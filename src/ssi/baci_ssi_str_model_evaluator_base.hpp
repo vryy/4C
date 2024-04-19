@@ -44,13 +44,13 @@ namespace STR::MODELEVALUATOR
 
     [[nodiscard]] Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override
     {
-      dserror("Not implemented!");
+      FOUR_C_THROW("Not implemented!");
       return Teuchos::null;
     }
 
     [[nodiscard]] Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override
     {
-      dserror("Not implemented!");
+      FOUR_C_THROW("Not implemented!");
       return Teuchos::null;
     }
 

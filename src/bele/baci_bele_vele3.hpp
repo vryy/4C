@@ -125,7 +125,7 @@ namespace DRT
           return 6;
         else
         {
-          dserror("Could not determine number of lines");
+          FOUR_C_THROW("Could not determine number of lines");
           return -1;
         }
       }
@@ -143,7 +143,7 @@ namespace DRT
           return 5;
         else
         {
-          dserror("Could not determine number of surfaces");
+          FOUR_C_THROW("Could not determine number of surfaces");
           return -1;
         }
       }
@@ -275,7 +275,7 @@ namespace DRT
             hoel = false;
             break;
           default:
-            dserror("distype unknown!");
+            FOUR_C_THROW("distype unknown!");
         }
         return hoel;
       };
@@ -309,7 +309,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented for element type vele3!");
+        FOUR_C_THROW("method ComputeNullSpace not implemented for element type vele3!");
         return nullspace;
       }
 
@@ -351,7 +351,7 @@ namespace DRT
           return 3;
         else
         {
-          dserror("Could not determine number of lines");
+          FOUR_C_THROW("Could not determine number of lines");
           return -1;
         }
       }
@@ -419,7 +419,7 @@ namespace DRT
             hoel = false;
             break;
           default:
-            dserror("distype unknown!");
+            FOUR_C_THROW("distype unknown!");
         }
         return hoel;
       };
@@ -458,7 +458,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented for element type vele3!");
+        FOUR_C_THROW("method ComputeNullSpace not implemented for element type vele3!");
         return nullspace;
       }
 

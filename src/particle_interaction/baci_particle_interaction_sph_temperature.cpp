@@ -95,7 +95,7 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
 
     // safety check
     if (not(thermomaterial_[type_i]->thermalCapacity_ > 0.0))
-      dserror("thermal capacity for particles of type '%s' not positive!",
+      FOUR_C_THROW("thermal capacity for particles of type '%s' not positive!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
   }
 
@@ -202,7 +202,7 @@ void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
     }
     default:
     {
-      dserror("unknown type of heat source!");
+      FOUR_C_THROW("unknown type of heat source!");
       break;
     }
   }

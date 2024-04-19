@@ -52,7 +52,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildStrategy(
       break;
     }
     default:
-      dserror("Unknown integration strategy!");
+      FOUR_C_THROW("Unknown integration strategy!");
       break;
   }
 
@@ -95,7 +95,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildExplicitStrategy(
       probtype == GLOBAL::ProblemType::fsi_lung or probtype == GLOBAL::ProblemType::gas_fsi or
       probtype == GLOBAL::ProblemType::ac_fsi or probtype == GLOBAL::ProblemType::biofilm_fsi or
       probtype == GLOBAL::ProblemType::thermo_fsi)
-    dserror("No explicit time integration with fsi");
+    FOUR_C_THROW("No explicit time integration with fsi");
 
   const enum INPAR::STR::DynamicType dyntype =
       CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");

@@ -129,7 +129,7 @@ namespace DRT
           case CORE::FE::CellType::wedge6:
             return SoWeg6ScatraType::Instance().UniqueParObjectId();
           default:
-            dserror("unknown element type!");
+            FOUR_C_THROW("unknown element type!");
             break;
         }
         // Intel compiler needs a return so
@@ -190,7 +190,7 @@ namespace DRT
           case CORE::FE::CellType::wedge6:
             return SoWeg6ScatraType::Instance();
           default:
-            dserror("unknown element type!");
+            FOUR_C_THROW("unknown element type!");
             break;
         }
         // Intel compiler needs a return so

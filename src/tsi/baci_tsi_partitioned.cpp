@@ -167,7 +167,7 @@ void TSI::Partitioned::Solve()
       break;
     }
     default:
-      dserror("desired type of thermo-structure interaction algorithm not supported");
+      FOUR_C_THROW("desired type of thermo-structure interaction algorithm not supported");
       break;
   }  // end switch
 
@@ -1270,7 +1270,7 @@ bool TSI::Partitioned::ConvergenceCheck(int itnum, const int itmax, const double
 
     case INPAR::TSI::convnorm_mix:
     default:
-      dserror("Cannot check for convergence of residual values!");
+      FOUR_C_THROW("Cannot check for convergence of residual values!");
       break;
   }
 

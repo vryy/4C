@@ -810,7 +810,7 @@ double base_func_line_int(CORE::LINALG::Matrix<2, 1> pt, int inte_num, std::vect
     return basef_line;
   }
 
-  dserror("the base function required is not defined");
+  FOUR_C_THROW("the base function required is not defined");
   return 0.0;
 }
 

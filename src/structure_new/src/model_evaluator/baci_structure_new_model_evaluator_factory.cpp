@@ -79,21 +79,21 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelE
       case INPAR::STR::model_monolithic_coupling:
       {
         if (coupling_model_ptr.is_null())
-          dserror("The monolithic coupling model evaluator is not defined.");
+          FOUR_C_THROW("The monolithic coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
       case INPAR::STR::model_partitioned_coupling:
       {
         if (coupling_model_ptr.is_null())
-          dserror("The partitioned coupling model evaluator is not defined.");
+          FOUR_C_THROW("The partitioned coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
       case INPAR::STR::model_basic_coupling:
       {
         if (coupling_model_ptr.is_null())
-          dserror("The basic coupling model evaluator is not defined.");
+          FOUR_C_THROW("The basic coupling model evaluator is not defined.");
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
@@ -104,7 +104,7 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelE
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Constraints());
         break;
       default:
-        dserror("Not yet implemented!");
+        FOUR_C_THROW("Not yet implemented!");
         break;
     }
   }

@@ -103,7 +103,7 @@ namespace DRT
           }
           default:
           {
-            dserror("unknown element type");
+            FOUR_C_THROW("unknown element type");
             break;
           }
         }
@@ -154,7 +154,7 @@ namespace DRT
             return DRT::ELEMENTS::WallNurbs9PoroScatraType::Instance();
             break;
           default:
-            dserror("unknown element type");
+            FOUR_C_THROW("unknown element type");
             break;
         }
         return DRT::ELEMENTS::WallQuad4PoroScatraType::Instance();

@@ -42,7 +42,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::CheckMaterialType(
   INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
   if ((mtype != INPAR::MAT::m_fluidporo_multiphase) and
       (mtype != INPAR::MAT::m_fluidporo_multiphase_reactions))
-    dserror("Material with ID %d is not admissible for porofluid multiphase elements", matid);
+    FOUR_C_THROW("Material with ID %d is not admissible for porofluid multiphase elements", matid);
 }
 
 
@@ -66,7 +66,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::SetElementData(
   }
   else
   {
-    dserror("unsupported element type '%s'", typeid(*newele).name());
+    FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
   }
   return;
 }

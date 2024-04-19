@@ -137,7 +137,7 @@ void STR::Integrator::SetInitialDisplacement(
                   .Evaluate(lnode->X().data(), GlobalState().GetTimeN(), d);
 
           const int err = GlobalState().GetDisN()->ReplaceMyValues(1, &initialval, &doflid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
 
@@ -147,19 +147,19 @@ void STR::Integrator::SetInitialDisplacement(
       break;
     }
     default:
-      dserror("Unknown option for initial displacement: %d", init);
+      FOUR_C_THROW("Unknown option for initial displacement: %d", init);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
+void STR::Integrator::CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::Integrator::CheckInitSetup() const
 {
-  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -207,7 +207,7 @@ void STR::Integrator::EquilibrateInitialState()
 
   // initialize the mass matrix and the Rayleigh damping matrix (optional)
   if (not ModelEval().InitializeInertiaAndDamping(*disnp_ptr, *stiff_ptr))
-    dserror("InitializeInertiaAndDamping failed!");
+    FOUR_C_THROW("InitializeInertiaAndDamping failed!");
 
   /* If we are restarting the simulation, we do not have to calculate a
    * consistent acceleration, since we get it anyway from the restart file.
@@ -223,7 +223,8 @@ void STR::Integrator::EquilibrateInitialState()
   }
 
   // build the entire initial right-hand-side
-  if (not ModelEval().ApplyInitialForce(*disnp_ptr, *rhs_ptr)) dserror("ApplyInitialForce failed!");
+  if (not ModelEval().ApplyInitialForce(*disnp_ptr, *rhs_ptr))
+    FOUR_C_THROW("ApplyInitialForce failed!");
 
   // add inertial and viscous contributions to rhs
   /* note: this needs to be done 'manually' here because in the RHS evaluation
@@ -267,7 +268,7 @@ void STR::Integrator::EquilibrateInitialState()
   if (dir_str == "User Defined")
     dir_str = p_nox.sublist("Direction").get<std::string>("User Defined Method");
   if (dir_str != "Newton" and dir_str != "Modified Newton")
-    dserror(
+    FOUR_C_THROW(
         "The EquilibriateState predictor is currently only working for the "
         "direction-method \"Newton\".");
 
@@ -294,7 +295,7 @@ void STR::Integrator::EquilibrateInitialState()
    * added above. */
   // ---------------------------------------------------------------------------
   // solve the linear system
-  if (stiff_ptr->NormInf() == 0.0) dserror("You are about to invert a singular matrix!");
+  if (stiff_ptr->NormInf() == 0.0) FOUR_C_THROW("You are about to invert a singular matrix!");
 
   linsys_ptr->applyJacobianInverse(p_ls, *nox_rhs_ptr, *nox_soln_ptr);
   nox_soln_ptr->scale(-1.0);
@@ -369,7 +370,7 @@ void STR::Integrator::DetermineEnergy()
  *----------------------------------------------------------------------------*/
 double STR::Integrator::GetModelValue(const Epetra_Vector& x)
 {
-  dserror(
+  FOUR_C_THROW(
       "This routine is not supported in the currently active time "
       "integration scheme.");
   exit(EXIT_FAILURE);
@@ -381,7 +382,7 @@ double STR::Integrator::GetTotalMidTimeStrEnergy(const Epetra_Vector& x)
 {
   CheckInitSetup();
   if (not mt_energy_.IsCorrectlyConfigured())
-    dserror(
+    FOUR_C_THROW(
         "You are trying to compute the mid-time energy in case of a non-static"
         " simulation, but you have not specified the desired energy averaging type."
         " Please add a meaningful MIDTIME_ENERGY_TYPE to the ---STRUCTURAL DYNAMIC"
@@ -779,7 +780,7 @@ Teuchos::RCP<const Epetra_Vector> STR::Integrator::MidTimeEnergy::Average(
       return state_avg;
     }
     default:
-      dserror("Don't know what to do for the given MidAvg type.");
+      FOUR_C_THROW("Don't know what to do for the given MidAvg type.");
       exit(EXIT_FAILURE);
   }
 }
@@ -797,7 +798,7 @@ void STR::Integrator::MidTimeEnergy::CopyNpToN()
  *----------------------------------------------------------------------------*/
 bool STR::Integrator::MidTimeEnergy::IsCorrectlyConfigured() const
 {
-  dsassert(issetup_, "Call Setup() first.");
+  FOUR_C_ASSERT(issetup_, "Call Setup() first.");
 
   if (avg_type_ == INPAR::STR::midavg_vague)
   {

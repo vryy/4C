@@ -73,7 +73,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       // i.e., one volume in the input section FLUID TURBULENT INFLOW VOLUME
       //       or in the input section
       if ((sepcond.size() != 1) and (condition == "TurbulentInflowSection"))
-        dserror("Only one separate section with condition TurbulentInflowSection expected!");
+        FOUR_C_THROW("Only one separate section with condition TurbulentInflowSection expected!");
       // remark: however, more than one are already considered
       for (auto& sepc : sepcond)
       {
@@ -150,7 +150,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       if (counter == numnode)
         found = true;
       else if ((counter > 0) and (counter < numnode))
-        dserror(
+        FOUR_C_THROW(
             "Turbulent inflow is a volume condition! All nodes of an element should have this "
             "condition!");
 
@@ -208,7 +208,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       if (counter == numnode)
         found = true;
       else if ((counter > 0) and (counter < numnode))
-        dserror(
+        FOUR_C_THROW(
             "Turbulent inflow is a volume condition! All nodes of an element should have this "
             "condition!");
 
@@ -514,7 +514,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
           }
         }
       }
-      if (insane) dserror("invalid dof col map");
+      if (insane) FOUR_C_THROW("invalid dof col map");
 
       {
         std::set<int> testset;
@@ -525,7 +525,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
           std::set<int>::iterator curr = testset.find(id);
           if (curr != testset.end())
           {
-            dserror("DofRowMap of child dis is not unique on this proc");
+            FOUR_C_THROW("DofRowMap of child dis is not unique on this proc");
           }
           testset.insert(id);
         }
@@ -534,14 +534,14 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         {
           std::cout << *childdiscret_->DofRowMap();
 
-          dserror("DofRowMap  of child dis is not unique (global)");
+          FOUR_C_THROW("DofRowMap  of child dis is not unique (global)");
         }
       }
     }
   }
   else
   {
-    dserror("Nodes with separation condition expected!");
+    FOUR_C_THROW("Nodes with separation condition expected!");
   }
 }
 

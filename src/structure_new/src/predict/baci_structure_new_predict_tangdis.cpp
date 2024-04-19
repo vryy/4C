@@ -64,7 +64,7 @@ void STR::PREDICT::TangDis::Compute(::NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  dsassert(grp_ptr != nullptr, "Dynamic cast failed!");
+  FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
   grp_ptr->ResetPrePostOperator(NoxParams().sublist("Group Options"));
 
   ImplInt().EvalData().SetPredictorType(INPAR::STR::pred_tangdis);
@@ -99,7 +99,7 @@ void STR::PREDICT::TangDis::Compute(::NOX::Abstract::Group& grp)
   if (dir_str == "User Defined")
     dir_str = NoxParams().sublist("Direction").get<std::string>("User Defined Method");
   if (dir_str != "Newton" and dir_str != "Modified Newton")
-    dserror(
+    FOUR_C_THROW(
         "The TangDis predictor is currently only working for the direction-"
         "methods \"Newton\" and \"Modified Newton\".");
 
@@ -143,7 +143,7 @@ void STR::PREDICT::TangDis::Compute(::NOX::Abstract::Group& grp)
  *----------------------------------------------------------------------------*/
 const Epetra_Vector& STR::PREDICT::TangDis::GetDbcIncr() const
 {
-  dsassert(!dbc_incr_ptr_.is_null(), "The dbc increment is not initialized!");
+  FOUR_C_ASSERT(!dbc_incr_ptr_.is_null(), "The dbc increment is not initialized!");
   return *dbc_incr_ptr_;
 }
 
@@ -203,11 +203,11 @@ void NOX::NLN::GROUP::PrePostOp::TangDis::runPostComputeF(
       tang_predict_ptr_->GlobalState().GetJacobianDisplBlock();
 
   // check if the jacobian is filled
-  if (not stiff_ptr->Filled()) dserror("The jacobian is not yet filled!");
+  if (not stiff_ptr->Filled()) FOUR_C_THROW("The jacobian is not yet filled!");
 
   Teuchos::RCP<Epetra_Vector> freact_ptr =
       Teuchos::rcp(new Epetra_Vector(*tang_predict_ptr_->GlobalState().DofRowMapView()));
-  if (stiff_ptr->Multiply(false, dbc_incr, *freact_ptr)) dserror("Multiply failed!");
+  if (stiff_ptr->Multiply(false, dbc_incr, *freact_ptr)) FOUR_C_THROW("Multiply failed!");
 
   // finally add the linear reaction forces to the current rhs
   CORE::LINALG::AssembleMyVector(1.0, F, 1.0, *freact_ptr);

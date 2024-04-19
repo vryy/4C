@@ -61,7 +61,7 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "The cell type you are trying to evaluate the Neumann condition for is not yet "
           "implemented in EvaluateNeumannByElement.");
       break;
@@ -85,13 +85,13 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
 
   // ensure that at least as many curves/functs as dofs are available
   if (onoff.size() < numdim)
-    dserror("Fewer functions or curves defined than the element's dimension.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element's dimension.");
 
   for (std::size_t checkdof = numdim; checkdof < onoff.size(); ++checkdof)
   {
     if (onoff[checkdof] != 0)
     {
-      dserror(
+      FOUR_C_THROW(
           "You have activated more than %d dofs in your Neumann boundary condition. This is higher "
           "than the dimension of the element.",
           numdim);
@@ -110,9 +110,10 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         if (jacobian_mapping.determinant_ == 0.0)
-          dserror("The determinant of the jacobian is zero for element with id %i", element.Id());
+          FOUR_C_THROW(
+              "The determinant of the jacobian is zero for element with id %i", element.Id());
         else if (jacobian_mapping.determinant_ < 0.0)
-          dserror("The determinant of the jacobian is negative (%d) for element with id %i",
+          FOUR_C_THROW("The determinant of the jacobian is negative (%d) for element with id %i",
               jacobian_mapping.determinant_, element.Id());
 
         // material/reference co-ordinates of Gauss point

@@ -73,7 +73,8 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Materials(
 )
 {
   // safety check
-  if (material->MaterialType() != INPAR::MAT::m_myocard) dserror("Material type is not supported");
+  if (material->MaterialType() != INPAR::MAT::m_myocard)
+    FOUR_C_THROW("Material type is not supported");
 
   // safety check
   Teuchos::RCP<MAT::Myocard> actmat =
@@ -316,7 +317,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::ExtractEle
 
   // extract additional local values from global vector
   Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
-  if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
+  if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, la[0].lm_);
 }
 

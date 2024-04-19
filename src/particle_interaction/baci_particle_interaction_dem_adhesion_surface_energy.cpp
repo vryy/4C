@@ -35,7 +35,7 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::Setup()
 {
   // safety check
   if (not(params_dem_.get<double>("ADHESION_SURFACE_ENERGY") > 0.0))
-    dserror("non-positive adhesion surface energy!");
+    FOUR_C_THROW("non-positive adhesion surface energy!");
 }
 
 PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyConstant::DEMAdhesionSurfaceEnergyConstant(
@@ -60,8 +60,8 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::Setup()
   DEMAdhesionSurfaceEnergyBase::Setup();
 
   // safety checks
-  if (variance_ < 0.0) dserror("negative variance for adhesion surface energy distribution!");
-  if (cutofffactor_ < 0.0) dserror("negative cutoff factor of adhesion surface energy!");
+  if (variance_ < 0.0) FOUR_C_THROW("negative variance for adhesion surface energy distribution!");
+  if (cutofffactor_ < 0.0) FOUR_C_THROW("negative cutoff factor of adhesion surface energy!");
 }
 
 void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::

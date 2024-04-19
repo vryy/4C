@@ -379,7 +379,7 @@ namespace DRT::ELEMENTS
   {
     if constexpr (has_gauss_point_history<SolidFormulation>)
     {
-      dserror("The Solid element formulation can only be evaluated at the Gauss points.");
+      FOUR_C_THROW("The Solid element formulation can only be evaluated at the Gauss points.");
     }
     else
     {
@@ -463,7 +463,7 @@ namespace DRT::ELEMENTS
     }
     else
     {
-      dserror("The solid formulation does not support to update the prestress!");
+      FOUR_C_THROW("The solid formulation does not support to update the prestress!");
     }
   }
 
@@ -488,7 +488,7 @@ namespace DRT::ELEMENTS
     }
     else
     {
-      dserror("The solid formulation does not support to update the prestress!");
+      FOUR_C_THROW("The solid formulation does not support to update the prestress!");
     }
   }
 

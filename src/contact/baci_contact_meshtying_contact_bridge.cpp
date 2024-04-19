@@ -60,7 +60,7 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(DRT::Discretization& dis
         CORE::UTILS::IntegralValue<bool>(GetStrategy().Params(), "OUTPUT_INTERFACES");
 
     if (writeInterfaceOutput && HaveContact() && ContactManager()->GetStrategy().Friction())
-      dserror(
+      FOUR_C_THROW(
           "Output for each interface does not work yet, if friction is enabled. Switch off the "
           "interface-based output in the input file (or implement/fix it for frictional contact "
           "problems.");
@@ -221,7 +221,7 @@ const Epetra_Comm& CONTACT::MeshtyingContactBridge::Comm() const
 
   if (mtman_ != Teuchos::null) return mtman_->Comm();
 
-  dserror("can't get comm()");
+  FOUR_C_THROW("can't get comm()");
   return cman_->Comm();
 }
 

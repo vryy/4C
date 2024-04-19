@@ -140,7 +140,7 @@ namespace CONTACT
     /*! @name Empty functions (Penalty meshtying)
      *
      * All these functions only have functionality in Penalty meshtying simulations,
-     * thus they are defined as dserror here in the case of Lagrange meshtying.
+     * thus they are defined as FOUR_C_THROW here in the case of Lagrange meshtying.
      */
 
     double ConstraintNorm() const override { return 0.0; }

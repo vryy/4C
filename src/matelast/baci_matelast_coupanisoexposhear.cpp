@@ -43,7 +43,7 @@ double MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetScalarProduct(int
 {
   if (!isInitialized_)
   {
-    dserror("Fibers have not been initialized yet.");
+    FOUR_C_THROW("Fibers have not been initialized yet.");
   }
 
   if (scalarProducts_.size() == 1)
@@ -59,7 +59,7 @@ MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetStructuralTensor(int gp)
 {
   if (!isInitialized_)
   {
-    dserror("Fibers have not been initialized yet.");
+    FOUR_C_THROW("Fibers have not been initialized yet.");
   }
 
   if (structuralTensors_.size() == 1)
@@ -75,7 +75,7 @@ MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetStructuralTensor_stress(
 {
   if (!isInitialized_)
   {
-    dserror("Fibers have not been initialized yet.");
+    FOUR_C_THROW("Fibers have not been initialized yet.");
   }
 
   if (structuralTensors_stress_.size() == 1)
@@ -102,7 +102,7 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalElementDataIni
 
   if (init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_ELEMENT_EXTERNAL)
   {
-    dserror(
+    FOUR_C_THROW(
         "This material only supports the fiber prescription with the FIBER1 FIBER2 notation and "
         "INIT modes %d and %d.",
         DefaultAnisotropyExtension<2>::INIT_MODE_ELEMENT_FIBERS,
@@ -111,7 +111,7 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalElementDataIni
 
   if (GetAnisotropy()->GetElementFibers().empty())
   {
-    dserror("No element fibers are given with the FIBER1 FIBER2 notation");
+    FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
   }
 
   scalarProducts_.resize(1);
@@ -144,7 +144,7 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalGPDataInitiali
 
   if (init_mode_ == DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_EXTERNAL)
   {
-    dserror(
+    FOUR_C_THROW(
         "This material only supports the fiber prescription with the FIBER1 FIBER2 notation and "
         "INIT modes %d and %d.",
         DefaultAnisotropyExtension<2>::INIT_MODE_ELEMENT_FIBERS,
@@ -153,7 +153,7 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalGPDataInitiali
 
   if (GetAnisotropy()->GetNumberOfGPFibers() == 0)
   {
-    dserror("No element fibers are given with the FIBER1 FIBER2 notation");
+    FOUR_C_THROW("No element fibers are given with the FIBER1 FIBER2 notation");
   }
 
   scalarProducts_.resize(GetAnisotropy()->GetNumberOfGaussPoints());
@@ -220,7 +220,7 @@ void MAT::ELASTIC::CoupAnisoExpoShear::GetFiberVecs(
 void MAT::ELASTIC::CoupAnisoExpoShear::SetFiberVecs(const double newgamma,
     const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
-  dserror("This function is not implemented for this summand!");
+  FOUR_C_THROW("This function is not implemented for this summand!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

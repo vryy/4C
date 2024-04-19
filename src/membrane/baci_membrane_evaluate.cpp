@@ -62,7 +62,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     // get the action required
     std::string action = params.get<std::string>("action", "none");
     if (action == "none")
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_nlnstiff")
       act = ELEMENTS::struct_calc_nlnstiff;
     else if (action == "calc_struct_nlnstiffmass")
@@ -81,7 +81,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::struct_postprocess_thickness;
     else
     {
-      dserror("Unknown type of action for Membrane: %s", action.c_str());
+      FOUR_C_THROW("Unknown type of action for Membrane: %s", action.c_str());
     }
   }
 
@@ -94,7 +94,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       CORE::LINALG::Matrix<numdof_, numdof_>* matptr = nullptr;
@@ -112,7 +112,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       CORE::LINALG::Matrix<numdof_, numdof_>* matptr = nullptr;
@@ -130,7 +130,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -146,7 +146,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     {
       // Update materials
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       Update_element(mydisp, params, Material());
@@ -170,7 +170,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -199,8 +199,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
             params, "iostrain", INPAR::STR::strain_none);
       }
 
-      if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-      if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
+      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
 
       CORE::LINALG::Matrix<numgpt_post_, 6> stress;
       CORE::LINALG::Matrix<numgpt_post_, 6> strain;
@@ -243,7 +243,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         else  // old structural time integration
           thickdata = params.get<Teuchos::RCP<std::vector<char>>>("optquantity", Teuchos::null);
 
-        if (thickdata == Teuchos::null) dserror("Cannot get 'thickness' data");
+        if (thickdata == Teuchos::null) FOUR_C_THROW("Cannot get 'thickness' data");
 
         CORE::LINALG::Matrix<numgpt_post_, 1> thickness;
         for (int i = 0; i < numgpt_post_; ++i) thickness(i) = cur_thickness_[i];
@@ -270,7 +270,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -335,7 +335,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
               1.0 / (dxds1.Dot(dxds1) * dxds2.Dot(dxds2) - std::pow(dxds1.Dot(dxds2), 2.0)));
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "Type of material not implemented for evaluation of strain energy for membranes!");
 
         // surface deformation gradient in 3 dimensions in global coordinates
@@ -365,7 +365,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
               ->StrainEnergy(cauchygreen_loc, psi, gp, Id());
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "Type of material not implemented for evaluation of strain energy for membranes!");
 
         // add gauss point contribution to internal energy
@@ -382,7 +382,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       else  // old structural time integration
       {
         // check length of elevec1
-        if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
+        if (elevec1_epetra.length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
         elevec1_epetra(0) = intenergy;
       }
@@ -397,7 +397,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> gpthickmap =
           params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
               "gpthickmap", Teuchos::null);
-      if (gpthickmap == Teuchos::null) dserror("no gp thickness map available for postprocessing");
+      if (gpthickmap == Teuchos::null)
+        FOUR_C_THROW("no gp thickness map available for postprocessing");
 
       std::string optquantitytype = params.get<std::string>("optquantitytype", "ndxyz");
 
@@ -406,7 +407,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 
       Teuchos::RCP<Epetra_MultiVector> postthick =
           params.get<Teuchos::RCP<Epetra_MultiVector>>("postthick", Teuchos::null);
-      if (postthick == Teuchos::null) dserror("No element thickness vector available");
+      if (postthick == Teuchos::null) FOUR_C_THROW("No element thickness vector available");
 
       if (optquantitytype == "ndxyz")
       {
@@ -431,7 +432,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         }
       }
       else
-        dserror("unknown type of thickness output on element level");
+        FOUR_C_THROW("unknown type of thickness output on element level");
     }
     break;
 
@@ -454,7 +455,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
      | default                                                                       |
      *===============================================================================*/
     default:
-      dserror("Unknown type of action for Membrane: %s", ActionType2String(act).c_str());
+      FOUR_C_THROW("Unknown type of action for Membrane: %s", ActionType2String(act).c_str());
       break;
   }
 
@@ -488,11 +489,11 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < noddof_)
-    dserror("Fewer functions or curves defined than the element has dofs.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   // check membrane pressure input
   for (int checkdof = 1; checkdof < int(onoff->size()); ++checkdof)
-    if ((*onoff)[checkdof] != 0) dserror("membrane pressure on 1st dof only!");
+    if ((*onoff)[checkdof] != 0) FOUR_C_THROW("membrane pressure on 1st dof only!");
 
   // find out whether we will use time curves and get the factors
   const auto* tmp_funct = condition.Get<std::vector<int>>("funct");
@@ -515,7 +516,7 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
 
   // need displacement new
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
-  if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement new'");
+  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -790,7 +791,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     }
     else
     {
-      dserror("The material does not support the evaluation of membranes");
+      FOUR_C_THROW("The material does not support the evaluation of membranes");
     }
 
     /*===============================================================================*
@@ -911,7 +912,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // check for non constant mass matrix
       if (SolidMaterial()->VaryingDensity())
       {
-        dserror("Varying Density not supported for Membrane");
+        FOUR_C_THROW("Varying Density not supported for Membrane");
       }
     }
 
@@ -923,7 +924,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // Green-Lagrange strains
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
         // transform local cauchygreen to global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
@@ -952,7 +953,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // Euler-Almansi strains
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
         // transform local cauchygreen to global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
@@ -985,7 +986,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // Logarithmic strains
       case INPAR::STR::strain_log:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
         // the Eularian logarithmic strain is defined as the natural logarithm of the left stretch
         // tensor [1,2]: e_{log} = e_{hencky} = ln (\mathbf{V}) = \sum_{i=1}^3 (ln \lambda_i)
@@ -1065,7 +1066,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
             // tempCG computed with every combination of eigenvector orientations -- up to nine
             // comparisons
             if (diffCG(i, j) > 1e-10)
-              dserror(
+              FOUR_C_THROW(
                   "eigenvector orientation error with the diffCG giving problems: %10.5e \n BUILD "
                   "SOLUTION TO FIX IT",
                   diffCG(i, j));
@@ -1084,7 +1085,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested strain type not available");
+        FOUR_C_THROW("requested strain type not available");
         break;
     }
 
@@ -1096,7 +1097,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // 2nd Piola-Kirchhoff stresses
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
         // 2nd Piola-Kirchhoff stress in tensor notation, plane stress meaning entries in 2i and i2
         // are zero for i=0,1,2
@@ -1121,7 +1122,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // Cauchy stresses
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
         // 2nd Piola-Kirchhoff stress in tensor notation, plane stress meaning entries in 2i and i2
         // are zero for i=0,1,2
@@ -1150,7 +1151,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not available");
+        FOUR_C_THROW("requested stress type not available");
         break;
     }
   }
@@ -1186,7 +1187,7 @@ bool DRT::ELEMENTS::Membrane<distype>::VisData(const std::string& name, std::vec
 
   if (name == "thickness")
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (int gp = 0; gp < intpoints_.nquad; gp++)
     {
       data[0] += cur_thickness_[gp];
@@ -1209,7 +1210,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<doubl
 {
   // get reference configuration and determine current configuration
   DRT::Node** nodes = Nodes();
-  if (!nodes) dserror("Nodes() returned null pointer");
+  if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
   for (int i = 0; i < numnod_; ++i)
   {
@@ -1359,7 +1360,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
   const double detF = defgrd.Determinant();
 
   // check determinant of deformation gradient
-  if (detF == 0) dserror("Zero Determinant of Deformation Gradient.");
+  if (detF == 0) FOUR_C_THROW("Zero Determinant of Deformation Gradient.");
 
   // determine the cauchy stresses
   CORE::LINALG::Matrix<noddof_, noddof_> temp;
@@ -1381,7 +1382,8 @@ void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(
 {
   // check determinant of deformation gradient
   if (defgrd.Determinant() == 0)
-    dserror("Inverse of Deformation Gradient can not be calcualated due to a zero Determinant.");
+    FOUR_C_THROW(
+        "Inverse of Deformation Gradient can not be calcualated due to a zero Determinant.");
 
   // inverse of deformation gradient
   CORE::LINALG::Matrix<noddof_, noddof_> invdefgrd(true);
@@ -1445,7 +1447,7 @@ DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
 
   // check for correct gaussrule
   if (intpoints_.nquad != numgpt_post_)
-    dserror(
+    FOUR_C_THROW(
         "number of gauss points of gaussrule_ does not match numgpt_post_ used for postprocessing");
 
   // allocate vector for shape functions and matrix for derivatives at gp
@@ -1470,7 +1472,7 @@ DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
   CORE::LINALG::FixedSizeSerialDenseSolver<numnod_, numgpt_post_, 1> solver;
   solver.SetMatrix(extrapol);
   int err = solver.Invert();
-  if (err != 0.) dserror("Matrix extrapol is not invertible");
+  if (err != 0.) FOUR_C_THROW("Matrix extrapol is not invertible");
 
   return extrapol;
 

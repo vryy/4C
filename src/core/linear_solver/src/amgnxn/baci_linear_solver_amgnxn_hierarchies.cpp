@@ -50,7 +50,7 @@ CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::Hierarchies(Teuchos::RCP<AMGNXN::Block
   if (A_->GetNumRows() != A_->GetNumCols() or (int)(muelu_params_.size()) != NumBlocks_ or
       (int)(num_pdes_.size()) != NumBlocks_ or (int)(null_spaces_dim_.size()) != NumBlocks_ or
       (int)(null_spaces_data_.size()) != NumBlocks_)
-    dserror("Something wrong");
+    FOUR_C_THROW("Something wrong");
 
   // Setput
   Setup();
@@ -250,7 +250,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::Setup()
           A_level[level] = myAspa;
         }
         else
-          dserror("Error in extracting A");
+          FOUR_C_THROW("Error in extracting A");
 
         if (this_level->IsAvailable("PreSmoother"))
         {
@@ -259,7 +259,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::Setup()
           SPre_level[level] = mySWrap;
         }
         else
-          dserror("Error in extracting PreSmoother");
+          FOUR_C_THROW("Error in extracting PreSmoother");
 
         if (level < NumLevel_this_block - 1)
         {
@@ -270,7 +270,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::Setup()
             SPos_level[level] = mySWrap;
           }
           else
-            dserror("Error in extracting PostSmoother");
+            FOUR_C_THROW("Error in extracting PostSmoother");
         }
 
         if (level != 0)
@@ -284,7 +284,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::Setup()
             P_level[level - 1] = myAspa;
           }
           else
-            dserror("Error in extracting P");
+            FOUR_C_THROW("Error in extracting P");
 
           if (this_level->IsAvailable("R"))
           {
@@ -295,7 +295,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::Setup()
             R_level[level - 1] = myAspa;
           }
           else
-            dserror("Error in extracting R");
+            FOUR_C_THROW("Error in extracting R");
         }
 
       }  // loop in levels
@@ -340,8 +340,8 @@ CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(
   if (not create_uncoarsened_hierarchy)
   {
     // Some cheks
-    if (numdf < 1 or dimns < 1) dserror("Error: PDE equations or null space dimension wrong.");
-    if (nsdata == Teuchos::null) dserror("Error: null space data is empty");
+    if (numdf < 1 or dimns < 1) FOUR_C_THROW("Error: PDE equations or null space dimension wrong.");
+    if (nsdata == Teuchos::null) FOUR_C_THROW("Error: null space data is empty");
 
     // Hack making TSI work with the trilinos Q1_2015. The Q1_2014 version worked without this
     if (numdf == 1) offsetFineLevel = 0;
@@ -349,7 +349,7 @@ CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(
     // Prepare operator for MueLu
     Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_eop);
     if (A_crs == Teuchos::null)
-      dserror("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
+      FOUR_C_THROW("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
     Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA =
         Teuchos::rcp(new Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>(A_crs));
 
@@ -388,7 +388,7 @@ CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(
       }
       offsets_str = offsets_str + "}";
       if (paramListFromXml.sublist("Factories", true).isSublist("myCoarseMapFactory123"))
-        dserror(
+        FOUR_C_THROW(
             "We are going to overwrite the factory 'myCoarseMapFactory123'. Please use an other "
             "name");
       Teuchos::ParameterList& myCoarseMapFactoryList =
@@ -396,7 +396,7 @@ CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(
       myCoarseMapFactoryList.set("factory", "CoarseMapFactory");
       myCoarseMapFactoryList.set("Domain GID offsets", offsets_str);
       if (paramListFromXml.sublist("Hierarchy", true).sublist("All").isParameter("CoarseMap"))
-        dserror("We are going to overwrite 'CoarseMap'. Don't use 'CoarseMap' here.");
+        FOUR_C_THROW("We are going to overwrite 'CoarseMap'. Don't use 'CoarseMap' here.");
       Teuchos::ParameterList& AllList = paramListFromXml.sublist("Hierarchy").sublist("All");
       AllList.set("CoarseMap", "myCoarseMapFactory123");
 
@@ -442,7 +442,7 @@ CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(
           myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
         }
         else
-          dserror("Error in extracting A");
+          FOUR_C_THROW("Error in extracting A");
 
         offsets[level - 1] = offsets[level - 1] + myAcrs->RangeMap().MaxAllGID() +
                              1;  // TODO I think we don't have to overwrite previous result
@@ -484,7 +484,7 @@ int CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::GetNumBlocks() { return NumBlocks_
 Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix>
 CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::GetBlockMatrix()
 {
-  if (A_ == Teuchos::null) dserror("No data");
+  if (A_ == Teuchos::null) FOUR_C_THROW("No data");
   return A_;
 }
 
@@ -495,7 +495,7 @@ Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
 CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::GetH(int block)
 {
   Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H = H_block_[block];
-  if (H == Teuchos::null) dserror("No data");
+  if (H == Teuchos::null) FOUR_C_THROW("No data");
   return H;
 }
 
@@ -507,7 +507,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINEAR_SOLVER::AMGNXN::Hierarchie
     int block, int level)
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> A = A_block_level_[block][level];
-  if (A == Teuchos::null) dserror("No data");
+  if (A == Teuchos::null) FOUR_C_THROW("No data");
   return A;
 }
 
@@ -519,7 +519,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINEAR_SOLVER::AMGNXN::Hierarchie
     int block, int level)
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> P = P_block_level_[block][level];
-  if (P == Teuchos::null) dserror("No data");
+  if (P == Teuchos::null) FOUR_C_THROW("No data");
   return P;
 }
 
@@ -530,7 +530,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINEAR_SOLVER::AMGNXN::Hierarchie
     int block, int level)
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> R = R_block_level_[block][level];
-  if (R == Teuchos::null) dserror("No data");
+  if (R == Teuchos::null) FOUR_C_THROW("No data");
   return R;
 }
 
@@ -542,7 +542,7 @@ Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::MueluSmootherWrapper>
 CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::GetSPre(int block, int level)
 {
   Teuchos::RCP<AMGNXN::MueluSmootherWrapper> SPre = SPre_block_level_[block][level];
-  if (SPre == Teuchos::null) dserror("No data");
+  if (SPre == Teuchos::null) FOUR_C_THROW("No data");
   return SPre;
 }
 
@@ -554,7 +554,7 @@ Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::MueluSmootherWrapper>
 CORE::LINEAR_SOLVER::AMGNXN::Hierarchies::GetSPos(int block, int level)
 {
   Teuchos::RCP<AMGNXN::MueluSmootherWrapper> SPos = SPos_block_level_[block][level];
-  if (SPos == Teuchos::null) dserror("No data");
+  if (SPos == Teuchos::null) FOUR_C_THROW("No data");
   return SPos;
 }
 
@@ -619,7 +619,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::Setup()
   // ====================================================
 
   NumLevels_ = params_.get<int>("number of levels", -1);
-  if (NumLevels_ == -1) dserror("Missing \"number of levels\" in your xml file");
+  if (NumLevels_ == -1) FOUR_C_THROW("Missing \"number of levels\" in your xml file");
   NumLevels_ = std::min(NumLevels_, H_->GetNumLevelMin());
   NumBlocks_ = H_->GetNumBlocks();
 
@@ -691,11 +691,11 @@ void CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::Setup()
 
             Teuchos::RCP<CORE::LINALG::SparseMatrix> AP_spa = Teuchos::null;
             AP_spa = CORE::LINALG::MLMultiply(*A_spa, *P_spa, true);
-            if (AP_spa == Teuchos::null) dserror("Error in AP");
+            if (AP_spa == Teuchos::null) FOUR_C_THROW("Error in AP");
 
             Teuchos::RCP<CORE::LINALG::SparseMatrix> RAP_spa = Teuchos::null;
             RAP_spa = CORE::LINALG::MLMultiply(*R_spa, *AP_spa, true);
-            if (RAP_spa == Teuchos::null) dserror("Error in RAP");
+            if (RAP_spa == Teuchos::null) FOUR_C_THROW("Error in RAP");
 
             A_[level]->SetMatrix(RAP_spa, row, col);
           }
@@ -764,13 +764,13 @@ CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::BuildSmoother(int level)
   {
     smother_name = params_.get<std::string>("smoother: all but coarsest level", "none");
     if (smother_name == "none")
-      dserror("You have to set the fine level smoother. Fix your xml file.");
+      FOUR_C_THROW("You have to set the fine level smoother. Fix your xml file.");
   }
   else
   {
     smother_name = params_.get<std::string>("smoother: coarsest level", "none");
     if (smother_name == "none")
-      dserror("You have to set the coarse level smoother. Fix your xml file.");
+      FOUR_C_THROW("You have to set the coarse level smoother. Fix your xml file.");
   }
 
   std::string verbosity = params_.get<std::string>("verbosity", "off");
@@ -802,7 +802,7 @@ CORE::LINEAR_SOLVER::AMGNXN::MonolithicHierarchy::BuildSmoother(int level)
   Teuchos::RCP<AMGNXN::BlockedSmoother> Sblock =
       Teuchos::rcp_dynamic_cast<AMGNXN::BlockedSmoother>(Sbase);
   if (Sblock == Teuchos::null)
-    dserror("We expect a block smoother. Fix the xml file defining the smoother");
+    FOUR_C_THROW("We expect a block smoother. Fix the xml file defining the smoother");
   return Sbase;
 }
 

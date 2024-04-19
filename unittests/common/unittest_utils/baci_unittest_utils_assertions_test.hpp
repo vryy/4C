@@ -25,7 +25,7 @@ namespace TESTING::INTERNAL
     template <typename T>
     inline int PrecisionForPrinting(T tolerance)
     {
-      dsassert(tolerance > 0, "Tolerance must be positive.");
+      FOUR_C_ASSERT(tolerance > 0, "Tolerance must be positive.");
       return tolerance > 1 ? 0 : static_cast<int>(std::ceil(-1.0 * std::log10(tolerance) + 1));
     }
 

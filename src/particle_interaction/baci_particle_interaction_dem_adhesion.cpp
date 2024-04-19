@@ -90,7 +90,7 @@ void PARTICLEINTERACTION::DEMAdhesion::Setup(
   adhesionsurfaceenergy_->Setup();
 
   // safety check
-  if (adhesion_distance_ < 0.0) dserror("negative adhesion distance!");
+  if (adhesion_distance_ < 0.0) FOUR_C_THROW("negative adhesion distance!");
 }
 
 void PARTICLEINTERACTION::DEMAdhesion::AddForceContribution()
@@ -125,7 +125,7 @@ void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionLawHandler()
     }
     default:
     {
-      dserror("unknown adhesion law type!");
+      FOUR_C_THROW("unknown adhesion law type!");
       break;
     }
   }
@@ -167,7 +167,7 @@ void PARTICLEINTERACTION::DEMAdhesion::InitAdhesionSurfaceEnergyHandler()
     }
     default:
     {
-      dserror("unknown adhesion surface energy distribution type!");
+      FOUR_C_THROW("unknown adhesion surface energy distribution type!");
       break;
     }
   }
@@ -377,7 +377,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
       const Teuchos::RCP<const MAT::ParticleWallMaterialDEM>& particlewallmaterial =
           Teuchos::rcp_dynamic_cast<const MAT::ParticleWallMaterialDEM>(ele->Material());
       if (particlewallmaterial == Teuchos::null)
-        dserror("cast to MAT::ParticleWallMaterialDEM failed!");
+        FOUR_C_THROW("cast to MAT::ParticleWallMaterialDEM failed!");
 
       // get adhesion surface energy
       surface_energy = particlewallmaterial->AdhesionSurfaceEnergy();
@@ -473,7 +473,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
       // assemble nodal forces
       const int err = walldatastate->GetForceCol()->SumIntoGlobalValues(
           numnodes * 3, nodal_force.data(), lmele.data());
-      if (err < 0) dserror("sum into Epetra_Vector failed!");
+      if (err < 0) FOUR_C_THROW("sum into Epetra_Vector failed!");
     }
   }
 

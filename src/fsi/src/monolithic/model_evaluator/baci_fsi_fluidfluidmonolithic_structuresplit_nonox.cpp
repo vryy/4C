@@ -94,17 +94,18 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
                 "------------+"
              << std::endl;
 
-    dserror(errormsg.str());
+    FOUR_C_THROW(errormsg.str());
   }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check if removing Dirichlet conditions was successful
   intersectionmaps.resize(0);
   intersectionmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
   intersectionmaps.push_back(StructureField()->Interface()->FSICondMap());
   intersectionmap = CORE::LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
   if (intersectionmap->NumGlobalElements() != 0)
-    dserror("Could not remove structural interface Dirichlet conditions from structure DBC map.");
+    FOUR_C_THROW(
+        "Could not remove structural interface Dirichlet conditions from structure DBC map.");
 #endif
 
   sggtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform);
@@ -167,14 +168,14 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
     // get structure matrix
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocks =
         StructureField()->BlockSystemMatrix();
-    if (blocks == Teuchos::null) dserror("expect structure block matrix");
+    if (blocks == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
 
     // get fluid shape derivatives matrix
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
 
     // get ale matrix
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocka = AleField()->BlockSystemMatrix();
-    if (blocka == Teuchos::null) dserror("expect ale block matrix");
+    if (blocka == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
     // extract structure and ale submatrices
     CORE::LINALG::SparseMatrix& sig = blocks->Matrix(0, 1);  // S_{I\Gamma}
@@ -330,11 +331,11 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystemMatrix()
   const CORE::ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
 
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
-  if (s == Teuchos::null) dserror("expect structure block matrix");
+  if (s == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
   Teuchos::RCP<CORE::LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
-  if (f == Teuchos::null) dserror("expect fluid matrix");
+  if (f == Teuchos::null) FOUR_C_THROW("expect fluid matrix");
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
-  if (a == Teuchos::null) dserror("expect ale block matrix");
+  if (a == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
   CORE::LINALG::SparseMatrix& aii = a->Matrix(0, 0);
   CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 1);
@@ -459,7 +460,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ScaleSystem(
         mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(2, 2).EpetraMatrix();
     arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
@@ -471,13 +472,13 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ScaleSystem(
         mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
 
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -524,8 +525,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
     Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 2);
 
-    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("structure scaling failed");
-    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sy, 0, x);
     Extractor().InsertVector(*ay, 2, x);
@@ -533,8 +534,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -547,7 +548,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::UnscaleSolution(
         mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(2, 2).EpetraMatrix();
     arowsum_->Reciprocal(*arowsum_);
@@ -557,7 +558,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::UnscaleSolution(
         mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
   }
 }
 
@@ -622,10 +623,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ExtractFieldVectors(
     Teuchos::RCP<const Epetra_Vector> x, Teuchos::RCP<const Epetra_Vector>& sx,
     Teuchos::RCP<const Epetra_Vector>& fx, Teuchos::RCP<const Epetra_Vector>& ax)
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (ddgpred_ == Teuchos::null)
   {
-    dserror("Vector 'ddgpred_' has not been initialized properly.");
+    FOUR_C_THROW("Vector 'ddgpred_' has not been initialized properly.");
   }
 #endif
 
@@ -746,7 +747,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::CreateCombinedDofRowMap()
   vecSpaces.push_back(AleField()->Interface()->OtherMap());
 
   if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No inner structural equations. Splitting not possible. Panic.");
+    FOUR_C_THROW("No inner structural equations. Splitting not possible. Panic.");
 
   SetDofRowMaps(vecSpaces);
 }

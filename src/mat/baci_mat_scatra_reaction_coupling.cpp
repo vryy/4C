@@ -53,10 +53,10 @@ MAT::PAR::REACTIONCOUPLING::ReactionInterface::CreateReaction(
       break;
     }
     case MAT::PAR::reac_coup_none:
-      dserror("reac_coup_none is not a valid coupling");
+      FOUR_C_THROW("reac_coup_none is not a valid coupling");
       break;
     default:
-      dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
+      FOUR_C_THROW("The couplingtype %i is not a valid coupling type.", couplingtype);
       break;
   }
 
@@ -150,7 +150,7 @@ void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceDerivAd
   // std::vector<double> phinp_mod(ModifyPhi(phinp,scale_phi));
   if (fabs(scale_phi - 1.0) > 1.0e-14)
   {
-    dserror("scale_phi is not equal to 1.0, you should make your own modify phi function");
+    FOUR_C_THROW("scale_phi is not equal to 1.0, you should make your own modify phi function");
   }
 
   // call the real evaluation
@@ -581,7 +581,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::Initialize(int numscal,  //!< numbe
       return InitializeInternal<3>(numscal, couprole);
 
     default:
-      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
 }
 
@@ -604,7 +604,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::InitializeInternal(int numscal,  //
         if (GLOBAL::Problem::Instance()
                 ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID - 1)
                 .NumberComponents() != 1)
-          dserror("expected only one component for the reaction evaluation");
+          FOUR_C_THROW("expected only one component for the reaction evaluation");
 
         for (int k = 0; k < numscal; k++)
         {
@@ -651,7 +651,7 @@ double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTerm(
       return CalcReaBodyForceTermInternal<3>(k, numscal, phinp, constants, couprole, scale_reac);
 
     default:
-      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
       return 0.0;
   }
 }
@@ -718,7 +718,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(int k,  //!< 
       return CalcReaBodyForceDerivInternal<3>(
           k, numscal, derivs, phinp, constants, couprole, scale_reac);
     default:
-      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
 }
 
@@ -790,7 +790,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariables(
       return CalcReaBodyForceDerivAddVariablesInternal<3>(
           k, derivs, variables, constants, couprole, scale_reac);
     default:
-      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
 }
 
@@ -815,7 +815,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDerivAddVariablesIn
 
   if (myderivs.size() != derivs.size())
   {
-    dserror("mismatch in dimensions, Input %d, Output %d", derivs.size(), myderivs.size());
+    FOUR_C_THROW("mismatch in dimensions, Input %d, Output %d", derivs.size(), myderivs.size());
   }
 
   // add it to derivs
@@ -842,7 +842,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::AddAdditionalVariables(
     case 3:
       return AddAdditionalVariablesInternal<3>(k, variables, couprole);
     default:
-      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
 }
 

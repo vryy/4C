@@ -34,7 +34,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(const El
 {
   const PositionFactory factory;
   if (rdim < factory.ProbDim())
-    dserror(
+    FOUR_C_THROW(
         "The given point has the wrong row dimension!\n"
         "rdim < prodbim <--> %d < %d",
         rdim, factory.ProbDim());
@@ -53,7 +53,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
   const unsigned num_nodes_ele = CORE::FE::getNumberOfElementNodes(distype);
 
   if (rdim < probdim or cdim != num_nodes_ele)
-    dserror(
+    FOUR_C_THROW(
         "Dimension mismatch of xyze! \n"
         "expected input: %d x %d (rows x cols)\n"
         "received input : %d x %d (rows x cols)",
@@ -69,7 +69,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
   }
 
   if (rdim_2 < probdim)
-    dserror(
+    FOUR_C_THROW(
         "Dimension mismatch of xyz! \n"
         "expected input: %d x 1 (rows x cols)\n"
         "received input : %d x 1 (rows x cols)",
@@ -91,7 +91,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 
   if (static_cast<unsigned>(xyze.numRows()) < probdim or
       static_cast<unsigned>(xyze.numCols()) != num_nodes_ele)
-    dserror(
+    FOUR_C_THROW(
         "Dimension mismatch of xyze! \n"
         "expected input: %d x %d (rows x cols)\n"
         "received input : %d x %d (rows x cols)",
@@ -107,7 +107,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
   }
 
   if (xyz.numRows() < probdim)
-    dserror(
+    FOUR_C_THROW(
         "Dimension mismatch of xyz! \n"
         "expected input: %d x 1 (rows x cols)\n"
         "received input : %d x 1 (rows x cols)",
@@ -125,7 +125,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 {
   const PositionFactory factory;
   if (rdim < factory.ProbDim())
-    dserror(
+    FOUR_C_THROW(
         "The given point has the wrong row dimension!\n"
         "rdim < prodbim <--> %d < %d",
         rdim, factory.ProbDim());
@@ -309,7 +309,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
     case CORE::FE::CellType::wedge6:
       return CreateConcretePosition<CORE::FE::CellType::wedge6>(element, point, floattype);
     default:
-      dserror("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -348,7 +348,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
     case CORE::FE::CellType::wedge6:
       return CreateConcretePosition<CORE::FE::CellType::wedge6>(element, xyz, floattype);
     default:
-      dserror("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -386,7 +386,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
     case CORE::FE::CellType::wedge6:
       return CreateConcretePosition<CORE::FE::CellType::wedge6>(xyze, xyz, floattype);
     default:
-      dserror("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -404,7 +404,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
     plain_element_set elements;
     FindCommonElements(nodes, elements);
     if (elements.size() != 1)
-      dserror("Couldn't find a unique element corresponding to the given nodes.");
+      FOUR_C_THROW("Couldn't find a unique element corresponding to the given nodes.");
 
     distype = elements[0]->Shape();
   }
@@ -434,7 +434,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
     case CORE::FE::CellType::wedge6:
       return CreateConcretePosition<CORE::FE::CellType::wedge6>(nodes, xyz, floattype);
     default:
-      dserror("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 

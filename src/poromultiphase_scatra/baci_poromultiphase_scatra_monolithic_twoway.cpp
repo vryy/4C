@@ -180,9 +180,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupMaps()
         (ScatraAlgo()->ScaTraField()->Discretization())->DofRowMap(0);
     vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra, false));
 
-    if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No poro structure equation. Panic.");
-    if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No poro fluid equation. Panic.");
-    if (vecSpaces[2]->NumGlobalElements() == 0) dserror("No scatra equation. Panic.");
+    if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro structure equation. Panic.");
+    if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No poro fluid equation. Panic.");
+    if (vecSpaces[2]->NumGlobalElements() == 0) FOUR_C_THROW("No scatra equation. Panic.");
   }
   else
   {
@@ -191,8 +191,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupMaps()
         (ScatraAlgo()->ScaTraField()->Discretization())->DofRowMap(0);
     vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra, false));
 
-    if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No poro fluid equation. Panic.");
-    if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No scatra equation. Panic.");
+    if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro fluid equation. Panic.");
+    if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No scatra equation. Panic.");
   }
 
   // full fluid-structure-scatra-map
@@ -261,7 +261,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
   const int linsolvernumber = poromultscatradyn.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER");
   // check if the poroelasticity solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for poromultiphaseflow with scatra coupling.\n"
         " Please set LINEAR_SOLVER in POROMULTIPHASESCATRA DYNAMIC to a valid number!");
   const Teuchos::ParameterList& solverparams =
@@ -297,7 +297,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSol
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("Iterative solver expected");
+    FOUR_C_THROW("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
@@ -312,7 +312,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSol
     }
     break;
     default:
-      dserror("AMGnxn preconditioner expected");
+      FOUR_C_THROW("AMGnxn preconditioner expected");
       break;
   }
 
@@ -410,7 +410,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::Evaluate(
   // check whether we have a sanely filled tangent matrix
   if (not systemmatrix_->Filled())
   {
-    dserror("Effective tangent matrix must be filled here");
+    FOUR_C_THROW("Effective tangent matrix must be filled here");
   }
 
   // (7) Build the monolithic system vector
@@ -533,7 +533,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroFluidScatraCoupl
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_pfs_);
-  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
+  if (sparse == Teuchos::null) FOUR_C_THROW("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }
@@ -545,7 +545,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ScatraStructCoupling
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_sps_);
-  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
+  if (sparse == Teuchos::null) FOUR_C_THROW("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }
@@ -557,7 +557,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::ScatraPoroFluidCoupl
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_spf_);
-  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
+  if (sparse == Teuchos::null) FOUR_C_THROW("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }
@@ -1307,7 +1307,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseS
     std::cout << "******************finite difference check done***************\n\n" << std::endl;
   }
   else
-    dserror("PoroFDCheck failed");
+    FOUR_C_THROW("PoroFDCheck failed");
 }
 
 /*----------------------------------------------------------------------*
@@ -1361,11 +1361,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::S
     vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra, false));
     vecSpaces.push_back(PoroField()->ArteryDofRowMap());
     vecSpaces.push_back(scatramsht_->ArtScatraDofRowMap());
-    if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No poro structure equation. Panic.");
-    if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No poro fluid equation. Panic.");
-    if (vecSpaces[2]->NumGlobalElements() == 0) dserror("No scatra equation. Panic.");
-    if (vecSpaces[3]->NumGlobalElements() == 0) dserror("No artery equation. Panic.");
-    if (vecSpaces[4]->NumGlobalElements() == 0) dserror("No artery scatra equation. Panic.");
+    if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro structure equation. Panic.");
+    if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No poro fluid equation. Panic.");
+    if (vecSpaces[2]->NumGlobalElements() == 0) FOUR_C_THROW("No scatra equation. Panic.");
+    if (vecSpaces[3]->NumGlobalElements() == 0) FOUR_C_THROW("No artery equation. Panic.");
+    if (vecSpaces[4]->NumGlobalElements() == 0) FOUR_C_THROW("No artery scatra equation. Panic.");
   }
   else
   {
@@ -1375,10 +1375,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::S
     vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra, false));
     vecSpaces.push_back(PoroField()->ArteryDofRowMap());
     vecSpaces.push_back(scatramsht_->ArtScatraDofRowMap());
-    if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No poro fluid equation. Panic.");
-    if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No scatra equation. Panic.");
-    if (vecSpaces[2]->NumGlobalElements() == 0) dserror("No artery equation. Panic.");
-    if (vecSpaces[3]->NumGlobalElements() == 0) dserror("No artery scatra equation. Panic.");
+    if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro fluid equation. Panic.");
+    if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No scatra equation. Panic.");
+    if (vecSpaces[2]->NumGlobalElements() == 0) FOUR_C_THROW("No artery equation. Panic.");
+    if (vecSpaces[3]->NumGlobalElements() == 0) FOUR_C_THROW("No artery scatra equation. Panic.");
   }
 
   // full fluid-structure-scatra-artery-arteryscatra map
@@ -1592,7 +1592,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> POROMULTIPHASESCATRA::
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_asa_);
-  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
+  if (sparse == Teuchos::null) FOUR_C_THROW("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }

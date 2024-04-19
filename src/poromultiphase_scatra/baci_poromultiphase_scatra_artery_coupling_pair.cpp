@@ -129,9 +129,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   }
   else
   {
-    dserror("Your selected coupling is not possible, type of element1: " +
-            element1_->ElementType().Name() +
-            ", type of element2: " + element2_->ElementType().Name());
+    FOUR_C_THROW("Your selected coupling is not possible, type of element1: " +
+                 element1_->ElementType().Name() +
+                 ", type of element2: " + element2_->ElementType().Name());
   }
 
   if (couplmethod_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
@@ -145,7 +145,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       if (coupltype_ == type_porofluid)
       {
-        dserror(
+        FOUR_C_THROW(
             "Wrong coupling type in DESIGN 1D ARTERY TO POROFLUID NONCONF COUPLING CONDITIONS.\n "
             "NTP-coupling is only possible for coupling type: "
             " 'ARTERY' or 'AIRWAY'. "
@@ -155,7 +155,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "Wrong coupling type in DESIGN 1D ARTERY TO SCATRA NONCONF COUPLING CONDITIONS.\n"
             "NTP-coupling is only possible for coupling type: "
             "'ARTERY' or 'AIRWAY'. "
@@ -173,7 +173,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   numdof_art_ = element1_->NumDofPerNode(*artnodes[0]);
   for (int i = 1; i < element1_->NumNode(); i++)
     if (numdof_art_ != element1_->NumDofPerNode(*artnodes[i]))
-      dserror("It is not possible to have different number of Dofs in artery discretization");
+      FOUR_C_THROW("It is not possible to have different number of Dofs in artery discretization");
   dim1_ = numdof_art_ * element1_->NumNode();
 
   // get number of DOFs of continuous ele (scatra or porofluid)
@@ -183,16 +183,19 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   numdof_cont_ = element2_->NumDofPerNode(*contnodes[0]);
   for (int i = 1; i < element2_->NumNode(); i++)
     if (numdof_cont_ != element2_->NumDofPerNode(*contnodes[i]))
-      dserror("It is not possible to have different number of Dofs in continuos discretization");
+      FOUR_C_THROW(
+          "It is not possible to have different number of Dofs in continuos discretization");
   dim2_ = numdof_cont_ * element2_->NumNode();
 
   // safety check
-  if (numdof_art_ != (int)(scale_vec[0].size())) dserror("Wrong size of scale-vector (artery)");
-  if (numdof_art_ != (int)(funct_vec[0].size())) dserror("Wrong size of function-vector (artery)");
+  if (numdof_art_ != (int)(scale_vec[0].size()))
+    FOUR_C_THROW("Wrong size of scale-vector (artery)");
+  if (numdof_art_ != (int)(funct_vec[0].size()))
+    FOUR_C_THROW("Wrong size of function-vector (artery)");
   if (numdof_cont_ != (int)(scale_vec[1].size()))
-    dserror("Wrong size of scale-vector (continuous discretization)");
+    FOUR_C_THROW("Wrong size of scale-vector (continuous discretization)");
   if (numdof_cont_ != (int)(funct_vec[1].size()))
-    dserror("Wrong size of function-vector (continuous discretization)");
+    FOUR_C_THROW("Wrong size of function-vector (continuous discretization)");
 
   // fill scale vector
   scale_vec_ = scale_vec;
@@ -216,14 +219,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   {
     if (coupleddofs_cont_[icont] >= numdof_cont_)
     {
-      dserror(
+      FOUR_C_THROW(
           "You try to couple DOF %d, which is larger than the number of dofs of the continuous "
           "discretization",
           coupleddofs_cont_[icont] + 1);
     }
     if (coupleddofs_cont_[icont] < 0)
     {
-      dserror("Your coupling DOF of the continuous discretization must be >= 0, your DOF = %d",
+      FOUR_C_THROW("Your coupling DOF of the continuous discretization must be >= 0, your DOF = %d",
           coupleddofs_cont_[icont] + 1);
     }
   }
@@ -231,14 +234,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   {
     if (coupleddofs_art_[iart] >= numdof_art_)
     {
-      dserror(
+      FOUR_C_THROW(
           "You try to couple DOF %d, which is larger than the number of dofs of the artery "
           "discretization",
           coupleddofs_art_[iart] + 1);
     }
     if (coupleddofs_art_[iart] < 0)
     {
-      dserror("Your coupling DOF of the reduced discretization must be >= 0, your DOF = %d",
+      FOUR_C_THROW("Your coupling DOF of the reduced discretization must be >= 0, your DOF = %d",
           coupleddofs_art_[iart] + 1);
     }
   }
@@ -303,7 +306,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       multiphasemat =
           Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(element2_->Material(nds_porofluid_));
       if (multiphasemat == Teuchos::null)
-        dserror("cast to MAT::FluidPoroMultiPhase failed for artery-porofluid coupling!");
+        FOUR_C_THROW("cast to MAT::FluidPoroMultiPhase failed for artery-porofluid coupling!");
       for (int idof = 0; idof < numcoupleddofs_; idof++)
       {
         const int matid = multiphasemat->MatID(coupleddofs_cont_[idof]);
@@ -313,7 +316,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure &&
             singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
         {
-          dserror(
+          FOUR_C_THROW(
               "You can only couple volume fraction pressures or fluid phases in multiphase "
               "porespace, your material is of type %d",
               singlemat->MaterialType());
@@ -331,7 +334,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           numscalcont_ = scatramat->NumMat();
         }
         else
-          dserror("Only MAT_matlist is valid for poromultiphase-scatra material");
+          FOUR_C_THROW("Only MAT_matlist is valid for poromultiphase-scatra material");
       }
       // we have a coupling with artery-scatra -> the artery-scatra-material is the second
       // material in the artery element
@@ -346,12 +349,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         else if (element1_->Material(1)->MaterialType() == INPAR::MAT::m_scatra)
           numscalart_ = 1;
         else
-          dserror("Only MAT_matlist and MAT_scatra are valid for artery-scatra material");
+          FOUR_C_THROW("Only MAT_matlist and MAT_scatra are valid for artery-scatra material");
       }
 
       arterymat_ = Teuchos::rcp_static_cast<MAT::Cnst1dArt>(element1_->Material(0));
       if (arterymat_ == Teuchos::null)
-        dserror("cast to artery material failed for porofluid-artery coupling!");
+        FOUR_C_THROW("cast to artery material failed for porofluid-artery coupling!");
       arterydiamAtGP_ = arterymat_->Diam();
       arterydiamref_ = arterymat_->DiamInitial();
       arterydens = arterymat_->Density();
@@ -361,17 +364,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     case type_scatra:
     {
       // check if we actually have three materials
-      if (element2_->NumMaterial() < 3) dserror("no third material available");
+      if (element2_->NumMaterial() < 3) FOUR_C_THROW("no third material available");
 
       multiphasemat =
           Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(element2_->Material(nds_porofluid_));
 
       if (multiphasemat == Teuchos::null)
-        dserror("cast to MAT::FluidPoroMultiPhase failed for arteryscatra-scatra coupling!");
+        FOUR_C_THROW("cast to MAT::FluidPoroMultiPhase failed for arteryscatra-scatra coupling!");
 
       contscatramat = Teuchos::rcp_static_cast<MAT::MatList>(element2_->Material(0));
       if (contscatramat == Teuchos::null)
-        dserror("cast to ScatraMat failed for arteryscatra-scatra coupling!");
+        FOUR_C_THROW("cast to ScatraMat failed for arteryscatra-scatra coupling!");
 
       for (int idof = 0; idof < numcoupleddofs_; idof++)
       {
@@ -382,7 +385,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         if (singlemat->MaterialType() != INPAR::MAT::m_scatra_multiporo_volfrac &&
             singlemat->MaterialType() != INPAR::MAT::m_scatra_multiporo_fluid)
         {
-          dserror(
+          FOUR_C_THROW(
               "You can only couple MAT::ScatraMatMultiPoroVolFrac or MAT::ScatraMatMultiPoroFluid, "
               "your material is of type %d",
               singlemat->MaterialType());
@@ -405,18 +408,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       else if (element1_->Material(0)->MaterialType() == INPAR::MAT::m_scatra)
         numscalart_ = 1;
       else
-        dserror("Only MAT_matlist and MAT_scatra are valid for artery-scatra material");
+        FOUR_C_THROW("Only MAT_matlist and MAT_scatra are valid for artery-scatra material");
       numscalcont_ = numdof_cont_;
       arterymat_ = Teuchos::rcp_static_cast<MAT::Cnst1dArt>(element1_->Material(1));
       if (arterymat_ == Teuchos::null)
-        dserror("cast to artery material failed for arteryscatra-scatra coupling!");
+        FOUR_C_THROW("cast to artery material failed for arteryscatra-scatra coupling!");
       arterydiamAtGP_ = arterymat_->Diam();
       arterydiamref_ = arterymat_->DiamInitial();
       arterydens = arterymat_->Density();
       break;
     }
     default:
-      dserror("Unknown coupling type");
+      FOUR_C_THROW("Unknown coupling type");
       break;
   }
 
@@ -426,7 +429,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   {
     // no real use-case without function coupling
     if (not funct_coupl_active_)
-      dserror(
+      FOUR_C_THROW(
           "Diameter function has been defined but no exchange function has been set, this is "
           "currently not possible, if you still want a varying diameter without any exchange "
           "terms, you can still define a zero exchange term");
@@ -446,15 +449,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   if (evaluate_on_lateral_surface_)
   {
     if (!evaluate_in_ref_config_)
-      dserror(
+      FOUR_C_THROW(
           "Evaluation in current configuration is not yet possible in combination with lateral "
           "surface coupling");
     if (diam_funct_active_)
-      dserror(
+      FOUR_C_THROW(
           "Setting a varying diameter is not yet possible in combination with lateral "
           "surface coupling");
     if (not(distypeCont == CORE::FE::CellType::hex8 or distypeCont == CORE::FE::CellType::tet4))
-      dserror("Only TET4 and HEX8 elements possible for lateral surface coupling");
+      FOUR_C_THROW("Only TET4 and HEX8 elements possible for lateral surface coupling");
   }
 
   numfluidphases_ = multiphasemat->NumFluidPhases();
@@ -498,7 +501,7 @@ template <CORE::FE::CellType distypeArt, CORE::FE::CellType distypeCont, int dim
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
     dim>::PreEvaluate(Teuchos::RCP<Epetra_MultiVector> gp_vector)
 {
-  if (!isinit_) dserror("MeshTying Pair has not yet been initialized");
+  if (!isinit_) FOUR_C_THROW("MeshTying Pair has not yet been initialized");
 
   if (couplmethod_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
   {
@@ -531,7 +534,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   CORE::LINALG::Matrix<3, 1> unit_rad_2;
   // unit tangential basis
   CORE::LINALG::Matrix<3, 1> tang;
-  if (numdim_ != 3) dserror("surface-based formulation makes only sense in 3D");
+  if (numdim_ != 3) FOUR_C_THROW("surface-based formulation makes only sense in 3D");
   for (int idim = 0; idim < 3; idim++) tang(idim) = lambda0_(idim);
 
   CORE::GEO::BuildOrthonormalBasisFromUnitVector(tang, unit_rad_1, unit_rad_2);
@@ -541,7 +544,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   Teuchos::RCP<MAT::Cnst1dArt> arterymat =
       Teuchos::rcp_static_cast<MAT::Cnst1dArt>(element1_->Material(artelematerial));
   if (arterymat == Teuchos::null)
-    dserror("cast to artery material failed for porofluid-artery coupling!");
+    FOUR_C_THROW("cast to artery material failed for porofluid-artery coupling!");
   double radius = arterymat->Diam() / 2.0;
 
   // size of one integration patch: 2*pi*R/numpatch_rad_*L/numpatch_axi_
@@ -693,7 +696,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
     bool projection_valid = false;
     Projection<double>(r1, xi_[i_gp], projection_valid);
-    if (!projection_valid) dserror("Gauss point could not be projected");
+    if (!projection_valid) FOUR_C_THROW("Gauss point could not be projected");
 
     // compute (dX/dxi)^-1
     Get2D3DShapeFunctions<double>(N2, N2_xi, xi_[i_gp]);
@@ -780,7 +783,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     dim>::ResetState(Teuchos::RCP<DRT::Discretization> contdis,
     Teuchos::RCP<DRT::Discretization> artdis)
 {
-  if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
+  if (!ispreevaluated_) FOUR_C_THROW("MeshTying Pair has not yet been pre-evaluated");
 
   // get location array for continuous ele
   DRT::Element::LocationArray la_cont(contdis->NumDofSets());
@@ -822,7 +825,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
               *artscalarnp, eartscalarnp_, la[ndsartery_scatra_].lm_);
         }
         else
-          dserror("Cannot get artery-scatra from artery discretization");
+          FOUR_C_THROW("Cannot get artery-scatra from artery discretization");
       }
       // extract values of continuous scatra discretization
       if (numscalcont_ > 0)
@@ -841,7 +844,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
               *contscalarnp, econtscalarnp_, la[3].lm_);
         }
         else
-          dserror("Cannot get state vector 'scalars'");
+          FOUR_C_THROW("Cannot get state vector 'scalars'");
       }
       break;
     }
@@ -866,11 +869,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
             *artpressnp, earterypressurenp_, la[ndsscatra_artery_].lm_);
       }
       else
-        dserror("Cannot get arterypressure from artery-scatra discretization");
+        FOUR_C_THROW("Cannot get arterypressure from artery-scatra discretization");
       break;
     }
     default:
-      dserror("Unknown coupling type");
+      FOUR_C_THROW("Unknown coupling type");
       break;
   }
 }
@@ -886,7 +889,7 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
     CORE::LINALG::SerialDenseMatrix* M_ele, CORE::LINALG::SerialDenseVector* Kappa_ele,
     const std::vector<double>& segmentlengths)
 {
-  if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
+  if (!ispreevaluated_) FOUR_C_THROW("MeshTying Pair has not yet been pre-evaluated");
 
   // resize and initialize variables to zero
   if (forcevec1 != nullptr) forcevec1->size(dim1_);
@@ -948,7 +951,7 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
       break;
     }
     default:
-      dserror("Unknown coupling type for artery to poro coupling");
+      FOUR_C_THROW("Unknown coupling type for artery to poro coupling");
       break;
   }
 
@@ -971,7 +974,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
                                                               stiffmat11,
     CORE::LINALG::SerialDenseMatrix* stiffmat12)
 {
-  if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
+  if (!ispreevaluated_) FOUR_C_THROW("MeshTying Pair has not yet been pre-evaluated");
 
   if (stiffmat11 != nullptr) stiffmat11->shape(dim1_, dim1_);
   if (stiffmat12 != nullptr) stiffmat12->shape(dim1_, dim2_);
@@ -1061,7 +1064,7 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
   xjm.MultiplyNT(deriv, ele2pos_);
   double det = xji.Invert(xjm);
 
-  if (det < 1E-16) dserror("GLOBAL ELEMENT ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", det);
+  if (det < 1E-16) FOUR_C_THROW("GLOBAL ELEMENT ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", det);
 
   // compute integration factor
   return gpweight * det;
@@ -1236,7 +1239,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
       bool projection_valid = false;
       Projection<double>(r1, myXi[i_gp], projection_valid);
-      if (!projection_valid) dserror("Gauss point could not be projected");
+      if (!projection_valid) FOUR_C_THROW("Gauss point could not be projected");
       // save the converged value
       eta_s_[i_gp] = eta_s.val();
     }  // GP loop
@@ -2053,7 +2056,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           phaseid = poromat->PhaseID();
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "Only MAT::ScatraMatMultiPoroVolFrac and MAT::ScatraMatMultiPoroFluid, your "
               "material "
               "is of type %d",
@@ -2063,7 +2066,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       break;
     }
     default:
-      dserror("Unknown coupling type");
+      FOUR_C_THROW("Unknown coupling type");
       break;
   }
 }
@@ -2148,7 +2151,7 @@ FAD POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, dis
     bool projection_valid = false;
     std::vector<FAD> xi(numdim_, 0.0);
     Projection<FAD>(r1, xi, projection_valid);
-    if (!projection_valid) dserror("Gauss point could not be projected");
+    if (!projection_valid) FOUR_C_THROW("Gauss point could not be projected");
 
     Get2D3DShapeFunctions<FAD>(N2, N2_xi, xi);
 
@@ -2198,7 +2201,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       break;
     }
     default:
-      dserror("Unknown coupling type");
+      FOUR_C_THROW("Unknown coupling type");
       break;
   }
 }
@@ -2231,7 +2234,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       break;
     }
     default:
-      dserror("Unknown coupling type");
+      FOUR_C_THROW("Unknown coupling type");
       break;
   }
 }
@@ -2387,7 +2390,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       break;
     }
     default:
-      dserror("Unknown coupling type");
+      FOUR_C_THROW("Unknown coupling type");
       break;
   }
 }
@@ -2722,7 +2725,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   }
   // rest is not possible
   else
-    dserror(
+    FOUR_C_THROW(
         "Found more than two intersections for artery element %d and 2D/3D element %d, this "
         "should "
         "not be possible",
@@ -2732,12 +2735,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   if (isactive_)
   {
     if (eta_a_ > eta_b_)
-      dserror(
+      FOUR_C_THROW(
           "something went terribly wrong for artery element %d and 2D/3D element %d, eta_a is "
           "bigger than eta_b",
           Ele1GID(), Ele2GID());
     if (fabs(eta_a_ - eta_b_) < XIETATOL)
-      dserror(
+      FOUR_C_THROW(
           "something went terribly wrong for artery element %d and 2D/3D element %d, found "
           "extremely small integration segment",
           Ele1GID(), Ele2GID());
@@ -2807,7 +2810,7 @@ std::vector<double> POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair
       break;
     }
     default:
-      dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+      FOUR_C_THROW("Only quad4, hex8 and tet4 are valid so far for second element");
   }
 
   std::sort(intersections.begin(), intersections.end());
@@ -2862,7 +2865,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         xi[1] = fixedAt;
       }
       else
-        dserror("wrong input for fixedPar");
+        FOUR_C_THROW("wrong input for fixedPar");
       break;
     }
     case CORE::FE::CellType::hex8:
@@ -2886,7 +2889,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         xi[2] = fixedAt;
       }
       else
-        dserror("wrong input for fixedPar");
+        FOUR_C_THROW("wrong input for fixedPar");
       break;
     }
     case CORE::FE::CellType::tet4:
@@ -2916,13 +2919,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         xi[2] = 0.5;
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "only fixedPar = 0, fixedPar = 1, fixedPar = 2 or fixedPar = 3 possible (for tet "
             "elements");
       break;
     }
     default:
-      dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+      FOUR_C_THROW("Only quad4, hex8 and tet4 are valid so far for second element");
   }
 
   if (PROJOUTPUT)
@@ -2945,7 +2948,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         break;
       }
       default:
-        dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+        FOUR_C_THROW("Only quad4, hex8 and tet4 are valid so far for second element");
     }
   }
 
@@ -3025,7 +3028,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           break;
         }
         default:
-          dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+          FOUR_C_THROW("Only quad4, hex8 and tet4 are valid so far for second element");
       }
     }
     else if (fixedPar == 2)  // xi3 fixed  --> we need x_{,xi1} (and x_{,xi2} in case of 3D)
@@ -3044,7 +3047,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       }
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "only fixedPar = 0, fixedPar = 1, fixedPar = 2 or fixedPar = 3 possible (for tet "
           "elements)");
 
@@ -3121,7 +3124,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           break;
         }
         default:
-          dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+          FOUR_C_THROW("Only quad4, hex8 and tet4 are valid so far for second element");
       }
     }
     else if (fixedPar == 2)  // xi3 fixed --> we have to update xi1 (and xi2 in case of 3D)
@@ -3137,7 +3140,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       xi[2] = 1.0 - xi[0] - xi[1];
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "only fixedPar = 0, fixedPar = 1, fixedPar = 2 or fixedPar = 3 possible (for tet "
           "elements)");
 
@@ -3177,7 +3180,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       break;
     }
     default:
-      dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+      FOUR_C_THROW("Only quad4, hex8 and tet4 are valid so far for second element");
   }
 
   if (PROJOUTPUT)
@@ -3235,7 +3238,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       break;
     }
     default:
-      dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
+      FOUR_C_THROW("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
   }
 
   if (PROJOUTPUT)
@@ -3259,7 +3262,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         break;
       }
       default:
-        dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
+        FOUR_C_THROW("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
     }
   }
 
@@ -3344,7 +3347,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
             break;
           }
           default:
-            dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
+            FOUR_C_THROW("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
         }
         std::cout << " with residual: " << residual << std::endl;
         std::cout << "r1:\n" << r1 << ", x2:\n" << x2 << std::endl;
@@ -3372,7 +3375,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           break;
         }
         default:
-          dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
+          FOUR_C_THROW("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
       }
       std::cout << " with residual: " << residual << std::endl;
     }
@@ -3437,7 +3440,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       break;
     }
     default:
-      dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
+      FOUR_C_THROW("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
   }
 
   if (PROJOUTPUT)
@@ -3504,7 +3507,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       break;
     }
     default:
-      dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
+      FOUR_C_THROW("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
   }
 
   return;
@@ -3586,7 +3589,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     dim>::InitializeFunction(const CORE::UTILS::FunctionOfAnything& funct)
 {
   // safety check
-  if (funct.NumberComponents() != 1) dserror("expected only one component for coupling function!");
+  if (funct.NumberComponents() != 1)
+    FOUR_C_THROW("expected only one component for coupling function!");
 }
 
 /*----------------------------------------------------------------------*
@@ -3689,7 +3693,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       break;
     }
     default:
-      dserror("Unknown coupling type");
+      FOUR_C_THROW("Unknown coupling type");
       break;
   }
 }

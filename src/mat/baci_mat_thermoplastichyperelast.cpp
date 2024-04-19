@@ -54,8 +54,8 @@ MAT::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(Teuchos::RCP<MAT::PAR
       abstol_(*matdata->Get<double>("TOL"))
 {
   if (sathardening_ < yield_)
-    dserror("Saturation hardening must not be less than initial yield stress!");
-  if (hardexpo_ < 0.0) dserror("Nonlinear hardening exponent must be non-negative!");
+    FOUR_C_THROW("Saturation hardening must not be less than initial yield stress!");
+  if (hardexpo_ < 0.0) FOUR_C_THROW("Nonlinear hardening exponent must be non-negative!");
 }
 
 
@@ -174,7 +174,7 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ThermoPlasticHyperElast*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -253,7 +253,8 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
   // if it was already plastic before, set true
   if (plastic_step != 0) plastic_step_ = true;
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 
@@ -372,7 +373,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
     CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
-  if (eleGID == -1) dserror("no element provided in material");
+  if (eleGID == -1) FOUR_C_THROW("no element provided in material");
 
   // elastic material data
   // -------------------------------------------------- get material parameters
@@ -412,7 +413,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
   double J = defgrd->Determinant();
   // determinant has to be >= 0
   // in case of too large dt, determinant is often negative --> reduce dt
-  if (J < 0) dserror("Jacobi determinant is not allowed to be less than zero!");
+  if (J < 0) FOUR_C_THROW("Jacobi determinant is not allowed to be less than zero!");
 
   // ------------------------------------------------ multiplicative split of F
   // split deformation gradient in elastic and plastic part
@@ -473,7 +474,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
   {
     // TSI, i.e. temperature is available --> use this temperature
     scalartemp = params.get<double>("scalartemp", -1.0);
-    if (scalartemp < 0.0) dserror("INadmissible value for the temperature: T=%3d", scalartemp);
+    if (scalartemp < 0.0) FOUR_C_THROW("INadmissible value for the temperature: T=%3d", scalartemp);
   }
   // in case of purely structural analysis, i.e. isothermal: T = T_0, DeltaT = 0
   else
@@ -497,7 +498,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
   double alpha = 0.0;
   alpha = accplstrainlast_->at(gp);
   if (accplstrainlast_->at(gp) < 0.0)
-    dserror("accumulated plastic strain has to be equal to or greater than 0!");
+    FOUR_C_THROW("accumulated plastic strain has to be equal to or greater than 0!");
 
   // thermodynamic force / hardening flux describing nonlinear isotropic hardening
   // sigma_iso = rho (d psi^_p) / (d accplstrain)
@@ -591,7 +592,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
       // check for convergence
       if (itnum > itermax)
       {
-        dserror("local Newton iteration did not converge after iteration %3d/%3d with Res=%3d",
+        FOUR_C_THROW("local Newton iteration did not converge after iteration %3d/%3d with Res=%3d",
             itnum, itermax, Res);
       }  // itnum > itermax
       // else: continue loop, i.e. m <= m_max
@@ -1260,7 +1261,7 @@ bool MAT::ThermoPlasticHyperElast::VisData(
   // accumulated strain
   if (name == "accumulatedstrain")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int iter = 0; iter < numgp; iter++) temp += AccumulatedStrain(iter);
     data[0] = temp / numgp;
@@ -1269,7 +1270,7 @@ bool MAT::ThermoPlasticHyperElast::VisData(
   // mechanical dissipation
   if (name == "mechdiss")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int iter = 0; iter < numgp; iter++) temp += MechDiss(iter);
     data[0] = temp / numgp;
@@ -1278,7 +1279,7 @@ bool MAT::ThermoPlasticHyperElast::VisData(
   // thermoplastic heating term
   if (name == "thrplheating")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int iter = 0; iter < numgp; iter++) temp += ThermoPlastHeating(iter);
     data[0] = temp / numgp;

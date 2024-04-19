@@ -66,7 +66,7 @@ namespace CORE::FE
   {
     // some numbers already known during compilation
     const int numnode = CORE::FE::num_nodes<DISTYPE>;
-    dsassert(numnode <= NumNode, "Expect at least numNodePerElement matrix columns");
+    FOUR_C_ASSERT(numnode <= NumNode, "Expect at least numNodePerElement matrix columns");
     const int nsd = ProbDim;
     const int numderiv2 = CORE::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2;
 
@@ -125,7 +125,7 @@ namespace CORE::FE
           derxy2(0, node) *= xji[0][0] * xji[0][0];
           break;
         default:
-          dserror("Illegal number of space dimensions: %d", nsd);
+          FOUR_C_THROW("Illegal number of space dimensions: %d", nsd);
           break;
       }
     }

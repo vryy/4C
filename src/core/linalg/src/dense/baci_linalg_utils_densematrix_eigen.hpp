@@ -31,7 +31,7 @@ namespace CORE::LINALG
    \param L (out):       Vector of eigenvalues in ascending order
    \param postproc (in): flag indicating whether we are using this
    routine for postprocessing only (in that
-   case dserror is replaced with a warning)
+   case FOUR_C_THROW is replaced with a warning)
    */
   void SymmetricEigenValues(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L,
       const bool postproc = false);
@@ -44,7 +44,7 @@ namespace CORE::LINALG
    \param L (out):       Vector of eigenvalues in ascending order
    \param postproc (in): flag indicating whether we are using this
    routine for postprocessing only (in that
-   case dserror is replaced with a warning)
+   case FOUR_C_THROW is replaced with a warning)
    */
   void SymmetricEigenProblem(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L,
       const bool postproc = false);
@@ -58,7 +58,7 @@ namespace CORE::LINALG
    \param eval_eigenvectors (in):     flag to evaluate also eigenvectors
    \param postproc (in): flag indicating whether we are using this
    routine for postprocessing only (in that
-   case dserror is replaced with a warning)
+   case FOUR_C_THROW is replaced with a warning)
    */
   void SymmetricEigen(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L,
       bool eval_eigenvectors, bool postproc = false);
@@ -101,7 +101,7 @@ namespace CORE::LINALG
     Teuchos::LAPACK<int, double> lapack;
     lapack.SYEV(jobz, uplo, N, tmp.A(), lda, w.data(), work.data(), lwork, &info);
 
-    if (info) dserror("Lapack's SYEV returned %d", info);
+    if (info) FOUR_C_THROW("Lapack's SYEV returned %d", info);
 
     // return eigenvectors
     V.Update(tmp);

@@ -226,7 +226,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       return 0;
     }
     default:
-      dserror("The element action %s is not yet implemented for the new solid elements",
+      FOUR_C_THROW("The element action %s is not yet implemented for the new solid elements",
           ActionType2String(action).c_str());
       return 0;
   }
@@ -236,7 +236,7 @@ int DRT::ELEMENTS::SolidPoro::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("not implemented");
+  FOUR_C_THROW("not implemented");
   return 1;
 }
 FOUR_C_NAMESPACE_CLOSE

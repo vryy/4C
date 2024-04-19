@@ -153,7 +153,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
   setup_filter(file, output);
 
   ndim_ = map_read_int(&control_table_, "ndim");
-  dsassert((ndim_ == 1) || (ndim_ == 2) || (ndim_ == 3), "illegal dimension");
+  FOUR_C_ASSERT((ndim_ == 1) || (ndim_ == 2) || (ndim_ == 3), "illegal dimension");
 
   const char* type = map_read_string(&control_table_, "problem_type");
   const std::string probtype(type);
@@ -169,7 +169,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
   {
     if (!symbol_is_map(symbol))
     {
-      dserror("failed to get result group");
+      FOUR_C_THROW("failed to get result group");
     }
     result_group_.push_back(symbol_map(symbol));
     symbol = symbol->next;
@@ -198,7 +198,7 @@ PostField* PostProblem::get_discretization(const int num)
     std::cout << "You asked for discretization " << num
               << " (counting from zero), but there are only " << fields_.size()
               << " discretization(s)!";
-    dserror("This is a bug!");
+    FOUR_C_THROW("This is a bug!");
   }
   return fields_.data() + num;
 }
@@ -215,7 +215,7 @@ int PostProblem::field_pos(const PostField* field) const
       return field - fields_.data();
     }
   }
-  dserror("field not in list");
+  FOUR_C_THROW("field not in list");
   return -1;
 }
 
@@ -294,7 +294,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
     SYMBOL* first_result = map_find_symbol(&control_table_, "result");
     if (first_result == nullptr)
     {
-      dserror("no result sections in control file '%s'\n", control_file_name.c_str());
+      FOUR_C_THROW("no result sections in control file '%s'\n", control_file_name.c_str());
     }
     while (first_result->next != nullptr)
     {
@@ -417,7 +417,7 @@ void PostProblem::read_meshes()
   using namespace FourC;
 
   SYMBOL* mesh = map_find_symbol(&control_table_, "field");
-  if (mesh == nullptr) dserror("No field found.");
+  if (mesh == nullptr) FOUR_C_THROW("No field found.");
 
   // We have to reverse the traversal of meshes we get from the control file
   // in order to get the same dof numbers in all discretizations as we had
@@ -463,7 +463,7 @@ void PostProblem::read_meshes()
     if (not havefield)
     {
       int step;
-      if (!map_find_int(meshmap, "step", &step)) dserror("No step information in field.");
+      if (!map_find_int(meshmap, "step", &step)) FOUR_C_THROW("No step information in field.");
 
       PostField currfield = getfield(meshmap);
 
@@ -475,7 +475,7 @@ void PostProblem::read_meshes()
       currfield.set_num_output_procs(num_output_procs);
       const char* fn;
       if (!map_find_string(meshmap, "mesh_file", &fn))
-        dserror(
+        FOUR_C_THROW(
             "No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
       std::string filename = fn;
       IO::HDFReader reader = IO::HDFReader(input_dir_);
@@ -508,7 +508,7 @@ void PostProblem::read_meshes()
               dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
 
           if (nurbsdis == nullptr)
-            dserror("Discretization %s is not a NurbsDiscretization",
+            FOUR_C_THROW("Discretization %s is not a NurbsDiscretization",
                 currfield.discretization()->Name().c_str());
 
           Teuchos::RCP<std::vector<char>> packed_knots;
@@ -558,7 +558,7 @@ void PostProblem::read_meshes()
 
           if (nurbsdis == nullptr)
           {
-            dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
+            FOUR_C_THROW("expected a nurbs discretisation for spatial approx. Nurbs\n");
           }
 
           if (nurbsdis->Comm().NumProc() != 1)
@@ -569,7 +569,7 @@ void PostProblem::read_meshes()
 
           if (!(nurbsdis->Filled()))
           {
-            dserror("nurbsdis was not fc\n");
+            FOUR_C_THROW("nurbsdis was not fc\n");
           }
 
           int smallest_gid_in_dis = nurbsdis->ElementRowMap()->MinAllGID();
@@ -639,7 +639,7 @@ PostField PostProblem::getfield(MAP* field_info)
     }
     default:
     {
-      dserror("Undefined spatial approximation type.\n");
+      FOUR_C_THROW("Undefined spatial approximation type.\n");
       break;
     }
   }
@@ -654,7 +654,7 @@ int PostProblem::get_max_nodeid(const std::string& fieldname)
 {
   SYMBOL* mesh = map_find_symbol(&control_table_, "field");
 
-  if (mesh == nullptr) dserror("No field found.");
+  if (mesh == nullptr) FOUR_C_THROW("No field found.");
 
   int maxnodeid = -1;
   while (mesh != nullptr)
@@ -711,7 +711,7 @@ std::vector<double> PostResult::get_result_times(const std::string& fieldname)
 
   if (times.size() == 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "PostResult::get_result_times(fieldname='%s'):\n  no solution steps found in specified "
         "timestep range! Check --start, --end, --step parameters.",
         fieldname.c_str());
@@ -732,13 +732,13 @@ std::vector<double> PostResult::get_result_times(
   if (this->next_result(groupname))
     times.push_back(this->time());
   else
-    dserror("no solution found in field '%s'", fieldname.c_str());
+    FOUR_C_THROW("no solution found in field '%s'", fieldname.c_str());
 
   while (this->next_result(groupname)) times.push_back(this->time());
 
   if (times.size() == 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "PostResult::get_result_times(fieldname='%s', groupname='%s'):\n  no solution steps found "
         "in specified timestep range! Check --start, --end, --step parameters.",
         fieldname.c_str(), groupname.c_str());
@@ -761,7 +761,7 @@ void PostResult::get_result_timesandsteps(
 
   if (times.size() == 0 or steps.size() == 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "PostResult::get_result_timesandsteps(fieldname='%s'):\n  no solution steps found in "
         "specified range! Check --start, --end, --step parameters.",
         fieldname.c_str());
@@ -881,7 +881,7 @@ Teuchos::RCP<Epetra_Vector> PostResult::read_result(const std::string name)
   int columns;
   if (map_find_int(result, "columns", &columns))
   {
-    if (columns != 1) dserror("got multivector with name '%s', vector expected", name.c_str());
+    if (columns != 1) FOUR_C_THROW("got multivector with name '%s', vector expected", name.c_str());
   }
   return Teuchos::rcp_dynamic_cast<Epetra_Vector>(read_multi_result(name));
 }
@@ -906,7 +906,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
     columns = 1;
   }
   if (columns != 1)
-    dserror("got multivector with name '%s', std::vector<char> expected", name.c_str());
+    FOUR_C_THROW("got multivector with name '%s', std::vector<char> expected", name.c_str());
 
   Teuchos::RCP<Epetra_Map> elemap;
   Teuchos::RCP<std::vector<char>> data =

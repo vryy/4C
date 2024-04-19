@@ -36,7 +36,7 @@ bool DRT::ELEMENTS::Torsion3::ReadElement(
     bendingpotential_ = cosine;
 
   else
-    dserror("Reading of Torsion3 element failed because of unknown potential type!");
+    FOUR_C_THROW("Reading of Torsion3 element failed because of unknown potential type!");
 
   return true;
 }

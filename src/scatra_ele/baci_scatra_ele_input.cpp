@@ -70,7 +70,7 @@ bool DRT::ELEMENTS::Transport::ReadElement(
   else if (impltype == "HdgCardMono")
     impltype_ = INPAR::SCATRA::impltype_cardiac_monodomain_hdg;
   else
-    dserror("Transport element received invalid implementation type!");
+    FOUR_C_THROW("Transport element received invalid implementation type!");
 
   // read number of material model
   int material = 0;

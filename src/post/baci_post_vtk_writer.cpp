@@ -39,7 +39,7 @@ PostVtkWriter::PostVtkWriter(PostField *field, const std::string &filename)
 
 void PostVtkWriter::WriteVtkHeader()
 {
-  if (!currentout_) dserror("Invalid output stream");
+  if (!currentout_) FOUR_C_THROW("Invalid output stream");
 
   // TODO: might need BigEndian on some systems
   const std::string byteorder = "LittleEndian";
@@ -74,7 +74,7 @@ void PostVtkWriter::WriteVtkHeader()
   // Also start master file on processor 0
   if (myrank_ == 0)
   {
-    if (!currentmasterout_) dserror("Invalid output stream");
+    if (!currentmasterout_) FOUR_C_THROW("Invalid output stream");
 
     currentmasterout_ << "<?xml version=\"1.0\" ?> \n";
     currentmasterout_ << "<!-- \n";
@@ -93,7 +93,7 @@ void PostVtkWriter::WriteVtkHeader()
 
 void PostVtkWriter::WriteVtkFooter()
 {
-  if (!currentout_) dserror("Invalid output stream");
+  if (!currentout_) FOUR_C_THROW("Invalid output stream");
 
   // end the scalar fields
   if (currentPhase_ == POINTS)
@@ -116,7 +116,7 @@ void PostVtkWriter::WriteVtkFooter()
   }
   else
   {
-    dserror("No data was written or writer was already in final phase.");
+    FOUR_C_THROW("No data was written or writer was already in final phase.");
   }
 
   currentout_ << "</Piece>\n";
@@ -131,8 +131,8 @@ void PostVtkWriter::WriteVtkFooter()
   const pptags_type &ppiecetags = this->WriterPPieceTags();
   if (myrank_ == 0)
   {
-    if (!currentmasterout_) dserror("Invalid output stream");
-    if (numproc_ != ppiecetags.size()) dserror("Incorrect number of Pieces.");
+    if (!currentmasterout_) FOUR_C_THROW("Invalid output stream");
+    if (numproc_ != ppiecetags.size()) FOUR_C_THROW("Incorrect number of Pieces.");
 
     for (pptags_type::const_iterator it = ppiecetags.begin(); it != ppiecetags.end(); ++it)
       currentmasterout_ << "    " << *it << "\n";
@@ -167,7 +167,8 @@ void PostVtkWriter::WriteSpecialField(SpecialFieldInterface &special,
     }
   }
   // should always find the correct result
-  if (!foundit) dserror("Internal error when trying to identify output type %s", groupname.c_str());
+  if (!foundit)
+    FOUR_C_THROW("Internal error when trying to identify output type %s", groupname.c_str());
 
   // jump to the correct location in the data vector. Some fields might only
   // be stored once, so need to catch that case as well
@@ -265,7 +266,7 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
               CORE::FE::ShapeFunctionType::polynomial or
           field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::hdg or
           field_->problem()->SpatialApproximationType() == CORE::FE::ShapeFunctionType::nurbs))
-    dserror(
+    FOUR_C_THROW(
         "Undefined spatial approximation type or the VTK filter is not yet implemented for the "
         "given type.");
   // need dummy structure that is required for the generic writer interface
@@ -294,7 +295,7 @@ void PostVtkWriter::WriteResult(const std::string groupname, const std::string n
     }
     default:
     {
-      dserror("Result type not yet implemented");
+      FOUR_C_THROW("Result type not yet implemented");
       break;
     }
   }

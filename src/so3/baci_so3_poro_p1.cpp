@@ -78,7 +78,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::Unpack(const std::vector<char>&
   Base::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
@@ -115,7 +115,7 @@ int DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::UniqueParObjectId() const
       return SoTet4PoroP1Type::Instance().UniqueParObjectId();
       break;
     default:
-      dserror("unknown element type!");
+      FOUR_C_THROW("unknown element type!");
       break;
   }
   return -1;
@@ -131,7 +131,7 @@ DRT::ElementType& DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::ElementType() cons
     case CORE::FE::CellType::hex8:
       return SoHex8PoroP1Type::Instance();
     default:
-      dserror("unknown element type!");
+      FOUR_C_THROW("unknown element type!");
       break;
   }
   return SoHex8PoroP1Type::Instance();

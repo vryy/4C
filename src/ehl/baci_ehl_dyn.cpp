@@ -111,7 +111,7 @@ void ehl_dyn()
           new EHL::Monolithic(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
       break;
     default:
-      dserror("unknown coupling algorithm for EHL!");
+      FOUR_C_THROW("unknown coupling algorithm for EHL!");
       break;
   }
 

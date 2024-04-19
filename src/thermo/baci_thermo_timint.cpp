@@ -92,7 +92,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   // check wether discretisation has been completed
   if (not discret_->Filled())
   {
-    dserror("Discretisation is not complete!");
+    FOUR_C_THROW("Discretisation is not complete!");
   }
 
   // time state
@@ -311,7 +311,7 @@ void THR::TimInt::ResetStep()
 void THR::TimInt::ReadRestart(const int step)
 {
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
-  if (step != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
+  if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
 
   step_ = step;
   stepn_ = step_ + 1;
@@ -530,7 +530,7 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
     }
     else
     {
-      dserror("requested heatflux type not supported");
+      FOUR_C_THROW("requested heatflux type not supported");
     }
     output_->WriteVector(heatfluxtext, *heatfluxdata, *(discret_->ElementColMap()));
   }
@@ -549,7 +549,7 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
     }
     else
     {
-      dserror("requested tempgrad type not supported");
+      FOUR_C_THROW("requested tempgrad type not supported");
     }
     output_->WriteVector(tempgradtext, *tempgraddata, *(discret_->ElementColMap()));
   }
@@ -737,7 +737,7 @@ void THR::TimInt::ApplyForceTangInternal(
   {
     if (fint->Update(
             1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.))
-      dserror("update failed");
+      FOUR_C_THROW("update failed");
     tang->UnComplete();
     tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
         false, p.get<double>("timefac"), 1.);
@@ -888,12 +888,12 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
           // extract temperature vector at time t_n (temp_ contains various vectors of
           // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
           int err1 = (*temp_)(0)->ReplaceMyValues(1, &initialval, &doflid);
-          if (err1 != 0) dserror("dof not on proc");
+          if (err1 != 0) FOUR_C_THROW("dof not on proc");
           // initialise also the solution vector. These values are a pretty good
           // guess for the solution after the first time step (much better than
           // starting with a zero vector)
           int err2 = tempn_->ReplaceMyValues(1, &initialval, &doflid);
-          if (err2 != 0) dserror("dof not on proc");
+          if (err2 != 0) FOUR_C_THROW("dof not on proc");
         }  // numdofs
       }
       break;
@@ -910,7 +910,7 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
     }  // initfield_field_by_condition
 
     default:
-      dserror("Unknown option for initial field: %d", init);
+      FOUR_C_THROW("Unknown option for initial field: %d", init);
       break;
   }  // switch(init)
 
@@ -1045,7 +1045,7 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::EvaluateErrorComparedToAnalytical
       return relerror;
     }
     default:
-      dserror("unknown type of error calculation!");
+      FOUR_C_THROW("unknown type of error calculation!");
       return Teuchos::null;
   }
 }  // end EvaluateErrorComparedToAnalyticalSol

@@ -66,7 +66,7 @@ void CONTACT::LagrangeStrategyTsi::SetState(
         for (int i = 0; i < idiscr.NumMyColNodes(); ++i)
         {
           CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscr.lColNode(i));
-          if (node == nullptr) dserror("cast failed");
+          if (node == nullptr) FOUR_C_THROW("cast failed");
           std::vector<double> mytemp(1);
           std::vector<int> lm(1, node->Dofs()[0]);
 
@@ -128,7 +128,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   // error checks
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM") !=
       INPAR::CONTACT::system_condensed)
-    dserror("only condensed system implemented");
+    FOUR_C_THROW("only condensed system implemented");
 
   // First, we need to evaluate all the interfaces
   InitMortar();         // initialize mortar matrices and vectors
@@ -206,7 +206,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   for (unsigned i = 0; i < interface_.size(); ++i)
   {
     CONTACT::TSIInterface* tsi_interface = dynamic_cast<CONTACT::TSIInterface*>(&(*interface_[i]));
-    if (!tsi_interface) dserror("in TSI contact, this should be a TSIInterface!");
+    if (!tsi_interface) FOUR_C_THROW("in TSI contact, this should be a TSIInterface!");
 
     // linearized normal contact
     interface_[i]->AssembleS(s);
@@ -266,7 +266,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
     if (gact->GlobalLength())
     {
       CORE::LINALG::Export(*g_all, *gact);
-      if (gact->ReplaceMap(*gactiven_)) dserror("replaceMap went wrong");
+      if (gact->ReplaceMap(*gactiven_)) FOUR_C_THROW("replaceMap went wrong");
     }
   }
   CONTACT::UTILS::AddVector(*gact, *rcsa);
@@ -312,14 +312,14 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
     Epetra_Vector tmp(*gdisprowmap_);
     CORE::LINALG::Export(*fscn_, tmp);
     if (rs->Update(alphaf_, tmp, 1.) != 0)  // fscn already scaled with alphaf_ in update
-      dserror("update went wrong");
+      FOUR_C_THROW("update went wrong");
   }
 
   if (ftcn_ != Teuchos::null)
   {
     Epetra_Vector tmp(*coupST->SlaveDofMap());
     CORE::LINALG::Export(*ftcn_, tmp);
-    if (rt->Update((1. - tsi_alpha_), tmp, 1.) != 0) dserror("update went wrong");
+    if (rt->Update((1. - tsi_alpha_), tmp, 1.) != 0) FOUR_C_THROW("update went wrong");
   }
 
   // map containing the inactive and non-contact structural dofs
@@ -373,7 +373,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -387,7 +387,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -408,7 +408,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -422,7 +422,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -443,7 +443,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -457,7 +457,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -478,7 +478,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -492,7 +492,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -597,7 +597,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   // invert D-matrix
   Epetra_Vector dDiag(*gactivedofs_);
   dInvA->ExtractDiagonalCopy(dDiag);
-  if (dDiag.Reciprocal(dDiag)) dserror("inversion of diagonal D matrix failed");
+  if (dDiag.Reciprocal(dDiag)) FOUR_C_THROW("inversion of diagonal D matrix failed");
   dInvA->ReplaceDiagonalValues(dDiag);
 
   // get dinv on thermal dofs
@@ -792,14 +792,15 @@ void CONTACT::UTILS::AddVector(Epetra_Vector& src, Epetra_Vector& dst)
   // return if src has no elements
   if (src.GlobalLength() == 0) return;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   for (int i = 0; i < src.Map().NumMyElements(); ++i)
-    if ((dst.Map().LID(src.Map().GID(i))) < 0) dserror("src is not a vector on a sub-map of dst");
+    if ((dst.Map().LID(src.Map().GID(i))) < 0)
+      FOUR_C_THROW("src is not a vector on a sub-map of dst");
 #endif
 
   Epetra_Vector tmp = Epetra_Vector(dst.Map(), true);
   CORE::LINALG::Export(src, tmp);
-  if (dst.Update(1., tmp, 1.)) dserror("vector update went wrong");
+  if (dst.Update(1., tmp, 1.)) FOUR_C_THROW("vector update went wrong");
   return;
 }
 
@@ -817,7 +818,7 @@ void CONTACT::LagrangeStrategyTsi::RecoverCoupled(Teuchos::RCP<Epetra_Vector> si
     // do we have everything we need?
     if (rs_a_ == Teuchos::null || kss_a_ == Teuchos::null || kst_a_ == Teuchos::null ||
         dinvA_ == Teuchos::null)
-      dserror("some data for LM recovery is missing");
+      FOUR_C_THROW("some data for LM recovery is missing");
 
     Epetra_Vector lmc_a_new(*gactivedofs_, false);
     Epetra_Vector tmp(*gactivedofs_, false);
@@ -835,7 +836,7 @@ void CONTACT::LagrangeStrategyTsi::RecoverCoupled(Teuchos::RCP<Epetra_Vector> si
     // do we have everything we need?
     if (rt_a_ == Teuchos::null || kts_a_ == Teuchos::null || ktt_a_ == Teuchos::null ||
         dinvAthr_ == Teuchos::null)
-      dserror("some data for LM recovery is missing");
+      FOUR_C_THROW("some data for LM recovery is missing");
 
     Epetra_Vector lmt_a_new(*thr_act_dofs_, false);
     Epetra_Vector tmp2(*thr_act_dofs_, false);
@@ -903,7 +904,7 @@ void CONTACT::LagrangeStrategyTsi::StoreNodalQuantities(
         {
           int gid = snodemap->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
-          if (!node) dserror("Cannot find node with gid %", gid);
+          if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* cnode = dynamic_cast<Node*>(node);
 
           cnode->TSIData().ThermoLM() =
@@ -945,7 +946,7 @@ void CONTACT::LagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> dis)
       CORE::ADAPTER::CouplingMasterConverter(*coupST_), dThr, false, false);
   dThr.Complete();
   tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gsdofrowmap_)));
-  if (dThr.Apply(*z_thr_, *tmp) != 0) dserror("apply went wrong");
+  if (dThr.Apply(*z_thr_, *tmp) != 0) FOUR_C_THROW("apply went wrong");
   CONTACT::UTILS::AddVector(*tmp, *ftcnp_);
 
   CORE::LINALG::SparseMatrix mThr(*coupST_->MasterToSlaveMap(gsdofrowmap_), 100, true, false,
@@ -956,7 +957,7 @@ void CONTACT::LagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> dis)
   mThr.Complete(*coupST_->MasterToSlaveMap(gmdofrowmap_), *coupST_->MasterToSlaveMap(gsdofrowmap_));
   mThr.UseTranspose();
   tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gmdofrowmap_)));
-  if (mThr.Multiply(true, *z_thr_, *tmp) != 0) dserror("multiply went wrong");
+  if (mThr.Multiply(true, *z_thr_, *tmp) != 0) FOUR_C_THROW("multiply went wrong");
   tmp->Scale(-1.);
   CONTACT::UTILS::AddVector(*tmp, *ftcnp_);
 
@@ -969,7 +970,7 @@ void CONTACT::LagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> dis)
   Teuchos::RCP<Epetra_Vector> z_act = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
   CORE::LINALG::Export(*z_, *z_act);
   tmp = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-  if (m_LinDissContactLM.Multiply(false, *z_act, *tmp) != 0) dserror("multiply went wrong");
+  if (m_LinDissContactLM.Multiply(false, *z_act, *tmp) != 0) FOUR_C_THROW("multiply went wrong");
   Teuchos::RCP<Epetra_Vector> tmp2 = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterDofMap()));
   CORE::LINALG::Export(*tmp, *tmp2);
   Teuchos::RCP<Epetra_Vector> tmp3 = coupST_->MasterToSlave(tmp2);
@@ -997,7 +998,7 @@ void CONTACT::LagrangeStrategyTsi::SetAlphafThermo(const Teuchos::ParameterList&
       tsi_alpha_ = 1.;
       break;
     default:
-      dserror("unknown thermal time integration type");
+      FOUR_C_THROW("unknown thermal time integration type");
   }
   return;
 }

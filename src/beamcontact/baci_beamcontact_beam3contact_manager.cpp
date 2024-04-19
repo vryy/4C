@@ -100,7 +100,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   if (sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM") < 0.0 ||
       sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM") < 0.0)
   {
-    dserror("ERROR: The penalty parameter has to be positive.");
+    FOUR_C_THROW("ERROR: The penalty parameter has to be positive.");
   }
 
   // initialize beam-to-beam contact element pairs
@@ -128,7 +128,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   searchboxinc_ = BEAMINTERACTION::DetermineSearchboxInc(sbeamcontact_);
 
   if (searchboxinc_ < 0.0)
-    dserror("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
+    FOUR_C_THROW("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
 
   // initialize octtree for contact search
   if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(sbeamcontact_, "BEAMS_OCTREE") !=
@@ -144,7 +144,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   else
   {
     if (btsol_ || btsolmt_)
-      dserror(
+      FOUR_C_THROW(
           "Beam to solid contact/meshtying are only implemented for the octree contact search!");
 
     // compute the search radius for searching possible contact pairs
@@ -162,7 +162,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
                  sbeamcontact_, "BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_gmshonly)
       std::cout << "Strategy                 Gmsh Only" << std::endl;
     else
-      dserror("Unknown strategy for beam contact!");
+      FOUR_C_THROW("Unknown strategy for beam contact!");
 
     switch (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
         sbeamcontact_, "BEAMS_PENALTYLAW"))
@@ -267,7 +267,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   {
     // safety check
     if (pdiscret_.Comm().NumProc() != 1)
-      dserror("potential-based beam interactions not implemented in parallel yet!");
+      FOUR_C_THROW("potential-based beam interactions not implemented in parallel yet!");
 
     // initialize parameters of applied potential law
     ki_ = Teuchos::rcp(new std::vector<double>);
@@ -292,13 +292,13 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     if (!ki_->empty())
     {
       if (ki_->size() != mi_->size())
-        dserror(
+        FOUR_C_THROW(
             "number of potential law prefactors does not match number of potential law exponents. "
             "Check your input file!");
 
       for (unsigned int i = 0; i < mi_->size(); ++i)
         if (mi_->at(i) <= 0)
-          dserror(
+          FOUR_C_THROW(
               "only positive values are allowed for potential law exponent. Check your input file");
     }
 
@@ -320,7 +320,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
           break;
         }
         default:
-          dserror("Potential type not supported!");
+          FOUR_C_THROW("Potential type not supported!");
       }
 
       std::cout << "Potential Law:       Phi(r) = ";
@@ -339,7 +339,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
             sbeampotential_, "BEAMPOT_OCTREE") != INPAR::BEAMCONTACT::boct_none)
     {
       if (searchradiuspot_ <= 0)
-        dserror(
+        FOUR_C_THROW(
             "no/invalid value for cutoff radius for Octree search for potential-based interaction "
             "pairs. Check your input file!");
 
@@ -348,7 +348,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     else
     {
       if (searchradiuspot_ <= 0 and searchradiuspot_ != -1.0)
-        dserror(
+        FOUR_C_THROW(
             "no/invalid value for cutoff radius of potential-based interaction pairs specified. "
             "Check your input file!");
 
@@ -629,7 +629,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   for (int i = 0; i < (ProblemDiscret().NodeColMap())->NumMyElements(); ++i)
   {
     DRT::Node* node = ProblemDiscret().lColNode(i);
-    if (!node) dserror("Cannot find node with lid %", i);
+    if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
     Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
     if (BEAMINTERACTION::UTILS::IsBeamNode(*newnode))
     {
@@ -644,7 +644,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
     else
     {
       if (btsol_ == false && btsolmt_ == false)
-        dserror(
+        FOUR_C_THROW(
             "Only beam elements are allowed as long as the flags btsol_ and btsolmt_ are set to "
             "false!");
     }
@@ -655,7 +655,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   for (int i = 0; i < (ProblemDiscret().ElementColMap())->NumMyElements(); ++i)
   {
     DRT::Element* ele = ProblemDiscret().lColElement(i);
-    if (!ele) dserror("Cannot find element with lid %", i);
+    if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
     Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
     if (BEAMINTERACTION::UTILS::IsBeamElement(*newele) or
         BEAMINTERACTION::UTILS::IsRigidSphereElement(*newele))
@@ -697,7 +697,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   {
     // get all nodes and add them
     const std::vector<int>* nodeids = btscontactconditions[j]->GetNodes();
-    if (!nodeids) dserror("Condition does not have Node Ids");
+    if (!nodeids) FOUR_C_THROW("Condition does not have Node Ids");
     for (int k = 0; k < (int)(*nodeids).size(); ++k)
     {
       int gid = (*nodeids)[k];
@@ -705,7 +705,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
       DRT::Node* node = ProblemDiscret().gNode(gid);
 
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
       Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(
           new CONTACT::Node(node->Id(), node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
@@ -775,7 +775,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   {
     // get all nodes and add them
     const std::vector<int>* nodeids = btsmeshtyingconditions[j]->GetNodes();
-    if (!nodeids) dserror("Condition does not have Node Ids");
+    if (!nodeids) FOUR_C_THROW("Condition does not have Node Ids");
     for (int k = 0; k < (int)(*nodeids).size(); ++k)
     {
       int gid = (*nodeids)[k];
@@ -783,7 +783,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
       DRT::Node* node = ProblemDiscret().gNode(gid);
 
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
       Teuchos::RCP<MORTAR::Node> mtnode = Teuchos::rcp(
           new MORTAR::Node(node->Id(), node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
@@ -933,7 +933,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
     std::vector<int> originalnodedofids = nodedofs[nodeid];
 
     if (btsolnodedofids.size() != originalnodedofids.size())
-      dserror(
+      FOUR_C_THROW(
           "Number of nodal DoFs does not match! "
           "node (GID %d) originally had %d DoFs, now in BTSOLdiscret %d DoFs!",
           nodeid, originalnodedofids.size(), btsolnodedofids.size());
@@ -1324,7 +1324,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
           (BEAMINTERACTION::UTILS::IsBeamElement(*(formattedelementpairs[k])[1]) and
               ele2_type != pair1_ele1_type))
       {
-        dserror(
+        FOUR_C_THROW(
             "All contacting beam elements have to be of the same type (beam3k, beam3eb or "
             "beam3r). Check your input file!");
       }
@@ -1363,7 +1363,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
         if (currid1 < currid2)
           contactpairmap_[std::make_pair(currid1, currid2)] = pairs_[pairs_.size() - 1];
         else
-          dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
+          FOUR_C_THROW("Element 1 has to have the smaller element-ID. Adapt your contact search!");
 
         isalreadyinpairs = true;
       }
@@ -1378,7 +1378,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
         if (currid1 <= currid2)
           contactpairmap_[std::make_pair(currid1, currid2)] = pairs_[pairs_.size() - 1];
         else
-          dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
+          FOUR_C_THROW("Element 1 has to have the smaller element-ID. Adapt your contact search!");
       }
     }
     // beam-to-solid contact pair
@@ -1399,7 +1399,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
         if (currid1 < currid2)
           btsolpairmap_[std::make_pair(currid1, currid2)] = btsolpairs_[btsolpairs_.size() - 1];
         else
-          dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
+          FOUR_C_THROW("Element 1 has to have the smaller element-ID. Adapt your contact search!");
 
         isalreadyinpairs = true;
       }
@@ -1415,12 +1415,12 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
         if (currid1 <= currid2)
           btsolpairmap_[std::make_pair(currid1, currid2)] = btsolpairs_[btsolpairs_.size() - 1];
         else
-          dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
+          FOUR_C_THROW("Element 1 has to have the smaller element-ID. Adapt your contact search!");
       }
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "ERROR: Unknown element type in beam contact pairs (none of BTB, BTSco, BTSmt, BTSPH)");
     }
   }
@@ -1504,8 +1504,8 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
     nodes1 = ele1->Nodes();
     nodes2 = ele2->Nodes();
 
-    dsassert(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
-    dsassert(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
+    FOUR_C_ASSERT(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
+    FOUR_C_ASSERT(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
 
     nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
 
@@ -1548,7 +1548,7 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
       // beam-to-solid pair, beam-to-??? pair
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "Only beam-to-beam and beam-to-sphere potential-based interaction is implemented yet. "
             "No other types of elements allowed!");
       }
@@ -1601,7 +1601,7 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::BruteForceSearch
       }
       else
       {
-        dserror("this should not happen!");
+        FOUR_C_THROW("this should not happen!");
       }
     }
 
@@ -1949,7 +1949,7 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
       continue;  // elelength does not apply for rigid spheres, radius is already considered in
                  // MaxEleRadius(), so simply do nothing here
     else
-      dserror(
+      FOUR_C_THROW(
           "The function GetMaxEleLength is only defined for beam elements and rigid sphere "
           "elements!");
 
@@ -1996,7 +1996,8 @@ void CONTACT::Beam3cmanager::Update(
     {
       // std::cout << "Minimal element radius: " << mineleradius_ << std::endl;
       // std::cout << "Maximal displacement per time step: " << maxdeltadisp_ << std::endl;
-      // dserror("Displacement increment per time step larger than smallest beam element radius, "
+      // FOUR_C_THROW("Displacement increment per time step larger than smallest beam element
+      // radius, "
       //        "but newgapfunction_ flag is not set. Choose smaller time step!");
     }
   }
@@ -2038,7 +2039,7 @@ void CONTACT::Beam3cmanager::Update(
         // of one beam are shifted by a small predefined value in order to enable evaluation of the
         // contact pair. This makes the Newton scheme more robust. However, in the converged
         // configuration we want to have the real nodal positions for all contact pairs!!!
-        dserror(
+        FOUR_C_THROW(
             "Contact pair with identical contact points (i.e. r1=r2) not possible in the converged "
             "configuration!");
       }
@@ -2095,11 +2096,11 @@ void CONTACT::Beam3cmanager::GmshOutput(
   // order of the nodes and intermediate points when visualizing Bezier curves with Blender) the
   // pairs_ vector would have to be communicated before writing the output
   if (btsoldiscret_->Comm().NumProc() > 1)
-    dserror("Contact pair specific gmsh output is not implemented in parallel so far.");
+    FOUR_C_THROW("Contact pair specific gmsh output is not implemented in parallel so far.");
 #endif
 
     //  if (btsol_)
-    //    dserror("GmshOutput not implemented for beam-to-solid contact so far!");
+    //    FOUR_C_THROW("GmshOutput not implemented for beam-to-solid contact so far!");
 
 #ifdef OUTPUTEVERY
   if (fabs(timen_ - (outputcounter_ + 1) * OUTPUTEVERY) < 1.0e-8)
@@ -2120,12 +2121,12 @@ void CONTACT::Beam3cmanager::GmshOutput(
   if (timestep < 1000000)
     filename << "beams_t" << std::setw(6) << std::setfill('0') << outputcounter_;
   else /*(timestep>=1000000)*/
-    dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
+    FOUR_C_THROW("ERROR: Gmsh output implemented for max 999.999 time steps");
 #else
   if (timestep < 1000000)
     filename << "beams_t" << std::setw(6) << std::setfill('0') << timestep;
   else /*(timestep>=1000000)*/
-    dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
+    FOUR_C_THROW("ERROR: Gmsh output implemented for max 999.999 time steps");
 #endif
 
   // STEPS 2/3: OUTPUT OF NEWTON STEP INDEX
@@ -2139,7 +2140,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
     else if (newtonstep < 1000)
       filename << "_n";
     else /*(newtonstep>=1000*/
-      dserror("ERROR: Gmsh output implemented for max 999 Newton steps");
+      FOUR_C_THROW("ERROR: Gmsh output implemented for max 999 Newton steps");
     filename << newtonstep;
   }
 
@@ -2169,7 +2170,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
     // open file to write output data into
     fp = fopen(filename.str().c_str(), "w");
 
-    if (fp == nullptr) dserror("can't write to specified gmsh output folder!");
+    if (fp == nullptr) FOUR_C_THROW("can't write to specified gmsh output folder!");
 
     std::stringstream gmshfileheader;
     // write output to temporary std::stringstream;
@@ -2397,7 +2398,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
               }
               else
               {
-                dserror("Only 2-noded center line interpolations (Hermite) possible so far!");
+                FOUR_C_THROW("Only 2-noded center line interpolations (Hermite) possible so far!");
               }
               if (N_CIRCUMFERENTIAL != 0)
                 GMSH_N_noded(n, n_axial, coord, element, gmshfilecontent);
@@ -2456,7 +2457,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
               // 4- or 5-noded beam element (higher-order interpolation)
               default:
               {
-                dserror(
+                FOUR_C_THROW(
                     "Gmsh output for %i noded element not yet implemented!", element->NumNode());
                 break;
               }
@@ -2516,7 +2517,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
           }
           else
           {
-            dserror("Only 2-noded Kirchhoff elements possible so far!");
+            FOUR_C_THROW("Only 2-noded Kirchhoff elements possible so far!");
           }
           if (N_CIRCUMFERENTIAL != 0)
             GMSH_N_noded(n, n_axial, coord, element, gmshfilecontent);
@@ -2612,7 +2613,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
           }
           else
           {
-            dserror("Only 3-noded weak Kirchhoff elements possible so far!");
+            FOUR_C_THROW("Only 3-noded weak Kirchhoff elements possible so far!");
           }
           if (N_CIRCUMFERENTIAL != 0)
             GMSH_N_noded(n, n_axial, coord, element, gmshfilecontent);
@@ -2622,12 +2623,13 @@ void CONTACT::Beam3cmanager::GmshOutput(
 
         else
         {
-          dserror("Your chosen type of beam element is not allowed for beam contact!");
+          FOUR_C_THROW("Your chosen type of beam element is not allowed for beam contact!");
         }
       }  // loop over elements
 
 #ifdef CONTACTPAIRSPECIFICOUTPUT
-      if (btsph_) dserror("CONTACTSPECIFICOUTPUT not implemented for rigid sphere elements yet!");
+      if (btsph_)
+        FOUR_C_THROW("CONTACTSPECIFICOUTPUT not implemented for rigid sphere elements yet!");
       // loop over pairs vector in order to print normal vector
       for (int i = 0; i < (int)pairs_.size(); ++i)
       {
@@ -2924,7 +2926,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
   if (timestep < 1000000)
     filename_fc2 << "fc2_t" << std::setw(6) << std::setfill('0') << timestep;
   else
-    dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
+    FOUR_C_THROW("ERROR: Gmsh output implemented for max 999.999 time steps");
 
   if (!endoftimestep)
   {
@@ -2934,7 +2936,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
     else if (newtonstep < 100)
       filename_fc2 << "_n";
     else
-      dserror("ERROR: Gmsh output implemented for max 99 Newton steps");
+      FOUR_C_THROW("ERROR: Gmsh output implemented for max 99 Newton steps");
     filename_fc2 << newtonstep;
   }
 
@@ -3160,7 +3162,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
       int numeps = pairs_[i]->GetNumEps();
 
       if (pairgaps.size() != (unsigned)(numcps + numgps + numeps))
-        dserror(
+        FOUR_C_THROW(
             "size mismatch! total "
             "number of gaps unequal sum of individual contact type gaps");
 
@@ -3971,7 +3973,7 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
   // get radius of element
   const DRT::ELEMENTS::Beam3Base* thisbeam = static_cast<const DRT::ELEMENTS::Beam3Base*>(thisele);
 
-  if (thisbeam == nullptr) dserror("cast to beam base failed!");
+  if (thisbeam == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
   double eleradius = thisbeam->GetCircularCrossSectionRadiusForInteractions();
 
@@ -4172,7 +4174,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n, int& n_axial,
   // get radius of element
   const DRT::ELEMENTS::Beam3Base* thisbeam = static_cast<const DRT::ELEMENTS::Beam3Base*>(thisele);
 
-  if (thisbeam == nullptr) dserror("cast to beam base failed!");
+  if (thisbeam == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
   double eleradius = thisbeam->GetCircularCrossSectionRadiusForInteractions();
 
@@ -4441,7 +4443,7 @@ void CONTACT::Beam3cmanager::GMSH_sphere(const CORE::LINALG::SerialDenseMatrix& 
     eleradius = thisparticle->Radius();
   }
   else
-    dserror("GMSH_sphere can only handle elements of Type Rigidsphere!");
+    FOUR_C_THROW("GMSH_sphere can only handle elements of Type Rigidsphere!");
 
   // ********************** Visualization as a point ***********************************************
   // syntax for scalar point:  SP( coordinates x,y,z ){value at point (determines the color)}
@@ -4778,7 +4780,7 @@ void CONTACT::Beam3cmanager::GMSH_Solid(
     }
     default:
     {
-      dserror("Gsmh-output: element shape not implemented");
+      FOUR_C_THROW("Gsmh-output: element shape not implemented");
       break;
     }
   }

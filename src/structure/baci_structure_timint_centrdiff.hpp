@@ -173,7 +173,7 @@ namespace STR
     //! Return external force \f$F_{ext,n+1}\f$
     Teuchos::RCP<Epetra_Vector> FextNew() override
     {
-      dserror("FextNew() not available in CentrDiff");
+      FOUR_C_THROW("FextNew() not available in CentrDiff");
       return Teuchos::null;
     }
 

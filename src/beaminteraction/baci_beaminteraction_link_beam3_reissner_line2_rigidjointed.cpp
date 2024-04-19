@@ -175,7 +175,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Unpack(const std::vector<
     CORE::COMM::ParObject* object = CORE::COMM::Factory(dataele);  // Unpack is done here
     DRT::ELEMENTS::Beam3r* linkele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(object);
     if (linkele == nullptr)
-      dserror("failed to unpack Beam3r object within BeamLinkBeam3rLine2RigidJointed");
+      FOUR_C_THROW("failed to unpack Beam3r object within BeamLinkBeam3rLine2RigidJointed");
     linkele_ = Teuchos::rcp(linkele);
   }
   else

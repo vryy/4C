@@ -94,10 +94,10 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Plot::Direction::ReadSparseVectorFromM
 
 
   if (dir_file == "none")
-    dserror("No direction file name has been provided! Read input = \"%s\"", dir_file.c_str());
+    FOUR_C_THROW("No direction file name has been provided! Read input = \"%s\"", dir_file.c_str());
 
   if (plot_.strat_->Comm().NumProc() != 1)
-    dserror(
+    FOUR_C_THROW(
         "A external direction vector can currently only be considered in "
         "serial mode. This is due to the used input format. -- hiermeier");
 
@@ -105,7 +105,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Plot::Direction::ReadSparseVectorFromM
   ExtendFileName(ext_dir_file, plot_.filepath_);
 
   FILE* file_ptr = std::fopen(ext_dir_file.c_str(), "r");
-  if (not file_ptr) dserror("The file \"%s\" could not be opened!", ext_dir_file.c_str());
+  if (not file_ptr) FOUR_C_THROW("The file \"%s\" could not be opened!", ext_dir_file.c_str());
 
   double* dir_vals = direction->Values();
   const int* mygids = direction->Map().MyGlobalElements();
@@ -118,14 +118,14 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Plot::Direction::ReadSparseVectorFromM
 
     // in a first attempt only the global id is extracted
     sscanf(cline, "%d", &gid);
-    if (gid != mygids[count]) dserror("Global ID mismatch!");
+    if (gid != mygids[count]) FOUR_C_THROW("Global ID mismatch!");
 
     // fill the vector
     sscanf(cline, "%d %lf", &gid, &dir_vals[count++]);
   }
 
   if (count != static_cast<unsigned>(direction->Map().NumMyElements()))
-    dserror(
+    FOUR_C_THROW(
         "Size mismatch! Did you specify the correct DIRECTION_FILE? It seems"
         " as the number of rows in your DIRECTION_FILE is less than the "
         "number of rows in the global DoF map.");
@@ -156,7 +156,7 @@ bool CONTACT::AUG::Plot::Direction::ExtendFileName(
 void CONTACT::AUG::Plot::Direction::SplitIntoSlaveMasterBody(const Epetra_Vector& dir,
     Teuchos::RCP<Epetra_Vector>& x_dir_ptr, Teuchos::RCP<Epetra_Vector>& y_dir_ptr) const
 {
-  if (plot_.strat_->ParRedist()) dserror("Parallel redistribution is not supported!");
+  if (plot_.strat_->ParRedist()) FOUR_C_THROW("Parallel redistribution is not supported!");
 
   const Epetra_Map& slnodes = plot_.strat_->SlRowNodes();
   const Epetra_Map& manodes = plot_.strat_->MaRowNodes();
@@ -191,7 +191,7 @@ void CONTACT::AUG::Plot::Direction::SplitIntoSlaveMasterBody(const Epetra_Vector
 
   if (x_dir_ptr->Map().NumGlobalElements() + y_dir_ptr->Map().NumGlobalElements() !=
       plot_.strat_->ProblemDofs()->NumGlobalElements())
-    dserror(
+    FOUR_C_THROW(
         "Split into slave and master dofs failed! This function supports "
         "currently only two distinct bodies. Self-contact, as well as contact"
         "between multiple bodies is not supported!");
@@ -297,7 +297,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Plot::Direction::Get(
     }
     default:
     {
-      dserror("Unsupported INPAR::CONTACT::PlotDirection.");
+      FOUR_C_THROW("Unsupported INPAR::CONTACT::PlotDirection.");
 
       exit(EXIT_FAILURE);
     }
@@ -387,15 +387,15 @@ void CONTACT::AUG::Plot::Init(
   model_ = plot_params.get<STR::MODELEVALUATOR::Contact*>("MODELEVALUATOR");
 
   const int output_precision = plot_params.get<int>("OUTPUT_PRECISION");
-  if (output_precision < 0) dserror("The specified output precision must be positive!");
+  if (output_precision < 0) FOUR_C_THROW("The specified output precision must be positive!");
   opt_.output_precision_ = static_cast<unsigned>(output_precision);
 
   const int res_x = plot_params.get<int>("RESOLUTION_X");
-  if (res_x < 0) dserror("The resolution in x-direction must be positive!");
+  if (res_x < 0) FOUR_C_THROW("The resolution in x-direction must be positive!");
   opt_.resolution_x_ = static_cast<unsigned>(res_x);
 
   const int res_y = plot_params.get<int>("RESOLUTION_Y");
-  if (res_y < 0) dserror("The resolution in y-direction must be positive!");
+  if (res_y < 0) FOUR_C_THROW("The resolution in y-direction must be positive!");
   opt_.resolution_y_ = static_cast<unsigned>(res_y);
 
   opt_.min_x_ = plot_params.get<double>("MIN_X");
@@ -434,7 +434,7 @@ void CONTACT::AUG::Plot::Init(
   do_plot_.iter_ = iter;
 
   curr_step_np_ = plot_params.get<const int*>("CURRENT_STEP");
-  if (not curr_step_np_) dserror("The step pointer is nullptr!");
+  if (not curr_step_np_) FOUR_C_THROW("The step pointer is nullptr!");
 
   dir_.ReadInput(plot_params);
 }
@@ -501,7 +501,7 @@ void CONTACT::AUG::Plot::ReadRefPoint(
   {
     coords[count++] = std::strtod(word.c_str(), &input);
 
-    if (count > 3) dserror("Too many coordinates!");
+    if (count > 3) FOUR_C_THROW("Too many coordinates!");
   }
 }
 
@@ -531,7 +531,7 @@ void CONTACT::AUG::Plot::AddFileNameToPath()
     }
     case INPAR::CONTACT::PlotMode::write_each_iteration_of_step:
     {
-      dserror("Not yet considered!");
+      FOUR_C_THROW("Not yet considered!");
       break;
     }
     default:
@@ -582,7 +582,7 @@ enum CONTACT::AUG::WGapGradientType CONTACT::AUG::Plot::ConvertPlotFuncName2WGap
  *----------------------------------------------------------------------------*/
 const CONTACT::AUG::Strategy& CONTACT::AUG::Plot::Strategy() const
 {
-  if (not strat_) dserror("No augmented strategy has been provided!");
+  if (not strat_) FOUR_C_THROW("No augmented strategy has been provided!");
 
   return *strat_;
 }
@@ -653,7 +653,7 @@ void CONTACT::AUG::Plot::Do(const ::NOX::Solver::Generic& solver)
     }
     case INPAR::CONTACT::PlotMode::write_each_iteration_of_step:
     {
-      dserror("Currently unsupported!");
+      FOUR_C_THROW("Currently unsupported!");
       exit(EXIT_FAILURE);
     }
     default:
@@ -699,7 +699,7 @@ void CONTACT::AUG::Plot::Execute(const ::NOX::Solver::Generic& solver)
       break;
     }
     default:
-      dserror("Unsupported plot type!");
+      FOUR_C_THROW("Unsupported plot type!");
       exit(EXIT_FAILURE);
   }
 }
@@ -754,7 +754,7 @@ void CONTACT::AUG::Plot::GetSupportPoints(
       break;
     }
     default:
-      dserror("Unknown PlotSupportType.");
+      FOUR_C_THROW("Unknown PlotSupportType.");
       exit(EXIT_FAILURE);
   }
 }
@@ -774,7 +774,7 @@ void CONTACT::AUG::Plot::ComputeDistancePosition()
     const int gid = node_gids[i];
     DRT::Node* node = discret_->gNode(gid);
 
-    if (not node) dserror("Couldn't find the node with GID %d!", gid);
+    if (not node) FOUR_C_THROW("Couldn't find the node with GID %d!", gid);
 
     CORE::LINALG::Matrix<3, 1> distance(node->X().data(), false);
     distance.Update(-1.0, ref_pos, 1.0);
@@ -800,7 +800,7 @@ void CONTACT::AUG::Plot::ComputeAnglePosition()
     const int gid = node_gids[i];
     DRT::Node* node = discret_->gNode(gid);
 
-    if (not node) dserror("Couldn't find the node with GID %d!", gid);
+    if (not node) FOUR_C_THROW("Couldn't find the node with GID %d!", gid);
 
     const CORE::LINALG::Matrix<3, 1> ref3(node->X().data(), true);
     CORE::LINALG::Matrix<3, 1> ref13(ref_points_[0], false);
@@ -905,7 +905,7 @@ void CONTACT::AUG::Plot::PlotVectorField2D(const NOX::NLN::CONSTRAINT::Group& re
 {
   if (x_type_ != INPAR::CONTACT::PlotSupportType::step_length or
       y_type_ != INPAR::CONTACT::PlotSupportType::step_length)
-    dserror(
+    FOUR_C_THROW(
         "PlotVectorField2D supports currently only the step_length"
         " PlotSupportType!");
 
@@ -1002,7 +1002,7 @@ void CONTACT::AUG::Plot::WriteLineDataToFile() const
       break;
     }
     default:
-      dserror("The given format is not supported! (enum=%d)", format_);
+      FOUR_C_THROW("The given format is not supported! (enum=%d)", format_);
       exit(EXIT_FAILURE);
   }
 
@@ -1051,7 +1051,7 @@ void CONTACT::AUG::Plot::WriteVectorFieldToFile() const
       break;
     }
     default:
-      dserror("The given format is not supported! (enum=%d)", format_);
+      FOUR_C_THROW("The given format is not supported! (enum=%d)", format_);
       exit(EXIT_FAILURE);
   }
 
@@ -1064,7 +1064,7 @@ template <typename T>
 void CONTACT::AUG::WriteColumnDataToFile(
     std::ofstream& outputfile, const std::vector<const T*>& columndata, const unsigned p)
 {
-  if (not outputfile.is_open()) dserror("The file must be open!");
+  if (not outputfile.is_open()) FOUR_C_THROW("The file must be open!");
 
   if (columndata.size() < 1 or columndata[0] == nullptr) return;
 
@@ -1106,7 +1106,7 @@ void CONTACT::AUG::Plot::WriteSurfaceDataToFile() const
       break;
     }
     default:
-      dserror("The given format is currently not supported! (enum=%d)", format_);
+      FOUR_C_THROW("The given format is currently not supported! (enum=%d)", format_);
       exit(EXIT_FAILURE);
   }
 
@@ -1140,12 +1140,12 @@ const NOX::NLN::CONSTRAINT::Group* CONTACT::AUG::Plot::GetReferenceGroup(
     }
     default:
     {
-      dserror("Unsupported INPAR::CONTACT::PlotReferenceType!");
+      FOUR_C_THROW("Unsupported INPAR::CONTACT::PlotReferenceType!");
       exit(EXIT_FAILURE);
     }
   }
 
-  if (not ref_grp) dserror("A NOX::NLN::CONSTRAINT::Group object is expected!");
+  if (not ref_grp) FOUR_C_THROW("A NOX::NLN::CONSTRAINT::Group object is expected!");
 
   return ref_grp;
 }
@@ -1174,7 +1174,7 @@ void CONTACT::AUG::Plot::Direction::SplitIntoSurfaceDirections(const Epetra_Vect
       break;
     }
     default:
-      dserror("Undefined direction split!");
+      FOUR_C_THROW("Undefined direction split!");
       break;
   }
 }
@@ -1200,14 +1200,14 @@ double CONTACT::AUG::Plot::GetValue(const enum INPAR::CONTACT::PlotFuncName func
         const int dof_gid = MapSlNodeGID2NDofGID(wgap_node_gid_);
 
         const int dof_lid = wgap.Map().LID(dof_gid);
-        if (dof_lid == -1) dserror("Couldn't find the DoF with GID %d.", dof_gid);
+        if (dof_lid == -1) FOUR_C_THROW("Couldn't find the DoF with GID %d.", dof_gid);
 
         return wgap[dof_lid];
       }
       case INPAR::CONTACT::PlotFuncName::weighted_gap_gradient:
       case INPAR::CONTACT::PlotFuncName::weighted_gap_mod_gradient:
       {
-        if (not dir) dserror("You have to provide a direction vector!");
+        if (not dir) FOUR_C_THROW("You have to provide a direction vector!");
 
         std::vector<double> grad_val;
         std::vector<const Epetra_Vector*> dir_vec(1, dir);
@@ -1239,7 +1239,7 @@ double CONTACT::AUG::Plot::GetValue(const enum INPAR::CONTACT::PlotFuncName func
       }
       default:
       {
-        dserror("Not yet supported!");
+        FOUR_C_THROW("Not yet supported!");
         exit(EXIT_FAILURE);
       }
     }
@@ -1254,7 +1254,7 @@ double CONTACT::AUG::Plot::GetNodalErrorAtPosition(
     const double* pos, const std::vector<std::pair<int, double>>& nodal_error) const
 {
   if (not pos)
-    dserror(
+    FOUR_C_THROW(
         "You have to provide the current x/y support value (a.k.a. "
         "angle/distance or any other scalar position value in this case).");
 
@@ -1295,7 +1295,7 @@ void CONTACT::AUG::Plot::GetVectorValues(const enum INPAR::CONTACT::PlotFuncName
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "The function \"%s\" is not supported for the vector-field "
           "plot.",
           INPAR::CONTACT::PlotFuncName2String(functype).c_str());
@@ -1337,7 +1337,7 @@ void CONTACT::AUG::Plot::GetWGapDirectionGradients(
     const enum CONTACT::AUG::WGapGradientType wgap_type,
     const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& grad_vals) const
 {
-  if (dirs.size() != grad_vals.size()) dserror("Size mismatch!");
+  if (dirs.size() != grad_vals.size()) FOUR_C_THROW("Size mismatch!");
 
   const unsigned num_vecs = dirs.size();
 
@@ -1364,7 +1364,7 @@ void CONTACT::AUG::Plot::GetWGapDirectionGradients(
 
   const int dof_gid = MapSlNodeGID2NDofGID(wgap_node_gid_);
   const int rlid = wgap_grad.RangeMap().LID(dof_gid);
-  if (rlid == -1) dserror("Node to NDof mapping failed! ( %d --> %d )", dof_gid, rlid);
+  if (rlid == -1) FOUR_C_THROW("Node to NDof mapping failed! ( %d --> %d )", dof_gid, rlid);
 
   for (unsigned i = 0; i < num_vecs; ++i) grad_vals[i] = wgap_dir_grads[i][rlid];
 }
@@ -1374,7 +1374,7 @@ void CONTACT::AUG::Plot::GetWGapDirectionGradients(
 int CONTACT::AUG::Plot::MapSlNodeGID2NDofGID(int node_gid) const
 {
   if (!strat_->SlRowNodes().PointSameAs(strat_->SlNormalDoFRowMap(false)))
-    dserror("Mapping is not possible!");
+    FOUR_C_THROW("Mapping is not possible!");
 
   const int node_lid = strat_->SlRowNodes().LID(node_gid);
   return strat_->SlNormalDoFRowMap(false).GID(node_lid);
@@ -1393,7 +1393,7 @@ double CONTACT::AUG::Plot::CharacteristicInterfaceElementLength(
 template <typename T>
 void CONTACT::AUG::WriteMatrixToFile(std::ofstream& outputfile, const T& mat, const unsigned p)
 {
-  if (not outputfile.is_open()) dserror("The file must be open!");
+  if (not outputfile.is_open()) FOUR_C_THROW("The file must be open!");
 
   outputfile << std::setprecision(p);
   for (unsigned i = 0; i < static_cast<unsigned>(mat.numRows()); ++i)

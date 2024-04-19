@@ -61,7 +61,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
       if (init_box_stream >> value)
         init_box_(row, col) = value;
       else
-        dserror(
+        FOUR_C_THROW(
             " Specify six values for bounding box in three dimensional problem."
             " Fix your input file.");
     }
@@ -84,7 +84,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
         if (pbb_stream >> value)
           init_box_(row, col) = value;
         else
-          dserror(
+          FOUR_C_THROW(
               " Specify six values for bounding box in three dimensional problem."
               " Fix your input file.");
       }
@@ -115,7 +115,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
     // safety check
     for (int i = 0; i < static_cast<int>(numcrosslinkerpertype_.size()); ++i)
       if (numcrosslinkerpertype_[i] < 0)
-        dserror(" negative number of crosslinker does not make sense.");
+        FOUR_C_THROW(" negative number of crosslinker does not make sense.");
   }
 
   // material numbers for crosslinker types
@@ -129,12 +129,13 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
 
     // safety check
     for (int i = 0; i < static_cast<int>(matcrosslinkerpertype_.size()); ++i)
-      if (matcrosslinkerpertype_[i] < 0) dserror(" negative material number does not make sense.");
+      if (matcrosslinkerpertype_[i] < 0)
+        FOUR_C_THROW(" negative material number does not make sense.");
   }
 
   // safety check
   if (numcrosslinkerpertype_.size() != matcrosslinkerpertype_.size())
-    dserror("number of crosslinker types does not fit number of assigned materials");
+    FOUR_C_THROW("number of crosslinker types does not fit number of assigned materials");
 
   // compute number of linker types
   linkertypes_.clear();
@@ -162,9 +163,10 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
       // safety checks
       for (int i = 0; i < static_cast<int>(maxnuminitcrosslinkerpertype.size()); ++i)
         if (maxnuminitcrosslinkerpertype[i] < 0)
-          dserror(" negative number of crosslinker does not make sense.");
+          FOUR_C_THROW(" negative number of crosslinker does not make sense.");
       if (maxnuminitcrosslinkerpertype.size() != numcrosslinkerpertype_.size())
-        dserror("number of initial set crosslinker types does not fit number of crosslinker types");
+        FOUR_C_THROW(
+            "number of initial set crosslinker types does not fit number of crosslinker types");
 
       for (int i = 0; i < static_cast<int>(maxnuminitcrosslinkerpertype.size()); ++i)
         maxnum_init_crosslinker_pertype_[matcrosslinkerpertype_[i]] =
@@ -184,12 +186,13 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
     {
       max_num_bonds_per_filament_bspot_[linkertypes_[count]] = std::strtod(word.c_str(), &input);
       if (max_num_bonds_per_filament_bspot_.at(linkertypes_[count]) < 0)
-        dserror(" Choose a number of bonds per filament binding spot type >= 0. ");
+        FOUR_C_THROW(" Choose a number of bonds per filament binding spot type >= 0. ");
       ++count;
     }
 
     if (max_num_bonds_per_filament_bspot_.size() != linkertypes_.size())
-      dserror(" Num linker types %i does not match num input for MAXNUMBONDSPERFILAMENTBSPOT %i. ",
+      FOUR_C_THROW(
+          " Num linker types %i does not match num input for MAXNUMBONDSPERFILAMENTBSPOT %i. ",
           linkertypes_.size(), max_num_bonds_per_filament_bspot_.size());
   }
 
@@ -226,7 +229,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
 
   if (linkertypes_.size() != filamentbspotintervalglobal_.size() and
       linkertypes_.size() != filamentbspotintervallocal_.size())
-    dserror("You need to specify filament binding spots for all your linker types");
+    FOUR_C_THROW("You need to specify filament binding spots for all your linker types");
 
   // safety checks for feasibility of input
   if (filamentbspotintervalglobal_.size() == filamentbspotintervallocal_.size())
@@ -236,11 +239,11 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
       // safety feasibility checks
       if (iter.second <= 0.0 and not(filamentbspotintervallocal_.at(iter.first) > 0.0 and
                                      filamentbspotintervallocal_.at(iter.first) <= 1.0))
-        dserror(
+        FOUR_C_THROW(
             " Choose realistic value for FILAMENTBSPOTINTERVAL (i.e. distance between "
             "two binding spots on a filament) in input file. ");
       if (iter.second > 0.0 and filamentbspotintervallocal_.at(iter.first) > 0.0)
-        dserror(" You can only set either a global or a local filament binding spot interval");
+        FOUR_C_THROW(" You can only set either a global or a local filament binding spot interval");
     }
   }
 
@@ -259,11 +262,11 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
       if (PL >> word)
         pair.second = std::strtod(word.c_str(), &input);
       else
-        dserror("Filament binding spot range needs to be specified via two values");
+        FOUR_C_THROW("Filament binding spot range needs to be specified via two values");
       filamentbspotrangeglobal_[linkertypes_[count]] = pair;
 
       if (pair.first > 0.0 and pair.second > 0.0 and (pair.first > pair.second))
-        dserror(" lower bound > upper bound, fix FILAMENTBSPOTRANGEGLOBAL in input file ");
+        FOUR_C_THROW(" lower bound > upper bound, fix FILAMENTBSPOTRANGEGLOBAL in input file ");
 
       ++count;
     }
@@ -284,13 +287,13 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
       if (PL >> word)
         pair.second = std::strtod(word.c_str(), &input);
       else
-        dserror("Filament binding spot range needs to be specified via two values");
+        FOUR_C_THROW("Filament binding spot range needs to be specified via two values");
       filamentbspotrangelocal_[linkertypes_[count]] = pair;
 
       if (pair.first > 0.0 and pair.second > 0.0 and (pair.first > pair.second))
-        dserror(" lower bound > upper bound, fix FILAMENTBSPOTRANGEGLOCAL in input file ");
+        FOUR_C_THROW(" lower bound > upper bound, fix FILAMENTBSPOTRANGEGLOCAL in input file ");
       if (pair.first > 1.0 or pair.second > 1.0)
-        dserror("values > 1.0 do not make sense for local filament binding spot range");
+        FOUR_C_THROW("values > 1.0 do not make sense for local filament binding spot range");
 
       ++count;
     }
@@ -298,7 +301,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
 
   if (linkertypes_.size() != filamentbspotrangeglobal_.size() and
       linkertypes_.size() != filamentbspotrangelocal_.size())
-    dserror("You need to specify filament binding spots for all your linker types");
+    FOUR_C_THROW("You need to specify filament binding spots for all your linker types");
 
   // safety checks for feasibility of input
   if (filamentbspotrangeglobal_.size() == filamentbspotrangelocal_.size())
@@ -308,7 +311,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
       if (filamentbspotrangelocal_.at(iter.first).first > 0.0 and
           filamentbspotrangelocal_.at(iter.first).second > 0.0 and
           (iter.second.first > 0.0 or iter.second.second > 0.0))
-        dserror("either local or global binding spot range can be specified");
+        FOUR_C_THROW("either local or global binding spot range can be specified");
     }
   }
 

@@ -246,7 +246,7 @@ int DRT::ELEMENTS::TransportType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(dis.lColElement(i));
-    if (!actele) dserror("cast to Transport element failed");
+    if (!actele) FOUR_C_THROW("cast to Transport element failed");
     actele->Initialize();
   }
   return 0;
@@ -349,7 +349,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       {
         // In the context of ELCH the only valid material combination is m_matlist and m_ion
         if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_ion)
-          dserror(
+          FOUR_C_THROW(
               "In the context of ELCH the material Mat_matlist can be only used in combination "
               "with Mat_ion");
       }
@@ -362,7 +362,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     {
       // only two-equation systems, for the time being: check!
       if (numdofpernode_ > 2)
-        dserror(
+        FOUR_C_THROW(
             "Only two-equation systems (one species and one temperature equation for "
             "Arrhenius-type systems, for the time being!");
 
@@ -371,14 +371,14 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       for (int ii = 0; ii < (numdofpernode_ - 1); ++ii)
       {
         if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_arrhenius_spec)
-          dserror(
+          FOUR_C_THROW(
               "For problem type LOMA, only combination of Arrhenius-type species (first equations) "
               "and temperature (last equation) possible in this specific order in case of matlist: "
               "one of the first equations is not a species equation!");
       }
       if (actmat->MaterialById(actmat->MatID(numdofpernode_ - 1))->MaterialType() !=
           INPAR::MAT::m_arrhenius_temp)
-        dserror(
+        FOUR_C_THROW(
             "For problem type LOMA, only combination of Arrhenius-type species (first equations) "
             "and temperature (last equation) possible in this specific order in case of matlist: "
             "last equation is not a temperature equation!");
@@ -404,7 +404,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
               INPAR::MAT::m_scatra_multiporo_temperature and
           actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
               INPAR::MAT::m_scatra_multiporo_solid)
-        dserror(
+        FOUR_C_THROW(
             "The material Mat_matlist_reaction only supports MAT_scatra and MAT_scatra_multiporo "
             "as valid main Material");
     }
@@ -418,7 +418,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
               INPAR::MAT::m_scatra_reaction and
           actmat->MaterialById(actmat->ReacID(jj))->MaterialType() !=
               INPAR::MAT::m_scatra_reaction_poroECM)
-        dserror(
+        FOUR_C_THROW(
             "The material MAT_matlist_reaction only supports MAT_scatra_reaction and "
             "MAT_scatra_reaction_poro as valid reaction Material");
 
@@ -428,7 +428,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
               actmat->MaterialById(actmat->ReacID(jj)));
       const int stoichlength = reacmat->NumScal();
       if (stoichlength != numdofpernode_)
-        dserror(
+        FOUR_C_THROW(
             "The number of scalars in your MAT_scatra_reaction material with ID %i does not fit to "
             "the number of scalars!",
             actmat->ReacID(jj));
@@ -446,7 +446,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     {
       // In the context of chemotaxis the only valid material combination is m_matlist and m_scatra
       if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra)
-        dserror(
+        FOUR_C_THROW(
             "The material Mat_matlist_chemotaxis only supports MAT_scatra as valid main Material");
     }
 
@@ -457,7 +457,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       // m_scatra_chemotaxis
       if (actmat->MaterialById(actmat->PairID(jj))->MaterialType() !=
           INPAR::MAT::m_scatra_chemotaxis)
-        dserror(
+        FOUR_C_THROW(
             "The material MAT_matlist_chemotaxis only supports MAT_scatra_chemotaxis as valid "
             "reaction Material");
 
@@ -467,7 +467,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
               actmat->MaterialById(actmat->PairID(jj)));
       const int pairlength = reacmat->Pair()->size();
       if (pairlength != numdofpernode_)
-        dserror(
+        FOUR_C_THROW(
             "The number of scalars in your MAT_scatra_chemotaxis material with ID %i does not fit "
             "to the number of scalars!",
             actmat->PairID(jj));
@@ -486,7 +486,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       // In the context of reactions/chemotaxis the only valid material combination is m_matlist and
       // m_scatra
       if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra)
-        dserror(
+        FOUR_C_THROW(
             "The material Mat_matlist_chemoreac only supports MAT_scatra as valid main Material");
     }
 
@@ -496,7 +496,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       // In the context of reactions the only valid material combination is m_matlist and
       // m_scatra_reaction
       if (actmat->MaterialById(actmat->ReacID(jj))->MaterialType() != INPAR::MAT::m_scatra_reaction)
-        dserror(
+        FOUR_C_THROW(
             "The material MAT_matlist_reaction only supports MAT_scatra_reaction as valid reaction "
             "Material");
 
@@ -506,7 +506,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
               actmat->MaterialById(actmat->ReacID(jj)));
       const int stoichlength = reacmat->NumScal();
       if (stoichlength != numdofpernode_)
-        dserror(
+        FOUR_C_THROW(
             "The number of scalars in your MAT_scatra_reaction material with ID %i does not fit to "
             "the number of scalars!",
             actmat->ReacID(jj));
@@ -519,7 +519,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       // m_scatra_chemotaxis
       if (actmat->MaterialById(actmat->PairID(jj))->MaterialType() !=
           INPAR::MAT::m_scatra_chemotaxis)
-        dserror(
+        FOUR_C_THROW(
             "The material MAT_matlist_chemotaxis only supports MAT_scatra_chemotaxis as valid "
             "reaction Material");
 
@@ -529,7 +529,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
               actmat->MaterialById(actmat->PairID(jj)));
       const int pairlength = reacmat->Pair()->size();
       if (pairlength != numdofpernode_)
-        dserror(
+        FOUR_C_THROW(
             "The number of scalars in your MAT_scatra_chemotaxis material with ID %i does not fit "
             "to the number of scalars!",
             actmat->PairID(jj));
@@ -542,7 +542,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     numdofpernode_ = actmat->NumDOF();
   }
   else
-    dserror("Transport element got unsupported material type %d", mat->MaterialType());
+    FOUR_C_THROW("Transport element got unsupported material type %d", mat->MaterialType());
 
   return;
 }
@@ -562,7 +562,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum, DRT::Element* oldele)
 
     Teuchos::RCP<MAT::ElastHyper> somat =
         Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(oldele->Material());
-    if (somat == Teuchos::null) dserror("cast to ElastHyper failed");
+    if (somat == Teuchos::null) FOUR_C_THROW("cast to ElastHyper failed");
 
     // copy fiber information from solid material to scatra material (for now, only one fiber
     // vector)
@@ -626,7 +626,7 @@ void DRT::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
   impltype_ = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -790,7 +790,7 @@ CORE::FE::CellType DRT::ELEMENTS::TransportBoundary::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::TransportBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("This TransportBoundary element does not support communication");
+  FOUR_C_THROW("This TransportBoundary element does not support communication");
 
   return;
 }
@@ -800,7 +800,7 @@ void DRT::ELEMENTS::TransportBoundary::Pack(CORE::COMM::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::TransportBoundary::Unpack(const std::vector<char>& data)
 {
-  dserror("This TransportBoundary element does not support communication");
+  FOUR_C_THROW("This TransportBoundary element does not support communication");
   return;
 }
 
@@ -840,7 +840,7 @@ int DRT::ELEMENTS::TransportBoundary::NumSurface() const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::TransportBoundary::Lines()
 {
-  dserror("Lines of TransportBoundary not implemented");
+  FOUR_C_THROW("Lines of TransportBoundary not implemented");
 }
 
 /*----------------------------------------------------------------------*
@@ -848,7 +848,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::TransportBoundary::Lines(
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::TransportBoundary::Surfaces()
 {
-  dserror("Surfaces of TransportBoundary not implemented");
+  FOUR_C_THROW("Surfaces of TransportBoundary not implemented");
 }
 
 FOUR_C_NAMESPACE_CLOSE

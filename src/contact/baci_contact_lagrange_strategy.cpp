@@ -279,7 +279,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-      dserror("Condensation only for dual LM");
+      FOUR_C_THROW("Condensation only for dual LM");
 
     /********************************************************************/
     /* (1) Multiply Mortar matrices: m^ = inv(d) * m                    */
@@ -342,19 +342,19 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -419,7 +419,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
       CORE::LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -429,7 +429,7 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     // do the multiplication mhat = inv(D) * M
@@ -1431,7 +1431,7 @@ void CONTACT::LagrangeStrategy::ComputeContactStresses()
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cnode = dynamic_cast<Node*>(node);
 
         std::vector<int> locindex(Dim());
@@ -1484,7 +1484,7 @@ void CONTACT::LagrangeStrategy::ComputeContactStresses()
         fclose(MyFile);
       }
       else
-        dserror("File could not be opened.");
+        FOUR_C_THROW("File could not be opened.");
     }
   }
 
@@ -1512,7 +1512,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
   {
     // interface needs to be complete
     if (!interface_[i]->Filled() && Comm().MyPID() == 0)
-      dserror("FillComplete() not called on interface %", i);
+      FOUR_C_THROW("FillComplete() not called on interface %", i);
 
     // reset kappa
     // loop over all slave row nodes on the current interface
@@ -1520,7 +1520,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
     {
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
       cnode->Data().Kappa() = 0.0;
     }
@@ -1531,7 +1531,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
     {
       int gid1 = interface_[i]->MasterColElements()->GID(j);
       DRT::Element* ele1 = interface_[i]->Discret().gElement(gid1);
-      if (!ele1) dserror("Cannot find slave element with gid %", gid1);
+      if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       Element* selement = dynamic_cast<Element*>(ele1);
 
       // loop over slave edges -> match node number for tri3/quad4
@@ -1575,7 +1575,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
             nodeLIds[1] = 0;
           }
           else
-            dserror("loop counter and edge number do not match!");
+            FOUR_C_THROW("loop counter and edge number do not match!");
         }
         else if (selement->Shape() == CORE::FE::CellType::tri3)
         {
@@ -1604,7 +1604,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
             nodeLIds[1] = 0;
           }
           else
-            dserror("loop counter and edge number do not match!");
+            FOUR_C_THROW("loop counter and edge number do not match!");
         }
 
         // check if both nodes on edge geometry
@@ -1654,7 +1654,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
     {
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       // only for edge nodes!
@@ -1668,7 +1668,7 @@ void CONTACT::LagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vec
         if (abs(kappainv) < 1e-12)
         {
           kappainv = 1.0;
-          //          dserror("gap is zero!");
+          //          FOUR_C_THROW("gap is zero!");
         }
         else
         {
@@ -1708,22 +1708,22 @@ void CONTACT::LagrangeStrategy::AddMasterContributions(
   }
 
   // force
-  if (fc->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble failed");
+  if (fc->GlobalAssemble(Add, false) != 0) FOUR_C_THROW("GlobalAssemble failed");
 
   // store fLTL values for time integration
   fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
-  if (fLTL_->Update(1.0, *fc, 0.0)) dserror("Update went wrong");
+  if (fLTL_->Update(1.0, *fc, 0.0)) FOUR_C_THROW("Update went wrong");
 
   if (add_time_integration)
     if (fLTLOld_ != Teuchos::null)
-      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("Update went wrong");
+      if (feff->Update(alphaf_, *fLTLOld_, 1.)) FOUR_C_THROW("Update went wrong");
 
   double fac = 0.;
   if (add_time_integration)
     fac = 1. - alphaf_;
   else
     fac = 1.;
-  if (feff->Update(fac, *fc, 1.)) dserror("Update went wrong");
+  if (feff->Update(fac, *fc, 1.)) FOUR_C_THROW("Update went wrong");
 
   // stiffness
   dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add);
@@ -1764,22 +1764,22 @@ void CONTACT::LagrangeStrategy::AddLineToLinContributions(
   fconservation_->Update(1.0, *fc, 0.0);
 
   // force
-  if (fc->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble failed");
+  if (fc->GlobalAssemble(Add, false) != 0) FOUR_C_THROW("GlobalAssemble failed");
 
   // store fLTL values for time integration
   fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
-  if (fLTL_->Update(1.0, *fc, 0.0)) dserror("Update went wrong");
+  if (fLTL_->Update(1.0, *fc, 0.0)) FOUR_C_THROW("Update went wrong");
 
   if (add_time_integration)
     if (fLTLOld_ != Teuchos::null)
-      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("Update went wrong");
+      if (feff->Update(alphaf_, *fLTLOld_, 1.)) FOUR_C_THROW("Update went wrong");
 
   double fac = 0.;
   if (add_time_integration)
     fac = 1. - alphaf_;
   else
     fac = 1.;
-  if (feff->Update(fac, *fc, 1.)) dserror("Update went wrong");
+  if (feff->Update(fac, *fc, 1.)) FOUR_C_THROW("Update went wrong");
 
   // stiffness
   dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add);
@@ -1817,7 +1817,7 @@ void CONTACT::LagrangeStrategy::AddLineToLinContributionsFriction(
 
   // store normal forces
   fLTLn_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
-  if (fLTLn_->Update(1.0, *fc, 0.0)) dserror("Update went wrong");
+  if (fLTLn_->Update(1.0, *fc, 0.0)) FOUR_C_THROW("Update went wrong");
 
   // loop over interface and assemble force and stiffness
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -1831,26 +1831,26 @@ void CONTACT::LagrangeStrategy::AddLineToLinContributionsFriction(
 
   // store tangential forces
   fLTLt_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
-  if (fLTLt_->Update(1.0, *fc, 0.0)) dserror("Update went wrong");
-  if (fLTLt_->Update(-1.0, *fLTLn_, 1.0)) dserror("Update went wrong");
+  if (fLTLt_->Update(1.0, *fc, 0.0)) FOUR_C_THROW("Update went wrong");
+  if (fLTLt_->Update(-1.0, *fLTLn_, 1.0)) FOUR_C_THROW("Update went wrong");
 
   // force
-  if (fc->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble failed");
+  if (fc->GlobalAssemble(Add, false) != 0) FOUR_C_THROW("GlobalAssemble failed");
 
   // store fLTL values for time integration
   fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
-  if (fLTL_->Update(1.0, *fc, 0.0)) dserror("Update went wrong");
+  if (fLTL_->Update(1.0, *fc, 0.0)) FOUR_C_THROW("Update went wrong");
 
   if (add_time_integration)
     if (fLTLOld_ != Teuchos::null)
-      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("Update went wrong");
+      if (feff->Update(alphaf_, *fLTLOld_, 1.)) FOUR_C_THROW("Update went wrong");
 
   double fac = 0.;
   if (add_time_integration)
     fac = 1. - alphaf_;
   else
     fac = 1.;
-  if (feff->Update(fac, *fc, 1.)) dserror("Update went wrong");
+  if (feff->Update(fac, *fc, 1.)) FOUR_C_THROW("Update went wrong");
 
   // stiffness
   dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add);
@@ -2029,7 +2029,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin &&
         CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
             INPAR::MORTAR::lagmult_const)
-      dserror("Condensation only for dual LM");
+      FOUR_C_THROW("Condensation only for dual LM");
 
     /**********************************************************************/
     /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
@@ -2092,19 +2092,19 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -2168,7 +2168,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
       CORE::LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -2178,7 +2178,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     // do the multiplication mhat = inv(D) * M
@@ -2951,7 +2951,7 @@ void CONTACT::LagrangeStrategy::BuildSaddlePointSystem(
 {
   // Check for saddle-point formulation
   if (SystemType() != INPAR::CONTACT::system_saddlepoint)
-    dserror("Invalid system type! Cannot build a saddle-point system for this system type.");
+    FOUR_C_THROW("Invalid system type! Cannot build a saddle-point system for this system type.");
 
   // create old style dirichtoggle vector (supposed to go away)
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
@@ -3130,7 +3130,7 @@ void CONTACT::LagrangeStrategy::BuildSaddlePointSystem(
 
       Teuchos::RCP<Epetra_Vector> lmDBCexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
       CORE::LINALG::Export(*lmDBC, *lmDBCexp);
-      if (dirichtoggleexp->Update(1., *lmDBCexp, 1.)) dserror("Update failed.");
+      if (dirichtoggleexp->Update(1., *lmDBCexp, 1.)) FOUR_C_THROW("Update failed.");
       trkzd->ApplyDirichlet(*lmDBC, false);
 
       trkzz->Complete();
@@ -3512,7 +3512,7 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFriction()
   if (Dualquadslavetrafo())
   {
     if (lagmultquad == INPAR::MORTAR::lagmult_lin)
-      dserror("no linear LM interpolation for frictional contact");
+      FOUR_C_THROW("no linear LM interpolation for frictional contact");
     else
     {
       // modify lindmatrix_
@@ -3585,19 +3585,19 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFriction()
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -3662,7 +3662,7 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFriction()
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
       CORE::LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -3672,7 +3672,7 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFriction()
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     invd_ = invd;
@@ -3847,19 +3847,19 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFrictionless()
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -3923,7 +3923,7 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFrictionless()
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
       CORE::LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -3933,7 +3933,7 @@ void CONTACT::LagrangeStrategy::AssembleAllContactTermsFrictionless()
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
-      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+      if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     invd_ = invd;
@@ -4238,7 +4238,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlo
         Epetra_Vector ones = Epetra_Vector(*unused_lmdofs, false);
         ones.PutScalar(1.0);
         if (CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(*kzz_ptr, ones))
-          dserror("Unexpected error!");
+          FOUR_C_THROW("Unexpected error!");
       }
       else
         kzz_ptr = Teuchos::rcp(new CORE::LINALG::SparseMatrix(SlDoFRowMap(true), 100, false, true));
@@ -4288,7 +4288,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::LagrangeStrategy::GetMatrixBlo
     }
     default:
     {
-      dserror("Unknown STR::MatBlockType!");
+      FOUR_C_THROW("Unknown STR::MatBlockType!");
       break;
     }
   }
@@ -4380,7 +4380,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::LagrangeStrategy::GetRhsBlockPtr(
     }
     default:
     {
-      dserror("Unknown STR::VecBlockType!");
+      FOUR_C_THROW("Unknown STR::VecBlockType!");
       break;
     }
   }
@@ -4444,7 +4444,7 @@ void CONTACT::LagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
             shapefcn != INPAR::MORTAR::shape_petrovgalerkin) &&
         CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
             INPAR::MORTAR::lagmult_const)
-      dserror("Condensation only for dual LM");
+      FOUR_C_THROW("Condensation only for dual LM");
 
     // extract slave displacements from disi
     Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -4598,7 +4598,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       // compute weighted gap
@@ -4901,7 +4901,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPr
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cnode = dynamic_cast<Node*>(node);
 
         // The nested active set strategy cannot deal with the case of
@@ -4913,7 +4913,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPr
         // updates the active set after EACH Newton step, see below, and thus
         // would always set the corresponding nodes to INACTIVE.)
         if (cnode->Active() && !cnode->HasSegment() && !cnode->IsOnBoundorCE())
-          dserror("Active node %i without any segment/cell attached", cnode->Id());
+          FOUR_C_THROW("Active node %i without any segment/cell attached", cnode->Id());
       }
     }
     return;
@@ -5106,7 +5106,7 @@ void CONTACT::LagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   {
     // store fLTL values for time integration
     fLTLOld_ = Teuchos::rcp(new Epetra_Vector(fLTL_->Map()), true);
-    if (fLTLOld_->Update(1.0, *fLTL_, 0.0)) dserror("Update went wrong");
+    if (fLTLOld_->Update(1.0, *fLTL_, 0.0)) FOUR_C_THROW("Update went wrong");
   }
 
   // abstract routine
@@ -5154,7 +5154,7 @@ void CONTACT::LagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   //  // complete balance check
   //  gcsum = gssum+gmsum;
   //  if (abs(gcsum)>1.0e-11)
-  //    dserror("Conservation of linear momentum is not fulfilled!");
+  //    FOUR_C_THROW("Conservation of linear momentum is not fulfilled!");
   //  if (Comm().MyPID()==0)
   //  {
   //    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
@@ -5184,7 +5184,7 @@ void CONTACT::LagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   //    fclose(MyFile);
   //  }
   //  else
-  //    dserror("File could not be opened.");
+  //    FOUR_C_THROW("File could not be opened.");
   //
   //  ++step;
 
@@ -5213,7 +5213,7 @@ void CONTACT::LagrangeStrategy::CheckConservationLaws(
   Comm().SumAll(&lmsum, &gmsum, 1);
   // complete balance check
   gcsum = gssum + gmsum;
-  if (abs(gcsum) > 1.0e-11) dserror("Conservation of linear momentum is not fulfilled!");
+  if (abs(gcsum) > 1.0e-11) FOUR_C_THROW("Conservation of linear momentum is not fulfilled!");
   if (Comm().MyPID() == 0)
   {
     std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
@@ -5381,7 +5381,7 @@ void CONTACT::LagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epetr
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         Node* cnode = dynamic_cast<Node*>(node);
 
@@ -5420,7 +5420,7 @@ void CONTACT::LagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epetr
           }
           else
           {
-            dserror("lid = -1!");
+            FOUR_C_THROW("lid = -1!");
           }
 
           std::cout << std::setprecision(32) << "cnode->PoroData().GetnScale() for node "
@@ -5442,13 +5442,13 @@ void CONTACT::LagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epetr
   // scale all matrixes!!!
   int err = smatrix_->LeftScale(
       *derivscalevec);  // scale with (alpha + dalpha/dgap*scaling + d(1-alpha)/dgap*lambda*n
-  if (err) dserror("LeftScale failed!");
+  if (err) FOUR_C_THROW("LeftScale failed!");
 
   err = nderivmatrix_->LeftScale(*scalevec2);  // scale with 1.0-alpha
-  if (err) dserror("LeftScale failed!");
+  if (err) FOUR_C_THROW("LeftScale failed!");
 
   err = nmatrix_->LeftScale(*scalevec2);  // scale with 1.0-alpha
-  if (err) dserror("LeftScale failed!");
+  if (err) FOUR_C_THROW("LeftScale failed!");
 
   Teuchos::RCP<Epetra_Vector> tmpgact =
       Teuchos::rcp(new Epetra_Vector(*gact));  // check later if this is required!!!
@@ -5518,7 +5518,7 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-    dserror("Condensation only for dual LM");
+    FOUR_C_THROW("Condensation only for dual LM");
 
   /********************************************************************/
   /* (1) Multiply Mortar matrices: m^ = inv(d) * m                    */
@@ -6346,7 +6346,7 @@ void CONTACT::LagrangeStrategy::CondenseFrictionless(
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin &&
       CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
           INPAR::MORTAR::lagmult_const)
-    dserror("Condensation only for dual LM");
+    FOUR_C_THROW("Condensation only for dual LM");
 
   /**********************************************************************/
   /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
@@ -6877,13 +6877,13 @@ void CONTACT::LagrangeStrategy::RunPreApplyJacobianInverse(
       CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD");
   if (Dualquadslavetrafo() && lagmultquad == INPAR::MORTAR::lagmult_lin)
   {
-    if (not(systrafo_->DomainMap().SameAs(kteff->DomainMap()))) dserror("stop");
+    if (not(systrafo_->DomainMap().SameAs(kteff->DomainMap()))) FOUR_C_THROW("stop");
 
     *kteff = *CORE::LINALG::Multiply(*systrafo_, true, *kteff, false, false, false, true);
     Epetra_Vector rhs_str(*ProblemDofs());
     Epetra_Vector rhs_str2(*ProblemDofs());
     CORE::LINALG::Export(rhs, rhs_str);
-    if (systrafo_->Multiply(true, rhs_str, rhs_str2)) dserror("multiply failed");
+    if (systrafo_->Multiply(true, rhs_str, rhs_str2)) FOUR_C_THROW("multiply failed");
     for (int i = 0; i < rhs_str2.Map().NumMyElements(); ++i)
       rhs[rhs.Map().LID(rhs_str2.Map().GID(i))] = rhs_str2[i];
   }
@@ -6921,7 +6921,7 @@ void CONTACT::LagrangeStrategy::RunPostApplyJacobianInverse(const CONTACT::Param
             shapefcn != INPAR::MORTAR::shape_petrovgalerkin) &&
         CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(Params(), "LM_QUAD") !=
             INPAR::MORTAR::lagmult_const)
-      dserror("Condensation only for dual LM");
+      FOUR_C_THROW("Condensation only for dual LM");
 
     // extract slave displacements from disi
     Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));

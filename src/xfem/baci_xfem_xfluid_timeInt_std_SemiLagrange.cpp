@@ -89,7 +89,7 @@ void XFEM::XfluidSemiLagrange::compute(
       break;
     }
     default:
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       break;
   }  // end switch
 
@@ -161,7 +161,7 @@ void XFEM::XfluidSemiLagrange::compute(
             else  // all procs searched -> initial point not in domain
             {
               data->state_ = TimeIntData::failedSL_;
-              dserror(
+              FOUR_C_THROW(
                   "<<< WARNING! Initial point for node %d for finding the Lagrangean origin not in "
                   "domain! >>>",
                   data->node_.Id());
@@ -177,11 +177,11 @@ void XFEM::XfluidSemiLagrange::compute(
             getNodalDofSet(
                 initial_ele, data->initialpoint_, nds_curr, data->last_valid_vc_, step_np);
 
-            if (nds_curr.size() == 0) dserror("no valid nds-vector for initial point found");
+            if (nds_curr.size() == 0) FOUR_C_THROW("no valid nds-vector for initial point found");
             if (data->last_valid_vc_ != nullptr and  // not an uncut element
                 data->last_valid_vc_->Position() != CORE::GEO::CUT::Point::outside)
             {
-              dserror("initial point does not lie in the fluid");
+              FOUR_C_THROW("initial point does not lie in the fluid");
             }
 
             data->initial_eid_ = initial_ele->Id();
@@ -274,7 +274,7 @@ void XFEM::XfluidSemiLagrange::compute(
               // std::cout << "initial element Id " << data->initial_eid_ << std::endl;
               // std::cout << "initial element owner " << data->initial_ele_owner_ << std::endl;
 
-              dserror("point did not change the side, but nds = empty?!.");
+              FOUR_C_THROW("point did not change the side, but nds = empty?!.");
             }
 
             //-------------------------------------------------
@@ -353,14 +353,14 @@ void XFEM::XfluidSemiLagrange::compute(
                     }
                     else
                     {
-                      dserror(
+                      FOUR_C_THROW(
                           "projection of startpoint lies in another element compared to the point "
                           "to be projected");
                       data->state_ = TimeIntData::failedSL_;
                     }
                   }
                   else
-                    dserror(
+                    FOUR_C_THROW(
                         "element where the projection point lies in not available on this proc");
                 }
                 //----------------------------------------------------------------------------------------
@@ -465,7 +465,7 @@ void XFEM::XfluidSemiLagrange::compute(
   // now
   setFinalData();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (counter > 8 * numproc_)  // too much loops shouldnt be if all this works
     std::cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << std::endl;
 #endif
@@ -539,8 +539,8 @@ void XFEM::XfluidSemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to el
         // TODO: modify the ChangedSide check for intersections with all sides in the boundary-dis
         // this is not so efficient but should not be called not so often
         // the check itself does not need information about the background elements
-        //              dserror("element where initial point lies in not available on proc %d, no
-        //              ChangedSide comparison possible", myrank_);
+        //              FOUR_C_THROW("element where initial point lies in not available on proc %d,
+        //              no ChangedSide comparison possible", myrank_);
       }
       else
       {
@@ -829,7 +829,7 @@ bool XFEM::XfluidSemiLagrange::continueForChangingSide(
     return false;
   }
   else
-    dserror("case not possible");
+    FOUR_C_THROW("case not possible");
 
   return false;
 }
@@ -872,7 +872,7 @@ void XFEM::XfluidSemiLagrange::getDataForNotConvergedNodes()
       }
       else  // possibly slave node looked for element of master node or vice versa
       {
-        dserror("element not found");
+        FOUR_C_THROW("element not found");
       }
 
       //-------------------------------------------------------------------
@@ -935,7 +935,7 @@ void XFEM::XfluidSemiLagrange::newIteration_nodalData(
       continue;  // no info at new interface position required
 
     if (data->type_ != TimeIntData::predictor_)
-      dserror(
+      FOUR_C_THROW(
           "this function is used for the first time here, check the compute gradient "
           "functionality, check also the parallel export!");
 
@@ -980,7 +980,7 @@ void XFEM::XfluidSemiLagrange::newIteration_nodalData(
         int peid = vc->ParentElement()->GetParentId();
 
         if (!discret_->HaveGlobalElement(peid))
-          dserror("element %d for averaging not on proc %d", peid, myrank_);
+          FOUR_C_THROW("element %d for averaging not on proc %d", peid, myrank_);
 
         // get the element
         DRT::Element* e = discret_->gElement(peid);
@@ -1013,7 +1013,7 @@ void XFEM::XfluidSemiLagrange::newIteration_nodalData(
       eles_avg_nds.push_back(std_nds);
     }
 
-    if (eles_avg.size() == 0) dserror("there is no element for averaging");
+    if (eles_avg.size() == 0) FOUR_C_THROW("there is no element for averaging");
 
     // compute the nodal gradients for velocity/acc and pressure component
     computeNodalGradient(newColVectors, node, eles_avg, eles_avg_nds, *dofset_new_,
@@ -1069,8 +1069,8 @@ void XFEM::XfluidSemiLagrange::newIteration_nodalData(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidSemiLagrange::reinitializeData()
 {
-  dserror("adapt implementation of this function");
-  dserror("adapt, how to get nds_np?");
+  FOUR_C_THROW("adapt implementation of this function");
+  FOUR_C_THROW("adapt, how to get nds_np?");
 
   //  int nds_np = -1;
   //
@@ -1142,7 +1142,7 @@ void XFEM::XfluidSemiLagrange::reinitializeData()
   //            {
   //              std::cout <<
   //              fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) <<
-  //              std::endl; dserror("unknown enrichment type"); break;
+  //              std::endl; FOUR_C_THROW("unknown enrichment type"); break;
   //            }
   //            } // end switch enrichment
   //          } // end loop over fieldenr
@@ -1158,7 +1158,7 @@ void XFEM::XfluidSemiLagrange::reinitializeData()
   //      data!=timeIntData_->end(); data++)
   //  {
   //    if (data->startpoint_==dummyStartpoint)
-  //      dserror("WARNING! No enriched node on one interface side found!\nThis "
+  //      FOUR_C_THROW("WARNING! No enriched node on one interface side found!\nThis "
   //          "indicates that the whole area is at one side of the interface!");
   //  } // end loop over nodes
 }  // end function reinitializeData
@@ -1188,7 +1188,7 @@ void XFEM::XfluidSemiLagrange::callBackTracking(DRT::Element*& ele,  /// pointer
     }
     break;
     default:
-      dserror("xfem assembly type not yet implemented in time integration");
+      FOUR_C_THROW("xfem assembly type not yet implemented in time integration");
       break;
   };
 }  // end backTracking
@@ -1215,7 +1215,7 @@ void XFEM::XfluidSemiLagrange::backTracking(DRT::Element*& fittingele,  /// poin
 
   if ((strcmp(backTrackingType, static_cast<const char*>("standard")) != 0) and
       (strcmp(backTrackingType, static_cast<const char*>("failing")) != 0))
-    dserror("backTrackingType not implemented");
+    FOUR_C_THROW("backTrackingType not implemented");
 
 #ifdef DEBUG_SEMILAGRANGE
   if (strcmp(backTrackingType, static_cast<const char*>("standard")) == 0)
@@ -1256,7 +1256,7 @@ void XFEM::XfluidSemiLagrange::backTracking(DRT::Element*& fittingele,  /// poin
              << data->node_.Id() << IO::endl;
   }
   else
-    dserror("backTrackingType not implemented");
+    FOUR_C_THROW("backTrackingType not implemented");
 
 
   CORE::LINALG::Matrix<numnode, 1> shapeFcn(true);       // shape function
@@ -1398,7 +1398,7 @@ void XFEM::XfluidSemiLagrange::backTracking(DRT::Element*& fittingele,  /// poin
         int peid = vc->ParentElement()->GetParentId();
 
         if (!discret_->HaveGlobalElement(peid))
-          dserror("element %d for averaging not on proc %d", peid, myrank_);
+          FOUR_C_THROW("element %d for averaging not on proc %d", peid, myrank_);
 
         // get the element
         DRT::Element* e = discret_->gElement(peid);
@@ -1431,7 +1431,7 @@ void XFEM::XfluidSemiLagrange::backTracking(DRT::Element*& fittingele,  /// poin
       eles_avg_nds.push_back(std_nds);
     }
 
-    if (eles_avg.size() == 0) dserror("there is no element for averaging");
+    if (eles_avg.size() == 0) FOUR_C_THROW("there is no element for averaging");
 
     // compute the nodal gradients for velocity/acc and pressure component
     computeNodalGradient(oldVectors_, node, eles_avg, eles_avg_nds, *dofset_old_,
@@ -1552,7 +1552,7 @@ void XFEM::XfluidSemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to
     e->GetVolumeCells(cells);
 
     if (cells.size() == 0)
-      dserror("CORE::GEO::CUT::Element %d does not contain any volume cell", ele->Id());
+      FOUR_C_THROW("CORE::GEO::CUT::Element %d does not contain any volume cell", ele->Id());
 
     for (CORE::GEO::CUT::plain_volumecell_set::iterator cell_it = cells.begin();
          cell_it != cells.end(); cell_it++)
@@ -1572,7 +1572,7 @@ void XFEM::XfluidSemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to
         nds = cell->NodalDofSet();
 
         if ((int)nds.size() != ele->NumNode())
-          dserror(
+          FOUR_C_THROW(
               " size of nds-vector != number of element nodes, why does the vc does not have nodal "
               "dofsets?!");
 
@@ -1625,7 +1625,7 @@ void XFEM::XfluidSemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to
         IO::cout << "vc-pos: " << cell->Position() << IO::endl;
       }
 
-      dserror(
+      FOUR_C_THROW(
           "no valid nds-vector could be determined and point does not lie within the structure!");
     }
 
@@ -1644,7 +1644,7 @@ void XFEM::XfluidSemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer to
 
     IO::cout << "error: coordinates of point x " << x << " number of volumecells: " << cells.size()
              << IO::endl;
-    dserror(
+    FOUR_C_THROW(
         "there is no volume cell in element %d which contains point with coordinates (%f,%f,%f) -> "
         "void element???",
         ele->Id(), x(0), x(1), x(2));
@@ -1689,7 +1689,7 @@ void XFEM::XfluidSemiLagrange::computeNodalGradient(
 
   int numele = (int)eles.size();
 
-  if (numele != (int)ele_nds.size()) dserror("number of nds-vector != number of elements!");
+  if (numele != (int)ele_nds.size()) FOUR_C_THROW("number of nds-vector != number of elements!");
 
 
   for (int iele = 0; iele < numele; iele++)
@@ -1752,11 +1752,11 @@ double XFEM::XfluidSemiLagrange::Theta(TimeIntData* data) const
       theta = theta_default_;
       break;
     default:
-      dserror("type not implemented");
+      FOUR_C_THROW("type not implemented");
       break;
   }
 
-  if (theta < 0.0) dserror("something wrong");
+  if (theta < 0.0) FOUR_C_THROW("something wrong");
 
   return theta;
 }  // end function theta

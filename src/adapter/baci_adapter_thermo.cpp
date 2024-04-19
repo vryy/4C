@@ -59,7 +59,8 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(
       SetupTimInt(prbdyn, timinttype, actdis);  // <-- here is the show
       break;
     default:
-      dserror("unknown time integration scheme '%s'", tdyn.get<std::string>("DYNAMICTYP").c_str());
+      FOUR_C_THROW(
+          "unknown time integration scheme '%s'", tdyn.get<std::string>("DYNAMICTYP").c_str());
       break;
   }
 
@@ -119,7 +120,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prb
   const int linsolvernumber = tdyn->get<int>("LINEAR_SOLVER");
   // check if the THERMAL solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for thermal solver. Please set LINEAR_SOLVER in THERMAL DYNAMIC "
         "to a valid number!");
 
@@ -158,7 +159,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(const Teuchos::ParameterList& prb
       break;
     }
     default:
-      dserror("unknown time integration scheme '%s'", timinttype);
+      FOUR_C_THROW("unknown time integration scheme '%s'", timinttype);
       break;
   }
 
@@ -195,7 +196,7 @@ void ADAPTER::Thermo::Integrate()
         continue;
       default:
         // no other convergence status can be handled at this point, abort
-        dserror("Solver failed.");
+        FOUR_C_THROW("Solver failed.");
     }
   }
   // print monitoring of time consumption

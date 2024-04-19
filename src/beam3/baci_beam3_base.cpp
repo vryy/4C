@@ -197,7 +197,7 @@ MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
   Teuchos::RCP<MAT::Material> material_ptr = Material();
 
   if (material_ptr->MaterialType() != INPAR::MAT::m_beam_elast_hyper_generic)
-    dserror("unknown or improper type of material law! expected beam material law!");
+    FOUR_C_THROW("unknown or improper type of material law! expected beam material law!");
 
   return *static_cast<MAT::BeamMaterial*>(material_ptr.get());
 }
@@ -283,7 +283,7 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(CORE::LINALG::Matrix<3, 1>
 
     default:
     {
-      dserror("Invalid choice of how damping coefficient values for beams are specified!");
+      FOUR_C_THROW("Invalid choice of how damping coefficient values for beams are specified!");
 
       break;
     }

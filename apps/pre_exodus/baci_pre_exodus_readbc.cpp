@@ -32,7 +32,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
   if (!bcfstream.good())
   {
     std::cout << std::endl << "Unable to open file: " << bcfile << std::endl;
-    dserror("Unable to open bc-file");
+    FOUR_C_THROW("Unable to open bc-file");
   }
 
   while (bcfstream.good()) bcstream << (char)bcfstream.get();
@@ -47,7 +47,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
   size_t found;
   found = allconds.find("BCSPECS");
   if (found == std::string::npos)
-    dserror("No specifications found in bcfile. BCSPECS section is missing!");
+    FOUR_C_THROW("No specifications found in bcfile. BCSPECS section is missing!");
   allconds.erase(allconds.begin(), allconds.begin() + found);
 
   // get rid of 'validconditions' part, if it can be found
@@ -96,7 +96,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
   std::map<int, int> ns_dv2Eid;  // node set vol E id
 
   if (allconds.find("**") != std::string::npos)
-    dserror("String '**' detected. More * than one not allowed due to usage as a marker.");
+    FOUR_C_THROW("String '**' detected. More * than one not allowed due to usage as a marker.");
 
   found = allconds.find_first_of(marker);
   while (found != std::string::npos)
@@ -107,7 +107,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
     std::string actcond = allconds.substr(startpos, found - startpos);
 
     // ensure substd::string has minimum length!
-    if (actcond.size() < 3) dserror("Substd::string is too short");
+    if (actcond.size() < 3) FOUR_C_THROW("Substd::string is too short");
 
     // find out what mesh_entity type we have
     std::string mesh_entity = actcond.substr(0, 3);
@@ -192,7 +192,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
             E_id = 0;
             break;
           default:
-            dserror("geometry type unspecified");
+            FOUR_C_THROW("geometry type unspecified");
             break;
         }
         cdef.e_id = E_id;
@@ -201,7 +201,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
       else
       {
         std::cout << "Undefined type for eb" << id << ": " << type << std::endl;
-        dserror("Undefined type!");
+        FOUR_C_THROW("Undefined type!");
       }
     }
     else if (mesh_entity.compare(nsmarker) == 0)
@@ -261,7 +261,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
           E_id = 0;
           break;
         default:
-          dserror("geometry type unspecified");
+          FOUR_C_THROW("geometry type unspecified");
           break;
       }
       cdef.e_id = E_id;
@@ -273,7 +273,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
       condefs.push_back(cdef);
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "Cannot identify marker '%s'. Use *el (element block), *ns (nodeset) or *ss (sideset)",
           mesh_entity.c_str());
   }
@@ -324,7 +324,7 @@ EXODUS::CondDef EXODUS::ReadCdef(
   else if (mesh_entity.compare(1, 2, "ss") == 0)
     cdef.me = EXODUS::bcss;
   else
-    dserror("Cannot identify marker. Use *el (element block), *ns (nodeset) or *ss (sideset)");
+    FOUR_C_THROW("Cannot identify marker. Use *el (element block), *ns (nodeset) or *ss (sideset)");
 
   // read sectionname
   size_t left = actcond.find("sectionname=\"");  // 13 chars
@@ -509,7 +509,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       {
         std::cout << "yz num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
         std::cout << "yz num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
-        dserror("num master nodes != num slave nodes before adjusting coords");
+        FOUR_C_THROW("num master nodes != num slave nodes before adjusting coords");
       }
 
       const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
@@ -543,7 +543,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
             equal = true;
 
           if ((count_slavenodes == (int)slave_nodeset_ids.size()) && !equal)
-            dserror("no matching slave node %d found, adjust your tolerance", *m_node_id);
+            FOUR_C_THROW("no matching slave node %d found, adjust your tolerance", *m_node_id);
 
           if (!equal)
             continue;
@@ -565,7 +565,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
                   << std::endl;
         std::cout << "yz num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes()
                   << std::endl;
-        dserror("num master nodes != num slave nodes after adjusting coords");
+        FOUR_C_THROW("num master nodes != num slave nodes after adjusting coords");
       }
     }
   }
@@ -647,7 +647,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       {
         std::cout << "xz num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
         std::cout << "xz num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
-        dserror("xz num master nodes != num slave nodes before adjusting coords");
+        FOUR_C_THROW("xz num master nodes != num slave nodes before adjusting coords");
       }
 
       const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
@@ -681,7 +681,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
             equal = true;
 
           if ((count_slavenodes == (int)slave_nodeset_ids.size()) && !equal)
-            dserror("no matching slave node %d found, adjust your tolerance", *m_node_id);
+            FOUR_C_THROW("no matching slave node %d found, adjust your tolerance", *m_node_id);
 
           if (!equal)
             continue;
@@ -703,7 +703,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
                   << std::endl;
         std::cout << "xz num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes()
                   << std::endl;
-        dserror("xz num master nodes != num slave nodes after adjusting coords");
+        FOUR_C_THROW("xz num master nodes != num slave nodes after adjusting coords");
       }
     }
   }
@@ -784,7 +784,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
       {
         std::cout << "xy num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
         std::cout << "xy num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
-        dserror("xy num master nodes != num slave nodes before adjusting coords");
+        FOUR_C_THROW("xy num master nodes != num slave nodes before adjusting coords");
       }
 
       const std::set<int> master_nodeset_ids = master_nodeset.GetNodeSet();
@@ -818,7 +818,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
             equal = true;
 
           if ((count_slavenodes == (int)slave_nodeset_ids.size()) && !equal)
-            dserror("no matching slave node %d found, adjust your tolerance", *m_node_id);
+            FOUR_C_THROW("no matching slave node %d found, adjust your tolerance", *m_node_id);
 
           if (!equal)
             continue;
@@ -840,7 +840,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
                   << std::endl;
         std::cout << "xy num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes()
                   << std::endl;
-        dserror("xy num master nodes != num slave nodes after adjusting coords");
+        FOUR_C_THROW("xy num master nodes != num slave nodes after adjusting coords");
       }
     }
   }

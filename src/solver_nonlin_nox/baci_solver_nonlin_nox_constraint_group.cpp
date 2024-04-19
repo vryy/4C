@@ -183,11 +183,11 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::CONSTRAINT::Group::GetRHSNorms
              " for the \"NormF\" Status Test could not be found! (enum="
           << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i])
           << " | return value=" << rval << ")" << std::endl;
-      dserror(msg.str());
+      FOUR_C_THROW(msg.str());
     }
     else
     {
-      dserror("The norm value %e for quantity %s is not valid!", rval,
+      FOUR_C_THROW("The norm value %e for quantity %s is not valid!", rval,
           NOX::NLN::StatusTest::QuantityType2String(chQ[i]).c_str());
     }
   }

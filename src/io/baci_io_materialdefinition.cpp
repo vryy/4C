@@ -76,10 +76,10 @@ void INPUT::MaterialDefinition::Read(
 
       if (name == materialname_)
       {
-        if (matid <= -1) dserror("Illegal negative ID provided");
+        if (matid <= -1) FOUR_C_THROW("Illegal negative ID provided");
 
         // check if material ID is already in use
-        if (mmap->Find(matid) != -1) dserror("More than one material with 'MAT %d'", matid);
+        if (mmap->Find(matid) != -1) FOUR_C_THROW("More than one material with 'MAT %d'", matid);
 
         // the read-in material line
         Teuchos::RCP<MAT::PAR::Material> material =
@@ -90,7 +90,7 @@ void INPUT::MaterialDefinition::Read(
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)
-          dserror(
+          FOUR_C_THROW(
               "Specification of material '%s' contains the following unknown, redundant, or "
               "incorrect elements: '%s'",
               materialname_.c_str(), condline->str().c_str());
@@ -148,13 +148,13 @@ void INPUT::AppendMaterialDefinition(std::vector<Teuchos::RCP<INPUT::MaterialDef
     Teuchos::RCP<INPUT::MaterialDefinition> mmd = *m;
 
     if (mmd->Type() == mat->Type())
-      dserror(
+      FOUR_C_THROW(
           "Trying to define two materials with the same type '%d'\n"
           "Please revise your definitions of valid materials",
           mmd->Type());
 
     if (mmd->Name() == mat->Name())
-      dserror(
+      FOUR_C_THROW(
           "Trying to define two materials with the same name '%s'\n"
           "Please revise your definitions of valid materials",
           mmd->Name().c_str());
@@ -164,7 +164,7 @@ void INPUT::AppendMaterialDefinition(std::vector<Teuchos::RCP<INPUT::MaterialDef
   if (m == matlist.end())
     matlist.push_back(mat);
   else
-    dserror("Trouble in determining coincidences of material definitions");
+    FOUR_C_THROW("Trouble in determining coincidences of material definitions");
 }
 
 FOUR_C_NAMESPACE_CLOSE

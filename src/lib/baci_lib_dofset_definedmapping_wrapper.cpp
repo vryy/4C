@@ -35,8 +35,8 @@ DRT::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
       condids_(condids),
       filled_(false)
 {
-  if (sourcedofset_ == Teuchos::null) dserror("Source dof set is null pointer.");
-  if (sourcedis_ == Teuchos::null) dserror("Source discretization is null pointer.");
+  if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("Source dof set is null pointer.");
+  if (sourcedis_ == Teuchos::null) FOUR_C_THROW("Source discretization is null pointer.");
 
   sourcedofset_->Register(this);
 }
@@ -53,8 +53,10 @@ DRT::DofSetDefinedMappingWrapper::~DofSetDefinedMappingWrapper()
 int DRT::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
     const Discretization& dis, const unsigned dspos, const int start)
 {
-  if (sourcedofset_ == Teuchos::null) dserror("No source dof set assigned to mapping dof set!");
-  if (sourcedis_ == Teuchos::null) dserror("No source discretization assigned to mapping dof set!");
+  if (sourcedofset_ == Teuchos::null)
+    FOUR_C_THROW("No source dof set assigned to mapping dof set!");
+  if (sourcedis_ == Teuchos::null)
+    FOUR_C_THROW("No source discretization assigned to mapping dof set!");
 
   // get condition which defines the coupling on target discretization
   std::vector<DRT::Condition*> conds;
@@ -107,7 +109,7 @@ int DRT::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
 
     // check if all nodes where matched for this condition ID
     if (targetnodes.size() != condcoupling.size())
-      dserror(
+      FOUR_C_THROW(
           "Did not get unique target to source spatial node coordinate mapping.\n"
           "targetnodes.size()=%d, coupling.size()=%d.\n"
           "The heterogeneous reaction strategy requires matching source and target meshes!",
@@ -154,7 +156,7 @@ int DRT::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
 
   // we expect to get maps of exactly the same shape
   if (not targetnodemap->PointSameAs(*permsourcenodemap))
-    dserror("target and permuted source node maps do not match");
+    FOUR_C_THROW("target and permuted source node maps do not match");
 
   // export target nodes to source node distribution
   Teuchos::RCP<Epetra_IntVector> permsourcenodevec = Teuchos::rcp(
@@ -199,7 +201,7 @@ void DRT::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dofset)
     sourcedis_ = Teuchos::null;
   }
   else
-    dserror("cannot disconnect from non-connected DofSet");
+    FOUR_C_THROW("cannot disconnect from non-connected DofSet");
 
   // clear my Teuchos::rcps.
   Reset();
@@ -210,7 +212,7 @@ void DRT::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dofset)
 const DRT::Node* DRT::DofSetDefinedMappingWrapper::GetSourceNode(int targetLid) const
 {
   // check
-  dsassert(targetLid <= targetlidtosourcegidmapping_->MyLength(), "Target Lid out of range!");
+  FOUR_C_ASSERT(targetLid <= targetlidtosourcegidmapping_->MyLength(), "Target Lid out of range!");
 
   // get the gid of the source node
   int sourcegid = (*targetlidtosourcegidmapping_)[targetLid];

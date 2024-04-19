@@ -143,7 +143,8 @@ char CORE::GEO::CUT::OUTPUT::GmshElementType(CORE::FE::CellType shape)
       return ' ';
     }
     default:
-      dserror("Unsupported cell shape! ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
+      FOUR_C_THROW(
+          "Unsupported cell shape! ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
       exit(EXIT_FAILURE);
   }
   // impossible to reach this point
@@ -255,7 +256,7 @@ void CORE::GEO::CUT::OUTPUT::GmshSideDump(
     default:
       std::stringstream str;
       str << "unknown element type in GmshSideDump for " << nodes.size() << " nodes!";
-      dserror(str.str());
+      FOUR_C_THROW(str.str());
       exit(EXIT_FAILURE);
   }
   GmshElementDump(file, nodes, elementtype, to_local, ele);
@@ -280,7 +281,7 @@ void CORE::GEO::CUT::OUTPUT::GmshTriSideDump(
     {
       std::stringstream str;
       str << "unknown element type in GmshTriSideDump for " << points.size() << " points!";
-      dserror(str.str());
+      FOUR_C_THROW(str.str());
       exit(EXIT_FAILURE);
     }
   }
@@ -309,7 +310,8 @@ void CORE::GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
 {
   if (to_local)
   {
-    if (ele == nullptr) dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
+    if (ele == nullptr)
+      FOUR_C_THROW("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
   }
 
   if (visualizationtype == "sides")
@@ -385,7 +387,7 @@ void CORE::GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
           file, facet->Points()[pidx], facet->SideId(), to_local, ele);
   }
   else
-    dserror("GmshFacetDump: unknown visualizationtype!");
+    FOUR_C_THROW("GmshFacetDump: unknown visualizationtype!");
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -415,7 +417,7 @@ void CORE::GEO::CUT::OUTPUT::GmshCycleDump(std::ofstream& file, Cycle* cycle,
       GmshLineDump(file, (*cycle)()[i], (*cycle)()[(i + 1) % (*cycle)().size()], to_local, ele);
   }
   else
-    dserror("GmshFacetDump: unknown visualizationtype!");
+    FOUR_C_THROW("GmshFacetDump: unknown visualizationtype!");
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -1012,11 +1014,12 @@ void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
   if (coord.size() <= 3)
     std::copy(coord.begin(), coord.end(), xyz.A());
   else
-    dserror("The coord vector dimension is wrong! (coord.size() = %d)", coord.size());
+    FOUR_C_THROW("The coord vector dimension is wrong! (coord.size() = %d)", coord.size());
 
   if (to_local)
   {
-    if (ele == nullptr) dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
+    if (ele == nullptr)
+      FOUR_C_THROW("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
 
     CORE::LINALG::Matrix<3, 1> rst(true);
 
@@ -1035,7 +1038,8 @@ void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
 {
   if (to_local)
   {
-    if (ele == nullptr) dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
+    if (ele == nullptr)
+      FOUR_C_THROW("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
 
     CORE::LINALG::Matrix<3, 1> xyz = coord;
     ele->LocalCoordinates(xyz, coord);
@@ -1390,7 +1394,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
          << "\n";
     file << "      intersection.CutMesh().GetElement(1)->DebugDump();"
          << "\n";
-    file << "      dserror(\"volume predicted by either one of the method is wrong\");"
+    file << "      FOUR_C_THROW(\"volume predicted by either one of the method is wrong\");"
          << "\n";
     file << "      }"
          << "\n";

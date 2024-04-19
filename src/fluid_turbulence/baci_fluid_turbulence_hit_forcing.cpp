@@ -106,7 +106,7 @@ namespace FLD
       }
       default:
       {
-        dserror("Set problem size! %i", discret_->NumGlobalElements());
+        FOUR_C_THROW("Set problem size! %i", discret_->NumGlobalElements());
         break;
       }
     }
@@ -172,7 +172,7 @@ namespace FLD
 
         if (tag != (myrank + numprocs - 1) % numprocs)
         {
-          dserror("received wrong message (ReceiveAny)");
+          FOUR_C_THROW("received wrong message (ReceiveAny)");
         }
 
         exporter.Wait(request);
@@ -367,7 +367,7 @@ namespace FLD
             }
           }
 
-          if (position == -1) dserror("Could not determine wave number!");
+          if (position == -1) FOUR_C_THROW("Could not determine wave number!");
 
           if (position > 0)
             // interpolate energy
@@ -387,7 +387,7 @@ namespace FLD
         }
       }
       else
-        dserror("Other initial spectra than simple algebraic spectrum not yet implemented!");
+        FOUR_C_THROW("Other initial spectra than simple algebraic spectrum not yet implemented!");
 
 
 #else
@@ -550,7 +550,7 @@ namespace FLD
       fftw_destroy_plan(fft_3);
       fftw_cleanup();
 #else
-      dserror("FFTW required for HIT!");
+      FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
       // scale solution (not done in the fftw routine)
@@ -630,7 +630,7 @@ namespace FLD
                 else
                 {
                   if (not(k_conj_3 >= 0 and k_conj_3 <= (nummodes_ - 1)))
-                    dserror("k_3 in fftw domain expected!");
+                    FOUR_C_THROW("k_3 in fftw domain expected!");
 
                   // shift k_1 and k_2 into fftw domain
                   if (k_conj_1 < 0) k_conj_1 += nummodes_;
@@ -645,7 +645,7 @@ namespace FLD
                     pos_fftw_k_3 = k_conj_3;
                   }
                   else
-                    dserror("Position in fftw domain expected!");
+                    FOUR_C_THROW("Position in fftw domain expected!");
                 }
               }
               else
@@ -655,7 +655,7 @@ namespace FLD
                 int k_shift_3 = k_3;
 
                 if (not(k_shift_3 >= 0 and k_shift_3 <= (nummodes_ - 1)))
-                  dserror("k_3 in fftw domain expected!");
+                  FOUR_C_THROW("k_3 in fftw domain expected!");
 
                 // shift k_1 and k_2 into fftw domain
                 if (k_shift_1 < 0) k_shift_1 += nummodes_;
@@ -670,7 +670,7 @@ namespace FLD
                   pos_fftw_k_3 = k_shift_3;
                 }
                 else
-                  dserror("Position in fftw domain expected!");
+                  FOUR_C_THROW("Position in fftw domain expected!");
               }
             }
 
@@ -711,7 +711,7 @@ namespace FLD
                 E_kf_ += energy;
             }
             else
-              dserror("Unknown forcing type!");
+              FOUR_C_THROW("Unknown forcing type!");
           }
         }
       }
@@ -828,7 +828,7 @@ namespace FLD
               }
             }
             else
-              dserror("Unknown forcing type!");
+              FOUR_C_THROW("Unknown forcing type!");
           }
         }
       }
@@ -839,7 +839,7 @@ namespace FLD
 
     return;
 #else
-    dserror("FFTW required");
+    FOUR_C_THROW("FFTW required");
 #endif
   }
 
@@ -984,7 +984,7 @@ namespace FLD
       fftw_destroy_plan(fft_3);
       fftw_cleanup();
 #else
-      dserror("FFTW required for HIT!");
+      FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
       // scale solution (not done in the fftw routine)
@@ -1051,7 +1051,7 @@ namespace FLD
       fftw_destroy_plan(fft_back_3);
       fftw_cleanup();
 #else
-      dserror("FFTW required for HIT!");
+      FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
       //----------------------------------------
@@ -1104,7 +1104,7 @@ namespace FLD
         err = forcing_->ReplaceMyValues(1, &((*f2)[pos]), &lid);
         lid = discret_->DofRowMap()->LID(dofs[2]);
         err = forcing_->ReplaceMyValues(1, &((*f3)[pos]), &lid);
-        if (err > 0) dserror("Could not set forcing!");
+        if (err > 0) FOUR_C_THROW("Could not set forcing!");
       }
     }
     else
@@ -1113,7 +1113,7 @@ namespace FLD
 
     return;
 #else
-    dserror("FFTW required");
+    FOUR_C_THROW("FFTW required");
 #endif
   }
 
@@ -1157,7 +1157,7 @@ namespace FLD
   {
     // here we are using the interior velocity
     TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*>(&timeint);
-    if (hdgfluid == nullptr) dserror("this should be a hdg time integer");
+    if (hdgfluid == nullptr) FOUR_C_THROW("this should be a hdg time integer");
 
     // we want to use the interior velocity here
     velnp_ = hdgfluid->ReturnIntVelnp();
@@ -1234,7 +1234,7 @@ namespace FLD
 #ifdef USE_TRAGET_SPECTRUM
     HomIsoTurbForcing::SetInitialSpectrum(init_field_type);
 #else
-    dserror("only USE_TARGET_SPECTRUM implemented for HDG");
+    FOUR_C_THROW("only USE_TARGET_SPECTRUM implemented for HDG");
 #endif
     return;
   }
@@ -1299,7 +1299,8 @@ namespace FLD
         discret_->SetState(1, "intvelnp", velnp_);
       }
       else
-        dserror("it seems like you need velaf_ here, which is not implemented for hit and hdg yet");
+        FOUR_C_THROW(
+            "it seems like you need velaf_ here, which is not implemented for hit and hdg yet");
 
       std::vector<int> dummy;
       CORE::LINALG::SerialDenseMatrix dummyMat;
@@ -1337,7 +1338,7 @@ namespace FLD
                 if ((int)rr < nummodes_)
                   loc[idim] = rr;
                 else
-                  dserror("I think that this should not happen");
+                  FOUR_C_THROW("I think that this should not happen");
 
                 break;
               }
@@ -1392,7 +1393,7 @@ namespace FLD
       fftw_destroy_plan(fft_3);
       fftw_cleanup();
 #else
-      dserror("FFTW required for HIT!");
+      FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
       // scale solution (not done in the fftw routine)
@@ -1472,7 +1473,7 @@ namespace FLD
                 else
                 {
                   if (not(k_conj_3 >= 0 and k_conj_3 <= (nummodes_ - 1)))
-                    dserror("k_3 in fftw domain expected!");
+                    FOUR_C_THROW("k_3 in fftw domain expected!");
 
                   // shift k_1 and k_2 into fftw domain
                   if (k_conj_1 < 0) k_conj_1 += nummodes_;
@@ -1487,7 +1488,7 @@ namespace FLD
                     pos_fftw_k_3 = k_conj_3;
                   }
                   else
-                    dserror("Position in fftw domain expected!");
+                    FOUR_C_THROW("Position in fftw domain expected!");
                 }
               }
               else
@@ -1497,7 +1498,7 @@ namespace FLD
                 int k_shift_3 = k_3;
 
                 if (not(k_shift_3 >= 0 and k_shift_3 <= (nummodes_ - 1)))
-                  dserror("k_3 in fftw domain expected!");
+                  FOUR_C_THROW("k_3 in fftw domain expected!");
 
                 // shift k_1 and k_2 into fftw domain
                 if (k_shift_1 < 0) k_shift_1 += nummodes_;
@@ -1512,7 +1513,7 @@ namespace FLD
                   pos_fftw_k_3 = k_shift_3;
                 }
                 else
-                  dserror("Position in fftw domain expected!");
+                  FOUR_C_THROW("Position in fftw domain expected!");
               }
             }
 
@@ -1554,7 +1555,7 @@ namespace FLD
                 E_kf_ += energy;
             }
             else
-              dserror("Unknown forcing type!");
+              FOUR_C_THROW("Unknown forcing type!");
           }
         }
       }
@@ -1671,7 +1672,7 @@ namespace FLD
               }
             }
             else
-              dserror("Unknown forcing type!");
+              FOUR_C_THROW("Unknown forcing type!");
           }
         }
       }
@@ -1682,7 +1683,7 @@ namespace FLD
     discret_->ClearState(true);
     return;
 #else
-    dserror("FFTW required");
+    FOUR_C_THROW("FFTW required");
 #endif
   }
 
@@ -1780,7 +1781,7 @@ namespace FLD
                 if ((int)rr < nummodes_)
                   loc[idim] = rr;
                 else
-                  dserror("I think that this should not happen");
+                  FOUR_C_THROW("I think that this should not happen");
 
                 break;
               }
@@ -1835,7 +1836,7 @@ namespace FLD
       fftw_destroy_plan(fft_3);
       fftw_cleanup();
 #else
-      dserror("FFTW required for HIT!");
+      FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
       // scale solution (not done in the fftw routine)
@@ -1902,7 +1903,7 @@ namespace FLD
       fftw_destroy_plan(fft_back_3);
       fftw_cleanup();
 #else
-      dserror("FFTW required for HIT!");
+      FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
       //----------------------------------------
@@ -1964,7 +1965,7 @@ namespace FLD
                 if ((int)rr < nummodes_)
                   loc[idim] = rr;
                 else
-                  dserror("I think that this should not happen");
+                  FOUR_C_THROW("I think that this should not happen");
 
                 break;
               }
@@ -1990,7 +1991,7 @@ namespace FLD
         if (ele->Owner() == discret_->Comm().MyPID())
         {
           std::vector<int> localDofs = discret_->Dof(1, ele);
-          dsassert(
+          FOUR_C_ASSERT(
               localDofs.size() == static_cast<std::size_t>(elevec1.numRows()), "Internal error");
           for (unsigned int i = 0; i < localDofs.size(); ++i)
             localDofs[i] = intdofrowmap->LID(localDofs[i]);
@@ -2005,7 +2006,7 @@ namespace FLD
 
     return;
 #else
-    dserror("FFTW required");
+    FOUR_C_THROW("FFTW required");
 #endif
     return;
   }
@@ -2114,14 +2115,14 @@ namespace FLD
     {
       int gid = discret_->NodeRowMap()->GID(i);
       DRT::Node* node = discret_->gNode(gid);
-      if (!node) dserror("Cannot find node");
+      if (!node) FOUR_C_THROW("Cannot find node");
 
       int firstgdofid = discret_->Dof(0, node, 0);
 
       int firstldofid = forcing_->Map().LID(firstgdofid);
 
       int err = forcing_->ReplaceMyValue(firstldofid, 0, newforce);
-      if (err != 0) dserror("something went wrong during replacemyvalue");
+      if (err != 0) FOUR_C_THROW("something went wrong during replacemyvalue");
     }
 
     oldforce_ = newforce;

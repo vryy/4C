@@ -1114,24 +1114,24 @@ void SSTI::AssembleStrategyBase::ApplyMeshtyingSysMat(
   {
     // extract global ID of current slave-side row
     const int dofgid_slave = slavemaps->GID(doflid_slave);
-    if (dofgid_slave < 0) dserror("Local ID not found!");
+    if (dofgid_slave < 0) FOUR_C_THROW("Local ID not found!");
 
     // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column
     // indices
     if (systemmatrix_structure.Filled())
     {
       const int rowlid_slave = systemmatrix_structure.RowMap().LID(dofgid_slave);
-      if (rowlid_slave < 0) dserror("Global ID not found!");
+      if (rowlid_slave < 0) FOUR_C_THROW("Global ID not found!");
       if (systemmatrix_structure.EpetraMatrix()->ReplaceMyValues(
               rowlid_slave, 1, &one, &rowlid_slave))
-        dserror("ReplaceMyValues failed!");
+        FOUR_C_THROW("ReplaceMyValues failed!");
     }
 
     // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and
     // column indices
     else if (systemmatrix_structure.EpetraMatrix()->InsertGlobalValues(
                  dofgid_slave, 1, &one, &dofgid_slave))
-      dserror("InsertGlobalValues failed!");
+      FOUR_C_THROW("InsertGlobalValues failed!");
   }
 }
 
@@ -1302,7 +1302,7 @@ Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::BuildAssembleStrategy(
         }
         default:
         {
-          dserror("unknown matrix type");
+          FOUR_C_THROW("unknown matrix type");
           break;
         }
       }
@@ -1315,7 +1315,7 @@ Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::BuildAssembleStrategy(
     }
     default:
     {
-      dserror("unknown matrix type");
+      FOUR_C_THROW("unknown matrix type");
       break;
     }
   }

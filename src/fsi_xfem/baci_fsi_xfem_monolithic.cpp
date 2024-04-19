@@ -148,7 +148,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   // write energy-file
   if (CORE::UTILS::IntegralValue<int>(fsidyn_.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
   {
-    dserror("writing energy not supported yet");
+    FOUR_C_THROW("writing energy not supported yet");
     //  TODO
     //    std::string fileiter2 = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
     //    fileiter2.append(".fsienergy");
@@ -164,7 +164,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
 
   if (timeadapton)
   {
-    dserror("FSI - TimeIntAdaptivity not supported for XFEM yet");
+    FOUR_C_THROW("FSI - TimeIntAdaptivity not supported for XFEM yet");
     // InitTimIntAda(fsidyn);
   }
 
@@ -234,10 +234,10 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
         CONTACT::NitscheStrategy* cs = dynamic_cast<CONTACT::NitscheStrategy*>(
             &StructurePoro()->MeshtyingContactBridge()->GetStrategy());
         if (!cs)
-          dserror(
+          FOUR_C_THROW(
               "FSI::MonolithicXFEM: Only Nitsche Contact Strategy for XFSCI/XFPSCI available yet!");
         if (cs->ContactInterfaces().size() > 1)
-          dserror("FSI::MonolithicXFEM: Only one contact interface supported!");
+          FOUR_C_THROW("FSI::MonolithicXFEM: Only one contact interface supported!");
 
         have_contact_ = true;
 
@@ -348,15 +348,15 @@ void FSI::MonolithicXFEM::ValidateParameters()
 
   // Check for the timestepsize
   if (fabs(FluidField()->Dt() - StructurePoro()->StructureField()->Dt()) > 1e-16)
-    dserror("ValidateParameters(): Timestep of fluid and structure not equal (%f != %f)!",
+    FOUR_C_THROW("ValidateParameters(): Timestep of fluid and structure not equal (%f != %f)!",
         FluidField()->Dt(), StructurePoro()->StructureField()->Dt());
   if (HaveAle())
     if (fabs(FluidField()->Dt() - AleField()->Dt()) > 1e-16)
-      dserror("ValidateParameters(): Timestep of fluid and ale not equal (%f != %f)!",
+      FOUR_C_THROW("ValidateParameters(): Timestep of fluid and ale not equal (%f != %f)!",
           FluidField()->Dt(), AleField()->Dt());
   if (StructurePoro()->isPoro())
     if (fabs(FluidField()->Dt() - StructurePoro()->PoroField()->Dt()) > 1e-16)
-      dserror("ValidateParameters(): Timestep of fluid and poro not equal (%f != %f)!",
+      FOUR_C_THROW("ValidateParameters(): Timestep of fluid and poro not equal (%f != %f)!",
           FluidField()->Dt(), StructurePoro()->PoroField()->Dt());
 
   // TODO
@@ -406,7 +406,8 @@ void FSI::MonolithicXFEM::CreateSystemMatrix()
   /*----------------------------------------------------------------------*/
 
   if (systemmatrix_.strong_count() > 1)
-    dserror("deleting systemmatrix does not work properly, the number of RCPs pointing to it is %i",
+    FOUR_C_THROW(
+        "deleting systemmatrix does not work properly, the number of RCPs pointing to it is %i",
         systemmatrix_.strong_count());
 
   // do not want to have two sysmats in memory at the same time
@@ -655,10 +656,11 @@ void FSI::MonolithicXFEM::CreateCombinedDofRowMap()
   vecSpaces_mergedporo.push_back(FluidField()->DofRowMap());
 
   // solid maps empty??
-  if (vecSpaces[structp_block_]->NumGlobalElements() == 0) dserror("No solid equations. Panic.");
+  if (vecSpaces[structp_block_]->NumGlobalElements() == 0)
+    FOUR_C_THROW("No solid equations. Panic.");
 
   // fluid maps empty??
-  if (vecSpaces[fluid_block_]->NumGlobalElements() == 0) dserror("No fluid equations. Panic.");
+  if (vecSpaces[fluid_block_]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equations. Panic.");
 
   if (StructurePoro()->isPoro())
   {
@@ -667,7 +669,7 @@ void FSI::MonolithicXFEM::CreateCombinedDofRowMap()
     vecSpaces_mergedporo.push_back(empty_map);
     // porofluid maps empty??
     if (vecSpaces[fluidp_block_]->NumGlobalElements() == 0)
-      dserror("No porofluid equations. Panic.");
+      FOUR_C_THROW("No porofluid equations. Panic.");
   }
 
   // Append the background fluid DOF map
@@ -677,7 +679,7 @@ void FSI::MonolithicXFEM::CreateCombinedDofRowMap()
     vecSpaces_mergedporo.push_back(AleField()->Interface()->OtherMap());
 
     // ale maps empty??
-    if (vecSpaces[ale_i_block_]->NumGlobalElements() == 0) dserror("No ale equations. Panic.");
+    if (vecSpaces[ale_i_block_]->NumGlobalElements() == 0) FOUR_C_THROW("No ale equations. Panic.");
   }
 
   // The vector is complete, now fill the system's global block row map
@@ -1024,7 +1026,7 @@ bool FSI::MonolithicXFEM::Newton()
     /*----------------------------------------------------------------------*/
 
     if (systemmatrix_.strong_count() > 1)
-      dserror(
+      FOUR_C_THROW(
           "deleting block sparse matrix does not work properly, the number of RCPs pointing to it "
           "is %i",
           systemmatrix_.strong_count());
@@ -1057,7 +1059,7 @@ bool FSI::MonolithicXFEM::Newton()
 
     fx_sum_ = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap()));
     int errfx = fx_sum_->Update(1.0, *FluidField()->Velnp(), -1.0, *FluidField()->Veln(), 0.0);
-    if (errfx != 0) dserror("update not successful");
+    if (errfx != 0) FOUR_C_THROW("update not successful");
 
     //-------------------
     // store ALE step-increment
@@ -1070,7 +1072,7 @@ bool FSI::MonolithicXFEM::Newton()
           ax_sum_->Update(1.0, *AleField()->Interface()->ExtractOtherVector(AleField()->Dispnp()),
               -1.0, *AleField()->Interface()->ExtractOtherVector(AleField()->Dispn()), 0.0);
 
-      if (errax != 0) dserror("update not successful");
+      if (errax != 0) FOUR_C_THROW("update not successful");
     }
 
     //-------------------
@@ -1082,7 +1084,7 @@ bool FSI::MonolithicXFEM::Newton()
         if(x_sum_ != Teuchos::null)
         {
           int errsx = sx_sum_->Update(1.0, *Extractor().ExtractVector(x_sum_,structp_block_), 0.0);
-          if(errsx != 0) dserror("update not successful");
+          if(errsx != 0) FOUR_C_THROW("update not successful");
         }
     */
     /*----------------------------------------------------------------------*/
@@ -1174,7 +1176,7 @@ bool FSI::MonolithicXFEM::Newton()
       zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
     }
     else
-      dserror("the Newton iteration index is assumed to be >= 0");
+      FOUR_C_THROW("the Newton iteration index is assumed to be >= 0");
 
 
     /*----------------------------------------------------------------------*/
@@ -1225,7 +1227,7 @@ bool FSI::MonolithicXFEM::Newton()
     //-------------------
     SetupSystemMatrix();
 
-    if (not systemmatrix_->Filled()) dserror("Unfilled system matrix! Fatal error!");
+    if (not systemmatrix_->Filled()) FOUR_C_THROW("Unfilled system matrix! Fatal error!");
 
     // Create the RHS consisting of the field residuals and coupling term residuals
     SetupRHS();
@@ -1677,10 +1679,10 @@ bool FSI::MonolithicXFEM::Converged()
               ((normflpresincInf_) < TOL_PRE_INC_INF_));
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       break;
     default:
-      dserror("Cannot check for convergence of residual values!");
+      FOUR_C_THROW("Cannot check for convergence of residual values!");
       break;
   }
 
@@ -1700,10 +1702,10 @@ bool FSI::MonolithicXFEM::Converged()
               ((normflpresrhsInf_) < TOL_PRE_RES_INF_));
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }
 
@@ -1714,7 +1716,7 @@ bool FSI::MonolithicXFEM::Converged()
   if (combincfres_ == INPAR::FSI::bop_and)
     converged = (convinc and convfres);
   else
-    dserror(
+    FOUR_C_THROW(
         "Just binary operator and for convergence check of Newton increment and residual "
         "supported!");
 
@@ -1847,7 +1849,7 @@ void FSI::MonolithicXFEM::BuildFluidPermutation()
     }
 
     if ((int)new_cycle.size() > 2)
-      dserror(
+      FOUR_C_THROW(
           "this is the first time that we permute more than two ghost dofsets! Check if the "
           "implementation works properly!");
 
@@ -1984,7 +1986,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   const int linsolvernumber = 1;
   // check if the XFSI solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for monolithic XFSI. Please set LINEAR_SOLVER in XFSI DYNAMIC to "
         "a valid number!");
 
@@ -1994,7 +1996,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 
   // safety check if the hard-coded solver number is the XFSI-solver
   if (xfsisolverparams.get<std::string>("NAME") != "XFSI_SOLVER")
-    dserror("check whether solver with number 1 is the XFSI_SOLVER and has this name!");
+    FOUR_C_THROW("check whether solver with number 1 is the XFSI_SOLVER and has this name!");
 
 
   const auto solvertype =
@@ -2024,7 +2026,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   // create iterative solver for XFSI block matrix
   //----------------------------------------------
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
+  if (solvertype != INPAR::SOLVER::SolverType::belos) FOUR_C_THROW("Iterative solver expected");
 
   // get parameter list of structural dynamics
   const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
@@ -2033,7 +2035,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
   // check if the structural solver has a valid solver number
   if (slinsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
@@ -2044,7 +2046,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   const int flinsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
   // check if the fluid solver has a valid solver number
   if (flinsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for fluid field. Please set LINEAR_SOLVER in FLUID DYNAMIC to a "
         "valid number!");
 
@@ -2056,7 +2058,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     alinsolvernumber = adyn.get<int>("LINEAR_SOLVER");
     // check if the ale solver has a valid solver number
     if (alinsolvernumber == (-1))
-      dserror(
+      FOUR_C_THROW(
           "no linear solver defined for ale field. Please set LINEAR_SOLVER in ALE DYNAMIC to a "
           "valid number!");
   }
@@ -2079,7 +2081,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     }
     break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "Block Gauss-Seidel BGS2x2 preconditioner expected. Alternatively you can define your "
           "own AMG block preconditioner (using an xml file). This is experimental.");
       break;
@@ -2135,7 +2137,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
               solver_->Params().sublist("Inverse4"));
         }
         else
-          dserror("You have more than 4 Fields? --> add another Inverse 5 here!");
+          FOUR_C_THROW("You have more than 4 Fields? --> add another Inverse 5 here!");
       }
 
       if (azprectype == INPAR::SOLVER::PreconditionerType::cheap_simple)
@@ -2197,12 +2199,12 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
           "nullspace", inv2source.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace"));
 
       // TODO: muelu for XFSI similar to TSI?
-      dserror("MueLu for XFSI?");
+      FOUR_C_THROW("MueLu for XFSI?");
       solver_->Params().sublist("MueLu Parameters").set("TSI", true);
       break;
     }
     default:
-      dserror("Block Gauss-Seidel BGS2x2 preconditioner expected");
+      FOUR_C_THROW("Block Gauss-Seidel BGS2x2 preconditioner expected");
       break;
   }
 }  // CreateLinearSolver()
@@ -2256,7 +2258,8 @@ void FSI::MonolithicXFEM::LinearSolve()
   }     // use block matrix
   else  // (merge_fsi_blockmatrix_ == true)
   {
-    if (scaling_infnorm_) dserror("infnorm-scaling of FSI-system not supported for direct solver");
+    if (scaling_infnorm_)
+      FOUR_C_THROW("infnorm-scaling of FSI-system not supported for direct solver");
 
     //------------------------------------------
     // merge blockmatrix to SparseMatrix and solve
@@ -2307,7 +2310,7 @@ void FSI::MonolithicXFEM::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, 
 {
   if (scaling_infnorm_)
   {
-    if (num_fields_ > 2) dserror("InfNorm Scaling just implemented for 2x2 Block!");
+    if (num_fields_ > 2) FOUR_C_THROW("InfNorm Scaling just implemented for 2x2 Block!");
     // The matrices are modified here. Do we have to change them back later on?
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0, 0).EpetraMatrix();
@@ -2319,12 +2322,12 @@ void FSI::MonolithicXFEM::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, 
     if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
         mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
 
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
 
-    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
   }
@@ -2342,13 +2345,13 @@ void FSI::MonolithicXFEM::UnscaleSolution(
   {
     Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
 
-    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("structure scaling failed");
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
 
     Extractor().InsertVector(*sy, 0, x);
 
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
 
-    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
 
@@ -2358,7 +2361,7 @@ void FSI::MonolithicXFEM::UnscaleSolution(
     if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
         mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
   }
 }
 
@@ -2426,10 +2429,10 @@ void FSI::MonolithicXFEM::PrintNewtonIterHeader()
                << "flp-rs-li|";
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -2448,10 +2451,10 @@ void FSI::MonolithicXFEM::PrintNewtonIterHeader()
                << "flp-in-li|";
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -2495,10 +2498,10 @@ void FSI::MonolithicXFEM::PrintNewtonIterText()
                << "|" << (normflpresrhsInf_);
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -2513,10 +2516,10 @@ void FSI::MonolithicXFEM::PrintNewtonIterText()
                << "|" << (normflpresincInf_) << "|" << IO::endl;
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 }

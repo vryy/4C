@@ -460,7 +460,7 @@ namespace DRT
       //! Set the isotropic diffusion coefficient
       virtual void SetIsotropicVisc(const double visc)
       {
-        if (visc < 0.0) dserror("negative (physical) viscosity: %f", 0, visc);
+        if (visc < 0.0) FOUR_C_THROW("negative (physical) viscosity: %f", 0, visc);
 
         visc_ = visc;
         return;

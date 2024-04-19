@@ -578,7 +578,7 @@ double base_func_surfX(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     return basef_surf;
   }
 
-  dserror("The base function for boundarycell integration undefined");
+  FOUR_C_THROW("The base function for boundarycell integration undefined");
   exit(1);
   return 0.0;
 }
@@ -1147,7 +1147,7 @@ double base_func_surfY(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
     basef_surf = z7 / 7.0;
     return basef_surf;
   }
-  dserror("The base function for boundarycell integration undefined");
+  FOUR_C_THROW("The base function for boundarycell integration undefined");
   exit(1);
   return 0.0;
 }
@@ -1709,7 +1709,7 @@ double base_func_surfZ(const CORE::LINALG::Matrix<2, 1>& pt, int inte_num, std::
       basef_surf = std::pow((a0 + a2 * y), 6) * x;
     return basef_surf;
   }
-  dserror("The base function for boundarycell integration undefined");
+  FOUR_C_THROW("The base function for boundarycell integration undefined");
   exit(1);
   return 0.0;
 }

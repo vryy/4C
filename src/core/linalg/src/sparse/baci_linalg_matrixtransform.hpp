@@ -220,7 +220,7 @@ namespace CORE::LINALG
     corresponding ale matrices just contain displacement values. In such a
     case it is possible to advice the transformation to drop the pressure
     values (\p exactmatch=false ). By default additional values raise a
-    \p dserror .
+    \p FOUR_C_THROW .
 
     \note The implementation is done by MatrixLogicalSplitAndTransform
 

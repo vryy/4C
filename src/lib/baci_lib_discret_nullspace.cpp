@@ -15,7 +15,7 @@ namespace DRT
   Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(const DRT::Discretization& dis, const int numdf,
       const int dimns, const Teuchos::RCP<Epetra_Map> dofmap)
   {
-    if (dimns > 10) dserror("Nullspace size only up to 10 supported!");
+    if (dimns > 10) FOUR_C_THROW("Nullspace size only up to 10 supported!");
 
     Teuchos::RCP<Epetra_MultiVector> nullspace =
         Teuchos::rcp(new Epetra_MultiVector(*dofmap, dimns, true));
@@ -77,7 +77,8 @@ namespace DRT
                   actnode->Elements()[i + 1], numdof2, dimnsp2, nv2, np2);
 
               if (numdof1 != numdof2 || dimnsp1 != dimnsp2)
-                dserror("Node is owned by different element types, nullspace calculation aborted!");
+                FOUR_C_THROW(
+                    "Node is owned by different element types, nullspace calculation aborted!");
             }
           }
         }

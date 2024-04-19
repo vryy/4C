@@ -45,7 +45,8 @@ MAT::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<MAT::PAR::Material> matdata)
   else if (*typestring_visc == "BLOOD")
     viscositylaw_ = viscositylaw_blood;
   else
-    dserror("wrong type of viscosity law for artery material, only CONSTANT and BLOOD are valid");
+    FOUR_C_THROW(
+        "wrong type of viscosity law for artery material, only CONSTANT and BLOOD are valid");
 
   const std::string* typestring_diam = matdata->Get<std::string>("VARYING_DIAMETERLAW");
 
@@ -54,7 +55,7 @@ MAT::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<MAT::PAR::Material> matdata)
   else if (*typestring_diam == "BY_FUNCTION")
     diameterlaw_ = diameterlaw_by_function;
   else
-    dserror(
+    FOUR_C_THROW(
         "wrong type of diameter law for artery material, only CONSTANT and BY_FUNCTION are valid");
 }
 
@@ -133,7 +134,7 @@ void MAT::Cnst1dArt::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Cnst1dArt*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -142,7 +143,8 @@ void MAT::Cnst1dArt::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, diam_);
   ExtractfromPack(position, data, diam_previous_time_step_);
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*/
@@ -157,7 +159,7 @@ double MAT::Cnst1dArt::Viscosity() const
       return CalculateBloodViscosity(
           diam_ * params_->blood_visc_scale_diam_to_microns_, params_->viscosity_);
     default:
-      dserror("Unknown viscosity law for 1D artery element");
+      FOUR_C_THROW("Unknown viscosity law for 1D artery element");
   }
   return 0.0;
 }

@@ -33,13 +33,14 @@ void CORE::GEO::UpdateMaterialConfigWithDispVector(
     const unsigned int ndim = mynode->Dim();
 
 #ifdef DEBUG
-    dsassert(ndim * dis->NodeRowMap()->NumGlobalElements() == disp->Map().NumGlobalElements(),
+    FOUR_C_ASSERT(ndim * dis->NodeRowMap()->NumGlobalElements() == disp->Map().NumGlobalElements(),
         "Number of space dimensions does not fit to displacement vector.");
 
     for (int disp_lid = 0; disp_lid < disp->Map().NumMyElements(); ++disp_lid)
     {
       const int disp_gid = disp->Map().GID(disp_lid);
-      dsassert(dis->DofRowMap()->LID(disp_gid) >= 0, "Displacement dofs not part of DofRowMap()");
+      FOUR_C_ASSERT(
+          dis->DofRowMap()->LID(disp_gid) >= 0, "Displacement dofs not part of DofRowMap()");
     }
 #endif
 
@@ -52,8 +53,8 @@ void CORE::GEO::UpdateMaterialConfigWithDispVector(
       const int gid = globaldofs[0] + static_cast<int>(i);
       const int lid = coldisp->Map().LID(gid);
 
-      dsassert(lid >= 0, "Proc %d: Cannot find gid=%d in Epetra_Vector", coldisp->Comm().MyPID(),
-          globaldofs[i]);
+      FOUR_C_ASSERT(lid >= 0, "Proc %d: Cannot find gid=%d in Epetra_Vector",
+          coldisp->Comm().MyPID(), globaldofs[i]);
 
       nvector[i] = (*coldisp)[lid];
     }

@@ -47,7 +47,7 @@ namespace CONTACT
        * All specified contact-related input parameters are read from the
        * GLOBAL::Problem::Instance() and stored into a local variable of
        * type Teuchos::ParameterList. Invalid parameter combinations are
-       * sorted out and throw a dserror.
+       * sorted out and throw a FOUR_C_THROW.
        *
        * \param[in/out] params ParameterList with mortar/contact parameters from input file
        *

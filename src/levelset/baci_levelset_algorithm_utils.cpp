@@ -143,7 +143,7 @@ void SCATRA::LevelSetAlgorithm::MassConservationCheck(
       double massloss = -(1. - actvolminus / initvolminus_) * 100.0;
 
       // 'isnan' seems to work not reliably; error occurs in line above
-      if (std::isnan(massloss)) dserror("NaN detected in mass conservation check");
+      if (std::isnan(massloss)) FOUR_C_THROW("NaN detected in mass conservation check");
 
       IO::cout << "---------------------------------------" << IO::endl;
       IO::cout << "           mass conservation" << IO::endl;
@@ -240,7 +240,7 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
 
         // get function
         int startfuncno = params_->get<int>("INITFUNCNO");
-        if (startfuncno < 1) dserror("No initial field defined!");
+        if (startfuncno < 1) FOUR_C_THROW("No initial field defined!");
 
         // loop all nodes on the processor
         for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
@@ -260,7 +260,7 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
                 problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                     .Evaluate(lnode->X().data(), time_, k);
             int err = phiref->ReplaceMyValues(1, &initialval, &doflid);
-            if (err != 0) dserror("dof not on proc");
+            if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
 
@@ -301,7 +301,7 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
     }
     break;
     default:
-      dserror("Cannot calculate error. Unknown type of analytical test problem");
+      FOUR_C_THROW("Cannot calculate error. Unknown type of analytical test problem");
       break;
   }
 
@@ -324,7 +324,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
   // extract convective velocity field
   Teuchos::RCP<const Epetra_Vector> convel =
       discret_->GetState(NdsVel(), "convective velocity field");
-  if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
+  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   Teuchos::RCP<Epetra_Vector> convel_new = Teuchos::rcp(new Epetra_Vector(*convel));
 
@@ -361,7 +361,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
           {
             // get discretization type
             if ((adjelements[iele])->Shape() != CORE::FE::CellType::hex8)
-              dserror("Currently only hex8 supported");
+              FOUR_C_THROW("Currently only hex8 supported");
             const CORE::FE::CellType distype = CORE::FE::CellType::hex8;
 
             // in case of further distypes, move the following block to a templated function
@@ -442,10 +442,10 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
       // get global and local dof IDs
       const int gid = nodedofs[index];
       const int lid = convel_new->Map().LID(gid);
-      if (lid < 0) dserror("Local ID not found in map for given global ID!");
+      if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
       const double convelocity = myvel[index];
       int err = convel_new->ReplaceMyValue(lid, 0, convelocity);
-      if (err != 0) dserror("Error while inserting value into vector convel!");
+      if (err != 0) FOUR_C_THROW("Error while inserting value into vector convel!");
     }
   }
 
@@ -472,7 +472,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
 
   Teuchos::RCP<const Epetra_Vector> convel_col =
       discret_->GetState(NdsVel(), "convective velocity field");
-  if (convel_col == Teuchos::null) dserror("Cannot get state vector convective velocity");
+  if (convel_col == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
   Teuchos::RCP<Epetra_Vector> convel =
       Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(NdsVel()), true));
   CORE::LINALG::Export(*convel_col, *convel);
@@ -536,7 +536,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
       else if (pbcplane == "xy")
         planenormal.push_back(2);
       else
-        dserror("A PBC condition could not provide a valid plane normal.");
+        FOUR_C_THROW("A PBC condition could not provide a valid plane normal.");
 
       double min = +10e19;
       double max = -10e19;
@@ -589,7 +589,8 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
           DRT::Node* node = discret_->gNode(nodegid);
           const int dofgid = discret_->Dof(0, node, 0);
           const int doflid = phinpcol->Map().LID(dofgid);
-          if (doflid < 0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector", myrank_, dofgid);
+          if (doflid < 0)
+            FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", myrank_, dofgid);
 
           if (plusDomain((*phinpcol)[doflid]) == false)
             gotnegativephi = true;
@@ -732,7 +733,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
         // get global and local dof IDs
         const int gid = nodedofs[i];
         const int lid = convel->Map().LID(gid);
-        if (lid < 0) dserror("Local ID not found in map for given global ID!");
+        if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
         coordandvel(i, 0) = coord[i];
         coordandvel(i, 1) = (*convel)[lid];
       }
@@ -766,7 +767,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
       // get global and local dof IDs
       const int gid = nodedofs[i];
       const int lid = convel->Map().LID(gid);
-      if (lid < 0) dserror("Local ID not found in map for given global ID!");
+      if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
       fluidvel(i) = (*convel)[lid];
     }
@@ -801,7 +802,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
         //   +: pbc
 
         if (planenormal.size() > 3)
-          dserror(
+          FOUR_C_THROW(
               "Sorry, but currently a maximum of three periodic boundary conditions are supported "
               "by the combustion reinitializer.");
 
@@ -871,10 +872,10 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
         // get global and local dof IDs
         const int gid = nodedofs[icomp];
         const int lid = convel->Map().LID(gid);
-        if (lid < 0) dserror("Local ID not found in map for given global ID!");
+        if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
         int err = conveltmp->ReplaceMyValue(lid, 0, closestnodedata(icomp, 1));
-        if (err) dserror("could not replace values for convective velocity");
+        if (err) FOUR_C_THROW("could not replace values for convective velocity");
       }
     }
     else
@@ -884,10 +885,10 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
         // get global and local dof IDs
         const int gid = nodedofs[icomp];
         const int lid = convel->Map().LID(gid);
-        if (lid < 0) dserror("Local ID not found in map for given global ID!");
+        if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
         int err = conveltmp->ReplaceMyValue(lid, 0, fluidvel(icomp));
-        if (err) dserror("could not replace values for convective velocity");
+        if (err) FOUR_C_THROW("could not replace values for convective velocity");
       }
     }
   }
@@ -935,7 +936,7 @@ void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
   }
 
   if (nsd_ != 3)
-    dserror("Writing the mass center only available for 3 dimensional problems currently.");
+    FOUR_C_THROW("Writing the mass center only available for 3 dimensional problems currently.");
 
   if (discret_->Comm().MyPID() == 0)
   {
@@ -987,7 +988,7 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   //      change this and use unused nodegraph
   // TODO: does not work for gen-alpha, since time-integration dependent vectors have
   //      to be redistributed, too
-  dserror("Fix Redistribution!");
+  FOUR_C_THROW("Fix Redistribution!");
   //--------------------------------------------------------------------
   // Now update all Epetra_Vectors and Epetra_Matrix to the new dofmap
   //--------------------------------------------------------------------
@@ -1122,7 +1123,7 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
   {
-    dserror("No redistribution for AVM3 subgrid stuff.");
+    FOUR_C_THROW("No redistribution for AVM3 subgrid stuff.");
   }
 
   if (discret_->Comm().MyPID() == 0) std::cout << "done" << std::endl;

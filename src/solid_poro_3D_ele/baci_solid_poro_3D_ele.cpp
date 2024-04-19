@@ -161,7 +161,7 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
   if (linedef->HaveNamed("TECH"))
   {
     if (STR::UTILS::READELEMENT::ReadElementTechnology(linedef) != ElementTechnology::none)
-      dserror("SOLIDPORO elements do not support any element technology!");
+      FOUR_C_THROW("SOLIDPORO elements do not support any element technology!");
   }
 
   // read scalar transport implementation type
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  if (ExtractInt(position, data) != UniqueParObjectId()) dserror("wrong instance type data");
+  if (ExtractInt(position, data) != UniqueParObjectId()) FOUR_C_THROW("wrong instance type data");
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -257,7 +257,7 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   DRT::ELEMENTS::Unpack(solidporo_calc_variant_, position, data);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 void DRT::ELEMENTS::SolidPoro::VisNames(std::map<std::string, int>& names)
@@ -279,12 +279,12 @@ MAT::StructPoro& DRT::ELEMENTS::SolidPoro::StructPoroMaterial(int nummat) const
   auto porostruct_mat =
       Teuchos::rcp_dynamic_cast<MAT::StructPoro>(DRT::Element::Material(nummat), true);
 
-  if (porostruct_mat == Teuchos::null) dserror("cast to poro material failed");
+  if (porostruct_mat == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
   if (porostruct_mat->MaterialType() != INPAR::MAT::m_structporo and
       porostruct_mat->MaterialType() != INPAR::MAT::m_structpororeaction and
       porostruct_mat->MaterialType() != INPAR::MAT::m_structpororeactionECM)
-    dserror("invalid structure material for poroelasticity");
+    FOUR_C_THROW("invalid structure material for poroelasticity");
 
   return *porostruct_mat;
 }
@@ -292,19 +292,20 @@ MAT::FluidPoroMultiPhase& DRT::ELEMENTS::SolidPoro::FluidPoroMultiMaterial(int n
 {
   if (this->NumMaterial() <= 1)
   {
-    dserror("No second material defined for SolidPoro element %i", Id());
+    FOUR_C_THROW("No second material defined for SolidPoro element %i", Id());
   }
 
   auto fluidmulti_mat =
       Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(DRT::Element::Material(1), true);
 
-  if (fluidmulti_mat == Teuchos::null) dserror("cast to multiphase fluid poro material failed");
+  if (fluidmulti_mat == Teuchos::null)
+    FOUR_C_THROW("cast to multiphase fluid poro material failed");
   if (fluidmulti_mat->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
       fluidmulti_mat->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-    dserror("invalid fluid material for poro-multiphase-elasticity");
+    FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");
   if (fluidmulti_mat->NumFluidPhases() == 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE = 0 currently not supported since this requires "
         "an adaption of the definition of the solid pressure");
   }

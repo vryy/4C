@@ -97,7 +97,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
       ParentElement()->LocationVector(dis, la, doDirichlet);
       break;
     case FLD::ba_none:
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
       break;
     default:
       // standard case: element assembles into its own dofs only
@@ -148,7 +148,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
                     dirich->Type() != DRT::Condition::LineDirichlet &&
                     dirich->Type() != DRT::Condition::SurfaceDirichlet &&
                     dirich->Type() != DRT::Condition::VolumeDirichlet)
-                  dserror("condition with name Dirichlet is not of type Dirichlet");
+                  FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
                 flag = dirich->Get<std::vector<int>>("onoff");
               }
               for (unsigned j = 0; j < dof.size(); ++j)
@@ -165,7 +165,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
         // fill the vector with element dofs
         //      const int owner = Owner();
         std::vector<int> dofx = dis.Dof(dofset, this);
-        if (dofx.size()) dserror("no element dofs expected");
+        if (dofx.size()) FOUR_C_THROW("no element dofs expected");
         //      std::vector<int> dof;
         //      if(dofx.size())
         //      {
@@ -185,7 +185,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
 
         // fill the vector with face dofs
         if (this->NumDofPerFace(0) > 0)
-          dserror("set face_ from private to protected and uncomment");
+          FOUR_C_THROW("set face_ from private to protected and uncomment");
         //      {
         //        for (int i=0; i<NumFace(); ++i)
         //        {
@@ -211,7 +211,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
         //              dirich->Type()!=DRT::Condition::LineDirichlet &&
         //              dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
         //              dirich->Type()!=DRT::Condition::VolumeDirichlet)
-        //            dserror("condition with name Dirichlet is not of type Dirichlet");
+        //            FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
         //          flag = dirich->Get<std::vector<int> >("onoff");
         //        }
         //        for (unsigned j=0; j<dof.size(); ++j)

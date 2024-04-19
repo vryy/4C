@@ -44,7 +44,7 @@ POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
   // mesh tying not yet works for non-matching structure and fluid discretizations
   if (not matchinggrid_)
   {
-    dserror(
+    FOUR_C_THROW(
         "The coupling algorithm 'poro_monolithicmeshtying' does not yet work for non-matching "
         "discretizations!");
   }
@@ -163,7 +163,7 @@ void POROELAST::MonolithicMeshtying::BuildConvergenceNorms()
 
   if (porosity_dof_)
   {
-    dserror("porosity dof not implemented for poro_monolithicmeshtying");
+    FOUR_C_THROW("porosity dof not implemented for poro_monolithicmeshtying");
     // consult method of mother class for further hints how to do this
   }
   else
@@ -240,7 +240,7 @@ bool POROELAST::MonolithicMeshtying::Converged()
                  normincfluidpres_ < tolinc_pressure_ and normincporo_ < tolinc_porosity_);
       break;
     default:
-      dserror("Cannot check for convergence of residual values!");
+      FOUR_C_THROW("Cannot check for convergence of residual values!");
       break;
   }
 
@@ -256,7 +256,7 @@ bool POROELAST::MonolithicMeshtying::Converged()
                   normrhsfactiven_ < tolfres_ncoup_);
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }
 
@@ -267,7 +267,7 @@ bool POROELAST::MonolithicMeshtying::Converged()
   else if (combincfres_ == INPAR::POROELAST::bop_or)
     conv = convinc or convfres;
   else
-    dserror("Something went terribly wrong with binary operator!");
+    FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
   return conv;
 }
@@ -320,7 +320,7 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterHeaderStream(std::ostringstr
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_ncoup_ << ")";
       break;
     default:
-      dserror("Unknown or undefined convergence form for residual.");
+      FOUR_C_THROW("Unknown or undefined convergence form for residual.");
       break;
   }
 
@@ -342,7 +342,7 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterHeaderStream(std::ostringstr
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_pressure_ << ")";
       break;
     default:
-      dserror("Unknown or undefined convergence form for increment.");
+      FOUR_C_THROW("Unknown or undefined convergence form for increment.");
       break;
   }
 }
@@ -364,7 +364,7 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream(std::ostringstrea
     case INPAR::POROELAST::convnorm_abs_singlefields:
       break;
     default:
-      dserror("Unknown or undefined convergence form for global residual.");
+      FOUR_C_THROW("Unknown or undefined convergence form for global residual.");
       break;
   }
   // increments
@@ -376,7 +376,7 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream(std::ostringstrea
     case INPAR::POROELAST::convnorm_abs_singlefields:
       break;
     default:
-      dserror("Unknown or undefined convergence form for global increment.");
+      FOUR_C_THROW("Unknown or undefined convergence form for global increment.");
       break;
   }
 
@@ -394,7 +394,7 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream(std::ostringstrea
     case INPAR::POROELAST::convnorm_abs_global:
       break;
     default:
-      dserror("Unknown or undefined convergence form for single field residual.");
+      FOUR_C_THROW("Unknown or undefined convergence form for single field residual.");
       break;
   }
 
@@ -410,7 +410,7 @@ void POROELAST::MonolithicMeshtying::PrintNewtonIterTextStream(std::ostringstrea
     case INPAR::POROELAST::convnorm_abs_global:
       break;
     default:
-      dserror("Unknown or undefined convergence form for single field increment.");
+      FOUR_C_THROW("Unknown or undefined convergence form for single field increment.");
       break;
   }
 }

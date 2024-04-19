@@ -40,8 +40,8 @@ MAT::PAR::Scl::Scl(Teuchos::RCP<MAT::PAR::Material> matdata)
                      .get<double>("PERMITTIVITY_VACUUM"))
 {
   if (transnrparanum_ != static_cast<int>(transnr_.size()))
-    dserror("number of materials %d does not fit to size of material vector %d", transnrparanum_,
-        transnr_.size());
+    FOUR_C_THROW("number of materials %d does not fit to size of material vector %d",
+        transnrparanum_, transnr_.size());
 
   // check if number of provided parameter is valid for a the chosen predefined function
   CheckProvidedParams(transnrcurve_, transnr_);
@@ -112,12 +112,13 @@ void MAT::Scl::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Scl*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*/
@@ -203,7 +204,7 @@ double MAT::Scl::ComputeDiffusionCoefficient(
       break;
     }
     default:
-      dserror("Extrapolation strategy is not available");
+      FOUR_C_THROW("Extrapolation strategy is not available");
   }
   return diff_coeff;
 }
@@ -247,7 +248,7 @@ double MAT::Scl::ComputeConcentrationDerivativeOfDiffusionCoefficient(
       break;
     }
     default:
-      dserror("Linearization strategy is not available");
+      FOUR_C_THROW("Linearization strategy is not available");
   }
   return diff_coeff_der;
 }

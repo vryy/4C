@@ -121,11 +121,12 @@ void MAT::Maxwell0dAcinusOgden::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Maxwell0dAcinusOgden*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 
@@ -172,7 +173,7 @@ void MAT::Maxwell0dAcinusOgden::Evaluate(CORE::LINALG::SerialDenseVector& epnp,
   // Safety check for NumOfAcini
   if (NumOfAcini < 1.0)
   {
-    dserror("Acinus condition at node (%d) has zero acini");
+    FOUR_C_THROW("Acinus condition at node (%d) has zero acini");
   }
   // Calculate volume and flow per acinuar duct
   double vi_n = (acin_vn / NumOfAcini);
@@ -222,7 +223,7 @@ double MAT::Maxwell0dAcinusOgden::GetParams(std::string parametername)
     return beta_;
   else
   {
-    dserror("Chosen Parameter can not be returned with this function!");
+    FOUR_C_THROW("Chosen Parameter can not be returned with this function!");
     return 0;
   }
 }
@@ -234,7 +235,7 @@ void MAT::Maxwell0dAcinusOgden::SetParams(std::string parametername, double new_
   if (parametername == "kappa")
     kappa_ = new_value;
   else
-    dserror("Chosen Parameter can not be set with this function yet!");
+    FOUR_C_THROW("Chosen Parameter can not be set with this function yet!");
 }
 
 /*----------------------------------------------------------------------*/
@@ -252,7 +253,7 @@ bool MAT::Maxwell0dAcinusOgden::VisData(
 {
   if (name == "kappa")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
 
     data[0] = GetParams("kappa");
   }

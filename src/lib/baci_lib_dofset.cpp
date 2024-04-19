@@ -128,14 +128,14 @@ void DRT::DofSet::Reset()
 int DRT::DofSet::AssignDegreesOfFreedom(
     const Discretization& dis, const unsigned dspos, const int start)
 {
-  if (!dis.Filled()) dserror("discretization Filled()==false");
-  if (!dis.NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
-  if (!dis.ElementRowMap()->UniqueGIDs()) dserror("Element row map is not unique");
+  if (!dis.Filled()) FOUR_C_THROW("discretization Filled()==false");
+  if (!dis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("Nodal row map is not unique");
+  if (!dis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("Element row map is not unique");
 
   // A definite offset is currently not supported.
   // TODO (kronbichler) find a better solution for this
   // if (start!=0)
-  //  dserror("right now user specified dof offsets are not supported");
+  //  FOUR_C_THROW("right now user specified dof offsets are not supported");
 
   dspos_ = dspos;
 
@@ -243,7 +243,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
         {
           if (couplingconditions[k]->ContainsNode(gid))
           {
-            if (relevantcondid != -1) dserror("ERROR: Two coupling conditions on one node");
+            if (relevantcondid != -1) FOUR_C_THROW("ERROR: Two coupling conditions on one node");
             relevantcondid = k;
           }
         }
@@ -254,10 +254,10 @@ int DRT::DofSet::AssignDegreesOfFreedom(
       if (relevantcondid >= 0)
       {
         const std::vector<int>* nodeids = couplingconditions[relevantcondid]->GetNodes();
-        if (!nodeids) dserror("ERROR: Condition does not have Node Ids");
+        if (!nodeids) FOUR_C_THROW("ERROR: Condition does not have Node Ids");
 
         // check if all nodes in this condition are on same processor
-        // (otherwise throw a dserror for now - not yet implemented)
+        // (otherwise throw a FOUR_C_THROW for now - not yet implemented)
         bool allononeproc = true;
         for (int k = 0; k < (int)(nodeids->size()); ++k)
         {
@@ -265,7 +265,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
           if (!dis.NodeRowMap()->MyGID(checkgid)) allononeproc = false;
         }
         if (!allononeproc)
-          dserror(
+          FOUR_C_THROW(
               "ERRROR: Nodes in point coupling condition must all be on same processsor (for now)");
 
         // do nothing for first (master) node in coupling condition
@@ -277,7 +277,8 @@ int DRT::DofSet::AssignDegreesOfFreedom(
 
           // check total number of dofs and determine which dofs are to be coupled
           if (*couplingconditions[relevantcondid]->Get<int>("numdof") != numdfrownodes[i])
-            dserror("ERROR: Number of DoFs in coupling condition (%i) does not match node (%i)",
+            FOUR_C_THROW(
+                "ERROR: Number of DoFs in coupling condition (%i) does not match node (%i)",
                 *couplingconditions[relevantcondid]->Get<int>("numdof"), numdfrownodes[i]);
           const std::vector<int>* onoffcond =
               couplingconditions[relevantcondid]->Get<std::vector<int>>("onoff");
@@ -286,7 +287,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
           int mgid = (*nodeids)[0];
           std::vector<int>& mdofs = nodedofset[mgid];
           if ((int)(mdofs.size()) == 0)
-            dserror("ERROR: Master node has not yet been initialized with DoFs");
+            FOUR_C_THROW("ERROR: Master node has not yet been initialized with DoFs");
 
           // special treatment
           int numdf = numdfrownodes[i];
@@ -338,9 +339,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(
 
     Epetra_Import nodeimporter(numdfcolnodes_->Map(), numdfrownodes.Map());
     int err = numdfcolnodes_->Import(numdfrownodes, nodeimporter, Insert);
-    if (err) dserror("Import using importer returned err=%d", err);
+    if (err) FOUR_C_THROW("Import using importer returned err=%d", err);
     err = idxcolnodes_->Import(idxrownodes, nodeimporter, Insert);
-    if (err) dserror("Import using importer returned err=%d", err);
+    if (err) FOUR_C_THROW("Import using importer returned err=%d", err);
 
     count = maxnodenumdf > 0 ? idxrownodes.MaxValue() + maxnodenumdf : 0;
 
@@ -397,9 +398,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(
 
       Epetra_Import faceimporter(numdfcolfaces_->Map(), numdfrowfaces.Map());
       err = numdfcolfaces_->Import(numdfrowfaces, faceimporter, Insert);
-      if (err) dserror("Import using importer returned err=%d", err);
+      if (err) FOUR_C_THROW("Import using importer returned err=%d", err);
       err = idxcolfaces_->Import(idxrowfaces, faceimporter, Insert);
-      if (err) dserror("Import using importer returned err=%d", err);
+      if (err) FOUR_C_THROW("Import using importer returned err=%d", err);
 
       count = idxrowfaces.MaxValue() + maxfacenumdf;
     }
@@ -439,9 +440,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(
 
     Epetra_Import elementimporter(numdfcolelements_->Map(), numdfrowelements.Map());
     err = numdfcolelements_->Import(numdfrowelements, elementimporter, Insert);
-    if (err) dserror("Import using importer returned err=%d", err);
+    if (err) FOUR_C_THROW("Import using importer returned err=%d", err);
     err = idxcolelements_->Import(idxrowelements, elementimporter, Insert);
-    if (err) dserror("Import using importer returned err=%d", err);
+    if (err) FOUR_C_THROW("Import using importer returned err=%d", err);
   }
 
   // Now finally we have everything in place to build the maps.
@@ -526,7 +527,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
 
   dofrowmap_ =
       Teuchos::rcp(new Epetra_Map(-1, localrowdofs.size(), localrowdofs.data(), 0, dis.Comm()));
-  if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");
+  if (!dofrowmap_->UniqueGIDs()) FOUR_C_THROW("Dof row map is not unique");
   dofcolmap_ =
       Teuchos::rcp(new Epetra_Map(-1, localcoldofs.size(), localcoldofs.data(), 0, dis.Comm()));
 
@@ -580,7 +581,7 @@ bool DRT::DofSet::Initialized() const
 const Epetra_Map* DRT::DofSet::DofRowMap() const
 {
   if (dofrowmap_ == Teuchos::null)
-    dserror("DRT::DofSet::DofRowMap(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("DRT::DofSet::DofRowMap(): dofrowmap_ not initialized, yet");
   return dofrowmap_.get();
 }
 
@@ -590,7 +591,7 @@ const Epetra_Map* DRT::DofSet::DofRowMap() const
 const Epetra_Map* DRT::DofSet::DofColMap() const
 {
   if (dofcolmap_ == Teuchos::null)
-    dserror("DRT::DofSet::DofColMap(): dofcolmap_ not initialized, yet");
+    FOUR_C_THROW("DRT::DofSet::DofColMap(): dofcolmap_ not initialized, yet");
   return dofcolmap_.get();
 }
 
@@ -599,7 +600,7 @@ const Epetra_Map* DRT::DofSet::DofColMap() const
 int DRT::DofSet::NumGlobalElements() const
 {
   if (dofrowmap_ == Teuchos::null)
-    dserror("DRT::DofSet::NumGlobalElements(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("DRT::DofSet::NumGlobalElements(): dofrowmap_ not initialized, yet");
   return dofrowmap_->NumGlobalElements();
 }
 
@@ -609,7 +610,7 @@ int DRT::DofSet::NumGlobalElements() const
 int DRT::DofSet::MaxAllGID() const
 {
   if (dofrowmap_ == Teuchos::null)
-    dserror("DRT::DofSet::MaxAllGID(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("DRT::DofSet::MaxAllGID(): dofrowmap_ not initialized, yet");
   return dofrowmap_->MaxAllGID();
 }
 
@@ -619,7 +620,7 @@ int DRT::DofSet::MaxAllGID() const
 int DRT::DofSet::MinAllGID() const
 {
   if (dofrowmap_ == Teuchos::null)
-    dserror("DRT::DofSet::MinAllGID(): dofrowmap_ not initialized, yet");
+    FOUR_C_THROW("DRT::DofSet::MinAllGID(): dofrowmap_ not initialized, yet");
   return dofrowmap_->MinAllGID();
 }
 

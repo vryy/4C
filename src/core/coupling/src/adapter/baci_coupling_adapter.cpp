@@ -51,7 +51,7 @@ void CORE::ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& 
   const int numdof = masterdofs.size();
   const int numdof_slave = slavedofs.size();
   if (numdof != numdof_slave)
-    dserror("Received %d master DOFs, but %d slave DOFs", numdof, numdof_slave);
+    FOUR_C_THROW("Received %d master DOFs, but %d slave DOFs", numdof, numdof_slave);
 
   std::vector<int> masternodes;
   DRT::UTILS::FindConditionedNodes(masterdis, condname, masternodes);
@@ -67,16 +67,16 @@ void CORE::ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& 
   slavedis.Comm().SumAll(&localslavecount, &slavecount, 1);
 
   if (mastercount != slavecount)
-    dserror("got %d master nodes but %d slave nodes for coupling", mastercount, slavecount);
+    FOUR_C_THROW("got %d master nodes but %d slave nodes for coupling", mastercount, slavecount);
 
   SetupCoupling(masterdis, slavedis, masternodes, slavenodes, masterdofs, slavedofs, matchall,
       1.0e-3, nds_master, nds_slave);
 
   // test for completeness
   if (static_cast<int>(masternodes.size()) * numdof != masterdofmap_->NumMyElements())
-    dserror("failed to setup master nodes properly");
+    FOUR_C_THROW("failed to setup master nodes properly");
   if (static_cast<int>(slavenodes.size()) * numdof != slavedofmap_->NumMyElements())
-    dserror("failed to setup slave nodes properly");
+    FOUR_C_THROW("failed to setup slave nodes properly");
 
   // Now swap in the maps we already had.
   // So we did a little more work than required. But there are cases
@@ -86,11 +86,11 @@ void CORE::ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& 
   // The point is to make sure there is only one map for each
   // interface.
 
-  if (not masterdofmap_->PointSameAs(*mastercondmap)) dserror("master dof map mismatch");
+  if (not masterdofmap_->PointSameAs(*mastercondmap)) FOUR_C_THROW("master dof map mismatch");
 
   if (not slavedofmap_->PointSameAs(*slavecondmap))
   {
-    dserror("slave dof map mismatch");
+    FOUR_C_THROW("slave dof map mismatch");
   }
 
   masterdofmap_ = mastercondmap;
@@ -193,15 +193,15 @@ void CORE::ADAPTER::Coupling::SetupConstrainedConditionCoupling(
   slavedis.Comm().SumAll(&localslavecount, &slavecount, 1);
 
   if (mastercount != slavecount and matchall)
-    dserror("got %d master nodes but %d slave nodes for coupling", mastercount, slavecount);
+    FOUR_C_THROW("got %d master nodes but %d slave nodes for coupling", mastercount, slavecount);
 
   SetupCoupling(masterdis, slavedis, masternodes, slavenodes, numdof, matchall);
 
   // test for completeness
   if (static_cast<int>(masternodes.size()) * numdof != masterdofmap_->NumMyElements())
-    dserror("failed to setup master nodes properly");
+    FOUR_C_THROW("failed to setup master nodes properly");
   if (static_cast<int>(slavenodes.size()) * numdof != slavedofmap_->NumMyElements())
-    dserror("failed to setup slave nodes properly");
+    FOUR_C_THROW("failed to setup slave nodes properly");
 
   // Now swap in the maps we already had.
   // So we did a little more work than required. But there are cases
@@ -211,9 +211,9 @@ void CORE::ADAPTER::Coupling::SetupConstrainedConditionCoupling(
   // The point is to make sure there is only one map for each
   // interface.
 
-  if (not masterdofmap_->PointSameAs(*mastercondmap)) dserror("master dof map mismatch");
+  if (not masterdofmap_->PointSameAs(*mastercondmap)) FOUR_C_THROW("master dof map mismatch");
 
-  if (not slavedofmap_->PointSameAs(*slavecondmap)) dserror("slave dof map mismatch");
+  if (not slavedofmap_->PointSameAs(*slavecondmap)) FOUR_C_THROW("slave dof map mismatch");
 
   masterdofmap_ = mastercondmap;
   masterexport_ = Teuchos::rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
@@ -246,8 +246,8 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis
     const int nds_master, const int nds_slave)
 {
   if (masternodes.NumGlobalElements() != slavenodes.NumGlobalElements() and matchall)
-    dserror("got %d master nodes but %d slave nodes for coupling", masternodes.NumGlobalElements(),
-        slavenodes.NumGlobalElements());
+    FOUR_C_THROW("got %d master nodes but %d slave nodes for coupling",
+        masternodes.NumGlobalElements(), slavenodes.NumGlobalElements());
 
   std::vector<int> mastervect(
       masternodes.MyGlobalElements(), masternodes.MyGlobalElements() + masternodes.NumMyElements());
@@ -279,7 +279,7 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis
     const Epetra_Map& slavenodemap, const Epetra_Map& permslavenodemap, const int numdof)
 {
   if (masternodemap.NumGlobalElements() != slavenodemap.NumGlobalElements())
-    dserror("got %d master nodes but %d slave nodes for coupling",
+    FOUR_C_THROW("got %d master nodes but %d slave nodes for coupling",
         masternodemap.NumGlobalElements(), slavenodemap.NumGlobalElements());
 
   // just copy Epetra maps
@@ -302,7 +302,7 @@ void CORE::ADAPTER::Coupling::SetupCoupling(
 {
   // safety check
   if (masterdis.DofRowMap()->NumGlobalElements() != slavedis.DofRowMap()->NumGlobalElements())
-    dserror("got %d master nodes but %d slave nodes for coupling",
+    FOUR_C_THROW("got %d master nodes but %d slave nodes for coupling",
         masterdis.DofRowMap()->NumGlobalElements(), slavedis.DofRowMap()->NumGlobalElements());
 
   // get master dof maps and build exporter
@@ -373,7 +373,8 @@ void CORE::ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
   tree.FindMatch(slavedis, slavenodes, coupling);
 
   if (masternodes.size() != coupling.size() and matchall)
-    dserror("Did not get 1:1 correspondence. \nmasternodes.size()=%d (%s), coupling.size()=%d (%s)",
+    FOUR_C_THROW(
+        "Did not get 1:1 correspondence. \nmasternodes.size()=%d (%s), coupling.size()=%d (%s)",
         masternodes.size(), masterdis.Name().c_str(), coupling.size(), slavedis.Name().c_str());
 
   // extract permutation
@@ -410,7 +411,7 @@ void CORE::ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdi
 {
   // we expect to get maps of exactly the same shape
   if (not masternodemap->PointSameAs(*permslavenodemap))
-    dserror("master and permuted slave node maps do not match");
+    FOUR_C_THROW("master and permuted slave node maps do not match");
 
   // export master nodes to slave node distribution
 
@@ -425,13 +426,13 @@ void CORE::ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdi
 
   Epetra_Export masternodeexport(*permslavenodemap, *slavenodemap);
   const int err = permmasternodevec->Export(*masternodevec, masternodeexport, Insert);
-  if (err) dserror("failed to export master nodes");
+  if (err) FOUR_C_THROW("failed to export master nodes");
 
   Teuchos::RCP<const Epetra_Map> permmasternodemap = Teuchos::rcp(new Epetra_Map(
       -1, permmasternodevec->MyLength(), permmasternodevec->Values(), 0, masterdis.Comm()));
 
   if (not slavenodemap->PointSameAs(*permmasternodemap))
-    dserror("slave and permuted master node maps do not match");
+    FOUR_C_THROW("slave and permuted master node maps do not match");
 
   masternodevec = Teuchos::null;
   permmasternodevec = Teuchos::null;
@@ -530,7 +531,7 @@ void CORE::ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
     const std::vector<int> dof = dis.Dof(nds, actnode);
     const int numdof = coupled_dofs.size();
     if (numdof > static_cast<int>(dof.size()))
-      dserror(
+      FOUR_C_THROW(
           "got just %d dofs at node %d (lid=%d) but expected %d", dof.size(), nodes[i], i, numdof);
     for (int idof = 0; idof < numdof; idof++)
     {
@@ -542,7 +543,7 @@ void CORE::ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
   }
 
   std::vector<int>::const_iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());
-  if (pos != dofmapvec.end() and *pos < 0) dserror("illegal dof number %d", *pos);
+  if (pos != dofmapvec.end() and *pos < 0) FOUR_C_THROW("illegal dof number %d", *pos);
 
   // dof map is the original, unpermuted distribution of dofs
   dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, dis.Comm()));
@@ -659,18 +660,18 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::Coupling::SlaveToMaster(
 void CORE::ADAPTER::Coupling::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
-#ifdef BACI_DEBUG
-  if (not mv->Map().PointSameAs(*masterdofmap_)) dserror("master dof map vector expected");
-  if (not sv->Map().PointSameAs(*slavedofmap_)) dserror("slave dof map vector expected");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (not mv->Map().PointSameAs(*masterdofmap_)) FOUR_C_THROW("master dof map vector expected");
+  if (not sv->Map().PointSameAs(*slavedofmap_)) FOUR_C_THROW("slave dof map vector expected");
   if (sv->NumVectors() != mv->NumVectors())
-    dserror("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
+    FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
 #endif
 
   Epetra_MultiVector perm(*permslavedofmap_, mv->NumVectors());
   std::copy(mv->Values(), mv->Values() + (mv->MyLength() * mv->NumVectors()), perm.Values());
 
   const int err = sv->Export(perm, *slaveexport_, Insert);
-  if (err) dserror("Export to slave distribution returned err=%d", err);
+  if (err) FOUR_C_THROW("Export to slave distribution returned err=%d", err);
 }
 
 
@@ -682,7 +683,7 @@ void CORE::ADAPTER::Coupling::MasterToSlave(const Epetra_IntVector& mv, Epetra_I
   std::copy(mv.Values(), mv.Values() + (mv.MyLength()), perm.Values());
 
   const int err = sv.Export(perm, *slaveexport_, Insert);
-  if (err) dserror("Export to slave distribution returned err=%d", err);
+  if (err) FOUR_C_THROW("Export to slave distribution returned err=%d", err);
 }
 
 
@@ -691,25 +692,25 @@ void CORE::ADAPTER::Coupling::MasterToSlave(const Epetra_IntVector& mv, Epetra_I
 void CORE::ADAPTER::Coupling::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
-#ifdef BACI_DEBUG
-  if (not mv->Map().PointSameAs(*masterdofmap_)) dserror("master dof map vector expected");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (not mv->Map().PointSameAs(*masterdofmap_)) FOUR_C_THROW("master dof map vector expected");
   if (not sv->Map().PointSameAs(*slavedofmap_))
   {
     std::cout << "slavedofmap_" << std::endl;
     std::cout << *slavedofmap_ << std::endl;
     std::cout << "sv" << std::endl;
     std::cout << sv->Map() << std::endl;
-    dserror("slave dof map vector expected");
+    FOUR_C_THROW("slave dof map vector expected");
   }
   if (sv->NumVectors() != mv->NumVectors())
-    dserror("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
+    FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
 #endif
 
   Epetra_MultiVector perm(*permmasterdofmap_, sv->NumVectors());
   std::copy(sv->Values(), sv->Values() + (sv->MyLength() * sv->NumVectors()), perm.Values());
 
   const int err = mv->Export(perm, *masterexport_, Insert);
-  if (err) dserror("Export to master distribution returned err=%d", err);
+  if (err) FOUR_C_THROW("Export to master distribution returned err=%d", err);
 }
 
 
@@ -721,7 +722,7 @@ void CORE::ADAPTER::Coupling::SlaveToMaster(const Epetra_IntVector& sv, Epetra_I
   std::copy(sv.Values(), sv.Values() + (sv.MyLength()), perm.Values());
 
   const int err = mv.Export(perm, *masterexport_, Insert);
-  if (err) dserror("Export to master distribution returned err=%d", err);
+  if (err) FOUR_C_THROW("Export to master distribution returned err=%d", err);
 }
 
 
@@ -803,7 +804,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::Coupling::MasterToPermMa
       Teuchos::rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
   int err = permsm->Import(*sm.EpetraMatrix(), *exporter, Insert);
 
-  if (err) dserror("Import failed with err=%d", err);
+  if (err) FOUR_C_THROW("Import failed with err=%d", err);
 
   permsm->FillComplete(sm.DomainMap(), *permmasterdofmap_);
 
@@ -818,9 +819,9 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::Coupling::MasterToPermMa
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::Coupling::SlaveToPermSlave(
     const CORE::LINALG::SparseMatrix& sm) const
 {
-#ifdef BACI_DEBUG
-  if (not sm.RowMap().PointSameAs(*slavedofmap_)) dserror("slave dof map vector expected");
-  if (not sm.Filled()) dserror("matrix must be filled");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (not sm.RowMap().PointSameAs(*slavedofmap_)) FOUR_C_THROW("slave dof map vector expected");
+  if (not sm.Filled()) FOUR_C_THROW("matrix must be filled");
 #endif
 
   Teuchos::RCP<Epetra_CrsMatrix> permsm =
@@ -833,7 +834,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::Coupling::SlaveToPermSla
       Teuchos::rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
   int err = permsm->Import(*sm.EpetraMatrix(), *exporter, Insert);
 
-  if (err) dserror("Import failed with err=%d", err);
+  if (err) FOUR_C_THROW("Import failed with err=%d", err);
 
   permsm->FillComplete(sm.DomainMap(), *permslavedofmap_);
 
@@ -865,19 +866,23 @@ void CORE::ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmas
 
     int err = matmm_->InsertGlobalValues(shiftedmgid, 1, &one, &mgid);
     if (err != 0)
-      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d", shiftedmgid, mgid, err);
+      FOUR_C_THROW(
+          "InsertGlobalValues for entry (%d,%d) failed with err=%d", shiftedmgid, mgid, err);
 
     err = matsm_->InsertGlobalValues(shiftedmgid, 1, &one, &sgid);
     if (err != 0)
-      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d", shiftedmgid, sgid, err);
+      FOUR_C_THROW(
+          "InsertGlobalValues for entry (%d,%d) failed with err=%d", shiftedmgid, sgid, err);
 
     err = matmm_trans_->InsertGlobalValues(mgid, 1, &one, &shiftedmgid);
     if (err != 0)
-      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d", mgid, shiftedmgid, err);
+      FOUR_C_THROW(
+          "InsertGlobalValues for entry (%d,%d) failed with err=%d", mgid, shiftedmgid, err);
 
     err = matsm_trans_->InsertGlobalValues(sgid, 1, &one, &shiftedmgid);
     if (err != 0)
-      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d", sgid, shiftedmgid, err);
+      FOUR_C_THROW(
+          "InsertGlobalValues for entry (%d,%d) failed with err=%d", sgid, shiftedmgid, err);
   }
 
   matmm_->FillComplete(masterdomainmap, shiftedmastermap);
@@ -893,7 +898,7 @@ void CORE::ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmas
   Teuchos::RCP<Epetra_Import> exporter =
       Teuchos::rcp(new Epetra_Import(slavedomainmap, *PermSlaveDofMap()));
   int err = tmp->Import(*matsm_trans_, *exporter, Insert);
-  if (err) dserror("Import failed with err=%d", err);
+  if (err) FOUR_C_THROW("Import failed with err=%d", err);
 
   tmp->FillComplete(shiftedmastermap, slavedomainmap);
   matsm_trans_ = tmp;
@@ -907,7 +912,8 @@ Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::MaDofMapPtr() { return 
 /*----------------------------------------------------------------------*/
 const Epetra_Map& CORE::ADAPTER::Coupling::MaDofMap() const
 {
-  if (masterdofmap_.is_null()) dserror("The masterdofmap_ has not been initialized correctly!");
+  if (masterdofmap_.is_null())
+    FOUR_C_THROW("The masterdofmap_ has not been initialized correctly!");
   return *masterdofmap_;
 }
 
@@ -923,7 +929,7 @@ Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::PermutedMaDofMapPtr()
 const Epetra_Map& CORE::ADAPTER::Coupling::PermutedMaDofMap() const
 {
   if (permmasterdofmap_.is_null())
-    dserror("The permmasterdofmap_ has not been initialized correctly!");
+    FOUR_C_THROW("The permmasterdofmap_ has not been initialized correctly!");
   return *permmasterdofmap_;
 }
 
@@ -935,7 +941,7 @@ Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::SlDofMapPtr() { return 
 /*----------------------------------------------------------------------*/
 const Epetra_Map& CORE::ADAPTER::Coupling::SlDofMap() const
 {
-  if (slavedofmap_.is_null()) dserror("The slavedofmap_ has not been initialized correctly!");
+  if (slavedofmap_.is_null()) FOUR_C_THROW("The slavedofmap_ has not been initialized correctly!");
   return *slavedofmap_;
 }
 
@@ -951,7 +957,7 @@ Teuchos::RCP<const Epetra_Map>& CORE::ADAPTER::Coupling::PermutedSlDofMapPtr()
 const Epetra_Map& CORE::ADAPTER::Coupling::PermutedSlDofMap() const
 {
   if (permslavedofmap_.is_null())
-    dserror("The permslavedofmap_ has not been initialized correctly!");
+    FOUR_C_THROW("The permslavedofmap_ has not been initialized correctly!");
   return *permslavedofmap_;
 }
 
@@ -963,7 +969,8 @@ Teuchos::RCP<Epetra_Export>& CORE::ADAPTER::Coupling::MaExporterPtr() { return m
 /*----------------------------------------------------------------------*/
 const Epetra_Export& CORE::ADAPTER::Coupling::MaExporter() const
 {
-  if (masterexport_.is_null()) dserror("The masterexport_ has not been initialized correctly!");
+  if (masterexport_.is_null())
+    FOUR_C_THROW("The masterexport_ has not been initialized correctly!");
   return *masterexport_;
 }
 
@@ -975,7 +982,7 @@ Teuchos::RCP<Epetra_Export>& CORE::ADAPTER::Coupling::SlExporterPtr() { return s
 /*----------------------------------------------------------------------*/
 const Epetra_Export& CORE::ADAPTER::Coupling::SlExporter() const
 {
-  if (slaveexport_.is_null()) dserror("The slaveexport_ has not been initialized correctly!");
+  if (slaveexport_.is_null()) FOUR_C_THROW("The slaveexport_ has not been initialized correctly!");
   return *slaveexport_;
 }
 

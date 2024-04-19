@@ -213,7 +213,7 @@ namespace ADAPTER
     /// do we have this model
     virtual bool HaveModel(INPAR::STR::ModelType model)
     {
-      dserror("new time integration only");
+      FOUR_C_THROW("new time integration only");
       return false;
     }
 

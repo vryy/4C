@@ -64,7 +64,7 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::EvalStrContactRHS()
 
   // For self contact, slave and master sets may have changed,
   if (IsSelfContact())
-    dserror(
+    FOUR_C_THROW(
         "ERROR: Augmented Lagrange Formulation: Self contact is not yet "
         "considered!");
 
@@ -194,7 +194,7 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::AddContributionsToMatrixBlockLmL
     CORE::LINALG::AssembleMyVector(1.0, kzz_diag, 1.0, *active_mod_diag);
 
     // if the matrix is filled, we try to replace the diagonal
-    if (kzz.ReplaceDiagonalValues(kzz_diag)) dserror("ReplaceDiagonalValues failed!");
+    if (kzz.ReplaceDiagonalValues(kzz_diag)) FOUR_C_THROW("ReplaceDiagonalValues failed!");
   }
 
   CONTACT::AUG::Strategy::AddContributionsToMatrixBlockLmLm(kzz);

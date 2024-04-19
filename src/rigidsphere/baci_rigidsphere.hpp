@@ -395,9 +395,9 @@ namespace DRT
        *  \date 06/17 */
       void DissolveBond(int id)
       {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (mybondstobeams_.find(id) == mybondstobeams_.end())
-          dserror(" You want to dissolve not existing bond. Something went wrong.");
+          FOUR_C_THROW(" You want to dissolve not existing bond. Something went wrong.");
 #endif
 
         mybondstobeams_.erase(id);
@@ -423,7 +423,7 @@ namespace DRT
        *  \date 04/16 */
       inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
       {
-        if (not IsParamsInterface()) dserror("The interface ptr is not set!");
+        if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
       }
 

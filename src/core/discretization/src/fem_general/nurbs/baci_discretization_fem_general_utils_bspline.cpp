@@ -45,7 +45,7 @@ void CORE::FE::NURBS::BsplinePolynomial::Throwerror(const std::string errormessa
 
   // and the throw the error and exit with a
   // sigsegv
-  dserror(errormessage);
+  FOUR_C_THROW(errormessage);
 
   return;
 }

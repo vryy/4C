@@ -24,19 +24,19 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   SetDisType(CORE::FE::StringToCellType(distype));
 
   linedef->ExtractDouble("THICK", thickness_);
-  if (thickness_ <= 0) dserror("WALL element thickness needs to be < 0");
+  if (thickness_ <= 0) FOUR_C_THROW("WALL element thickness needs to be < 0");
 
   std::vector<int> ngp;
   linedef->ExtractIntVector("GP", ngp);
 
   if ((NumNode() == 4) and ((ngp[0] < 2) or (ngp[1] < 2)))
-    dserror("Insufficient number of Gauss points");
+    FOUR_C_THROW("Insufficient number of Gauss points");
   else if ((NumNode() == 8) and ((ngp[0] < 3) or (ngp[1] < 3)))
-    dserror("Insufficient number of Gauss points");
+    FOUR_C_THROW("Insufficient number of Gauss points");
   else if ((NumNode() == 9) and ((ngp[0] < 3) or (ngp[1] < 3)))
-    dserror("Insufficient number of Gauss points");
+    FOUR_C_THROW("Insufficient number of Gauss points");
   else if ((NumNode() == 6) and (ngp[0] < 3))
-    dserror("Insufficient number of Gauss points");
+    FOUR_C_THROW("Insufficient number of Gauss points");
 
   gaussrule_ = getGaussrule(ngp.data());
 
@@ -61,7 +61,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   else if (buffer == "plane_strain")
     wtype_ = plane_strain;
   else
-    dserror("Illegal strain/stress type '%s'", buffer.c_str());
+    FOUR_C_THROW("Illegal strain/stress type '%s'", buffer.c_str());
 
   // kinematics type
   linedef->ExtractString("KINEM", buffer);
@@ -71,7 +71,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   else if (buffer == "nonlinear")
     kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   else
-    dserror("Illegal KINEM type '%s'", buffer.c_str());
+    FOUR_C_THROW("Illegal KINEM type '%s'", buffer.c_str());
 
   // EAS type
   linedef->ExtractString("EAS", buffer);
@@ -84,13 +84,13 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
     iseas_ = true;
 
     if (NumNode() == 9)
-      dserror("eas-technology not necessary with 9 nodes");
+      FOUR_C_THROW("eas-technology not necessary with 9 nodes");
     else if (NumNode() == 8)
-      dserror("eas-technology not necessary with 8 nodes");
+      FOUR_C_THROW("eas-technology not necessary with 8 nodes");
     else if (NumNode() == 3)
-      dserror("eas-technology not implemented for tri3 elements");
+      FOUR_C_THROW("eas-technology not implemented for tri3 elements");
     else if (NumNode() == 6)
-      dserror("eas-technology not implemented for tri6 elements");
+      FOUR_C_THROW("eas-technology not implemented for tri6 elements");
     else
     {
       // EAS enhanced deformation gradient parameters
@@ -121,7 +121,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   }
   else
   {
-    dserror("Illegal EAS model");
+    FOUR_C_THROW("Illegal EAS model");
   }
 
   // EAS type
@@ -138,14 +138,14 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
 
   // check for invalid combinations
   if (kintype_ == INPAR::STR::KinemType::linear && iseas_ == true)
-    dserror("ERROR: No EAS for geometrically linear WALL element");
+    FOUR_C_THROW("ERROR: No EAS for geometrically linear WALL element");
 
   // validate kinematics of solid material
   SolidMaterial()->ValidKinematics(kintype_);
 
   // Validate that materials doesn't use extended update call.
   if (SolidMaterial()->UsesExtendedUpdate())
-    dserror("This element currently does not support the extended update call.");
+    FOUR_C_THROW("This element currently does not support the extended update call.");
 
   return true;
 }
@@ -172,7 +172,7 @@ CORE::FE::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
         rule = CORE::FE::GaussRule2D::quad_9point;
       }
       else
-        dserror("Unknown number of Gauss points for quad element");
+        FOUR_C_THROW("Unknown number of Gauss points for quad element");
       break;
     }
     case CORE::FE::CellType::nurbs4:
@@ -199,7 +199,7 @@ CORE::FE::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
         rule = CORE::FE::GaussRule2D::quad_100point;
       }
       else
-        dserror("Unknown number of Gauss points for nurbs element");
+        FOUR_C_THROW("Unknown number of Gauss points for nurbs element");
       break;
     }
     case CORE::FE::CellType::tri3:
@@ -218,11 +218,11 @@ CORE::FE::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
         rule = CORE::FE::GaussRule2D::tri_6point;
       }
       else
-        dserror("Unknown number of Gauss points for tri element");
+        FOUR_C_THROW("Unknown number of Gauss points for tri element");
       break;
     }
     default:
-      dserror("Unknown distype");
+      FOUR_C_THROW("Unknown distype");
       break;
   }
   return rule;

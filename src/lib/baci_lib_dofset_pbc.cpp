@@ -50,7 +50,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(
   // contains exactly the entries as in a regular dofset
   DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
   if (pccdofhandling_)
-    dserror("ERROR: Point coupling cinditions not yet implemented for PBCDofSet");
+    FOUR_C_THROW("ERROR: Point coupling cinditions not yet implemented for PBCDofSet");
 
   myMaxGID_ = DRT::DofSet::MaxAllGID();
   myMinGID_ = DRT::DofSet::MinAllGID();
@@ -72,7 +72,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(
 
     if (master_lid < 0)
     {
-      dserror("master gid %d not on proc %d, but required by slave %d", master->first,
+      FOUR_C_THROW("master gid %d not on proc %d, but required by slave %d", master->first,
           dis.Comm().MyPID(), master->second[0]);
     }
 
@@ -88,10 +88,10 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(
       }
       else
       {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (dis.NodeRowMap()->MyGID(master->first))
         {
-          dserror("slave not on proc but master owned by proc\n");
+          FOUR_C_THROW("slave not on proc but master owned by proc\n");
         }
 #endif
       }

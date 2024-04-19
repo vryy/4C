@@ -49,7 +49,7 @@ double THR::AUX::CalculateVectorNorm(
   }
   else
   {
-    dserror("Cannot handle vector norm");
+    FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
 }  // CalculateVectorNorm()

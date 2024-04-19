@@ -59,7 +59,7 @@ namespace CORE::LINEAR_SOLVER
     const CORE::LINEAR_SOLVER::PreconditionerType& Preconditioner()
     {
       if (preconditioner_ == Teuchos::null)
-        dserror("Preconditioner has to be given for iterative methods!");
+        FOUR_C_THROW("Preconditioner has to be given for iterative methods!");
       return *preconditioner_;
     }
 

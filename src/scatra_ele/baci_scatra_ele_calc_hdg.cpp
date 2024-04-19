@@ -119,14 +119,14 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::InitializeShapes(
     hdgele->SetOnfDofs(onfdofs);
 
     // check if only one scalar is defined
-    if (numscal_ > 1) dserror("Not implemented for multiple scalars");
+    if (numscal_ > 1) FOUR_C_THROW("Not implemented for multiple scalars");
 
     if (localSolver_ == Teuchos::null)
       localSolver_ =
           Teuchos::rcp(new LocalSolver(ele, *shapes_, *shapesface_, usescompletepoly_, disname, 1));
   }
   else
-    dserror("Only works for HDG transport elements");
+    FOUR_C_THROW("Only works for HDG transport elements");
 }
 
 /*----------------------------------------------------------------------*
@@ -141,7 +141,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Evaluate(DRT::Element* el
 {
   // check if this is an hdg element
   const DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<const DRT::ELEMENTS::ScaTraHDG*>(ele);
-  if (!hdgele) dserror("Cannot cast element to scatra hdg element");
+  if (!hdgele) FOUR_C_THROW("Cannot cast element to scatra hdg element");
 
   InitializeShapes(ele, discretization.Name());
 
@@ -177,7 +177,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
 {
   // check if this is an hdg element
   DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
-  if (!hdgele) dserror("cannot cast element to scatrahdg element");
+  if (!hdgele) FOUR_C_THROW("cannot cast element to scatrahdg element");
 
   // get the action required
 
@@ -190,7 +190,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
         act = SCATRA::Action::project_dirich_field;
         break;
       default:
-        dserror("HDG Action type not supported");
+        FOUR_C_THROW("HDG Action type not supported");
     }
   }
   else
@@ -308,7 +308,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
     }
     default:
     {
-      dserror("Unknown type of action for ScaTraHDG");
+      FOUR_C_THROW("Unknown type of action for ScaTraHDG");
       break;
     }
   }  // end of switch(act)
@@ -323,7 +323,7 @@ template <CORE::FE::CellType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(DRT::Element* ele,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1)
 {
-  dsassert(elevec1.numRows() == (int)nen_ * (2 + nsd_), "Vector does not have correct size");
+  FOUR_C_ASSERT(elevec1.numRows() == (int)nen_ * (2 + nsd_), "Vector does not have correct size");
   CORE::LINALG::SerialDenseMatrix locations =
       CORE::FE::getEleNodeNumbering_nodes_paramspace(distype);
   CORE::LINALG::SerialDenseVector values(shapes_->ndofs_);
@@ -470,7 +470,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ReadGlobalVectors(
   interiorPhinp_.size(shapes_->ndofs_ * (nsd_ + 1));
   tracenm_.size(hdgele->onfdofs_);
   Teuchos::RCP<const Epetra_Vector> phiaf = discretization.GetState("phiaf");
-  if (phiaf == Teuchos::null) dserror("Cannot get state vector phiaf");
+  if (phiaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector phiaf");
   CORE::FE::ExtractMyValues(*phiaf, tracen_, la[0].lm_);
 
 
@@ -481,7 +481,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ReadGlobalVectors(
   }
 
   Teuchos::RCP<const Epetra_Vector> intphinp = discretization.GetState(2, "intphinp");
-  if (intphinp == Teuchos::null) dserror("Cannot get state vector intphinp");
+  if (intphinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector intphinp");
   std::vector<int> localDofs = discretization.Dof(2, ele);
   CORE::FE::ExtractMyValues(*intphinp, interiorPhinp_, localDofs);
 
@@ -604,7 +604,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeMatr
   if (err != 0)
   {
     if (scatraparatimint_->IsStationary())
-      dserror(
+      FOUR_C_THROW(
           "Inversion for AMmat failed with errorcode %d. This might be due to the fact that in "
           "stationary problems Mmat_ is a zero matrix and AMat_ (if there is no convection) only "
           "has boundary integrals. Therefore, if you are using elements with internal degrees of "
@@ -612,7 +612,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeMatr
           "you'll need to find the problem yourself.",
           err);
     else
-      dserror("Inversion for AMmat failed with errorcode %d", err);
+      FOUR_C_THROW("Inversion for AMmat failed with errorcode %d", err);
   }
 }
 
@@ -649,7 +649,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeFace
       tau = 0.0;
       break;
     default:
-      dserror("Unknown definition for stabilization parameter for HDG");
+      FOUR_C_THROW("Unknown definition for stabilization parameter for HDG");
       break;
   }
 
@@ -807,7 +807,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
             massPartDW[d * nsd_ + e](i, q) =
                 shape_gp[q](i) * jacdet * intpoints.IP().qwgt[q] * hdgele->invdiff_[q](d, e);
       else
-        dserror("Diffusion tensor not defined properly");
+        FOUR_C_THROW("Diffusion tensor not defined properly");
     }
   }
 
@@ -912,7 +912,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
             massPartDW[d * nsd_ + e](i, q) =
                 shapes_->shfunct(i, q) * shapes_->jfac(q) * hdgele->invdiff_[q](d, e);
       else
-        dserror("Diffusion tensor not defined properly");
+        FOUR_C_THROW("Diffusion tensor not defined properly");
 
 
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -1131,7 +1131,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeSour
   if (nsd_ != GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcno - 1)
                   .NumberComponents())
-    dserror(
+    FOUR_C_THROW(
         "The source does not have the correct number of components.\n The correct number of "
         "components should be equal to the number of spatial dimensions.\n Fix the source "
         "function.");
@@ -1219,7 +1219,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::CondenseLoc
   inverseinW.setMatrix(Teuchos::rcpFromRef(tempMat2));
   int err = inverseinW.invert();
   if (err != 0)
-    dserror("Inversion of temporary matrix for Schur complement failed with errorcode %d", err);
+    FOUR_C_THROW(
+        "Inversion of temporary matrix for Schur complement failed with errorcode %d", err);
   // tempMat2 = (  D - H A^{-1} B )^{-1}
 
   hdgele->invCondmat_ = tempMat2;
@@ -1309,7 +1310,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ScaTraHDGEleCalc::ComputeNeumannBC");
 
   DRT::Condition* condition = params.get<DRT::Condition*>("condition");
-  if (condition == nullptr) dserror("Cannot access Neumann boundary condition!");
+  if (condition == nullptr) FOUR_C_THROW("Cannot access Neumann boundary condition!");
 
   // get actual time
   const double time = scatraparatimint_->Time();
@@ -1386,7 +1387,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterialParams(
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
-    if (actmat->NumMat() < numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() < numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < numscal_; ++k)
     {
@@ -1430,7 +1431,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
-    if (actmat->NumMat() < numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() < numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < numscal_; ++k)
     {
@@ -1630,7 +1631,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
   CORE::LINALG::SerialDenseMatrix massPartW(shapes_->ndofs_, shapes_->nqpoints_);
 
   // reshape elevec2 as matrix
-  dsassert(elevec2.numRows() == 0 || unsigned(elevec2.numRows()) == shapes_->ndofs_ * (nsd_ + 1),
+  FOUR_C_ASSERT(
+      elevec2.numRows() == 0 || unsigned(elevec2.numRows()) == shapes_->ndofs_ * (nsd_ + 1),
       "Wrong size in project vector 2");
 
   // get function
@@ -1653,14 +1655,14 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
       double phi;
       double gradphi[nsd_];
 
-      dsassert(start_func != nullptr, "funct not set for initial value");
+      FOUR_C_ASSERT(start_func != nullptr, "funct not set for initial value");
       if (GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                   .NumberComponents() != 1 &&
           GLOBAL::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                   .NumberComponents() != nsd_ + 2)
-        dserror(
+        FOUR_C_THROW(
             "Impossible to initialize the field with the given number of components of the initial "
             "field. Set the number of components to either 1 or nsd_ + 2.\nThe fields are ordered "
             "as:\n- phi\n- gradphi\n- tracephi");
@@ -1694,7 +1696,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
       inverseMass.factorWithEquilibration(true);
       int err2 = inverseMass.factor();
       int err = inverseMass.solve();
-      if (err != 0 || err2 != 0) dserror("Inversion of matrix failed with errorcode %d", err);
+      if (err != 0 || err2 != 0) FOUR_C_THROW("Inversion of matrix failed with errorcode %d", err);
     }
   }
 
@@ -1744,7 +1746,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
     inverseMass.factorWithEquilibration(true);
     int err2 = inverseMass.factor();
     int err = inverseMass.solve();
-    if (err != 0 || err2 != 0) dserror("Inversion of matrix failed with errorcode %d", err);
+    if (err != 0 || err2 != 0) FOUR_C_THROW("Inversion of matrix failed with errorcode %d", err);
     for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i) elevec1(nfdofs + i) = trVec(i, 0);
 
     nfdofs += shapesface_->nfdofs_;
@@ -1820,7 +1822,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::PrepareMate
   Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseindifftensor;
   inverseindifftensor.setMatrix(Teuchos::rcpFromRef(difftensor));
   int err = inverseindifftensor.invert();
-  if (err != 0) dserror("Inversion of diffusion tensor failed with errorcode %d", err);
+  if (err != 0) FOUR_C_THROW("Inversion of diffusion tensor failed with errorcode %d", err);
 
   hdgele->invdiff_.push_back(difftensor);
 }
@@ -1882,7 +1884,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
       Teuchos::rcp(new CORE::FE::ShapeValues<distype>(
           hdgele->DegreeOld(), usescompletepoly_, 2 * hdgele->DegreeOld()));
 
-  dsassert(elevec2.numRows() == 0 || unsigned(elevec2.numRows()) == shapes_->ndofs_ * (nsd_ + 1),
+  FOUR_C_ASSERT(
+      elevec2.numRows() == 0 || unsigned(elevec2.numRows()) == shapes_->ndofs_ * (nsd_ + 1),
       "Wrong size in project vector 2");
 
   // polynomial space to get the value of the shape function at the new points
@@ -1903,7 +1906,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
   std::vector<double> intphi;
   CORE::FE::ExtractMyValues(*matrix_state, intphi, la[nds_intvar_old].lm_);
   if (intphi.size() != shapes_old->ndofs_ * (nsd_ + 1))
-    dserror("node number not matching: %d vs. %d", intphi.size(), shapes_old->ndofs_ * (nsd_ + 1));
+    FOUR_C_THROW(
+        "node number not matching: %d vs. %d", intphi.size(), shapes_old->ndofs_ * (nsd_ + 1));
 
   for (unsigned int i = 0; i < shapes_old->ndofs_ * (nsd_ + 1); ++i) interiorPhi_old(i) = intphi[i];
 
@@ -2162,7 +2166,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(const DRT::Elem
   if (GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(func - 1)
           .NumberComponents() != 1)
-    dserror(
+    FOUR_C_THROW(
         "The number of component must be one. The grandient is computed with forward auomatic "
         "differentiation.");
 
@@ -2193,7 +2197,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(const DRT::Elem
                           hdgele->invdiff_[q](d, e);
       }
     else
-      dserror("Diffusion tensor not defined properly. Impossible to compute error.");
+      FOUR_C_THROW("Diffusion tensor not defined properly. Impossible to compute error.");
 
 
     // Analytical function evaluation

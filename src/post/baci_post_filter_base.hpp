@@ -54,7 +54,7 @@ class PostFilterBase
   //! get the underlying writer object
   PostWriterBase& GetWriter()
   {
-    dsassert(writer_ != Teuchos::null, "Not initialized");
+    FOUR_C_ASSERT(writer_ != Teuchos::null, "Not initialized");
     return *writer_;
   }
 
@@ -64,7 +64,7 @@ class PostFilterBase
   //! look for problem dependent result entries and write them for one time step
   virtual void WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep)
   {
-    dserror("not implemented");
+    FOUR_C_THROW("not implemented");
   }
 
   /// write all element based results

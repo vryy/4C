@@ -43,7 +43,7 @@ void ALE::AleResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& te
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1, aledis_->Name().c_str());
+    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, aledis_->Name().c_str());
   }
   else
   {
@@ -74,7 +74,7 @@ void ALE::AleResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& te
       }
       else
       {
-        dserror("Quantity '%s' not supported in ALE testing", position.c_str());
+        FOUR_C_THROW("Quantity '%s' not supported in ALE testing", position.c_str());
       }
 
       nerr += CompareValues(result, "NODE", res);

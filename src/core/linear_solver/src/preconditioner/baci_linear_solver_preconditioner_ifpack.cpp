@@ -33,7 +33,7 @@ void CORE::LINEAR_SOLVER::IFPACKPreconditioner::Setup(
   if (create)
   {
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(matrix);
-    if (A == nullptr) dserror("CrsMatrix expected");
+    if (A == nullptr) FOUR_C_THROW("CrsMatrix expected");
 
     // free old matrix first
     prec_ = Teuchos::null;
@@ -52,7 +52,7 @@ void CORE::LINEAR_SOLVER::IFPACKPreconditioner::Setup(
     prec_ = Teuchos::rcp(Factory.Create(prectype, Pmatrix_.get(), overlap));
 
     if (prec_.is_null())
-      dserror("Creation of IFPACK preconditioner of type '%s' failed.", prectype.c_str());
+      FOUR_C_THROW("Creation of IFPACK preconditioner of type '%s' failed.", prectype.c_str());
 
     // setup
     prec_->SetParameters(ifpacklist_);

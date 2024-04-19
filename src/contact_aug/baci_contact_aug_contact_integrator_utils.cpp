@@ -102,7 +102,7 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::Element& sele,
       is_on_meles[m] = WithinBounds(mxi, mastertype, proj_tol);
 
       if (is_on_meles[m] and not conv)
-        dserror(
+        FOUR_C_THROW(
             "The gp has a feasible projection, but the local Newton scheme "
             "did not converge!");
     }  // mele loop
@@ -238,7 +238,7 @@ bool CONTACT::INTEGRATOR::WithinBounds(
     }
     default:
     {
-      dserror("Unsupported element type %s!", CORE::FE::CellTypeToString(type).c_str());
+      FOUR_C_THROW("Unsupported element type %s!", CORE::FE::CellTypeToString(type).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -291,7 +291,7 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
   const double smooth_nodal_normal_length = avg_nodal_normal.Norm2();
 
   if (smooth_nodal_normal_length == 0.0)
-    dserror("Sum of slave unit normals at node %d has a length of zero!", slavenode.Id());
+    FOUR_C_THROW("Sum of slave unit normals at node %d has a length of zero!", slavenode.Id());
 
   avg_nodal_normal.Scale(1.0 / smooth_nodal_normal_length);
 
@@ -353,7 +353,7 @@ double CONTACT::INTEGRATOR::UnitSlaveElementNormal(const MORTAR::Element& sele,
     }
     default:
     {
-      dserror("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
+      FOUR_C_THROW("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
           CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
@@ -488,7 +488,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     default:
     {
-      dserror("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
+      FOUR_C_THROW("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
           CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
@@ -540,7 +540,7 @@ void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
     }
     default:
     {
-      dserror("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
+      FOUR_C_THROW("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
           CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
@@ -667,7 +667,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
     }
     default:
     {
-      dserror("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
+      FOUR_C_THROW("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
           CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }
@@ -792,7 +792,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const CORE::FE::CellType slav
     }
     default:
     {
-      dserror("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
+      FOUR_C_THROW("Unsupported slave element type! (enum = %d|\"%s\")", slavetype,
           CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
     }

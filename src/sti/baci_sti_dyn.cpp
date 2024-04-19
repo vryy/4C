@@ -42,14 +42,14 @@ void sti_dyn(const int& restartstep  //! time step for restart
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
       Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(problem->NDim() + 1, 0, 0, true));
   if (scatradis->AddDofSet(dofsetaux) != 1)
-    dserror("Scatra discretization has illegal number of dofsets!");
+    FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
   // finalize scatra discretization
   scatradis->FillComplete();
 
   // safety check
   if (scatradis->NumGlobalNodes() == 0)
-    dserror(
+    FOUR_C_THROW(
         "The scatra discretization must not be empty, since the thermo discretization needs to be "
         "cloned from it!");
 
@@ -59,7 +59,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
   // add dofset for velocity-related quantities to thermo discretization
   dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(problem->NDim() + 1, 0, 0, true));
   if (thermodis->AddDofSet(dofsetaux) != 1)
-    dserror("Thermo discretization has illegal number of dofsets!");
+    FOUR_C_THROW("Thermo discretization has illegal number of dofsets!");
 
   // equip thermo discretization with noderowmap for subsequent safety check
   // final FillComplete() is called at the end of discretization cloning
@@ -67,7 +67,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
 
   // safety check
   if (thermodis->NumGlobalNodes() != 0)
-    dserror(
+    FOUR_C_THROW(
         "The thermo discretization must be empty, since it is cloned from the scatra "
         "discretization!");
 
@@ -78,9 +78,9 @@ void sti_dyn(const int& restartstep  //! time step for restart
 
   // add proxy of scalar transport degrees of freedom to thermo discretization and vice versa
   if (thermodis->AddDofSet(scatradis->GetDofSetProxy()) != 2)
-    dserror("Thermo discretization has illegal number of dofsets!");
+    FOUR_C_THROW("Thermo discretization has illegal number of dofsets!");
   if (scatradis->AddDofSet(thermodis->GetDofSetProxy()) != 2)
-    dserror("Scatra discretization has illegal number of dofsets!");
+    FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
   thermodis->FillComplete(true, false, false);
   scatradis->FillComplete(true, false, false);
 
@@ -101,14 +101,14 @@ void sti_dyn(const int& restartstep  //! time step for restart
   // extract and check ID of linear solver for scatra field
   const int solver_id_scatra = scatradyn.get<int>("LINEAR_SOLVER");
   if (solver_id_scatra == -1)
-    dserror(
+    FOUR_C_THROW(
         "No linear solver for scalar transport field was specified in input file section 'SCALAR "
         "TRANSPORT DYNAMIC'!");
 
   // extract and check ID of linear solver for thermo field
   const int solver_id_thermo = stidyn.get<int>("THERMO_LINEAR_SOLVER");
   if (solver_id_thermo == -1)
-    dserror(
+    FOUR_C_THROW(
         "No linear solver for temperature field was specified in input file section 'STI "
         "DYNAMIC'!");
 
@@ -123,7 +123,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
       // extract and check ID of monolithic linear solver
       const int solver_id = stidyn.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER");
       if (solver_id == -1)
-        dserror(
+        FOUR_C_THROW(
             "No global linear solver was specified in input file section 'STI "
             "DYNAMIC/MONOLITHIC'!");
 
@@ -154,7 +154,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
     // unknown algorithm
     default:
     {
-      dserror("Unknown coupling algorithm for scatra-thermo interaction!");
+      FOUR_C_THROW("Unknown coupling algorithm for scatra-thermo interaction!");
     }
   }
 
@@ -178,7 +178,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
     problem->AddFieldTest(Teuchos::rcp<DRT::ResultTest>(new SCATRA::ElchResultTest(
         Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(sti_algorithm->ScaTraField()))));
   else
-    dserror(
+    FOUR_C_THROW(
         "Scatra-thermo interaction is currently only available for thermodynamic electrochemistry, "
         "but not for other kinds of thermodynamic scalar transport!");
   problem->AddFieldTest(

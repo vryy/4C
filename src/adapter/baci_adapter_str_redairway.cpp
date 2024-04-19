@@ -21,14 +21,15 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
 {
   //----------------------------------------------------------------------
   // make sure
-  if (structure_ == Teuchos::null) dserror("Failed to create the underlying structural adapter");
+  if (structure_ == Teuchos::null)
+    FOUR_C_THROW("Failed to create the underlying structural adapter");
 
   // first get all Neumann conditions on structure
 
   std::vector<DRT::Condition*> surfneumcond;
   Discretization()->GetCondition("SurfaceNeumann", surfneumcond);
   unsigned int numneumcond = surfneumcond.size();
-  if (numneumcond == 0) dserror("no Neumann conditions on structure");
+  if (numneumcond == 0) FOUR_C_THROW("no Neumann conditions on structure");
 
   // now filter those Neumann conditions that are due to the coupling
   std::vector<int> tmp;
@@ -45,7 +46,7 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
     }
   }
   unsigned int numcond = tmp.size();
-  if (numcond == 0) dserror("no coupling conditions found");
+  if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
   coupmap_ =
       Teuchos::rcp(new Epetra_Map(tmp.size(), tmp.size(), tmp.data(), 0, Discretization()->Comm()));
 }
@@ -70,7 +71,7 @@ void ADAPTER::StructureRedAirway::SetPressure(Teuchos::RCP<Epetra_Vector> couppr
 /*======================================================================*/
 void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
 {
-  if (!(Discretization()->Filled())) dserror("FillComplete() was not called");
+  if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
 
   Teuchos::ParameterList params;
   params.set("action", "calc_struct_constrvol");
@@ -116,7 +117,7 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
       // call the element specific evaluate method
       int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,
           elevector1, elevector2, elevector3);
-      if (err) dserror("error while evaluating elements");
+      if (err) FOUR_C_THROW("error while evaluating elements");
 
       // "assembly
       tmp += elevector3[0];

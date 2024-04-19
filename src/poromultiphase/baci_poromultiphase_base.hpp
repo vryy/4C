@@ -121,7 +121,7 @@ namespace POROMULTIPHASE
     /// method)
     void SetRelaxedFluidSolution() override
     {
-      dserror("SetRelaxedFluidSolution() only available for partitioned schemes!");
+      FOUR_C_THROW("SetRelaxedFluidSolution() only available for partitioned schemes!");
       return;
     };
 
@@ -137,14 +137,14 @@ namespace POROMULTIPHASE
     //! unique map of all dofs that should be constrained with DBC
     Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const override
     {
-      dserror("CombinedDBCMap() only available for monolithic schemes!");
+      FOUR_C_THROW("CombinedDBCMap() only available for monolithic schemes!");
       return Teuchos::null;
     };
 
     //! build the block null spaces
     void BuildBlockNullSpaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) override
     {
-      dserror("BuildBlockNullSpaces() only available for monolithic schemes!");
+      FOUR_C_THROW("BuildBlockNullSpaces() only available for monolithic schemes!");
       return;
     };
 
@@ -152,7 +152,7 @@ namespace POROMULTIPHASE
     void BuildArteryBlockNullSpace(
         Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum) override
     {
-      dserror("BuildArteryBlockNullSpace() only available for monolithic schemes!");
+      FOUR_C_THROW("BuildArteryBlockNullSpace() only available for monolithic schemes!");
       return;
     };
 
@@ -160,7 +160,7 @@ namespace POROMULTIPHASE
     void Evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
         const bool firstcall) override
     {
-      dserror("Evaluate() only available for monolithic schemes!");
+      FOUR_C_THROW("Evaluate() only available for monolithic schemes!");
       return;
     };
 
@@ -169,35 +169,35 @@ namespace POROMULTIPHASE
     void UpdateFieldsAfterConvergence(
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override
     {
-      dserror("UpdateFieldsAfterConvergence() only available for monolithic schemes!");
+      FOUR_C_THROW("UpdateFieldsAfterConvergence() only available for monolithic schemes!");
       return;
     };
 
     /// perform relaxaton (only for partitioned schemes)
     void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) override
     {
-      dserror("PerformRelaxation() only available for partitioned schemes!");
+      FOUR_C_THROW("PerformRelaxation() only available for partitioned schemes!");
       return;
     };
 
     //! get monolithic rhs vector
     Teuchos::RCP<const Epetra_Vector> RHS() const override
     {
-      dserror("RHS() only available for monolithic schemes!");
+      FOUR_C_THROW("RHS() only available for monolithic schemes!");
       return Teuchos::null;
     };
 
     //! get extractor
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const override
     {
-      dserror("Extractor() only available for monolithic schemes!");
+      FOUR_C_THROW("Extractor() only available for monolithic schemes!");
       return Teuchos::null;
     };
 
     //! get monolithic block system matrix
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const override
     {
-      dserror("BlockSystemMatrix() only available for monolithic schemes!");
+      FOUR_C_THROW("BlockSystemMatrix() only available for monolithic schemes!");
       return Teuchos::null;
     };
 

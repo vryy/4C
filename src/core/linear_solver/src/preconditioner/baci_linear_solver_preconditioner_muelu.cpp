@@ -70,7 +70,7 @@ void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
   // check whether A is a Epetra_CrsMatrix i.e. no block matrix
   Teuchos::RCP<Epetra_CrsMatrix> A =
       Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcp(matrix, false));
-  if (A == Teuchos::null) dserror("Matrix is not a SparseMatrix");
+  if (A == Teuchos::null) FOUR_C_THROW("Matrix is not a SparseMatrix");
 
   // store operator
   Pmatrix_ = A;
@@ -93,7 +93,7 @@ void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
       int numdf = muelulist_.get<int>("PDE equations", -1);
       int dimns = muelulist_.get<int>("null space: dimension", -1);
       if (dimns == -1 || numdf == -1)
-        dserror("Error: PDE equations or null space dimension wrong.");
+        FOUR_C_THROW("Error: PDE equations or null space dimension wrong.");
 
       Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>> rowMap =
           mueluA->getRowMap();
@@ -104,7 +104,7 @@ void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
       mueluOp->SetFixedBlockSize(numdf);
 
       if (!muelulist_.isParameter("MUELU_XML_FILE"))
-        dserror(
+        FOUR_C_THROW(
             "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
             "Please set it as entry 'MUELU_XML_FILE'.");
       std::string xmlFileName = muelulist_.get<std::string>("MUELU_XML_FILE");
@@ -188,7 +188,7 @@ void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
 
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
-  if (A == Teuchos::null) dserror("Matrix is not a BlockSparseMatrix");
+  if (A == Teuchos::null) FOUR_C_THROW("Matrix is not a BlockSparseMatrix");
 
   // store operator
   Pmatrix_ = A;
@@ -204,7 +204,7 @@ void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
 
       // build fluid null space in MueLu format
       if (numdf == 0 || nv == 0 || np == 0)
-        dserror("Error: PDE equations or null space dimension wrong.");
+        FOUR_C_THROW("Error: PDE equations or null space dimension wrong.");
 
       // define strided maps
       std::vector<size_t> stridingInfo;
@@ -274,7 +274,7 @@ void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
       }
 
       if (!muelulist_.isParameter("MUELU_XML_FILE"))
-        dserror(
+        FOUR_C_THROW(
             "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
             "Please set it as entry 'MUELU_XML_FILE'.");
       std::string xmlFileName = muelulist_.get<std::string>("MUELU_XML_FILE");
@@ -298,7 +298,7 @@ void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
   }    // if (xmlfile)
   else
   {
-    dserror("Only works with .xml file!");
+    FOUR_C_THROW("Only works with .xml file!");
   }  // else (xml file)
 }
 
@@ -321,7 +321,7 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
 
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
-  if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
+  if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
   Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
       Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
@@ -381,14 +381,14 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
     if (create)
     {
       if (!mueluParameters.isParameter("MUELU_XML_FILE"))
-        dserror(
+        FOUR_C_THROW(
             "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
             "Please set it as entry 'MUELU_XML_FILE'.");
       std::string xmlFileName = mueluParameters.get<std::string>("MUELU_XML_FILE");
 
       int solidDimns = solidList.get<int>("null space: dimension", -1);
       if (solidDimns == -1 || solidDofs == -1)
-        dserror("Error: PDE equations of solid or null space dimension wrong.");
+        FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
           CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
@@ -396,7 +396,7 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
 
       int thermoDimns = thermoList.get<int>("null space: dimension", -1);
       if (thermoDimns == -1 || thermoDofs == -1)
-        dserror("Error: PDE equations of solid or null space dimension wrong.");
+        FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
           CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
@@ -418,7 +418,8 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
   }
   else
   {
-    dserror("The MueLu preconditioner for TSI problems only works with an appropriate .xml file");
+    FOUR_C_THROW(
+        "The MueLu preconditioner for TSI problems only works with an appropriate .xml file");
   }
 }
 
@@ -444,7 +445,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
   // Check whether input matrix is an actual blocked operator
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
-  if (A == Teuchos::null) dserror("Matrix is not a BlockSparseMatrix");
+  if (A == Teuchos::null) FOUR_C_THROW("Matrix is not a BlockSparseMatrix");
 
   // store blocked operator
   Pmatrix_ = A;
@@ -457,13 +458,14 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
 
   // prepare nullspace vector for MueLu (block A11 only)
   if (!contactList.isParameter("PDE equations"))
-    dserror("Multigrid parameter 'PDE equations' missing in solver parameter list.");
+    FOUR_C_THROW("Multigrid parameter 'PDE equations' missing in solver parameter list.");
   if (!contactList.isParameter("null space: dimension"))
-    dserror("Multigrid parameter 'null space: dimension' missing  in solver parameter list.");
+    FOUR_C_THROW("Multigrid parameter 'null space: dimension' missing  in solver parameter list.");
   const int numdf = contactList.get<int>("PDE equations", -1);
   const int dimns = contactList.get<int>("null space: dimension", -1);
-  if (numdf == -1) dserror("Multigrid parameter 'PDE equations' wrong. It has to be > 0.");
-  if (dimns == -1) dserror("Multigrid parameter 'null space: dimension' wrong. It has to be > 0.");
+  if (numdf == -1) FOUR_C_THROW("Multigrid parameter 'PDE equations' wrong. It has to be > 0.");
+  if (dimns == -1)
+    FOUR_C_THROW("Multigrid parameter 'null space: dimension' wrong. It has to be > 0.");
 
   // create a Teuchos::Comm from EpetraComm
   Teuchos::RCP<const Teuchos::Comm<int>> comm = Xpetra::toXpetra(A->RangeMap(0).Comm());
@@ -479,7 +481,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
       muelulist_.sublist("Belos Parameters").get<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap");
 
   if (epSlaveDofMap.is_null())
-    dserror(
+    FOUR_C_THROW(
         "CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner: "
         "Interface contact map is not available!");
 
@@ -590,17 +592,17 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
   Teuchos::RCP<const Xpetra::Matrix<SC, LO, GO, NO>> xA11FromBOp = bOp->getMatrix(0, 0);
   testMap = Teuchos::rcp_dynamic_cast<const Xpetra::StridedMap<LO, GO, NO>>(
       xA11FromBOp->getRowMap("stridedMaps"));
-  if (testMap.is_null()) dserror("Row map of A00 is no StridedMap.");
+  if (testMap.is_null()) FOUR_C_THROW("Row map of A00 is no StridedMap.");
 
   Teuchos::RCP<const Xpetra::Matrix<SC, LO, GO, NO>> xA12FromBOp = bOp->getMatrix(0, 1);
   testMap = Teuchos::rcp_dynamic_cast<const Xpetra::StridedMap<LO, GO, NO>>(
       xA12FromBOp->getRowMap("stridedMaps"));
-  if (testMap.is_null()) dserror("Row map of A01 is no StridedMap.");
+  if (testMap.is_null()) FOUR_C_THROW("Row map of A01 is no StridedMap.");
 
   Teuchos::RCP<const Xpetra::Matrix<SC, LO, GO, NO>> xA21FromBOp = bOp->getMatrix(1, 0);
   testMap = Teuchos::rcp_dynamic_cast<const Xpetra::StridedMap<LO, GO, NO>>(
       xA21FromBOp->getRowMap("stridedMaps"));
-  if (testMap.is_null()) dserror("Row map of A00 is no StridedMap.");
+  if (testMap.is_null()) FOUR_C_THROW("Row map of A00 is no StridedMap.");
 
   bOp->SetFixedBlockSize(numdf);
   bOp->fillComplete();
@@ -635,7 +637,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
     P_ = Teuchos::null;
 
     if (!contactList.isParameter("MUELU_XML_FILE"))
-      dserror(
+      FOUR_C_THROW(
           "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
           "Please set it as entry 'MUELU_XML_FILE'.");
     std::string xml_file = contactList.get<std::string>("MUELU_XML_FILE");
@@ -730,7 +732,7 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
   // first we check if the input matrix is of normal CRS type
   Teuchos::RCP<Epetra_CrsMatrix> A =
       Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcp(matrix, false));
-  if (A == Teuchos::null) dserror("Matrix is not a SparseMatrix");
+  if (A == Teuchos::null) FOUR_C_THROW("Matrix is not a SparseMatrix");
 
   ///////////////////////////////////////////////////////////////////////
   // First get the solid and beam rowmaps and split the matrix
@@ -740,12 +742,12 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
   Teuchos::ParameterList solidList = muelulist_.sublist("Inverse1");
   Teuchos::RCP<Epetra_Map> solidDofRowmap =
       solidList.get<Teuchos::RCP<Epetra_Map>>("null space: map", Teuchos::null);
-  if (solidDofRowmap == Teuchos::null) dserror("Solid row map is zero!");
+  if (solidDofRowmap == Teuchos::null) FOUR_C_THROW("Solid row map is zero!");
 
   Teuchos::ParameterList beamList = muelulist_.sublist("Inverse2");
   Teuchos::RCP<Epetra_Map> beamDofRowmap =
       beamList.get<Teuchos::RCP<Epetra_Map>>("null space: map", Teuchos::null);
-  if (beamDofRowmap == Teuchos::null) dserror("Beam row map is zero!");
+  if (beamDofRowmap == Teuchos::null) FOUR_C_THROW("Beam row map is zero!");
 
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>> Ablock =
       Teuchos::null;
@@ -810,21 +812,21 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
     if (create)
     {
       if (!mueluParameters.isParameter("MUELU_XML_FILE"))
-        dserror(
+        FOUR_C_THROW(
             "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
             "Please set it as entry 'MUELU_XML_FILE'.");
       std::string xmlFileName = mueluParameters.get<std::string>("MUELU_XML_FILE");
 
       int solidDimns = solidList.get<int>("null space: dimension", -1);
       if (solidDimns == -1 || solidDofs == -1)
-        dserror("Error: PDE equations of solid or null space dimension wrong.");
+        FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
           CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(solidmap, solidList);
 
       int beamDimns = beamList.get<int>("null space: dimension", -1);
       if (beamDimns == -1 || beamDofs == -1)
-        dserror("Error: PDE equations of beam or null space dimension wrong.");
+        FOUR_C_THROW("Error: PDE equations of beam or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
           CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(beammap, beamList);
@@ -846,7 +848,7 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
   }
   else
   {
-    dserror("Only works with .xml file");
+    FOUR_C_THROW("Only works with .xml file");
   }
 }
 
@@ -872,7 +874,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
     // check wheter input matrix is an actual blocked operator
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
         Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
-    if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
+    if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
     // split matrix into components
     Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
@@ -915,7 +917,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
         fluidList.sublist("NodalBlockInformation").get<int>("number of constraint dofs", 0);
 
     if (numFluidDofsPerNode != (numVelocityDofsPerNode + numPressureDofsPerNode))
-      dserror("Number of fluid dofs does not match the number of velocity and pressure dofs");
+      FOUR_C_THROW("Number of fluid dofs does not match the number of velocity and pressure dofs");
 
     // define strided maps
     std::vector<size_t> solidStriding;
@@ -990,14 +992,14 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
     Teuchos::ParameterList mueluParameters = muelulist_.sublist("MueLu (FSI) Parameters");
 
     if (!mueluParameters.isParameter("MUELU_XML_FILE"))
-      dserror(
+      FOUR_C_THROW(
           "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
           "Please set it as entry 'MUELU_XML_FILE'.");
     std::string xmlFileName = mueluParameters.get<std::string>("MUELU_XML_FILE");
 
     const int solidDimns = solidList.get<int>("null space: dimension", -1);
     if (solidDimns == -1 || numSolidDofsPerNode == -1)
-      dserror("Error: PDE equations of solid or null space dimension wrong.");
+      FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
         CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
@@ -1005,7 +1007,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
 
     const int fluidDimns = fluidList.get<int>("null space: dimension", -1);
     if (fluidDimns == -1 || numFluidDofsPerNode == -1)
-      dserror("Error: PDE equations of fluid or null space dimension wrong.");
+      FOUR_C_THROW("Error: PDE equations of fluid or null space dimension wrong.");
 
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
         CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
@@ -1013,7 +1015,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
 
     const int aleDimns = aleList.get<int>("null space: dimension", -1);
     if (aleDimns == -1 || numAleDofsPerNode == -1)
-      dserror("Error: PDE equations of ale or null space dimension wrong.");
+      FOUR_C_THROW("Error: PDE equations of ale or null space dimension wrong.");
 
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace33 =
         CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
@@ -1048,10 +1050,10 @@ CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
 {
   // Extract info about nullspace dimension
   if (!muelulist.isParameter("null space: dimension"))
-    dserror("Multigrid parameter 'null space: dimension' missing  in solver parameter list.");
+    FOUR_C_THROW("Multigrid parameter 'null space: dimension' missing  in solver parameter list.");
   const int nspDimension = muelulist.get<int>("null space: dimension");
   if (nspDimension < 1)
-    dserror("Multigrid parameter 'null space: dimension' wrong. It has to be > 0.");
+    FOUR_C_THROW("Multigrid parameter 'null space: dimension' wrong. It has to be > 0.");
 
   Teuchos::RCP<Epetra_MultiVector> nullspaceData =
       muelulist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);

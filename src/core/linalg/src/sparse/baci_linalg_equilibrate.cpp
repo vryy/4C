@@ -37,7 +37,7 @@ CORE::LINALG::EquilibrationSparse::EquilibrationSparse(
     : EquilibrationUniversal(method, dofrowmap)
 {
   if (method == EquilibrationMethod::symmetry)
-    dserror("symmetric equilibration not implemented for sparse matrices");
+    FOUR_C_THROW("symmetric equilibration not implemented for sparse matrices");
 }
 
 /*----------------------------------------------------------------------------*
@@ -47,7 +47,7 @@ CORE::LINALG::EquilibrationBlock::EquilibrationBlock(
     : EquilibrationUniversal(method, dofrowmap)
 {
   if (method == EquilibrationMethod::symmetry)
-    dserror("symmetric equilibration not implemented for block matrices");
+    FOUR_C_THROW("symmetric equilibration not implemented for block matrices");
 }
 
 /*----------------------------------------------------------------------------*
@@ -61,7 +61,7 @@ CORE::LINALG::EquilibrationBlockSpecific::EquilibrationBlockSpecific(
     if (method_block == EquilibrationMethod::columns_full or
         method_block == EquilibrationMethod::rows_full or
         method_block == EquilibrationMethod::rowsandcolumns_full)
-      dserror("full matrix equilibration not reasonable for block based equilibration");
+      FOUR_C_THROW("full matrix equilibration not reasonable for block based equilibration");
   }
 }
 
@@ -72,7 +72,7 @@ void CORE::LINALG::Equilibration::ComputeInvRowSums(const CORE::LINALG::SparseMa
 {
   // compute inverse row sums of matrix
   if (matrix.EpetraMatrix()->InvRowSums(*invrowsums))
-    dserror("Inverse row sums of matrix could not be successfully computed!");
+    FOUR_C_THROW("Inverse row sums of matrix could not be successfully computed!");
 
   // take square root of inverse row sums if matrix is scaled from left and right
   if (method == EquilibrationMethod::rowsandcolumns_full or
@@ -88,7 +88,7 @@ void CORE::LINALG::Equilibration::ComputeInvColSums(const CORE::LINALG::SparseMa
 {
   // compute inverse column sums of matrix
   if (matrix.EpetraMatrix()->InvColSums(*invcolsums))
-    dserror("Inverse column sums of matrix could not be successfully computed!");
+    FOUR_C_THROW("Inverse column sums of matrix could not be successfully computed!");
 
   // take square root of inverse column sums if matrix is scaled from left and right
   if (method == EquilibrationMethod::rowsandcolumns_full or
@@ -116,7 +116,7 @@ void CORE::LINALG::Equilibration::ComputeInvSymmetry(
 void CORE::LINALG::Equilibration::EquilibrateMatrixRows(
     CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invrowsums) const
 {
-  if (matrix.LeftScale(*invrowsums)) dserror("Row equilibration of matrix failed!");
+  if (matrix.LeftScale(*invrowsums)) FOUR_C_THROW("Row equilibration of matrix failed!");
 }
 
 /*----------------------------------------------------------------------*
@@ -124,7 +124,7 @@ void CORE::LINALG::Equilibration::EquilibrateMatrixRows(
 void CORE::LINALG::Equilibration::EquilibrateMatrixColumns(
     CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invcolsums) const
 {
-  if (matrix.RightScale(*invcolsums)) dserror("Column equilibration of matrix failed!");
+  if (matrix.RightScale(*invcolsums)) FOUR_C_THROW("Column equilibration of matrix failed!");
 }
 
 /*----------------------------------------------------------------------*
@@ -152,7 +152,7 @@ void CORE::LINALG::EquilibrationUniversal::UnequilibrateIncrement(
       Method() == EquilibrationMethod::rowsandcolumns_maindiag)
   {
     if (increment->Multiply(1.0, *invcolsums_, *increment, 0.0))
-      dserror("Unequilibration of global increment vector failed!");
+      FOUR_C_THROW("Unequilibration of global increment vector failed!");
   }
 }
 
@@ -167,7 +167,7 @@ void CORE::LINALG::EquilibrationUniversal::EquilibrateRHS(
       Method() == EquilibrationMethod::rowsandcolumns_full or
       Method() == EquilibrationMethod::rowsandcolumns_maindiag)
     if (residual->Multiply(1.0, *invrowsums_, *residual, 0.0))
-      dserror("Equilibration of global residual vector failed!");
+      FOUR_C_THROW("Equilibration of global residual vector failed!");
 }
 
 /*----------------------------------------------------------------------*
@@ -176,7 +176,7 @@ void CORE::LINALG::EquilibrationBlockSpecific::UnequilibrateIncrement(
     Teuchos::RCP<Epetra_Vector> increment) const
 {
   if (increment->Multiply(1.0, *invcolsums_, *increment, 0.0))
-    dserror("Unequilibration of global increment vector failed!");
+    FOUR_C_THROW("Unequilibration of global increment vector failed!");
 }
 
 /*----------------------------------------------------------------------*
@@ -185,7 +185,7 @@ void CORE::LINALG::EquilibrationBlockSpecific::EquilibrateRHS(
     Teuchos::RCP<Epetra_Vector> residual) const
 {
   if (residual->Multiply(1.0, *invrowsums_, *residual, 0.0))
-    dserror("Equilibration of global residual vector failed!");
+    FOUR_C_THROW("Equilibration of global residual vector failed!");
 }
 
 /*-------------------------------------------------------------------------*
@@ -279,7 +279,7 @@ void CORE::LINALG::EquilibrationBlock::EquilibrateMatrix(
               int numentries(0);
               std::vector<double> values(length, 0.);
               if (matrix.EpetraMatrix()->ExtractMyRowCopy(irow, length, numentries, values.data()))
-                dserror("Cannot extract matrix row with local ID %d from matrix block!", irow);
+                FOUR_C_THROW("Cannot extract matrix row with local ID %d from matrix block!", irow);
 
               // compute and store current row sum
               double rowsum(0.);
@@ -291,7 +291,7 @@ void CORE::LINALG::EquilibrationBlock::EquilibrateMatrix(
         }
 
         // invert row sums
-        if (invrowsums->Reciprocal(*invrowsums)) dserror("Vector could not be inverted!");
+        if (invrowsums->Reciprocal(*invrowsums)) FOUR_C_THROW("Vector could not be inverted!");
 
         // take square root of inverse row sums if matrix is scaled from left and right
         if (Method() == EquilibrationMethod::rowsandcolumns_full or
@@ -351,7 +351,7 @@ void CORE::LINALG::EquilibrationBlock::EquilibrateMatrix(
               std::vector<int> indices(length, 0);
               if (matrix.EpetraMatrix()->ExtractMyRowCopy(
                       irow, length, numentries, values.data(), indices.data()))
-                dserror("Cannot extract matrix row with local ID %d from matrix block!", irow);
+                FOUR_C_THROW("Cannot extract matrix row with local ID %d from matrix block!", irow);
 
               // add entries of current matrix row to column sums
               for (int ientry = 0; ientry < numentries; ++ientry)
@@ -362,7 +362,7 @@ void CORE::LINALG::EquilibrationBlock::EquilibrateMatrix(
         }
 
         // invert column sums
-        if (invcolsums->Reciprocal(*invcolsums)) dserror("Vector could not be inverted!");
+        if (invcolsums->Reciprocal(*invcolsums)) FOUR_C_THROW("Vector could not be inverted!");
 
         // take square root of inverse column sums if matrix is scaled from left and right
         if (Method() == EquilibrationMethod::rowsandcolumns_full or
@@ -392,7 +392,7 @@ void CORE::LINALG::EquilibrationBlockSpecific::EquilibrateMatrix(
       CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
 
   if (blocksparsematrix->Rows() != static_cast<int>(method_blocks_.size()))
-    dserror("No match between number of equilibration methods and Matrix blocks");
+    FOUR_C_THROW("No match between number of equilibration methods and Matrix blocks");
 
   // init: no scaling
   invcolsums_->PutScalar(1.0);
@@ -484,7 +484,7 @@ Teuchos::RCP<CORE::LINALG::Equilibration> CORE::LINALG::BuildEquilibration(Matri
         }
         default:
         {
-          dserror("Unknown type of global system matrix");
+          FOUR_C_THROW("Unknown type of global system matrix");
           break;
         }
       }

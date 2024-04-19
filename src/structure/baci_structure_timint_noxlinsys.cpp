@@ -154,7 +154,7 @@ bool NOX::STR::LinearSystem::applyJacobianInverse(
   }
   else
   {
-    dserror("Cannot deal with Epetra_Operator of type %d", jacType_);
+    FOUR_C_THROW("Cannot deal with Epetra_Operator of type %d", jacType_);
   }
 
   // Set the output parameters in the "Output" sublist

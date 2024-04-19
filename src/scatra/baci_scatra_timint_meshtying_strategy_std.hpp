@@ -63,7 +63,7 @@ namespace SCATRA
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
         const int condid) override
     {
-      dserror("EvaluateCondition(...) is not implemented in MeshtyingStrategyStd.");
+      FOUR_C_THROW("EvaluateCondition(...) is not implemented in MeshtyingStrategyStd.");
     };
 
     //! compute meshtying residual terms and their linearizations
@@ -74,7 +74,7 @@ namespace SCATRA
 
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
-      dserror("InterfaceMaps() is not implemented in MeshtyingStrategyStd.");
+      FOUR_C_THROW("InterfaceMaps() is not implemented in MeshtyingStrategyStd.");
       return Teuchos::null;
     }
 
@@ -82,7 +82,7 @@ namespace SCATRA
 
     Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override
     {
-      dserror(
+      FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
           "instead on the initialization of the field. If this changes, you also need to change "
           "'SystemMatrixInitializationNeeded()' to return true");

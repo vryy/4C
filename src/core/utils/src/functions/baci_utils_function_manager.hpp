@@ -119,16 +119,16 @@ const T& CORE::UTILS::FunctionManager::FunctionById(int num) const
 {
   const int input_id = num + 1;
   if (functions_.size() < (unsigned int)(input_id) || input_id < 1)
-    dserror("Function with index %d (i.e. input FUNCT%d) not available.", num, input_id);
+    FOUR_C_THROW("Function with index %d (i.e. input FUNCT%d) not available.", num, input_id);
 
   const auto& function_any = functions_[num];
-  dsassert(function_any.has_value(), "Implementation error.");
+  FOUR_C_ASSERT(function_any.has_value(), "Implementation error.");
 
   using StoredType = Teuchos::RCP<T>;
   if (typeid(StoredType) == function_any.type())
   {
     const auto function_rcp = std::any_cast<StoredType>(function_any);
-    dsassert(function_rcp != Teuchos::null, "Implementation error.");
+    FOUR_C_ASSERT(function_rcp != Teuchos::null, "Implementation error.");
     return *function_rcp;
   }
   else
@@ -151,7 +151,7 @@ const T& CORE::UTILS::FunctionManager::FunctionById(int num) const
             return actual_type_name_with_rcp_prefix;
         });
 
-    dserror(
+    FOUR_C_THROW(
         "You tried to query function %d as a function of type '%s'.\n"
         "Actually, it has type '%s'.",
         input_id, CORE::UTILS::TryDemangle(typeid(T).name()).c_str(), actual_type_name.c_str());

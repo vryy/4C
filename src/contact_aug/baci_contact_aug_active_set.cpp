@@ -56,7 +56,7 @@ bool CONTACT::AUG::ActiveSet::SkipUpdate() const
       {
         int gid = interface.SlaveRowNodes()->GID(j);
         DRT::Node* node = interface.Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cnode = static_cast<Node*>(node);
 
         /* The nested active set strategy cannot deal with the case of
@@ -68,7 +68,7 @@ bool CONTACT::AUG::ActiveSet::SkipUpdate() const
          * updates the active set after EACH Newton step, see below, and thus
          * would always set the corresponding nodes to INACTIVE.) */
         if (cnode->Active() && !cnode->HasSegment())
-          dserror("Active node %i without any segment/cell attached", cnode->Id());
+          FOUR_C_THROW("Active node %i without any segment/cell attached", cnode->Id());
       }
     }
     return true;
@@ -156,7 +156,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateStatus(
     {
       const int gid = my_slave_row_node_gids[j];
       Node* cnode = dynamic_cast<Node*>(interface.Discret().gNode(gid));
-      if (!cnode) dserror("Cannot find node with gid %", gid);
+      if (!cnode) FOUR_C_THROW("Cannot find node with gid %", gid);
 
       /* read weighting factor cn
        * (this is necessary in semi-smooth Newton case, as the search for the
@@ -258,10 +258,10 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateInitialStatus(
       {
         const int sgid = my_slave_gids[j];
         Node* cnode = dynamic_cast<Node*>(interface.Discret().gNode(sgid));
-        if (!cnode) dserror("Cannot find node with gid %", sgid);
+        if (!cnode) FOUR_C_THROW("Cannot find node with gid %", sgid);
 
         const std::pair<int, bool>& active_pair = my_active_node_list[j];
-        if (cnode->Id() != active_pair.first) dserror("GID mismatch!");
+        if (cnode->Id() != active_pair.first) FOUR_C_THROW("GID mismatch!");
         if (active_pair.second != cnode->Active())
         {
           initstatus = InitStatus::changed;
@@ -333,12 +333,12 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::Merge(
         status = Status::unchanged;
         break;
       case Status::unevaluated:
-        dserror(
+        FOUR_C_THROW(
             "The active set status is unevaluated! First update the "
             "status before you call this merge routine.");
         exit(EXIT_FAILURE);
       default:
-        dserror("Unknown active set status: %d", is);
+        FOUR_C_THROW("Unknown active set status: %d", is);
         exit(EXIT_FAILURE);
     }
   }
@@ -365,7 +365,7 @@ void CONTACT::AUG::ActiveSet::Print(std::ostream& os) const
     {
       const int gid = my_slave_row_node_gids[j];
       Node* cnode = dynamic_cast<Node*>(interface.Discret().gNode(gid));
-      if (!cnode) dserror("Cannot find node with gid %", gid);
+      if (!cnode) FOUR_C_THROW("Cannot find node with gid %", gid);
 
       // compute averaged weighted gap
       const double kappa = cnode->AugData().GetKappa();
@@ -440,7 +440,7 @@ void CONTACT::AUG::ActiveSet::SanityCheck(
   const DataContainer& data = strategy_.Data();
 
   if (cparams.IsDefaultStep() and (gstatus == Status::changed) == data.IsActiveSetConverged())
-    dserror(
+    FOUR_C_THROW(
         "The convergence state of the active set has not been correctly "
         "detected: %s",
         Status2String(gstatus).c_str());

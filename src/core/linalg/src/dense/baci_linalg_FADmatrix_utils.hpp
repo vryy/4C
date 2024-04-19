@@ -78,7 +78,7 @@ namespace CORE::LINALG
     inline void diff(const int pos,  ///< appending array of derivatives starts from this position
         const int n)                 ///< total length of derivative array
     {
-      if (rows != cols) dserror("diff does only work for quadratic matrices");
+      if (rows != cols) FOUR_C_THROW("diff does only work for quadratic matrices");
       for (unsigned i = 0; i < rows; ++i) (*this)(i, i).diff(pos + i, n);
       (*this)(0, 1).diff(pos + 2 + 1, n);
       (*this)(1, 2).diff(pos + 2 + 2, n);

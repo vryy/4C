@@ -625,7 +625,7 @@ namespace DRT
           break;
 
         default:
-          dserror("Element shape not supported.");
+          FOUR_C_THROW("Element shape not supported.");
           break;
       }
       return -1.0;

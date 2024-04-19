@@ -52,7 +52,7 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
     case 3:
       return InitializeInternal<3>();
     default:
-      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
 }
 
@@ -65,7 +65,7 @@ void MAT::PAR::FluidPoroSingleReaction::InitializeInternal()
   if (GLOBAL::Problem::Instance()
           ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
           .NumberComponents() != 1)
-    dserror("expected only one component for single phase reaction!");
+    FOUR_C_THROW("expected only one component for single phase reaction!");
 
   for (int k = 0; k < numscal_; k++)
   {
@@ -142,7 +142,7 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(std::vector<double>& re
           reacderivsporosity, reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar,
           pressure, saturation, porosity, volfracs, volfracpressures, scalar);
     default:
-      dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
   }
 }
 
@@ -254,72 +254,73 @@ void MAT::PAR::FluidPoroSingleReaction::CheckSizes(std::vector<double>& reacval,
     const std::vector<double>& volfracs, const std::vector<double>& volfracpressures,
     const std::vector<double>& scalar)
 {
-  //  dsassert(pressurenames_.size()==pressure.size(),"Invalid number of pressure values for this
+  //  FOUR_C_ASSERT(pressurenames_.size()==pressure.size(),"Invalid number of pressure values for
+  //  this the fluid poro reaction material!");
+  //  FOUR_C_ASSERT(pressurenames_.size()==saturation.size(),"Invalid number of pressure values for
+  //  this the fluid poro reaction material!");
+  //  FOUR_C_ASSERT(scalarnames_.size()==scalar.size(),"Invalid number of pressure values for this
   //  the fluid poro reaction material!");
-  //  dsassert(pressurenames_.size()==saturation.size(),"Invalid number of pressure values for this
-  //  the fluid poro reaction material!"); dsassert(scalarnames_.size()==scalar.size(),"Invalid
-  //  number of pressure values for this the fluid poro reaction material!");
 
   if (numfluidphases_ != (int)pressure.size())
-    dserror("Invalid number of pressure values for this fluid poro reaction material!");
+    FOUR_C_THROW("Invalid number of pressure values for this fluid poro reaction material!");
 
   if (numfluidphases_ != (int)saturation.size())
-    dserror("Invalid number of saturation values for this fluid poro reaction material!");
+    FOUR_C_THROW("Invalid number of saturation values for this fluid poro reaction material!");
   if (numscal_ != (int)scalar.size())
-    dserror("Invalid number of scalar values for this fluid poro reaction material!");
+    FOUR_C_THROW("Invalid number of scalar values for this fluid poro reaction material!");
   if (numvolfrac_ != (int)volfracs.size())
-    dserror("Invalid number of volfrac values for this fluid poro reaction material!");
+    FOUR_C_THROW("Invalid number of volfrac values for this fluid poro reaction material!");
   if (numvolfrac_ != (int)volfracpressures.size())
-    dserror("Invalid number of volfrac values for this fluid poro reaction material!");
+    FOUR_C_THROW("Invalid number of volfrac values for this fluid poro reaction material!");
 
   if (totalnummultiphasedof_ != (int)reacderivsporosity.size())
-    dserror(
+    FOUR_C_THROW(
         "Invalid length of vector for porosity derivatives for this fluid poro reaction material!");
   if (totalnummultiphasedof_ != (int)reacderivspressure.size())
-    dserror(
+    FOUR_C_THROW(
         "Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
   for (int k = 0; k < totalnummultiphasedof_; k++)
   {
     if (numfluidphases_ != (int)reacderivspressure[k].size())
-      dserror(
+      FOUR_C_THROW(
           "Invalid length of vector for pressure derivatives for this fluid poro reaction "
           "material!");
   }
   if (totalnummultiphasedof_ != (int)reacderivssaturation.size())
-    dserror(
+    FOUR_C_THROW(
         "Invalid length of vector for pressure derivatives for this fluid poro reaction material!");
   for (int k = 0; k < totalnummultiphasedof_; k++)
   {
     if (numfluidphases_ != (int)reacderivssaturation[k].size())
-      dserror(
+      FOUR_C_THROW(
           "Invalid length of vector for pressure derivatives for this fluid poro reaction "
           "material!");
   }
   if (totalnummultiphasedof_ != (int)reacderivsscalar.size())
-    dserror(
+    FOUR_C_THROW(
         "Invalid length of vector for scalar derivatives for this fluid poro reaction material!");
   for (int k = 0; k < totalnummultiphasedof_; k++)
   {
     if (numscal_ != (int)reacderivsscalar[k].size())
-      dserror(
+      FOUR_C_THROW(
           "Invalid length of vector for scalar derivatives for this fluid poro reaction material!");
   }
   if (totalnummultiphasedof_ != (int)reacderivsvolfrac.size())
-    dserror(
+    FOUR_C_THROW(
         "Invalid length of vector for vol frac derivatives for this fluid poro reaction material!");
   for (int k = 0; k < totalnummultiphasedof_; k++)
   {
     if (numvolfrac_ != (int)reacderivsvolfrac[k].size())
-      dserror(
+      FOUR_C_THROW(
           "Invalid length of vector for scalar derivatives for this fluid poro reaction material!");
   }
   if (totalnummultiphasedof_ != (int)reacderivsvolfracpressure.size())
-    dserror(
+    FOUR_C_THROW(
         "Invalid length of vector for vol frac derivatives for this fluid poro reaction material!");
   for (int k = 0; k < totalnummultiphasedof_; k++)
   {
     if (numvolfrac_ != (int)reacderivsvolfracpressure[k].size())
-      dserror(
+      FOUR_C_THROW(
           "Invalid length of vector for scalar derivatives for this fluid poro reaction material!");
   }
 
@@ -423,11 +424,12 @@ void MAT::FluidPoroSingleReaction::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroSingleReaction*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*

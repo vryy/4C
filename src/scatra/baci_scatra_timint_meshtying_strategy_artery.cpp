@@ -45,7 +45,7 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
       GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
   if (CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
       INPAR::SCATRA::velocity_zero)
-    dserror("set your velocity field to zero!");
+    FOUR_C_THROW("set your velocity field to zero!");
 
   // construct artery scatra problem
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> art_scatra =
@@ -147,7 +147,7 @@ void SCATRA::MeshtyingStrategyArtery::InitializeLinearSolver(
       solvertype == INPAR::SOLVER::SolverType::superlu)
     return;
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
+  if (solvertype != INPAR::SOLVER::SolverType::belos) FOUR_C_THROW("Iterative solver expected");
 
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
@@ -162,7 +162,7 @@ void SCATRA::MeshtyingStrategyArtery::InitializeLinearSolver(
     }
     break;
     default:
-      dserror("AMGnxn preconditioner expected");
+      FOUR_C_THROW("AMGnxn preconditioner expected");
       break;
   }
 
@@ -202,7 +202,7 @@ Teuchos::RCP<const Epetra_Map> SCATRA::MeshtyingStrategyArtery::ArtScatraDofRowM
  *-------------------------------------------------------------------------------*/
 const CORE::LINALG::Solver& SCATRA::MeshtyingStrategyArtery::Solver() const
 {
-  if (scatratimint_->Solver() == Teuchos::null) dserror("Invalid linear solver!");
+  if (scatratimint_->Solver() == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
 
   return *scatratimint_->Solver();
 }
@@ -315,7 +315,8 @@ void SCATRA::MeshtyingStrategyArtery::SetArteryScatraTimeIntegrator(
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> artscatratimint)
 {
   artscatratimint_ = artscatratimint;
-  if (artscatratimint_ == Teuchos::null) dserror("could not set artery scatra time integrator");
+  if (artscatratimint_ == Teuchos::null)
+    FOUR_C_THROW("could not set artery scatra time integrator");
 
   return;
 }
@@ -327,7 +328,7 @@ void SCATRA::MeshtyingStrategyArtery::SetArteryTimeIntegrator(
     Teuchos::RCP<ADAPTER::ArtNet> arttimint)
 {
   arttimint_ = arttimint;
-  if (arttimint_ == Teuchos::null) dserror("could not set artery time integrator");
+  if (arttimint_ == Teuchos::null) FOUR_C_THROW("could not set artery time integrator");
 
   return;
 }

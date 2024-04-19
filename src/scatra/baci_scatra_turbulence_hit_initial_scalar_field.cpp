@@ -77,7 +77,7 @@ namespace SCATRA
       }
       default:
       {
-        dserror("Set problem size! %i", discret_->NumGlobalElements());
+        FOUR_C_THROW("Set problem size! %i", discret_->NumGlobalElements());
         break;
       }
     }
@@ -144,7 +144,7 @@ namespace SCATRA
 
         if (tag != (myrank + numprocs - 1) % numprocs)
         {
-          dserror("received wrong message (ReceiveAny)");
+          FOUR_C_THROW("received wrong message (ReceiveAny)");
         }
 
         exporter.Wait(request);
@@ -277,7 +277,7 @@ namespace SCATRA
                 std::cout << "k1  " << k_1 << std::endl;
                 std::cout << "k2  " << k_2 << std::endl;
                 std::cout << "k3  " << k_3 << std::endl;
-                dserror("Negative energy!");
+                FOUR_C_THROW("Negative energy!");
               }
 
               // remark on the literature:
@@ -393,7 +393,7 @@ namespace SCATRA
     fftw_destroy_plan(fft);
     fftw_cleanup();
 #else
-    dserror("FFTW required for HIT!");
+    FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
     //----------------------------------------
@@ -411,7 +411,8 @@ namespace SCATRA
 
       // get global ids of all dofs of the node
       std::vector<int> dofs = discret_->Dof(0, node);
-      if (dofs.size() > 1) dserror("Only one dof per node for homogeneous isotropic turbulence!");
+      if (dofs.size() > 1)
+        FOUR_C_THROW("Only one dof per node for homogeneous isotropic turbulence!");
 
       // determine position
       std::vector<int> loc(3);
@@ -443,7 +444,7 @@ namespace SCATRA
       // set value
       int err = phinp_->ReplaceMyValues(1, &((*phi)[pos]), &lid);
 
-      if (err > 0) dserror("Could not set initial field!");
+      if (err > 0) FOUR_C_THROW("Could not set initial field!");
     }
 
     // initialize phin_ as well
@@ -451,7 +452,7 @@ namespace SCATRA
 
     return;
 #else
-    dserror("FFTW required");
+    FOUR_C_THROW("FFTW required");
 #endif
   }
 
@@ -479,7 +480,7 @@ namespace SCATRA
         energy = 0.1 * 1.0;
     }
     else
-      dserror("Unkown initial field!");
+      FOUR_C_THROW("Unkown initial field!");
 
     return energy;
   }

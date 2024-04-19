@@ -116,14 +116,14 @@ CORE::COMM::ParObject* CORE::COMM::ParObjectFactory::Create(const std::vector<ch
   std::map<int, ParObjectType*>::iterator i = type_map_.find(type);
   if (i == type_map_.end())
   {
-    dserror("object id %d undefined. Have you extended CORE::COMM::ParObjectList()?", type);
+    FOUR_C_THROW("object id %d undefined. Have you extended CORE::COMM::ParObjectList()?", type);
   }
 
   ParObject* o = i->second->Create(data);
 
   if (o == nullptr)
   {
-    dserror("failed to create object of type %d", type);
+    FOUR_C_THROW("failed to create object of type %d", type);
   }
 
   return o;
@@ -159,7 +159,7 @@ Teuchos::RCP<DRT::Element> CORE::COMM::ParObjectFactory::Create(
     }
   }
 
-  dserror("Unknown type '%s' of finite element", eletype.c_str());
+  FOUR_C_THROW("Unknown type '%s' of finite element", eletype.c_str());
   return Teuchos::null;
 }
 
@@ -184,13 +184,13 @@ void CORE::COMM::ParObjectFactory::Register(ParObjectType* object_type)
   std::map<int, ParObjectType*>::iterator i = type_map_.find(hash);
   if (i != type_map_.end())
   {
-    dserror("object (%s,%d) already defined: (%s,%d)", name.c_str(), hash,
+    FOUR_C_THROW("object (%s,%d) already defined: (%s,%d)", name.c_str(), hash,
         i->second->Name().c_str(), i->first);
   }
 
   if (hash == 0)
   {
-    dserror("illegal hash value");
+    FOUR_C_THROW("illegal hash value");
   }
 
   // std::cout << "register type object: '" << name << "': " << hash << "\n";
@@ -240,11 +240,11 @@ void CORE::COMM::ParObjectFactory::InitializeElements(DRT::Discretization& dis)
     {
       ae.insert(eot);
       int err = eot->Initialize(dis);
-      if (err) dserror("Element Initialize returned err=%d", err);
+      if (err) FOUR_C_THROW("Element Initialize returned err=%d", err);
     }
     else
     {
-      dserror("illegal element type id %d", *i);
+      FOUR_C_THROW("illegal element type id %d", *i);
     }
   }
 }

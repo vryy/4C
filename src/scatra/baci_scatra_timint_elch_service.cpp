@@ -37,13 +37,13 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
   // safety checks
   if (adaptivetimesteppingonoff_ and !adaptivetimestepping)
   {
-    dserror(
+    FOUR_C_THROW(
         "Must not activate adaptive time stepping for initial relaxation while adaptive time "
         "stepping in scatra is disabled.");
   }
   if (nhalfcycles_ < 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Less than one constant-current constant-voltage (CCCV) half-cycle specified in CCCV "
         "cell cycling boundary condition!");
   }
@@ -53,7 +53,7 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
   {
     if (*condition->Get<int>("ConditionID") < 0)
     {
-      dserror(
+      FOUR_C_THROW(
           "Constant-current constant-voltage (CCCV) half-cycle boundary condition has invalid "
           "condition ID!");
     }
@@ -67,8 +67,8 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
       halfcycle_discharge_ =
           Teuchos::rcp(new SCATRA::CCCVHalfCycleCondition(*condition, adaptivetimestepping));
   }
-  if (halfcycle_charge_ == Teuchos::null) dserror("Invalid halfcycle for charge!");
-  if (halfcycle_discharge_ == Teuchos::null) dserror("Invalid halfcycle for discharge!");
+  if (halfcycle_charge_ == Teuchos::null) FOUR_C_THROW("Invalid halfcycle for charge!");
+  if (halfcycle_discharge_ == Teuchos::null) FOUR_C_THROW("Invalid halfcycle for discharge!");
 
   // activate first half cycle depending on initial relaxation
   if (initrelaxtime_ < 0.0)
@@ -76,7 +76,7 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
   else if (initrelaxtime_ > 0.0)
     phaseinitialrelaxation_ = true;
   else
-    dserror("Please choose an initial relaxation time larger than 0.0");
+    FOUR_C_THROW("Please choose an initial relaxation time larger than 0.0");
 }
 
 /*-----------------------------------------------------------------------------*
@@ -140,7 +140,7 @@ bool SCATRA::CCCVCondition::IsEndOfHalfCyclePhase(
       break;
     }
     default:
-      dserror("illegal CC-CV operation mode");
+      FOUR_C_THROW("illegal CC-CV operation mode");
       break;
   }
 
@@ -282,7 +282,7 @@ SCATRA::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
   {
     if (i and !adaptivetimestepping)
     {
-      dserror(
+      FOUR_C_THROW(
           "Must not activate adaptive time stepping for half cycles while adaptive time "
           "stepping in scatra is disabled.");
     }
@@ -318,7 +318,7 @@ bool SCATRA::CCCVHalfCycleCondition::IsEndOfHalfCycleNextPhase(const double time
       break;
     }
     default:
-      dserror("illegal CC-CV mode");
+      FOUR_C_THROW("illegal CC-CV mode");
       break;
   }
 
@@ -357,7 +357,7 @@ bool SCATRA::CCCVHalfCycleCondition::IsAdaptiveTimeSteppingPhase() const
       break;
     }
     default:
-      dserror("illegal CC-CV mode");
+      FOUR_C_THROW("illegal CC-CV mode");
       break;
   }
 

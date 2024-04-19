@@ -87,7 +87,7 @@ int CORE::COUPLING::MatchingOctree::Setup()
       // check if entity is on this proc
       if (not CheckHaveEntity(discret_, masterentityids_->at(locn)))
       {
-        dserror(
+        FOUR_C_THROW(
             "MatchingOctree can only be constructed with entities,\n"
             "which are either owned, or ghosted by calling proc.");
       }
@@ -131,7 +131,7 @@ bool CORE::COUPLING::MatchingOctree::SearchClosestEntityOnThisProc(const std::ve
 
     if (octreeroot_ == Teuchos::null)
     {
-      dserror("No root for octree on proc");
+      FOUR_C_THROW("No root for octree on proc");
     }
 
     Teuchos::RCP<OctreeElement> octreeele = octreeroot_;
@@ -142,7 +142,7 @@ bool CORE::COUPLING::MatchingOctree::SearchClosestEntityOnThisProc(const std::ve
 
       if (octreeele == Teuchos::null)
       {
-        dserror("Child is nullpointer");
+        FOUR_C_THROW("Child is nullpointer");
       }
     }
 
@@ -237,7 +237,7 @@ void CORE::COUPLING::MatchingOctree::CreateGlobalEntityMatching(
       // you didn't
       if (!rblockofnodes.empty())
       {
-        dserror("rblockofnodes not empty");
+        FOUR_C_THROW("rblockofnodes not empty");
       }
 
       rblockofnodes.clear();
@@ -248,7 +248,7 @@ void CORE::COUPLING::MatchingOctree::CreateGlobalEntityMatching(
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -341,7 +341,7 @@ void CORE::COUPLING::MatchingOctree::CreateGlobalEntityMatching(
 
           if (dir < 0)
           {
-            dserror("Unable to get direction orthogonal to plane");
+            FOUR_C_THROW("Unable to get direction orthogonal to plane");
           }
 
           // substitute x value
@@ -419,7 +419,7 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slaved
   int numprocs = discret_->Comm().NumProc();
 
   if (slavedis.Comm().NumProc() != numprocs)
-    dserror("compared discretizations must live on same procs");
+    FOUR_C_THROW("compared discretizations must live on same procs");
 
   // 1) each proc generates a list of his slavenodes
   //
@@ -490,7 +490,7 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slaved
       // you didn't
       if (not rblockofnodes.empty())
       {
-        dserror("rblockofnodes not empty");
+        FOUR_C_THROW("rblockofnodes not empty");
       }
 
       rblockofnodes.clear();
@@ -501,7 +501,7 @@ void CORE::COUPLING::MatchingOctree::FindMatch(const DRT::Discretization& slaved
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -591,7 +591,7 @@ void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
   int numprocs = discret_->Comm().NumProc();
 
   if (slavedis.Comm().NumProc() != numprocs)
-    dserror("compared discretizations must live on same procs");
+    FOUR_C_THROW("compared discretizations must live on same procs");
 
   // 1) each proc generates a list of his slavenodes
   //
@@ -646,7 +646,7 @@ void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
       // you didn't
       if (not rblockofnodes.empty())
       {
-        dserror("rblockofnodes not empty");
+        FOUR_C_THROW("rblockofnodes not empty");
       }
 
       rblockofnodes.clear();
@@ -657,7 +657,7 @@ void CORE::COUPLING::MatchingOctree::FillSlaveToMasterGIDMapping(
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -768,7 +768,7 @@ void CORE::COUPLING::NodeMatchingOctree::CalcPointCoordinate(
     CORE::COMM::ParObject* entity, double* coord)
 {
   auto* actnode = dynamic_cast<DRT::Node*>(entity);
-  if (actnode == nullptr) dserror("dynamic_cast failed");
+  if (actnode == nullptr) FOUR_C_THROW("dynamic_cast failed");
 
   const int dim = 3;
 
@@ -816,7 +816,7 @@ int CORE::COUPLING::NodeMatchingOctree::CheckValidEntityType(Teuchos::RCP<CORE::
 {
   // cast ParObject to Node
   auto* actnode = dynamic_cast<DRT::Node*>(o.get());
-  if (actnode == nullptr) dserror("unpack of invalid data");
+  if (actnode == nullptr) FOUR_C_THROW("unpack of invalid data");
 
   return actnode->Id();
 }  // NodeMatchingOctree::CheckValidEntityType
@@ -865,10 +865,10 @@ void CORE::COUPLING::ElementMatchingOctree::CalcPointCoordinate(
     CORE::COMM::ParObject* entity, double* coord)
 {
   auto* actele = dynamic_cast<DRT::Element*>(entity);
-  if (actele == nullptr) dserror("dynamic_cast failed");
+  if (actele == nullptr) FOUR_C_THROW("dynamic_cast failed");
 
   DRT::Node** nodes = actele->Nodes();
-  if (nodes == nullptr) dserror("could not get pointer to nodes");
+  if (nodes == nullptr) FOUR_C_THROW("could not get pointer to nodes");
 
   const int numnode = actele->NumNode();
   const int dim = 3;
@@ -925,7 +925,7 @@ void CORE::COUPLING::ElementMatchingOctree::UnPackEntity(
     CORE::COMM::ParObject::ExtractfromPack(index, rblockofnodes, nodedata);
     Teuchos::RCP<CORE::COMM::ParObject> o = Teuchos::rcp(CORE::COMM::Factory(nodedata));
     Teuchos::RCP<DRT::Node> actnode = Teuchos::rcp_dynamic_cast<DRT::Node>(o);
-    if (actnode == Teuchos::null) dserror("cast from ParObject to Node failed");
+    if (actnode == Teuchos::null) FOUR_C_THROW("cast from ParObject to Node failed");
     nodes_.insert(std::pair<int, Teuchos::RCP<DRT::Node>>(actnode->Id(), actnode));
   }
 
@@ -938,7 +938,7 @@ int CORE::COUPLING::ElementMatchingOctree::CheckValidEntityType(
 {
   // cast ParObject to element
   auto* actele = dynamic_cast<DRT::Element*>(o.get());
-  if (actele == nullptr) dserror("unpack of invalid data");
+  if (actele == nullptr) FOUR_C_THROW("unpack of invalid data");
 
   // set nodal pointers for this element
   actele->BuildNodalPointers(nodes_);
@@ -1075,7 +1075,7 @@ int CORE::COUPLING::OctreeElement::Setup()
 
   if (layer_ > 200)
   {
-    dserror("max.depth of octree: 200. Can't append further children\n");
+    FOUR_C_THROW("max.depth of octree: 200. Can't append further children\n");
   }
 
   const int numnodestoadd = static_cast<int>(nodeids_.size());
@@ -1233,7 +1233,7 @@ int CORE::COUPLING::OctreeElement::Setup()
   {
     if ((int)nodeids_.size() == 0)
     {
-      dserror("Trying to create leaf with no nodes. Stop.");
+      FOUR_C_THROW("Trying to create leaf with no nodes. Stop.");
     }
   }
 
@@ -1324,7 +1324,7 @@ CORE::COUPLING::OctreeElement::ReturnChildContainingPoint(const std::vector<doub
 
   if (this->octreechild1_ == Teuchos::null || this->octreechild2_ == Teuchos::null)
   {
-    dserror("Asked leaf element for further children.");
+    FOUR_C_THROW("Asked leaf element for further children.");
   }
 
   if (this->octreechild1_->IsPointInBoundingBox(x))
@@ -1337,7 +1337,7 @@ CORE::COUPLING::OctreeElement::ReturnChildContainingPoint(const std::vector<doub
   }
   else
   {
-    dserror("point in no bounding box of children, but in parent bounding box!");
+    FOUR_C_THROW("point in no bounding box of children, but in parent bounding box!");
   }
 
   return nextelement;

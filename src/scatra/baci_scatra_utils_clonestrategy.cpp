@@ -61,7 +61,7 @@ void SCATRA::ScatraFluidCloneStrategy::CheckMaterialType(const int matid)
       (mtype != INPAR::MAT::m_scatra_multiporo_volfrac) &&
       (mtype != INPAR::MAT::m_scatra_multiporo_solid) &&
       (mtype != INPAR::MAT::m_scatra_multiporo_temperature))
-    dserror("Material with ID %d is not admissible for scalar transport elements", matid);
+    FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
 
@@ -83,7 +83,7 @@ void SCATRA::ScatraFluidCloneStrategy::SetElementData(
   }
   else
   {
-    dserror("unsupported element type '%s'", typeid(*newele).name());
+    FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
   }
   return;
 }
@@ -129,7 +129,7 @@ void SCATRA::ScatraReactionCloneStrategy::CheckMaterialType(const int matid)
   INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
   if ((mtype != INPAR::MAT::m_scatra) && (mtype != INPAR::MAT::m_matlist) &&
       (mtype != INPAR::MAT::m_matlist_reactions))
-    dserror("Material with ID %d is not admissible for scalar transport elements", matid);
+    FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
 
@@ -151,7 +151,7 @@ void SCATRA::ScatraReactionCloneStrategy::SetElementData(
   }
   else
   {
-    dserror("unsupported element type '%s'", typeid(*newele).name());
+    FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
   }
   return;
 }

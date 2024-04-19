@@ -55,7 +55,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_linstiff")
     act = SoHex27::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
@@ -94,7 +94,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_struct_predict")
     return 0;
   else
-    dserror("Unknown type of action for So_hex27: %s", action.c_str());
+    FOUR_C_THROW("Unknown type of action for So_hex27: %s", action.c_str());
   // what should the element do
   switch (act)
   {
@@ -122,7 +122,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -146,7 +146,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
             INPAR::STR::strain_none, INPAR::STR::strain_none);
       }
       else
-        dserror("unknown kinematic type");
+        FOUR_C_THROW("unknown kinematic type");
     }
     break;
 
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -181,13 +181,13 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
             INPAR::STR::strain_none, INPAR::STR::strain_none);
       }
       else
-        dserror("unknown kinematic type");
+        FOUR_C_THROW("unknown kinematic type");
     }
     break;
 
     // linear stiffness and consistent mass matrix
     case calc_struct_linstiffmass:
-      dserror("Case 'calc_struct_linstiffmass' not yet implemented");
+      FOUR_C_THROW("Case 'calc_struct_linstiffmass' not yet implemented");
       break;
 
     // nonlinear stiffness, internal force vector, and consistent mass matrix
@@ -202,9 +202,9 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
       Teuchos::RCP<const Epetra_Vector> acc = discretization.GetState("acceleration");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
-      if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-      if (acc == Teuchos::null) dserror("Cannot get state vectors 'acceleration'");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
+      if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
+      if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'acceleration'");
 
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -248,7 +248,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
               INPAR::STR::stress_none, INPAR::STR::strain_none, INPAR::STR::strain_none);
         }
         else
-          dserror("unknown kinematic type");
+          FOUR_C_THROW("unknown kinematic type");
       }
 
       if (act == calc_struct_nlnstifflmass) soh27_lumpmass(&elemat2);
@@ -284,10 +284,10 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
       Teuchos::RCP<std::vector<char>> plstraindata =
           params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-      if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-      if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
-      if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
+      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
+      if (plstraindata == Teuchos::null) FOUR_C_THROW("Cannot get 'plastic strain' data");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -318,7 +318,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
             ioplstrain);
       }
       else
-        dserror("unknown kinematic type");
+        FOUR_C_THROW("unknown kinematic type");
 
       {
         CORE::COMM::PackBuffer data;
@@ -350,7 +350,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
     {
       time_ = params.get<double>("total time");
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get displacement state");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -382,11 +382,11 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_eleload:
-      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
       break;
 
     case calc_struct_fsiload:
-      dserror("Case not yet implemented");
+      FOUR_C_THROW("Case not yet implemented");
       break;
 
     case calc_struct_update_istep:
@@ -416,7 +416,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this processor
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
@@ -487,7 +487,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
       else  // old structural time integration
       {
         // check length of elevec1
-        if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
+        if (elevec1_epetra.length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
         elevec1_epetra(0) = intenergy;
       }
@@ -509,7 +509,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
     break;
 
     default:
-      dserror("Unknown type of action for So_hex27");
+      FOUR_C_THROW("Unknown type of action for So_hex27");
   }
   return 0;
 }
@@ -542,12 +542,13 @@ int DRT::ELEMENTS::SoHex27::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOH27)
-    dserror("Fewer functions or curves defined than the element has dofs.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   for (int checkdof = NUMDIM_SOH27; checkdof < int(onoff->size()); ++checkdof)
   {
     if ((*onoff)[checkdof] != 0)
-      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+      FOUR_C_THROW(
+          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS
@@ -587,9 +588,9 @@ int DRT::ELEMENTS::SoHex27::EvaluateNeumann(Teuchos::ParameterList& params,
     // compute determinant of Jacobian
     const double detJ = jac.Determinant();
     if (detJ == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     // material/reference co-ordinates of Gauss point
     if (havefunct)
@@ -652,9 +653,9 @@ void DRT::ELEMENTS::SoHex27::InitJacobianMapping()
     invJ_[gp].Multiply(derivs[gp], xrefe);
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ_[gp] < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
@@ -801,14 +802,14 @@ void DRT::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // locati
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
         CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> gl;
         gl(0, 0) = glstrain(0);
@@ -841,7 +842,7 @@ void DRT::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // locati
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested strain type not available");
+        FOUR_C_THROW("requested strain type not available");
     }
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
@@ -867,7 +868,7 @@ void DRT::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // locati
     {
       case INPAR::STR::strain_gl:
       {
-        if (eleplstrain == nullptr) dserror("plastic strain data not available");
+        if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
             params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         for (int i = 0; i < 3; ++i) (*eleplstrain)(gp, i) = plglstrain(i);
@@ -876,7 +877,7 @@ void DRT::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // locati
       }
       case INPAR::STR::strain_ea:
       {
-        if (eleplstrain == nullptr) dserror("plastic strain data not available");
+        if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
             params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         // rewriting Green-Lagrange strains in matrix format
@@ -911,7 +912,7 @@ void DRT::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // locati
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested plastic strain type not available");
+        FOUR_C_THROW("requested plastic strain type not available");
         break;
     }
 
@@ -920,13 +921,13 @@ void DRT::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // locati
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF = defgrd.Determinant();
 
         CORE::LINALG::Matrix<3, 3> pkstress;
@@ -956,7 +957,7 @@ void DRT::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // locati
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not available");
+        FOUR_C_THROW("requested stress type not available");
     }
 
     double detJ_w = detJ * gpweights[gp];
@@ -1126,14 +1127,14 @@ void DRT::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locati
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
         CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> gl;
         gl(0, 0) = glstrain(0);
@@ -1166,7 +1167,7 @@ void DRT::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locati
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested strain type not available");
+        FOUR_C_THROW("requested strain type not available");
     }
 
     /* non-linear B-operator (may so be called, meaning
@@ -1237,7 +1238,7 @@ void DRT::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locati
     {
       case INPAR::STR::strain_gl:
       {
-        if (eleplstrain == nullptr) dserror("plastic strain data not available");
+        if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
             params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         for (int i = 0; i < 3; ++i) (*eleplstrain)(gp, i) = plglstrain(i);
@@ -1246,7 +1247,7 @@ void DRT::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locati
       }
       case INPAR::STR::strain_ea:
       {
-        if (eleplstrain == nullptr) dserror("plastic strain data not available");
+        if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
             params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         // rewriting Green-Lagrange strains in matrix format
@@ -1281,7 +1282,7 @@ void DRT::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locati
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested plastic strain type not available");
+        FOUR_C_THROW("requested plastic strain type not available");
         break;
     }
 
@@ -1290,13 +1291,13 @@ void DRT::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locati
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF = defgrd.Determinant();
 
         CORE::LINALG::Matrix<3, 3> pkstress;
@@ -1326,7 +1327,7 @@ void DRT::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locati
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not available");
+        FOUR_C_THROW("requested stress type not available");
     }
 
     double detJ_w = detJ * gpweights[gp];
@@ -1612,7 +1613,7 @@ int DRT::ELEMENTS::SoHex27Type::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex27*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex27* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex27* failed");
     actele->InitJacobianMapping();
   }
   return 0;

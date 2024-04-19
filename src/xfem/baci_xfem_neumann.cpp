@@ -51,8 +51,8 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 5) EvaluateNeumann");
 
 
-  if (!discret->Filled()) dserror("FillComplete() was not called");
-  if (!discret->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!discret->Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!discret->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   bool assemblemat = (systemmatrix != nullptr);
 
@@ -136,7 +136,7 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
       std::cout << "WARNING: No linearization of PointNeumann conditions" << std::endl;
     DRT::Condition& cond = *(fool->second);
     const std::vector<int>* nodeids = cond.GetNodes();
-    if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
+    if (!nodeids) FOUR_C_THROW("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
     const auto* funct = cond.GetIf<std::vector<int>>("funct");
     const auto* onoff = cond.GetIf<std::vector<int>>("onoff");
@@ -156,7 +156,7 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
       // do only nodes in my row map
       if (!discret->NodeRowMap()->MyGID((*nodeids)[i])) continue;
       DRT::Node* actnode = discret->gNode((*nodeids)[i]);
-      if (!actnode) dserror("Cannot find global node %d", (*nodeids)[i]);
+      if (!actnode) FOUR_C_THROW("Cannot find global node %d", (*nodeids)[i]);
       // call explicitly the main dofset, i.e. the first column
       std::vector<int> dofs = discret->Dof(0, actnode);
       const unsigned numdf = dofs.size();
@@ -167,7 +167,7 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
         double value = (*val)[j];
         value *= functfac;
         const int lid = systemvector.Map().LID(gid);
-        if (lid < 0) dserror("Global id %d not on this proc in system vector", gid);
+        if (lid < 0) FOUR_C_THROW("Global id %d not on this proc in system vector", gid);
         systemvector[lid] += value;
       }
     }

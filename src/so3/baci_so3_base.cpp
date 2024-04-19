@@ -116,7 +116,7 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::SoBase::ParamsInterf
  *----------------------------------------------------------------------*/
 STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::SoBase::StrParamsInterface()
 {
-  if (not IsParamsInterface()) dserror("The interface ptr is not set!");
+  if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
   return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_, true));
 }
 
@@ -125,7 +125,7 @@ STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::SoBase::StrParamsInterface()
 void DRT::ELEMENTS::SoBase::ErrorHandling(const double& det_curr, Teuchos::ParameterList& params,
     const int line_id, const STR::ELEMENTS::EvalErrorFlag flag)
 {
-  // check, if errors are tolerated or should throw a dserror
+  // check, if errors are tolerated or should throw a FOUR_C_THROW
   if (IsParamsInterface() and StrParamsInterface().IsTolerateErrors())
   {
     StrParamsInterface().SetEleEvalErrorFlag(flag);
@@ -141,13 +141,13 @@ void DRT::ELEMENTS::SoBase::ErrorHandling(const double& det_curr, Teuchos::Param
       params.set<bool>("eval_error", true);
       return;
     }
-    // if the errors are not tolerated, throw a dserror
+    // if the errors are not tolerated, throw a FOUR_C_THROW
     else
     {
       if (det_curr == 0.0)
-        dserror("ZERO DETERMINANT DETECTED in line %d", line_id);
+        FOUR_C_THROW("ZERO DETERMINANT DETECTED in line %d", line_id);
       else if (det_curr < 0.0)
-        dserror("NEGATIVE DETERMINANT DETECTED in line %d (value = %.5e)", line_id, det_curr);
+        FOUR_C_THROW("NEGATIVE DETERMINANT DETECTED in line %d (value = %.5e)", line_id, det_curr);
     }
   }
 }

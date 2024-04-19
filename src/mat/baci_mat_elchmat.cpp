@@ -28,7 +28,7 @@ MAT::PAR::ElchMat::ElchMat(Teuchos::RCP<MAT::PAR::Material> matdata)
       local_(*matdata->Get<bool>("LOCAL"))
 {
   if (numphase_ != (int)phaseids_.size())
-    dserror(
+    FOUR_C_THROW(
         "number of phases %d does not fit to size of phase vector %d", numphase_, phaseids_.size());
 
   if (not local_)
@@ -86,7 +86,7 @@ void MAT::ElchMat::SetupMatMap()
 {
   // safety first
   mat_.clear();
-  if (not mat_.empty()) dserror("What's going wrong here?");
+  if (not mat_.empty()) FOUR_C_THROW("What's going wrong here?");
 
   // make sure the referenced materials in material list have quick access parameters
 
@@ -96,7 +96,7 @@ void MAT::ElchMat::SetupMatMap()
   {
     const int phaseid = *n;
     Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(phaseid);
-    if (mat == Teuchos::null) dserror("Failed to allocate this material");
+    if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
     mat_.insert(std::pair<int, Teuchos::RCP<MAT::Material>>(phaseid, mat));
   }
   return;
@@ -163,7 +163,7 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ElchMat*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -175,7 +175,7 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
     {
       const int actphaseid = *n;
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(actphaseid);
-      if (mat == Teuchos::null) dserror("Failed to allocate this material");
+      if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
       mat_.insert(std::pair<int, Teuchos::RCP<MAT::Material>>(actphaseid, mat));
     }
 
@@ -192,7 +192,7 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
     if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
   }  // if (params_ != nullptr)
 }
 

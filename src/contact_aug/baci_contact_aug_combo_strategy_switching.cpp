@@ -38,11 +38,11 @@ Teuchos::RCP<CONTACT::AUG::ComboStrategy::Switching> CONTACT::AUG::ComboStrategy
     case INPAR::CONTACT::switch_preasymptotic:
       return Teuchos::rcp(new PreAsymptoticSwitching(combo, p_combo));
     default:
-      dserror("Unknown switching strategy! (switch_type = %d)", switch_type);
+      FOUR_C_THROW("Unknown switching strategy! (switch_type = %d)", switch_type);
       exit(EXIT_FAILURE);
   }
 
-  dserror("Impossible to reach this point!");
+  FOUR_C_THROW("Impossible to reach this point!");
   exit(EXIT_FAILURE);
 }
 
@@ -73,7 +73,7 @@ void CONTACT::AUG::ComboStrategy::Switching::GetStrategyTypes(
         strat_types.push_back(s.Type());
         break;
       default:
-        dserror(
+        FOUR_C_THROW(
             "The strategy is of a non-supported type! ( type = "
             "%s | %d )",
             INPAR::CONTACT::SolvingStrategy2String(s.Type()).c_str(), s.Type());
@@ -81,7 +81,7 @@ void CONTACT::AUG::ComboStrategy::Switching::GetStrategyTypes(
     }
   }
 
-  if (strategies.size() != strat_types.size()) dserror("Size mismatch! Something went wrong.");
+  if (strategies.size() != strat_types.size()) FOUR_C_THROW("Size mismatch! Something went wrong.");
 }
 
 /*----------------------------------------------------------------------------*
@@ -105,7 +105,7 @@ unsigned CONTACT::AUG::ComboStrategy::Switching::FindId(
     ++id;
   }
 
-  dserror("Couldn't find the given SolvingStrategy! (sol_type = %s | %d)",
+  FOUR_C_THROW("Couldn't find the given SolvingStrategy! (sol_type = %s | %d)",
       INPAR::CONTACT::SolvingStrategy2String(sol_type).c_str(), sol_type);
   exit(EXIT_FAILURE);
 }
@@ -121,7 +121,7 @@ CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::PreAsymptoticSwitching(
       maxabsawgap_(*this)
 {
   if (combo_.strategies_.size() > 2)
-    dserror(
+    FOUR_C_THROW(
         "This basic switching strategy supports maximal a number of "
         "two strategies. Feel free to add a new switching strategy, if you "
         "need more.");

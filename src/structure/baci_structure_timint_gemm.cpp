@@ -114,7 +114,7 @@ void STR::TimIntGEMM::Setup()
   // GEMM time integrator cannot handle nonlinear inertia forces
   if (HaveNonlinearMass())
   {
-    dserror(
+    FOUR_C_THROW(
         "Gemm time integrator cannot handle nonlinear inertia forces "
         "(flag: MASSLIN)");
   }

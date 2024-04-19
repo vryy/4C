@@ -208,7 +208,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::ScaTraEleCalcElchEl
 {
   // safety check
   if (numscal != 1 or numdofpernode != 2)
-    dserror("Invalid number of transported scalars or degrees of freedom per node!");
+    FOUR_C_THROW("Invalid number of transported scalars or degrees of freedom per node!");
 
   // replace internal variable manager for isothermal electrodes by internal variable manager for
   // thermodynamic electrodes

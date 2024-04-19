@@ -167,7 +167,8 @@ bool FLD::XFluidFluidState::Destroy()
   // DofRowMap() in Xfluidfluid currently returns a strong RCP
   if (xffluiddofrowmap_.strong_count() == 1)
     xffluiddofrowmap_ = Teuchos::null;
-  else  // dserror("could not destroy object: %i!=1 pointers", xffluiddofrowmap_.strong_count());
+  else  // FOUR_C_THROW("could not destroy object: %i!=1 pointers",
+        // xffluiddofrowmap_.strong_count());
     std::cout << "could not destroy xffluiddofrowmap_: number of pointers is "
               << xffluiddofrowmap_.strong_count() << "!=1";
 

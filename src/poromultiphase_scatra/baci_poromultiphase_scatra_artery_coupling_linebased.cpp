@@ -247,7 +247,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateCou
     // should always be a multiple of six because we should always find exactly two/four, etc.
     // duplicates
     if (myduplicates.size() % 6 != 0)
-      dserror("duplicate vector has size %i, should be multiple of six", myduplicates.size());
+      FOUR_C_THROW("duplicate vector has size %i, should be multiple of six", myduplicates.size());
     // compare the possible duplicates
     for (int idupl = 0; idupl < (int)(myduplicates.size() / 3); idupl++)
     {
@@ -369,7 +369,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
   }
 
   if (unaffected_seg_lengths_artery_->GlobalAssemble(Add, false) != 0)
-    dserror("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
+    FOUR_C_THROW("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
 
   // subtract the segment lengths only if we evaluate in current configuration
   if (!evaluate_in_ref_config_)
@@ -390,7 +390,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
           1, &seglengthdofs[segid], &(init_segment_length));
     }
     if (unaffected_seg_lengths_artery_->GlobalAssemble(Add, false) != 0)
-      dserror("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
+      FOUR_C_THROW("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
   }
   // the current length is simply the unaffected length
   else
@@ -415,7 +415,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
     // first add all contributions int unaffected_diams_artery_row-vector
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =
         Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(artele->Material());
-    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+    if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
     const double length_diam = initlength * arterymat->Diam();
     unaffected_diams_artery_row->SumIntoGlobalValues(1, &artelegid, &length_diam);
   }
@@ -431,14 +431,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
 
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =
         Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(artele->Material());
-    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+    if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
     const double length_diam = init_segment_length * arterymat->Diam();
     unaffected_diams_artery_row->SumIntoGlobalValues(1, &artelegid, &length_diam);
   }
 
   // global assembly and export
   if (unaffected_diams_artery_row->GlobalAssemble(Add, false) != 0)
-    dserror("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
+    FOUR_C_THROW("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
   CORE::LINALG::Export(*unaffected_diams_artery_row, *unaffected_integrated_diams_artery_col_);
 }
 
@@ -460,7 +460,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
 
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =
         Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(artele->Material());
-    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+    if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
 
     // TODO: this will not work for higher order artery eles
     const double etaA = coupl_elepairs_[i]->EtaA();
@@ -477,7 +477,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
 
     // note: this works since we 2D/3D continuous element of each pair is always owned by this proc.
     int err = bloodvesselvolfrac_->SumIntoGlobalValues(1, &volfrac, &contelegid);
-    if (err) dserror("SumIntoGlobalValues failed!");
+    if (err) FOUR_C_THROW("SumIntoGlobalValues failed!");
   }
 
   // user output
@@ -558,7 +558,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
     const int artelegid = arterydis_->ElementColMap()->GID(i);
     if ((int)gid_to_segment_[artelegid].size() > 2 * maxnumsegperartele_)
     {
-      dserror(
+      FOUR_C_THROW(
           "Artery element %i has %i segments, which is more than the maximum allowed number of %i "
           "segments per artery element, increase MAXNUMSEGPERARTELE",
           artelegid, (int)(gid_to_segment_[artelegid].size() / 2), maxnumsegperartele_);
@@ -575,7 +575,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateGIDToSeg
           std::cout << "[" << gid_to_segment_[artelegid][2 * jseg] << ", "
                     << gid_to_segment_[artelegid][2 * jseg + 1] << "]" << std::endl;
         }
-        dserror("artery element %i has probably not found all possible segments", artelegid);
+        FOUR_C_THROW("artery element %i has probably not found all possible segments", artelegid);
       }
     }
   }
@@ -605,7 +605,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillGIDToSegme
       gid_to_seglength[artelegid].push_back(etaB);
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "Something went wrong here, pair in coupling ele pairs where continuous-discretization "
           "element is not owned by this proc.");
   }
@@ -641,7 +641,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamI
 {
   // assemble
   if (integrated_diams_artery_row_->GlobalAssemble(Add, false) != 0)
-    dserror("GlobalAssemble of integrated_integrated_diams_artery_row_ failed");
+    FOUR_C_THROW("GlobalAssemble of integrated_integrated_diams_artery_row_ failed");
 
   // export to column format
   CORE::LINALG::Export(*integrated_diams_artery_row_, *integrated_diams_artery_col_);
@@ -673,7 +673,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamI
     // get the artery-material
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =
         Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(actele->Material());
-    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+    if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
 
     // set to zero if collapsed
     if (diam < arterymat->CollapseThreshold())
@@ -879,7 +879,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::DepthFirstSear
     // get the artery-material
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =
         Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(Elements[i_element]->Material());
-    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+    if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
 
     // if the element is not collapsed it is connected to this node and we continue with the
     // depth-first search with all nodes of this element
@@ -943,7 +943,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetEleSegmentLength
   if (porofluidprob_) return gid_to_seglength_[artelegid];
 
   // safety checks
-  if (!arterydis_->HasState(1, "curr_seg_lengths")) dserror("cannot get state curr_seg_lengths");
+  if (!arterydis_->HasState(1, "curr_seg_lengths"))
+    FOUR_C_THROW("cannot get state curr_seg_lengths");
 
   // build the location array
   DRT::Element* artele = arterydis_->gElement(artelegid);
@@ -1012,7 +1013,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ApplyMeshMovem
   if (!evaluate_in_ref_config_)
   {
     // safety
-    if (!contdis_->HasState(1, "dispnp")) dserror("cannot get displacement state");
+    if (!contdis_->HasState(1, "dispnp")) FOUR_C_THROW("cannot get displacement state");
 
     // update with unaffected length
     current_seg_lengths_artery_->Update(1.0, *unaffected_seg_lengths_artery_, 0.0);
@@ -1033,7 +1034,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::ApplyMeshMovem
     }
 
     if (current_seg_lengths_artery_->GlobalAssemble(Add, false) != 0)
-      dserror("GlobalAssemble of current_seg_lengths_artery_ failed");
+      FOUR_C_THROW("GlobalAssemble of current_seg_lengths_artery_ failed");
   }
 
   // set state on artery dis

@@ -60,14 +60,15 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
   structure_->Setup();
 
   if (structure_ == Teuchos::null)
-    dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
+    FOUR_C_THROW("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
       new ADAPTER::AleBaseAlgorithm(GLOBAL::Problem::Instance()->StructuralDynamicParams(),
           GLOBAL::Problem::Instance()->GetDis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleWearWrapper>(ale->AleField());
-  if (ale_ == Teuchos::null) dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
+  if (ale_ == Teuchos::null)
+    FOUR_C_THROW("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
 
   // create empty operator
   ale_->CreateSystemMatrix();
@@ -119,11 +120,11 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
   // create some local variables (later to be stored in strategy)
   int dim = GLOBAL::Problem::Instance()->NDim();
-  if (dim != 2 && dim != 3) dserror("Contact problem must be 2D or 3D");
+  if (dim != 2 && dim != 3) FOUR_C_THROW("Contact problem must be 2D or 3D");
   Teuchos::ParameterList cparams = cstrategy.Params();
 
   // check for FillComplete of discretization
-  if (!structure_->Discretization()->Filled()) dserror("Discretization is not fillcomplete");
+  if (!structure_->Discretization()->Filled()) FOUR_C_THROW("Discretization is not fillcomplete");
 
   // let's check for contact boundary conditions in discret
   // and detect groups of matching conditions
@@ -139,11 +140,12 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
   // there must be more than one contact condition
   // unless we have a self contact problem!
-  if ((int)contactconditions.size() < 1) dserror("Not enough contact conditions in discretization");
+  if ((int)contactconditions.size() < 1)
+    FOUR_C_THROW("Not enough contact conditions in discretization");
   if ((int)contactconditions.size() == 1)
   {
     const std::string* side = contactconditions[0]->Get<std::string>("Side");
-    if (*side != "Selfcontact") dserror("Not enough contact conditions in discretization");
+    if (*side != "Selfcontact") FOUR_C_THROW("Not enough contact conditions in discretization");
   }
 
   // find all pairs of matching contact conditions
@@ -196,7 +198,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
     }
 
     // now we should have found a group of conds
-    if (!foundit) dserror("Cannot find matching contact condition for id %d", groupid1);
+    if (!foundit) FOUR_C_THROW("Cannot find matching contact condition for id %d", groupid1);
 
     // see whether we found this group before
     bool foundbefore = false;
@@ -250,10 +252,10 @@ void WEAR::Algorithm::CreateMaterialInterface()
       // check consistency of interface COFs
       for (int j = 1; j < (int)currentgroup.size(); ++j)
         if (frcoeff[j] != frcoeff[0])
-          dserror("Inconsistency in friction coefficients of interface %i", groupid1);
+          FOUR_C_THROW("Inconsistency in friction coefficients of interface %i", groupid1);
 
       // check for infeasible value of COF
-      if (frcoeff[0] < 0.0) dserror("Negative FrCoeff / FrBound on interface %i", groupid1);
+      if (frcoeff[0] < 0.0) FOUR_C_THROW("Negative FrCoeff / FrBound on interface %i", groupid1);
 
       // add COF locally to contact parameter list of this interface
       if (fric == INPAR::CONTACT::friction_tresca)
@@ -281,10 +283,10 @@ void WEAR::Algorithm::CreateMaterialInterface()
       // check consistency of interface COFs
       for (int j = 1; j < (int)currentgroup.size(); ++j)
         if (ad_bound[j] != ad_bound[0])
-          dserror("Inconsistency in adhesion bounds of interface %i", groupid1);
+          FOUR_C_THROW("Inconsistency in adhesion bounds of interface %i", groupid1);
 
       // check for infeasible value of COF
-      if (ad_bound[0] < 0.0) dserror("Negative adhesion bound on interface %i", groupid1);
+      if (ad_bound[0] < 0.0) FOUR_C_THROW("Negative adhesion bound on interface %i", groupid1);
 
       // add COF locally to contact parameter list of this interface
       icparams.setEntry("ADHESION_BOUND", static_cast<Teuchos::ParameterEntry>(ad_bound[0]));
@@ -301,7 +303,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
         Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
             icparams.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
     if (isanyselfcontact == true && redundant != INPAR::MORTAR::ExtendGhosting::redundant_all)
-      dserror("Self contact requires fully redundant slave and master storage");
+      FOUR_C_THROW("Self contact requires fully redundant slave and master storage");
 
     // decide between contactinterface, augmented interface and wearinterface
     Teuchos::RCP<CONTACT::Interface> newinterface = CONTACT::STRATEGY::Factory::CreateInterface(
@@ -325,14 +327,14 @@ void WEAR::Algorithm::CreateMaterialInterface()
     {
       // get all nodes and add them
       const std::vector<int>* nodeids = currentgroup[j]->GetNodes();
-      if (!nodeids) dserror("Condition does not have Node Ids");
+      if (!nodeids) FOUR_C_THROW("Condition does not have Node Ids");
       for (int k = 0; k < (int)(*nodeids).size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!structure_->Discretization()->NodeColMap()->MyGID(gid)) continue;
         DRT::Node* node = structure_->Discretization()->gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // store initial active node gids
         if (isactive[j]) initialactive.push_back(gid);
@@ -384,7 +386,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
                 if (onoff->at(k) == 1) cnode->DbcDofs()[k] = true;
               if (stype == INPAR::CONTACT::solution_lagmult &&
                   constr_direction != INPAR::CONTACT::constr_xyz)
-                dserror(
+                FOUR_C_THROW(
                     "Contact symmetry with Lagrange multiplier method"
                     " only with contact constraints in xyz direction.\n"
                     "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");

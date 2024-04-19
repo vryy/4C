@@ -36,7 +36,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
   int numdim = params_.get<int>("number of velocity degrees of freedom");
   if (numdim != 3)
   {
-    dserror("Evaluation of turbulence statistics only for 3d flow problems!");
+    FOUR_C_THROW("Evaluation of turbulence statistics only for 3d flow problems!");
   }
 
   // use input parameter HOMDIR to specify sampling
@@ -60,7 +60,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
       std::cout << "sampling is done in homogeneous (z-)direction and in time." << std::endl;
     }
     else
-      dserror("unknown sampling procedure for square-section cylinder!");
+      FOUR_C_THROW("unknown sampling procedure for square-section cylinder!");
   }
 
   //----------------------------------------------------------------------
@@ -209,7 +209,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -273,7 +273,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -337,7 +337,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -401,7 +401,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -465,7 +465,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -535,7 +535,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
           if (tag != (myrank + numprocs - 1) % numprocs)
           {
-            dserror("received wrong message (ReceiveAny)");
+            FOUR_C_THROW("received wrong message (ReceiveAny)");
           }
 
           exporter.Wait(request);
@@ -599,7 +599,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
 
           if (tag != (myrank + numprocs - 1) % numprocs)
           {
-            dserror("received wrong message (ReceiveAny)");
+            FOUR_C_THROW("received wrong message (ReceiveAny)");
           }
 
           exporter.Wait(request);

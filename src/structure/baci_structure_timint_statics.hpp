@@ -117,28 +117,28 @@ namespace STR
     //! Give local order of accuracy of displacement part
     int MethodOrderOfAccuracyDis() const override
     {
-      dserror("Sensible to ask?");
+      FOUR_C_THROW("Sensible to ask?");
       return 0;
     }
 
     //! Give local order of accuracy of velocity part
     int MethodOrderOfAccuracyVel() const override
     {
-      dserror("Sensible to ask?");
+      FOUR_C_THROW("Sensible to ask?");
       return 0;
     }
 
     //! Return linear error coefficient of displacements
     double MethodLinErrCoeffDis() const override
     {
-      dserror("Sensible to ask?");
+      FOUR_C_THROW("Sensible to ask?");
       return 0.0;
     }
 
     //! Return linear error coefficient of velocities
     double MethodLinErrCoeffVel() const override
     {
-      dserror("Sensible to ask?");
+      FOUR_C_THROW("Sensible to ask?");
       return 0.0;
     }
 
@@ -226,7 +226,7 @@ namespace STR
     //! Return external force \f$F_{ext,n}\f$
     Teuchos::RCP<Epetra_Vector> Fext() override
     {
-      dserror("Statics: no external forces at t_n available");
+      FOUR_C_THROW("Statics: no external forces at t_n available");
       return Teuchos::null;
     }
 

@@ -192,7 +192,7 @@ namespace CONTACT
      */
     virtual Element& SurfaceElement() const
     {
-      if (currEle_ < 0 or currEle_ > ((int)surfEles_.size() - 1)) dserror("currEle invalid!");
+      if (currEle_ < 0 or currEle_ > ((int)surfEles_.size() - 1)) FOUR_C_THROW("currEle invalid!");
 
       return *surfEles_[currEle_];
     }

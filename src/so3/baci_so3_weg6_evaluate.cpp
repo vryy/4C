@@ -53,7 +53,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_linstiff")
     act = SoWeg6::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
@@ -87,7 +87,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_struct_predict")
     return 0;
   else
-    dserror("Unknown type of action for So_weg6");
+    FOUR_C_THROW("Unknown type of action for So_weg6");
 
   // what should the element do
   switch (act)
@@ -117,7 +117,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -138,7 +138,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -156,7 +156,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     // linear stiffness and consistent mass matrix
     case calc_struct_linstiffmass:
-      dserror("Case 'calc_struct_linstiffmass' not yet implemented");
+      FOUR_C_THROW("Case 'calc_struct_linstiffmass' not yet implemented");
       break;
 
     //==================================================================================
@@ -170,9 +170,9 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
       Teuchos::RCP<const Epetra_Vector> acc = discretization.GetState("acceleration");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
-      if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-      if (acc == Teuchos::null) dserror("Cannot get state vectors 'acceleration'");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
+      if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
+      if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'acceleration'");
 
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -200,9 +200,9 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
       Teuchos::RCP<std::vector<char>> straindata =
           params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-      if (stressdata == Teuchos::null) dserror("Cannot get stress 'data'");
-      if (straindata == Teuchos::null) dserror("Cannot get strain 'data'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
+      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get strain 'data'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -238,7 +238,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_energy:
     {
       // check length of elevec1
-      if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
+      if (elevec1_epetra.length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
       // initialization of internal energy
       double intenergy = 0.0;
@@ -254,7 +254,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this processor
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
@@ -364,12 +364,12 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     case calc_struct_eleload:
-      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
       break;
 
     //==================================================================================
     case calc_struct_fsiload:
-      dserror("Case not yet implemented");
+      FOUR_C_THROW("Case not yet implemented");
       break;
 
     //==================================================================================
@@ -393,7 +393,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
     case prestress_update:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get displacement state");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -438,21 +438,21 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
             params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         Teuchos::RCP<std::vector<char>> straindata =
             params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-        if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+        if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
+        if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
         const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
             gpstressmap = params.get<
                 Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstressmap", Teuchos::null);
         if (gpstressmap == Teuchos::null)
-          dserror("no gp stress map available for writing gpstresses");
+          FOUR_C_THROW("no gp stress map available for writing gpstresses");
         const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
             gpstrainmap = params.get<
                 Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstrainmap", Teuchos::null);
         if (gpstrainmap == Teuchos::null)
-          dserror("no gp strain map available for writing gpstrains");
+          FOUR_C_THROW("no gp strain map available for writing gpstrains");
         std::vector<double> mydisp(lm.size());
         CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
@@ -469,7 +469,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
         // if a linear analysis is desired
         if (kintype_ == INPAR::STR::KinemType::linear)
         {
-          dserror("Linear case not implemented");
+          FOUR_C_THROW("Linear case not implemented");
         }
         else
         {
@@ -531,7 +531,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
 
 
     default:
-      dserror("Unknown type of action for Solid3");
+      FOUR_C_THROW("Unknown type of action for Solid3");
       break;
   }
   return 0;
@@ -546,7 +546,7 @@ int DRT::ELEMENTS::SoWeg6::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("Body force of wedge6 not implemented");
+  FOUR_C_THROW("Body force of wedge6 not implemented");
   return 0;
 }
 
@@ -583,7 +583,7 @@ void DRT::ELEMENTS::SoWeg6::InitJacobianMapping()
 
     invJ_[gp].Multiply(deriv_gp, xrefe);
     detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
+    if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
     if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
@@ -712,14 +712,14 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == nullptr) dserror("no strain data available");
+        if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == nullptr) dserror("no strain data available");
+        if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
 
         // rewriting Green-Lagrange strains in matrix format
         CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> gl;
@@ -754,7 +754,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested strain type not available");
+        FOUR_C_THROW("requested strain type not available");
         break;
     }
 
@@ -825,13 +825,13 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("no stress data available");
+        if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("no stress data available");
+        if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         const double detF = defgrd.Determinant();
 
         CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> pkstress;
@@ -861,7 +861,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not available");
+        FOUR_C_THROW("requested stress type not available");
         break;
     }
 
@@ -1151,7 +1151,7 @@ int DRT::ELEMENTS::SoWeg6Type::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoWeg6*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_weg6* failed");
+    if (!actele) FOUR_C_THROW("cast to So_weg6* failed");
     actele->InitJacobianMapping();
   }
   return 0;
@@ -1382,7 +1382,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
         avg_defgrd.Update(1.0 / NUMGPT_WEG6, defgrd, 1.0);
       }
       else
-        dserror("material not implemented for remodeling");
+        FOUR_C_THROW("material not implemented for remodeling");
 
     }  // end loop over gauss points
 

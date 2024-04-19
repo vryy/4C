@@ -48,7 +48,7 @@ void CONTACT::AUG::LAGRANGE::Strategy::EvalStrContactRHS()
 
   // For self contact, slave and master sets may have changed,
   if (IsSelfContact())
-    dserror(
+    FOUR_C_THROW(
         "ERROR: Augmented Lagrange Formulation: Self contact is not yet "
         "considered!");
 

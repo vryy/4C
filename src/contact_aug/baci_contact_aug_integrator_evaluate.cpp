@@ -199,7 +199,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_kap
 {
   // Get slave nodes
   DRT::Node** snodes = sele.Nodes();
-  dsassert(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
+  FOUR_C_ASSERT(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
 
   //  // number of nodes (slave)
   //  int nrow = sele.NumNode();
@@ -348,7 +348,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::GP_Aug
 {
   // Get slave nodes
   DRT::Node** snodes = sele.Nodes();
-  dsassert(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
+  FOUR_C_ASSERT(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
 
   for (unsigned it = 0; it < my::SLAVENUMNODE; ++it)
   {
@@ -370,7 +370,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Get_De
 {
   // Get slave nodes
   DRT::Node** snodes = sele.Nodes();
-  dsassert(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
+  FOUR_C_ASSERT(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
 
   // map iterator
   typedef Deriv1stMap::const_iterator CI;

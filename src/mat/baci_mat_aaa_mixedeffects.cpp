@@ -101,12 +101,13 @@ void MAT::AaaMixedeffects::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::AaaMixedeffects*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 
@@ -161,7 +162,7 @@ void MAT::AaaMixedeffects::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const int eleGID)
 {
   double elelocalrad = params.get("localrad meanvalue", -999.0);
-  if (elelocalrad == -999.0) dserror("Aneurysm local radii not found");
+  if (elelocalrad == -999.0) FOUR_C_THROW("Aneurysm local radii not found");
 
   // material parameters for isochoric part
   const double alpha = 1E6 * (0.09631 + 0.03329 * (elelocalrad * 2 / params_->refdia_ - 2.55));
@@ -191,7 +192,7 @@ void MAT::AaaMixedeffects::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   double detf = 0.0;
   if (iiinv < 0.0)
-    dserror("fatal failure in aneurysmatic artery wall material");
+    FOUR_C_THROW("fatal failure in aneurysmatic artery wall material");
   else
     detf = sqrt(iiinv);  // determinate of deformation gradient
 
@@ -383,7 +384,7 @@ void MAT::AaaMixedeffects::Evaluate(const CORE::LINALG::SerialDenseVector* glstr
 
   double detf = 0.0;
   if (iiinv < 0.0)
-    dserror("fatal failure in aneurysmatic artery wall material");
+    FOUR_C_THROW("fatal failure in aneurysmatic artery wall material");
   else
     detf = sqrt(iiinv);  // determinate of deformation gradient
 

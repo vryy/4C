@@ -21,9 +21,9 @@ void THR::TimIntGenAlpha::CalcCoeff()
   // rho_inf specified --> calculate optimal parameters
   if (rho_inf_ != -1.)
   {
-    if ((rho_inf_ < 0.0) or (rho_inf_ > 1.0)) dserror("rho_inf out of range [0.0,1.0]");
+    if ((rho_inf_ < 0.0) or (rho_inf_ > 1.0)) FOUR_C_THROW("rho_inf out of range [0.0,1.0]");
     if ((gamma_ != 0.5) or (alpham_ != 0.5) or (alphaf_ != 0.5))
-      dserror("you may only specify RHO_INF or the other three parameters");
+      FOUR_C_THROW("you may only specify RHO_INF or the other three parameters");
     alpham_ = 0.5 * (3.0 - rho_inf_) / (rho_inf_ + 1.0);
     alphaf_ = 1.0 / (rho_inf_ + 1.0);
     gamma_ = 0.5 + alpham_ - alphaf_;
@@ -36,11 +36,11 @@ void THR::TimIntGenAlpha::CalcCoeff()
 void THR::TimIntGenAlpha::VerifyCoeff()
 {
   // alpha_f
-  if ((alphaf_ < 0.0) or (alphaf_ > 1.0)) dserror("alpha_f out of range [0.0,1.0]");
+  if ((alphaf_ < 0.0) or (alphaf_ > 1.0)) FOUR_C_THROW("alpha_f out of range [0.0,1.0]");
   // alpha_m
-  if ((alpham_ < 0.0) or (alpham_ > 1.5)) dserror("alpha_m out of range [0.0,1.0]");
+  if ((alpham_ < 0.0) or (alpham_ > 1.5)) FOUR_C_THROW("alpha_m out of range [0.0,1.0]");
   // gamma:
-  if ((gamma_ <= 0.0) or (gamma_ > 1.0)) dserror("gamma out of range (0.0,1.0]");
+  if ((gamma_ <= 0.0) or (gamma_ > 1.0)) FOUR_C_THROW("gamma out of range (0.0,1.0]");
 
   // mid-averaging type
   // In principle, there exist two mid-averaging possibilities, namely TR-like and IMR-like,
@@ -52,7 +52,7 @@ void THR::TimIntGenAlpha::VerifyCoeff()
   // never explicitly at some generalised midpoint, such as t_{n+1-\alpha_f}. Thus, any
   // cumbersome extrapolation of history variables, etc. becomes obsolete.
   if (midavg_ != INPAR::THR::midavg_trlike)
-    dserror("mid-averaging of internal forces only implemented TR-like");
+    FOUR_C_THROW("mid-averaging of internal forces only implemented TR-like");
 
   // done
   return;

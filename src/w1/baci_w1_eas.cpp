@@ -58,7 +58,7 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(CORE::LINALG::SerialDenseMatrix& boplin0,
   /*------------------------------------------ determinant of jacobian ---*/
   detJ0 = xjm0[0][0] * xjm0[1][1] - xjm0[1][0] * xjm0[0][1];
 
-  if (detJ0 < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+  if (detJ0 < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
 
   // compute boplin at origin (boplin0)
@@ -167,7 +167,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
   }
   else
   {
-    dserror("Cannot handle EAS type=%d", eastype_);
+    FOUR_C_THROW("Cannot handle EAS type=%d", eastype_);
   }
 
   // inverse of jacobian matrix at element origin
@@ -192,7 +192,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
   else if (eastype_ == eas_q1et4)
     CORE::LINALG::multiply(0.0, A, detJ0 / det, xjm0, M_temp);
   else
-    dserror("Cannot handle EAS type=%d", eastype_);
+    FOUR_C_THROW("Cannot handle EAS type=%d", eastype_);
 
   // enhanced deformation gradient at origin (four rows, one column)
 
@@ -254,7 +254,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
   }
   else
   {
-    dserror("Cannot handle EAS type=%d", eastype_);
+    FOUR_C_THROW("Cannot handle EAS type=%d", eastype_);
   }
 
   // declaration of matrix (4x4) without eas-parameter alpha
@@ -276,7 +276,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
     else if (eastype_ == eas_q1et4)
       CORE::LINALG::multiply(0.0, A_ges[i], detJ0 / det, xjm0, M_temp);
     else
-      dserror("Cannot handle EAS type=%d", eastype_);
+      FOUR_C_THROW("Cannot handle EAS type=%d", eastype_);
 
     // fill G-operator
 

@@ -31,7 +31,8 @@ XFEM::XfsCouplingManager::XfsCouplingManager(Teuchos::RCP<ConditionManager> cond
       idx_(idx),
       interface_second_order_(false)
 {
-  if (idx_.size() != 2) dserror("XFSCoupling_Manager required two block ( 2 != %d)", idx_.size());
+  if (idx_.size() != 2)
+    FOUR_C_THROW("XFSCoupling_Manager required two block ( 2 != %d)", idx_.size());
 
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   interface_second_order_ = CORE::UTILS::IntegralValue<int>(fsidyn, "SECONDORDER");
@@ -40,13 +41,13 @@ XFEM::XfsCouplingManager::XfsCouplingManager(Teuchos::RCP<ConditionManager> cond
   // = 1!
   mcfsi_ =
       Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(condmanager->GetMeshCoupling(cond_name_));
-  if (mcfsi_ == Teuchos::null) dserror(" Failed to get MeshCouplingFSI for Structure!");
+  if (mcfsi_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFSI for Structure!");
 
   mcfsi_->SetTimeFac(1. / GetInterfaceTimefac());
 
   // safety check
   if (!mcfsi_->IDispnp()->Map().SameAs(*GetMapExtractor(0)->Map(1)))
-    dserror("XFSCoupling_Manager: Maps of Condition and Mesh Coupling do not fit!");
+    FOUR_C_THROW("XFSCoupling_Manager: Maps of Condition and Mesh Coupling do not fit!");
 
   // storage of the resulting Robin-type structural forces from the old timestep
   // Recovering of Lagrange multiplier happens on fluid field
@@ -165,7 +166,7 @@ void XFEM::XfsCouplingManager::AddCouplingMatrix(
   }
   else
   {
-    dserror("XFSCoupling_Manager: Want to use me for other problemtype --> check and add me!");
+    FOUR_C_THROW("XFSCoupling_Manager: Want to use me for other problemtype --> check and add me!");
   }
 }
 
@@ -196,7 +197,7 @@ void XFEM::XfsCouplingManager::AddCouplingRHS(
     const double scaling_S = 1.0 / (1.0 - stiparam);  // 1/(1-alpha_F) = 1/weight^S_np
     // add Lagrange multiplier (structural forces from t^n)
     int err = coup_rhs_sum->Update(stiparam * scaling_S, *lambda_, scaling);
-    if (err) dserror("Update of Nit_Struct_FSI RHS failed with errcode = %d!", err);
+    if (err) FOUR_C_THROW("Update of Nit_Struct_FSI RHS failed with errcode = %d!", err);
   }
   else
   {

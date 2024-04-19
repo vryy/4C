@@ -96,7 +96,8 @@ namespace
         }
         else
         {
-          dserror("Pair {%d, %d} not found in reference map", std::get<1>(pair), std::get<3>(pair));
+          FOUR_C_THROW(
+              "Pair {%d, %d} not found in reference map", std::get<1>(pair), std::get<3>(pair));
         }
       }
     };

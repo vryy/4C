@@ -149,7 +149,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhsO
 
   // safety check
   if (my::bodyforce_[my::numscal_].Dot(my::funct_) != 0.0)
-    dserror("body force not implemented for potential equation");
+    FOUR_C_THROW("body force not implemented for potential equation");
 }
 
 /*----------------------------------------------------------------------*
@@ -162,7 +162,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcDiffODMesh
     const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   // safety check
-  if (k != 0) dserror("Invalid species index!");
+  if (k != 0) FOUR_C_THROW("Invalid species index!");
 
   // call base class routine to compute linearizations of diffusion term w.r.t. structural
   // displacements
@@ -283,7 +283,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetMaterialPar
         material, VarManager()->Phinp(0), VarManager()->Temperature(), DiffManager());
   }
   else
-    dserror("Material type not supported!");
+    FOUR_C_THROW("Material type not supported!");
 }
 
 

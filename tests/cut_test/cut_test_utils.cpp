@@ -430,7 +430,7 @@ void SimpleWrapper::AssumeVolumeCells(unsigned num)
   {
     std::stringstream str;
     str << "expected " << num << " volume cells, but got " << numvc;
-    dserror(str.str());
+    FOUR_C_THROW(str.str());
   }
 }
 
@@ -542,7 +542,7 @@ void SimpleWrapper::CreateElementSides(
       break;
     }
     default:
-      dserror("distype not supported");
+      FOUR_C_THROW("distype not supported");
   }
 }
 

@@ -164,7 +164,7 @@ void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::UnpackAffiliationPairs(
     affiliationdata_[globalid] = rigidbody;
   }
   if (position != buffer.size())
-    dserror("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
+    FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
 }
 
 void PARTICLERIGIDBODY::RigidBodyAffiliationPairs::AddAffiliationPairToBuffer(

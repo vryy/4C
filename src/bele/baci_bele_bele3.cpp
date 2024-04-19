@@ -56,7 +56,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Bele3Type::Create(
     }
     else
     {
-      dserror("ERROR: Found BELE3 element without specified number of dofs!");
+      FOUR_C_THROW("ERROR: Found BELE3 element without specified number of dofs!");
     }
   }
 
@@ -171,7 +171,7 @@ CORE::FE::CellType DRT::ELEMENTS::Bele3::Shape() const
     case 9:
       return CORE::FE::CellType::quad9;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
       break;
   }
 }
@@ -210,7 +210,8 @@ void DRT::ELEMENTS::Bele3::Unpack(const std::vector<char>& data)
   // numdofpernode_
   numdofpernode_ = ExtractInt(position, data);
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 
@@ -261,7 +262,7 @@ CORE::FE::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule() const
       rule = CORE::FE::GaussRule2D::tri_6point;
       break;
     default:
-      dserror("unknown number of nodes for gaussrule initialization");
+      FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
       break;
   }
   return rule;

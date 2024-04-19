@@ -41,7 +41,7 @@ namespace DRT::UTILS::BEAM
       }
       case 2:
       {
-        dsassert(hermite_length_param != -1.0,
+        FOUR_C_ASSERT(hermite_length_param != -1.0,
             "you must provide a length parameter in case of "
             "Hermite interpolation!");
 
@@ -51,7 +51,7 @@ namespace DRT::UTILS::BEAM
         break;
       }
       default:
-        dserror("invalid value for vpernode (number of values per node) specified");
+        FOUR_C_THROW("invalid value for vpernode (number of values per node) specified");
     }
   }
 
@@ -75,7 +75,7 @@ namespace DRT::UTILS::BEAM
       }
       case 2:
       {
-        dsassert(hermite_length_param != -1.0,
+        FOUR_C_ASSERT(hermite_length_param != -1.0,
             "you must provide a length parameter in case of "
             "Hermite interpolation!");
 
@@ -85,7 +85,7 @@ namespace DRT::UTILS::BEAM
         break;
       }
       default:
-        dserror("invalid value for vpernode (number of values per node) specified");
+        FOUR_C_THROW("invalid value for vpernode (number of values per node) specified");
     }
   }
 
@@ -109,7 +109,7 @@ namespace DRT::UTILS::BEAM
       }
       case 2:
       {
-        dsassert(hermite_length_param != -1.0,
+        FOUR_C_ASSERT(hermite_length_param != -1.0,
             "you must provide a length parameter in case of "
             "Hermite interpolation!");
 
@@ -119,7 +119,7 @@ namespace DRT::UTILS::BEAM
         break;
       }
       default:
-        dserror("invalid value for vpernode (number of values per node) specified");
+        FOUR_C_THROW("invalid value for vpernode (number of values per node) specified");
     }
   }
 
@@ -138,13 +138,14 @@ namespace DRT::UTILS::BEAM
       case 1:
       {
         // evaluate Lagrange shape function derivs at xi
-        if (nnode >= 4) dserror("Please implement 3rd derivatives of Lagrange shape functions!");
+        if (nnode >= 4)
+          FOUR_C_THROW("Please implement 3rd derivatives of Lagrange shape functions!");
 
         break;
       }
       case 2:
       {
-        dsassert(hermite_length_param != -1.0,
+        FOUR_C_ASSERT(hermite_length_param != -1.0,
             "you must provide a length parameter in case of "
             "Hermite interpolation!");
 
@@ -154,7 +155,7 @@ namespace DRT::UTILS::BEAM
         break;
       }
       default:
-        dserror("invalid value for vpernode (number of values per node) specified");
+        FOUR_C_THROW("invalid value for vpernode (number of values per node) specified");
     }
   }
 
@@ -198,7 +199,8 @@ namespace DRT::UTILS::BEAM
       double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
   {
     if (I_i.size() != (unsigned int)gausspoints.nquad)
-      dserror("vector for individual shape functions to be evaluated at %d GPs has wrong size: %d",
+      FOUR_C_THROW(
+          "vector for individual shape functions to be evaluated at %d GPs has wrong size: %d",
           gausspoints.nquad, I_i.size());
 
     for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
@@ -225,7 +227,7 @@ namespace DRT::UTILS::BEAM
       double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
   {
     if (I_i_xi.size() != (unsigned int)gausspoints.nquad)
-      dserror(
+      FOUR_C_THROW(
           "vector for individual shape function derivatives to be evaluated at %d GPs has "
           "wrong size: %d",
           gausspoints.nquad, I_i_xi.size());

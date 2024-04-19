@@ -85,14 +85,14 @@ void MORTAR::STRATEGY::Factory::Setup()
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::CheckInitSetup() const
 {
-  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+  if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::CheckInit() const
 {
-  if (not IsInit()) dserror("Call Init() first!");
+  if (not IsInit()) FOUR_C_THROW("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -156,7 +156,7 @@ Teuchos::RCP<const Epetra_Comm> MORTAR::STRATEGY::Factory::CommPtr() const
 const int& MORTAR::STRATEGY::Factory::Dim() const
 {
   if (dim_ == -1)
-    dserror(
+    FOUR_C_THROW(
         "Call the STR::MODELEVEALUATOR::Setup() routine first to "
         "set the problem dimension variable!");
   return dim_;
@@ -166,7 +166,7 @@ const int& MORTAR::STRATEGY::Factory::Dim() const
  *----------------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::CheckDimension() const
 {
-  if (Dim() != 2 && Dim() != 3) dserror("Mortar meshtying/contact problems must be 2D or 3D");
+  if (Dim() != 2 && Dim() != 3) FOUR_C_THROW("Mortar meshtying/contact problems must be 2D or 3D");
 }
 
 /*----------------------------------------------------------------------*
@@ -176,7 +176,7 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::Discretization& d
 {
   const DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discret));
-  if (nurbsdis == nullptr) dserror("Dynamic cast failed!");
+  if (nurbsdis == nullptr) FOUR_C_THROW("Dynamic cast failed!");
 
   Teuchos::RCP<const DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
   std::vector<CORE::LINALG::SerialDenseVector> parentknots(Dim());
@@ -184,7 +184,7 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::Discretization& d
 
   double normalfac = 0.0;
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
-  if (faceele.is_null()) dserror("Cast to FaceElement failed!");
+  if (faceele.is_null()) FOUR_C_THROW("Cast to FaceElement failed!");
 
   bool zero_size = knots->GetBoundaryEleAndParentKnots(parentknots, mortarknots, normalfac,
       faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
@@ -246,7 +246,7 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
       IO::cout << "================================================================\n\n";
     }
     else
-      dserror("Invalid system type for contact/meshtying interface smoothing");
+      FOUR_C_THROW("Invalid system type for contact/meshtying interface smoothing");
   }
   else
   {
@@ -339,7 +339,7 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
           IO::cout << "================================================================\n\n";
         }
         else
-          dserror("Invalid strategy or shape function type for contact/meshtying");
+          FOUR_C_THROW("Invalid strategy or shape function type for contact/meshtying");
       }
 
       // condensed formulation
@@ -403,7 +403,7 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
           IO::cout << "================================================================\n\n";
         }
         else
-          dserror("Invalid strategy or shape function type for contact/meshtying");
+          FOUR_C_THROW("Invalid strategy or shape function type for contact/meshtying");
       }
     }
     else if (algorithm == INPAR::MORTAR::algorithm_nts)
@@ -432,7 +432,7 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
     }
     // invalid system type
     else
-      dserror("Invalid system type for contact/meshtying");
+      FOUR_C_THROW("Invalid system type for contact/meshtying");
   }
   return;
 }

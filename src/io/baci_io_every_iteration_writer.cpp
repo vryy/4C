@@ -128,7 +128,7 @@ void IO::CreateDirectory(const std::string& dir_path, const int myrank)
   std::filesystem::path dir(dir_path);
   if (!std::filesystem::is_directory(dir))
     if (!std::filesystem::create_directory(dir))
-      dserror("The directory \"%s\" could not be created!", dir_path.c_str());
+      FOUR_C_THROW("The directory \"%s\" could not be created!", dir_path.c_str());
 }
 
 /*----------------------------------------------------------------------------*
@@ -239,7 +239,7 @@ void IO::EveryIterationWriter::AddNewtonIteration(const int newton_iteration)
 
   if (not WriteThisStep()) return;
 
-  if (not isnewton_initialized_) dserror("Call InitNewtonIteration() first!");
+  if (not isnewton_initialized_) FOUR_C_THROW("Call InitNewtonIteration() first!");
 
   const int counter = MAX_NUMBER_LINE_SEARCH_ITERATIONS_ * newton_iteration;
   every_iter_writer_->WriteMesh(counter, counter);
@@ -259,10 +259,10 @@ void IO::EveryIterationWriter::AddLineSearchIteration(
 
   if (not WriteThisStep()) return;
 
-  if (not isnewton_initialized_) dserror("Call InitNewtonIteration() first!");
+  if (not isnewton_initialized_) FOUR_C_THROW("Call InitNewtonIteration() first!");
 
   if (linesearch_iteration >= static_cast<int>(MAX_NUMBER_LINE_SEARCH_ITERATIONS_))
-    dserror(
+    FOUR_C_THROW(
         "The EveryIterationWriter does not support more than %d line search"
         " steps. If this number is exceeded, the counters will get mixed up.",
         MAX_NUMBER_LINE_SEARCH_ITERATIONS_ - 1);

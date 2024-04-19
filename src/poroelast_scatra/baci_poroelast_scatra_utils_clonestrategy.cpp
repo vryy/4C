@@ -177,7 +177,7 @@ void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::SetElementData(
 
   // note: SetMaterial() was reimplemented by the transport element!
   auto* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
-  if (trans == nullptr) dserror("unsupported element type '%s'", typeid(*newele).name());
+  if (trans == nullptr) FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
 
 
   // set material
@@ -190,7 +190,7 @@ void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::SetElementData(
       POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImplType(oldele);
 
   if (impltype == INPAR::SCATRA::impltype_undefined)
-    dserror(
+    FOUR_C_THROW(
         "PoroScatraCloneStrategy copies scatra discretization from structure discretization, but "
         "the "
         "STRUCTURE elements that are defined in the .dat file are either not meant to be copied "
@@ -228,7 +228,7 @@ void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::CheckMaterialType(const in
       (mtype != INPAR::MAT::m_electrode) && (mtype != INPAR::MAT::m_matlist) &&
       (mtype != INPAR::MAT::m_matlist_reactions) && (mtype != INPAR::MAT::m_myocard) &&
       (mtype != INPAR::MAT::m_thermostvenant))
-    dserror("Material with ID %d is not admissible for scalar transport elements", matid);
+    FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
 bool POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements::DetermineEleType(

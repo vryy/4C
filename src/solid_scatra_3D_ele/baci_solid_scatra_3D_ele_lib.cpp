@@ -37,7 +37,7 @@ INPAR::SCATRA::ImplType DRT::ELEMENTS::ReadScatraImplType(
   else if (impltype == "Std")
     return INPAR::SCATRA::impltype_std;
 
-  dserror("The input type %s is not valud for SOLIDSCATRA elements!", impltype.c_str());
+  FOUR_C_THROW("The input type %s is not valud for SOLIDSCATRA elements!", impltype.c_str());
 }
 
 FOUR_C_NAMESPACE_CLOSE

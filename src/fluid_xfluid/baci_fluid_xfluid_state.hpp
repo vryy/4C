@@ -170,7 +170,7 @@ namespace FLD
     /// access to the cut wizard
     Teuchos::RCP<CORE::GEO::CutWizard> Wizard() const
     {
-      if (wizard_ == Teuchos::null) dserror("Cut wizard is uninitialized!");
+      if (wizard_ == Teuchos::null) FOUR_C_THROW("Cut wizard is uninitialized!");
       return wizard_;
     }
 

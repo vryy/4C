@@ -42,7 +42,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::CheckMaterialType(const int matid
   // Here we check first, whether this material is of admissible type
   INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
   if ((mtype != INPAR::MAT::m_fluidporo))
-    dserror("Material with ID %d is not admissible for fluid poroelasticity elements", matid);
+    FOUR_C_THROW("Material with ID %d is not admissible for fluid poroelasticity elements", matid);
 }
 
 void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
@@ -67,14 +67,14 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
     if (so_base)
       fluid->SetKinematicType(so_base->KinematicType());
     else
-      dserror(" dynamic cast from DRT::Element* to DRT::ELEMENTS::So_base* failed ");
+      FOUR_C_THROW(" dynamic cast from DRT::Element* to DRT::ELEMENTS::So_base* failed ");
 
     SetAnisotropicPermeabilityDirectionsOntoFluid(newele, oldele);
     SetAnisotropicPermeabilityNodalCoeffsOntoFluid(newele, oldele);
   }
   else
   {
-    dserror("unsupported element type '%s'", typeid(*newele).name());
+    FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
   }
 }
 

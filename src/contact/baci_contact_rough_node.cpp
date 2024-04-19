@@ -75,7 +75,7 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
     maxTopologyHeight_ = max_and_mean.max_;
   }
 #else
-  dserror(
+  FOUR_C_THROW(
       "You are trying to create a RoughNode with BACI_WITH_MIRCO flag turned off. Please enable "
       "this flag and build BACI again");
 #endif
@@ -140,7 +140,7 @@ void CONTACT::RoughNode::Unpack(const std::vector<char>& data)
 
   // Check
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

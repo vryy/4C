@@ -75,7 +75,8 @@ void NOX::NLN::Problem::Initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
 {
   // in the standard case, we use the input rhs and matrix
   // ToDo Check if CreateView is sufficient
-  if (x.is_null()) dserror("You have to provide a state vector pointer unequal Teuchos::null!");
+  if (x.is_null())
+    FOUR_C_THROW("You have to provide a state vector pointer unequal Teuchos::null!");
 
   xVector_ = &x;
   isjac_ = (not A.is_null());
@@ -90,7 +91,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem(
 {
   CheckInit();
   if (not IsJac())
-    dserror(
+    FOUR_C_THROW(
         "You have to set a jacobian first, before you can create a "
         "linear system!");
 
@@ -178,7 +179,7 @@ void NOX::NLN::Problem::CheckFinalStatus(const ::NOX::StatusTest::StatusType& fi
 {
   if (finalStatus != ::NOX::StatusTest::Converged)
   {
-    dserror("The nonlinear solver did not converge!");
+    FOUR_C_THROW("The nonlinear solver did not converge!");
   }
 
   return;

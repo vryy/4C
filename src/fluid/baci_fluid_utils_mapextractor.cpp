@@ -51,7 +51,7 @@ void FLD::UTILS::MapExtractor::Setup(
   othermaps.push_back(extractor.OtherMap());
 
   if (CORE::LINALG::MultiMapExtractor::IntersectMaps(othermaps)->NumGlobalElements() > 0)
-    dserror("Failed to add dofmap of foreign discretization to OtherMap. Detected overlap.");
+    FOUR_C_THROW("Failed to add dofmap of foreign discretization to OtherMap. Detected overlap.");
 
   Teuchos::RCP<const Epetra_Map> mergedothermap =
       CORE::LINALG::MultiMapExtractor::MergeMaps(othermaps);
@@ -155,7 +155,7 @@ void FLD::UTILS::FsiMapExtractor::Setup(Teuchos::RCP<const Epetra_Map>& addition
   othermaps.push_back(extractor.OtherMap());
 
   if (CORE::LINALG::MultiMapExtractor::IntersectMaps(othermaps)->NumGlobalElements() > 0)
-    dserror("Failed to add dofmap of foreign discretization to OtherMap. Detected overlap.");
+    FOUR_C_THROW("Failed to add dofmap of foreign discretization to OtherMap. Detected overlap.");
 
   Teuchos::RCP<const Epetra_Map> mergedothermap =
       CORE::LINALG::MultiMapExtractor::MergeMaps(othermaps);

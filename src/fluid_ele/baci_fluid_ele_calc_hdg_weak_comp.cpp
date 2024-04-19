@@ -65,7 +65,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InitializeShapes(
       localSolver_ = Teuchos::rcp(new LocalSolver(ele, *shapes_, *shapesface_, usescompletepoly_));
   }
   else
-    dserror("Only works for HDG weakly compressible fluid elements");
+    FOUR_C_THROW("Only works for HDG weakly compressible fluid elements");
 }
 
 
@@ -242,7 +242,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateService(DRT::ELEMEN
       break;
     }
     default:
-      dserror("Unknown type of action for FluidHDG");
+      FOUR_C_THROW("Unknown type of action for FluidHDG");
       break;
   }
 
@@ -448,8 +448,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
   shapes_->Evaluate(*ele, aleDis_);
 
   // reshape elevec2 as matrix
-  dsassert(elevec2.numRows() == 0 ||
-               elevec2.numRows() == static_cast<int>((msd_ + 1 + nsd_) * shapes_->ndofs_),
+  FOUR_C_ASSERT(elevec2.numRows() == 0 ||
+                    elevec2.numRows() == static_cast<int>((msd_ + 1 + nsd_) * shapes_->ndofs_),
       "Wrong size in project vector 2");
 
   // get initial function and current time
@@ -479,7 +479,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
       double r = 0.0;
       CORE::LINALG::Matrix<nsd_, 1> w(true);
 
-      dsassert(initfield != nullptr && startfunc != nullptr,
+      FOUR_C_ASSERT(initfield != nullptr && startfunc != nullptr,
           "initfield or startfuncno not set for initial value");
 
       // This function returns th value of the interior variables from the
@@ -519,8 +519,9 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
   CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
   // trVec is the vector of the trace values
   CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, 1 + nsd_);
-  dsassert(elevec1.numRows() == static_cast<int>((1 + nsd_) * shapesface_->nfdofs_) ||
-               elevec1.numRows() == static_cast<int>(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_),
+  FOUR_C_ASSERT(
+      elevec1.numRows() == static_cast<int>((1 + nsd_) * shapesface_->nfdofs_) ||
+          elevec1.numRows() == static_cast<int>(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_),
       "Wrong size in project vector 1");
 
   const unsigned int* faceConsider = params.getPtr<unsigned int>("faceconsider");
@@ -536,7 +537,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
       // We get here only if it is not an initial value but it is a time
       // dependant boundary value. If we are here we only want the function to run
       // for boundary faces specified in the faceConsider variable
-      dsassert(faceConsider != nullptr, "Unsupported operation");
+      FOUR_C_ASSERT(faceConsider != nullptr, "Unsupported operation");
       if (*faceConsider != face) continue;
     }
 
@@ -574,7 +575,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
       {
         // This is used to project a function only on the boundary during the
         // temporal evolution of the simulation
-        dsassert(functno != nullptr && time != nullptr && onoff != nullptr,
+        FOUR_C_ASSERT(functno != nullptr && time != nullptr && onoff != nullptr,
             "No array with functions given");
 
         // Deciding if to use the function or not for the density
@@ -654,7 +655,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
 
   InitializeShapes(ele);
   // Check if the vector has the correct size
-  dsassert(elevec1.numRows() == (int)nen_ * (msd_ + 1 + nsd_ + 1 + nsd_),
+  FOUR_C_ASSERT(elevec1.numRows() == (int)nen_ * (msd_ + 1 + nsd_ + 1 + nsd_),
       "Vector does not have correct size");
 
   // Getting the connectivity matrix
@@ -2030,7 +2031,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InvertLocalLo
   KlocallocalInv = Klocallocal;
   KlocallocalInvSolver.setMatrix(Teuchos::rcpFromRef(KlocallocalInv));
   int err = KlocallocalInvSolver.invert();
-  if (err != 0) dserror("Inversion of local-local matrix failed with errorcode %d", err);
+  if (err != 0) FOUR_C_THROW("Inversion of local-local matrix failed with errorcode %d", err);
 }
 
 

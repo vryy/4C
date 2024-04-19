@@ -68,7 +68,7 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
       hybridPrec_(hybridPrec)
 {
   if (strategy_ != INPAR::FSI::PreconditionedKrylov && strategy_ != INPAR::FSI::LinalgSolver)
-    dserror("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
+    FOUR_C_THROW("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
 }
 
 /*----------------------------------------------------------------------*
@@ -78,11 +78,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   TEUCHOS_FUNC_TIME_MONITOR("FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner");
 
 #ifdef BLOCKMATRIXMERGE
-  dserror("class OverlappingBlockMatrixFSIAMG does not support #define BLOCKMATRIXMERGE");
+  FOUR_C_THROW("class OverlappingBlockMatrixFSIAMG does not support #define BLOCKMATRIXMERGE");
 #endif
 
   if (GLOBAL::Problem::Instance()->GetCommunicators()->NumGroups() != 1)
-    dserror(
+    FOUR_C_THROW(
         "No nested parallelism for AMG FSI. See comments in "
         "FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()!");
   // Attention: No nested parallelism for AMG FSI due to MLAPI incompatibility
@@ -147,7 +147,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (FisAMG()) fml = const_cast<ML*>(fmlclass->GetML());
   if (AisAMG()) aml = const_cast<ML*>(amlclass->GetML());
   if ((!sml && SisAMG()) || (!fml && FisAMG()) || (!aml && AisAMG()))
-    dserror("Not using ML for Fluid, Structure or Ale");
+    FOUR_C_THROW("Not using ML for Fluid, Structure or Ale");
 
   // number of grids in structure, fluid and ale
   if (SisAMG())
@@ -187,17 +187,18 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
 
   // check whether we have enough iteration and damping factors
   if ((int)pciter_.size() < 3 || (int)pcomega_.size() < 3)
-    dserror("You need at least 3 values of PCITER and PCOMEGA in input file");
+    FOUR_C_THROW("You need at least 3 values of PCITER and PCOMEGA in input file");
   if ((int)siterations_.size() < snlevel_ || (int)somega_.size() < snlevel_)
-    dserror(
+    FOUR_C_THROW(
         "You need at least %d values of STRUCTPCITER and STRUCTPCOMEGA in input file", snlevel_);
   if ((int)fiterations_.size() < fnlevel_ || (int)fomega_.size() < fnlevel_)
-    dserror("You need at least %d values of FLUIDPCITER and FLUIDPCOMEGA in input file", fnlevel_);
+    FOUR_C_THROW(
+        "You need at least %d values of FLUIDPCITER and FLUIDPCOMEGA in input file", fnlevel_);
   if ((int)aiterations_.size() < anlevel_ || (int)aomega_.size() < anlevel_)
-    dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file", anlevel_);
+    FOUR_C_THROW("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file", anlevel_);
   if ((int)blocksmoother_.size() < 1)
-    dserror("You need at least 1 value of BLOCKSMOOTHER in input file");
-  if (blocksmoother_[0] == "Schur") dserror("Schur(AMG) not implemented");
+    FOUR_C_THROW("You need at least 1 value of BLOCKSMOOTHER in input file");
+  if (blocksmoother_[0] == "Schur") FOUR_C_THROW("Schur(AMG) not implemented");
 
   Ass_.resize(std::max(maxnlevel_, snlevel_));
   Pss_.resize(std::max(maxnlevel_, snlevel_) - 1);
@@ -658,13 +659,13 @@ void FSI::OverlappingBlockMatrixFSIAMG::SchurComplementOperator(MLAPI::Operator&
     Epetra_Vector invdiagS(Ass.GetRCPRowMatrix()->OperatorRangeMap());
     Ass.GetRCPRowMatrix()->ExtractDiagonalCopy(invdiagS);
     int err = invdiagS.Reciprocal(invdiagS);
-    if (err) dserror("Inverse of diagonal of S returned %d", err);
+    if (err) FOUR_C_THROW("Inverse of diagonal of S returned %d", err);
     diagSinv = new Epetra_CrsMatrix(::Copy, rmaps, 1, true);
     for (int j = 0; j < rmaps.NumMyElements(); ++j)
     {
       int gid = rmaps.GID(j);
       err = diagSinv->InsertGlobalValues(gid, 1, &invdiagS[j], &gid);
-      if (err) dserror("Epetra_CrsMatrix::InsertGlobalValues returned %d", err);
+      if (err) FOUR_C_THROW("Epetra_CrsMatrix::InsertGlobalValues returned %d", err);
     }
     diagSinv->FillComplete();
   }
@@ -677,13 +678,13 @@ void FSI::OverlappingBlockMatrixFSIAMG::SchurComplementOperator(MLAPI::Operator&
     Epetra_Vector invdiagA(Aaa.GetRCPRowMatrix()->OperatorRangeMap());
     Aaa.GetRCPRowMatrix()->ExtractDiagonalCopy(invdiagA);
     int err = invdiagA.Reciprocal(invdiagA);
-    if (err) dserror("Inverse of diagonal of A returned %d", err);
+    if (err) FOUR_C_THROW("Inverse of diagonal of A returned %d", err);
     diagAinv = new Epetra_CrsMatrix(::Copy, rmapa, 1, true);
     for (int j = 0; j < rmapa.NumMyElements(); ++j)
     {
       int gid = rmapa.GID(j);
       err = diagAinv->InsertGlobalValues(gid, 1, &invdiagA[j], &gid);
-      if (err) dserror("Epetra_CrsMatrix::InsertGlobalValues returned %d", err);
+      if (err) FOUR_C_THROW("Epetra_CrsMatrix::InsertGlobalValues returned %d", err);
     }
     diagAinv->FillComplete();
   }
@@ -896,7 +897,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SelectMLAPISmoother(std::string& type, c
     Teuchos::ParameterList& subp, Teuchos::ParameterList& p, Teuchos::ParameterList& pushlist)
 {
   type = subp.get("smoother: type", "none");
-  if (type == "none") dserror("Cannot find msoother type");
+  if (type == "none") FOUR_C_THROW("Cannot find msoother type");
   if (type == "symmetric Gauss-Seidel" || type == "Gauss-Seidel")
   {
     const int sweeps = subp.get("smoother: sweeps", 1);
@@ -926,9 +927,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::SelectMLAPISmoother(std::string& type, c
   else if (type == "Amesos-KLU")
     ;  // nothing to do
   else if (type == "Amesos-Superludist")
-    dserror("No SuperLUDist support in MLAPI");
+    FOUR_C_THROW("No SuperLUDist support in MLAPI");
   else
-    dserror("Smoother not recognized");
+    FOUR_C_THROW("Smoother not recognized");
   p.set("relaxation: zero starting solution", false);
   return;
 }
@@ -1130,7 +1131,7 @@ strongly coupled AMG-Block-Gauss-Seidel
 void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  if (symmetric_) dserror("FSIAMG symmetric Block Gauss-Seidel not impl.");
+  if (symmetric_) FOUR_C_THROW("FSIAMG symmetric Block Gauss-Seidel not impl.");
 
   // rewrap the matrix every time as it is killed irrespective
   // of whether the precond is reused or not.
@@ -1326,7 +1327,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     }
     default:
     {
-      dserror("Unknown type of preconditioner choice");
+      FOUR_C_THROW("Unknown type of preconditioner choice");
       break;
     }
   }

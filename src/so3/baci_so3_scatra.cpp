@@ -140,7 +140,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Unpack(const std::vector<char>&
   so3_ele::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -189,7 +189,7 @@ bool DRT::ELEMENTS::So3Scatra<so3_ele, distype>::ReadElement(
   else if (impltype == "Std")
     impltype_ = INPAR::SCATRA::impltype_std;
   else
-    dserror("Invalid implementation type for So3_Scatra elements!");
+    FOUR_C_THROW("Invalid implementation type for So3_Scatra elements!");
 
   return true;
 }
@@ -236,7 +236,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::SetMaterial(int matnum)
   if ((Teuchos::getIntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
           INPAR::SSI::SolutionSchemeOverFields::ssi_Monolithic) and
       (mat->MaterialType() != INPAR::MAT::m_multiplicative_split_defgrad_elasthyper))
-    dserror(
+    FOUR_C_THROW(
         "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section,"
         " you need to use the material 'MAT_MultiplicativeSplitDefgradElastHyper'! If you want to "
         "use another material feel free to implement it! ;-)");

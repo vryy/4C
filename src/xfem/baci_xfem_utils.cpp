@@ -36,7 +36,7 @@ void XFEM::UTILS::ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
     dis->Dof(node, lm);
     std::vector<double> mydisp;
     CORE::FE::ExtractMyValues(*dispcol, mydisp, lm);
-    if (mydisp.size() < 3) dserror("we need at least 3 dofs here");
+    if (mydisp.size() < 3) FOUR_C_THROW("we need at least 3 dofs here");
 
     CORE::LINALG::Matrix<3, 1> currpos;
     currpos(0) = node->X()[0] + mydisp[0];
@@ -56,7 +56,7 @@ void XFEM::UTILS::GetVolumeCellMaterial(DRT::Element* actele, Teuchos::RCP<MAT::
   if (position == CORE::GEO::CUT::Point::inside)  // minus domain, Omega^i with i<j
     position_id = 1;
   else if (position != CORE::GEO::CUT::Point::outside)  // plus domain, \Omega^j with j>i
-    dserror("Volume cell is either undecided or on surface. That can't be good....");
+    FOUR_C_THROW("Volume cell is either undecided or on surface. That can't be good....");
 
   Teuchos::RCP<MAT::Material> material = actele->Material();
 
@@ -69,7 +69,7 @@ void XFEM::UTILS::GetVolumeCellMaterial(DRT::Element* actele, Teuchos::RCP<MAT::
     // Error messages
     if (numofmaterials > 2)
     {
-      dserror("More than two materials is currently not supported.");
+      FOUR_C_THROW("More than two materials is currently not supported.");
     }
 
     // set default id in list of materials
@@ -95,10 +95,10 @@ void XFEM::UTILS::SafetyCheckMaterials(
   //------------------------------ see whether materials in patch are equal
 
   if (pmat->MaterialType() != nmat->MaterialType())
-    dserror(" not the same material for master and slave parent element");
+    FOUR_C_THROW(" not the same material for master and slave parent element");
 
   if (pmat->MaterialType() == INPAR::MAT::m_matlist)
-    dserror(
+    FOUR_C_THROW(
         "A matlist has been found in edge based stabilization! If you are running XTPF, check "
         "calls as this should NOT happen!!!");
 
@@ -106,7 +106,7 @@ void XFEM::UTILS::SafetyCheckMaterials(
       pmat->MaterialType() != INPAR::MAT::m_modpowerlaw &&
       pmat->MaterialType() != INPAR::MAT::m_herschelbulkley &&
       pmat->MaterialType() != INPAR::MAT::m_fluid)
-    dserror("Material law for parent element is not a fluid");
+    FOUR_C_THROW("Material law for parent element is not a fluid");
 
   if (pmat->MaterialType() == INPAR::MAT::m_fluid)
   {
@@ -123,19 +123,19 @@ void XFEM::UTILS::SafetyCheckMaterials(
       {
         std::cout << "Parent element viscosity: " << pvisc
                   << " ,neighbor element viscosity: " << nvisc << std::endl;
-        dserror("parent and neighbor element do not have the same viscosity!");
+        FOUR_C_THROW("parent and neighbor element do not have the same viscosity!");
       }
       if (std::abs(ndens - pdens) > 1e-14)
       {
         std::cout << "Parent element density: " << pdens << " ,neighbor element density: " << ndens
                   << std::endl;
-        dserror("parent and neighbor element do not have the same density!");
+        FOUR_C_THROW("parent and neighbor element do not have the same density!");
       }
     }
   }
   else
   {
-    dserror("up to now I expect a FLUID (m_fluid) material for edge stabilization\n");
+    FOUR_C_THROW("up to now I expect a FLUID (m_fluid) material for edge stabilization\n");
   }
 
   return;
@@ -155,14 +155,14 @@ void XFEM::UTILS::ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base
   if (la[nds_vector].lm_.size() != numnode)
   {
     std::cout << "la[nds_vector].lm_.size(): " << la[nds_vector].lm_.size() << std::endl;
-    dserror("assume a unique level-set dof in cutterdis-Dofset per node");
+    FOUR_C_THROW("assume a unique level-set dof in cutterdis-Dofset per node");
   }
 
   std::vector<double> local_vector(nsd * numnode);
   CORE::FE::ExtractMyValues(*global_col_vector, local_vector, la[nds_vector].lm_);
 
   if (local_vector.size() != nsd * numnode)
-    dserror("wrong size of (potentially resized) local matrix!");
+    FOUR_C_THROW("wrong size of (potentially resized) local matrix!");
 
   // copy local to normal....
   CORE::LINALG::copy(local_vector.data(), element_vector);
@@ -175,12 +175,12 @@ void XFEM::UTILS::ExtractQuantityAtNode(CORE::LINALG::SerialDenseMatrix::Base& e
     Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const unsigned int nsd)
 {
   const std::vector<int> lm = dis->Dof(nds_vector, node);
-  if (lm.size() != 1) dserror("assume a unique level-set dof in cutterdis-Dofset");
+  if (lm.size() != 1) FOUR_C_THROW("assume a unique level-set dof in cutterdis-Dofset");
 
   std::vector<double> local_vector(nsd);
   CORE::FE::ExtractMyValues(*global_col_vector, local_vector, lm);
 
-  if (local_vector.size() != nsd) dserror("wrong size of (potentially resized) local matrix!");
+  if (local_vector.size() != nsd) FOUR_C_THROW("wrong size of (potentially resized) local matrix!");
 
   // copy local to nvec....
   CORE::LINALG::copy(local_vector.data(), element_vector);

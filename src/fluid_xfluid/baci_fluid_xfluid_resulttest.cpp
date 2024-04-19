@@ -75,7 +75,7 @@ void FLD::XFluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int&
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1, discret->Name().c_str());
+    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, discret->Name().c_str());
   }
   else
   {
@@ -109,7 +109,7 @@ void FLD::XFluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int&
       }
       else
       {
-        dserror("Quantity '%s' not supported in ale testing", position.c_str());
+        FOUR_C_THROW("Quantity '%s' not supported in ale testing", position.c_str());
       }
 
       nerr += CompareValues(result, "NODE", res);

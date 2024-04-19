@@ -111,7 +111,7 @@ void ADAPTER::StructureTimeAdaJoint::SetupAuxiliar()
   // check explicitness
   if (sta_->IsImplicit())
   {
-    dserror("Implicit might work, but please check carefully");
+    FOUR_C_THROW("Implicit might work, but please check carefully");
   }
 
   // check order

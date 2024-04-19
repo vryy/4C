@@ -84,7 +84,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Init(
           std::cout << beams_damping_coefficient_prefactors_perunitlength_[i] << " ";
 
 
-        dserror(
+        FOUR_C_THROW(
             "Expected 3 values for beam damping coefficients if specified via input file "
             "but got %d! Check your input file!",
             beams_damping_coefficient_prefactors_perunitlength_.size());
@@ -94,14 +94,14 @@ void STR::MODELEVALUATOR::BrownianDynData::Init(
           beams_damping_coefficient_prefactors_perunitlength_[0] < 0.0 or
           beams_damping_coefficient_prefactors_perunitlength_[0] < 0.0)
       {
-        dserror("The damping coefficients for beams must not be negative!");
+        FOUR_C_THROW("The damping coefficients for beams must not be negative!");
       }
     }
   }
   // safety check for valid input parameter
   else if (beam_damping_coeff_specified_via_ == INPAR::BROWNIANDYN::vague)
   {
-    dserror("The way how beam damping coefficients are specified is not properly set!");
+    FOUR_C_THROW("The way how beam damping coefficients are specified is not properly set!");
   }
 
   // set flag

@@ -428,7 +428,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
 
   // Safety checks.
   if (this->patch_dof_gid_.size() != volume::n_dof_ or surface_gid.size() != surface::n_dof_)
-    dserror("Mismatch in GID sizes!");
+    FOUR_C_THROW("Mismatch in GID sizes!");
 
   // Calculate the face to volume DOF map.
   for (unsigned i_dof_surf = 0; i_dof_surf < surface::n_dof_; i_dof_surf++)
@@ -441,7 +441,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
       surface_dof_lid_map_(i_dof_surf) = dof_iterator - this->patch_dof_gid_.begin();
     }
     else
-      dserror("Could not find the surface DOF %d in the volume DOFs", surface_gid[i_dof_surf]);
+      FOUR_C_THROW("Could not find the surface DOF %d in the volume DOFs", surface_gid[i_dof_surf]);
   }
 
   // Set the reference position.
@@ -523,7 +523,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
     third_direction_factor_ = 1;
   }
   else
-    dserror("Could not map face to volume.");
+    FOUR_C_THROW("Could not map face to volume.");
 
   // Calculate the reference normals.
   CalculateNormals(volume_reference_position_, this->face_reference_position_,
@@ -594,7 +594,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
     EvaluatePosition<volume>(xi_volume, volume_position, r_volume);
     r_volume -= r_surface;
     if (CORE::FADUTILS::VectorNorm(r_volume) > 1e-10)
-      dserror("Nodal positions for face and volume do not match.");
+      FOUR_C_THROW("Nodal positions for face and volume do not match.");
 
     EvaluatePositionDerivative1<volume>(xi_volume, volume_position, dr_volume);
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -683,7 +683,7 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
             new FaceElementTemplate<t_nurbs9, line_to_surface_scalar_type<t_hermite, t_nurbs9>>(
                 face_element));
       default:
-        dserror("Wrong discretization type given.");
+        FOUR_C_THROW("Wrong discretization type given.");
     }
   }
   else
@@ -718,7 +718,7 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
                   line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>>(
                   face_element));
             default:
-              dserror("Wrong discretization type given.");
+              FOUR_C_THROW("Wrong discretization type given.");
           }
           break;
         }
@@ -750,12 +750,12 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
               return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
                   line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>>(face_element));
             default:
-              dserror("Wrong discretization type given.");
+              FOUR_C_THROW("Wrong discretization type given.");
           }
           break;
         }
         default:
-          dserror("Got unexpected fad order.");
+          FOUR_C_THROW("Got unexpected fad order.");
       }
     }
     else if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::extended_volume)
@@ -775,14 +775,14 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
               line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hex27>(
               face_element));
         default:
-          dserror("Got unexpected face type for extended volume coupling.");
+          FOUR_C_THROW("Got unexpected face type for extended volume coupling.");
       }
     }
     else
-      dserror("Surface normal strategy not recognized.");
+      FOUR_C_THROW("Surface normal strategy not recognized.");
   }
 
-  dserror("Could not create a face element.");
+  FOUR_C_THROW("Could not create a face element.");
   return Teuchos::null;
 }
 

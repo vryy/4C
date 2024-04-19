@@ -57,7 +57,8 @@ void StruResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_c
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1, strudisc_->Name().c_str());
+    FOUR_C_THROW(
+        "Node %d does not belong to discretization %s", node + 1, strudisc_->Name().c_str());
   }
   else
   {
@@ -92,8 +93,8 @@ void StruResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_c
           unknownpos = false;
           int lid = disnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-                actnode->Id());
+            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
+                idx, actnode->Id());
           result = (*dis_)[lid];
         }
       }
@@ -115,8 +116,8 @@ void StruResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_c
           unknownpos = false;
           int lid = dismpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-                actnode->Id());
+            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
+                idx, actnode->Id());
           result = (*dism_)[lid];
         }
       }
@@ -138,8 +139,8 @@ void StruResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_c
           unknownpos = false;
           int lid = velnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-                actnode->Id());
+            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
+                idx, actnode->Id());
           result = (*vel_)[lid];
         }
       }
@@ -161,14 +162,15 @@ void StruResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_c
           unknownpos = false;
           int lid = accnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-                actnode->Id());
+            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
+                idx, actnode->Id());
           result = (*acc_)[lid];
         }
       }
 
       // catch position std::strings, which are not handled by structure result test
-      if (unknownpos) dserror("Quantity '%s' not supported in structure testing", position.c_str());
+      if (unknownpos)
+        FOUR_C_THROW("Quantity '%s' not supported in structure testing", position.c_str());
 
       // compare values
       const int err = CompareValues(result, "NODE", res);
@@ -210,7 +212,7 @@ double StruResultTest::GetSpecialResultForTesting(const std::string& quantity)
   else if (quantity == "lin_iters_contact")  // number of iterations in contact linear solver
     result = static_cast<double>(timeintegrator_->ContactSolver()->getNumIters());
   else  // Catch unknown quantity strings
-    dserror("Quantity '%s' not supported in structure result test!", quantity.c_str());
+    FOUR_C_THROW("Quantity '%s' not supported in structure result test!", quantity.c_str());
 
   return result;
 }

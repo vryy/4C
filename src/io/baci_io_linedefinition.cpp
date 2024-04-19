@@ -122,7 +122,7 @@ namespace INPUT::INTERNAL
       {
         if ((in.peek() != ' ') && (in.peek() != '/'))  // exclude whitespaces and comments
         {
-          dserror(
+          FOUR_C_THROW(
               "Data type of component %s doesn't match the specified value. Needs to be of type %s",
               name.c_str(), correctDataType.c_str());
         }
@@ -609,7 +609,7 @@ namespace INPUT
   LineDefinition::Builder& LineDefinition::Builder::AddOptionalTag(const std::string& name)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
-      dserror("optional component '%s' already defined", name.c_str());
+      FOUR_C_THROW("optional component '%s' already defined", name.c_str());
     pimpl_->optionaltail_.emplace(
         name, INTERNAL::GenericComponent<INTERNAL::Empty>{name, INTERNAL::Empty()});
     return *this;
@@ -620,7 +620,7 @@ namespace INPUT
   LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedString(const std::string& name)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
-      dserror("optional component '%s' already defined", name.c_str());
+      FOUR_C_THROW("optional component '%s' already defined", name.c_str());
     pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent<std::string>{name, "''"});
     return *this;
   }
@@ -630,7 +630,7 @@ namespace INPUT
   LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedInt(const std::string& name)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
-      dserror("optional component '%s' already defined", name.c_str());
+      FOUR_C_THROW("optional component '%s' already defined", name.c_str());
     pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent<int>{name, 0});
     return *this;
   }
@@ -641,7 +641,7 @@ namespace INPUT
       const std::string& name, int length)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
-      dserror("optional component '%s' already defined", name.c_str());
+      FOUR_C_THROW("optional component '%s' already defined", name.c_str());
     pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent(name, std::vector<int>(length)));
     return *this;
   }
@@ -651,7 +651,7 @@ namespace INPUT
   LineDefinition::Builder& LineDefinition::Builder::AddOptionalNamedDouble(const std::string& name)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
-      dserror("optional component '%s' already defined", name.c_str());
+      FOUR_C_THROW("optional component '%s' already defined", name.c_str());
     pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent<double>{name, 0.});
     return *this;
   }
@@ -662,7 +662,7 @@ namespace INPUT
       const std::string& name, int length)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
-      dserror("optional component '%s' already defined", name.c_str());
+      FOUR_C_THROW("optional component '%s' already defined", name.c_str());
     pimpl_->optionaltail_.emplace(
         name, INTERNAL::GenericComponent(name, std::vector<double>(length)));
     return *this;
@@ -674,7 +674,7 @@ namespace INPUT
       const std::string& name, LengthDefinition lengthdef)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
-      dserror("optional component '%s' already defined", name.c_str());
+      FOUR_C_THROW("optional component '%s' already defined", name.c_str());
 
     pimpl_->optionaltail_.emplace(
         name, INTERNAL::GenericComponent<std::vector<double>>(name, std::vector<double>{},
@@ -695,7 +695,7 @@ namespace INPUT
       const std::string& name, int length)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
-      dserror("optional component '%s' already defined", name.c_str());
+      FOUR_C_THROW("optional component '%s' already defined", name.c_str());
     pimpl_->optionaltail_.emplace(
         name, INTERNAL::GenericComponent(name, std::vector<std::string>(length, "''")));
     return *this;
@@ -707,7 +707,7 @@ namespace INPUT
       const std::string& name, LengthDefinition lengthdef)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
-      dserror("optional component '%s' already defined", name.c_str());
+      FOUR_C_THROW("optional component '%s' already defined", name.c_str());
     using T = std::vector<std::string>;
 
     pimpl_->optionaltail_.emplace(name,
@@ -727,7 +727,7 @@ namespace INPUT
       const std::string& name, LengthDefinition lengthdef)
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
-      dserror("optional component '%s' already defined", name.c_str());
+      FOUR_C_THROW("optional component '%s' already defined", name.c_str());
     using T = std::vector<std::pair<std::string, double>>;
 
     pimpl_->optionaltail_.emplace(name,
@@ -924,7 +924,7 @@ namespace INPUT
             def.Print(out);
             out << '\n';
           });
-      dserror(out.str().c_str());
+      FOUR_C_THROW(out.str().c_str());
     }
 
     return parsed_lines;
@@ -962,7 +962,7 @@ namespace INPUT
       process_line(input_line);
     }
 
-    dsassert(
+    FOUR_C_ASSERT(
         unparsed_lines.size() + parsed_lines.size() == lines_in_section.size(), "Internal error.");
 
     return {parsed_lines, unparsed_lines};

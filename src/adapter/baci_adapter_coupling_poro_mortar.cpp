@@ -72,7 +72,7 @@ void ADAPTER::CouplingPoroMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discreti
       input.set<int>("PROBTYPE", INPAR::CONTACT::poroscatra);
       break;
     default:
-      dserror("Invalid poro problem is specified");
+      FOUR_C_THROW("Invalid poro problem is specified");
       break;
   }
 
@@ -85,7 +85,7 @@ void ADAPTER::CouplingPoroMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discreti
   input.set<bool>("CONTACTNOPEN",
       CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
   if (!CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
-    dserror("Set CONTACTNOPEN for Poroelastic meshtying!");
+    FOUR_C_THROW("Set CONTACTNOPEN for Poroelastic meshtying!");
 }
 
 /*----------------------------------------------------------------------*
@@ -125,7 +125,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
         ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), false, isnurbs));
 
     Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
-    if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
+    if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
     cele->PhysType() = MORTAR::Element::other;
 
     std::vector<Teuchos::RCP<DRT::Condition>> porocondvec;
@@ -139,7 +139,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
         if (faceele->ParentElement()->Id() == eleitergeometry->second->Id())
         {
           if (mastertype_ == 0)
-            dserror(
+            FOUR_C_THROW(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
           cele->PhysType() = MORTAR::Element::poro;
@@ -151,7 +151,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
     if (cele->PhysType() == MORTAR::Element::other)
     {
       if (mastertype_ == 1)
-        dserror(
+        FOUR_C_THROW(
             "struct and poro master elements on the same processor - no mixed interface supported");
       cele->PhysType() = MORTAR::Element::structure;
       mastertype_ = 0;
@@ -192,7 +192,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
         ele->Id(), ele->Owner(), ele->Shape(), ele->NumNode(), ele->NodeIds(), true, isnurbs));
 
     Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
-    if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
+    if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
     cele->PhysType() = MORTAR::Element::other;
 
     std::vector<Teuchos::RCP<DRT::Condition>> porocondvec;
@@ -207,7 +207,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
         if (faceele->ParentElement()->Id() == eleitergeometry->second->Id())
         {
           if (slavetype_ == 0)
-            dserror(
+            FOUR_C_THROW(
                 "struct and poro slave elements on the same processor - no mixed interface "
                 "supported");
           cele->PhysType() = MORTAR::Element::poro;
@@ -219,7 +219,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(Teuchos::RCP<DRT::Discretiza
     if (cele->PhysType() == MORTAR::Element::other)
     {
       if (slavetype_ == 1)
-        dserror(
+        FOUR_C_THROW(
             "struct and poro slave elements on the same processor - no mixed interface supported");
       cele->PhysType() = MORTAR::Element::structure;
       slavetype_ = 0;
@@ -289,19 +289,19 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
         break;
       case 1:
         if (structslave)
-          dserror(
+          FOUR_C_THROW(
               "struct and poro slave elements on the same adapter - no mixed interface supported");
-        // adjust dserror text, when more than one interface is supported
+        // adjust FOUR_C_THROW text, when more than one interface is supported
         poroslave = true;
         break;
       case 0:
         if (poroslave)
-          dserror(
+          FOUR_C_THROW(
               "struct and poro slave elements on the same adapter - no mixed interface supported");
         structslave = true;
         break;
       default:
-        dserror("this cannot happen");
+        FOUR_C_THROW("this cannot happen");
         break;
     }
   }
@@ -314,19 +314,19 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(Teuchos::RCP<DRT::Discretizatio
         break;
       case 1:
         if (structmaster)
-          dserror(
+          FOUR_C_THROW(
               "struct and poro master elements on the same adapter - no mixed interface supported");
-        // adjust dserror text, when more than one interface is supported
+        // adjust FOUR_C_THROW text, when more than one interface is supported
         poromaster = true;
         break;
       case 0:
         if (poromaster)
-          dserror(
+          FOUR_C_THROW(
               "struct and poro master elements on the same adapter - no mixed interface supported");
         structmaster = true;
         break;
       default:
-        dserror("this cannot happen");
+        FOUR_C_THROW("this cannot happen");
         break;
     }
   }

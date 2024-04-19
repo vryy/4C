@@ -70,7 +70,7 @@ scalar_type BEAMINTERACTION::PenaltyForce(const scalar_type& gap,
       break;
     }
     default:
-      dserror("Got unexpected penalty law.");
+      FOUR_C_THROW("Got unexpected penalty law.");
       break;
   }
 
@@ -118,7 +118,7 @@ scalar_type BEAMINTERACTION::PenaltyPotential(const scalar_type& gap,
       break;
     }
     default:
-      dserror("Got unexpected penalty law.");
+      FOUR_C_THROW("Got unexpected penalty law.");
       break;
   }
 
@@ -159,7 +159,7 @@ void BEAMINTERACTION::MortarShapeFunctionsToNumberOfLagrangeValues(
       return;
     }
     default:
-      dserror("Mortar shape function not implemented!");
+      FOUR_C_THROW("Mortar shape function not implemented!");
   }
 }
 
@@ -174,9 +174,9 @@ void BEAMINTERACTION::GetMortarGID(const BeamToSolidMortarManager* mortar_manage
   std::vector<int> lambda_total;
   mortar_manager->LocationVector(contact_pair, lambda_total);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (lambda_total.size() != n_mortar_pos + n_mortar_rot)
-    dserror("BEAMINTERACTION::GetMortarGID the local and global GID sizes do not match.");
+    FOUR_C_THROW("BEAMINTERACTION::GetMortarGID the local and global GID sizes do not match.");
 #endif
 
   unsigned int n_nodal_dof = 3;
@@ -218,7 +218,7 @@ void BEAMINTERACTION::GetBeamTriadInterpolationScheme(const DRT::Discretization&
   // Check that the beam element is a SR beam.
   auto beam_ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(ele);
   if (beam_ele == nullptr)
-    dserror("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
+    FOUR_C_THROW("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
 
   // Get the rotations of the beam rotation nodes.
   std::vector<double> beam_displacement_vector_full_double;
@@ -282,7 +282,7 @@ void BEAMINTERACTION::GetSolidRotationVector(
           xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid);
       return;
     default:
-      dserror("Got unexpected rotational coupling type");
+      FOUR_C_THROW("Got unexpected rotational coupling type");
       break;
   }
 }
@@ -591,7 +591,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3D(
       constructed_basis_vector_to_triad_order[2] = 1;
       break;
     default:
-      dserror("Unexpected coupling type for GetSolidRotationVectorDeformationGradient3D");
+      FOUR_C_THROW("Unexpected coupling type for GetSolidRotationVectorDeformationGradient3D");
   }
 
   // Basis vectors and the triad of the solid.
@@ -742,7 +742,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient2D(
               M_PI * 0.25;
       break;
     default:
-      dserror("Unexpected coupling type for GetSolidRotationVectorDeformationGradient2D");
+      FOUR_C_THROW("Unexpected coupling type for GetSolidRotationVectorDeformationGradient2D");
       break;
   }
   psi_solid.PutScalar(0.0);
@@ -766,14 +766,16 @@ void BEAMINTERACTION::CheckPlaneRotations(
     out_of_plane_values += pow(CORE::FADUTILS::CastToDouble(deformation_gradient)(0, i + 1), 2.0);
   }
   if (CORE::FADUTILS::sqrt(out_of_plane_values) > tol)
-    dserror("The solid deformation is not just in plane. Out of plane value: %f, tolerance: %f",
+    FOUR_C_THROW(
+        "The solid deformation is not just in plane. Out of plane value: %f, tolerance: %f",
         CORE::FADUTILS::sqrt(out_of_plane_values), tol);
   CORE::LINALG::Matrix<2, 1, double> projection_on_x;
   CORE::LINALG::Matrix<3, 1, double> beam_ref_psi;
   CORE::LARGEROTATIONS::quaterniontoangle(quaternion_beam_ref, beam_ref_psi);
   for (unsigned int i = 0; i < 2; i++) projection_on_x(i) = beam_ref_psi(i + 1);
   if (CORE::FADUTILS::VectorNorm(projection_on_x) > tol)
-    dserror("The beam reference rotation is not just in plane. Projection value: %f, tolerance: %f",
+    FOUR_C_THROW(
+        "The beam reference rotation is not just in plane. Projection value: %f, tolerance: %f",
         CORE::FADUTILS::VectorNorm(projection_on_x), tol);
 }
 

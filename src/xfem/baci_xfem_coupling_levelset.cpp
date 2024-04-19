@@ -79,7 +79,7 @@ void XFEM::LevelSetCoupling::SetConditionsToCopy()
 void XFEM::LevelSetCoupling::SetCutterDiscretization()
 {
   if (&*cond_dis_ != &*bg_dis_)  // check not required for two-phase anymore
-    dserror(
+    FOUR_C_THROW(
         "for non-twophase couplings, we have not checked the functionality of using an extra "
         "scatra this -- lets try!");
 
@@ -102,10 +102,10 @@ void XFEM::LevelSetCoupling::SetCutterDiscretization()
   else if (cutter_dis_->Name() == "fluid")
     dofset_name = "phi_scatra_proxy_in_fluid";
   else
-    dserror("unsupported cutter dis!");
+    FOUR_C_THROW("unsupported cutter dis!");
 
   if (not(dofset_coupling_map_.count(dofset_name) > 0))
-    dserror("dofset not set in dofset_coupling_map for cutter dis!");
+    FOUR_C_THROW("dofset not set in dofset_coupling_map for cutter dis!");
 
   cutter_nds_phi_ = dofset_coupling_map_[dofset_name];  // dofset id for scalar field
 }
@@ -229,7 +229,7 @@ void XFEM::LevelSetCoupling::DoConditionSpecificSetup()
 void XFEM::LevelSetCoupling::SetLevelSetBooleanType()
 {
   if (cutterele_conds_.size() == 0)
-    dserror(
+    FOUR_C_THROW(
         "no element condition for LevelSetCouplingBC set. Not possible to extract BOOLEANTYPE!");
 
   DRT::Condition* cond = (cutterele_conds_[0]).second;
@@ -246,7 +246,7 @@ void XFEM::LevelSetCoupling::SetLevelSetBooleanType()
   else if (*booleantype == "sym_difference")
     ls_boolean_type_ = ls_sym_difference;
   else
-    dserror("not a valid boolean type %s: ", booleantype->c_str());
+    FOUR_C_THROW("not a valid boolean type %s: ", booleantype->c_str());
 }
 
 
@@ -255,7 +255,7 @@ void XFEM::LevelSetCoupling::SetLevelSetBooleanType()
 bool XFEM::LevelSetCoupling::ApplyComplementaryOperator()
 {
   if (cutterele_conds_.size() == 0)
-    dserror(
+    FOUR_C_THROW(
         "no element condition for LevelSetCouplingBC set. Not possible to extract BOOLEANTYPE!");
 
   DRT::Condition* cond = (cutterele_conds_[0]).second;
@@ -347,8 +347,8 @@ void XFEM::LevelSetCoupling::GmshOutput(const std::string& filename_base, const 
 // -------------------------------------------------------------------
 void XFEM::LevelSetCoupling::ReadRestart(const int step, const int lsc_idx)
 {
-  //  dserror("Not tested Level Set restart from file. Should most likely work though if this
-  //  dserror is removed.");
+  //  FOUR_C_THROW("Not tested Level Set restart from file. Should most likely work though if this
+  //  FOUR_C_THROW is removed.");
 
   //-------- boundary discretization
   IO::DiscretizationReader boundaryreader(
@@ -407,16 +407,16 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
                   .Evaluate(lnode->X().data(), time, 0);
     }
     else
-      dserror("invalid function no. to set level-set field!");
+      FOUR_C_THROW("invalid function no. to set level-set field!");
 
     const std::vector<int> lm = cutter_dis_->Dof(cutter_nds_phi_, lnode);
 
-    if (lm.size() != 1) dserror("assume 1 dof in cutterdis-Dofset for phi vector");
+    if (lm.size() != 1) FOUR_C_THROW("assume 1 dof in cutterdis-Dofset for phi vector");
 
     const int gid = lm[0];
     const int lid = cutter_phinp_->Map().LID(gid);
     err = cutter_phinp_->ReplaceMyValues(1, &value, &lid);
-    if (err) dserror("could not replace values for phi vector");
+    if (err) FOUR_C_THROW("could not replace values for phi vector");
   }
 
 
@@ -435,7 +435,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
     {
       // check for potential L2_Projection smoothing
       const int l2_proj_num = (*cond->Get<int>("l2projsolv") + 1);
-      if (l2_proj_num < 1) dserror("Issue with L2_PROJECTION_SOLVER, smaller than 1!!!");
+      if (l2_proj_num < 1) FOUR_C_THROW("Issue with L2_PROJECTION_SOLVER, smaller than 1!!!");
 
       // SMOOTHED GRAD PHI!!!!!! (Create from nodal map on Xfluid discretization)
       // This method might be a bit too complicated as we need to save modphinp (size of fluid
@@ -462,18 +462,18 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       {
         // get the processor's local node
         DRT::Node* lsnode = cutter_dis_->lRowNode(lnodeid);
-        if (lsnode == nullptr) dserror("Returned node is null-pointer.");
+        if (lsnode == nullptr) FOUR_C_THROW("Returned node is null-pointer.");
 
         std::vector<int> initialdof =
             Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)->InitialDof(lsnode);
 
         if (initialdof.size() != 4)
-          dserror("Initial Dof Size is not 4! Size: %d", initialdof.size());
+          FOUR_C_THROW("Initial Dof Size is not 4! Size: %d", initialdof.size());
 
         const int gid = initialdof[3];
 
         int err = modphinp->ReplaceGlobalValues(1, &val[lnodeid], &gid);
-        if (err != 0) dserror("Something went wrong when replacing the values.");
+        if (err != 0) FOUR_C_THROW("Something went wrong when replacing the values.");
 
       }  // Loop over all nodes
 
@@ -481,7 +481,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       // dependent on the desired projection, just remove this line
       if (not modphinp->Map().SameAs(
               *Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)->InitialDofRowMap()))
-        dserror("input map is not a dof row map of the fluid");
+        FOUR_C_THROW("input map is not a dof row map of the fluid");
 
       // set given state for element evaluation
       cutter_dis_->ClearState();
@@ -493,7 +493,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode =
           CORE::FE::compute_nodal_l2_projection(cutter_dis_, "pres", 3, eleparams, solverparams);
       if (gradphinp_smoothed_rownode == Teuchos::null)
-        dserror("A smoothed grad phi is required, but an empty one is provided!");
+        FOUR_C_THROW("A smoothed grad phi is required, but an empty one is provided!");
 
       // The following bugfix needs to be check carefully
       {
@@ -555,9 +555,11 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
       std::vector<int> lm_target;
       target_dis->Dof(target_nds, node_target, lm_target);
 
-      if (static_cast<int>(lm_source.size()) != 1) dserror("we expect a unique dof per node here!");
+      if (static_cast<int>(lm_source.size()) != 1)
+        FOUR_C_THROW("we expect a unique dof per node here!");
 
-      if (static_cast<int>(lm_target.size()) != 1) dserror("we expect a unique dof per node here!");
+      if (static_cast<int>(lm_target.size()) != 1)
+        FOUR_C_THROW("we expect a unique dof per node here!");
 
       std::vector<double> val_source;
       CORE::FE::ExtractMyValues(*source_vec_dofbased, val_source, lm_source);
@@ -565,12 +567,12 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
       // set to a dofrowmap based vector!
       const int lid_target = target_vec_dofbased->Map().LID(lm_target[0]);
       const int err = target_vec_dofbased->ReplaceMyValues(1, val_source.data(), &lid_target);
-      if (err) dserror("could not replace values for convective velocity");
+      if (err) FOUR_C_THROW("could not replace values for convective velocity");
     }
   }
   else
   {
-    dserror("nonmatching discretizations not supported so far! - Implement a mesh projector?");
+    FOUR_C_THROW("nonmatching discretizations not supported so far! - Implement a mesh projector?");
   }
 }
 
@@ -589,11 +591,11 @@ Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::GetLevelSetFieldAsNodeRowVec
     std::vector<double> val_source;
     CORE::FE::ExtractMyValues(*phinp_, val_source, lm_source);
 
-    if (val_source.size() != 1) dserror("we expect only one dof");
+    if (val_source.size() != 1) FOUR_C_THROW("we expect only one dof");
 
     const int lid_target = bg_dis_->NodeRowMap()->LID(node->Id());
     const int err = bg_phinp_nodemap_->ReplaceMyValues(1, val_source.data(), &lid_target);
-    if (err) dserror("could not replace values for phi vector");
+    if (err) FOUR_C_THROW("could not replace values for phi vector");
   }
 
   return bg_phinp_nodemap_;
@@ -607,7 +609,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::GetLevelSetFieldAsNodeRowVec
 double XFEM::LevelSetCoupling::FunctImplementation(
     const int func_no, const double* coords, const double t)
 {
-  //  dserror("you try to evaluate an implemented function for level-set field! Which one?");
+  //  FOUR_C_THROW("you try to evaluate an implemented function for level-set field! Which one?");
   // WARNING!
 
   double x = coords[0];
@@ -706,7 +708,7 @@ double XFEM::LevelSetCoupling::FunctImplementation(
         std::cout << "i: " << i << " rhs " << rhs << std::endl;
         std::cout << "armijo: " << armijo << std::endl;
 
-        dserror(
+        FOUR_C_THROW(
             "did not converge properly, intial guess not good enough - increase helixal height "
             "alpha!");
       }
@@ -1088,7 +1090,7 @@ void XFEM::LevelSetCouplingNeumann::DoConditionSpecificSetup()
   XFEM::LevelSetCouplingBC::DoConditionSpecificSetup();
 
   // Check if Inflow Stabilisation is active
-  if (!cutterele_conds_.size()) dserror("cutterele_conds_.size = 0!");
+  if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
   DRT::Condition* cond = (cutterele_conds_[0]).second;
   auto inflow_stab = *cond->Get<bool>("InflowStab");
   for (auto& cutterele_cond : cutterele_conds_)
@@ -1096,7 +1098,7 @@ void XFEM::LevelSetCouplingNeumann::DoConditionSpecificSetup()
     DRT::Condition* cond = cutterele_cond.second;
     auto this_inflow = *cond->Get<bool>("InflowStab");
     if (inflow_stab != this_inflow)
-      dserror(
+      FOUR_C_THROW(
           "You want to stabilized just some of your Neumann Boundaries? - feel free to implement!");
   }
 
@@ -1232,7 +1234,7 @@ void XFEM::LevelSetCouplingNavierSlip::SetElementConditions()
 {
   XFEM::LevelSetCouplingBC::SetElementConditions();
 
-  if (cutterele_conds_.size() == 0) dserror("call SetElementConditions() first!");
+  if (cutterele_conds_.size() == 0) FOUR_C_THROW("call SetElementConditions() first!");
 
   DRT::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
 
@@ -1302,7 +1304,7 @@ void XFEM::LevelSetCouplingNavierSlip::SetElementSpecificConditions(
     // safety checks
     if (mynewcond.size() != 1)
     {
-      dserror(
+      FOUR_C_THROW(
           "%i conditions of the same name with robin id %i, for element %i! %s coupling-condition "
           "not unique!",
           mynewcond.size(), (robin_id + 1), cutele->Id(), cond_name.c_str());
@@ -1321,7 +1323,7 @@ void XFEM::LevelSetCouplingNavierSlip::SetElementSpecificConditions(
   for (int lid = 0; lid < nummycolele; ++lid)
   {
     if (cutterele_cond[lid] == nullptr)
-      dserror("cutter element with local id %i has no Robin-condition!!!", lid);
+      FOUR_C_THROW("cutter element with local id %i has no Robin-condition!!!", lid);
   }
 }
 
@@ -1332,7 +1334,7 @@ void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::
     const DRT::Condition* cond)
 {
   if (cutterele_cond_robin_dirichlet_.size() == 0)
-    dserror("initialize cutterele_cond_robin_dirichlet_ first!");
+    FOUR_C_THROW("initialize cutterele_cond_robin_dirichlet_ first!");
 
   // evaluate interface velocity (given by weak Dirichlet condition)
   EvaluateDirichletFunction(ivel, x, cutterele_cond_robin_dirichlet_[0], time_);
@@ -1341,7 +1343,7 @@ void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::
   if (has_neumann_jump_)
   {
     if (cutterele_cond_robin_neumann_.size() == 0)
-      dserror("initialize cutterele_cond_robin_neumann_ first!");
+      FOUR_C_THROW("initialize cutterele_cond_robin_neumann_ first!");
 
     EvaluateNeumannFunction(itraction, x, cutterele_cond_robin_neumann_[0], time_);
   }
@@ -1354,7 +1356,7 @@ void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditionsOldState(
     const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
 {
   if (cutterele_cond_robin_dirichlet_.size() == 0)
-    dserror("initialize cutterele_cond_robin_dirichlet_ first!");
+    FOUR_C_THROW("initialize cutterele_cond_robin_dirichlet_ first!");
 
   // evaluate interface velocity (given by weak Dirichlet condition)
   EvaluateDirichletFunction(ivel, x, cutterele_cond_robin_dirichlet_[0], time_ - dt_);
@@ -1363,7 +1365,7 @@ void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditionsOldState(
   if (has_neumann_jump_)
   {
     if (cutterele_cond_robin_neumann_.size() == 0)
-      dserror("initialize cutterele_cond_robin_neumann_ first!");
+      FOUR_C_THROW("initialize cutterele_cond_robin_neumann_ first!");
 
     EvaluateNeumannFunction(itraction, x, cutterele_cond_robin_neumann_[0], time_ - dt_);
   }
@@ -1384,7 +1386,7 @@ void XFEM::LevelSetCouplingNavierSlip::GetSlipCoefficient(
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNavierSlip::SetConditionSpecificParameters()
 {
-  if (cutterele_conds_.size() == 0) dserror("call SetElementConditions() first!");
+  if (cutterele_conds_.size() == 0) FOUR_C_THROW("call SetElementConditions() first!");
 
   DRT::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
 
@@ -1448,9 +1450,9 @@ void XFEM::LevelSetCouplingNavierSlip::SetupConfigurationMap()
     configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
   }
   else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
-    dserror("XFEM::LevelSetCouplingNavierSlip: Averaging Strategy not set!");
+    FOUR_C_THROW("XFEM::LevelSetCouplingNavierSlip: Averaging Strategy not set!");
   else
-    dserror(
+    FOUR_C_THROW(
         "XFEM::LevelSetCouplingNavierSlip: You want to initialize another strategy than "
         "Xfluid_Sided?");
   return;
@@ -1479,7 +1481,7 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
   double sliplength = 0.0;
   GetSlipCoefficient(sliplength, x, cond);
 
-  if (sliplength < 0.0) dserror("The slip length can not be negative.");
+  if (sliplength < 0.0) FOUR_C_THROW("The slip length can not be negative.");
 
   if (sliplength != 0.0)
   {

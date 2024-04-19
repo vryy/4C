@@ -92,7 +92,7 @@ namespace FSI
      */
     double SelectDtErrorBased() const override
     {
-      dserror("SelectDtErrorBased() not implemented, yet!");
+      FOUR_C_THROW("SelectDtErrorBased() not implemented, yet!");
       return 0.0;
     }
 
@@ -103,7 +103,7 @@ namespace FSI
      */
     bool SetAccepted() const override
     {
-      dserror("SetAccepted() not implemented, yet!");
+      FOUR_C_THROW("SetAccepted() not implemented, yet!");
       return false;
     }
 
@@ -125,7 +125,7 @@ namespace FSI
         Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
         const INPAR::FSI::Redistribute domain) override
     {
-      dserror("Not implemented, yet.");
+      FOUR_C_THROW("Not implemented, yet.");
     }
 
    protected:

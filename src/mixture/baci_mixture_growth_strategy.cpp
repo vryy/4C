@@ -27,13 +27,13 @@ MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::Factor
   // for the sake of safety
   if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
   {
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }
 
   // yet another safety check
   if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
   {
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
   }
 
   // retrieve problem instance to read from
@@ -57,7 +57,8 @@ MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::Factor
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::StiffnessGrowthStrategy>(curmat);
     }
     default:
-      dserror("The referenced material with id %d is not registered as a mixture growth strategy!",
+      FOUR_C_THROW(
+          "The referenced material with id %d is not registered as a mixture growth strategy!",
           matid);
   }
   return nullptr;

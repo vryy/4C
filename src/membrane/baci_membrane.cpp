@@ -72,7 +72,7 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
       break;
     }
     default:
-      dserror("shape type unknown!\n");
+      FOUR_C_THROW("shape type unknown!\n");
       break;
   }
   cur_thickness_.resize(intpoints_.nquad, thickness_);
@@ -173,7 +173,7 @@ void DRT::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, cur_thickness_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -211,7 +211,7 @@ Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> DRT::ELEMENTS::Membrane<distype>::P
 template <CORE::FE::CellType distype>
 STR::ELEMENTS::ParamsInterface& DRT::ELEMENTS::Membrane<distype>::StrParamsInterface()
 {
-  if (not IsParamsInterface()) dserror("The interface ptr is not set!");
+  if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
   return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_, true));
 }
 

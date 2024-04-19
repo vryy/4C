@@ -150,7 +150,7 @@ double CORE::GEO::CUT::Tri3BoundaryCell::Area()
       CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "BoundaryCellsNormal");
       DumpGmshNormal(file);
       CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
-      dserror("Boundary Cell not valid! Written GMSH output in Invalid_boundary_cell.pos!");
+      FOUR_C_THROW("Boundary Cell not valid! Written GMSH output in Invalid_boundary_cell.pos!");
     }
     else
     {
@@ -296,7 +296,7 @@ void CORE::GEO::CUT::Line2BoundaryCell::DumpGmshNormal(std::ofstream& file)
 void CORE::GEO::CUT::ArbitraryBoundaryCell::DumpGmshNormal(std::ofstream& file)
 {
   // TO DO: implement gmsh output for arbitrarily shaped bcell
-  //  dserror("not implemented");
+  //  FOUR_C_THROW("not implemented");
 }
 
 /*----------------------------------------------------------------------------*
@@ -377,7 +377,7 @@ void CORE::GEO::CUT::Quad4BoundaryCell::Normal(
 void CORE::GEO::CUT::ArbitraryBoundaryCell::Normal(
     const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const
 {
-  dserror("Call GetNormalVector() to get normal for arbitrary boundarycells");
+  FOUR_C_THROW("Call GetNormalVector() to get normal for arbitrary boundarycells");
   exit(1);
   /*// cross product to get the normal at the point
   normal( 0 ) = A( 0, 1 )*A( 1, 2 ) - A( 0, 2 )*A( 1, 1 );
@@ -431,7 +431,7 @@ CORE::FE::GaussIntegration CORE::GEO::CUT::ArbitraryBoundaryCell::gaussRule(int 
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::ArbitraryBoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
-  dserror("Element Center for ArbitraryBoundaryCells not implemented!");
+  FOUR_C_THROW("Element Center for ArbitraryBoundaryCells not implemented!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -475,7 +475,7 @@ void CORE::GEO::CUT::Quad4BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>
  *----------------------------------------------------------------------------*/
 CORE::LINALG::Matrix<3, 1> CORE::GEO::CUT::Point1BoundaryCell::GetNormalVector()
 {
-  dserror("There is no normal for Point1 boundarycell");
+  FOUR_C_THROW("There is no normal for Point1 boundarycell");
   exit(EXIT_FAILURE);
 }
 
@@ -495,7 +495,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::CUT::Line2BoundaryCell::GetNormalVector()
  *----------------------------------------------------------------------------*/
 CORE::LINALG::Matrix<3, 1> CORE::GEO::CUT::Tri3BoundaryCell::GetNormalVector()
 {
-  dserror("Call Transform function to get normal for Tri3 boundarycell");
+  FOUR_C_THROW("Call Transform function to get normal for Tri3 boundarycell");
   exit(EXIT_FAILURE);
 }
 
@@ -503,7 +503,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::CUT::Tri3BoundaryCell::GetNormalVector()
  *----------------------------------------------------------------------------*/
 CORE::LINALG::Matrix<3, 1> CORE::GEO::CUT::Quad4BoundaryCell::GetNormalVector()
 {
-  dserror("Call Transform function to get normal for Quad4 boundarycell");
+  FOUR_C_THROW("Call Transform function to get normal for Quad4 boundarycell");
   exit(EXIT_FAILURE);
 }
 

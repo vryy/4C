@@ -155,14 +155,14 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::buildMapLagrangeToBezier()
   Teuchos::LAPACK<int, double> lapack;
   lapack.GETRF(27, 27, map_l2b_.A(), 27, ipiv.data(), &info);
 
-  if (info) dserror("Error detected in LAPACK::GETRF. info = %d", info);
+  if (info) FOUR_C_THROW("Error detected in LAPACK::GETRF. info = %d", info);
 
   // (1) compute the optimal block size first
   std::vector<double> work(1);
   int lwork = -1;
   lapack.GETRI(27, map_l2b_.A(), 27, ipiv.data(), work.data(), lwork, &info);
   if (info)
-    dserror(
+    FOUR_C_THROW(
         "Error detected in LAPACK::GETRI during the calculation of "
         "the optimal block size. info = %d",
         info);
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::buildMapLagrangeToBezier()
   work.resize(lwork);
   lapack.GETRI(27, map_l2b_.A(), 27, ipiv.data(), work.data(), lwork, &info);
   if (info)
-    dserror(
+    FOUR_C_THROW(
         "Error detected in LAPACK::GETRI during the calculation of "
         "the inverse. info = %d",
         info);

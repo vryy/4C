@@ -61,7 +61,7 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
       visualization_ouput_parameter_list, "OUTPUT_WRITER");
   if (output_writer == INPAR::IO_RUNTIME_OUTPUT::OutputWriter::none)
   {
-    dserror(
+    FOUR_C_THROW(
         "The visualization writer has to be set in the input file under IO/RUNTIME VTK "
         "OUTPUT/OUTPUT_WRITER");
   }
@@ -96,7 +96,7 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
 {
   if (iteration_number != 0 && !visualization_parameters.every_iteration_)
   {
-    dserror(
+    FOUR_C_THROW(
         "An iteration index was passed to GetTimeAndTimeStepIndexForOutput, but output for "
         "each iteration is deactivated, this is a contradiction");
   }

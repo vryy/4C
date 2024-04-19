@@ -126,7 +126,7 @@ void DRT::ELEMENTS::Truss3Scatra::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, impltype_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -148,7 +148,7 @@ bool DRT::ELEMENTS::Truss3Scatra::ReadElement(
   else if (impltype == "ElchElectrode")
     impltype_ = INPAR::SCATRA::impltype_elch_electrode;
   else
-    dserror("Invalid implementation type for Truss3Scatra elements!");
+    FOUR_C_THROW("Invalid implementation type for Truss3Scatra elements!");
 
   return true;
 }
@@ -162,7 +162,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D_growth and
       Material()->MaterialType() != INPAR::MAT::m_linelast1D)
-    dserror("only linear elastic growth material supported for truss element");
+    FOUR_C_THROW("only linear elastic growth material supported for truss element");
 
   switch (Material()->MaterialType())
   {
@@ -226,7 +226,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
     }
     default:
     {
-      dserror("Material type is not supported");
+      FOUR_C_THROW("Material type is not supported");
       break;
     }
   }
@@ -240,7 +240,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D_growth and
       Material()->MaterialType() != INPAR::MAT::m_linelast1D)
-    dserror("only linear elastic growth material supported for truss element");
+    FOUR_C_THROW("only linear elastic growth material supported for truss element");
 
   switch (Material()->MaterialType())
   {
@@ -303,7 +303,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
           case INPAR::STR::stress_none:
             break;
           default:
-            dserror("Requested stress type not available");
+            FOUR_C_THROW("Requested stress type not available");
             break;
         }
       }
@@ -318,7 +318,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
     break;
     default:
     {
-      dserror("Material type is not supported");
+      FOUR_C_THROW("Material type is not supported");
       break;
     }
   }
@@ -349,7 +349,7 @@ void DRT::ELEMENTS::Truss3Scatra::ExtractElementalVariables(LocationArray& la,
     phi_ele.resize(la[2].lm_.size());
     phi_ele.clear();
     auto phi = discretization.GetState(2, "MicroCon");
-    if (phi == Teuchos::null) dserror("Cannot get state vector 'MicroCon'");
+    if (phi == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'MicroCon'");
     CORE::FE::ExtractMyValues(*phi, phi_ele, la[2].lm_);
   }
   // get nodal phi from micro state
@@ -358,11 +358,11 @@ void DRT::ELEMENTS::Truss3Scatra::ExtractElementalVariables(LocationArray& la,
     phi_ele.resize(la[1].lm_.size());
     phi_ele.clear();
     auto phi = discretization.GetState(1, "scalarfield");
-    if (phi == Teuchos::null) dserror("Cannot get state vectors 'scalar'");
+    if (phi == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'scalar'");
     CORE::FE::ExtractMyValues(*phi, phi_ele, la[1].lm_);
   }
   else
-    dserror("Cannot find state vector");
+    FOUR_C_THROW("Cannot find state vector");
 
   if (ele_state.find("phi") == ele_state.end())
     ele_state.emplace(std::make_pair("phi", phi_ele));
@@ -395,7 +395,7 @@ void DRT::ELEMENTS::Truss3Scatra::PrepCalcInternalForceStiffTotLagScaTra(
       nodal_concentration(1) = phi_ele[3];
       break;
     default:
-      dserror("Vector has size other than 2,4, or 6. Please use different mapping strategy!");
+      FOUR_C_THROW("Vector has size other than 2,4, or 6. Please use different mapping strategy!");
       break;
   }
 }
@@ -409,7 +409,7 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D_growth and
       Material()->MaterialType() != INPAR::MAT::m_linelast1D)
-    dserror("only linear elastic growth material supported for truss element");
+    FOUR_C_THROW("only linear elastic growth material supported for truss element");
 
   switch (Material()->MaterialType())
   {
@@ -449,7 +449,7 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
     }
     default:
     {
-      dserror("Material type is not supported");
+      FOUR_C_THROW("Material type is not supported");
       break;
     }
   }

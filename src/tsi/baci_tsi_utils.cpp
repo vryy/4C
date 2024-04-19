@@ -55,7 +55,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::CheckMaterialType(const int matid
   //  INPAR::MAT::MaterialType mtype =
   //  GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type(); if ((mtype !=
   //  INPAR::MAT::m_th_fourier_iso))
-  //    dserror("Material with ID %d is not admissible for thermo elements",matid);
+  //    FOUR_C_THROW("Material with ID %d is not admissible for thermo elements",matid);
 
 }  // CheckMaterialType()
 
@@ -78,7 +78,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   if (so_base != nullptr)
     kintype = so_base->KinematicType();
   else
-    dserror("oldele is neither a So_base element!");
+    FOUR_C_THROW("oldele is neither a So_base element!");
 
   // note: SetMaterial() was reimplemented by the thermo element!
 
@@ -96,7 +96,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   }
   else
   {
-    dserror("unsupported element type '%s'", typeid(*newele).name());
+    FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
   }
   return;
 }  // SetElementData()
@@ -143,13 +143,13 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   bool matchinggrid = CORE::UTILS::IntegralValue<bool>(tsidyn, "MATCHINGGRID");
 
   // we use the structure discretization as layout for the temperature discretization
-  if (structdis->NumGlobalNodes() == 0) dserror("Structure discretization is empty!");
+  if (structdis->NumGlobalNodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
 
   // create thermo elements if the temperature discretization is empty
   if (thermdis->NumGlobalNodes() == 0)
   {
     if (!matchinggrid)
-      dserror(
+      FOUR_C_THROW(
           "MATCHINGGRID is set to 'no' in TSI DYNAMIC section, but thermo discretization is "
           "empty!");
 
@@ -183,8 +183,9 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
     Teuchos::RCP<DRT::DofSetInterface> thermodofset = thermdis->GetDofSetProxy();
 
     // check if ThermoField has 2 discretizations, so that coupling is possible
-    if (thermdis->AddDofSet(structdofset) != 1) dserror("unexpected dof sets in thermo field");
-    if (structdis->AddDofSet(thermodofset) != 1) dserror("unexpected dof sets in structure field");
+    if (thermdis->AddDofSet(structdofset) != 1) FOUR_C_THROW("unexpected dof sets in thermo field");
+    if (structdis->AddDofSet(thermodofset) != 1)
+      FOUR_C_THROW("unexpected dof sets in structure field");
 
     structdis->FillComplete(true, true, true);
     thermdis->FillComplete(true, true, true);
@@ -194,7 +195,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   else
   {
     if (matchinggrid)
-      dserror(
+      FOUR_C_THROW(
           "MATCHINGGRID is set to 'yes' in TSI DYNAMIC section, but thermo discretization is not "
           "empty!");
 
@@ -211,10 +212,11 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
     Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
     dofsetaux = Teuchos::rcp(
         new DRT::DofSetPredefinedDoFNumber(ndofpernode_thermo, ndofperelement_thermo, 0, true));
-    if (structdis->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in structure field");
+    if (structdis->AddDofSet(dofsetaux) != 1)
+      FOUR_C_THROW("unexpected dof sets in structure field");
     dofsetaux = Teuchos::rcp(
         new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
-    if (thermdis->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in thermo field");
+    if (thermdis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in thermo field");
 
     // call AssignDegreesOfFreedom also for auxiliary dofsets
     // note: the order of FillComplete() calls determines the gid numbering!
@@ -314,7 +316,7 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
   if (so_base != nullptr)
     kintype = so_base->KinematicType();
   else
-    dserror("ele1 is not a so3_thermo element!");
+    FOUR_C_THROW("ele1 is not a so3_thermo element!");
 
   DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele2);
   if (therm != nullptr)

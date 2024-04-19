@@ -74,7 +74,7 @@ namespace CORE::UTILS
     virtual std::vector<double> EvaluateSpatialDerivative(
         const double* x, double t, std::size_t component) const
     {
-      dserror("The evaluation of the derivative is not implemented for this function");
+      FOUR_C_THROW("The evaluation of the derivative is not implemented for this function");
       std::vector<double> emptyvector;
       return emptyvector;
     };
@@ -95,7 +95,7 @@ namespace CORE::UTILS
     virtual std::vector<double> EvaluateTimeDerivative(
         const double* x, double t, unsigned deg, std::size_t component) const
     {
-      dserror("The evaluation of the time derivative is not implemented for this function");
+      FOUR_C_THROW("The evaluation of the time derivative is not implemented for this function");
       std::vector<double> emptyvector;
       return emptyvector;
     };

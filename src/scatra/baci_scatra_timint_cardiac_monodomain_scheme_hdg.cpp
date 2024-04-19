@@ -120,7 +120,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::OutputState()
     material_internal_state_np_ =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
     if (material_internal_state_np_ == Teuchos::null)
-      dserror("Cannot get state vector material internal state");
+      FOUR_C_THROW("Cannot get state vector material internal state");
 
     output_->WriteVector("ionic_currents_hdg", material_internal_state_np_);
 

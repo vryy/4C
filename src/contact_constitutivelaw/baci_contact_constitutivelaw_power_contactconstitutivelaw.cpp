@@ -53,14 +53,14 @@ double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::Evaluate(double gap, CONT
 {
   if (gap + params_->GetOffset() > 0)
   {
-    dserror("You should not be here. The Evaluate function is only tested for active nodes. ");
+    FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   double result = 1;
   gap *= -1;
   result = -1;
   result *= (params_->GetA() * pow(gap - params_->GetOffset(), params_->GetB()));
   if (result > 0)
-    dserror(
+    FOUR_C_THROW(
         "The constitutive function you are using seems to be positive, even though the gap is "
         "negative. Please check your coefficients!");
   return result;
@@ -73,7 +73,7 @@ double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::EvaluateDeriv(
 {
   if (gap + params_->GetOffset() > 0.0)
   {
-    dserror("You should not be here. The Evaluate function is only tested for active nodes. ");
+    FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   gap = -gap;
   return params_->GetA() * params_->GetB() * pow(gap - params_->GetOffset(), params_->GetB() - 1);

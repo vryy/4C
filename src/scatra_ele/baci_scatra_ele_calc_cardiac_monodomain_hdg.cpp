@@ -101,7 +101,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
       for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
     (*difftensor).push_back(difftensortmp);
     DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(ele->Nodes()[0]);
-    if (fnode) dserror("Fiber direction defined twice (nodes and elements)");
+    if (fnode) FOUR_C_THROW("Fiber direction defined twice (nodes and elements)");
   }
   else
   {
@@ -187,7 +187,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
       for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
     (*difftensor).push_back(difftensortmp);
     DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(ele->Nodes()[0]);
-    if (fnode) dserror("Fiber direction defined twice (nodes and elements)");
+    if (fnode) FOUR_C_THROW("Fiber direction defined twice (nodes and elements)");
   }
   else
   {
@@ -246,7 +246,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Materia
   if (material->MaterialType() == INPAR::MAT::m_myocard)
     MatMyocard(material, k, difftensor, ivecn, ivecnp, ivecnpderiv);
   else
-    dserror("Material type is not supported");
+    FOUR_C_THROW("Material type is not supported");
 
   return;
 }
@@ -296,7 +296,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
     nqpoints = intpoints.IP().nquad;
 
     if (nqpoints != actmat->GetNumberOfGP())
-      dserror("Number of quadrature points (%d) does not match number of points in material (%d)!",
+      FOUR_C_THROW(
+          "Number of quadrature points (%d) does not match number of points in material (%d)!",
           nqpoints, actmat->GetNumberOfGP());
 
     if (values_mat_gp_all_.empty() or
@@ -334,7 +335,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
     nqpoints = quadrature_->NumPoints();
 
     if (nqpoints != actmat->GetNumberOfGP())
-      dserror("Number of quadrature points (%d) does not match number of points in material (%d)!",
+      FOUR_C_THROW(
+          "Number of quadrature points (%d) does not match number of points in material (%d)!",
           nqpoints, actmat->GetNumberOfGP());
 
     if (values_mat_gp_all_.empty() or
@@ -422,7 +424,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpd
   if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
     const Teuchos::RCP<MAT::MatList> actmat = Teuchos::rcp_dynamic_cast<MAT::MatList>(material);
-    if (actmat->NumMat() < this->numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() < this->numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < this->numscal_; ++k)
     {
@@ -484,7 +486,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::GetMate
         }
         int err =
             material_internal_state->ReplaceGlobalValue(ele->Id(), k, material_state / nqpoints);
-        if (err != 0) dserror("%i", err);
+        if (err != 0) FOUR_C_THROW("%i", err);
       }
     }
 
@@ -590,7 +592,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   CORE::LINALG::SerialDenseMatrix state_variables(
       shapes_old->nqpoints_, actmat->GetNumberOfInternalStateVariables());
 
-  if (shapes->ndofs_ != shapes_old->ndofs_) dserror("Number of shape functions not identical!");
+  if (shapes->ndofs_ != shapes_old->ndofs_)
+    FOUR_C_THROW("Number of shape functions not identical!");
 
   for (unsigned int i = 0; i < shapes->ndofs_; ++i)
   {
@@ -624,7 +627,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   inverseMat.factorWithEquilibration(true);
   int err2 = inverseMat.factor();
   int err = inverseMat.solve();
-  if (err != 0 || err2 != 0) dserror("Inversion of matrix failed with errorcode %d", err);
+  if (err != 0 || err2 != 0) FOUR_C_THROW("Inversion of matrix failed with errorcode %d", err);
 
   CORE::LINALG::SerialDenseMatrix tempMat2(
       shapes->nqpoints_, actmat->GetNumberOfInternalStateVariables());
@@ -753,7 +756,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   inverseMat.factorWithEquilibration(true);
   int err2 = inverseMat.factor();
   int err = inverseMat.solve();
-  if (err != 0 || err2 != 0) dserror("Inversion of matrix failed with errorcode %d", err);
+  if (err != 0 || err2 != 0) FOUR_C_THROW("Inversion of matrix failed with errorcode %d", err);
 
   CORE::LINALG::SerialDenseMatrix tempMat2(
       shape_gp.size(), actmat->GetNumberOfInternalStateVariables());

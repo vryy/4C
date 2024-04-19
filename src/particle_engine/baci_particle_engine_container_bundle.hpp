@@ -87,9 +87,9 @@ namespace PARTICLEENGINE
      */
     inline ParticleContainer* GetSpecificContainer(ParticleType type, ParticleStatus status) const
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedtypes_.count(type))
-        dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
+        FOUR_C_THROW("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
       return (containers_[type])[status].get();
@@ -110,9 +110,9 @@ namespace PARTICLEENGINE
     inline void ScaleStateSpecificContainer(
         double fac, ParticleState state, ParticleType type) const
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedtypes_.count(type))
-        dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
+        FOUR_C_THROW("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
       ((containers_[type])[Owned])->ScaleState(fac, state);
@@ -133,9 +133,9 @@ namespace PARTICLEENGINE
     inline void UpdateStateSpecificContainer(double facA, ParticleState stateA, double facB,
         ParticleState stateB, ParticleType type) const
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedtypes_.count(type))
-        dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
+        FOUR_C_THROW("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
       ((containers_[type])[Owned])->UpdateState(facA, stateA, facB, stateB);
@@ -153,9 +153,9 @@ namespace PARTICLEENGINE
     inline void SetStateSpecificContainer(
         std::vector<double> val, ParticleState state, ParticleType type) const
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedtypes_.count(type))
-        dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
+        FOUR_C_THROW("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
       ((containers_[type])[Owned])->SetState(val, state);
@@ -171,9 +171,9 @@ namespace PARTICLEENGINE
      */
     inline void ClearStateSpecificContainer(ParticleState state, ParticleType type) const
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedtypes_.count(type))
-        dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
+        FOUR_C_THROW("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
       ((containers_[type])[Owned])->ClearState(state);

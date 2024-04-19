@@ -47,7 +47,7 @@ MAT::ELASTIC::GeneralizedGenMax::GeneralizedGenMax(MAT::ELASTIC::PAR::Generalize
       // get parameters of each component
       int curmatid = branchmatids->at(i);
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(curmatid);
-      if (sum == Teuchos::null) dserror("Failed to allocate");
+      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       // write summand in the vector of summands of each branch
       internalpotsum_.push_back(sum);
     }

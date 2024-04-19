@@ -36,10 +36,11 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::Ini
   {
     // safety checks
     if (ElchTimInt()->EquPot() == INPAR::ELCH::equpot_undefined)
-      dserror("Type of closing equation for electric potential not correctly set!");
+      FOUR_C_THROW("Type of closing equation for electric potential not correctly set!");
     if (ElchTimInt()->EquPot() != INPAR::ELCH::equpot_enc)
-      dserror("Special ELCH assemble strategy for block-matrix will not assemble A_11 block!");
-    if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
+      FOUR_C_THROW("Special ELCH assemble strategy for block-matrix will not assemble A_11 block!");
+    if (scatratimint_->NumScal() < 1)
+      FOUR_C_THROW("Number of transported scalars not correctly set!");
 
     // initial guess for non-zeros per row: 27 neighboring nodes for hex8
     // this is enough! A higher guess would require too much memory!
@@ -79,7 +80,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::Ini
 
       default:
       {
-        dserror("Unknown matrix type of ScaTra field");
+        FOUR_C_THROW("Unknown matrix type of ScaTra field");
         break;
       }
     }

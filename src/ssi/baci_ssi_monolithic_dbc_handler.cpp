@@ -208,7 +208,7 @@ Teuchos::RCP<SSI::DBCHandlerBase> SSI::BuildDBCHandler(const bool is_scatra_mani
     }
     default:
     {
-      dserror("unknown matrix type of SSI problem");
+      FOUR_C_THROW("unknown matrix type of SSI problem");
       break;
     }
   }

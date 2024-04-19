@@ -55,7 +55,8 @@ void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
 
   if (pre_stress_type != INPAR::STR::PreStress::none && dyntype != INPAR::STR::dyna_statics)
   {
-    dserror("Paranoia Error: PRESTRESS is only allowed in combinations with DYNAMICTYPE Statics!!");
+    FOUR_C_THROW(
+        "Paranoia Error: PRESTRESS is only allowed in combinations with DYNAMICTYPE Statics!!");
   }
 
   // info to user

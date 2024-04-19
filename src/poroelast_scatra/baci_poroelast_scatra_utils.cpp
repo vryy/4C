@@ -102,7 +102,7 @@ Teuchos::RCP<POROELASTSCATRA::PoroScatraBase> POROELASTSCATRA::UTILS::CreatePoro
 
   if (algo.is_null())
   {
-    dserror("Creation of the Poroelast Scatra Algorithm failed.");
+    FOUR_C_THROW("Creation of the Poroelast Scatra Algorithm failed.");
   }
 
   // setup solver (if needed)
@@ -171,12 +171,12 @@ void POROELASTSCATRA::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
       int gid = ielecolmap->GID(i);
 
       DRT::Element* ele = idiscret.gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+      if (!ele) FOUR_C_THROW("ERROR: Cannot find element with gid %", gid);
       auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
 
       int volgid = 0;
       if (!faceele)
-        dserror("Cast to FaceElement failed!");
+        FOUR_C_THROW("Cast to FaceElement failed!");
       else
         volgid = faceele->ParentElementId();
 

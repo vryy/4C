@@ -104,7 +104,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Unpack(const std::vector<char>&
   so3_ele::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 
 }  // Unpack()
@@ -170,7 +170,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::UniqueParObjectId() const
       return SoNurbs27ThermoType::Instance().UniqueParObjectId();
       break;
     default:
-      dserror("unknown element type!");
+      FOUR_C_THROW("unknown element type!");
       break;
   }
   // Intel compiler needs a return
@@ -214,7 +214,7 @@ DRT::ElementType& DRT::ELEMENTS::So3Thermo<so3_ele, distype>::ElementType() cons
       return SoNurbs27ThermoType::Instance();
       break;
     default:
-      dserror("unknown element type!");
+      FOUR_C_THROW("unknown element type!");
       break;
   }
   // Intel compiler needs a return

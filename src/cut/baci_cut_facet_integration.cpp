@@ -155,7 +155,7 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
     }
     else
     {
-      dserror("VC position not defined!");
+      FOUR_C_THROW("VC position not defined!");
     }
   }
 
@@ -183,7 +183,8 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
       }
       default:
       {
-        dserror("Add other elements not only here but in complete direct divergence procedure");
+        FOUR_C_THROW(
+            "Add other elements not only here but in complete direct divergence procedure");
         break;
       }
     }
@@ -281,7 +282,7 @@ std::vector<double> CORE::GEO::CUT::FacetIntegration::compute_alpha(
   }
   else
   {
-    dserror("The facet integration type undefined");
+    FOUR_C_THROW("The facet integration type undefined");
     exit(1);
   }
   return alfa;
@@ -304,7 +305,7 @@ double CORE::GEO::CUT::FacetIntegration::getNormal(CORE::GEO::CUT::ProjectionDir
     return eqn_plane_[2] / normalScale;
   else
   {
-    dserror("The normal direction is unspecified");
+    FOUR_C_THROW("The normal direction is unspecified");
     return 0.0;
   }
 }
@@ -429,7 +430,7 @@ double CORE::GEO::CUT::FacetIntegration::integrate_facet()
     if (projType != CORE::GEO::CUT::proj_x and projType != CORE::GEO::CUT::proj_y and
         projType != CORE::GEO::CUT::proj_z)
     {
-      dserror("projection plane is not defined");
+      FOUR_C_THROW("projection plane is not defined");
       exit(1);
     }
 
@@ -528,7 +529,7 @@ void CORE::GEO::CUT::FacetIntegration::BoundaryFacetIntegration(
     }
     else
     {
-      dserror("The facet integration type not supported");
+      FOUR_C_THROW("The facet integration type not supported");
       exit(1);
     }
   }
@@ -626,7 +627,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
           break;
         }
         default:
-          dserror("unsupported integration cell type");
+          FOUR_C_THROW("unsupported integration cell type");
       }
       double wei = iquad.Weight() * drs * normalX;
 
@@ -715,7 +716,7 @@ void CORE::GEO::CUT::FacetIntegration::GenerateDivergenceCells(
         else
         {
           std::cout << "number of sides = " << tri.size();
-          dserror("Splitting created neither tri3 or quad4");
+          FOUR_C_THROW("Splitting created neither tri3 or quad4");
         }
       }
     }
@@ -824,7 +825,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
 
   // SAFETY-CHECK
   if (eqn_plane_divCell.size() != divCells.size())
-    dserror("Something wrong with divCell and clockwise assignment.");
+    FOUR_C_THROW("Something wrong with divCell and clockwise assignment.");
 
   double normalX;
 
@@ -913,7 +914,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
           break;
         }
         default:
-          dserror("unsupported integration cell type ( cell type = %s )",
+          FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
               CORE::FE::CellTypeToString(bcell->Shape()).c_str());
           exit(EXIT_FAILURE);
       }
@@ -1059,7 +1060,7 @@ void CORE::GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool divergenc
         else
         {
           std::cout << "number of sides = " << tri.size();
-          dserror("Splitting created neither tri3 or quad4");
+          FOUR_C_THROW("Splitting created neither tri3 or quad4");
         }
       }
     }

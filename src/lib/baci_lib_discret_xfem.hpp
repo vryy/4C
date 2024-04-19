@@ -106,8 +106,8 @@ namespace DRT
     */
     virtual std::vector<int> InitialDof(unsigned nds, const Node* node) const
     {
-      dsassert(nds < initialdofsets_.size(), "undefined dof set");
-      dsassert(initialized_, "no initial dofs assigned");
+      FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
       return initialdofsets_[nds]->Dof(node);
     }
 
@@ -122,8 +122,8 @@ namespace DRT
     */
     virtual std::vector<int> InitialDof(const Node* node) const
     {
-      dsassert(initialdofsets_.size() == 1, "expect just one dof set");
-      dsassert(initialized_, "no initial dofs assigned");
+      FOUR_C_ASSERT(initialdofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
       return InitialDof(0, node);
     }
 
@@ -141,8 +141,8 @@ namespace DRT
 
     virtual void InitialDof(unsigned nds, const Node* node, std::vector<int>& lm) const
     {
-      dsassert(nds < initialdofsets_.size(), "undefined dof set");
-      dsassert(initialized_, "no initial dofs assigned");
+      FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
       initialdofsets_[nds]->Dof(node, lm);
     }
 
@@ -158,8 +158,8 @@ namespace DRT
     */
     virtual void InitialDof(const Node* node, std::vector<int>& lm) const
     {
-      dsassert(initialdofsets_.size() == 1, "expect just one dof set");
-      dsassert(initialized_, "no initial dofs assigned");
+      FOUR_C_ASSERT(initialdofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(initialized_, "no initial dofs assigned");
       InitialDof((unsigned)0, node, lm);
     }
 
@@ -174,7 +174,7 @@ namespace DRT
 
     Teuchos::RCP<DRT::DofSetInterface> GetInitialDofSetProxy(int nds)
     {
-      dsassert(nds < (int)initialdofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(nds < (int)initialdofsets_.size(), "undefined dof set");
       return Teuchos::rcp(new DofSetProxy(&*initialdofsets_[nds]));
     }
 

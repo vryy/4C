@@ -97,7 +97,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
 
       // get actual values of transported scalars
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
       std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
@@ -110,7 +110,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
       // get convective (velocity - mesh displacement) velocity at nodes
       Teuchos::RCP<const Epetra_Vector> convel =
           discretization.GetState(ndsvel, "convective velocity field");
-      if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
+      if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -158,7 +158,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
             eporosity_(inode, 0) = mydisp[nsd_ + (inode * (nsd_ele_ + 2))];
         }
         else
-          dserror("Cannot get state vector displacement");
+          FOUR_C_THROW("Cannot get state vector displacement");
       }
       else
         isnodalporosity_ = false;
@@ -172,7 +172,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
     }
     default:
     {
-      dserror("Invalid action parameter nr. %i!", action);
+      FOUR_C_THROW("Invalid action parameter nr. %i!", action);
       break;
     }
   }  // switch(action)
@@ -248,7 +248,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ComputePorosi
   }
   else
   {
-    dserror("porosity calculation not yet implemented for non-node-based porosity!");
+    FOUR_C_THROW("porosity calculation not yet implemented for non-node-based porosity!");
   }
 
   return porosity;

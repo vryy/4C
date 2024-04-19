@@ -37,7 +37,8 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR
       thetainit_(*matdata->Get<double>("INITTEMP")),
       thermomat_(*matdata->Get<int>("THERMOMAT"))
 {
-  if (poissonratio_ >= 0.5 || poissonratio_ < -1.) dserror("Poisson's ratio must be in [-1;0.5)");
+  if (poissonratio_ >= 0.5 || poissonratio_ < -1.)
+    FOUR_C_THROW("Poisson's ratio must be in [-1;0.5)");
 }
 
 
@@ -87,7 +88,7 @@ void MAT::ThermoStVenantKirchhoff::CreateThermoMaterialIfSet()
   if (thermoMatId != -1)
   {
     auto mat = MAT::Material::Factory(thermoMatId);
-    if (mat == Teuchos::null) dserror("Failed to create thermo material, id=%d", thermoMatId);
+    if (mat == Teuchos::null) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
     thermo_ = Teuchos::rcp_dynamic_cast<MAT::TRAIT::Thermo>(mat);
   }
 }
@@ -134,13 +135,14 @@ void MAT::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ThermoStVenantKirchhoff*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
 
       CreateThermoMaterialIfSet();
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }  // Unpack()
 
 
@@ -178,7 +180,7 @@ void MAT::ThermoStVenantKirchhoff::StrainEnergy(
     const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   if (YoungsIsTempDependent())
-    dserror("Calculation of strain energy only for constant Young's modulus");
+    FOUR_C_THROW("Calculation of strain energy only for constant Young's modulus");
   CORE::LINALG::Matrix<6, 6> cmat;
   SetupCmat(cmat);
   CORE::LINALG::Matrix<6, 1> s;

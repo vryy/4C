@@ -61,7 +61,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_m
     if (fnc == 1)
     {
       if (rhs_mom.normInf() > 1e-5 && rhs_mom(0) < 0.0)
-        dserror("negaive volume in base function integration. is ordering of vertices right?");
+        FOUR_C_THROW("negaive volume in base function integration. is ordering of vertices right?");
     }
   }
 
@@ -98,7 +98,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_m
       break;
     }
     default:
-      dserror("unsupported integration cell type ( cell type = %s )",
+      FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
           CORE::FE::CellTypeToString(elem1_->Shape()).c_str());
       exit(EXIT_FAILURE);
   }

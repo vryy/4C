@@ -34,7 +34,7 @@ void STR::NLN::SOLVER::SingleStep::Setup()
   // Note, that the issetup_ flag is also updated during this call.
   Nox::Setup();
 
-  dsassert(IsSetup(), "issetup_ should be \"true\" at this point!");
+  FOUR_C_ASSERT(IsSetup(), "issetup_ should be \"true\" at this point!");
 }
 
 

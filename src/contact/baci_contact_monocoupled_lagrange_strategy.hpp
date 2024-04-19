@@ -56,7 +56,7 @@ namespace CONTACT
         const int step, const int iter, bool predictor) override
     {
       if (has_to_evaluate_ && 0)
-        dserror(
+        FOUR_C_THROW(
             "MonoCoupledLagrangeStrategy::You have to call ApplyForceStiffCmtCoupled() for Contact "
             "Evaluation!");  // what to do in the predictor?
       has_to_evaluate_ = true;
@@ -68,7 +68,7 @@ namespace CONTACT
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override
     {
       if (has_to_recover_ && 0)
-        dserror(
+        FOUR_C_THROW(
             "MonoCoupledLagrangeStrategy::You have to call RecoverCoupled() for Contact Recovery!");
       has_to_recover_ = true;
       return;

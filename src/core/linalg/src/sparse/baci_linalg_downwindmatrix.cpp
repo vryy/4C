@@ -34,11 +34,11 @@ CORE::LINALG::DownwindMatrix::DownwindMatrix(Teuchos::RCP<Epetra_CrsMatrix> A, c
 void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 {
   Teuchos::Time time("", true);
-  if (!A.Filled()) dserror("Input matrix has to be FillComplete");
+  if (!A.Filled()) FOUR_C_THROW("Input matrix has to be FillComplete");
   const int numdofrows = A.RowMap().NumMyElements();
   const int bsize = bs_;
   const int vsize = nv_;
-  if (numdofrows % bsize) dserror("Local number of matrix rows does not divide by block size");
+  if (numdofrows % bsize) FOUR_C_THROW("Local number of matrix rows does not divide by block size");
   const int numnoderows = numdofrows / bsize;
 
   // compute a nodal row map
@@ -51,13 +51,13 @@ void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
     {
       const int gdofid = A.RowMap().GID(i);
       //      if (gdofid%bsize)
-      //        dserror("dof id is not a multiple of block size");
+      //        FOUR_C_THROW("dof id is not a multiple of block size");
       //      const int gnodeid = gdofid/bsize;
       const int gnodeid = gdofid;
       gnodeids[count++] = gnodeid;
       i += (bsize - 1);
     }
-    if (count != numnoderows) dserror("# nodes wrong: %d != %d", count, numnoderows);
+    if (count != numnoderows) FOUR_C_THROW("# nodes wrong: %d != %d", count, numnoderows);
     onoderowmap = Teuchos::rcp(new Epetra_Map(-1, numnoderows, gnodeids.data(), 0, A.Comm()));
   }
 
@@ -72,7 +72,7 @@ void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
     for (int i = 0; i < numdofrows; ++i)
     {
       const int gdofrow = A.RowMap().GID(i);
-      //      if (gdofrow%bsize) dserror("Row map is not a multiple of bsize");
+      //      if (gdofrow%bsize) FOUR_C_THROW("Row map is not a multiple of bsize");
       //      const int gnoderow = gdofrow / bsize;
       const int gnoderow = gdofrow;
 
@@ -81,14 +81,14 @@ void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
         int iii = i + ii;
         int numentries;
         int err = A.ExtractMyRowCopy(iii, maxnumentries, numentries, values.data(), indices.data());
-        if (err) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d", err);
+        if (err) FOUR_C_THROW("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d", err);
         for (int j = 0; j < numentries; ++j) indices[j] = A.ColMap().GID(indices[j]);
         ML_az_sort(indices.data(), numentries, nullptr, values.data());
         for (int j = 0; j < numentries; ++j)
         {
           const int gdofcol = indices[j];
           //          if (gdofcol%bsize)
-          //            dserror("Col map is not a multiple of bsize indices[j]=%d
+          //            FOUR_C_THROW("Col map is not a multiple of bsize indices[j]=%d
           //            bsize=%d",indices[j],bsize);
 
           //          const int gnodecol = gdofcol / bsize;
@@ -231,7 +231,7 @@ void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
     for (int i = 0; i < length; ++i)
     {
       const int gid = nnodegraph->RowMap().GID(index[i]);
-      if (gid < 0) dserror("nnodegraph->RowMap().GID(index[i]) failed");
+      if (gid < 0) FOUR_C_THROW("nnodegraph->RowMap().GID(index[i]) failed");
       gindices[i] = gid;
     }
     nnoderowmap = Teuchos::rcp(new Epetra_Map(-1, length, gindices.Values(), 0, A.Comm()));
@@ -304,7 +304,7 @@ void CORE::LINALG::DownwindMatrix::DownwindBeyWittum(
       index[i] = nf;
       ++nf;
     }
-  if (nf != index.MyLength()) dserror("Local number of nodes wrong");
+  if (nf != index.MyLength()) FOUR_C_THROW("Local number of nodes wrong");
   return;
 }
 

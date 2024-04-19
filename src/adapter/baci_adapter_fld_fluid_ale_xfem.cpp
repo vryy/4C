@@ -108,7 +108,7 @@ void ADAPTER::FluidAleXFEM::NonlinearSolve(
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::RelaxationSolve(
     Teuchos::RCP<Epetra_Vector> idisp, double dt)
 {
-  dserror("RelaxationSolve for XFEM useful?");
+  FOUR_C_THROW("RelaxationSolve for XFEM useful?");
   std::cout << "WARNING: RelaxationSolve for XFEM useful?" << std::endl;
 
   // the displacement -> velocity conversion at the interface
@@ -131,7 +131,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::ExtractInterfaceForces()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::ExtractInterfaceVelnp()
 {
-  dserror("Robin stuff");
+  FOUR_C_THROW("Robin stuff");
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
   return xfluid->ExtractStructInterfaceVelnp();
 }

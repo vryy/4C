@@ -99,7 +99,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   }
   else
   {
-    dserror("Unknown type of SurfaceNeumann condition");
+    FOUR_C_THROW("Unknown type of SurfaceNeumann condition");
   }
 
   // get values and switches from the condition
@@ -121,7 +121,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < numdim)
-    dserror("Fewer functions or curves defined than the element has dofs.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   // element geometry update
   const int numnode = NumNode();
@@ -149,7 +149,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
       // evaluate last converged configuration
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       SpatialConfiguration(xc, mydisp);
@@ -174,7 +174,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       {
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
         if (disp == Teuchos::null)
-          dserror(
+          FOUR_C_THROW(
               "Cannot get state vector 'displacement new'\n"
               "Did you forget to set the 'LOADLIN yes' in '--STRUCTURAL DYNAMIC' input section???");
         std::vector<double> mydisp(lm.size());
@@ -184,7 +184,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
     }
     break;
     default:
-      dserror("Unknown case of frame");
+      FOUR_C_THROW("Unknown case of frame");
       break;
   }
 
@@ -270,7 +270,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
         for (int checkdof = numdim; checkdof < int(onoff->size()); ++checkdof)
         {
           if ((*onoff)[checkdof] != 0)
-            dserror(
+            FOUR_C_THROW(
                 "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not "
                 "considered.");
         }
@@ -325,12 +325,12 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       case neum_pseudo_orthopressure:
       case neum_orthopressure:
       {
-        if ((*onoff)[0] != 1) dserror("orthopressure on 1st dof only!");
+        if ((*onoff)[0] != 1) FOUR_C_THROW("orthopressure on 1st dof only!");
         for (int checkdof = 1; checkdof < 3; ++checkdof)
-          if ((*onoff)[checkdof] != 0) dserror("orthopressure on 1st dof only!");
+          if ((*onoff)[checkdof] != 0) FOUR_C_THROW("orthopressure on 1st dof only!");
         double ortho_value = (*val)[0];
-        // if (!ortho_value) dserror("no orthopressure value given!"); // in case of coupling with
-        // redairways, there is a zero orthoval in the beginning!!!!
+        // if (!ortho_value) FOUR_C_THROW("no orthopressure value given!"); // in case of coupling
+        // with redairways, there is a zero orthoval in the beginning!!!!
         std::vector<double> normal(3);
         SurfaceIntegration(normal, xc, deriv);
         // Calculate spatial position of GP
@@ -386,12 +386,12 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       case neum_torque:
       {
         // check whether only first, fourth, fifth and sixth value is set
-        if ((*onoff)[0] != 1) dserror("Torque value not provided!");
-        if ((*onoff)[3] != 1) dserror("X-coordinate of axis for torque not provided!");
-        if ((*onoff)[4] != 1) dserror("Y-coordinate of axis for torque not provided!");
-        if ((*onoff)[5] != 1) dserror("Z-coordinate of axis for torque not provided!");
+        if ((*onoff)[0] != 1) FOUR_C_THROW("Torque value not provided!");
+        if ((*onoff)[3] != 1) FOUR_C_THROW("X-coordinate of axis for torque not provided!");
+        if ((*onoff)[4] != 1) FOUR_C_THROW("Y-coordinate of axis for torque not provided!");
+        if ((*onoff)[5] != 1) FOUR_C_THROW("Z-coordinate of axis for torque not provided!");
         for (int checkdof = 1; checkdof < 3; ++checkdof)
-          if ((*onoff)[checkdof] != 0) dserror("Incorrect value for torque!");
+          if ((*onoff)[checkdof] != 0) FOUR_C_THROW("Incorrect value for torque!");
 
         // get values for torque and coordinates of axis
         double torque_value = (*val)[0];
@@ -444,7 +444,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       break;
 
       default:
-        dserror("Unknown type of SurfaceNeumann load");
+        FOUR_C_THROW("Unknown type of SurfaceNeumann load");
         break;
     }
 
@@ -463,7 +463,7 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(std::vector<double>& n
 
   // compute dXYZ / drs
   CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
-  if (CORE::LINALG::multiply(dxyzdrs, deriv, x)) dserror("multiply failed");
+  if (CORE::LINALG::multiply(dxyzdrs, deriv, x)) FOUR_C_THROW("multiply failed");
 
   normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
   normal[1] = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);
@@ -480,7 +480,7 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(double& detA, std::vec
 {
   // compute dXYZ / drs
   CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
-  if (CORE::LINALG::multiply(dxyzdrs, deriv, x)) dserror("multiply failed");
+  if (CORE::LINALG::multiply(dxyzdrs, deriv, x)) FOUR_C_THROW("multiply failed");
 
   /* compute covariant metric tensor G for surface element
   **                        | g11   g12 |
@@ -639,7 +639,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_constrvol")
     act = StructuralSurface::calc_struct_constrvol;
   else if (action == "calc_struct_volconstrstiff")
@@ -679,7 +679,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
   else
   {
     std::cout << action << std::endl;
-    dserror("Unknown type of action for StructuralSurface");
+    FOUR_C_THROW("Unknown type of action for StructuralSurface");
   }
 
   // create communicator
@@ -695,7 +695,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       {
         // element geometry update
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacementtotal");
-        if (disp == Teuchos::null) dserror("Cannot get state vector 'displacementtotal'");
+        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementtotal'");
         std::vector<double> mydisp(lm.size());
         CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numnode = NumNode();
@@ -758,14 +758,14 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
         //  element geometry update for time t_n
         Teuchos::RCP<const Epetra_Vector> dispn = discretization.GetState("displacementnp");
-        if (dispn == Teuchos::null) dserror("Cannot get state vector 'displacementnp");
+        if (dispn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementnp");
         std::vector<double> edispn(lm.size());
         CORE::FE::ExtractMyValues(*dispn, edispn, lm);
         CORE::LINALG::SerialDenseMatrix xcn(numnode, numdf);
         SpatialConfiguration(xcn, edispn);
 
         Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
-        if (dispn == Teuchos::null) dserror("Cannot get state vector 'displacementincr");
+        if (dispn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementincr");
         std::vector<double> edispincr(lm.size());
         CORE::FE::ExtractMyValues(*dispincr, edispincr, lm);
 
@@ -800,7 +800,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
           }
           else
           {
-            dserror("rotation not yet implemented!");
+            FOUR_C_THROW("rotation not yet implemented!");
           }
 
           if (CORE::LINALG::Norm2(tangent) > tol)
@@ -825,7 +825,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                   circ = 0.0;
                 }
                 else  // severe error
-                  dserror("Do not use sqrt() with a negative number");
+                  FOUR_C_THROW("Do not use sqrt() with a negative number");
               }
               else
               {
@@ -851,14 +851,14 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
       //  element geometry update for time t_n
       Teuchos::RCP<const Epetra_Vector> dispn = discretization.GetState("displacementnp");
-      if (dispn == Teuchos::null) dserror("Cannot get state vector 'displacementnp");
+      if (dispn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementnp");
       std::vector<double> edispn(lm.size());
       CORE::FE::ExtractMyValues(*dispn, edispn, lm);
       CORE::LINALG::SerialDenseMatrix xcn(numnode, numdf);
       SpatialConfiguration(xcn, edispn);
 
       Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
-      if (dispn == Teuchos::null) dserror("Cannot get state vector 'displacementincr");
+      if (dispn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementincr");
       std::vector<double> edispincr(lm.size());
       CORE::FE::ExtractMyValues(*dispincr, edispincr, lm);
 
@@ -888,7 +888,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         }
         else
         {
-          dserror("rotation not yet implemented!");
+          FOUR_C_THROW("rotation not yet implemented!");
         }
 
         if (CORE::LINALG::Norm2(tangent) > tol)
@@ -907,7 +907,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
               circ = 0.0;
             }
             else  // severe error
-              dserror("Do not use sqrt() with a negative number");
+              FOUR_C_THROW("Do not use sqrt() with a negative number");
           }
           else
           {
@@ -932,7 +932,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       {
         // element geometry update
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
         CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numdim = 3;
@@ -948,7 +948,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     {
       // element geometry update
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
@@ -1058,7 +1058,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
             temp += normal[i] * normal[i];
           }
 
-          if (temp < 0.) dserror("calculation of initial volume failed in surface element");
+          if (temp < 0.) FOUR_C_THROW("calculation of initial volume failed in surface element");
           double absnorm = sqrt(temp);
 
           for (int i = 0; i < 3; ++i)
@@ -1077,13 +1077,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     // compute stochastical forces due to Brownian Motion
     case calc_brownian_motion:
     {
-      dserror("not commited");
+      FOUR_C_THROW("not commited");
     }
     break;
     // compute damping matrix due to Brownian Motion
     case calc_brownian_motion_damping:
     {
-      dserror("not yet comitted");
+      FOUR_C_THROW("not yet comitted");
     }
     break;
     // compute the area (e.g. for initialization)
@@ -1094,7 +1094,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       {
         // element geometry update
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
         CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numdim = 3;
@@ -1159,7 +1159,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     {
       // element geometry update
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
@@ -1184,7 +1184,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     {
       // element geometry update
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
@@ -1244,7 +1244,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     case calc_cur_nodal_normals:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       BuildNormalsAtNodes(elevector1, mydisp, false);
@@ -1253,7 +1253,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     case calc_cur_normal_at_point:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -1332,11 +1332,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       const Teuchos::RCP<DRT::Discretization> backgrddis = globalproblem->GetDis(backgrddisname);
       const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (backgrddis == Teuchos::null)
-        dserror("Pointer to background dis empty. Correct disname in parameter list 'params'?");
+        FOUR_C_THROW(
+            "Pointer to background dis empty. Correct disname in parameter list 'params'?");
       if (immerseddis == Teuchos::null)
-        dserror("Pointer to immersed dis empty. Correct disname in parameter list 'params'?");
+        FOUR_C_THROW("Pointer to immersed dis empty. Correct disname in parameter list 'params'?");
 #endif
 
       const int nen = NumNode();
@@ -1356,8 +1357,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
       // get structural state and element displacements (parent element)
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
-#ifdef BACI_DEBUG
-      if (dispnp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
 #endif
       std::vector<double> parenteledisp(lm.size());
       std::vector<double> bdryeledisp(lm.size());
@@ -1668,7 +1669,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       else if (*direction == "cursurfnormal")
         rtype = cursurfnormal;
       else
-        dserror("Unknown type of Robin condition");
+        FOUR_C_THROW("Unknown type of Robin condition");
 
 
       // element geometry update
@@ -1807,7 +1808,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         for (int checkdof = numdim; checkdof < int(onoff->size()); ++checkdof)
         {
           if ((*onoff)[checkdof] != 0)
-            dserror(
+            FOUR_C_THROW(
                 "Number of dimensions in Robin evaluation is 3. Further DoFs are not considered.");
         }
 
@@ -1894,10 +1895,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
           case refsurfnormal:
           {
-            if ((*onoff)[0] != 1) dserror("refsurfnormal Robin condition on 1st dof only!");
+            if ((*onoff)[0] != 1) FOUR_C_THROW("refsurfnormal Robin condition on 1st dof only!");
             for (int checkdof = 1; checkdof < 3; ++checkdof)
               if ((*onoff)[checkdof] != 0)
-                dserror("refsurfnormal Robin condition on 1st dof only!");
+                FOUR_C_THROW("refsurfnormal Robin condition on 1st dof only!");
 
             // all parameters are in dof No. 1
             for (int dim = 0; dim < numdim; dim++)
@@ -1977,14 +1978,14 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
           case cursurfnormal:
           {
-            dserror(
+            FOUR_C_THROW(
                 "cursurfnormal option not (yet) implemented in calc_struct_robinforcestiff "
                 "routine!");
           }
           break;
 
           default:
-            dserror("Unknown type of Robin direction");
+            FOUR_C_THROW("Unknown type of Robin direction");
             break;
         }
       }
@@ -1992,7 +1993,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     break;
 
     default:
-      dserror("Unimplemented type of action for StructuralSurface");
+      FOUR_C_THROW("Unimplemented type of action for StructuralSurface");
       break;
   }
   return 0;
@@ -2020,7 +2021,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_area_poro")
     act = StructuralSurface::calc_struct_area_poro;
   else if (action == "calc_cur_nodal_normals")
@@ -2028,7 +2029,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_ref_nodal_normals")
     act = StructuralSurface::calc_ref_nodal_normals;
   else
-    dserror("Unknown type of action for StructuralSurface");
+    FOUR_C_THROW("Unknown type of action for StructuralSurface");
 
   // what the element has to do
   switch (act)
@@ -2047,7 +2048,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     default:
-      dserror("Unimplemented type of action for StructuralSurface");
+      FOUR_C_THROW("Unimplemented type of action for StructuralSurface");
       break;
   }
   return 0;
@@ -2358,7 +2359,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const CORE::LINALG::Seri
         }
         else
         {
-          dserror("calculation of second derivatives of interfacial area failed");
+          FOUR_C_THROW("calculation of second derivatives of interfacial area failed");
           exit(1);
         }
 
@@ -2445,7 +2446,7 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
 
   // element geometry update
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
   std::vector<double> mydisp(lmpar.size());
   CORE::FE::ExtractMyValues(*disp, mydisp, lmpar);
 
@@ -2469,7 +2470,7 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
   const int numdofpernode = 4;
 
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState(1, "fluidvel");
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'fluidvel'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fluidvel'");
   // extract local values of the global vectors
   std::vector<double> myvelpres(la[1].lm_.size());
   CORE::FE::ExtractMyValues(*velnp, myvelpres, la[1].lm_);
@@ -2525,7 +2526,7 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
              Jmat(0, 2) * (Jmat(1, 0) * Jmat(2, 1) - Jmat(2, 0) * Jmat(1, 1));
     }
     else
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
 
     const double J = det / detJ;
 

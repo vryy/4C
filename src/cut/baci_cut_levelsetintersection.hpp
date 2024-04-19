@@ -98,7 +98,7 @@ namespace CORE::GEO
      private:
       const Epetra_Comm& Comm() const
       {
-        if (not comm_) dserror("Epetra communicator was not initialized!");
+        if (not comm_) FOUR_C_THROW("Epetra communicator was not initialized!");
 
         return *comm_;
       }

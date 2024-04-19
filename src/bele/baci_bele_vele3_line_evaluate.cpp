@@ -58,7 +58,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Vele3Line::getOptimalGaussrule(
       rule = CORE::FE::GaussRule1D::line_3point;
       break;
     default:
-      dserror("unknown number of nodes for gaussrule initialization");
+      FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
   }
   return rule;
 }

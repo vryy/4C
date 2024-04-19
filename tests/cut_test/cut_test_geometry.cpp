@@ -59,7 +59,7 @@ void test_geometry_schleifend1()
   }
   else
   {
-    dserror("not intersected");
+    FOUR_C_THROW("not intersected");
   }
 }
 
@@ -103,7 +103,7 @@ void test_geometry_parallel1()
   if (!conv)
   {
     if ((ci.GetEdgeLocation().WithinSide()) and (ci.GetSideLocation().WithinSide()))
-      dserror("intersected");
+      FOUR_C_THROW("intersected");
   }
   else
   {

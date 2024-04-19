@@ -179,7 +179,7 @@ namespace CORE::GEO
       else
       {
         if (normalvec1 == nullptr)
-          dserror(
+          FOUR_C_THROW(
               "The normalvec1 is necessary to calculate the extended "
               "jacobian!");
 
@@ -213,7 +213,7 @@ namespace CORE::GEO
         if (dim == 1 and probdim == 3)
         {
           if (normalvec2 == nullptr)
-            dserror(
+            FOUR_C_THROW(
                 "The normalvec2 is necessary to calculate the extended "
                 "jacobian for 1D elements embedded in 3D problems!");
 
@@ -230,7 +230,7 @@ namespace CORE::GEO
             // normalize
             const valtype norm2 = normalvec2->Norm2();
             if (norm2 < 1.0e-16)
-              dserror("The l2-norm of the normal vector is smaller than 1.0e-16!");
+              FOUR_C_THROW("The l2-norm of the normal vector is smaller than 1.0e-16!");
             //   " ( norm2 = %e )", norm2 ); // commented out in order for cln to work
             normalvec2->Scale(1.0 / norm2);
           }
@@ -363,7 +363,7 @@ namespace CORE::GEO
               static_cast<unsigned>(correct_shape.numRows()) or
           static_cast<unsigned>(wrong_shape.numCols()) <
               static_cast<unsigned>(correct_shape.numCols()))
-        dserror("Shape fixing is not possible!");
+        FOUR_C_THROW("Shape fixing is not possible!");
 
       for (unsigned c = 0; c < static_cast<unsigned>(correct_shape.numCols()); ++c)
         std::copy(
@@ -387,7 +387,7 @@ namespace CORE::GEO
     void EvalNormalVectors(const T1& xyze, const T2& rst, T3& normalvec1, T3* normalvec2 = nullptr,
         bool unit_normal = true)
     {
-      if (dim >= probdim) dserror("This function is only meaningful for the embedded case!");
+      if (dim >= probdim) FOUR_C_THROW("This function is only meaningful for the embedded case!");
 
       CORE::LINALG::Matrix<dim, dim> metrictensor;
       CORE::LINALG::Matrix<probdim, numNodesElement> deriv1;
@@ -400,12 +400,12 @@ namespace CORE::GEO
         FixMatrixShape(xyze, xyze_linalg);
 
       if (static_cast<unsigned>(rst.M()) < dim)
-        dserror("The local coordinates have the wrong dimension!");
+        FOUR_C_THROW("The local coordinates have the wrong dimension!");
       CORE::LINALG::Matrix<dim, 1> rst_linalg(rst.A(), true);
 
       if (static_cast<unsigned>(normalvec1.M()) < probdim or
           (normalvec2 and static_cast<unsigned>(normalvec2->M()) < probdim))
-        dserror("The normal vectors have the wrong dimenison!");
+        FOUR_C_THROW("The normal vectors have the wrong dimenison!");
 
       CORE::LINALG::Matrix<probdim, 1> normalvec1_linalg(normalvec1.A(), true);
 
@@ -457,7 +457,7 @@ namespace CORE::GEO
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
         default:
-          dserror("Currently unsupported discretization type: %s",
+          FOUR_C_THROW("Currently unsupported discretization type: %s",
               CORE::FE::CellTypeToString(distype).c_str());
           exit(EXIT_FAILURE);
       }

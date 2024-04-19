@@ -28,7 +28,7 @@ MAT::PAR::MatList::MatList(Teuchos::RCP<MAT::PAR::Material> matdata)
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())
-    dserror("number of materials %d does not fit to size of material vector %d", nummat_,
+    FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
         matids_->size());
 
   if (not local_)
@@ -57,14 +57,14 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MatList::MaterialById(const int id) const
 
     if (m == mat_.end())
     {
-      dserror("Material %d could not be found", id);
+      FOUR_C_THROW("Material %d could not be found", id);
       return Teuchos::null;
     }
     else
       return m->second;
   }
   else
-    dserror("This is not allowed");
+    FOUR_C_THROW("This is not allowed");
 
   return Teuchos::null;
 }
@@ -104,7 +104,7 @@ void MAT::MatList::SetupMatMap()
 {
   // safety first
   mat_.clear();
-  if (not mat_.empty()) dserror("What's going wrong here?");
+  if (not mat_.empty()) FOUR_C_THROW("What's going wrong here?");
 
   // make sure the referenced materials in material list have quick access parameters
 
@@ -114,7 +114,7 @@ void MAT::MatList::SetupMatMap()
   {
     const int matid = *m;
     Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
-    if (mat == Teuchos::null) dserror("Failed to allocate this material");
+    if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
     mat_.insert(std::pair<int, Teuchos::RCP<MAT::Material>>(matid, mat));
   }
   return;
@@ -186,7 +186,7 @@ void MAT::MatList::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::MatList*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -198,7 +198,7 @@ void MAT::MatList::Unpack(const std::vector<char>& data)
     {
       const int actmatid = *m;
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(actmatid);
-      if (mat == Teuchos::null) dserror("Failed to allocate this material");
+      if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
       mat_.insert(std::pair<int, Teuchos::RCP<MAT::Material>>(actmatid, mat));
     }
 
@@ -215,7 +215,7 @@ void MAT::MatList::Unpack(const std::vector<char>& data)
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
     if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
   }  // if (params_ != nullptr)
 }
 
@@ -228,7 +228,7 @@ int MAT::MatList::MatID(const unsigned index) const
     return params_->matids_->at(index);
   else
   {
-    dserror("Index too large");
+    FOUR_C_THROW("Index too large");
     return -1;
   }
 }
@@ -244,7 +244,7 @@ Teuchos::RCP<MAT::Material> MAT::MatList::MaterialById(const int id) const
     std::map<int, Teuchos::RCP<MAT::Material>>::const_iterator m = MaterialMapRead()->find(id);
     if (m == mat_.end())
     {
-      dserror("Material %d could not be found", id);
+      FOUR_C_THROW("Material %d could not be found", id);
       return Teuchos::null;
     }
     else

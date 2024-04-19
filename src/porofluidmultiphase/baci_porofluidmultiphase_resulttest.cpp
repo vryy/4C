@@ -49,7 +49,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestNode(
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1,
+    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1,
         porotimint_.Discretization()->Name().c_str());
   }
   else
@@ -98,7 +98,7 @@ void POROFLUIDMULTIPHASE::ResultTest::TestElement(
 
   if (iselementofanybody == 0)
   {
-    dserror("Element %d does not belong to discretization %s", element + 1,
+    FOUR_C_THROW("Element %d does not belong to discretization %s", element + 1,
         porotimint_.Discretization()->Name().c_str());
   }
   else
@@ -149,10 +149,10 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
     std::string k_string = quantity.substr(3);
     char* locator(nullptr);
     int k = strtol(k_string.c_str(), &locator, 10) - 1;
-    if (locator == k_string.c_str()) dserror("Couldn't read species ID!");
+    if (locator == k_string.c_str()) FOUR_C_THROW("Couldn't read species ID!");
 
     if (porotimint_.Discretization()->NumDof(0, node) <= k)
-      dserror("Species ID is larger than number of DOFs of node!");
+      FOUR_C_THROW("Species ID is larger than number of DOFs of node!");
 
     // extract result
     result = (*porotimint_.Phinp())[phinpmap.LID(porotimint_.Discretization()->Dof(0, node, k))];
@@ -169,10 +169,10 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
     std::string k_string = quantity.substr(8);
     char* locator(nullptr);
     int k = strtol(k_string.c_str(), &locator, 10) - 1;
-    if (locator == k_string.c_str()) dserror("Couldn't read pressure ID!");
+    if (locator == k_string.c_str()) FOUR_C_THROW("Couldn't read pressure ID!");
 
     if (porotimint_.Discretization()->NumDof(0, node) <= k)
-      dserror("Pressure ID is larger than number of DOFs of node!");
+      FOUR_C_THROW("Pressure ID is larger than number of DOFs of node!");
 
     // extract result
     result = (*porotimint_.Pressure())[phinpmap.LID(porotimint_.Discretization()->Dof(0, node, k))];
@@ -190,10 +190,10 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
     std::string k_string = quantity.substr(10);
     char* locator(nullptr);
     int k = strtol(k_string.c_str(), &locator, 10) - 1;
-    if (locator == k_string.c_str()) dserror("Couldn't read saturation ID!");
+    if (locator == k_string.c_str()) FOUR_C_THROW("Couldn't read saturation ID!");
 
     if (porotimint_.Discretization()->NumDof(0, node) <= k)
-      dserror("Saturation ID is larger than number of DOFs of node!");
+      FOUR_C_THROW("Saturation ID is larger than number of DOFs of node!");
 
     // extract result
     result =
@@ -202,7 +202,7 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
 
   // catch unknown quantity strings
   else
-    dserror("Quantity '%s' not supported in result test!", quantity.c_str());
+    FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
 }  // POROFLUIDMULTIPHASE::ResultTest::ResultNode
@@ -231,7 +231,7 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultElement(
     std::string k_string = quantity.substr(13);
     char* locator(nullptr);
     auto idx_poro_dof = int(strtol(k_string.c_str(), &locator, 13) - 1);
-    if (locator == k_string.c_str()) dserror("Could not read phase ID in result test!");
+    if (locator == k_string.c_str()) FOUR_C_THROW("Could not read phase ID in result test!");
 
     // get spatial dimension
     int idx_dim(-1);
@@ -247,7 +247,7 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultElement(
   }
   // catch unknown quantity strings
   else
-    dserror("Quantity '%s' not supported in result test!", quantity.c_str());
+    FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
 }
@@ -301,7 +301,7 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultSpecial(
     }
     catch (const std::invalid_argument& e)
     {
-      dserror(
+      FOUR_C_THROW(
           "You provided the wrong format for output of domain_integral_values. The integer number "
           "must be at the very last position of the name, separated by an underscore.\n"
           "The correct format is: domain_integral_value_<number>");
@@ -309,7 +309,7 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultSpecial(
 
     // index should be in range [0, number_functions - 1]
     if (idx < 0 || idx >= porotimint_.NumDomainIntFunctions())
-      dserror("detected wrong index %i, index should be in range [0,%i]", idx,
+      FOUR_C_THROW("detected wrong index %i, index should be in range [0,%i]", idx,
           porotimint_.NumDomainIntFunctions() - 1);
 
     // return the result
@@ -317,7 +317,7 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultSpecial(
   }
   // catch unknown quantity strings
   else
-    dserror("Quantity '%s' not supported in result test!", quantity.c_str());
+    FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
 }  // POROFLUIDMULTIPHASE::ResultTest::ResultSpecial

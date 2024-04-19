@@ -114,7 +114,7 @@ namespace BEAMINTERACTION
      */
     inline void CheckInitSetup() const
     {
-      if (!isinit_ or !issetup_) dserror("Call Init() and Setup() first!");
+      if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
     /**
@@ -122,7 +122,7 @@ namespace BEAMINTERACTION
      */
     inline void CheckInit() const
     {
-      if (!isinit_) dserror("Init() has not been called, yet!");
+      if (!isinit_) FOUR_C_THROW("Init() has not been called, yet!");
     }
 
     //! Flag if object is initialized.

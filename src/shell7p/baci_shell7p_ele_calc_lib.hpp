@@ -153,7 +153,7 @@ namespace DRT::ELEMENTS::SHELL
   Stress<MAT::NUM_STRESS_3D> EvaluateMaterialStressCartesianSystem(MAT::So3Material& material,
       const Strains& strains, Teuchos::ParameterList& params, int gp, int eleGID)
   {
-    if (dim != 3) dserror("stop: this currently only works for 3D");
+    if (dim != 3) FOUR_C_THROW("stop: this currently only works for 3D");
     DRT::ELEMENTS::SHELL::Stress<MAT::NUM_STRESS_3D> stress;
 
     material.Evaluate(
@@ -207,7 +207,7 @@ namespace DRT::ELEMENTS::SHELL
 
     // We calculate the "enhanced" deformation gradient from the enhanced GL strains with the help
     // of two polar decompositions
-    if (dim != 3) dserror("stop: this currently only works for 3D");
+    if (dim != 3) FOUR_C_THROW("stop: this currently only works for 3D");
     // First step: calculate enhanced right stretch tensor  U_enh from C_enh=U_enh^T*U_enh
     // -> get C_enh from enhanced GL strains
     for (unsigned i = 0; i < dim; i++) U_enh(i, i) = 2. * glstrain_enh(i) + 1.;
@@ -241,7 +241,7 @@ namespace DRT::ELEMENTS::SHELL
     const double det_defgrd_enh = defgrd_enh.Determinant();
     if (det_defgrd_enh <= 0.0)
     {
-      dserror("Negative jacobian determinant of modified deformation gradient");
+      FOUR_C_THROW("Negative jacobian determinant of modified deformation gradient");
     }
   }
 
@@ -1183,7 +1183,7 @@ namespace DRT::ELEMENTS::SHELL
       case INPAR::STR::strain_none:
         return;
       default:
-        dserror("strain type not supported");
+        FOUR_C_THROW("strain type not supported");
     }
   }
   /*!
@@ -1218,7 +1218,7 @@ namespace DRT::ELEMENTS::SHELL
       case INPAR::STR::stress_none:
         return;
       default:
-        dserror("stress type not supported");
+        FOUR_C_THROW("stress type not supported");
     }
   }
 

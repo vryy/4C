@@ -39,7 +39,7 @@ bool DRT::ELEMENTS::SoTet4::ReadElement(
   }
   else
   {
-    dserror("Reading of SO_TET4 element failed KINEM unknown");
+    FOUR_C_THROW("Reading of SO_TET4 element failed KINEM unknown");
   }
 
   // check if material kinematics is compatible to element kinematics

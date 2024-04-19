@@ -46,8 +46,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(
     bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput)
 {
   // make sure FillComplete was called on the matrices
-  if (!A.Filled()) dserror("A has to be FillComplete");
-  if (!B.Filled()) dserror("B has to be FillComplete");
+  if (!A.Filled()) FOUR_C_THROW("A has to be FillComplete");
+  if (!B.Filled()) FOUR_C_THROW("B has to be FillComplete");
 
   // EpetraExt::RowMatrix_Transpose transposera(true,nullptr,false);
   // EpetraExt::RowMatrix_Transpose transposerb(true,nullptr,false);
@@ -83,8 +83,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(const Epetra_C
   const Epetra_CrsMatrix& B = Btransform(const_cast<Epetra_CrsMatrix&>(Borig));
 
   // make sure FillComplete was called on the matrices
-  if (!A.Filled()) dserror("A has to be FillComplete");
-  if (!B.Filled()) dserror("B has to be FillComplete");
+  if (!A.Filled()) FOUR_C_THROW("A has to be FillComplete");
+  if (!B.Filled()) FOUR_C_THROW("B has to be FillComplete");
 
   // For debugging, it might be helpful when all columns are
   // sorted and all zero values are wiped from the input:
@@ -106,10 +106,10 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(const Epetra_C
   // The following is going down to the salt-mines of ML ...
   int N_local = ml_AtimesB->invec_leng;
   ML_CommInfoOP* getrow_comm = ml_AtimesB->getrow->pre_comm;
-  if (!getrow_comm) dserror("ML_Operator does not have CommInfo");
+  if (!getrow_comm) FOUR_C_THROW("ML_Operator does not have CommInfo");
   ML_Comm* comm = ml_AtimesB->comm;
   if (N_local != B.DomainMap().NumMyElements())
-    dserror("Mismatch in local row dimension between ML and Epetra");
+    FOUR_C_THROW("Mismatch in local row dimension between ML and Epetra");
   int N_rcvd = 0;
   int N_send = 0;
   int flag = 0;
@@ -180,13 +180,14 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(const Epetra_C
     for (int j = 0; j < rowlength; ++j)
     {
       gcid[j] = gcmap.GID(bindx[j]);
-#ifdef BACI_DEBUG
-      if (gcid[j] < 0) dserror("This is really bad... cannot find gcid");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (gcid[j] < 0) FOUR_C_THROW("This is really bad... cannot find gcid");
 #endif
     }
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     int err = result->InsertGlobalValues(grid, rowlength, val, gcid.data());
-    if (err != 0 && err != 1) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
+    if (err != 0 && err != 1)
+      FOUR_C_THROW("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
 #else
     result->InsertGlobalValues(grid, rowlength, val, gcid.data());
 #endif
@@ -197,7 +198,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(const Epetra_C
   if (complete)
   {
     int err = result->FillComplete(B.DomainMap(), A.RangeMap());
-    if (err) dserror("Epetra_CrsMatrix::FillComplete returned err=%d", err);
+    if (err) FOUR_C_THROW("Epetra_CrsMatrix::FillComplete returned err=%d", err);
   }
   return Teuchos::rcp(new SparseMatrix(result, View, explicitdirichlet, savegraph));
 }

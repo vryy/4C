@@ -41,7 +41,7 @@ namespace SCATRA
       // is there some charge?
       if (abs(valence[k]) > 1e-10) indices.push_back(k);
     }
-    if (indices.size() != 2) dserror("Found no binary electrolyte!");
+    if (indices.size() != 2) FOUR_C_THROW("Found no binary electrolyte!");
 
     return indices;
   }
@@ -51,13 +51,14 @@ namespace SCATRA
   double CalResDiffCoeff(const std::vector<double>& valence, const std::vector<double>& diffus,
       const std::vector<int>& indices)
   {
-    if (indices.size() != 2) dserror("Non-matching number of indices!");
+    if (indices.size() != 2) FOUR_C_THROW("Non-matching number of indices!");
     const int first = indices[0];
     const int second = indices[1];
     if ((valence[first] * valence[second]) > 1e-10)
-      dserror("Binary electrolyte has no opposite charges.");
+      FOUR_C_THROW("Binary electrolyte has no opposite charges.");
     const double n = ((diffus[first] * valence[first]) - (diffus[second] * valence[second]));
-    if (abs(n) < 1e-12) dserror("denominator in resulting diffusion coefficient is nearly zero");
+    if (abs(n) < 1e-12)
+      FOUR_C_THROW("denominator in resulting diffusion coefficient is nearly zero");
 
     return diffus[first] * diffus[second] * (valence[first] - valence[second]) / n;
   }
@@ -75,7 +76,7 @@ namespace SCATRA
 
     // check whether all nodes have a unique inflow condition
     DRT::UTILS::FindElementConditions(ele, "TurbulentInflowSection", myinflowcond);
-    if (myinflowcond.size() > 1) dserror("More than one inflow condition on one node!");
+    if (myinflowcond.size() > 1) FOUR_C_THROW("More than one inflow condition on one node!");
 
     if (myinflowcond.size() == 1) inflow_ele = true;
 
@@ -217,7 +218,7 @@ namespace SCATRA
       }
       default:
       {
-        dserror("Invalid implementation type!");
+        FOUR_C_THROW("Invalid implementation type!");
         break;
       }
     }

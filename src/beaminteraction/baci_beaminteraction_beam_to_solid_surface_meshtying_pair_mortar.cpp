@@ -190,7 +190,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
       break;
     }
     default:
-      dserror("Wrong coupling type.");
+      FOUR_C_THROW("Wrong coupling type.");
   }
   for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
   {
@@ -237,7 +237,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line2>());
         default:
-          dserror("Wrong element type for surface element.");
+          FOUR_C_THROW("Wrong element type for surface element.");
       }
       break;
     }
@@ -264,7 +264,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line3>());
         default:
-          dserror("Wrong element type for surface element.");
+          FOUR_C_THROW("Wrong element type for surface element.");
       }
       break;
     }
@@ -291,12 +291,12 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line4>());
         default:
-          dserror("Wrong element type for surface element.");
+          FOUR_C_THROW("Wrong element type for surface element.");
       }
       break;
     }
     default:
-      dserror("Wrong mortar shape function.");
+      FOUR_C_THROW("Wrong mortar shape function.");
   }
 
   return Teuchos::null;

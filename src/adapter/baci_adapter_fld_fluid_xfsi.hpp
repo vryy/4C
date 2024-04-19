@@ -97,7 +97,7 @@ namespace ADAPTER
     /// Return interface velocity at new time level n+1
     virtual Teuchos::RCP<Epetra_Vector> ExtractStructInterfaceVelnp()
     {
-      dserror("Not implemented, yet!");
+      FOUR_C_THROW("Not implemented, yet!");
       return Teuchos::null;
     }
 
@@ -113,7 +113,7 @@ namespace ADAPTER
     /// Apply initial mesh displacement
     void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override
     {
-      dserror("Not implemented, yet!");
+      FOUR_C_THROW("Not implemented, yet!");
     }
 
     /// apply the interface displacements to the fluid

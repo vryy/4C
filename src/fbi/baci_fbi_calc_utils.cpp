@@ -91,7 +91,7 @@ void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
       // safety check: dimensions
       if ((unsigned int)eleforce_centerlineDOFs[iele].numRows() !=
           ele_centerlinedofindices[iele].size())
-        dserror(
+        FOUR_C_THROW(
             "size mismatch! need to assemble %d values of centerline-Dof based "
             "force vector into element vector but only got %d element-local Dof indices",
             eleforce_centerlineDOFs[iele].numRows(), ele_centerlinedofindices[iele].size());
@@ -115,14 +115,14 @@ void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
         // safety check: dimensions
         if ((unsigned int)elestiff_centerlineDOFs[iele][jele].numRows() !=
             ele_centerlinedofindices[iele].size())
-          dserror(
+          FOUR_C_THROW(
               "size mismatch! need to assemble %d row values of centerline-Dof based "
               "stiffness matrix into element matrix but only got %d element-local Dof indices",
               elestiff_centerlineDOFs[iele][jele].numRows(), ele_centerlinedofindices[iele].size());
 
         if ((unsigned int)elestiff_centerlineDOFs[iele][jele].numCols() !=
             ele_centerlinedofindices[jele].size())
-          dserror(
+          FOUR_C_THROW(
               "size mismatch! need to assemble %d column values of centerline-Dof based "
               "stiffness matrix into element matrix but only got %d element-local Dof indices",
               elestiff_centerlineDOFs[iele][jele].numCols(), ele_centerlinedofindices[jele].size());

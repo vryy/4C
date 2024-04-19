@@ -86,7 +86,7 @@ void CONSTRAINTS::ConstraintSolver::Solve(Teuchos::RCP<CORE::LINALG::SparseMatri
       SolveSimple(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
     default:
-      dserror("Unknown constraint solution technique!");
+      FOUR_C_THROW("Unknown constraint solution technique!");
   }
   return;
 }
@@ -337,7 +337,7 @@ void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::Spars
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
   // check if the meshtying/contact solver has a valid solver number
   if (linsolvernumber == (-1))
-   dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in
+   FOUR_C_THROW("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in
   CONTACT DYNAMIC to a valid number!");
    */
 
@@ -351,7 +351,7 @@ void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::Spars
   // Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter
   // list solver_->Params() =
   // CORE::LINALG::Solver::TranslateSolverParameters(GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
-  if (!solver_->Params().isSublist("Belos Parameters")) dserror("Iterative solver expected!");
+  if (!solver_->Params().isSublist("Belos Parameters")) FOUR_C_THROW("Iterative solver expected!");
 
   solver_->Params().set<bool>(
       "CONSTRAINT", true);  // handling of constraint null space within Simple type preconditioners
@@ -362,8 +362,8 @@ void CONSTRAINTS::ConstraintSolver::SolveSimple(Teuchos::RCP<CORE::LINALG::Spars
   const int simplersolvernumber = mcparams.get<int>("SIMPLER_SOLVER");
   // check if the SIMPLER solver has a valid solver number
   if (simplersolvernumber == (-1))
-    dserror("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in CONTACT
-  DYNAMIC to a valid number!"); solver_->PutSolverParamsToSubParams("Inverse2",
+    FOUR_C_THROW("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in
+  CONTACT DYNAMIC to a valid number!"); solver_->PutSolverParamsToSubParams("Inverse2",
       GLOBAL::Problem::Instance()->SolverParams(simplersolvernumber));
   */
 

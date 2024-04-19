@@ -27,7 +27,7 @@ void CORE::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim(
   const int nen = CORE::FE::num_nodes<distype>;
   const int nsd_ele = CORE::FE::dim<distype>;
 
-  dsassert(nsd_ele != probdim,
+  FOUR_C_ASSERT(nsd_ele != probdim,
       "This method is designed to be used if the dimension of the element is smaller than the "
       "problem dimension");
 

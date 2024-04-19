@@ -70,7 +70,7 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   const int linsolvernumber = sdyn_micro.get<int>("LINEAR_SOLVER");
   // check if the structural solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
@@ -235,7 +235,7 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     discret_->EvaluateCondition(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
         Teuchos::null, "MicroBoundary");
     V0_ = p.get<double>("V0", -1.0);
-    if (V0_ == -1.0) dserror("Calculation of initial volume failed");
+    if (V0_ == -1.0) FOUR_C_THROW("Calculation of initial volume failed");
   }
   // sum initial volume over all procs (including supporting procs)
   double sum = 0.0;
@@ -264,7 +264,8 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   sum = 0.0;
   discret_->Comm().SumAll(&my, &sum, 1);
   density_ = sum;
-  if (density_ == 0.0) dserror("Density determined from homogenization procedure equals zero!");
+  if (density_ == 0.0)
+    FOUR_C_THROW("Density determined from homogenization procedure equals zero!");
 
   return;
 }  // STRUMULTI::MicroStatic::MicroStatic
@@ -277,7 +278,7 @@ void STRUMULTI::MicroStatic::Predictor(CORE::LINALG::Matrix<3, 3>* defgrd)
   else if (pred_ == INPAR::STR::pred_tangdis)
     PredictTangDis(defgrd);
   else
-    dserror("requested predictor not implemented on the micro-scale");
+    FOUR_C_THROW("requested predictor not implemented on the micro-scale");
   return;
 }
 
@@ -338,7 +339,8 @@ void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   // extract reaction forces
   int err = freactn_->Import(*fresn_, *importp_, Insert);
   if (err)
-    dserror("Importing reaction forces of prescribed dofs using importer returned err=%d", err);
+    FOUR_C_THROW(
+        "Importing reaction forces of prescribed dofs using importer returned err=%d", err);
 
   // blank residual at DOFs on Dirichlet BC
   Epetra_Vector fresncopy(*fresn_);
@@ -497,7 +499,8 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   // extract reaction forces
   int err = freactn_->Import(*fresn_, *importp_, Insert);
   if (err)
-    dserror("Importing reaction forces of prescribed dofs using importer returned err=%d", err);
+    FOUR_C_THROW(
+        "Importing reaction forces of prescribed dofs using importer returned err=%d", err);
 
   // blank residual at DOFs on Dirichlet BC
   Epetra_Vector fresncopy(*fresn_);
@@ -590,7 +593,8 @@ void STRUMULTI::MicroStatic::FullNewton()
     // extract reaction forces
     int err = freactn_->Import(*fresn_, *importp_, Insert);
     if (err)
-      dserror("Importing reaction forces of prescribed dofs using importer returned err=%d", err);
+      FOUR_C_THROW(
+          "Importing reaction forces of prescribed dofs using importer returned err=%d", err);
 
     // blank residual DOFs which are on Dirichlet BC
     Epetra_Vector fresncopy(*fresn_);
@@ -609,7 +613,7 @@ void STRUMULTI::MicroStatic::FullNewton()
   //-------------------------------- test whether max iterations was hit
   if (numiter_ >= maxiter_)
   {
-    dserror("Newton unconverged in %d iterations", numiter_);
+    FOUR_C_THROW("Newton unconverged in %d iterations", numiter_);
   }
 
   return;
@@ -709,7 +713,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
     isdatawritten = true;
 
     if (stress_ == Teuchos::null or strain_ == Teuchos::null or plstrain_ == Teuchos::null)
-      dserror("Missing stresses and strains in micro-structural time integrator");
+      FOUR_C_THROW("Missing stresses and strains in micro-structural time integrator");
 
     switch (iostress_)
     {
@@ -722,7 +726,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not supported");
+        FOUR_C_THROW("requested stress type not supported");
         break;
     }
 
@@ -737,7 +741,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested strain type not supported");
+        FOUR_C_THROW("requested strain type not supported");
         break;
     }
 
@@ -752,7 +756,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested plastic strain type not supported");
+        FOUR_C_THROW("requested plastic strain type not supported");
         break;
     }
   }
@@ -770,7 +774,7 @@ void STRUMULTI::MicroStatic::ReadRestart(int step, Teuchos::RCP<Epetra_Vector> d
   IO::DiscretizationReader reader(discret_, inputcontrol, step);
   double time = reader.ReadDouble("time");
   int rstep = reader.ReadInt("step");
-  if (rstep != step) dserror("Time step on file not equal to given step");
+  if (rstep != step) FOUR_C_THROW("Time step on file not equal to given step");
 
   reader.ReadVector(dis, "displacement");
   // It does not make any sense to read the mesh and corresponding
@@ -802,7 +806,7 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
       // do only nodes in my row map
       if (!discret_->NodeRowMap()->MyGID(nodeid)) continue;
       DRT::Node* actnode = discret_->gNode(nodeid);
-      if (!actnode) dserror("Cannot find global node %d", nodeid);
+      if (!actnode) FOUR_C_THROW("Cannot find global node %d", nodeid);
 
       // nodal coordinates
       const auto& x = actnode->X();
@@ -836,7 +840,7 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
         const int gid = dofs[l];
 
         const int lid = disp->Map().LID(gid);
-        if (lid < 0) dserror("Global id %d not on this proc in system vector", gid);
+        if (lid < 0) FOUR_C_THROW("Global id %d not on this proc in system vector", gid);
         (*disp)[lid] = disp_prescribed[l];
       }
     }
@@ -1060,7 +1064,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
       }
       default:
       {
-        dserror("You have to choose an iterative solver for micro structures!");
+        FOUR_C_THROW("You have to choose an iterative solver for micro structures!");
         break;
       }
     }
@@ -1070,7 +1074,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
 
     Epetra_MultiVector fexp(*pdof_, 9);
     int err = fexp.Import(*temp, *importp_, Insert);
-    if (err) dserror("Export of boundary 'forces' failed with err=%d", err);
+    if (err) FOUR_C_THROW("Export of boundary 'forces' failed with err=%d", err);
 
     // multiply manually D_ and fexp because D_ is not distributed as usual Epetra_MultiVectors and,
     // hence, standard Multiply functions do not apply.
@@ -1163,7 +1167,7 @@ void STRUMULTI::MicroStaticParObject::Unpack(const std::vector<char>& data)
   SetMicroStaticData(micro_data);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 STRUMULTI::MicroStaticParObjectType STRUMULTI::MicroStaticParObjectType::instance_;

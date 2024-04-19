@@ -132,7 +132,7 @@ void MAT::ViscoNeoHooke::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ViscoNeoHooke*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -157,7 +157,8 @@ void MAT::ViscoNeoHooke::Unpack(const std::vector<char>& data)
     artstresslast_->push_back(tmp);
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 }
@@ -188,8 +189,8 @@ void MAT::ViscoNeoHooke::Setup(int numgp, INPUT::LineDefinition* linedef)
   double E_f = params_->youngs_fast_;
   double tau = params_->relax_;
 
-  if (E_f < E_s) dserror("Wrong ratio between fast and slow Young's modulus");
-  if (tau <= 0.0) dserror("Relaxation time tau has to be positive!");
+  if (E_f < E_s) FOUR_C_THROW("Wrong ratio between fast and slow Young's modulus");
+  if (tau <= 0.0) FOUR_C_THROW("Relaxation time tau has to be positive!");
   isinit_ = true;
   return;
 }

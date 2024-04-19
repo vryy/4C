@@ -705,7 +705,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(DRT::Element& ele,
     Teuchos::ParameterList& params, STR::ELEMENTS::ParamsInterface& interface_ptr)
 {
   Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-  if (res == Teuchos::null) dserror("Cannot get residual displacement state vector");
+  if (res == Teuchos::null) FOUR_C_THROW("Cannot get residual displacement state vector");
   std::vector<double> residual(dof_index_array.size());
   CORE::FE::ExtractMyValues(*res, residual, dof_index_array);
 
@@ -734,7 +734,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(DRT::Element& ele,
   else
   {
     // The first step has to be a default step!
-    if (old_step_length_ < 0.0) dserror("The old step length was not defined!");
+    if (old_step_length_ < 0.0) FOUR_C_THROW("The old step length was not defined!");
     // if this is no full step, we have to adjust the length of the enhanced assumed strain
     // incremental step.
     // undo the previous step:
@@ -761,7 +761,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::Update(DRT::Element& ele,
     Teuchos::ParameterList& params)
 {
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' ");
+  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
   std::vector<double> displacement(dof_index_array.size());
   CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
 
@@ -878,7 +878,7 @@ void DRT::ELEMENTS::Shell7pEleCalcEas<distype>::VisData(
 {
   if (name == "thickness")
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (auto& thickness_data : cur_thickness_)
     {
       data[0] += thickness_data;

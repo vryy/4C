@@ -62,7 +62,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchMat(
       Teuchos::rcp_static_cast<const MAT::ElchMat>(material);
 
   // safety check
-  if (elchmat->NumPhase() != 1) dserror("Can only have a single electrolyte phase at the moment!");
+  if (elchmat->NumPhase() != 1)
+    FOUR_C_THROW("Can only have a single electrolyte phase at the moment!");
 
   // extract electrolyte phase
   const Teuchos::RCP<const MAT::Material> elchphase = elchmat->PhaseById(elchmat->PhaseID(0));
@@ -73,7 +74,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchMat(
     MatElchPhase(elchphase, concentrations, temperature, equpot, ffrt, diffmanager, diffcondmat);
   }
   else
-    dserror("Invalid material type!");
+    FOUR_C_THROW("Invalid material type!");
 }
 
 /*----------------------------------------------------------------------*
@@ -108,7 +109,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
       {
         // safety check
         if (matelchphase->NumMat() != 1)
-          dserror("Newman material must be the only transported species!");
+          FOUR_C_THROW("Newman material must be the only transported species!");
 
         // set ion type
         diffcondmat = INPAR::ELCH::diffcondmat_newman;
@@ -139,7 +140,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
 
       default:
       {
-        dserror("Invalid material type!");
+        FOUR_C_THROW("Invalid material type!");
         break;
       }
     }

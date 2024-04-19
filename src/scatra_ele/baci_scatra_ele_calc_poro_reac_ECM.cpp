@@ -78,7 +78,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Materials(
       pororeac::MatScaTra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:
-      dserror("Material type %i is not supported", material->MaterialType());
+      FOUR_C_THROW("Material type %i is not supported", material->MaterialType());
       break;
   }
   return;
@@ -107,7 +107,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetMaterialParams(
   {
     const Teuchos::RCP<MAT::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
-    if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < actmat->NumReac(); ++k)
     {
@@ -121,7 +121,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetMaterialParams(
       {
         Teuchos::RCP<MAT::StructPoroReactionECM> structmat =
             Teuchos::rcp_dynamic_cast<MAT::StructPoroReactionECM>(my::ele_->Material(1));
-        if (structmat == Teuchos::null) dserror("cast to MAT::StructPoroReactionECM failed!");
+        if (structmat == Teuchos::null) FOUR_C_THROW("cast to MAT::StructPoroReactionECM failed!");
         double structpot = ComputeStructChemPotential(structmat, iquad);
 
         scatramat->ComputeReacCoeff(structpot);

@@ -120,7 +120,7 @@ namespace DRT
           return 1;
         else
         {
-          dserror("Could not determine number of lines");
+          FOUR_C_THROW("Could not determine number of lines");
           return -1;
         }
       }
@@ -195,7 +195,7 @@ namespace DRT
           }
           default:
           {
-            dserror("Defined problem type %d does not exist!!", impltype_);
+            FOUR_C_THROW("Defined problem type %d does not exist!!", impltype_);
             break;
           }
         }

@@ -51,7 +51,7 @@ Teuchos::RCP<ADAPTER::ArtNet> ART::UTILS::CreateAlgorithm(
       break;
     }
     default:
-      dserror("Unknown time-integration scheme for artery network problem");
+      FOUR_C_THROW("Unknown time-integration scheme for artery network problem");
       break;
   }
 
@@ -138,7 +138,7 @@ void ART::ArteryScatraCloneStrategy::SetElementData(
   }
   else
   {
-    dserror("unsupported element type '%s'", typeid(*newele).name());
+    FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
   }
   return;
 }
@@ -152,7 +152,7 @@ void ART::ArteryScatraCloneStrategy::CheckMaterialType(const int matid)
   // Here we check first, whether this material is of admissible type
   INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
   if ((mtype != INPAR::MAT::m_scatra) && (mtype != INPAR::MAT::m_matlist))
-    dserror("Material with ID %d is not admissible for scalar transport elements", matid);
+    FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
 

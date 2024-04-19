@@ -215,7 +215,7 @@ void PARTICLEINTERACTION::SPHMomentum::InitMomentumFormulationHandler()
     }
     default:
     {
-      dserror("unknown acceleration formulation type!");
+      FOUR_C_THROW("unknown acceleration formulation type!");
       break;
     }
   }
@@ -893,7 +893,7 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
       // assemble nodal forces
       const int err = walldatastate->GetForceCol()->SumIntoGlobalValues(
           numnodes * 3, nodal_force.data(), lmele.data());
-      if (err < 0) dserror("sum into Epetra_Vector failed!");
+      if (err < 0) FOUR_C_THROW("sum into Epetra_Vector failed!");
     }
   }
 

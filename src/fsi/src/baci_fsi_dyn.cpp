@@ -119,7 +119,7 @@ void fluid_ale_drt()
   else  // filled ale discretization
   {
     if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
-      dserror(
+      FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
@@ -174,7 +174,7 @@ void fluid_xfem_drt()
     else  // filled ale discretization
     {
       if (!FSI::UTILS::FluidAleNodesDisjoint(problem->GetDis("fluid"), aledis))
-        dserror(
+        FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
             "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
@@ -266,7 +266,7 @@ void fluid_freesurf_drt()
   else  // filled ale discretization
   {
     if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
-      dserror(
+      FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
@@ -382,7 +382,7 @@ void fsi_immersed_drt()
     Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
   }
   else
-    dserror("unsupported partitioned FSI scheme");
+    FOUR_C_THROW("unsupported partitioned FSI scheme");
 
   if (presort_strategy == INPAR::FBI::BeamToFluidPreSortStrategy::binning)
   {
@@ -460,7 +460,7 @@ void fsi_ale_drt()
   else  // filled ale discretization (i.e. read from input file)
   {
     if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
-      dserror(
+      FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
@@ -572,7 +572,8 @@ void fsi_ale_drt()
       }
       else
       {
-        dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",
+        FOUR_C_THROW(
+            "Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",
             coupling, linearsolverstrategy);
       }
 
@@ -676,7 +677,7 @@ void fsi_ale_drt()
         fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplitNoNOX(comm, fsidyn));
       }
       else
-        dserror("Unsupported monolithic XFFSI scheme");
+        FOUR_C_THROW("Unsupported monolithic XFFSI scheme");
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a Redistribute call
@@ -727,7 +728,7 @@ void fsi_ale_drt()
           Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
           break;
         default:
-          dserror("unsupported partitioned FSI scheme");
+          FOUR_C_THROW("unsupported partitioned FSI scheme");
           break;
       }
       const int restart = GLOBAL::Problem::Instance()->Restart();
@@ -791,7 +792,7 @@ void xfsi_drt()
   if (ale)
   {
     aledis = problem->GetDis("ale");
-    if (aledis == Teuchos::null) dserror("XFSI DYNAMIC: ALE Discretization empty!!!");
+    if (aledis == Teuchos::null) FOUR_C_THROW("XFSI DYNAMIC: ALE Discretization empty!!!");
 
     aledis->FillComplete(true, true, true);
 
@@ -808,7 +809,7 @@ void xfsi_drt()
     else  // ALE discretization already filled
     {
       if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
-        dserror(
+        FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
             "Use the ALE cloning functionality or ensure non-overlapping node numbering!");
@@ -827,7 +828,7 @@ void xfsi_drt()
           CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
       if (linearsolverstrategy != INPAR::FSI::PreconditionedKrylov)
-        dserror("Only Newton-Krylov scheme with XFEM fluid");
+        FOUR_C_THROW("Only Newton-Krylov scheme with XFEM fluid");
 
       // create the MonolithicXFEM object that does the whole work
       Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn));
@@ -860,7 +861,7 @@ void xfsi_drt()
     }
     case fsi_iter_monolithicfluidsplit:
     case fsi_iter_monolithicstructuresplit:
-      dserror("Unreasonable choice");
+      FOUR_C_THROW("Unreasonable choice");
       break;
     default:
     {
@@ -879,7 +880,7 @@ void xfsi_drt()
           Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->Setup();
           break;
         default:
-          dserror("only Dirichlet-Neumann partitioned schemes with XFEM");
+          FOUR_C_THROW("only Dirichlet-Neumann partitioned schemes with XFEM");
           break;
       }
 
@@ -939,7 +940,7 @@ void xfpsi_drt()
   if (ale)
   {
     aledis = problem->GetDis("ale");
-    if (aledis == Teuchos::null) dserror("Ale Discretization empty!");
+    if (aledis == Teuchos::null) FOUR_C_THROW("Ale Discretization empty!");
 
     aledis->FillComplete(true, true, true);
 
@@ -956,7 +957,7 @@ void xfpsi_drt()
     else  // ALE discretization already filled
     {
       if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
-        dserror(
+        FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
             "Use the ALE cloning functionality or ensure non-overlapping node numbering!");
@@ -980,7 +981,7 @@ void xfpsi_drt()
           CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
       if (linearsolverstrategy != INPAR::FSI::PreconditionedKrylov)
-        dserror("Only Newton-Krylov scheme with XFEM fluid");
+        FOUR_C_THROW("Only Newton-Krylov scheme with XFEM fluid");
 
       Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(
           new FSI::MonolithicXFEM(comm, fsidyn, ADAPTER::FieldWrapper::type_PoroField));
@@ -1015,11 +1016,11 @@ void xfpsi_drt()
     }
     case fsi_iter_monolithicfluidsplit:
     case fsi_iter_monolithicstructuresplit:
-      dserror("Unreasonable choice");
+      FOUR_C_THROW("Unreasonable choice");
       break;
     default:
     {
-      dserror("FPSI_XFEM: No Partitioned Algorithms implemented !!!");
+      FOUR_C_THROW("FPSI_XFEM: No Partitioned Algorithms implemented !!!");
       break;
     }
   }

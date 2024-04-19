@@ -65,7 +65,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::BuildIdSets(
   const std::vector<int> node_ids = *(condition_line_->GetNodes());
 
   if (node_ids.size() != 2)
-    dserror(
+    FOUR_C_THROW(
         "The Penalty Point Coupling Condition can only handle 2 nodes per condition! If you want "
         "to couple multiple nodes, please split them into multiple conditions, each coupling two "
         "of the beam nodes.");

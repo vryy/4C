@@ -114,7 +114,7 @@ void CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     }
     else
     {
-      dserror("Not supported");
+      FOUR_C_THROW("Not supported");
     }
     p->AddEdge(e);
   }
@@ -186,7 +186,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "The given side element type is currently unsupported! \n"
           "( dim = %d | sideType = %s ",
           dimside, CORE::FE::CellTypeToString(sidetype).c_str());
@@ -212,7 +212,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   tolerance = 0.0;
 
   //  if ( CheckAngleCriterionBetweenSideNormalAndEdge() )
-  //    dserror("This shouldn't happen at this point! -- hiermeier");
+  //    FOUR_C_THROW("This shouldn't happen at this point! -- hiermeier");
 
   return false;
 }
@@ -240,7 +240,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   dedge.Update(-1.0, e_endpoint, 1.0);
   const double e_nrm2 = dedge.Norm2();
   if (e_nrm2 == 0.0)
-    dserror("The 1-st edge length is zero!");
+    FOUR_C_THROW("The 1-st edge length is zero!");
   else
     dedge.Scale(1.0 / e_nrm2);
 
@@ -268,9 +268,9 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
                                                        side_rs_corner_intersect,
     std::vector<CORE::LINALG::Matrix<dimedge, 1>>& edge_r_corner_intersect, double& tolerance)
 {
-  dserror("Is this used?");
+  FOUR_C_THROW("Is this used?");
   if (numNodesEdge != 2 or numNodesSide != 2)
-    dserror(
+    FOUR_C_THROW(
         "Two line2 elements are expected, but instead a %s (edge) and %s (side) "
         "element were given.",
         CORE::FE::CellTypeToString(edgetype).c_str(), CORE::FE::CellTypeToString(sidetype).c_str());
@@ -346,12 +346,12 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       xsi_side_.Update(side_rs_corner_intersect[0]);
       if (not FindLocalCoordinateOfEdgeEndPoint(
               xsi_edge_(0), side_xyz_corner_intersect[i], tolerance))
-        dserror("We couldn't find the correct edge end-point!");
+        FOUR_C_THROW("We couldn't find the correct edge end-point!");
       if (num_cut_points_ > 1)
         edge_r_corner_intersect.push_back(CORE::LINALG::Matrix<dimedge, 1>(xsi_edge_.A(), false));
 
       // safety
-      if (not(LineWithinLimits() and SurfaceWithinLimits())) dserror("Something went wrong!");
+      if (not(LineWithinLimits() and SurfaceWithinLimits())) FOUR_C_THROW("Something went wrong!");
     }
 
     return true;
@@ -397,12 +397,12 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   const CORE::LINALG::Matrix<probdim, 1> e_endpoint(&xyze_lineElement_(0, 1), true);
   deedge.Update(-1.0, e_endpoint, 1.0);
   const double e_nrm2 = deedge.Norm2();
-  if (e_nrm2 == 0.0) dserror("The 1-st edge length is zero!");
+  if (e_nrm2 == 0.0) FOUR_C_THROW("The 1-st edge length is zero!");
 
   const CORE::LINALG::Matrix<probdim, 1> s_endpoint(&xyze_surfaceElement_(0, 1), true);
   dsedge.Update(-1.0, s_endpoint, 1.0);
   const double s_nrm2 = dsedge.Norm2();
-  if (s_nrm2 == 0.0) dserror("The 2-nd edge length is zero!");
+  if (s_nrm2 == 0.0) FOUR_C_THROW("The 2-nd edge length is zero!");
 
   const double inner_product = deedge.Dot(dsedge);
   /* If the angle between the two lines is larger than 1 degree ( cos( 1 degree ) = 0.99866695... ),
@@ -477,7 +477,7 @@ CORE::GEO::CUT::ParallelIntersectionStatus CORE::GEO::CUT::Intersection<probdim,
     else if (skip_id == 1)
       id_end = 1;
     else
-      dserror(
+      FOUR_C_THROW(
           "Trying to skip id = %d of the edge nodes. You can only skip BeginNode(0) or "
           "EndNode(1)\n",
           skip_id);
@@ -558,7 +558,7 @@ CORE::GEO::CUT::ParallelIntersectionStatus CORE::GEO::CUT::Intersection<probdim,
           std::copy(tri_touched_edges[1].begin(), tri_touched_edges[1].end(),
               std::inserter(touched_edges, touched_edges.begin()));
           if (touched_edges.size() != (tri_touched_edges[1].size() + tri_touched_edges[0].size()))
-            dserror("Got duplicate edges from triangle split");
+            FOUR_C_THROW("Got duplicate edges from triangle split");
 
           // set up all the topology data
           std::vector<int> tri_touched_edges_full(touched_edges.begin(), touched_edges.end());
@@ -583,7 +583,7 @@ CORE::GEO::CUT::ParallelIntersectionStatus CORE::GEO::CUT::Intersection<probdim,
                 extended_tri_tolerance_loc_triangle_split[1])
             {
               GenerateGmshDump();
-              dserror(
+              FOUR_C_THROW(
                   "Here we need to create point on diagonal line between two triangles in "
                   "triangulated quad4! This is not yet implemented");
             }
@@ -608,7 +608,7 @@ CORE::GEO::CUT::ParallelIntersectionStatus CORE::GEO::CUT::Intersection<probdim,
       }  // end: case (CORE::FE::CellType::quad4)
       default:
       {
-        dserror(
+        FOUR_C_THROW(
             "Intersection Error: Other surfaces than TRI3 and QUAD4 are not supported "
             "to avoid huge problems!!!");
         break;
@@ -759,7 +759,7 @@ CORE::GEO::CUT::ParallelIntersectionStatus CORE::GEO::CUT::Intersection<probdim,
               e->BeginNode()->point()->Print(std::cout);
               e->EndNode()->point()->Print(std::cout);
             }
-            dserror("Two Edges have more than two cutpoint, sounds strange!");
+            FOUR_C_THROW("Two Edges have more than two cutpoint, sounds strange!");
           }
           if (debug)
           {
@@ -823,7 +823,8 @@ CORE::GEO::CUT::ParallelIntersectionStatus CORE::GEO::CUT::Intersection<probdim,
             if (not(is_distorted.first or is_distorted.second))
             {
               GenerateGmshDump();
-              dserror("This case should have been handled before with edge-edge intersection!");
+              FOUR_C_THROW(
+                  "This case should have been handled before with edge-edge intersection!");
             }
             else
               return intersection_found;
@@ -883,7 +884,8 @@ void CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   }
   catch (CORE::Exception& e)
   {
-    dserror("Cautch error in the cut_intersection:  \n%s . Current tolerance must be increased",
+    FOUR_C_THROW(
+        "Cautch error in the cut_intersection:  \n%s . Current tolerance must be increased",
         e.what_with_stacktrace().c_str());
   }
 }
@@ -919,7 +921,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         {
           (*it)->point()->DumpConnectivityInfo();
         }
-        dserror(
+        FOUR_C_THROW(
             "ComputeEdgeSideIntersection for Quad4 didn't converge, "
             "but ComputeEdgeTri3Intersection for triangulation (id=%d) is inside the Element!",
             tri);
@@ -939,7 +941,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     }
   }
   // If we reach here, this is probably distorted  element
-  dserror("Distorted element. To enable support for it switch TRIANGULATED_INTERSECTION to true");
+  FOUR_C_THROW(
+      "Distorted element. To enable support for it switch TRIANGULATED_INTERSECTION to true");
   return false;
 }
 
@@ -963,7 +966,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       catch (CORE::Exception& e)
       {
         GenerateGmshDump();
-        dserror("Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
+        FOUR_C_THROW(
+            "Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
             e.what_with_stacktrace().c_str());
       }
 
@@ -987,7 +991,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           return false;
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "Newton did not converge for edge-side(tri3) intersection and there is not cut point!");
       break;
     }
@@ -1011,7 +1015,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         catch (CORE::Exception& e)
         {
           GenerateGmshDump();
-          dserror(
+          FOUR_C_THROW(
               "Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
               e.what_with_stacktrace().c_str());
         }
@@ -1041,7 +1045,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
                 cut_point_count++;
               }
               else
-                dserror("This should not happen");
+                FOUR_C_THROW("This should not happen");
             }
             // if tri equal to 1 we just let the check go to the next triangle
             if (tri == 0) first_close_to_shared = true;
@@ -1093,7 +1097,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
             }
             GenerateGmshDump();
 
-            dserror(err_msg.str());
+            FOUR_C_THROW(err_msg.str());
           }
           else
           {
@@ -1105,13 +1109,13 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           break;
         }
         default:
-          dserror("This should not be possible!");
+          FOUR_C_THROW("This should not be possible!");
       }
       break;
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Intersection Error: Other surfaces than TRI3 and QUAD4 are not supported "
           "to avoid huge problems!!!");
       break;
@@ -1147,7 +1151,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
                      * search for an intersection point! */
     }
     else
-      dserror("We should use bounding box now!");
+      FOUR_C_THROW("We should use bounding box now!");
   }
 
   // try to find out if this intersection can be handled just by ComputeDistance
@@ -1177,7 +1181,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     catch (const CORE::Exception& e)
     {
       GenerateGmshDump();
-      dserror("Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
+      FOUR_C_THROW(
+          "Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
           e.what_with_stacktrace().c_str());
     }
 
@@ -1213,7 +1218,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
               << "\n ==== \n Bounding boxes said that there is no intersection point! \n ==== \n"
               << std::endl;
           GenerateGmshDump();
-          dserror("Bounding Boxes said that there is no intersection point!");
+          FOUR_C_THROW("Bounding Boxes said that there is no intersection point!");
         }
         return true;
       }
@@ -1248,7 +1253,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     numNodesEdge, numNodesSide>::RefinedBBOverlapCheck(int maxstep)
 {
   if (sidetype != CORE::FE::CellType::tri3)
-    dserror("RefinedBBOverlapCheck is made for distored tri3s!");
+    FOUR_C_THROW("RefinedBBOverlapCheck is made for distored tri3s!");
 
   std::vector<CORE::LINALG::Matrix<3, 1>> surfpoints;
   std::vector<CORE::LINALG::Matrix<3, 1>> linepoints;
@@ -1389,7 +1394,7 @@ CORE::GEO::CUT::IntersectionFactory::CreateIntersection(
     case CORE::FE::CellType::line2:
       return Teuchos::rcp(CreateIntersection<CORE::FE::CellType::line2>(side_type, probdim));
     default:
-      dserror(
+      FOUR_C_THROW(
           "Unsupported edgeType! If meaningful, add your edgeType here. \n"
           "Given edgeType = %s",
           CORE::FE::CellTypeToString(edge_type).c_str());
@@ -1438,7 +1443,7 @@ std::pair<bool, bool> CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, 
       }
       default:
       {
-        dserror("Unexpected floattype for KERNEL::ComputeDistance!");
+        FOUR_C_THROW("Unexpected floattype for KERNEL::ComputeDistance!");
       }
     }
     if (conv)

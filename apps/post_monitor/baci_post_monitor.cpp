@@ -64,9 +64,9 @@ MonWriter::MonWriter(PostProblem& problem, std::string& infieldtype,
     int localnodeowner = (int)nodeowner_;
     int numnodeowner = 0;
     (problem.comm())->SumAll(&localnodeowner, &numnodeowner, 1);
-    if ((myrank_ == 0) and (numnodeowner == 0)) dserror("Could not find node %d", node);
+    if ((myrank_ == 0) and (numnodeowner == 0)) FOUR_C_THROW("Could not find node %d", node);
     if ((myrank_ == 0) and (numnodeowner > 1))
-      dserror("Found more than one owner of node %d: %d", node, numnodeowner);
+      FOUR_C_THROW("Found more than one owner of node %d: %d", node, numnodeowner);
   }
 
   return;
@@ -89,7 +89,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
 
   // get pointer to discretisation of actual field
   PostField* field = GetFieldPtr(problem);
-  if (field == nullptr) dserror("Could not obtain field");
+  if (field == nullptr) FOUR_C_THROW("Could not obtain field");
 
   CheckInfieldType(infieldtype);
 
@@ -167,7 +167,7 @@ void MonWriter::WriteMonStressFile(
 {
   // stop it now
   if ((stresstype != "none") and (stresstype != "ndxyz"))
-    dserror("Cannot deal with requested stress output type: %s", stresstype.c_str());
+    FOUR_C_THROW("Cannot deal with requested stress output type: %s", stresstype.c_str());
 
   // write stress
   if (stresstype != "none")
@@ -191,7 +191,7 @@ void MonWriter::WriteMonStrainFile(
 {
   // stop it now
   if ((straintype != "none") and (straintype != "ndxyz"))
-    dserror("Cannot deal with requested strain output type: %s", straintype.c_str());
+    FOUR_C_THROW("Cannot deal with requested strain output type: %s", straintype.c_str());
 
   if (straintype != "none")
   {
@@ -217,7 +217,7 @@ void MonWriter::WriteMonPlStrainFile(
 {
   // stop it now
   if ((straintype != "none") and (straintype != "ndxyz"))
-    dserror("Cannot deal with requested plastic strain output type: %s", straintype.c_str());
+    FOUR_C_THROW("Cannot deal with requested plastic strain output type: %s", straintype.c_str());
 
   if (straintype != "none")
   {
@@ -254,7 +254,7 @@ void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& proble
 
   // get pointer to discretisation of actual field
   PostField* field = GetFieldPtr(problem);
-  if (field == nullptr) dserror("Could not obtain field");
+  if (field == nullptr) FOUR_C_THROW("Could not obtain field");
 
   CheckInfieldType(infieldtype);
 
@@ -333,7 +333,7 @@ void MonWriter::WriteMonHeatfluxFile(
 {
   // stop it now
   if ((heatfluxtype != "none") and (heatfluxtype != "ndxyz"))
-    dserror("Cannot deal with requested heatflux output type: %s", heatfluxtype.c_str());
+    FOUR_C_THROW("Cannot deal with requested heatflux output type: %s", heatfluxtype.c_str());
 
   // write heatflux
   if (heatfluxtype != "none")
@@ -360,7 +360,7 @@ void MonWriter::WriteMonTempgradFile(
 {
   // stop it now
   if ((tempgradtype != "none") and (tempgradtype != "ndxyz"))
-    dserror(
+    FOUR_C_THROW(
         "Cannot deal with requested temperature gradient output type: %s", tempgradtype.c_str());
 
   if (tempgradtype != "none")
@@ -399,7 +399,7 @@ void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& proble
 
   // get pointer to discretisation of actual field
   PostField* field = GetFieldPtr(problem);
-  if (field == nullptr) dserror("Could not obtain field");
+  if (field == nullptr) FOUR_C_THROW("Could not obtain field");
 
   CheckInfieldType(infieldtype);
 
@@ -494,7 +494,7 @@ void FluidMonWriter::CheckInfieldType(std::string& infieldtype)
 /*----------------------------------------------------------------------*/
 void FluidMonWriter::FieldError(int node)
 {
-  dserror("Node %i does not belong to fluid field!", node);
+  FOUR_C_THROW("Node %i does not belong to fluid field!", node);
 }
 
 /*----------------------------------------------------------------------*/
@@ -515,7 +515,7 @@ void FluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
       outfile << "# step   time     u_x      u_y      u_z      p\n";
       break;
     default:
-      dserror("Number of dimensions in space differs from 2 and 3!");
+      FOUR_C_THROW("Number of dimensions in space differs from 2 and 3!");
       break;
   }
 }
@@ -558,7 +558,7 @@ void RedAirwayMonWriter::CheckInfieldType(std::string& infieldtype)
 /*----------------------------------------------------------------------*/
 void RedAirwayMonWriter::FieldError(int node)
 {
-  dserror("Node %i does not belong to red_airway field!", node);
+  FOUR_C_THROW("Node %i does not belong to red_airway field!", node);
 }
 
 /*----------------------------------------------------------------------*/
@@ -611,7 +611,7 @@ void StructMonWriter::CheckInfieldType(std::string& infieldtype)
 /*----------------------------------------------------------------------*/
 void StructMonWriter::FieldError(int node)
 {
-  dserror("Node %i does not belong to structure field!", node);
+  FOUR_C_THROW("Node %i does not belong to structure field!", node);
 }
 
 /*----------------------------------------------------------------------*/
@@ -642,7 +642,7 @@ void StructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
               << std::endl;
       break;
     default:
-      dserror("Number of dimensions in space differs from 2 and 3!");
+      FOUR_C_THROW("Number of dimensions in space differs from 2 and 3!");
       break;
   }
 }
@@ -686,7 +686,7 @@ void StructMonWriter::WriteResult(
   for (unsigned i = 0; i < noddof; ++i)
   {
     const int lid = dispmap.LID(gdof[i] + offset2);
-    if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+    if (lid == -1) FOUR_C_THROW("illegal gid %d at %d!", gdof[i], i);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
@@ -708,7 +708,7 @@ void StructMonWriter::WriteResult(
     for (unsigned i = 0; i < noddof; ++i)
     {
       const int lid = velmap.LID(gdof[i] + offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+      if (lid == -1) FOUR_C_THROW("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
@@ -730,7 +730,7 @@ void StructMonWriter::WriteResult(
     for (unsigned i = 0; i < noddof; ++i)
     {
       const int lid = accmap.LID(gdof[i] + offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+      if (lid == -1) FOUR_C_THROW("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
@@ -749,7 +749,7 @@ void StructMonWriter::WriteResult(
     {
       const unsigned i = (unsigned)dim;
       const int lid = pressmap.LID(gdof[i] + offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+      if (lid == -1) FOUR_C_THROW("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
@@ -777,7 +777,7 @@ void StructMonWriter::WriteStrTableHead(
               << strname + "_yz" << std::right << std::setw(16) << strname + "_zx" << std::endl;
       break;
     default:
-      dserror("Number of dimensions in space differs from 2 and 3!");
+      FOUR_C_THROW("Number of dimensions in space differs from 2 and 3!");
       break;
   }
 
@@ -833,7 +833,7 @@ void StructMonWriter::WriteStrResults(std::ofstream& outfile, PostProblem& probl
     }
     else
     {
-      dserror("trying to write something that is not a stress or a strain");
+      FOUR_C_THROW("trying to write something that is not a stress or a strain");
       exit(1);
     }
 
@@ -850,7 +850,7 @@ void StructMonWriter::WriteStrResults(std::ofstream& outfile, PostProblem& probl
     else if (dim == 2)
       numdf = 2;
     else
-      dserror("Cannot handle dimension %d", dim);
+      FOUR_C_THROW("Cannot handle dimension %d", dim);
 
     // this is a loop over all time steps that should be written
     // bottom control here, because first set has been read already
@@ -905,7 +905,10 @@ void AleMonWriter::CheckInfieldType(std::string& infieldtype)
 }
 
 /*----------------------------------------------------------------------*/
-void AleMonWriter::FieldError(int node) { dserror("Node %i does not belong to ALE field!", node); }
+void AleMonWriter::FieldError(int node)
+{
+  FOUR_C_THROW("Node %i does not belong to ALE field!", node);
+}
 
 /*----------------------------------------------------------------------*/
 void AleMonWriter::WriteHeader(std::ofstream& outfile)
@@ -925,7 +928,7 @@ void AleMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
       outfile << "# step   time     d_x      d_y      d_z\n";
       break;
     default:
-      dserror("Number of dimensions in space differs from 2 and 3!");
+      FOUR_C_THROW("Number of dimensions in space differs from 2 and 3!");
       break;
   }
 }
@@ -961,7 +964,7 @@ PostField* FsiFluidMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
-  if (myfield->name() != "fluid") dserror("Fieldtype of field 1 is not fluid.");
+  if (myfield->name() != "fluid") FOUR_C_THROW("Fieldtype of field 1 is not fluid.");
   return myfield;
 }
 
@@ -1000,7 +1003,7 @@ void FsiFluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
     }
     default:
     {
-      dserror("Number of dimensions in space differs from 2 and 3!");
+      FOUR_C_THROW("Number of dimensions in space differs from 2 and 3!");
       break;
     }
   }
@@ -1077,7 +1080,7 @@ PostField* FsiStructMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(0);
-  if (myfield->name() != "structure") dserror("Fieldtype of field 1 is not structure.");
+  if (myfield->name() != "structure") FOUR_C_THROW("Fieldtype of field 1 is not structure.");
   return myfield;
 }
 
@@ -1111,7 +1114,7 @@ void FsiStructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
               << "lambda_y" << std::right << std::setw(16) << "lambda_z" << std::endl;
       break;
     default:
-      dserror("Number of dimensions in space differs from 2 and 3!");
+      FOUR_C_THROW("Number of dimensions in space differs from 2 and 3!");
       break;
   }
 }
@@ -1155,7 +1158,7 @@ void FsiStructMonWriter::WriteResult(
   for (unsigned i = 0; i < noddof; ++i)
   {
     const int lid = dispmap.LID(gdof[i] + offset2);
-    if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+    if (lid == -1) FOUR_C_THROW("illegal gid %d at %d!", gdof[i], i);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
@@ -1177,7 +1180,7 @@ void FsiStructMonWriter::WriteResult(
     for (unsigned i = 0; i < noddof; ++i)
     {
       const int lid = velmap.LID(gdof[i] + offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+      if (lid == -1) FOUR_C_THROW("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
@@ -1206,7 +1209,7 @@ void FsiStructMonWriter::WriteResult(
     for (unsigned i = 0; i < noddof; ++i)
     {
       const int lid = accmap.LID(gdof[i] + offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+      if (lid == -1) FOUR_C_THROW("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
@@ -1232,7 +1235,7 @@ void FsiStructMonWriter::WriteResult(
     {
       const unsigned i = (unsigned)dim;
       const int lid = pressmap.LID(gdof[i] + offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+      if (lid == -1) FOUR_C_THROW("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
@@ -1254,7 +1257,7 @@ void FsiStructMonWriter::WriteResult(
     for (unsigned i = 0; i < noddof; ++i)
     {
       const int lid = lambdamap.LID(gdof[i] + offset2);
-      if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+      if (lid == -1) FOUR_C_THROW("illegal gid %d at %d!", gdof[i], i);
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
@@ -1276,7 +1279,7 @@ PostField* FsiAleMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
-  if (myfield->name() != "fluid") dserror("Fieldtype of field 1 is not fluid.");
+  if (myfield->name() != "fluid") FOUR_C_THROW("Fieldtype of field 1 is not fluid.");
   return myfield;
 }
 
@@ -1299,7 +1302,7 @@ void ScatraMonWriter::CheckInfieldType(std::string& infieldtype)
 /*----------------------------------------------------------------------*/
 void ScatraMonWriter::FieldError(int node)
 {
-  dserror("Node %i does not belong to scatra field!", node);
+  FOUR_C_THROW("Node %i does not belong to scatra field!", node);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1313,7 +1316,7 @@ PostField* ScatraMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
-  if (myfield->name() != "scatra") dserror("Fieldtype of field 1 is not scatra.");
+  if (myfield->name() != "scatra") FOUR_C_THROW("Fieldtype of field 1 is not scatra.");
   return myfield;
 }
 
@@ -1329,7 +1332,7 @@ void ScatraMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
       outfile << "# step   time     phi\n";
       break;
     default:
-      dserror("Number of dimensions in space differs from 2 and 3!");
+      FOUR_C_THROW("Number of dimensions in space differs from 2 and 3!");
       break;
   }
 }
@@ -1372,7 +1375,7 @@ void ThermoMonWriter::CheckInfieldType(std::string& infieldtype)
 /*----------------------------------------------------------------------*/
 void ThermoMonWriter::FieldError(int node)
 {
-  dserror("Node %i does not belong to thermal field!", node);
+  FOUR_C_THROW("Node %i does not belong to thermal field!", node);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1412,7 +1415,7 @@ void ThermoMonWriter::WriteResult(
   for (unsigned i = 0; i < gdof.size(); ++i)
   {
     const int lid = dispmap.LID(gdof[i] + offset2);
-    if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+    if (lid == -1) FOUR_C_THROW("illegal gid %d at %d!", gdof[i], i);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
@@ -1429,7 +1432,7 @@ void ThermoMonWriter::WriteResult(
   for (unsigned i = 0; i < gdof.size(); ++i)
   {
     const int lid = ratemap.LID(gdof[i] + offset2);
-    if (lid == -1) dserror("illegal gid %d at %d!", gdof[i], i);
+    if (lid == -1) FOUR_C_THROW("illegal gid %d at %d!", gdof[i], i);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
@@ -1458,7 +1461,7 @@ void ThermoMonWriter::WriteThrTableHead(
               << std::endl;
       break;
     default:
-      dserror("Number of dimensions in space differs from 2 and 3!");
+      FOUR_C_THROW("Number of dimensions in space differs from 2 and 3!");
       break;
   }
 
@@ -1498,7 +1501,7 @@ void ThermoMonWriter::WriteThrResults(std::ofstream& outfile, PostProblem& probl
     }
     else
     {
-      dserror("trying to write something that is not a heatflux or a temperature gradient");
+      FOUR_C_THROW("trying to write something that is not a heatflux or a temperature gradient");
       exit(1);
     }
 
@@ -1556,25 +1559,25 @@ void ThermoMonWriter::WriteThrResult(std::ofstream& outfile, PostField*& field, 
     std::vector<double> nodal_heatfluxes;
     if (dim == 3)
     {
-      if (lnodedofs.size() < numdofpernode) dserror("Too few DOFs at node of interest");
+      if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
       nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]] / adjele);
       nodal_heatfluxes.push_back((*heatfluxy)[lnodedofs[0]] / adjele);
       nodal_heatfluxes.push_back((*heatfluxz)[lnodedofs[0]] / adjele);
     }
     else if (dim == 2)
     {
-      if (lnodedofs.size() < numdofpernode) dserror("Too few DOFs at node of interest");
+      if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
       nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]] / adjele);
       nodal_heatfluxes.push_back((*heatfluxy)[lnodedofs[0]] / adjele);
     }
     else if (dim == 1)
     {
-      if (lnodedofs.size() < numdofpernode) dserror("Too few DOFs at node of interest");
+      if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
       nodal_heatfluxes.push_back((*heatfluxx)[lnodedofs[0]] / adjele);
     }
     else
     {
-      dserror("Don't know what to do with %d dimensions", dim);
+      FOUR_C_THROW("Don't know what to do with %d dimensions", dim);
     }
 
     // print to file
@@ -1601,7 +1604,7 @@ PostField* TsiStructMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
-  if (myfield->name() != "structure") dserror("Fieldtype of field 1 is not structure.");
+  if (myfield->name() != "structure") FOUR_C_THROW("Fieldtype of field 1 is not structure.");
   return myfield;
 }
 
@@ -1620,7 +1623,7 @@ PostField* TsiThermoMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(0);
-  if (myfield->name() != "thermo") dserror("Fieldtype of field 2 is not thermo.");
+  if (myfield->name() != "thermo") FOUR_C_THROW("Fieldtype of field 2 is not thermo.");
   return myfield;
 }
 
@@ -1642,7 +1645,7 @@ void PoroFluidMultiMonWriter::CheckInfieldType(std::string& infieldtype)
 /*----------------------------------------------------------------------*/
 void PoroFluidMultiMonWriter::FieldError(int node)
 {
-  dserror("Node %i does not belong to porofluid field!", node);
+  FOUR_C_THROW("Node %i does not belong to porofluid field!", node);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1662,7 +1665,7 @@ void PoroFluidMultiMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
                  "pressure_1 ... pressure_n ... porosity (with --optquantity=porosity)\n";
       break;
     default:
-      dserror("Number of dimensions in space differs from 2 and 3!");
+      FOUR_C_THROW("Number of dimensions in space differs from 2 and 3!");
       break;
   }
 }
@@ -1727,7 +1730,7 @@ PostField* PoroMultiElastScatraFluidMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
-  if (myfield->name() != "porofluid") dserror("Fieldtype of field 2 is not porofluid.");
+  if (myfield->name() != "porofluid") FOUR_C_THROW("Fieldtype of field 2 is not porofluid.");
   return myfield;
 }
 
@@ -1751,7 +1754,7 @@ PostField* PoroMultiElastScatraScatraMonWriter::GetFieldPtr(PostProblem& problem
         << "Scatra-dis is not the third field. Artery coupling active? Trying field 4 for scatra"
         << std::endl;
     myfield = problem.get_discretization(3);
-    if (myfield->name() != "scatra") dserror("Fieldtype of field 3 or 4 is not scatra.");
+    if (myfield->name() != "scatra") FOUR_C_THROW("Fieldtype of field 3 or 4 is not scatra.");
   }
   return myfield;
 }
@@ -1769,7 +1772,8 @@ PostField* PoroMultiElastScatraArteryScatraMonWriter::GetFieldPtr(PostProblem& p
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(4);
-  if (myfield->name() != "artery_scatra") dserror("Fieldtype of field 5 is not artery_scatra.");
+  if (myfield->name() != "artery_scatra")
+    FOUR_C_THROW("Fieldtype of field 5 is not artery_scatra.");
   return myfield;
 }
 
@@ -1832,13 +1836,13 @@ int main(int argc, char** argv)
       }
       else if (infieldtype == "ale")
       {
-        dserror("There is no ALE output. Displacements of fluid nodes can be printed.");
+        FOUR_C_THROW("There is no ALE output. Displacements of fluid nodes can be printed.");
         FsiAleMonWriter mymonwriter(problem, infieldtype, node);
         mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
       else
       {
-        dserror("handling for monitoring of this fieldtype not yet implemented");
+        FOUR_C_THROW("handling for monitoring of this fieldtype not yet implemented");
       }
       break;
     }
@@ -1902,7 +1906,7 @@ int main(int argc, char** argv)
       }
       else
       {
-        dserror("handling for monitoring of this fieldtype not yet implemented");
+        FOUR_C_THROW("handling for monitoring of this fieldtype not yet implemented");
       }
       break;
     }
@@ -1911,7 +1915,7 @@ int main(int argc, char** argv)
     case GLOBAL::ProblemType::biofilm_fsi:
     case GLOBAL::ProblemType::thermo_fsi:
     {
-      dserror("not implemented yet");
+      FOUR_C_THROW("not implemented yet");
       break;
     }
     case GLOBAL::ProblemType::red_airways:
@@ -1956,7 +1960,7 @@ int main(int argc, char** argv)
         mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
       else
-        dserror("Unsupported field type %s for problem-type Multiphase_Poroelasticity",
+        FOUR_C_THROW("Unsupported field type %s for problem-type Multiphase_Poroelasticity",
             infieldtype.c_str());
       break;
     }
@@ -1983,13 +1987,13 @@ int main(int argc, char** argv)
         mymonwriter.WriteMonFile(problem, infieldtype, node);
       }
       else
-        dserror("Unsupported field type %s for problem-type Multiphase_Poroelasticity_ScaTra",
+        FOUR_C_THROW("Unsupported field type %s for problem-type Multiphase_Poroelasticity_ScaTra",
             infieldtype.c_str());
       break;
     }
     default:
     {
-      dserror("problem type %d not yet supported", problem.Problemtype());
+      FOUR_C_THROW("problem type %d not yet supported", problem.Problemtype());
     }
     break;
   }

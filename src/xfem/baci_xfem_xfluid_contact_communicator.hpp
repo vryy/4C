@@ -141,7 +141,7 @@ namespace XFEM
         bool& gp_on_this_proc,  // for serial run
         double* poropressure = nullptr)
     {
-      dserror("no 2D xfsi with contact");
+      FOUR_C_THROW("no 2D xfsi with contact");
       return -1.0;
     }
 

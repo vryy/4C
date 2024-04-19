@@ -75,7 +75,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
     //      // do only nodes that I have in my discretization
     //      if (!StructureField()->Discretization()->NodeColMap()->MyGID(gid)) continue;
     //      DRT::Node* node = StructureField()->Discretization()->gNode(gid);
-    //      if (!node) dserror("Cannot find node with gid %",gid);
+    //      if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
     //
     //      std::vector<int> nodedofs = StructureField()->Discretization()->Dof(node);
     //
@@ -144,7 +144,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
                 "------------+"
              << std::endl;
 
-    dserror(errormsg.str());
+    FOUR_C_THROW(errormsg.str());
   }
   // ---------------------------------------------------------------------------
 
@@ -172,51 +172,51 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
   sgiprev_ = Teuchos::null;
   sggprev_ = Teuchos::null;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether allocation was successful
   if (sggtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'sggtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'sggtransform_' failed.");
   }
   if (sgitransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'sgitransform_' failed.");
+    FOUR_C_THROW("Allocation of 'sgitransform_' failed.");
   }
   if (sigtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'sigtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'sigtransform_' failed.");
   }
   if (aigtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'aigtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'aigtransform_' failed.");
   }
   if (fmiitransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fmiitransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fmiitransform_' failed.");
   }
   if (fmgitransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fmgitransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fmgitransform_' failed.");
   }
   if (fsaigtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fsaigtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fsaigtransform_' failed.");
   }
   if (fsmgitransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fsmgitransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fsmgitransform_' failed.");
   }
   if (fscoupfa_ == Teuchos::null)
   {
-    dserror("Allocation of 'fscoupfa_' failed.");
+    FOUR_C_THROW("Allocation of 'fscoupfa_' failed.");
   }
   if (lambda_ == Teuchos::null)
   {
-    dserror("Allocation of 'lambda_' failed.");
+    FOUR_C_THROW("Allocation of 'lambda_' failed.");
   }
   if (lambdaold_ == Teuchos::null)
   {
-    dserror("Allocation of 'lambdaold_' failed.");
+    FOUR_C_THROW("Allocation of 'lambdaold_' failed.");
   }
 #endif
 
@@ -321,7 +321,7 @@ void FSI::MonolithicStructureSplit::CreateCombinedDofRowMap()
   vecSpaces.push_back(AleField()->Interface()->OtherMap());
 
   if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No inner structural equations. Splitting not possible. Panic.");
+    FOUR_C_THROW("No inner structural equations. Splitting not possible. Panic.");
 
   SetDofRowMaps(vecSpaces);
 
@@ -353,7 +353,7 @@ void FSI::MonolithicStructureSplit::SetupDBCMapExtractor()
   dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
   if (dbcmaps_ == Teuchos::null)
   {
-    dserror("Creation of FSI Dirichlet map extractor failed.");
+    FOUR_C_THROW("Creation of FSI Dirichlet map extractor failed.");
   }
 
   return;
@@ -457,14 +457,14 @@ void FSI::MonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   const Teuchos::RCP<const CORE::LINALG::BlockSparseMatrixBase> blocka =
       AleField()->BlockSystemMatrix();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (blocks == Teuchos::null)
   {
-    dserror("Expected Teuchos::rcp to structure block matrix.");
+    FOUR_C_THROW("Expected Teuchos::rcp to structure block matrix.");
   }
   if (blocka == Teuchos::null)
   {
-    dserror("Expected Teuchos::rcp to ALE block matrix.");
+    FOUR_C_THROW("Expected Teuchos::rcp to ALE block matrix.");
   }
 #endif
 
@@ -670,19 +670,19 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseM
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether allocation was successful
   if (s == Teuchos::null)
   {
-    dserror("expect structure block matrix");
+    FOUR_C_THROW("expect structure block matrix");
   }
   if (f == Teuchos::null)
   {
-    dserror("expect fluid block matrix");
+    FOUR_C_THROW("expect fluid block matrix");
   }
   if (a == Teuchos::null)
   {
-    dserror("expect ale block matrix");
+    FOUR_C_THROW("expect ale block matrix");
   }
 #endif
 
@@ -829,7 +829,7 @@ void FSI::MonolithicStructureSplit::ScaleSystem(
         mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     // do scaling of ale rows
     A = mat.Matrix(2, 2).EpetraMatrix();
@@ -842,14 +842,14 @@ void FSI::MonolithicStructureSplit::ScaleSystem(
         mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
 
     // do scaling of structure and ale rhs vectors
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -871,8 +871,8 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
     Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 2);
 
-    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("structure scaling failed");
-    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sy, 0, x);
     Extractor().InsertVector(*ay, 2, x);
@@ -880,8 +880,8 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -894,7 +894,7 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(
         mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(2, 2).EpetraMatrix();
     arowsum_->Reciprocal(*arowsum_);
@@ -904,7 +904,7 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(
         mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
   }
 
   // very simple hack just to see the linear solution
@@ -1155,10 +1155,10 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::ExtractFieldVectors");
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (ddgpred_ == Teuchos::null)
   {
-    dserror("Vector 'ddgpred_' has not been initialized properly.");
+    FOUR_C_THROW("Vector 'ddgpred_' has not been initialized properly.");
   }
 #endif
 

@@ -55,7 +55,7 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface* DRT::ELEMENTS::ScaTraHDGIntFaceImp
       return ScaTraHDGIntFaceImpl<CORE::FE::CellType::line3>::Instance();
     }
     default:
-      dserror(
+      FOUR_C_THROW(
           "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
       break;
   }

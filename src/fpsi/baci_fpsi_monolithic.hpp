@@ -215,7 +215,7 @@ namespace FPSI
     /// Recover the Lagrange multiplier at the interface   mayr.mt (03/2012)
     virtual void RecoverLagrangeMultiplier()
     {
-      dserror("RecoverLagrangeMultiplier: Not Implemented in Base Class!");
+      FOUR_C_THROW("RecoverLagrangeMultiplier: Not Implemented in Base Class!");
     }
 
     /// Extract specific columns from Sparse Matrix

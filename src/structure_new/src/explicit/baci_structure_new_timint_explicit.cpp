@@ -85,7 +85,7 @@ void STR::TIMINT::Explicit::PrepareTimeStep()
 void STR::TIMINT::Explicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   CheckInitSetup();
-  dserror(
+  FOUR_C_THROW(
       "All monolithically coupled problems work with implicit time "
       "integration schemes. Thus, calling Evaluate() in an explicit scheme "
       "is not possible.");
@@ -100,7 +100,7 @@ void STR::TIMINT::Explicit::DetermineStressStrain() { ExplInt().DetermineStressS
 void STR::TIMINT::Explicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   CheckInitSetup();
-  dserror(
+  FOUR_C_THROW(
       "All monolithically coupled problems work with implicit time "
       "integration schemes. Thus, calling Evaluate() in an explicit scheme "
       "is not possible.");
@@ -115,7 +115,7 @@ void STR::TIMINT::Explicit::Evaluate()
   ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  if (grp_ptr == nullptr) dserror("Dynamic cast failed!");
+  if (grp_ptr == nullptr) FOUR_C_THROW("Dynamic cast failed!");
 
   // you definitely have to evaluate here. You might be called from a coupled
   // problem and the group might not be aware, that a different state than
@@ -131,7 +131,7 @@ void STR::TIMINT::Explicit::Evaluate()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::SetState(const Teuchos::RCP<Epetra_Vector>& x)
 {
-  dserror(
+  FOUR_C_THROW(
       "All coupled problems work with implicit time "
       "integration schemes. Thus, calling SetState() in an explicit scheme "
       "is not considered, yet.");
@@ -166,7 +166,7 @@ void STR::TIMINT::Explicit::PreparePartitionStep()
 void STR::TIMINT::Explicit::Update(double endtime)
 {
   CheckInitSetup();
-  dserror("Not implemented. No time adaptivity available for explicit time integration.");
+  FOUR_C_THROW("Not implemented. No time adaptivity available for explicit time integration.");
 }
 
 
@@ -211,7 +211,7 @@ void STR::TIMINT::Explicit::PrintStep()
 INPAR::STR::StcScale STR::TIMINT::Explicit::GetSTCAlgo()
 {
   CheckInitSetup();
-  dserror("GetSTCAlgo() has not been tested for explicit time integration.");
+  FOUR_C_THROW("GetSTCAlgo() has not been tested for explicit time integration.");
   return INPAR::STR::stc_none;
 };
 
@@ -221,7 +221,7 @@ INPAR::STR::StcScale STR::TIMINT::Explicit::GetSTCAlgo()
 Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::Explicit::GetSTCMat()
 {
   CheckInitSetup();
-  dserror("GetSTCMat() has not been tested for explicit time integration.");
+  FOUR_C_THROW("GetSTCMat() has not been tested for explicit time integration.");
   return Teuchos::null;
 };
 
@@ -230,7 +230,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::Explicit::GetSTCMat()
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Explicit::Integrate()
 {
-  dserror(
+  FOUR_C_THROW(
       "The function is unused since the ADAPTER::StructureTimeLoop "
       "wrapper gives you all the flexibility you need.");
   return 0;
@@ -255,7 +255,7 @@ int STR::TIMINT::Explicit::IntegrateStep()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::InitialGuess()
 {
-  dserror("InitialGuess() is not available for explicit time integration");
+  FOUR_C_THROW("InitialGuess() is not available for explicit time integration");
   return Teuchos::null;
 }
 
@@ -264,7 +264,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::InitialGuess()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::GetF() const
 {
-  dserror("RHS() is not available for explicit time integration");
+  FOUR_C_THROW("RHS() is not available for explicit time integration");
   return Teuchos::null;
 }
 
@@ -274,7 +274,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::GetF() const
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::Explicit::Freact()
 {
   CheckInitSetup();
-  dserror("Not implemented!");
+  FOUR_C_THROW("Not implemented!");
   return Teuchos::null;
 }
 
@@ -283,7 +283,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::Explicit::Freact()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::Explicit::SystemMatrix()
 {
-  dserror("SystemMatrix() is not available for explicit time integration");
+  FOUR_C_THROW("SystemMatrix() is not available for explicit time integration");
   return Teuchos::null;
 }
 
@@ -292,7 +292,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::Explicit::SystemMatrix()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> STR::TIMINT::Explicit::BlockSystemMatrix()
 {
-  dserror("BlockSystemMatrix() is not available for explicit time integration");
+  FOUR_C_THROW("BlockSystemMatrix() is not available for explicit time integration");
   return Teuchos::null;
 }
 
@@ -303,7 +303,7 @@ void STR::TIMINT::Explicit::UseBlockMatrix(
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {
-  dserror("UseBlockMatrix() is not available for explicit time integration");
+  FOUR_C_THROW("UseBlockMatrix() is not available for explicit time integration");
 }
 ///@}
 

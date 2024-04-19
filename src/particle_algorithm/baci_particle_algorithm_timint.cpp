@@ -171,13 +171,14 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
 
   // safety check
   if (static_cast<int>(amplitude.size()) != 3)
-    dserror("dimension (dim = %d) of initial position amplitude vector is wrong!",
+    FOUR_C_THROW("dimension (dim = %d) of initial position amplitude vector is wrong!",
         static_cast<int>(amplitude.size()));
 
   // safety check
   for (double a : amplitude)
     if (a < 0.0)
-      dserror("no negative initial position amplitude allowed (set a positive or zero value)!");
+      FOUR_C_THROW(
+          "no negative initial position amplitude allowed (set a positive or zero value)!");
 
   // get magnitude of initial position amplitude
   double temp = 0.0;
@@ -190,7 +191,8 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
   // safety check
   const double max_amplitude = *std::max_element(amplitude.begin(), amplitude.end());
   if (max_amplitude > particleengineinterface_->MinBinSize())
-    dserror("amplitude of noise added to initial position larger than minimum relevant bin size!");
+    FOUR_C_THROW(
+        "amplitude of noise added to initial position larger than minimum relevant bin size!");
 
   // get particle container bundle
   PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle =
@@ -259,7 +261,7 @@ void PARTICLEALGORITHM::TimIntSemiImplicitEuler::Setup(
     // safety check
     if (container->HaveStoredState(PARTICLEENGINE::ModifiedVelocity) or
         container->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration))
-      dserror(
+      FOUR_C_THROW(
           "modified velocity and acceleration states not implemented yet for semi-implicit Euler "
           "time integration scheme!");
   }

@@ -84,7 +84,7 @@ void LOMA::Algorithm::Init()
 
   // check scatra solver type, which should be incremental, for the time being
   if (not ScaTraField()->IsIncremental())
-    dserror("Incremental ScaTra formulation required for low-Mach-number flow");
+    FOUR_C_THROW("Incremental ScaTra formulation required for low-Mach-number flow");
 
   // flag for turbulent inflow
   turbinflow_ =
@@ -107,9 +107,9 @@ void LOMA::Algorithm::Init()
     }
 
     if (special_flow_ != "loma_backward_facing_step")
-      dserror("Turbulent inflow generation only for backward-facing step!");
+      FOUR_C_THROW("Turbulent inflow generation only for backward-facing step!");
     if (consthermpress_ != "Yes")
-      dserror("Constant thermodynamic pressure in main problem domain!");
+      FOUR_C_THROW("Constant thermodynamic pressure in main problem domain!");
   }
 }
 
@@ -128,14 +128,14 @@ void LOMA::Algorithm::Setup()
   {
     // check whether turbulent inflow is included,
     // which is currently not possible for monolithic solver
-    if (turbinflow_) dserror("No turbulent inflow for monolithic low-Mach-number solver");
+    if (turbinflow_) FOUR_C_THROW("No turbulent inflow for monolithic low-Mach-number solver");
 
     // check whether (fluid) linearization scheme is a fixed-point-like scheme,
     // which is the only one enabled for monolithic solver, for the time being
     INPAR::FLUID::LinearisationAction linearization =
         CORE::UTILS::IntegralValue<INPAR::FLUID::LinearisationAction>(fluiddyn, "NONLINITER");
     if (linearization != INPAR::FLUID::fixed_point_like)
-      dserror(
+      FOUR_C_THROW(
           "Only a fixed-point-like iteration scheme is enabled for monolithic low-Mach-number "
           "solver, for the time being!");
 
@@ -145,7 +145,7 @@ void LOMA::Algorithm::Setup()
 
     // check number of dof sets in respective fields
     if (FluidField()->Discretization()->AddDofSet(scatradofset) != 1)
-      dserror("Incorrect number of dof sets in fluid field!");
+      FOUR_C_THROW("Incorrect number of dof sets in fluid field!");
 
     // create combined map for loma problem
     std::vector<Teuchos::RCP<const Epetra_Map>> dofrowmaps;
@@ -158,8 +158,8 @@ void LOMA::Algorithm::Setup()
     }
 
     // check existence of elements
-    if (dofrowmaps[0]->NumGlobalElements() == 0) dserror("No fluid elements!");
-    if (dofrowmaps[1]->NumGlobalElements() == 0) dserror("No scatra elements!");
+    if (dofrowmaps[0]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid elements!");
+    if (dofrowmaps[1]->NumGlobalElements() == 0) FOUR_C_THROW("No scatra elements!");
 
     Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(dofrowmaps);
 
@@ -170,7 +170,7 @@ void LOMA::Algorithm::Setup()
     const int linsolvernumber = probdyn_.get<int>("LINEAR_SOLVER");
     // check if LOMA solvers has a valid number
     if (linsolvernumber == (-1))
-      dserror(
+      FOUR_C_THROW(
           "no linear solver defined for LOMA. Please set LINEAR_SOLVER in LOMA CONTROL to a valid "
           "number! This solver has to be an iterative solver with BGS2x2 block preconditioner.");
 
@@ -183,7 +183,7 @@ void LOMA::Algorithm::Setup()
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(lomasolverparams, "SOLVER");
 
     if (solvertype != INPAR::SOLVER::SolverType::belos)
-      dserror(
+      FOUR_C_THROW(
           "SOLVER %i is not valid for LOMA. It has to be an iterative Solver (with BGS2x2 block "
           "preconditioner)",
           linsolvernumber);
@@ -191,7 +191,7 @@ void LOMA::Algorithm::Setup()
     const auto azprectype =
         Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(lomasolverparams, "AZPREC");
     if (azprectype != INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)
-      dserror(
+      FOUR_C_THROW(
           "SOLVER %i is not valid for LOMA. It has to be an iterative Solver with BGS2x2 block "
           "preconditioner",
           linsolvernumber);
@@ -203,7 +203,7 @@ void LOMA::Algorithm::Setup()
     // todo extract ScalarTransportFluidSolver
     const int fluidsolver = fluiddyn.get<int>("LINEAR_SOLVER");
     if (fluidsolver == (-1))
-      dserror(
+      FOUR_C_THROW(
           "no linear solver defined for fluid LOMA (inflow) problem. Please set LINEAR_SOLVER in "
           "FLUID DYNAMIC to a valid number! This solver block is used for the primary variables "
           "(Inverse1 block) within BGS2x2 preconditioner.");
@@ -216,7 +216,7 @@ void LOMA::Algorithm::Setup()
         GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
     const int scalartransportsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
     if (scalartransportsolvernumber == (-1))
-      dserror(
+      FOUR_C_THROW(
           "no linear solver defined for LOMA problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT "
           "DYNAMIC to a valid number! This solver block is used for the secondary variables "
           "(Inverse2 block) within BGS2x2 preconditioner.");
@@ -553,7 +553,7 @@ void LOMA::Algorithm::SetFluidValuesInScaTra()
     }
     break;
     default:
-      dserror("Time integration scheme not supported");
+      FOUR_C_THROW("Time integration scheme not supported");
       break;
   }
   return;
@@ -599,7 +599,7 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
     }
     break;
     default:
-      dserror("Time integration scheme not supported");
+      FOUR_C_THROW("Time integration scheme not supported");
       break;
   }
   return;
@@ -729,7 +729,7 @@ void LOMA::Algorithm::EvaluateLomaODBlockMatFluid(Teuchos::RCP<CORE::LINALG::Spa
     FluidField()->Discretization()->SetState(0, "velaf", FluidField()->Velnp());
   }
   else
-    dserror("Time integration scheme not supported");
+    FOUR_C_THROW("Time integration scheme not supported");
 
   // build specific assemble strategy for this off-diagonal matrix block,
   // which is assembled in fluid solver

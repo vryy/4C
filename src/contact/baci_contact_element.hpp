@@ -137,7 +137,7 @@ namespace CONTACT
      and parameters from some control routine in params and evaluates element matrices and
      vectors accoring to the command in params.
 
-     \note This class implements a dummy of this method that prints a dserror and
+     \note This class implements a dummy of this method that prints a FOUR_C_THROW and
      returns false.
 
      \param params (in/out)    : ParameterList for communication between control routine
@@ -229,7 +229,7 @@ namespace CONTACT
      */
     CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetDderiv()
     {
-      if (dMatrixDeriv_ == Teuchos::null) dserror("trying to get Dderiv, but not initialized");
+      if (dMatrixDeriv_ == Teuchos::null) FOUR_C_THROW("trying to get Dderiv, but not initialized");
       return *dMatrixDeriv_;
     }
 
@@ -238,7 +238,7 @@ namespace CONTACT
      */
     CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetMderiv()
     {
-      if (mMatrixDeriv_ == Teuchos::null) dserror("trying to get Mderiv, but not initialized");
+      if (mMatrixDeriv_ == Teuchos::null) FOUR_C_THROW("trying to get Mderiv, but not initialized");
       return *mMatrixDeriv_;
     }
 

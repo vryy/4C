@@ -333,13 +333,13 @@ namespace IMMERSED
     //! check if \ref Setup() was called
     void CheckIsSetup()
     {
-      if (not IsSetup()) dserror("Setup() was not called.");
+      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! check if \ref Init() was called
     void CheckIsInit()
     {
-      if (not IsInit()) dserror("Init(...) was not called.");
+      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    protected:
@@ -718,18 +718,18 @@ namespace IMMERSED
               std::cout << "WARNING !! Immersed point is lying on element edge! validsource="
                         << validsource << "for eleid=" << sourceele->Id() << std::endl;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
               if (abs(scalarproduct) < 1e-13 and validsource)
               {
                 std::cout << "scalarproduct = " << scalarproduct << std::endl;
-                dserror(
+                FOUR_C_THROW(
                     "normal vec and vec from point to node perpendicular.\n"
                     "no robust determination of outward lying src ele possible");
               }
               if (abs(scalarproduct) < -1e-12 and validsource)
               {
                 std::cout << "scalarproduct = " << scalarproduct << std::endl;
-                dserror(
+                FOUR_C_THROW(
                     "normal vec and vec from point to node have no sharp angle.\n"
                     "no robust determination of outward laying src ele possible");
               }
@@ -839,7 +839,7 @@ namespace IMMERSED
         int from = -1;
         exporter.ReceiveAny(from, tag, rdata, length);
         if (tag != 1234 or from != fromrank)
-          dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
+          FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
               myrank, from, myrank);
 
         // ---- unpack data -----
@@ -871,15 +871,15 @@ namespace IMMERSED
         {
           std::cout << "target position = [" << xvec[0] << " " << xvec[1] << " " << xvec[2] << "]"
                     << std::endl;
-          dserror("could not match given point on any proc. Element(0)=%f", (*vectofill)(0));
+          FOUR_C_THROW("could not match given point on any proc. Element(0)=%f", (*vectofill)(0));
         }
       }
 
     }  // end for irobin
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (owner != comm.MyPID())
-      dserror("after round robin every proc should have recieved his original data");
+      FOUR_C_THROW("after round robin every proc should have recieved his original data");
 #endif
 
     // now every proc should store the requested quantities in vectofill for his targetxi
@@ -1167,7 +1167,7 @@ namespace IMMERSED
         int from = -1;
         exporter.ReceiveAny(from, tag, rdata, length);
         if (tag != 1234 or from != fromrank)
-          dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
+          FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
               myrank, from, myrank);
 
         // ---- unpack data -----
@@ -1192,9 +1192,9 @@ namespace IMMERSED
 
     }  // end for irobin
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (owner != comm.MyPID())
-      dserror("after round robin every proc should have recieved his original data");
+      FOUR_C_THROW("after round robin every proc should have recieved his original data");
 #endif
 
     // now every proc should store the requested quantities in vectofill for his targetxi
@@ -1573,7 +1573,7 @@ namespace IMMERSED
         int from = -1;
         exporter.ReceiveAny(from, tag, rdata, length);
         if (tag != 1234 or from != fromrank)
-          dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
+          FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
               myrank, from, myrank);
 
         // ---- unpack data -----
@@ -1598,9 +1598,9 @@ namespace IMMERSED
 
     }  // loop over all procs
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (owner != comm.MyPID())
-      dserror("after round robin every proc should have received his original data");
+      FOUR_C_THROW("after round robin every proc should have received his original data");
 #endif
 
     // now every proc should store the requested quantities in velnp_at_struct_point for his fluidxi

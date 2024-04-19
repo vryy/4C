@@ -407,16 +407,16 @@ void SSI::MeshtyingStrategyBase::FinalizeMeshtyingStructureMatrix(
   {
     // extract global ID of current slave-side row
     const int dofgid_slave = slavemaps->GID(doflid_slave);
-    if (dofgid_slave < 0) dserror("Local ID not found!");
+    if (dofgid_slave < 0) FOUR_C_THROW("Local ID not found!");
 
     // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column indices
     if (ssi_structure_matrix.Filled())
     {
       const int rowlid_slave = ssi_structure_matrix.RowMap().LID(dofgid_slave);
-      if (rowlid_slave < 0) dserror("Global ID not found!");
+      if (rowlid_slave < 0) FOUR_C_THROW("Global ID not found!");
       if (ssi_structure_matrix.EpetraMatrix()->ReplaceMyValues(
               rowlid_slave, 1, &one, &rowlid_slave))
-        dserror("ReplaceMyValues failed!");
+        FOUR_C_THROW("ReplaceMyValues failed!");
     }
 
     // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and column indices
@@ -451,7 +451,7 @@ Teuchos::RCP<SSI::MeshtyingStrategyBase> SSI::BuildMeshtyingStrategy(const bool 
 
     default:
     {
-      dserror("unknown matrix type of ScaTra field");
+      FOUR_C_THROW("unknown matrix type of ScaTra field");
       break;
     }
   }

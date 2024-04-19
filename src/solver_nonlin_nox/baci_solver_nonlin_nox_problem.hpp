@@ -89,7 +89,7 @@ namespace NOX
       inline void CheckInit() const
       {
         if (not isinit_)
-          dserror(
+          FOUR_C_THROW(
               "You have to call Initialize() first, before you can use this"
               " function!");
       }

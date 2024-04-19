@@ -119,7 +119,7 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
       break;
     }
     default:
-      dserror("Unknown solutiontype for poroelasticity: %d", coupling);
+      FOUR_C_THROW("Unknown solutiontype for poroelasticity: %d", coupling);
       break;
   }
 
@@ -216,12 +216,12 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
       int gid = ielecolmap->GID(i);
 
       DRT::Element* ele = idiscret.gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+      if (!ele) FOUR_C_THROW("ERROR: Cannot find element with gid %", gid);
       auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
 
       int volgid = 0;
       if (!faceele)
-        dserror("Cast to FaceElement failed!");
+        FOUR_C_THROW("Cast to FaceElement failed!");
       else
         volgid = faceele->ParentElementId();
 
@@ -265,11 +265,11 @@ void POROELAST::UTILS::ReconnectParentPointers(DRT::Discretization& idiscret,
     int gid = ielecolmap->GID(i);
 
     DRT::Element* ele = idiscret.gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+    if (!ele) FOUR_C_THROW("ERROR: Cannot find element with gid %", gid);
 
     auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
 
-    if (!faceele) dserror("Cast to FaceElement failed!");
+    if (!faceele) FOUR_C_THROW("Cast to FaceElement failed!");
     SetSlaveAndMaster(voldiscret, voldiscret2, elecolmap, faceele);
   }
 }
@@ -280,10 +280,10 @@ void POROELAST::UTILS::SetSlaveAndMaster(const DRT::Discretization& voldiscret,
   int volgid = faceele->ParentElementId();
 
   if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
-    dserror("CreateVolumeGhosting: Element %d does not exist on this Proc!", volgid);
+    FOUR_C_THROW("CreateVolumeGhosting: Element %d does not exist on this Proc!", volgid);
 
   DRT::Element* vele = voldiscret.gElement(volgid);
-  if (!vele) dserror("ERROR: Cannot find element with gid %", volgid);
+  if (!vele) FOUR_C_THROW("ERROR: Cannot find element with gid %", volgid);
   faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
 
   if (voldiscret2)
@@ -294,7 +294,7 @@ void POROELAST::UTILS::SetSlaveAndMaster(const DRT::Discretization& voldiscret,
     else
     {
       vele = voldiscret2->gElement(volgid);
-      if (!vele) dserror("ERROR: Cannot find element with gid %", volgid);
+      if (!vele) FOUR_C_THROW("ERROR: Cannot find element with gid %", volgid);
       faceele->SetParentSlaveElement(vele, faceele->FaceParentNumber());
     }
   }
@@ -370,7 +370,7 @@ double POROELAST::UTILS::CalculateVectorNorm(
   }
   else
   {
-    dserror("Cannot handle vector norm");
+    FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
 }
@@ -418,7 +418,7 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
   }
   else
   {
-    dserror("ERROR: Unsupported element type '%s'", typeid(*ele2).name());
+    FOUR_C_THROW("ERROR: Unsupported element type '%s'", typeid(*ele2).name());
   }
 }
 
@@ -469,11 +469,11 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
       fluid->SetKinematicType(so_base->KinematicType());
     }
     else
-      dserror("ERROR: ele1 is not a solid element");
+      FOUR_C_THROW("ERROR: ele1 is not a solid element");
   }
   else
   {
-    dserror("ERROR: Unsupported element type '%s'", typeid(*ele2).name());
+    FOUR_C_THROW("ERROR: Unsupported element type '%s'", typeid(*ele2).name());
   }
 }
 

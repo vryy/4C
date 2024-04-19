@@ -601,7 +601,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<Strategy>> CORE::LINALG::SparseMatr
   else if (domainmaps.NumMaps() > 0 && rangemaps.NumMaps() > 0)
     this->SplitMxN(*blockA);
   else
-    dserror("Invalid number %d of row blocks or %d of column blocks for splitting operation!",
+    FOUR_C_THROW("Invalid number %d of row blocks or %d of column blocks for splitting operation!",
         rangemaps.NumMaps(), domainmaps.NumMaps());
 
   // return resulting BlockSparseMatrix

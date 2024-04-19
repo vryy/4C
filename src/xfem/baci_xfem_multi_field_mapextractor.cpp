@@ -107,7 +107,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
 
   // sanity check
   if (dis_vec.size() < 2)
-    dserror(
+    FOUR_C_THROW(
         "You gave less than 2 discretizations. What are you planning "
         "to do? Seems as you are wrong here...");
 
@@ -167,7 +167,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
       {
         std::pair<std::set<int>::iterator, bool> is_unique = my_coupled_sl_dis[*ngid].insert(d);
         if (not is_unique.second)
-          dserror(
+          FOUR_C_THROW(
               "That is impossible, since this row node cannot be part of the "
               "same discretization on one single processor more than once!");
       }
@@ -242,7 +242,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
       // make sure that you do not think you received something if
       // you didn't
       if (not receivedset.empty() or not receivedgid.empty() or not receivedsize.empty())
-        dserror("Received data objects are not empty!");
+        FOUR_C_THROW("Received data objects are not empty!");
 
       // receive from predecessor
       frompid = (myrank + numprocs - 1) % numprocs;
@@ -251,7 +251,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
       int length = 0;
       exporter.ReceiveAny(frompid, tag, receivedsize, length);
       if (length != 2 or tag != frompid)
-        dserror(
+        FOUR_C_THROW(
             "Size information got mixed up!\n"
             "Received length = %d, Expected length = %d \n"
             "Received tag    = %d, Expected tag    = %d",
@@ -262,7 +262,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
       // receive the gids
       exporter.ReceiveAny(frompid, tag, receivedgid, length);
       if (length != receivedsize[0] or tag != frompid * 10)
-        dserror(
+        FOUR_C_THROW(
             "GID information got mixed up! \n"
             "Received length = %d, Expected length = %d \n"
             "Received tag    = %d, Expected tag    = %d",
@@ -273,7 +273,7 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
       // receive the sets
       exporter.ReceiveAny(frompid, tag, receivedset, length);
       if (length != receivedsize[1] or tag != frompid * 100)
-        dserror(
+        FOUR_C_THROW(
             "Set information got mixed up! \n"
             "Received length = %d, Expected length = %d \n"
             "Received tag    = %d, Expected tag    = %d",
@@ -558,7 +558,7 @@ void XFEM::MultiFieldMapExtractor::BuildInterfaceCouplingDofSet()
     if (g_num_std_dof == -1) Comm().MaxAll(&my_num_std_dof, &g_num_std_dof, 1);
 
     if (my_num_std_dof != -1 and g_num_std_dof != my_num_std_dof)
-      dserror(
+      FOUR_C_THROW(
           "The number of standard DoF's is not equal on all procs"
           "and discretizations!");
 
@@ -583,7 +583,7 @@ void XFEM::MultiFieldMapExtractor::BuildInterfaceCouplingDofSet()
   }
 
   // get the node index range over all procs
-  if (g_interface_node_gid_set_.empty()) dserror("set of global nodes is empty?!");
+  if (g_interface_node_gid_set_.empty()) FOUR_C_THROW("set of global nodes is empty?!");
   const int min_all_gid = *(g_interface_node_gid_set_.begin());
   const int max_all_gid = *(g_interface_node_gid_set_.rbegin());
 
@@ -755,7 +755,8 @@ Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::ExtractVector(
    * the field slave map extractor */
   const Teuchos::RCP<const Epetra_Map>& sl_full_map = SlMapExtractor(dis_id, map_type).FullMap();
 
-  if (sl_full_map.is_null()) dserror("null full map for field %s", FieldName2String(field).c_str());
+  if (sl_full_map.is_null())
+    FOUR_C_THROW("null full map for field %s", FieldName2String(field).c_str());
 
   // create a new vector
   Teuchos::RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*sl_full_map));
@@ -777,7 +778,8 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::MultiFieldMapExtractor::ExtractVector(
    * the field slave map extractor */
   const Teuchos::RCP<const Epetra_Map>& sl_full_map = SlMapExtractor(dis_id, map_type).FullMap();
 
-  if (sl_full_map.is_null()) dserror("null full map for field %s", FieldName2String(field).c_str());
+  if (sl_full_map.is_null())
+    FOUR_C_THROW("null full map for field %s", FieldName2String(field).c_str());
 
   // create a new multi vector
   Teuchos::RCP<Epetra_MultiVector> vec =
@@ -926,7 +928,7 @@ void XFEM::MultiFieldMapExtractor::BuildSlaveDiscretIdMap()
     else if (name == "xstructure")
       slave_discret_id_map_[xstructure] = dis_count;
     else
-      dserror("Unknown field discretization name \"%s\"!", name.c_str());
+      FOUR_C_THROW("Unknown field discretization name \"%s\"!", name.c_str());
     // increase counter
     ++dis_count;
   }
@@ -952,7 +954,7 @@ int XFEM::MultiFieldMapExtractor::SlaveId(enum FieldName field) const
 {
   std::map<enum FieldName, int>::const_iterator cit = slave_discret_id_map_.find(field);
   if (cit == slave_discret_id_map_.end())
-    dserror("The slave field \"%s\" could not be found!", FieldName2String(field).c_str());
+    FOUR_C_THROW("The slave field \"%s\" could not be found!", FieldName2String(field).c_str());
 
   return cit->second;
 }
@@ -1071,7 +1073,7 @@ Teuchos::RCP<const Epetra_Map> XFEM::MultiFieldMapExtractor::NodeRowMap(
       break;
     }
     default:
-      dserror("Unknown block type!");
+      FOUR_C_THROW("Unknown block type!");
       exit(EXIT_FAILURE);
   }
   // hoops, shouldn't happen ...
@@ -1085,12 +1087,12 @@ void XFEM::MultiFieldMapExtractor::AddMatrix(const CORE::LINALG::SparseOperator&
 {
   const CORE::LINALG::BlockSparseMatrixBase* block_mat =
       dynamic_cast<const CORE::LINALG::BlockSparseMatrixBase*>(&partial_mat);
-  if (not block_mat) dserror("The partial matrix must be a  CORE::LINALG::BlockSparseMatrix!");
+  if (not block_mat) FOUR_C_THROW("The partial matrix must be a  CORE::LINALG::BlockSparseMatrix!");
   if (block_mat->Rows() != 2 or block_mat->Cols() != 2)
-    dserror("We support only 2x2 block matrices!");
+    FOUR_C_THROW("We support only 2x2 block matrices!");
 
   CORE::LINALG::SparseMatrix* sp_mat = dynamic_cast<CORE::LINALG::SparseMatrix*>(&full_mat);
-  if (not sp_mat) dserror("The full matrix must be a CORE::LINALG::SparseMatrix!");
+  if (not sp_mat) FOUR_C_THROW("The full matrix must be a CORE::LINALG::SparseMatrix!");
 
   AddMatrix(*block_mat, block, *sp_mat, scale);
 }

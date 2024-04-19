@@ -86,7 +86,7 @@ void SCATRA::MeshtyingStrategyStd::Solve(
  *-------------------------------------------------------------------------*/
 const CORE::LINALG::Solver& SCATRA::MeshtyingStrategyStd::Solver() const
 {
-  if (scatratimint_->Solver() == Teuchos::null) dserror("Invalid linear solver!");
+  if (scatratimint_->Solver() == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
   return *scatratimint_->Solver();
 }  // SCATRA::MeshtyingStrategyStd::Solver()
 

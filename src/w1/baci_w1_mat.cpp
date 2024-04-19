@@ -139,7 +139,7 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
 
         default:
         {
-          dserror("Only plane strain and plane stress options exist for wtype_");
+          FOUR_C_THROW("Only plane strain and plane stress options exist for wtype_");
           break;
         }
       }  // switch(wtype_)
@@ -179,7 +179,7 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
 
     default:
     {
-      dserror("Invalid type of material law for wall element");
+      FOUR_C_THROW("Invalid type of material law for wall element");
       break;
     }
   }  // switch(material->MaterialType())
@@ -267,7 +267,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(CORE::LINALG::SerialDenseMatr
     // check if convergence was reached
     if ((i >= n) and (pserr > tol))
     {
-      dserror("Failed to identify plane stress solution");
+      FOUR_C_THROW("Failed to identify plane stress solution");
     }
     else
     {
@@ -305,7 +305,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(CORE::LINALG::SerialDenseMatr
   }
   else
   {
-    dserror("Dimension reduction type wtype_=%d is not available.", wtype_);
+    FOUR_C_THROW("Dimension reduction type wtype_=%d is not available.", wtype_);
   }
 
   // transform 2nd Piola--Kirchhoff stress back to 2d stress matrix
@@ -405,13 +405,13 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> ma
     break;
     default:
     {
-      dserror("Illegal type of material for this element");
+      FOUR_C_THROW("Illegal type of material for this element");
       return 0.0;
     }
     break;
   }  // end of switch (material->MaterialType())
 
-  dserror(
+  FOUR_C_THROW(
       "You should never end up here, since all possible cases should be "
       "covered by the material selection.");
 

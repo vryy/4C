@@ -28,7 +28,7 @@ namespace MAT
     // REMARK: since incompressibility (J=1) is assumed principal and modified invariants are equal
     // no transformation between principal and modified invariants needed below
     if (prinv(2) != 1.0)
-      dserror("Incompressibility assumption not fulfilled in membrane hyperelastic material!");
+      FOUR_C_THROW("Incompressibility assumption not fulfilled in membrane hyperelastic material!");
 
     // derivatives of principal materials
     if (properties.isoprinc)

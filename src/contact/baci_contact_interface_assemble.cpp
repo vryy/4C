@@ -30,7 +30,7 @@ void CONTACT::Interface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod)
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     int dim = cnode->NumDof();
@@ -65,7 +65,7 @@ void CONTACT::Interface::AssembleRegNormalForces(bool& localisincontact, bool& l
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     int dim = cnode->NumDof();
@@ -204,7 +204,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // get some informatiom form the node
@@ -246,7 +246,7 @@ void CONTACT::Interface::AssembleRegTangentForcesPenalty()
       tanplane(1, 1) = 1 - (n[1] * n[1]);
     }
     else
-      dserror("Error in AssembleTangentForces: Unknown dimension.");
+      FOUR_C_THROW("Error in AssembleTangentForces: Unknown dimension.");
 
     // evaluate traction
     CORE::LINALG::SerialDenseMatrix jumpvec(numdof, 1);
@@ -560,7 +560,7 @@ void CONTACT::Interface::AssembleRegTangentForcesUzawa()
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // get some informatiom form the node
@@ -601,7 +601,7 @@ void CONTACT::Interface::AssembleRegTangentForcesUzawa()
       tanplane(1, 1) = 1 - (n[1] * n[1]);
     }
     else
-      dserror("Error in AssembleTangentForces: Unknown dimension.");
+      FOUR_C_THROW("Error in AssembleTangentForces: Unknown dimension.");
 
     // Lagrange multiplier in tangential direction
     CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
@@ -917,10 +917,11 @@ void CONTACT::Interface::AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleLinZ: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID())
+      FOUR_C_THROW("AssembleLinZ: Node ownership inconsistency!");
 
     // derivz is the std::vector<map> we want to assemble
     std::vector<std::map<int, double>>& derivz = cnode->Data().GetDerivZ();
@@ -933,7 +934,7 @@ void CONTACT::Interface::AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal)
       // consistency check
       for (int j = 0; j < rowsize - 1; ++j)
         if ((int)derivz[j].size() != (int)derivz[j + 1].size())
-          dserror("AssembleLinZ: Column dim. of nodal derivz-map is inconsistent!");
+          FOUR_C_THROW("AssembleLinZ: Column dim. of nodal derivz-map is inconsistent!");
 
       std::map<int, double>::iterator colcurr;
 
@@ -953,7 +954,7 @@ void CONTACT::Interface::AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal)
           l++;
         }
 
-        if (l != colsize) dserror("AssembleLinZ: l = %i but colsize = %i", k, colsize);
+        if (l != colsize) FOUR_C_THROW("AssembleLinZ: l = %i but colsize = %i", k, colsize);
       }
     }
   }
@@ -970,18 +971,18 @@ void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tgl
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
-  if (Dim() != 2 && Dim() != 3) dserror("Dim() must be either 2 or 3!");
+  if (Dim() != 2 && Dim() != 3) FOUR_C_THROW("Dim() must be either 2 or 3!");
 
   // loop over all active slave nodes of the interface
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* cnode = dynamic_cast<Node*>(node);
     const int numdof = cnode->NumDof();
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleTN: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) FOUR_C_THROW("AssembleTN: Node ownership inconsistency!");
 
     if (tglobal != Teuchos::null)
     {
@@ -1029,7 +1030,7 @@ void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tgl
           tglobal->Assemble(-1, Tnode, lmrowT, lmrowownerT, lmcol);
         }
         else
-          dserror("Dim() must be either 2D or 3D");
+          FOUR_C_THROW("Dim() must be either 2D or 3D");
       }
       else
       {
@@ -1084,7 +1085,7 @@ void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tgl
           tglobal->Assemble(-1, Tnode, lmrowT, lmrowownerT, lmcol);
         }
         else
-          dserror("Dim() must be either 2D or 3D");
+          FOUR_C_THROW("Dim() must be either 2D or 3D");
       }
     }
 
@@ -1118,10 +1119,10 @@ void CONTACT::Interface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleS: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) FOUR_C_THROW("AssembleS: Node ownership inconsistency!");
 
     // prepare assembly
     std::map<int, double>& dgmap = cnode->Data().GetDerivG();
@@ -1155,18 +1156,18 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
-  if (Dim() != 2 && Dim() != 3) dserror("Dim() must be either 2 or 3!");
+  if (Dim() != 2 && Dim() != 3) FOUR_C_THROW("Dim() must be either 2 or 3!");
 
   // loop over all active slave nodes of the interface
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID())  // move this check into debug?
-      dserror("AssembleTNderiv: Node ownership inconsistency!");
+      FOUR_C_THROW("AssembleTNderiv: Node ownership inconsistency!");
 
     if (tderivglobal != Teuchos::null)  // assemble tangential derivs?
     {
@@ -1189,7 +1190,7 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
           {
             std::cout << "size j = " << dtmap[j].size() << "   size j+1 = " << dtmap[j + 1].size()
                       << std::endl;
-            dserror("AssembleTNderiv: Column dim. of nodal DerivT-map is inconsistent!");
+            FOUR_C_THROW("AssembleTNderiv: Column dim. of nodal DerivT-map is inconsistent!");
           }
 
         // begin assembly of Tderiv-matrix
@@ -1234,7 +1235,7 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
             ++k;
           }
 
-          if (k != colsize) dserror("AssembleTNderiv: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) FOUR_C_THROW("AssembleTNderiv: k = %i but colsize = %i", k, colsize);
         }
       }
     }
@@ -1253,7 +1254,7 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
 
       for (int j = 0; j < mapsize - 1; ++j)  // move this check into debug?
         if ((int)dnmap[j].size() != (int)dnmap[j + 1].size())
-          dserror("AssembleTNderiv: Column dim. of nodal DerivN-map is inconsistent!");
+          FOUR_C_THROW("AssembleTNderiv: Column dim. of nodal DerivN-map is inconsistent!");
 
       // loop over all derivative maps (=dimensions)
       for (int j = 0; j < mapsize; ++j)
@@ -1283,7 +1284,7 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
           ++k;
         }
 
-        if (k != colsize) dserror("AssembleTNderiv: k = %i but colsize = %i", k, colsize);
+        if (k != colsize) FOUR_C_THROW("AssembleTNderiv: k = %i but colsize = %i", k, colsize);
       }
     }
 
@@ -1311,7 +1312,7 @@ void CONTACT::Interface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bo
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     int dim = cnode->NumDof();
 
@@ -1337,7 +1338,7 @@ void CONTACT::Interface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bo
       ++scurr;
 
       DRT::Node* snode = idiscret_->gNode(sgid);
-      if (!snode) dserror("Cannot find node with gid %", sgid);
+      if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       Node* csnode = dynamic_cast<Node*>(snode);
 
       // Mortar matrix D derivatives
@@ -1366,13 +1367,13 @@ void CONTACT::Interface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bo
 
         // check for completeness of DerivD-Derivatives-iteration
         if (scolcurr != thisdderiv.end())
-          dserror("AssembleLinDM: Not all derivative entries of DerivD considered!");
+          FOUR_C_THROW("AssembleLinDM: Not all derivative entries of DerivD considered!");
       }
     }
 
     // check for completeness of DerivD-Slave-iteration
     if (scurr != dderiv.end())
-      dserror("AssembleLinDM: Not all DISP slave entries of DerivD considered!");
+      FOUR_C_THROW("AssembleLinDM: Not all DISP slave entries of DerivD considered!");
     /******************************** Finished with LinDMatrix **********/
   }
 
@@ -1399,7 +1400,7 @@ void CONTACT::Interface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bo
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     int dim = cnode->NumDof();
 
@@ -1425,7 +1426,7 @@ void CONTACT::Interface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bo
       ++mcurr;
 
       DRT::Node* mnode = idiscret_->gNode(mgid);
-      if (!mnode) dserror("Cannot find node with gid %", mgid);
+      if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
       Node* cmnode = dynamic_cast<Node*>(mnode);
 
       // Mortar matrix M derivatives
@@ -1454,13 +1455,13 @@ void CONTACT::Interface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bo
 
         // check for completeness of DerivM-Derivatives-iteration
         if (mcolcurr != thismderiv.end())
-          dserror("AssembleLinDM: Not all derivative entries of DerivM considered!");
+          FOUR_C_THROW("AssembleLinDM: Not all derivative entries of DerivM considered!");
       }
     }
 
     // check for completeness of DerivM-Master-iteration
     if (mcurr != mderiv.end())
-      dserror("AssembleLinDM: Not all master entries of DerivM considered!");
+      FOUR_C_THROW("AssembleLinDM: Not all master entries of DerivM considered!");
     /******************************** Finished with LinMMatrix **********/
   }
 
@@ -1493,10 +1494,10 @@ void CONTACT::Interface::AssembleG(Epetra_Vector& gglobal)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleG: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) FOUR_C_THROW("AssembleG: Node ownership inconsistency!");
 
     /**************************************************** g-vector ******/
     if (cnode->Data().Getg() != 0.0)
@@ -1591,11 +1592,11 @@ void CONTACT::Interface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
   {
     int gid = inactivenodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("AssembleInactiverhs: Node ownership inconsistency!");
+      FOUR_C_THROW("AssembleInactiverhs: Node ownership inconsistency!");
     if (Dim() == 2)
     {
       // calculate the tangential rhs
@@ -1639,10 +1640,11 @@ void CONTACT::Interface::AssembleTangrhs(Epetra_Vector& tangrhs)
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleTangrhs: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID())
+      FOUR_C_THROW("AssembleTangrhs: Node ownership inconsistency!");
     if (constr_direction_ == INPAR::CONTACT::constr_xyz)
     {
       if (Dim() == 2)
@@ -1746,7 +1748,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
   bool consistent = false;
 
 #if defined(CONSISTENTSTICK) && defined(CONSISTENTSLIP)
-  dserror(
+  FOUR_C_THROW(
       "It's not reasonable to activate both, the consistent stick and slip branch, "
       "because both together will lead again to an inconsistent formulation!");
 #endif
@@ -1756,18 +1758,18 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
 
   if (consistent &&
       CORE::UTILS::IntegralValue<int>(InterfaceParams(), "REGULARIZED_NORMAL_CONTACT"))
-    dserror("no consistent stick for regularized contact");
+    FOUR_C_THROW("no consistent stick for regularized contact");
 
   // loop over all stick nodes of the interface
   for (int i = 0; i < sticknodes->NumMyElements(); ++i)
   {
     int gid = sticknodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("AssembleLinStick: Node ownership inconsistency!");
+      FOUR_C_THROW("AssembleLinStick: Node ownership inconsistency!");
 
     // get friction coefficient for this node
     // in case of TSI, the nodal temperature influences the local friction coefficient
@@ -1816,7 +1818,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
       row[1] = stickt->GID(2 * i) + 1;
     }
     else
-      dserror("AssemblelinStick: Dimension not correct");
+      FOUR_C_THROW("AssemblelinStick: Dimension not correct");
 
     //****************************************************************
     // CONSISTENT TREATMENT OF CASE FRCOEFF=0 (FRICTIONLESS)
@@ -1964,17 +1966,17 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dnmap[j].size() != (int)dnmap[j + 1].size())
-          dserror("AssembleLinStick: Column dim. of nodal DerivN-map is inconsistent!");
+          FOUR_C_THROW("AssembleLinStick: Column dim. of nodal DerivN-map is inconsistent!");
 
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-          dserror("AssembleLinStick: Column dim. of nodal DerivTxi-map is inconsistent!");
+          FOUR_C_THROW("AssembleLinStick: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       if (Dim() == 3)
       {
         for (int j = 0; j < Dim() - 1; ++j)
           if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-            dserror("AssembleLinStick: Column dim. of nodal DerivTeta-map is inconsistent!");
+            FOUR_C_THROW("AssembleLinStick: Column dim. of nodal DerivTeta-map is inconsistent!");
       }
 
       double cn = cn_input;
@@ -2007,7 +2009,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
 
       // check for dimensions
       if (Dim() == 2 and (jumpteta != 0.0))
-        dserror("AssembleLinStick: jumpteta must be zero in 2D");
+        FOUR_C_THROW("AssembleLinStick: jumpteta must be zero in 2D");
 
       //**************************************************************
       // calculation of matrix entries of linearized stick condition
@@ -2325,13 +2327,13 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
     {
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-          dserror("AssembleLinStick: Column dim. of nodal DerivTxi-map is inconsistent!");
+          FOUR_C_THROW("AssembleLinStick: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       if (Dim() == 3)
       {
         for (int j = 0; j < Dim() - 1; ++j)
           if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-            dserror("AssembleLinStick: Column dim. of nodal DerivTeta-map is inconsistent!");
+            FOUR_C_THROW("AssembleLinStick: Column dim. of nodal DerivTeta-map is inconsistent!");
       }
 
       // evaluation of specific components of entries to assemble
@@ -2358,7 +2360,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
 
       // check for dimensions
       if (Dim() == 2 and (jumpteta != 0.0))
-        dserror("AssembleLinStick: jumpteta must be zero in 2D");
+        FOUR_C_THROW("AssembleLinStick: jumpteta must be zero in 2D");
 
       // Entries on right hand side
       /************************************************ (-utxi, -uteta) ***/
@@ -2463,7 +2465,8 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
         // get linearization of jump vector
         std::vector<std::map<int, double>> derivjump = cnode->FriData().GetDerivJump();
 
-        if (derivjump.size() < 1) dserror("AssembleLinStick: Derivative of jump is not exiting!");
+        if (derivjump.size() < 1)
+          FOUR_C_THROW("AssembleLinStick: Derivative of jump is not exiting!");
 
         // loop over dimensions
         for (int dim = 0; dim < cnode->NumDof(); ++dim)
@@ -2582,11 +2585,11 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
     {
       int gid = slipnodes_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
-        dserror("AssembleLinSlip: Node ownership inconsistency!");
+        FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
       // get friction coefficient for this node
       // in case of TSI, the nodal temperature influences the local friction coefficient
@@ -2606,17 +2609,17 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dnmap[j].size() != (int)dnmap[j + 1].size())
-          dserror("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
+          FOUR_C_THROW("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-          dserror("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
+          FOUR_C_THROW("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       if (Dim() == 3)
       {
         for (int j = 0; j < Dim() - 1; ++j)
           if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-            dserror("AssembleLinSlip: Column dim. of nodal DerivTeta-map is inconsistent!");
+            FOUR_C_THROW("AssembleLinSlip: Column dim. of nodal DerivTeta-map is inconsistent!");
       }
 
       // more information from node
@@ -2642,7 +2645,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         row[1] = slipt_->GID(2 * i) + 1;
       }
       else
-        dserror("AssemblelinSlip: Dimension not correct");
+        FOUR_C_THROW("AssemblelinSlip: Dimension not correct");
 
       // evaluation of specific components of entries to assemble
       double znor = 0.0;
@@ -2687,7 +2690,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 
       // check of dimensions
       if (Dim() == 2 and (zteta != 0.0 or jumpteta != 0.0))
-        dserror("AssemblelinSlip: zteta and jumpteta must be zero in 2D");
+        FOUR_C_THROW("AssemblelinSlip: zteta and jumpteta must be zero in 2D");
 
       //****************************************************************
       // CONSISTENT TREATMENT OF CASE FRCOEFF=0 (FRICTIONLESS)
@@ -3614,11 +3617,11 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
     {
       int gid = slipnodes_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
-        dserror("AssembleLinSlip: Node ownership inconsistency!");
+        FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
       double ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
@@ -3656,7 +3659,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 
       for (int j = 0; j < mapsize - 1; ++j)
         if ((int)dtmap[j].size() != (int)dtmap[j + 1].size())
-          dserror("AssembleLinSlip: Column dim. of nodal DerivT-map is inconsistent!");
+          FOUR_C_THROW("AssembleLinSlip: Column dim. of nodal DerivT-map is inconsistent!");
 
       // calculation of parts of the complementary function
       double ztan = txi[0] * z[0] + txi[1] * z[1];
@@ -3813,7 +3816,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         double D = cnode->MoData().GetD()[cnode->Id()];
         double Dold = cnode->FriData().GetDOld()[cnode->Id()];
 
-        if (abs(Dold) < 0.0001) dserror("Error:No entry for Dold");
+        if (abs(Dold) < 0.0001) FOUR_C_THROW("Error:No entry for Dold");
 
         // loop over all derivative maps (=dimensions)
         for (int dim = 0; dim < cnode->NumDof(); ++dim)
@@ -3860,7 +3863,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
@@ -3915,7 +3918,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
@@ -3968,7 +3971,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             ++k;
           }
 
-          if (k != colsize) dserror("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) FOUR_C_THROW("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
         }
 
         /*********************************** Deriv(abs)*DerivT.z*ztan ***/
@@ -3999,7 +4002,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             ++k;
           }
 
-          if (k != colsize) dserror("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) FOUR_C_THROW("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
         }
 
         /******************************* Deriv(abs)*DerivT.jump+*ztan ***/
@@ -4030,7 +4033,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             ++k;
           }
 
-          if (k != colsize) dserror("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) FOUR_C_THROW("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
         }
 
         /*************************** -Deriv(abs).ct.tan.DerivD.x*ztan ***/
@@ -4072,7 +4075,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         {
           int gid = dmcurr->first;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           double* mxi = cmnode->xspatial();
 
@@ -4131,7 +4134,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             ++k;
           }
 
-          if (k != colsize) dserror("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) FOUR_C_THROW("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
         }
 
         /************************************ -frbound.ct.DerivT.jump ***/
@@ -4162,7 +4165,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             ++k;
           }
 
-          if (k != colsize) dserror("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) FOUR_C_THROW("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
         }
 
         /************************************* +frbound.ct.T.DerivD.x ***/
@@ -4197,7 +4200,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         {
           int gid = dmcurr->first;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           double* mxi = cmnode->xspatial();
 
@@ -4240,7 +4243,7 @@ void CONTACT::Interface::AssembleNormalContactRegularization(
 {
   const bool regularization =
       CORE::UTILS::IntegralValue<int>(InterfaceParams(), "REGULARIZED_NORMAL_CONTACT");
-  if (!regularization) dserror("you should not be here");
+  if (!regularization) FOUR_C_THROW("you should not be here");
   const double k = 1. / InterfaceParams().get<double>("REGULARIZATION_STIFFNESS");
   const double gmax = InterfaceParams().get<double>("REGULARIZATION_THICKNESS");
   const int dim = Dim();
@@ -4251,9 +4254,9 @@ void CONTACT::Interface::AssembleNormalContactRegularization(
   for (int i = 0; i < ActiveNodes()->NumMyElements(); ++i)
   {
     DRT::Node* node = Discret().gNode(ActiveNodes()->GID(i));
-    if (!node) dserror("node not found");
+    if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-    if (!cnode) dserror("not a contact node");
+    if (!cnode) FOUR_C_THROW("not a contact node");
 
     CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
     CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
@@ -4263,7 +4266,7 @@ void CONTACT::Interface::AssembleNormalContactRegularization(
     const double d_gLM = k * exp(-k / gmax * lm_n);
 
     if (cnode->MoData().GetD().size() != 1)
-      dserror(
+      FOUR_C_THROW(
           "we need to have a D-value for active contact nodes\nAnd exactly one due to "
           "biorthogonality");
     double dval = cnode->MoData().GetD().at(cnode->Id());
@@ -4322,7 +4325,7 @@ void CONTACT::Interface::AssembleLinSlipNormalRegularization(
   double frcoeff_in =
       InterfaceParams().get<double>("FRCOEFF");  // the friction coefficient from the input
   bool gp_slip = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "GP_SLIP_INCR");
-  if (gp_slip) dserror("not implemented");
+  if (gp_slip) FOUR_C_THROW("not implemented");
   bool frilessfirst = CORE::UTILS::IntegralValue<int>(InterfaceParams(), "FRLESS_FIRST");
 
   // the friction coefficient adapted by every node (eg depending on the local temperature)
@@ -4342,11 +4345,11 @@ void CONTACT::Interface::AssembleLinSlipNormalRegularization(
     {
       int gid = slipnodes_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
-        dserror("AssembleLinSlip: Node ownership inconsistency!");
+        FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
       // get friction coefficient for this node
       // in case of TSI, the nodal temperature influences the local friction coefficient
@@ -4363,17 +4366,17 @@ void CONTACT::Interface::AssembleLinSlipNormalRegularization(
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dnmap[j].size() != (int)dnmap[j + 1].size())
-          dserror("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
+          FOUR_C_THROW("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-          dserror("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
+          FOUR_C_THROW("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       if (Dim() == 3)
       {
         for (int j = 0; j < Dim() - 1; ++j)
           if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-            dserror("AssembleLinSlip: Column dim. of nodal DerivTeta-map is inconsistent!");
+            FOUR_C_THROW("AssembleLinSlip: Column dim. of nodal DerivTeta-map is inconsistent!");
       }
 
       // more information from node
@@ -4399,7 +4402,7 @@ void CONTACT::Interface::AssembleLinSlipNormalRegularization(
         row[1] = slipt_->GID(2 * i) + 1;
       }
       else
-        dserror("AssemblelinSlip: Dimension not correct");
+        FOUR_C_THROW("AssemblelinSlip: Dimension not correct");
 
       // evaluation of specific components of entries to assemble
       double znor = 0.0;
@@ -4422,11 +4425,11 @@ void CONTACT::Interface::AssembleLinSlipNormalRegularization(
       // setup regularization
       static const bool regularization =
           CORE::UTILS::IntegralValue<int>(InterfaceParams(), "REGULARIZED_NORMAL_CONTACT");
-      if (!regularization) dserror("you should not be here");
+      if (!regularization) FOUR_C_THROW("you should not be here");
       static const double k = 1. / InterfaceParams().get<double>("REGULARIZATION_STIFFNESS");
       static const double gmax = InterfaceParams().get<double>("REGULARIZATION_THICKNESS");
       if (cnode->MoData().GetD().size() != 1)
-        dserror(
+        FOUR_C_THROW(
             "we need to have a D-value for active contact nodes\nAnd exactly one due to "
             "biorthogonality");
       double dval = cnode->MoData().GetD().at(cnode->Id());
@@ -4446,7 +4449,7 @@ void CONTACT::Interface::AssembleLinSlipNormalRegularization(
 
       // check of dimensions
       if (Dim() == 2 and (zteta != 0.0 or jumpteta != 0.0))
-        dserror("AssemblelinSlip: zteta and jumpteta must be zero in 2D");
+        FOUR_C_THROW("AssemblelinSlip: zteta and jumpteta must be zero in 2D");
 
       //****************************************************************
       // CONSISTENT TREATMENT OF CASE FRCOEFF=0 (FRICTIONLESS)
@@ -5112,7 +5115,7 @@ void CONTACT::Interface::AssembleLinSlipNormalRegularization(
 
   else
   {
-    dserror("no tresca friction with regularized normal constraint");
+    FOUR_C_THROW("no tresca friction with regularized normal constraint");
   }  // Tresca friction
 
   return;
@@ -5129,10 +5132,11 @@ void CONTACT::Interface::AssembleNCoup(Epetra_Vector& gglobal)
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* mrtnode = dynamic_cast<Node*>(node);
 
-    if (mrtnode->Owner() != Comm().MyPID()) dserror("AssembleDMG: Node ownership inconsistency!");
+    if (mrtnode->Owner() != Comm().MyPID())
+      FOUR_C_THROW("AssembleDMG: Node ownership inconsistency!");
 
     /**************************************************** nCoup-vector ******/
     if (mrtnode->PoroData().GetnCoup() != 0.0)
@@ -5179,10 +5183,10 @@ void CONTACT::Interface::AssembleNCoupLin(
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleS: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) FOUR_C_THROW("AssembleS: Node ownership inconsistency!");
 
     std::map<int, double>::iterator colcurr;
     int row = activen_->GID(i);
@@ -5241,7 +5245,7 @@ void CONTACT::Interface::AssembleCoupLinD(
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // Mortar matrix D derivatives
@@ -5259,7 +5263,7 @@ void CONTACT::Interface::AssembleCoupLinD(
       ++scurr;
 
       DRT::Node* snode = idiscret_->gNode(sgid);
-      if (!snode) dserror("Cannot find node with gid %", sgid);
+      if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       Node* csnode = dynamic_cast<Node*>(snode);  // current slave node
 
       // Mortar matrix D derivatives
@@ -5267,7 +5271,7 @@ void CONTACT::Interface::AssembleCoupLinD(
       int mapsize = (int)(thisdderiv.size());
 
       if (cnode->NumDof() != csnode->NumDof())
-        dserror("Mortar Nodes on interface must have same number of dofs!");
+        FOUR_C_THROW("Mortar Nodes on interface must have same number of dofs!");
 
       // inner product D_{jk,c} * z_j for index j
       for (int prodj = 0; prodj < cnode->NumDof(); ++prodj)
@@ -5282,7 +5286,7 @@ void CONTACT::Interface::AssembleCoupLinD(
           int slavedofgid = cnode->Dofs()[prodj];
 
           int slavedoflid = x->Map().LID(slavedofgid);
-          if (slavedoflid < 0) dserror("invalid slave dof lid");
+          if (slavedoflid < 0) FOUR_C_THROW("invalid slave dof lid");
           double val = (*x)[slavedoflid] * (scolcurr->second);
 
           ++scolcurr;
@@ -5293,12 +5297,12 @@ void CONTACT::Interface::AssembleCoupLinD(
         }
         // check for completeness of DerivD-Derivatives-iteration
         if (scolcurr != thisdderiv.end())
-          dserror("AssembleCoupLin: Not all derivative entries of Lin(D*z_s) considered!");
+          FOUR_C_THROW("AssembleCoupLin: Not all derivative entries of Lin(D*z_s) considered!");
       }
     }
 
     if (scurr != dderiv.end())
-      dserror("AssembleCoupLin: Not all connected slave nodes to Lin(D*z_s) considered!");
+      FOUR_C_THROW("AssembleCoupLin: Not all connected slave nodes to Lin(D*z_s) considered!");
   }
 
   return;
@@ -5320,7 +5324,7 @@ void CONTACT::Interface::AssembleCoupLinM(
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // Mortar matrix M derivatives
@@ -5338,7 +5342,7 @@ void CONTACT::Interface::AssembleCoupLinM(
       ++mcurr;
 
       DRT::Node* mnode = idiscret_->gNode(mgid);
-      if (!mnode) dserror("Cannot find node with gid %", mgid);
+      if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
       Node* cmnode = dynamic_cast<Node*>(mnode);
 
       // Mortar matrix M derivatives
@@ -5346,7 +5350,7 @@ void CONTACT::Interface::AssembleCoupLinM(
       int mapsize = (int)(thismderiv.size());
 
       if (cnode->NumDof() != cmnode->NumDof())
-        dserror("Mortar Nodes on interface must have same number of dofs!");
+        FOUR_C_THROW("Mortar Nodes on interface must have same number of dofs!");
 
       // inner product M_{jl,c} * z_j for index j
       for (int prodj = 0; prodj < cmnode->NumDof(); ++prodj)
@@ -5371,13 +5375,13 @@ void CONTACT::Interface::AssembleCoupLinM(
 
         // check for completeness of DerivM-Derivatives-iteration
         if (mcolcurr != thismderiv.end())
-          dserror("AssembleCoupLin: Not all derivative entries of DerivM considered!");
+          FOUR_C_THROW("AssembleCoupLin: Not all derivative entries of DerivM considered!");
       }
     }  // loop over all master nodes, connected to this slave node => Lin(M*z_s) finished
 
     // check for completeness of DerivM-Master-iteration
     if (mcurr != mderiv.end())
-      dserror("AssembleCoupLin: Not all master entries of Lin(M*z_s) considered!");
+      FOUR_C_THROW("AssembleCoupLin: Not all master entries of Lin(M*z_s) considered!");
 
     /*********************************************************************/
     /*******************       Finished with Lin(M*z_s)         **********/

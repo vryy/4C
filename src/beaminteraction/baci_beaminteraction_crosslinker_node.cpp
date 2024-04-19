@@ -93,7 +93,7 @@ CROSSLINKING::CrosslinkerNode::CrosslinkerNode(
 CROSSLINKING::CrosslinkerNode::CrosslinkerNode(const CROSSLINKING::CrosslinkerNode& old)
     : DRT::Node(old)
 {
-  dserror(
+  FOUR_C_THROW(
       "Copy constructor of CrosslinkerNodeDataContainer needs to "
       "implemented first");
   return;
@@ -177,7 +177,7 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
     ExtractfromPack(position, data, tmp);
     CORE::COMM::ParObject* o = CORE::COMM::Factory(tmp);
     MAT::CrosslinkerMat* mat = dynamic_cast<MAT::CrosslinkerMat*>(o);
-    if (mat == nullptr) dserror("failed to unpack material");
+    if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack material
     mat_ = Teuchos::rcp(mat);
   }
@@ -187,7 +187,7 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
   }
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -210,7 +210,7 @@ void CROSSLINKING::CrosslinkerNode::SetMaterial(int const matnum)
 {
   Teuchos::RCP<MAT::CrosslinkerMat> mat =
       Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(MAT::Material::Factory(matnum));
-  if (mat == Teuchos::null) dserror("Invalid material given to crosslinker node. \n");
+  if (mat == Teuchos::null) FOUR_C_THROW("Invalid material given to crosslinker node. \n");
   mat_ = mat;
 }
 
@@ -220,7 +220,7 @@ void CROSSLINKING::CrosslinkerNode::SetMaterial(int const matnum)
 void CROSSLINKING::CrosslinkerNode::SetMaterial(Teuchos::RCP<MAT::Material> material)
 {
   Teuchos::RCP<MAT::CrosslinkerMat> mat = Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(material);
-  if (mat == Teuchos::null) dserror("Invalid material given to crosslinker node. \n");
+  if (mat == Teuchos::null) FOUR_C_THROW("Invalid material given to crosslinker node. \n");
   mat_ = mat;
 }
 

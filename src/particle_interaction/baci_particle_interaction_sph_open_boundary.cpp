@@ -70,7 +70,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryBase::Setup(
   // safety check
   for (const auto& type_i : {fluidphase_, openboundaryphase_})
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
-      dserror("no particle container for particle type '%s' found!",
+      FOUR_C_THROW("no particle container for particle type '%s' found!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 }
 
@@ -215,7 +215,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::Init()
   prescribedstatefunctid_ = params_sph_.get<int>("DIRICHLET_FUNCT");
 
   // safety check
-  if (not(prescribedstatefunctid_ > 0)) dserror("no function id of prescribed state set!");
+  if (not(prescribedstatefunctid_ > 0)) FOUR_C_THROW("no function id of prescribed state set!");
 
   // init outward normal
   {
@@ -226,12 +226,12 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::Init()
 
     // safety check
     if (static_cast<int>(outwardnormal_.size()) != 3)
-      dserror("dimension (dim = %d) of outward normal is wrong!",
+      FOUR_C_THROW("dimension (dim = %d) of outward normal is wrong!",
           static_cast<int>(outwardnormal_.size()));
 
     // normalize outward normal
     const double norm = UTILS::VecNormTwo(outwardnormal_.data());
-    if (not(norm > 0.0)) dserror("no outward normal set!");
+    if (not(norm > 0.0)) FOUR_C_THROW("no outward normal set!");
     UTILS::VecSetScale(outwardnormal_.data(), 1.0 / norm, outwardnormal_.data());
   }
 
@@ -244,7 +244,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::Init()
 
     // safety check
     if (static_cast<int>(planepoint_.size()) != 3)
-      dserror(
+      FOUR_C_THROW(
           "dimension (dim = %d) of plane point is wrong!", static_cast<int>(planepoint_.size()));
   }
 
@@ -293,7 +293,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::PrescribeOpenBoundaryStates(
 
   // safety check
   if (function.NumberComponents() != 1)
-    dserror("dimension of function governing velocity condition is not one!");
+    FOUR_C_THROW("dimension of function governing velocity condition is not one!");
 
   // iterate over particles in container
   for (int particle_i = 0; particle_i < particlestored; ++particle_i)
@@ -427,12 +427,12 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::Init()
 
     // safety check
     if (static_cast<int>(outwardnormal_.size()) != 3)
-      dserror("dimension (dim = %d) of outward normal is wrong!",
+      FOUR_C_THROW("dimension (dim = %d) of outward normal is wrong!",
           static_cast<int>(outwardnormal_.size()));
 
     // normalize outward normal
     const double direction_norm = UTILS::VecNormTwo(outwardnormal_.data());
-    if (not(direction_norm > 0.0)) dserror("no outward normal set!");
+    if (not(direction_norm > 0.0)) FOUR_C_THROW("no outward normal set!");
     UTILS::VecSetScale(outwardnormal_.data(), 1.0 / direction_norm, outwardnormal_.data());
   }
 
@@ -445,7 +445,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::Init()
 
     // safety check
     if (static_cast<int>(planepoint_.size()) != 3)
-      dserror(
+      FOUR_C_THROW(
           "dimension (dim = %d) of plane point is wrong!", static_cast<int>(planepoint_.size()));
   }
 
@@ -503,7 +503,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::PrescribeOpenBoundaryStates(
 
     // safety check
     if (function.NumberComponents() != 1)
-      dserror("dimension of function governing pressure condition is not one!");
+      FOUR_C_THROW("dimension of function governing pressure condition is not one!");
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < particlestored; ++particle_i)

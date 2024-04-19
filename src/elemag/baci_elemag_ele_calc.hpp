@@ -44,7 +44,7 @@ namespace DRT
       int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1) override
       {
-        dserror("Not implemented");
+        FOUR_C_THROW("Not implemented");
         return 1;
       };
 

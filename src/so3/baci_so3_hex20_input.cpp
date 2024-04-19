@@ -36,14 +36,14 @@ bool DRT::ELEMENTS::SoHex20::ReadElement(
     kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
-    dserror("Reading SO_HEX20 element failed KINEM unknown");
+    FOUR_C_THROW("Reading SO_HEX20 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
 
   // Validate that materials doesn't use extended update call.
   if (SolidMaterial()->UsesExtendedUpdate())
-    dserror("This element currently does not support the extended update call.");
+    FOUR_C_THROW("This element currently does not support the extended update call.");
 
   return true;
 }

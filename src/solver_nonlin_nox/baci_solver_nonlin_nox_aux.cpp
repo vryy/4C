@@ -109,7 +109,7 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
       }
       // --- ToDo has to be extended
 
-      dserror(
+      FOUR_C_THROW(
           "There is no capable linear system type for the given linear "
           "solver combination! ( 1 linear solver )");
       exit(EXIT_FAILURE);
@@ -141,7 +141,7 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
       }
       // --- ToDo has to be extended
 
-      dserror(
+      FOUR_C_THROW(
           "There is no capable linear system type for the given linear "
           "solver combination ( 2 linear solvers )!");
     }
@@ -154,13 +154,13 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
       {
         return NOX::NLN::LinSystem::linear_system_structure_contact;
       }
-      dserror(
+      FOUR_C_THROW(
           "There is no capable linear system type for the given linear "
           "solver combination ( 3 linear solvers )!");
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "There is no capable linear system type for the given linear "
           "solver combination!");
       exit(EXIT_FAILURE);
@@ -559,7 +559,7 @@ enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
       break;
     case NOX::NLN::StatusTest::quantity_unknown:
     default:
-      dserror("Unknown conversion for the quantity type \"%s\".",
+      FOUR_C_THROW("Unknown conversion for the quantity type \"%s\".",
           NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
   }
   // return the corresponding solution type
@@ -578,7 +578,7 @@ enum ::NOX::Abstract::Vector::NormType NOX::NLN::AUX::String2NormType(const std:
   else if (name == "Max Norm")
     norm_type = ::NOX::Abstract::Vector::MaxNorm;
   else
-    dserror("Unknown conversion from STL_STRING to NormType enum for %s.", name.c_str());
+    FOUR_C_THROW("Unknown conversion from STL_STRING to NormType enum for %s.", name.c_str());
 
   return norm_type;
 }
@@ -618,11 +618,11 @@ void NOX::NLN::AUX::AddToPrePostOpVector(
 std::string NOX::NLN::AUX::GetDirectionMethodListName(const Teuchos::ParameterList& p)
 {
   if (not p.isSublist("Direction"))
-    dserror("There is no \"Direction\" sub-list in the parameter list!");
+    FOUR_C_THROW("There is no \"Direction\" sub-list in the parameter list!");
   const Teuchos::ParameterList& pdir = p.sublist("Direction");
 
   if (not pdir.isParameter("Method"))
-    dserror("There is no \"Method\" parameter in the Direction sub-list!");
+    FOUR_C_THROW("There is no \"Method\" parameter in the Direction sub-list!");
 
   const std::string* dir_str = &pdir.get<std::string>("Method");
   if (*dir_str == "User Defined")
@@ -633,7 +633,7 @@ std::string NOX::NLN::AUX::GetDirectionMethodListName(const Teuchos::ParameterLi
     return "Newton";
   else
   {
-    dserror("Currently unsupported direction method string: %s", dir_str->c_str());
+    FOUR_C_THROW("Currently unsupported direction method string: %s", dir_str->c_str());
     exit(EXIT_FAILURE);
   }
 }

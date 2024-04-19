@@ -42,7 +42,7 @@ void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>&
 
   // If d<2 the material model is not stress free in the reference configuration
   if (d < 2)
-    dserror(
+    FOUR_C_THROW(
         "The Elast_Coup1Pow - material only works for positive integer exponents, which are larger "
         "than two.");
 

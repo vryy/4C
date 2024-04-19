@@ -58,7 +58,7 @@ CORE::FE::CellType DRT::ELEMENTS::Ale2Line::Shape() const
     case 3:
       return CORE::FE::CellType::line3;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
       break;
   }
 }
@@ -67,7 +67,7 @@ CORE::FE::CellType DRT::ELEMENTS::Ale2Line::Shape() const
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2Line::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("this Ale2Line element does not support communication");
+  FOUR_C_THROW("this Ale2Line element does not support communication");
 
   return;
 }
@@ -76,7 +76,7 @@ void DRT::ELEMENTS::Ale2Line::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2Line::Unpack(const std::vector<char>& data)
 {
-  dserror("this Ale2Line element does not support communication");
+  FOUR_C_THROW("this Ale2Line element does not support communication");
   return;
 }
 

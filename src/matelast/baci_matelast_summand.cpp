@@ -62,11 +62,11 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
 {
   // for the sake of safety
   if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
 
   // yet another safety check
   if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -421,14 +421,14 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       return Teuchos::rcp(new ViscoPart(params));
     }
     default:
-      dserror("cannot deal with type %d", curmat->Type());
+      FOUR_C_THROW("cannot deal with type %d", curmat->Type());
   }
   return Teuchos::null;
 }
 
 void MAT::ELASTIC::Summand::AddShearMod(bool& haveshearmod, double& shearmod) const
 {
-  dserror("MAT::ELASTIC::Summand::AddShearMod: Add Shear Modulus not implemented - do so!");
+  FOUR_C_THROW("MAT::ELASTIC::Summand::AddShearMod: Add Shear Modulus not implemented - do so!");
 }
 
 int MAT::ELASTIC::Summand::UniqueParObjectId() const { return -1; }
@@ -485,7 +485,7 @@ void MAT::ELASTIC::Summand::EvaluateFirstDerivativesAniso(CORE::LINALG::Matrix<2
   SpecifyFormulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
   if (anisoprinc or anisomod)
   {
-    dserror(
+    FOUR_C_THROW(
         "This anisotropic material does not support the first derivative of the free-energy "
         "function with respect to the anisotropic invariants. You need to implement them.");
   }
@@ -498,7 +498,7 @@ void MAT::ELASTIC::Summand::EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<
   SpecifyFormulation(isoprinc, isomod, anisoprinc, anisomod, viscogeneral);
   if (anisoprinc or anisomod)
   {
-    dserror(
+    FOUR_C_THROW(
         "This anisotropic material does not support the second derivative of the free-energy "
         "function with respect to the anisotropic invariants. You need to implement them.");
   }

@@ -37,7 +37,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
     int numphase = actmat->NumPhase();
 
     // access mat_elchmat: container material for porous structures in elch
-    if (numphase != 1) dserror("In the moment a single phase is only allowed.");
+    if (numphase != 1) FOUR_C_THROW("In the moment a single phase is only allowed.");
 
     // 1) loop over single phases
     for (int iphase = 0; iphase < actmat->NumPhase(); ++iphase)
@@ -55,7 +55,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
       // enough materials defined
       if (nummat != my::numscal_)
       {
-        dserror(
+        FOUR_C_THROW(
             "The number of scalars defined in the material ElchMat does not correspond with "
             "the number of materials defined in the material MatPhase.");
       }
@@ -71,7 +71,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
 
       if (numdofpernode != my::numdofpernode_)
       {
-        dserror(
+        FOUR_C_THROW(
             "The chosen element formulation (e.g. current as solution variable) "
             "does not correspond with the number of dof's defined in your material");
       }
@@ -87,7 +87,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
           // Newman material must be combined with divi closing equation for electric potential
           if (myelch::elchparams_->EquPot() != INPAR::ELCH::equpot_divi)
           {
-            dserror(
+            FOUR_C_THROW(
                 "Newman material must be combined with divi closing equation for electric "
                 "potential!");
           }
@@ -96,7 +96,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
           // non-reacting species
           if (my::numscal_ > 1)
           {
-            dserror(
+            FOUR_C_THROW(
                 "Material Newman is only valid for one scalar (binary electrolyte utilizing the "
                 "ENC)");
           }
@@ -136,7 +136,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CorrectRHSFromC
   if (my::scatraparatimint_->IsIncremental())
     my::CalcRHSLinMass(erhs, k, 0.0, -fac, 0.0, DiffManager()->GetPhasePoro(0));
   else
-    dserror("Must be incremental!");
+    FOUR_C_THROW("Must be incremental!");
 }
 
 /*----------------------------------------------------------------------*
@@ -174,12 +174,12 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
                 (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
           }
           else
-            dserror("Invalid material!");
+            FOUR_C_THROW("Invalid material!");
         }
       }
 
       else
-        dserror("Invalid material!");
+        FOUR_C_THROW("Invalid material!");
 
       // process electrode boundary kinetics point condition
       myelch::CalcElchBoundaryKineticsPoint(ele, params, discretization, la[0].lm_, elemat1_epetra,
@@ -233,20 +233,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
             (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
       }
       else
-        dserror("Invalid material!");
+        FOUR_C_THROW("Invalid material!");
     }
   }
 
   else
-    dserror("Invalid material!");
+    FOUR_C_THROW("Invalid material!");
 
   // get actual values of transported scalars
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // get history variable (needed for double layer modeling)
   Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector 'hist'");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'hist'");
 
   // state and history variables at element nodes
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
@@ -258,7 +258,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
 
   // get current condition
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
-  if (cond == Teuchos::null) dserror("Cannot access condition 'ElchDomainKinetics'");
+  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchDomainKinetics'");
 
   // access parameters of the condition
   const int kinetics = *cond->Get<int>("kinetic model");
@@ -270,7 +270,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
   const int zerocur = *cond->Get<int>("zero_cur");
   if (nume < 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "The convention for electrochemical reactions at the electrodes does not allow \n"
         "a negative number of transferred electrons");
   }
@@ -280,7 +280,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
   const auto* stoich = cond->Get<std::vector<int>>("stoich");
   if ((unsigned int)my::numscal_ != (*stoich).size())
   {
-    dserror(
+    FOUR_C_THROW(
         "Electrode kinetics: number of stoichiometry coefficients %u does not match"
         " the number of ionic species %d",
         (*stoich).size(), my::numscal_);
@@ -297,7 +297,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
                                  kinetics == INPAR::ELCH::butler_volmer_yang1997 or
                                  kinetics == INPAR::ELCH::tafel or kinetics == INPAR::ELCH::linear))
     {
-      dserror(
+      FOUR_C_THROW(
           "Kinetic model Butler-Volmer / Butler-Volmer-Yang / Tafel and Linear: \n"
           "Only one educt and no product is allowed in the implemented version");
     }
@@ -327,7 +327,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
       // BDF2:              timefac = 2/3 * dt
       // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
       timefac = my::scatraparatimint_->TimeFac();
-      if (timefac < 0.0) dserror("time factor is negative.");
+      if (timefac < 0.0) FOUR_C_THROW("time factor is negative.");
       // for correct scaling of rhs contribution (see below)
       rhsfac = 1 / my::scatraparatimint_->AlphaF();
     }
@@ -349,7 +349,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
   {
     // get actual values of transported scalars
     Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
-    if (phidtnp == Teuchos::null) dserror("Cannot get state vector 'ephidtnp'");
+    if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'ephidtnp'");
     std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(
         my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phidtnp, ephidtnp, lm);
@@ -360,7 +360,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
       // BDF2:              timefacrhs = 2/3 * dt
       // generalized-alpha: timefacrhs = (gamma/alpha_M) * dt
       timefac = my::scatraparatimint_->TimeFacRhs();
-      if (timefac < 0.) dserror("time factor is negative.");
+      if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
     EvaluateElectrodeStatus(ele, elevec1_epetra, params, cond, ephinp, ephidtnp, kinetics, *stoich,
@@ -414,7 +414,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchBou
 
     default:
     {
-      dserror("Unknown closing equation for electric potential!");
+      FOUR_C_THROW("Unknown closing equation for electric potential!");
       break;
     }
   }
@@ -463,7 +463,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
 
       // access input parameter
       const double frt = VarManager()->FRT();
-      if (frt <= 0.0) dserror("A negative factor frt is not possible by definition");
+      if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
       const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, gpid);
 
@@ -508,7 +508,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
 
     default:
     {
-      dserror("Unknown closing equation for electric potential!");
+      FOUR_C_THROW("Unknown closing equation for electric potential!");
       break;
     }
   }
@@ -565,7 +565,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectro
 
       // access input parameter
       const double frt = VarManager()->FRT();
-      if (frt <= 0.0) dserror("A negative factor frt is not possible by definition");
+      if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
       // call utility class for element evaluation
       Utils()->EvaluateElectrodeStatusAtIntegrationPoint(ele, scalars, params, cond, ephinp,
@@ -579,7 +579,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectro
   // safety check
   if (!statistics)
   {
-    dserror(
+    FOUR_C_THROW(
         "There is no oxidized species O (stoich<0) defined in your input file!! \n"
         " Statistics could not be evaluated");
   }
@@ -629,7 +629,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateFlux(
           VarManager()->GradPhi(k), 1.0);
       break;
     default:
-      dserror("received illegal flag inside flux evaluation for whole domain");
+      FOUR_C_THROW("received illegal flag inside flux evaluation for whole domain");
       break;
   }
 }
@@ -672,7 +672,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateCurren
 
       break;
     default:
-      dserror("received illegal flag inside flux evaluation for whole domain");
+      FOUR_C_THROW("received illegal flag inside flux evaluation for whole domain");
       break;
   }
 }
@@ -700,9 +700,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
 
       // safety checks
       if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)
-        dserror("How did you get here?");
-      if (my::scatrapara_->IsAle()) dserror("No ALE for Kwok & Wu error calculation allowed.");
-      if (my::numscal_ != 1) dserror("Numscal_ != 1 for desired error calculation.");
+        FOUR_C_THROW("How did you get here?");
+      if (my::scatrapara_->IsAle()) FOUR_C_THROW("No ALE for Kwok & Wu error calculation allowed.");
+      if (my::numscal_ != 1) FOUR_C_THROW("Numscal_ != 1 for desired error calculation.");
 
       // set constants for analytical solution
       const double t =
@@ -784,7 +784,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorCompare
           c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m) * t * M_PI * M_PI));
         }
         else
-          dserror("Illegal number of space dimensions for analyt. solution: %d", nsd_);
+          FOUR_C_THROW("Illegal number of space dimensions for analyt. solution: %d", nsd_);
 
         // compute analytical solution for el. potential
         // const double pot =

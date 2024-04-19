@@ -42,7 +42,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, EmplaceBackInWrongOrder)
   {
-#ifndef BACI_DEBUG
+#ifndef FOUR_C_ENABLE_ASSERTIONS
     GTEST_SKIP() << "Skip debug assertion tests in release mode.";
 #endif
     MIXTURE::TimestepAdaptivityInfo level{};
@@ -367,7 +367,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, GetIndicesFromBaseWrongOrder)
   {
-#ifndef BACI_DEBUG
+#ifndef FOUR_C_ENABLE_ASSERTIONS
     GTEST_SKIP() << "Skip debug assertion tests in release mode.";
 #endif
     MIXTURE::TimestepAdaptivityInfo level{};
@@ -379,7 +379,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, GetBaseIndicesWrongOrder)
   {
-#ifndef BACI_DEBUG
+#ifndef FOUR_C_ENABLE_ASSERTIONS
     GTEST_SKIP() << "Skip debug assertion tests in release mode.";
 #endif
     MIXTURE::TimestepAdaptivityInfo level{};

@@ -68,7 +68,7 @@ void ThermoFilter::PostHeatflux(const std::string groupname, const std::string h
   }
   else
   {
-    dserror("Unknown heatflux/tempgrad type");
+    FOUR_C_THROW("Unknown heatflux/tempgrad type");
   }
 
 }  // ThermoFilter::PostHeatflux
@@ -92,7 +92,8 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     else if (filter_.GetWriter().GetField()->problem()->num_dim() == 1)
       numdf = 1;
     else
-      dserror("Cannot handle dimension %g", filter_.GetWriter().GetField()->problem()->num_dim());
+      FOUR_C_THROW(
+          "Cannot handle dimension %g", filter_.GetWriter().GetField()->problem()->num_dim());
     return numdf;
   }
 
@@ -104,7 +105,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
   {
     using namespace FourC;
 
-    dsassert(name.size() == 1, "Unexpected number of names");
+    FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
 
     int numdf = Numdf();
 
@@ -146,7 +147,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
         const DRT::Node* lnode = dis->lRowNode(i);
         const std::vector<int> lnodedofs = dis->Dof(lnode);
 
-        if (lnodedofs.size() < numdofpernode) dserror("Too few DOFs at node of interest");
+        if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
         const int adjele = lnode->NumElement();
         // build three scalar valued vectors for the heatflux output
         (*((*nodal_heatfluxes)(0)))[i] = (*heatfluxx)[dis->DofRowMap()->LID(lnodedofs[0])] / adjele;
@@ -161,7 +162,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
         const DRT::Node* lnode = dis->lRowNode(i);
         const std::vector<int> lnodedofs = dis->Dof(lnode);
 
-        if (lnodedofs.size() < numdofpernode) dserror("Too few DOFs at node of interest");
+        if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
         const int adjele = lnode->NumElement();
         // build two scalar valued vectors for the heatflux output
         (*((*nodal_heatfluxes)(0)))[i] = (*heatfluxx)[dis->DofRowMap()->LID(lnodedofs[0])] / adjele;
@@ -175,7 +176,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
         const DRT::Node* lnode = dis->lRowNode(i);
         const std::vector<int> lnodedofs = dis->Dof(lnode);
 
-        if (lnodedofs.size() < numdofpernode) dserror("Too few DOFs at node of interest");
+        if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
         const int adjele = lnode->NumElement();
         // build one scalar valued vectors for the heatflux output
         (*((*nodal_heatfluxes)(0)))[i] = (*heatfluxx)[dis->DofRowMap()->LID(lnodedofs[0])] / adjele;
@@ -183,7 +184,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     }
     else
     {
-      dserror("Cannot handle numdf=%g", numdf);
+      FOUR_C_THROW("Cannot handle numdf=%g", numdf);
     }
 
     filter_.GetWriter().WriteNodalResultStep(
@@ -212,7 +213,8 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     else if (filter_.GetWriter().GetField()->problem()->num_dim() == 1)
       numdf = 1;
     else
-      dserror("Cannot handle dimension %g", filter_.GetWriter().GetField()->problem()->num_dim());
+      FOUR_C_THROW(
+          "Cannot handle dimension %g", filter_.GetWriter().GetField()->problem()->num_dim());
     return numdf;
   }
 
@@ -224,7 +226,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
   {
     using namespace FourC;
 
-    dsassert(name.size() == 1, "Unexpected number of names");
+    FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
 
     int numdf = Numdf();
 
@@ -247,7 +249,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     dis->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     if (eleheatflux == Teuchos::null)
     {
-      dserror("vector containing element center heatfluxes/tempgradients not available");
+      FOUR_C_THROW("vector containing element center heatfluxes/tempgradients not available");
     }
 
     filter_.GetWriter().WriteElementResultStep(
@@ -290,7 +292,7 @@ void ThermoFilter::WriteHeatflux(
   }
   else
   {
-    dserror("trying to write something that is not a heatflux or a temperature gradient");
+    FOUR_C_THROW("trying to write something that is not a heatflux or a temperature gradient");
     exit(1);
   }
 
@@ -309,7 +311,7 @@ void ThermoFilter::WriteHeatflux(
         heatflux, result, elementbased, groupname, std::vector<std::string>(1, name), out);
   }
   else
-    dserror("Unknown heatflux type");
+    FOUR_C_THROW("Unknown heatflux type");
 }  // ThermoFilter::WriteNodalHeatflux
 
 FOUR_C_NAMESPACE_CLOSE

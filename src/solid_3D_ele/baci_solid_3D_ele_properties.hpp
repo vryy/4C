@@ -48,7 +48,7 @@ namespace DRT::ELEMENTS
         return "eas_full";
     }
 
-    dserror("Unknown element technology %d", ele_tech);
+    FOUR_C_THROW("Unknown element technology %d", ele_tech);
   }
 
   template <typename Function>
@@ -66,7 +66,7 @@ namespace DRT::ELEMENTS
         return fct(std::integral_constant<ElementTechnology, ElementTechnology::eas_full>{});
     }
 
-    dserror("Your element technology is unknown: %d", eletech);
+    FOUR_C_THROW("Your element technology is unknown: %d", eletech);
   }
 
   enum class PrestressTechnology
@@ -85,7 +85,7 @@ namespace DRT::ELEMENTS
         return "mulf";
     }
 
-    dserror("Unknown prestress technology %d", prestress_tech);
+    FOUR_C_THROW("Unknown prestress technology %d", prestress_tech);
   }
 
   template <typename Function>
@@ -99,7 +99,7 @@ namespace DRT::ELEMENTS
         return fct(std::integral_constant<PrestressTechnology, PrestressTechnology::mulf>{});
     }
 
-    dserror("Your prestress technology is unknown: %d", prestress_technology);
+    FOUR_C_THROW("Your prestress technology is unknown: %d", prestress_technology);
   }
 
 

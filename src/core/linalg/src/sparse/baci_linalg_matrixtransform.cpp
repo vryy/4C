@@ -61,7 +61,7 @@ bool CORE::LINALG::MatrixLogicalSplitAndTransform::operator()(const CORE::LINALG
       Teuchos::RCP<Epetra_CrsMatrix> permsrc =
           Teuchos::rcp(new Epetra_CrsMatrix(::Copy, permsrcmap, 0));
       int err = permsrc->Import(*src.EpetraMatrix(), *exporter_, Insert);
-      if (err) dserror("Import failed with err=%d", err);
+      if (err) FOUR_C_THROW("Import failed with err=%d", err);
 
       permsrc->FillComplete(src.DomainMap(), permsrcmap);
       esrc = permsrc;
@@ -113,7 +113,7 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::InternalAdd(Teuchos::RCP<Epet
     const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
     double scale)
 {
-  if (not esrc->Filled()) dserror("filled source matrix expected");
+  if (not esrc->Filled()) FOUR_C_THROW("filled source matrix expected");
 
   Epetra_Vector dselector(esrc->DomainMap());
   for (int i = 0; i < dselector.MyLength(); ++i)
@@ -175,14 +175,14 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::AddIntoFilled(
     double *ValuesA, *ValuesB;
     int *IndicesA, *IndicesB;
     const int rowA = esrc->RowMap().LID(logical_range_map.GID(i));
-    if (rowA == -1) dserror("Internal error");
+    if (rowA == -1) FOUR_C_THROW("Internal error");
     int err = esrc->ExtractMyRowView(rowA, NumEntriesA, ValuesA, IndicesA);
-    if (err != 0) dserror("ExtractMyRowView error: %d", err);
+    if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
 
     // identify the local row index in the destination matrix corresponding to i
     const int rowB = dstrowmap.LID(matching_dst_rows.GID(i));
     err = edst->ExtractMyRowView(rowB, NumEntriesB, ValuesB, IndicesB);
-    if (err != 0) dserror("ExtractMyRowView error: %d", err);
+    if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
 
     // loop through the columns in source matrix and find respective place in destination
     for (int jA = 0, jB = 0; jA < NumEntriesA; ++jA)
@@ -194,7 +194,7 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::AddIntoFilled(
       if (col == -1)
       {
         if (exactmatch)
-          dserror("gid %d not found in map for lid %d at %d", srccolmap.GID(IndicesA[jA]),
+          FOUR_C_THROW("gid %d not found in map for lid %d at %d", srccolmap.GID(IndicesA[jA]),
               IndicesA[jA], jA);
         else
           continue;
@@ -211,7 +211,7 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::AddIntoFilled(
       // not found, sparsity pattern of B does not contain the index from A -> terminate
       if (jB == NumEntriesB || IndicesB[jB] != col)
       {
-        dserror(
+        FOUR_C_THROW(
             "Source matrix entry with global row ID %d and global column ID %d couldn't be added to"
             " destination matrix entry with global row ID %d and unknown global column ID %d!",
             esrc->RowMap().GID(i), srccolmap.GID(IndicesA[jA]), matching_dst_rows.GID(i),
@@ -246,7 +246,7 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::AddIntoUnfilled(
     int* Indices;
     int err = esrc->ExtractMyRowView(
         esrc->RowMap().LID(logical_range_map.GID(i)), NumEntries, Values, Indices);
-    if (err != 0) dserror("ExtractMyRowView error: %d", err);
+    if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
 
     idx.clear();
     vals.clear();
@@ -266,7 +266,8 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::AddIntoUnfilled(
       else
       {
         // only complain if an exact match is demanded
-        if (exactmatch) dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
+        if (exactmatch)
+          FOUR_C_THROW("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
       }
     }
 
@@ -281,7 +282,7 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::AddIntoUnfilled(
     if (edst->NumAllocatedGlobalEntries(globalRow) == 0)
     {
       int err = edst->InsertGlobalValues(globalRow, NumEntries, vals.data(), idx.data());
-      if (err < 0) dserror("InsertGlobalValues error: %d", err);
+      if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
     }
     else
       for (int j = 0; j < NumEntries; ++j)
@@ -291,10 +292,10 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::AddIntoUnfilled(
         if (err > 0)
         {
           err = edst->InsertGlobalValues(globalRow, 1, &vals[j], &idx[j]);
-          if (err < 0) dserror("InsertGlobalValues error: %d", err);
+          if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
         }
         else if (err < 0)
-          dserror("SumIntoGlobalValues error: %d", err);
+          FOUR_C_THROW("SumIntoGlobalValues error: %d", err);
       }
   }
 }

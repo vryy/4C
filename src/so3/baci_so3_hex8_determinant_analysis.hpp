@@ -260,7 +260,7 @@ namespace DRT
             return t * t;
           default:
           {
-            dserror("The desired bezier function #%d is not defined.", n);
+            FOUR_C_THROW("The desired bezier function #%d is not defined.", n);
             exit(EXIT_FAILURE);
           }
         }

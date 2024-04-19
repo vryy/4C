@@ -86,7 +86,7 @@ int CORE::COMM::ExtractAndAssertId(std::vector<char>::size_type& position,
   std::string error_message = "Wrong instance type data. The extracted type id is " +
                               std::to_string(type_id) + ", while the desired type id is " +
                               std::to_string(desired_type_id);
-  dsassert(type_id == desired_type_id, error_message.c_str());
+  FOUR_C_ASSERT(type_id == desired_type_id, error_message.c_str());
 
   return type_id;
 }

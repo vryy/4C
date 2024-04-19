@@ -82,7 +82,7 @@ namespace STR
         const ::NOX::StatusTest::Generic& GetOStatusTest() const
         {
           CheckInitSetup();
-          dsassert(!ostatus_.is_null(), "The outer status test object is not defined!");
+          FOUR_C_ASSERT(!ostatus_.is_null(), "The outer status test object is not defined!");
           return *ostatus_;
         }
 

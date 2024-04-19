@@ -32,7 +32,7 @@ void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::Par
 
   // safety check
   if (static_cast<int>(typetoval.size()) % 2)
-    dserror("input of '%s' (size = %d) relating particle type to value is odd!", name.c_str(),
+    FOUR_C_THROW("input of '%s' (size = %d) relating particle type to value is odd!", name.c_str(),
         typetoval.size());
 
   std::string typestring;
@@ -54,7 +54,8 @@ void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::Par
     }
     catch (const std::invalid_argument& e)
     {
-      dserror("wrong format of numeric value provided following the name of the particle type!");
+      FOUR_C_THROW(
+          "wrong format of numeric value provided following the name of the particle type!");
     }
 
     // insert into map
@@ -62,7 +63,7 @@ void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::Par
 
     // safety check
     if (not iterator.second)
-      dserror("failed inserting numeric value into map since key '%s' is already existing!",
+      FOUR_C_THROW("failed inserting numeric value into map since key '%s' is already existing!",
           PARTICLEENGINE::EnumToTypeName(particleType).c_str());
   }
 }

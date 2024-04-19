@@ -160,7 +160,7 @@ namespace CORE::UTILS
     {
       if (iteration > max_iterations)
       {
-        dserror(
+        FOUR_C_THROW(
             "The local Newton method did not converge within %d iterations. Residuum is %.3e > "
             "%.3e.",
             max_iterations, FADUTILS::CastToDouble(L2Norm(residuum)),

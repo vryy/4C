@@ -225,7 +225,7 @@ void IO::ElementReader::GetAndDistributeElements(const int nblock, const int bsi
           {
             // let the factory create a matching empty element
             Teuchos::RCP<DRT::Element> ele = CORE::COMM::Factory(eletype, distype, elenumber, 0);
-            if (ele.is_null()) dserror("element creation failed");
+            if (ele.is_null()) FOUR_C_THROW("element creation failed");
 
             // For the time being we support old and new input facilities. To
             // smooth transition.
@@ -239,7 +239,7 @@ void IO::ElementReader::GetAndDistributeElements(const int nblock, const int bsi
                 linedef->Print(std::cout);
                 std::cout << "\n";
                 std::cout << line << "\n";
-                dserror(
+                FOUR_C_THROW(
                     "failed to read element %d %s %s", elenumber, eletype.c_str(), distype.c_str());
               }
 
@@ -248,7 +248,7 @@ void IO::ElementReader::GetAndDistributeElements(const int nblock, const int bsi
             }
             else
             {
-              dserror("a matching line definition is needed for %s %s", eletype.c_str(),
+              FOUR_C_THROW("a matching line definition is needed for %s %s", eletype.c_str(),
                   distype.c_str());
             }
 

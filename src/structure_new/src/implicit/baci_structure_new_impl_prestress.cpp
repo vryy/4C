@@ -150,7 +150,7 @@ void STR::IMPLICIT::PreStress::PostTimeLoop()
   {
     if (absoluteDisplacementNorm_ > SDyn().GetPreStressDisplacementTolerance())
     {
-      dserror(
+      FOUR_C_THROW(
           "Prestress algorithm did not converged within the given timesteps. "
           "abs-dis-inf-norm is "
           "%f",

@@ -98,7 +98,7 @@ void MAT::PlasticDruckerPrager::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::PlasticDruckerPrager*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -126,7 +126,7 @@ void MAT::PlasticDruckerPrager::Unpack(const std::vector<char>& data)
       strainbarplcurr_.push_back(tmp_scalar);
     }
     if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
   }
 }
 void MAT::PlasticDruckerPrager::Setup(int numgp, INPUT::LineDefinition* linedef)
@@ -263,7 +263,7 @@ void MAT::PlasticDruckerPrager::EvaluateFAD(const CORE::LINALG::Matrix<3, 3>* de
   ScalarT strainbar_p = 0.0;
   strainbar_p = (strainbarpllast_.at(gp));
   if (strainbarpllast_.at(gp) < 0.0)
-    dserror("accumulated plastic strain has to be equal to or greater than zero!");
+    FOUR_C_THROW("accumulated plastic strain has to be equal to or greater than zero!");
 
   for (int i = 3; i < 6; ++i) strain(i) /= 2.0;
   for (int i = 3; i < 6; ++i) strain_p(i) /= 2.0;

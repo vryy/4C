@@ -28,7 +28,7 @@ int EXODUS::WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
 {
   // open datfile
   std::ofstream dat(datfile.c_str());
-  if (!dat) dserror("failed to open file: %s", datfile.c_str());
+  if (!dat) FOUR_C_THROW("failed to open file: %s", datfile.c_str());
 
   // write dat-file intro
   EXODUS::WriteDatIntro(headfile, mymesh, dat);
@@ -89,7 +89,7 @@ void EXODUS::WriteDatHead(const std::string& headfile, std::ostream& dat)
   if (not header.good())
   {
     std::cout << std::endl << "Unable to open file: " << headfilechar << std::endl;
-    dserror("Unable to open head-file");
+    FOUR_C_THROW("Unable to open head-file");
   }
   while (header.good()) head << (char)header.get();
   // while (!header.eof()) head << (char) header.get();
@@ -181,7 +181,7 @@ void EXODUS::WriteDatConditions(
         geo = "DVOL   ";
         break;
       default:
-        dserror("geometry type unspecified");
+        FOUR_C_THROW("geometry type unspecified");
     }
 
     dat << geo << (count->second).size() << std::endl;
@@ -204,7 +204,7 @@ void EXODUS::WriteDatConditions(
         name = (mymesh.GetSideSet(actcon.id).GetName());
       }
       else
-        dserror("Unidentified Actcon");
+        FOUR_C_THROW("Unidentified Actcon");
       if ((name != ""))
       {
         dat << "// " << name;
@@ -240,7 +240,7 @@ void EXODUS::WriteDatConditions(
     for (count = count_cond.begin(); count != count_cond.end(); ++count)
       std::cout << "Section name  " << count->first << "  is not valid. Typo?" << std::endl;
 
-    dserror("There are invalid condition names in your bc file (see list above)");
+    FOUR_C_THROW("There are invalid condition names in your bc file (see list above)");
   }
 }
 
@@ -273,7 +273,7 @@ std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::
   }
   if (normaltangent.size() == 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Warning! No normal defined for SurfLocsys within nodeset '%s'!", (ns.GetName()).c_str());
   }
 
@@ -338,7 +338,7 @@ void EXODUS::WriteDatDesignTopology(
         // do nothing
         break;
       default:
-        dserror("Cannot identify Condition GeometryType");
+        FOUR_C_THROW("Cannot identify Condition GeometryType");
         break;
     }
   }
@@ -420,7 +420,7 @@ std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::CondDef& e, const EXODUS::
     return allnodes;
   }
   else
-    dserror("Cannot identify mesh_entity");
+    FOUR_C_THROW("Cannot identify mesh_entity");
   std::set<int> n;
   return n;
 }
@@ -493,7 +493,7 @@ void EXODUS::WriteDatEles(const std::vector<ElemDef>& eledefs, const EXODUS::Mes
     {
       std::cout << "Unknown ELEMENT sectionname in eb" << element_definition.id << ": '"
                 << element_definition.sec << "'!" << std::endl;
-      dserror("Unknown ELEMENT sectionname");
+      FOUR_C_THROW("Unknown ELEMENT sectionname");
     }
   }
 
@@ -508,7 +508,7 @@ void EXODUS::WriteDatEles(const std::vector<ElemDef>& eledefs, const EXODUS::Mes
     const unsigned min_num_preceding_dashes = 2;
 
     if (section_name.length() > padding_length - min_num_preceding_dashes)
-      dserror("The section name you chose exceeds padding length");
+      FOUR_C_THROW("The section name you chose exceeds padding length");
 
     std::string padded_section_name(section_name);
     padded_section_name.insert(

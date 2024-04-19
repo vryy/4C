@@ -133,7 +133,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::SetState(const Epetra_Vector& x)
     }
 
     if (test > 1.0e-13)
-      dserror("High Order AdamsBashforth does not currently support the variable step size.");
+      FOUR_C_THROW("High Order AdamsBashforth does not currently support the variable step size.");
 
     // ---------------------------------------------------------------------------
     // new end-point velocities

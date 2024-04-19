@@ -48,7 +48,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("IntegrateOverlap called without specific shape function defined!");
+    FOUR_C_THROW("IntegrateOverlap called without specific shape function defined!");
 
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -65,11 +65,11 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
   // is integrated that contributes to this slave node)
   int nnodes = SlaveElement().NumNode();
   DRT::Node** mynodes = SlaveElement().Nodes();
-  if (!mynodes) dserror("Null pointer!");
+  if (!mynodes) FOUR_C_THROW("Null pointer!");
   for (int k = 0; k < nnodes; ++k)
   {
     MORTAR::Node* mycnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
-    if (!mycnode) dserror("Null pointer!");
+    if (!mycnode) FOUR_C_THROW("Null pointer!");
     mycnode->HasSegment() = true;
   }
 
@@ -114,7 +114,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
   // *******************************************************************
   else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin)
   {
-    dserror("Piecewise linear LM not (yet?) implemented in 2D");
+    FOUR_C_THROW("Piecewise linear LM not (yet?) implemented in 2D");
   }
 
   // *******************************************************************
@@ -122,7 +122,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
   // *******************************************************************
   else if (Quad() && lmtype == INPAR::MORTAR::lagmult_undefined)
   {
-    dserror(
+    FOUR_C_THROW(
         "Lagrange multiplier interpolation for quadratic elements undefined\n"
         "If you are using 2nd order mortar elements, you need to specify LM_QUAD in MORTAR "
         "COUPLING section");
@@ -133,7 +133,7 @@ bool CONTACT::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInte
   // *******************************************************************
   else
   {
-    dserror("IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
+    FOUR_C_THROW("IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
   }
 
   return true;
@@ -180,7 +180,7 @@ bool CONTACT::Coupling2dManager::EvaluateCoupling(
   // Error
   //*********************************
   else
-    dserror("chose contact algorithm not supported!");
+    FOUR_C_THROW("chose contact algorithm not supported!");
 
   return true;
 }
@@ -338,7 +338,7 @@ void CONTACT::Coupling2dManager::IntegrateCoupling(
     // *******************************************************************
     else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin)
     {
-      dserror("Piecewise linear LM not (yet?) implemented in 2D");
+      FOUR_C_THROW("Piecewise linear LM not (yet?) implemented in 2D");
     }
 
     // *******************************************************************
@@ -346,7 +346,7 @@ void CONTACT::Coupling2dManager::IntegrateCoupling(
     // *******************************************************************
     else if (Quad() && lmtype == INPAR::MORTAR::lagmult_undefined)
     {
-      dserror(
+      FOUR_C_THROW(
           "Lagrange multiplier interpolation for quadratic elements undefined\n"
           "If you are using 2nd order mortar elements, you need to specify LM_QUAD"
           " in MORTAR COUPLING section");
@@ -357,7 +357,7 @@ void CONTACT::Coupling2dManager::IntegrateCoupling(
     // *******************************************************************
     else
     {
-      dserror("Integrate: Invalid case for 2D mortar coupling LM interpolation");
+      FOUR_C_THROW("Integrate: Invalid case for 2D mortar coupling LM interpolation");
     }
   }
   //**********************************************************************
@@ -365,7 +365,7 @@ void CONTACT::Coupling2dManager::IntegrateCoupling(
   //**********************************************************************
   else
   {
-    dserror("Invalid type of numerical integration");
+    FOUR_C_THROW("Invalid type of numerical integration");
   }
 }
 
@@ -385,7 +385,7 @@ void CONTACT::Coupling2dManager::ConsistDualShape()
   // Consistent modification not yet checked for constant LM interpolation
   if (Quad() == true && LagMultQuad() == INPAR::MORTAR::lagmult_const &&
       consistent != INPAR::MORTAR::consistent_none)
-    dserror("Consistent dual shape functions not yet checked for constant LM interpolation!");
+    FOUR_C_THROW("Consistent dual shape functions not yet checked for constant LM interpolation!");
 
   // do nothing if there are no coupling pairs
   if (Coupling().size() == 0) return;

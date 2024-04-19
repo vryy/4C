@@ -45,7 +45,7 @@ std::map<int, std::map<int, std::vector<std::vector<double>>>> EXODUS::EleCenter
         centerlineid = i_ns->first;
       }
     }
-    if (centerlineid == -1) dserror("Have not found centerline NodeSet");
+    if (centerlineid == -1) FOUR_C_THROW("Have not found centerline NodeSet");
 
     EXODUS::Centerline myCLine(nss.find(centerlineid)->second, mymesh.GetNodes());
     myCLine.PlotCL_Gmsh();  // generation of accordant Gmsh-file
@@ -105,7 +105,7 @@ std::map<int, std::map<int, std::vector<std::vector<double>>>> EXODUS::EleCenter
         centerlineid = i_ns->first;
       }
     }
-    if (centerlineid == -1) dserror("Have not found centerline NodeSet");
+    if (centerlineid == -1) FOUR_C_THROW("Have not found centerline NodeSet");
     EXODUS::Centerline myCLine(nss.find(centerlineid)->second, centerlinemesh.GetNodes());
     myCLine.PlotCL_Gmsh();  // generation of accordant Gmsh-file
 
@@ -172,10 +172,11 @@ std::map<int, std::map<int, std::vector<std::vector<double>>>> EXODUS::EleCenter
         }
         // check if there is more than one element block
         if (eb_ids.size() != 1)
-          dserror("ERROR: COMPUTATION OF FIBER DIRECTIONS IS ONLY SUPPORTED FOR ONE ELEMENT BLOCK");
+          FOUR_C_THROW(
+              "ERROR: COMPUTATION OF FIBER DIRECTIONS IS ONLY SUPPORTED FOR ONE ELEMENT BLOCK");
         // check if Elementblock is of shape HEX8
         if (mymesh.GetElementBlock(eb_ids[0])->GetShape() != EXODUS::ElementBlock::hex8)
-          dserror("ERROR: COMPUATION OF FIBER DIRECTION SUPPORTS ONLY HEX 8 ELEMENTS");
+          FOUR_C_THROW("ERROR: COMPUATION OF FIBER DIRECTION SUPPORTS ONLY HEX 8 ELEMENTS");
         centlineinfo = EXODUS::element_cosys(myCLine, mymesh, eb_ids, all_surfnodes);
       }
     }
@@ -306,7 +307,7 @@ EXODUS::Centerline::Centerline(std::string filename, std::vector<double> coordco
   if (!infile)
   {
     std::cout << "Could not open Centerline file: " << filename << std::endl;
-    dserror("Could not open Centerline file!");
+    FOUR_C_THROW("Could not open Centerline file!");
   }
 
   // read in the whole file into a "table"

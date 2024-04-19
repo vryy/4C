@@ -418,7 +418,7 @@ void SSI::SSIMono::BuildNullSpaces() const
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -484,7 +484,7 @@ void SSI::SSIMono::SetupContactStrategy()
     if (CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
             GLOBAL::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") !=
         INPAR::STR::int_standard)
-      dserror("ssi contact only with new structural time integration");
+      FOUR_C_THROW("ssi contact only with new structural time integration");
 
     // get the contact model evaluator and store a pointer to the strategy
     auto& model_evaluator_contact = dynamic_cast<STR::MODELEVALUATOR::Contact&>(
@@ -493,7 +493,7 @@ void SSI::SSIMono::SetupContactStrategy()
         model_evaluator_contact.StrategyPtr(), true);
   }
   else
-    dserror("Only Nitsche contact implemented for SSI problems at the moment!");
+    FOUR_C_THROW("Only Nitsche contact implemented for SSI problems at the moment!");
 }
 
 /*--------------------------------------------------------------------------*
@@ -505,11 +505,11 @@ void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   // check input parameters for scalar transport field
   if (CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams, "VELOCITYFIELD") !=
       INPAR::SCATRA::velocity_Navier_Stokes)
-    dserror("Invalid type of velocity field for scalar-structure interaction!");
+    FOUR_C_THROW("Invalid type of velocity field for scalar-structure interaction!");
 
   if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP") ==
       INPAR::STR::DynamicType::dyna_statics)
-    dserror(
+    FOUR_C_THROW(
         "Mass conservation is not fulfilled if 'Statics' time integration is chosen since the "
         "deformation velocities are incorrectly calculated.\n"
         "Use 'NEGLECTINERTIA Yes' in combination with another time integration scheme instead!");
@@ -539,7 +539,7 @@ void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 
     default:
     {
-      dserror("Type of scalar transport time integrator currently not supported!");
+      FOUR_C_THROW("Type of scalar transport time integrator currently not supported!");
       break;
     }
   }
@@ -665,7 +665,7 @@ void SSI::SSIMono::Setup()
   // safety checks
   if (ScaTraField()->NumScal() != 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Since the ssi_monolithic framework is only implemented for usage in combination with "
         "volume change laws 'MAT_InelasticDefgradLinScalarIso' or "
         "'MAT_InelasticDefgradLinScalarAniso' so far and these laws are implemented for only "
@@ -681,7 +681,7 @@ void SSI::SSIMono::Setup()
 
   if (ScaTraField()->EquilibrationMethod() != CORE::LINALG::EquilibrationMethod::none)
   {
-    dserror(
+    FOUR_C_THROW(
         "You are within the monolithic solid scatra interaction framework but activated a pure "
         "scatra equilibration method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set "
         "it in 'SSI CONTROL/MONOLITHIC' instead.");
@@ -689,34 +689,35 @@ void SSI::SSIMono::Setup()
   if (equilibration_method_.global != CORE::LINALG::EquilibrationMethod::local and
       (equilibration_method_.structure != CORE::LINALG::EquilibrationMethod::none or
           equilibration_method_.scatra != CORE::LINALG::EquilibrationMethod::none))
-    dserror("Either global equilibration or local equilibration");
+    FOUR_C_THROW("Either global equilibration or local equilibration");
 
   if (matrixtype_ == CORE::LINALG::MatrixType::sparse and
       (equilibration_method_.structure != CORE::LINALG::EquilibrationMethod::none or
           equilibration_method_.scatra != CORE::LINALG::EquilibrationMethod::none))
-    dserror("Block based equilibration only for block matrices");
+    FOUR_C_THROW("Block based equilibration only for block matrices");
 
   if (!CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->ScalarTransportDynamicParams(), "SKIPINITDER"))
   {
-    dserror(
+    FOUR_C_THROW(
         "Initial derivatives are already calculated in monolithic SSI. Enable 'SKIPINITDER' in the "
         "input file.");
   }
 
   if (calc_initial_pot_elch)
-    dserror("Initial potential is calculated by SSI. Disable in Elch section.");
+    FOUR_C_THROW("Initial potential is calculated by SSI. Disable in Elch section.");
   if (calc_initial_pot_ssi and Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params,
                                    "SCATRATIMINTTYPE") != INPAR::SSI::ScaTraTimIntType::elch)
-    dserror("Calculation of initial potential only in case of Elch");
+    FOUR_C_THROW("Calculation of initial potential only in case of Elch");
 
   if (!ScaTraField()->IsIncremental())
-    dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
+    FOUR_C_THROW(
+        "Must have incremental solution approach for monolithic scalar-structure interaction!");
 
   if (SSIInterfaceMeshtying() and
       MeshtyingStrategyS2I()->CouplingType() != INPAR::S2I::coupling_matching_nodes)
   {
-    dserror(
+    FOUR_C_THROW(
         "Monolithic scalar-structure interaction only implemented for scatra-scatra "
         "interface coupling with matching interface nodes!");
   }
@@ -740,7 +741,8 @@ void SSI::SSIMono::SetupSystem()
     {
       // safety check
       if (!solver_->Params().isSublist("AMGnxn Parameters"))
-        dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
+        FOUR_C_THROW(
+            "Global system matrix with block structure requires AMGnxn block preconditioner!");
 
       // feed AMGnxn block preconditioner with null space information for each block of global
       // block system matrix
@@ -753,13 +755,13 @@ void SSI::SSIMono::SetupSystem()
     {
       // safety check
       if (ScaTraField()->SystemMatrix() == Teuchos::null)
-        dserror("Incompatible matrix type associated with scalar transport field!");
+        FOUR_C_THROW("Incompatible matrix type associated with scalar transport field!");
       break;
     }
 
     default:
     {
-      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      FOUR_C_THROW("Type of global system matrix for scalar-structure interaction not recognized!");
       break;
     }
   }
@@ -898,7 +900,7 @@ void SSI::SSIMono::NewtonLoop()
 
     // safety check
     if (!ssi_matrices_->SystemMatrix()->Filled())
-      dserror("Complete() has not been called on global system matrix yet!");
+      FOUR_C_THROW("Complete() has not been called on global system matrix yet!");
 
     // check termination criterion for Newton-Raphson iteration
     if (strategy_convcheck_->ExitNewtonRaphson(*this)) break;
@@ -1118,7 +1120,7 @@ std::vector<CORE::LINALG::EquilibrationMethod> SSI::SSIMono::GetBlockEquilibrati
     }
     default:
     {
-      dserror("Invalid matrix type associated with system matrix field!");
+      FOUR_C_THROW("Invalid matrix type associated with system matrix field!");
       break;
     }
   }
@@ -1210,7 +1212,7 @@ void SSI::SSIMono::CalcInitialPotentialField()
   if (equpot != INPAR::ELCH::equpot_divi and equpot != INPAR::ELCH::equpot_enc_pde and
       equpot != INPAR::ELCH::equpot_enc_pde_elim)
   {
-    dserror(
+    FOUR_C_THROW(
         "Initial potential field cannot be computed for chosen closing equation for electric "
         "potential!");
   }
@@ -1224,7 +1226,7 @@ void SSI::SSIMono::CalcInitialPotentialField()
                            ? Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraManifold())
                            : Teuchos::null;
   if (scatra_elch == Teuchos::null or (IsScaTraManifold() and manifold_elch == Teuchos::null))
-    dserror("Cast to Elch time integrator faild. Scatra is not an Elch problem");
+    FOUR_C_THROW("Cast to Elch time integrator faild. Scatra is not an Elch problem");
 
   // prepare specific time integrators
   scatra_elch->PreCalcInitialPotentialField();
@@ -1491,7 +1493,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
 
         default:
         {
-          dserror("Invalid matrix type associated with scalar transport field!");
+          FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
           break;
         }
       }
@@ -1514,7 +1516,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
     }
     default:
     {
-      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      FOUR_C_THROW("Type of global system matrix for scalar-structure interaction not recognized!");
       break;
     }
   }
@@ -1669,7 +1671,7 @@ void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
 
     default:
     {
-      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      FOUR_C_THROW("Type of global system matrix for scalar-structure interaction not recognized!");
       break;
     }
   }

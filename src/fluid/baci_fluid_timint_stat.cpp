@@ -45,7 +45,7 @@ void FLD::TimIntStationary::Init()
 
   // check, if starting algorithm is desired
   if (numstasteps_ > 0)
-    dserror("no starting algorithm supported for schemes other than af-gen-alpha");
+    FOUR_C_THROW("no starting algorithm supported for schemes other than af-gen-alpha");
 
   SetElementTimeParameter();
 
@@ -239,7 +239,7 @@ double FLD::TimIntStationary::TimIntParam() const
 {
   double retval = 0.0;
   // no FSI with stationary time integrator
-  dserror("FSI does not allow a stationary time integrator.");
+  FOUR_C_THROW("FSI does not allow a stationary time integrator.");
   return retval;
 }
 

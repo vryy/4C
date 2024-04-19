@@ -20,7 +20,7 @@ MAT::ELASTIC::PAR::VolPenalty::VolPenalty(const Teuchos::RCP<MAT::PAR::Material>
       gam_(*matdata->Get<double>("GAMMA"))
 {
   if (eps_ < 0. || gam_ <= 0.)
-    dserror("VolPenalty parameters EPSILON and GAMMA have to be greater zero");
+    FOUR_C_THROW("VolPenalty parameters EPSILON and GAMMA have to be greater zero");
 }
 
 MAT::ELASTIC::VolPenalty::VolPenalty(MAT::ELASTIC::PAR::VolPenalty* params) : params_(params) {}

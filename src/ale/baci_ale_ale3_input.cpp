@@ -62,7 +62,7 @@ bool DRT::ELEMENTS::Ale3::ReadElement(
       break;
     }
     default:
-      dserror("Unknown distype %s for ALE3 element", distype.c_str());
+      FOUR_C_THROW("Unknown distype %s for ALE3 element", distype.c_str());
       // just set to something to shutup compiler
       gaussrule = CORE::FE::GaussRule3D::undefined;
       break;

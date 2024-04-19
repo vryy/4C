@@ -193,7 +193,7 @@ namespace STR
     //! Return reaction forces
     Teuchos::RCP<Epetra_Vector> Freact() override
     {
-      dserror("Not impl.");
+      FOUR_C_THROW("Not impl.");
       return Teuchos::null;
     };
 
@@ -206,14 +206,14 @@ namespace STR
     //! InitialGuess is not available for explicit time integrators
     Teuchos::RCP<const Epetra_Vector> InitialGuess() override
     {
-      dserror("InitialGuess() is not available for explicit time integrators");
+      FOUR_C_THROW("InitialGuess() is not available for explicit time integrators");
       return Teuchos::null;
     }
 
     //! RHS() is not available for explicit time integrators
     Teuchos::RCP<const Epetra_Vector> RHS() override
     {
-      dserror("RHS() is not available for explicit time integrators");
+      FOUR_C_THROW("RHS() is not available for explicit time integrators");
       return Teuchos::null;
     }
 
@@ -239,7 +239,7 @@ namespace STR
     //!  Update displacement state in case of coupled problems
     void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
     {
-      dserror(
+      FOUR_C_THROW(
           "All monolithically coupled problems work with implicit time "
           "integration schemes. Thus, calling UpdateStateIncrementally() in an explicit scheme "
           "is not possible.");
@@ -249,7 +249,7 @@ namespace STR
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc  ///< iterative solution increment
         ) override
     {
-      dserror(
+      FOUR_C_THROW(
           "All monolithically coupled problems work with implicit time "
           "integration schemes. Thus, calling Evaluate() in an explicit scheme "
           "is not possible.");
@@ -285,70 +285,71 @@ namespace STR
     //! Update routine for coupled problems with monolithic approach with time adaptivity
     void Update(const double endtime) override
     {
-      dserror("Not implemented. No time adaptivity available for explicit time integration.");
+      FOUR_C_THROW("Not implemented. No time adaptivity available for explicit time integration.");
     }
 
 
     /* Linear structure solve with just an interface load */
     Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() override
     {
-      dserror("SolveRelaxationLinear() not implemented");
+      FOUR_C_THROW("SolveRelaxationLinear() not implemented");
       return Teuchos::null;
     }
 
     /// are there any algebraic constraints?
     bool HaveConstraint() override
     {
-      dserror("HaveConstraint() has not been tested for explicit time integrators");
+      FOUR_C_THROW("HaveConstraint() has not been tested for explicit time integrators");
       return false;
     };
 
     /// are there any Cardiovascular0D bcs?
     virtual bool HaveCardiovascular0D()
     {
-      dserror("HaveCardiovascular0D() has not been tested for explicit time integrators");
+      FOUR_C_THROW("HaveCardiovascular0D() has not been tested for explicit time integrators");
       return false;
     };
 
     /// are there any spring dashpot BCs?
     bool HaveSpringDashpot() override
     {
-      dserror("HaveSpringDashpot() has not been tested for explicit time integrators");
+      FOUR_C_THROW("HaveSpringDashpot() has not been tested for explicit time integrators");
       return false;
     };
 
     //! Return Teuchos::rcp to ConstraintManager conman_
     Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override
     {
-      dserror("GetConstraintManager() has not been tested for explicit time integrators");
+      FOUR_C_THROW("GetConstraintManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Return Teuchos::rcp to Cardiovascular0DManager windkman_
     virtual Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
     {
-      dserror("GetCardiovascular0DManager() has not been tested for explicit time integrators");
+      FOUR_C_THROW(
+          "GetCardiovascular0DManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
     Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override
     {
-      dserror("GetSpringDashpotManager() has not been tested for explicit time integrators");
+      FOUR_C_THROW("GetSpringDashpotManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Get type of thickness scaling for thin shell structures
     INPAR::STR::StcScale GetSTCAlgo() override
     {
-      dserror("GetSTCAlgo() has not been tested for explicit time integrators");
+      FOUR_C_THROW("GetSTCAlgo() has not been tested for explicit time integrators");
       return INPAR::STR::stc_none;
     };
 
     //! Access to scaling matrix for STC
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
     {
-      dserror("GetSTCMat() has not been tested for explicit time integrators");
+      FOUR_C_THROW("GetSTCMat() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
@@ -356,7 +357,7 @@ namespace STR
         Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
         ) override
     {
-      dserror("UpdateIterIncrConstr() has not been tested for explicit time integrators");
+      FOUR_C_THROW("UpdateIterIncrConstr() has not been tested for explicit time integrators");
       return;
     }
 
@@ -364,7 +365,8 @@ namespace STR
         Teuchos::RCP<Epetra_Vector> presincr  ///< pressure increment
         ) override
     {
-      dserror("UpdateIterIncrCardiovascular0D() has not been tested for explicit time integrators");
+      FOUR_C_THROW(
+          "UpdateIterIncrCardiovascular0D() has not been tested for explicit time integrators");
       return;
     }
 
@@ -387,7 +389,7 @@ namespace STR
     void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
         Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override
     {
-      dserror("UseBlockMatrix() not implemented");
+      FOUR_C_THROW("UseBlockMatrix() not implemented");
     }
     //@}
   };

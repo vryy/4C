@@ -98,7 +98,7 @@ namespace THR
         break;
       default:
         std::cout << action << std::endl;
-        dserror("no string for this action defined!");
+        FOUR_C_THROW("no string for this action defined!");
         break;
     };
     return s;
@@ -126,7 +126,7 @@ namespace THR
         break;
       default:
         std::cout << baction << std::endl;
-        dserror("no string for this boundary action defined!");
+        FOUR_C_THROW("no string for this boundary action defined!");
         break;
     };
     return s;

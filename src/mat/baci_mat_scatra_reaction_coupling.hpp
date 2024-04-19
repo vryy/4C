@@ -94,7 +94,7 @@ namespace MAT
           // do nothing in this case --> only the by-function reaction will override this method
           // if you want to evaluate any coupling terms in your own reaction coupling just override
           // it in your own function
-          dserror("Only the by-function coupling is capable of adding additional variables");
+          FOUR_C_THROW("Only the by-function coupling is capable of adding additional variables");
           return;
         }
 
@@ -114,7 +114,8 @@ namespace MAT
           // do nothing in this case --> only the by-function reaction will override this method
           // if you want to evaluate any coupling terms in your own reaction coupling just override
           // it in your own function
-          dserror("Only the by-function coupling is capable of calculating additional derivatives");
+          FOUR_C_THROW(
+              "Only the by-function coupling is capable of calculating additional derivatives");
           return;
         }
       };
@@ -298,7 +299,7 @@ namespace MAT
             ) override
         {
           // check
-          dsassert(IsInit(), "Reaction class has not been initialized!");
+          FOUR_C_ASSERT(IsInit(), "Reaction class has not been initialized!");
 
           // call the real evaluation (scale_phi should have been applied in wrapper class)
           return CalcReaBodyForceTerm(k, numscal, phinp, constants, couprole, scale_reac);
@@ -320,7 +321,7 @@ namespace MAT
             ) override
         {
           // check
-          dsassert(IsInit(), "Reaction class has not been initialized!");
+          FOUR_C_ASSERT(IsInit(), "Reaction class has not been initialized!");
 
           // call the real evaluation (scale_phi should have been applied in wrapper class)
           CalcReaBodyForceDeriv(k, numscal, derivs, phinp, constants, couprole, scale_reac);
@@ -559,7 +560,7 @@ namespace MAT
             ) override
         {
           // check
-          dsassert(IsInit(), "Reaction class has not been initialized!");
+          FOUR_C_ASSERT(IsInit(), "Reaction class has not been initialized!");
 
           // call the real evaluation (scale_phi should have been applied in wrapper class)
           CalcReaBodyForceDerivAddVariables(k, derivs, variables, constants, couprole, scale_reac);

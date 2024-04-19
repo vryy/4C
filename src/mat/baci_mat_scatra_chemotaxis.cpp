@@ -28,7 +28,7 @@ MAT::PAR::ScatraChemotaxisMat::ScatraChemotaxisMat(Teuchos::RCP<MAT::PAR::Materi
 {
   // Some checks for more safety
   if (numscal_ != (int)pair_->size())
-    dserror("number of materials %d does not fit to size of material vector %d", numscal_,
+    FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", numscal_,
         pair_->size());
 
   // is there exactly one '1' (i.e. attractant) and at least one '-1' (i.e. chemotractant)?
@@ -42,7 +42,7 @@ MAT::PAR::ScatraChemotaxisMat::ScatraChemotaxisMat(Teuchos::RCP<MAT::PAR::Materi
       numneg++;
   }
   if (numpos != 1 or numneg != 1)
-    dserror(
+    FOUR_C_THROW(
         "Each PAIR vector must contain exactly one '-1' (i.e. chemotractant) and exactly one '1' "
         "(i.e. attractant)!");
 
@@ -119,11 +119,12 @@ void MAT::ScatraChemotaxisMat::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraChemotaxisMat*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 FOUR_C_NAMESPACE_CLOSE

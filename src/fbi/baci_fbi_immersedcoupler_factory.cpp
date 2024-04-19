@@ -37,7 +37,7 @@ Teuchos::RCP<FBI::FBIGeometryCoupler> FBI::GeometryCouplerFactory::CreateGeometr
     coupler = Teuchos::rcp(new FBI::FBIBinningGeometryCoupler());
   }
   else
-    dserror("Unknown Beam to Fluid PreSort Strategy");
+    FOUR_C_THROW("Unknown Beam to Fluid PreSort Strategy");
 
   return coupler;
 }

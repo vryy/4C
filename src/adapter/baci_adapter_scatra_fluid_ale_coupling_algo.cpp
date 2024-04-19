@@ -103,7 +103,7 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::FluidAleNonlinearSolve(
 
   if (FluidField()->Interface()->FSCondRelevant())
   {
-    dserror("free surface code in combination with scatra has to be checked");
+    FOUR_C_THROW("free surface code in combination with scatra has to be checked");
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
     Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField()->Interface()->ExtractFSCondVector(dispnp);
     AleField()->ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));

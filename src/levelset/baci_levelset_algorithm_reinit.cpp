@@ -269,7 +269,7 @@ void SCATRA::LevelSetAlgorithm::FinishTimeLoopReinit()
   //  gmshfilecontent.close();
   //  if (screen_out) std::cout << " done" << std::endl;
   //  }
-  //  dserror("ENDE");
+  //  FOUR_C_THROW("ENDE");
 
   return;
 }
@@ -424,7 +424,7 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
         }
         default:
         {
-          dserror("Unknown reinitialization method for projection!");
+          FOUR_C_THROW("Unknown reinitialization method for projection!");
           exit(EXIT_FAILURE);
         }
       }
@@ -554,7 +554,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
   // determine the number of nodes per element
   int numnodesperele = 0;
   if (discret_->NumMyRowElements() <= 0)
-    dserror("This discretization does not have any row elements.");
+    FOUR_C_THROW("This discretization does not have any row elements.");
   switch (discret_->lRowElement(0)->Shape())
   {
     case CORE::FE::CellType::hex8:
@@ -574,7 +574,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
       break;
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "The fast signed distance reinitialization only supports hex8, hex20 and hex27 "
           "elements.");
       break;
@@ -630,7 +630,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
       else if (pbcplane == "xy")
         planenormal.push_back(2);
       else
-        dserror("A PBC condition could not provide a plane normal.");
+        FOUR_C_THROW("A PBC condition could not provide a plane normal.");
 
       double min = +10e19;
       double max = -10e19;
@@ -704,7 +704,8 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
     const int dofgid =
         discret_->Dof(0, lnode, 0);  // since this is a scalar field the dof is always 0
     int doflid = dofrowmap->LID(dofgid);
-    if (doflid < 0) dserror("Proc %d: Cannot find dof gid=%d in Epetra_Vector", myrank_, dofgid);
+    if (doflid < 0)
+      FOUR_C_THROW("Proc %d: Cannot find dof gid=%d in Epetra_Vector", myrank_, dofgid);
 
     // get physical coordinates of this node
     CORE::LINALG::Matrix<3, 1> nodecoord(false);
@@ -758,7 +759,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
         eledistance.push_back(thispair);
       }
     }
-    if (eledistance.empty()) dserror("No intersected elements available! G-function correct?");
+    if (eledistance.empty()) FOUR_C_THROW("No intersected elements available! G-function correct?");
 
 
     //==================================================================
@@ -794,7 +795,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
         std::map<int, CORE::GEO::BoundaryIntCells>::const_iterator elepatches =
             interface.find(eledistance.front().first);
         if (elepatches == interface.end())
-          dserror("Could not find the boundary integration cells belonging to Element %d.",
+          FOUR_C_THROW("Could not find the boundary integration cells belonging to Element %d.",
               eledistance.front().first);
 
         // number of flamefront patches for this element
@@ -820,7 +821,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
         //   +: pbc
         //--------------------------------------------------------------------
         if (planenormal.size() > 3)
-          dserror(
+          FOUR_C_THROW(
               "Sorry, but currently a maximum of three periodic boundary conditions are supported "
               "by the combustion reinitializer.");
 
@@ -883,7 +884,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
             if (!(patch.Shape() == CORE::FE::CellType::tri3 or
                     patch.Shape() == CORE::FE::CellType::quad4))
             {
-              dserror("invalid type of boundary integration cell for reinitialization");
+              FOUR_C_THROW("invalid type of boundary integration cell for reinitialization");
             }
 
             // get coordinates of vertices defining flame front patch
@@ -995,7 +996,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
     }
 
     int err = phinp_->ReplaceMyValues(1, &(eledistance.front().second), &doflid);
-    if (err) dserror("this did not work");
+    if (err) FOUR_C_THROW("this did not work");
   }
 
   if (myrank_ == 0) std::cout << " done" << std::endl;
@@ -1038,7 +1039,7 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const CORE::LINALG:
     }
     default:
     {
-      dserror("unknown type of boundary integration cell");
+      FOUR_C_THROW("unknown type of boundary integration cell");
       break;
     }
   }
@@ -1085,7 +1086,7 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const CORE::LINALG:
     }
     default:
     {
-      dserror("unknown type of boundary integration cell");
+      FOUR_C_THROW("unknown type of boundary integration cell");
       break;
     }
   }
@@ -1262,7 +1263,7 @@ void SCATRA::LevelSetAlgorithm::ComputeNormalVectorToInterface(
 
   // compute unit (normed) normal vector
   double norm = sqrt(normal(0) * normal(0) + normal(1) * normal(1) + normal(2) * normal(2));
-  if (norm == 0.0) dserror("norm of normal vector is zero!");
+  if (norm == 0.0) FOUR_C_THROW("norm of normal vector is zero!");
   normal.Scale(1.0 / norm);
 
   return;
@@ -1375,7 +1376,7 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const CORE::LINALG::Matrix<3,
     int err2 = solver.Factor();            // ?
     int err = solver.Solve();              // incr = gradF^-1.F
     if ((err != 0) || (err2 != 0))
-      dserror("solving linear system in Newton-Raphson method for projection failed");
+      FOUR_C_THROW("solving linear system in Newton-Raphson method for projection failed");
 
     // update eta and alpha
     eta(0) += incr(0);
@@ -1392,7 +1393,7 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const CORE::LINALG::Matrix<3,
   {
     alpha = 7777.7;
     //        std::cout << "projection did not converge" << std::endl;
-    // dserror("projection did not converge!");
+    // FOUR_C_THROW("projection did not converge!");
   }
   else
   {

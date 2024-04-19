@@ -34,7 +34,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::VolumeChang
   if (iter_ls == 0)
   {
     if (SetElementVolumes(grp, ref_ele_vols_) != ::NOX::Abstract::Group::Ok)
-      dserror("The evaluation of the reference volumes failed!");
+      FOUR_C_THROW("The evaluation of the reference volumes failed!");
     return status_unevaluated;
   }
   else if (checkType == ::NOX::StatusTest::None)
@@ -114,7 +114,7 @@ int NOX::NLN::INNER::StatusTest::VolumeChange::NumberOfBadElements()
   for (unsigned elid = 0; elid < num_my_eles; ++elid)
   {
     if ((*ref_ele_vols_)[elid] <= 0.0)
-      dserror("Negative or zero reference volume detected for element #d!", my_egids[elid]);
+      FOUR_C_THROW("Negative or zero reference volume detected for element #d!", my_egids[elid]);
 
     const double ratio = (*curr_ele_vols_)[elid] / (*ref_ele_vols_)[elid];
 

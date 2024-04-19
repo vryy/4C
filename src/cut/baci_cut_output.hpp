@@ -325,7 +325,7 @@ namespace CORE::GEO
       void GmshObjectDump(
           std::ofstream& file, T* obj, bool to_local = false, Element* ele = nullptr)
       {
-        dserror("GmshObjectDump: no specific implementation for your Object type!");
+        FOUR_C_THROW("GmshObjectDump: no specific implementation for your Object type!");
       }
 
       template <>

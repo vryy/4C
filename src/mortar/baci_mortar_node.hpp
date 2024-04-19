@@ -519,7 +519,7 @@ namespace MORTAR
      */
     inline MORTAR::NodeDataContainer& MoData() const
     {
-      if (modata_ == Teuchos::null) dserror("No mortar data attached. (node-id = %d)", Id());
+      if (modata_ == Teuchos::null) FOUR_C_THROW("No mortar data attached. (node-id = %d)", Id());
       return *modata_;
     }
 
@@ -618,12 +618,12 @@ namespace MORTAR
 
     virtual void InitializePoroDataContainer()
     {
-      dserror("Shouldn't land here...");
+      FOUR_C_THROW("Shouldn't land here...");
       return;
     };
     virtual void InitializeEhlDataContainer()
     {
-      dserror("Shouldn't land here...");
+      FOUR_C_THROW("Shouldn't land here...");
       return;
     };
 

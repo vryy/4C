@@ -134,7 +134,7 @@ namespace ADAPTER
 
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
     {
-      dserror("FSI with merged structural constraints does not work in combination with STC!");
+      FOUR_C_THROW("FSI with merged structural constraints does not work in combination with STC!");
       return structure_->GetSTCMat();
     }
 

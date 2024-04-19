@@ -31,7 +31,7 @@ void MAT::ReadAnisotropyFiber(
 
   if (f1norm < 1e-9)
   {
-    dserror("The given fiber is not a vector but zero.");
+    FOUR_C_THROW("The given fiber is not a vector but zero.");
   }
 
   // fill final fiber vector
@@ -50,7 +50,7 @@ void MAT::ComputeStructuralTensors(
   // Need to compute the stuctural tensors
   if (Teuchos::is_null(strategy))
   {
-    dserror("Structural tensor strategy is null!");
+    FOUR_C_THROW("Structural tensor strategy is null!");
   }
 
   structural_tensor.resize(fibers.size());

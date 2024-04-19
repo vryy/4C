@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
         if (ele->HermiteCenterlineInterpolation())
           tan = ele->Tref()[n];
         else
-          dserror(
+          FOUR_C_THROW(
               "ERROR: Beam3tosolidmeshtying: beam::n_val_=2 detected for beam3r element w/o "
               "Hermite centerline");
       }
@@ -84,7 +84,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
       }
       else
       {
-        dserror("ERROR: Beam3tosolidmeshtying: Invalid beam element type");
+        FOUR_C_THROW("ERROR: Beam3tosolidmeshtying: Invalid beam element type");
       }
 
       for (int d = 0; d < 3; ++d)

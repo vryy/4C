@@ -57,7 +57,8 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
 
   // safety check
   if (not my::scatrapara_->TauGP())
-    dserror("For advanced reactions, tau needs to be evaluated by integration-point evaluations!");
+    FOUR_C_THROW(
+        "For advanced reactions, tau needs to be evaluated by integration-point evaluations!");
 }
 
 /*----------------------------------------------------------------------*
@@ -85,7 +86,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetMaterialParams(
   {
     const Teuchos::RCP<const MAT::MatList> actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
-    if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
@@ -100,7 +101,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetMaterialParams(
   {
     const Teuchos::RCP<MAT::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
-    if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
@@ -143,7 +144,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::Materials(
       my::MatScaTra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:
-      dserror("Material type %i is not supported", material->MaterialType());
+      FOUR_C_THROW("Material type %i is not supported", material->MaterialType());
       break;
   }
   return;
@@ -308,7 +309,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
         }
 
         if (my::use2ndderiv_ and remanager->GetReaCoeff(k) != 0.0)
-          dserror("Second order reactive stabilization is not fully implemented!! ");
+          FOUR_C_THROW("Second order reactive stabilization is not fully implemented!! ");
       }
     }
   }  // end for

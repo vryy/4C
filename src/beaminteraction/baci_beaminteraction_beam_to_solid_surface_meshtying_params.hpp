@@ -70,7 +70,7 @@ namespace BEAMINTERACTION
           return true;
           break;
         default:
-          dserror("Wrong coupling type.");
+          FOUR_C_THROW("Wrong coupling type.");
           break;
       }
       return false;

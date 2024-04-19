@@ -79,7 +79,7 @@ void NOX::NLN::Solver::SingleStep::printUpdate()
     }
     if (status != ::NOX::StatusTest::Converged)
     {
-      dserror(
+      FOUR_C_THROW(
           "The SingleStep solver does not converge. This can't happen unless NaN values are "
           "encountered in the computation.");
     }

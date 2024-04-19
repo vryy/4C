@@ -58,7 +58,7 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(Teuchos::RCP<MAT::PAR::Material> 
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())
-    dserror("number of materials %d does not fit to size of material vector %d", nummat_,
+    FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
         matids_->size());
 
   // check plastic parameter validity
@@ -71,12 +71,12 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(Teuchos::RCP<MAT::PAR::Material> 
 
   // no infyield provided 0. is default
   if (infyield_ == 0.)
-    if (expisohard_ != 0.) dserror("hardening exponent provided without inf yield stress");
-  if (expisohard_ < 0.) dserror("Nonlinear hardening exponent must be non-negative");
+    if (expisohard_ != 0.) FOUR_C_THROW("hardening exponent provided without inf yield stress");
+  if (expisohard_ < 0.) FOUR_C_THROW("Nonlinear hardening exponent must be non-negative");
 
   // polyconvexity check is just implemented for isotropic hyperlastic materials
   if (polyconvex_)
-    dserror(
+    FOUR_C_THROW(
         "This polyconvexity-check is just implemented for isotropic "
         "hyperelastic-materials (do not use for plastic materials).");
 }
@@ -159,7 +159,7 @@ MAT::PlasticElastHyper::PlasticElastHyper(MAT::PAR::PlasticElastHyper* params)
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-    if (sum == Teuchos::null) dserror("Failed to allocate");
+    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
     sum->RegisterAnisotropyExtensions(anisotropy_);
   }
@@ -250,7 +250,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::PlasticElastHyper*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -269,7 +269,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
     {
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-      if (sum == Teuchos::null) dserror("Failed to allocate");
+      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
 
@@ -328,7 +328,8 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 }
@@ -356,16 +357,17 @@ void MAT::PlasticElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
   // in this case the mandel stress become non-symmetric and the
   // calculated derivatives have to be extended.
   if (summandProperties_.anisomod == true || summandProperties_.anisoprinc == true)
-    dserror("PlasticElastHyper only for isotropic elastic material!");
+    FOUR_C_THROW("PlasticElastHyper only for isotropic elastic material!");
 
   // no visco-elasticity (yet?)
-  if (summandProperties_.viscoGeneral) dserror("no visco-elasticity in PlasticElastHyper...yet(?)");
+  if (summandProperties_.viscoGeneral)
+    FOUR_C_THROW("no visco-elasticity in PlasticElastHyper...yet(?)");
 
   // check if either zero or three fiber directions are given
   if (linedef->HaveNamed("FIBER1") || linedef->HaveNamed("FIBER2") || linedef->HaveNamed("FIBER3"))
     if (!linedef->HaveNamed("FIBER1") || !linedef->HaveNamed("FIBER2") ||
         !linedef->HaveNamed("FIBER3"))
-      dserror("so3 expects no fibers or 3 fiber directions");
+      FOUR_C_THROW("so3 expects no fibers or 3 fiber directions");
 
   // plastic anisotropy
   SetupHillPlasticity(linedef);
@@ -391,7 +393,7 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelemen
   if (mode == INPAR::TSI::pl_multiplier)
     if (MatParams()->rY_11_ != 0. || MatParams()->rY_22_ != 0. || MatParams()->rY_33_ != 0. ||
         MatParams()->rY_12_ != 0. || MatParams()->rY_23_ != 0. || MatParams()->rY_13_ != 0.)
-      dserror("TSI with Hill plasticity not available with DISSIPATION_MODE pl_multiplier");
+      FOUR_C_THROW("TSI with Hill plasticity not available with DISSIPATION_MODE pl_multiplier");
   SetDissipationMode(mode);
 
   // allocate memory
@@ -408,20 +410,20 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelemen
   // temperature arises, namely via H^k=H^k(T) in the computation of the effective
   // stress eta. Without this term, the only dependency of the NCP function is
   // via the effective yield stress Y^pl=Y^pl(T)
-  if (Kinhard() != 0.) dserror("no kinematic hardening for TSI (yet)");
+  if (Kinhard() != 0.) FOUR_C_THROW("no kinematic hardening for TSI (yet)");
   // no TSI with plastic spin yet
   // besides the kinematic hardening term (see above) there is not much to do
   // just add the derivatives of theating and NCP function in the
   // EvaluateNCPandSpin(...) function
-  if (PlSpinChi() != 0.) dserror("no thermo-plasticitiy with plastic spin");
+  if (PlSpinChi() != 0.) FOUR_C_THROW("no thermo-plasticitiy with plastic spin");
 
   /// Hill TSI only with pl_flow dissipation
   if (MatParams()->rY_11_ != 0. && mode == INPAR::TSI::pl_multiplier)
-    dserror("hill thermo plasticity not with dissipation mode pl_multiplier");
+    FOUR_C_THROW("hill thermo plasticity not with dissipation mode pl_multiplier");
 
   /// viscoplastic TSI only with  pl_flow dissipation
   if (Visc() != 0. && mode == INPAR::TSI::pl_multiplier)
-    dserror("thermo-visco-plasticity not with dissipation mode pl_multiplier");
+    FOUR_C_THROW("thermo-visco-plasticity not with dissipation mode pl_multiplier");
   return;
 }
 
@@ -435,7 +437,7 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
       MatParams()->rY_12_ != 0. || MatParams()->rY_23_ != 0. || MatParams()->rY_13_ != 0.)
     if (MatParams()->rY_11_ <= 0. || MatParams()->rY_22_ <= 0. || MatParams()->rY_33_ <= 0. ||
         MatParams()->rY_12_ <= 0. || MatParams()->rY_23_ <= 0. || MatParams()->rY_13_ <= 0.)
-      dserror("Hill parameters all must be positive (incomplete set?)");
+      FOUR_C_THROW("Hill parameters all must be positive (incomplete set?)");
 
   // all (optional) Hill parameters are zero (default value)
   // --> we want to do von Mises plasticity
@@ -467,7 +469,7 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
       // normalization
       for (int i = 0; i < 3; ++i) fnorm += fiber[i] * fiber[i];
       fnorm = sqrt(fnorm);
-      if (fnorm == 0.) dserror("Fiber vector has norm zero");
+      if (fnorm == 0.) FOUR_C_THROW("Fiber vector has norm zero");
 
       // fill final fiber vector
       for (int i = 0; i < 3; ++i) directions.at(0)(i) = fiber[i] / fnorm;
@@ -481,7 +483,7 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
       // normalization
       for (int i = 0; i < 3; ++i) fnorm += fiber[i] * fiber[i];
       fnorm = sqrt(fnorm);
-      if (fnorm == 0.) dserror("Fiber vector has norm zero");
+      if (fnorm == 0.) FOUR_C_THROW("Fiber vector has norm zero");
 
       // fill final fiber vector
       for (int i = 0; i < 3; ++i) directions.at(1)(i) = fiber[i] / fnorm;
@@ -495,7 +497,7 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
       // normalization
       for (int i = 0; i < 3; ++i) fnorm += fiber[i] * fiber[i];
       fnorm = sqrt(fnorm);
-      if (fnorm == 0.) dserror("Fiber vector has norm zero");
+      if (fnorm == 0.) FOUR_C_THROW("Fiber vector has norm zero");
 
       // fill final fiber vector
       for (int i = 0; i < 3; ++i) directions.at(2)(i) = fiber[i] / fnorm;
@@ -504,11 +506,11 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
     // check orthogonality
     CORE::LINALG::Matrix<1, 1> matrix1;
     matrix1.MultiplyTN(directions.at(0), directions.at(1));
-    if (std::abs(matrix1(0, 0)) > 1.e-16) dserror("fiber directions not orthogonal");
+    if (std::abs(matrix1(0, 0)) > 1.e-16) FOUR_C_THROW("fiber directions not orthogonal");
     matrix1.MultiplyTN(directions.at(0), directions.at(2));
-    if (std::abs(matrix1(0, 0)) > 1.e-16) dserror("fiber directions not orthogonal");
+    if (std::abs(matrix1(0, 0)) > 1.e-16) FOUR_C_THROW("fiber directions not orthogonal");
     matrix1.MultiplyTN(directions.at(2), directions.at(1));
-    if (std::abs(matrix1(0, 0)) > 1.e-16) dserror("fiber directions not orthogonal");
+    if (std::abs(matrix1(0, 0)) > 1.e-16) FOUR_C_THROW("fiber directions not orthogonal");
 
     // check right-handed trihedron
     CORE::LINALG::Matrix<3, 1> A0xA1;
@@ -519,7 +521,7 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
     A0xA1(2) =
         (directions.at(0)(0) * directions.at(1)(1) - directions.at(0)(1) * directions.at(1)(0));
     A0xA1.Update(-1., directions.at(2), 1.);
-    if (A0xA1.Norm2() > 1.e-8) dserror("fibers don't form right-handed trihedron");
+    if (A0xA1.Norm2() > 1.e-8) FOUR_C_THROW("fibers don't form right-handed trihedron");
 
     // setup structural tensor for first and second direction
     // (as the directions are orthogonal, 2 structural tensors are sufficient)
@@ -570,7 +572,7 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
     solver.SetMatrix(tmp55);
     int err2 = solver.Factor();
     int err = solver.Invert();
-    if ((err != 0) || (err2 != 0)) dserror("Inversion of plastic anisotropy tensor failed");
+    if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of plastic anisotropy tensor failed");
     tmp.MultiplyNT(red, tmp55);
     InvPlAniso_full_.MultiplyNT(tmp, red);
   }
@@ -603,7 +605,7 @@ void MAT::PlasticElastHyper::EvaluateElast(const CORE::LINALG::Matrix<3, 3>* def
   if (summandProperties_.isoprinc || summandProperties_.isomod)
     EvaluateIsotropicPrincElast(*pk2, *cmat, dPI, ddPII);
   else
-    dserror("only isotropic hyperelastic materials");
+    FOUR_C_THROW("only isotropic hyperelastic materials");
 
   return;
 }
@@ -660,7 +662,7 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(const CORE::LINALG::Matrix<3,
   // due to thermal expansion can be easily calculated by the volumetric
   // part of the strain energy function
   if (summandProperties_.anisomod || summandProperties_.anisoprinc)
-    dserror(
+    FOUR_C_THROW(
         "TSI with semi-Smooth Newton type plasticity algorithm only "
         "with isotropic strain energy functions");
 
@@ -715,7 +717,7 @@ void MAT::PlasticElastHyper::EvaluateCTvol(const CORE::LINALG::Matrix<3, 3>* def
   // due to thermal expansion can be easily calculated by the volumetric
   // part of the strain energy function
   if (summandProperties_.anisomod || summandProperties_.anisoprinc)
-    dserror(
+    FOUR_C_THROW(
         "TSI with semi-Smooth Newton type plasticity algorithm only "
         "with isotropic strain energy functions");
 
@@ -803,7 +805,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
 {
   int check = +(cauchy != nullptr) + (d_cauchy_dC != nullptr) + (d_cauchy_dF != nullptr) +
               (d_cauchy_ddp != nullptr);
-  if (!(check == 0 || check == 4)) dserror("some inconsistency with provided variables");
+  if (!(check == 0 || check == 4)) FOUR_C_THROW("some inconsistency with provided variables");
 
   CORE::LINALG::Matrix<3, 1> dPI;
   CORE::LINALG::Matrix<6, 1> ddPII;
@@ -838,7 +840,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
   if (summandProperties_.isoprinc || summandProperties_.isomod)
     EvaluateIsotropicPrincPlast(dPK2dFpinv, mStr, dMdC, dMdFpinv, gamma, delta);
   else
-    dserror("only isotropic hypereleastic materials");
+    FOUR_C_THROW("only isotropic hypereleastic materials");
 
   if (cauchy)
     EvaluateCauchyPlast(
@@ -926,7 +928,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
   double absHeta = NormStressLike(tmp61);
   double abseta_H = tmp61.Dot(eta_v_strainlike);
   if (abseta_H < -1.e-16)
-    dserror("this should not happen. eta : H : eta =%f < 0", abseta_H);
+    FOUR_C_THROW("this should not happen. eta : H : eta =%f < 0", abseta_H);
   else if (abseta_H >= 0.)
     abseta_H = sqrt(abseta_H);
   else
@@ -935,7 +937,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
   tmp61.Multiply(PlAniso_full_, etatr_v);
   double absetatr_H = tmp61.Dot(etatr_v_strainlike);
   if (absetatr_H < -1.e-16)
-    dserror("this should not happen. eta_tr : H : eta_tr =%f < 0", absetatr_H);
+    FOUR_C_THROW("this should not happen. eta_tr : H : eta_tr =%f < 0", absetatr_H);
   else if (absetatr_H >= 0.)
     absetatr_H = sqrt(absetatr_H);
   else
@@ -995,7 +997,8 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
   // in that case, no viable solution to the plasticity probleme exists, since we
   // need abs(dev(Sigma)) - Y = 0 --> abs(dev(Sigma))=Y, but abs(dev(Sigma))>0, Y<0 --> error
   if (ypl <= 0.)
-    dserror("negative effective yield stress! Thermal softening and large temperature increase???");
+    FOUR_C_THROW(
+        "negative effective yield stress! Thermal softening and large temperature increase???");
 
   // activity state check
   if (ypl < absetatr_H)
@@ -1113,7 +1116,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
             plHeating += eta_v_strainlike.Dot(deltaDp_v);
             break;
           default:
-            dserror("unknown plastic dissipation mode: %d", DisMode());
+            FOUR_C_THROW("unknown plastic dissipation mode: %d", DisMode());
             break;
         }
 
@@ -1134,7 +1137,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
             // do nothing
             break;
           default:
-            dserror("unknown plastic dissipation mode: %d", DisMode());
+            FOUR_C_THROW("unknown plastic dissipation mode: %d", DisMode());
             break;
         }
 
@@ -1162,7 +1165,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
             // do nothing
             break;
           default:
-            dserror("unknown plastic dissipation mode: %d", DisMode());
+            FOUR_C_THROW("unknown plastic dissipation mode: %d", DisMode());
             break;
         }
 
@@ -1325,7 +1328,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
 {
   int check = +(cauchy != nullptr) + (d_cauchy_dC != nullptr) + (d_cauchy_dF != nullptr) +
               (d_cauchy_ddp != nullptr) + (d_cauchy_dT != nullptr);
-  if (!(check == 0 || check == 5)) dserror("some inconsistency with provided variables");
+  if (!(check == 0 || check == 5)) FOUR_C_THROW("some inconsistency with provided variables");
 
   CORE::LINALG::Matrix<3, 1> dPI(true);
   CORE::LINALG::Matrix<6, 1> ddPII(true);
@@ -1362,7 +1365,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
     EvaluateIsotropicPrincPlast(dPK2dFpinv, mStr, dMdC, dMdFpinv, gamma, delta);
   }
   else
-    dserror("only isotropic hypereleastic materials");
+    FOUR_C_THROW("only isotropic hypereleastic materials");
 
   if (cauchy)
     EvaluateCauchyPlast(dPI, ddPII, defgrd, *cauchy, d_cauchy_dFpi, *d_cauchy_dC, *d_cauchy_dF);
@@ -1457,20 +1460,20 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(const CORE::LINALG::Matrix<3, 3>
   double absHeta = NormStressLike(tmp61);
   double abseta_H = tmp61.Dot(eta_v_strainlike);
   if (abseta_H < -1.e-16)
-    dserror("this should not happen. tmp=%f", abseta_H);
+    FOUR_C_THROW("this should not happen. tmp=%f", abseta_H);
   else if (abseta_H >= 0.)
     abseta_H = sqrt(abseta_H);
   else
-    dserror("this should not happen. tmp=%f", abseta_H);
+    FOUR_C_THROW("this should not happen. tmp=%f", abseta_H);
   double dDpHeta = tmp61.Dot(deltaDp_v_strainlike);
   tmp61.Multiply(PlAniso_full_, etatr_v);
   double absetatr_H = tmp61.Dot(etatr_v_strainlike);
   if (absetatr_H < -1.e-16)
-    dserror("this should not happen. tmp=%f", absetatr_H);
+    FOUR_C_THROW("this should not happen. tmp=%f", absetatr_H);
   else if (absetatr_H >= 0.)
     absetatr_H = sqrt(absetatr_H);
   else
-    dserror("this should not happen. tmp=%f", absetatr_H);
+    FOUR_C_THROW("this should not happen. tmp=%f", absetatr_H);
   CORE::LINALG::Matrix<6, 1> HdDp;
   HdDp.Multiply(PlAniso_full_, deltaDp_v);
   CORE::LINALG::Matrix<6, 1> HdDp_strainlike;
@@ -1845,7 +1848,7 @@ void MAT::PlasticElastHyper::EvaluateCauchyPlast(const CORE::LINALG::Matrix<3, 1
 
     const double j = sqrt(prinv_(2));
     double d_dPI2_dT = 0.;
-    if (summandProperties_.isomod) dserror("only coupled SEF are supposed to end up here");
+    if (summandProperties_.isomod) FOUR_C_THROW("only coupled SEF are supposed to end up here");
     for (unsigned int p = 0; p < potsum_.size(); ++p)
       potsum_[p]->AddCoupDerivVol(j, nullptr, &d_dPI2_dT, nullptr, nullptr);
 
@@ -1869,12 +1872,12 @@ void MAT::PlasticElastHyper::EvaluateCauchyDerivs(const CORE::LINALG::Matrix<3, 
       potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII, prinv, gp, eleGID);
     }
     if (summandProperties_.isomod || summandProperties_.anisomod || summandProperties_.anisoprinc)
-      dserror("not implemented for this form of strain energy function");
+      FOUR_C_THROW("not implemented for this form of strain energy function");
   }
   if (temp)
   {
     if (summandProperties_.isomod || summandProperties_.anisomod || summandProperties_.anisoprinc)
-      dserror(
+      FOUR_C_THROW(
           "thermo-elastic Nitsche contact only with strain energies"
           "\ndepending on unmodified invariants");
 
@@ -2323,14 +2326,14 @@ bool MAT::PlasticElastHyper::VisData(
 {
   if (name == "accumulatedstrain")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double tmp = 0.;
     for (unsigned gp = 0; gp < last_alpha_isotropic_.size(); gp++) tmp += AccumulatedStrain(gp);
     data[0] = tmp / last_alpha_isotropic_.size();
   }
   else if (name == "plastic_strain_incr")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double tmp = 0.;
     for (unsigned gp = 0; gp < delta_alpha_i_.size(); gp++) tmp += delta_alpha_i_.at(gp);
     data[0] = tmp / delta_alpha_i_.size();
@@ -2339,7 +2342,7 @@ bool MAT::PlasticElastHyper::VisData(
   {
     bool plastic_history = false;
     bool curr_active = false;
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     for (unsigned gp = 0; gp < last_alpha_isotropic_.size(); gp++)
     {
       if (AccumulatedStrain(gp) != 0.) plastic_history = true;
@@ -2349,7 +2352,7 @@ bool MAT::PlasticElastHyper::VisData(
   }
   else if (name == "kinematic_plastic_strain")
   {
-    if ((int)data.size() != 9) dserror("size mismatch");
+    if ((int)data.size() != 9) FOUR_C_THROW("size mismatch");
     std::vector<double> tmp(9, 0.);
     for (std::size_t gp = 0; gp < last_alpha_kinematic_.size(); ++gp)
     {
@@ -2460,7 +2463,7 @@ void MAT::PlasticElastHyper::MatrixExponential3x3(CORE::LINALG::Matrix<3, 3>& Ma
     tmp2 = tmp;
     MatrixInOut.Update(1. / facn, tmp, 1.);
   }
-  if (n == 50) dserror("matrix exponential unconverged in %i steps", n);
+  if (n == 50) FOUR_C_THROW("matrix exponential unconverged in %i steps", n);
 
   return;
 }
@@ -2514,7 +2517,7 @@ void MAT::PlasticElastHyper::MatrixExponentialDerivativeSym3x3(
       Xn.push_back(tmp1);
       tmp2 = tmp1;
     }
-    if (nIter == 50) dserror("matrix exponential unconverged in %i steps", nIter);
+    if (nIter == 50) FOUR_C_THROW("matrix exponential unconverged in %i steps", nIter);
     nmax = nIter;
 
     // compose derivative of matrix exponential (symmetric Voigt-notation)
@@ -2593,7 +2596,7 @@ void MAT::PlasticElastHyper::MatrixExponentialDerivativeSym3x3(
         c = 2;
       }
       else
-        dserror("you should not be here");
+        FOUR_C_THROW("you should not be here");
 
       // in souza eq. (A.53):
       s1 = (exp(EW(a, a)) - exp(EW(c, c))) / (pow(EW(a, a) - EW(c, c), 2.0)) -
@@ -2664,7 +2667,7 @@ void MAT::PlasticElastHyper::MatrixExponentialDerivativeSym3x3(
     }
 
     else
-      dserror("you should not be here.");
+      FOUR_C_THROW("you should not be here.");
   }
   return;
 }
@@ -2703,7 +2706,7 @@ void MAT::PlasticElastHyper::MatrixExponentialDerivative3x3(
     Xn.push_back(tmp1);
     tmp2 = tmp1;
   }
-  if (nIter == 50) dserror("matrix exponential unconverged in %i steps", nIter);
+  if (nIter == 50) FOUR_C_THROW("matrix exponential unconverged in %i steps", nIter);
   nmax = nIter;
 
   // compose derivative of matrix exponential (non-symmetric Voigt-notation)

@@ -28,7 +28,7 @@ int DRT::TransparentDofSet::AssignDegreesOfFreedom(
   // first, we call the standard AssignDegreesOfFreedom from the base class
   int count = DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
   if (pccdofhandling_)
-    dserror("ERROR: Point coupling cinditions not yet implemented for TransparentDofSet");
+    FOUR_C_THROW("ERROR: Point coupling cinditions not yet implemented for TransparentDofSet");
 
   if (!parallel_)
   {
@@ -49,13 +49,13 @@ int DRT::TransparentDofSet::AssignDegreesOfFreedom(
 void DRT::TransparentDofSet::TransferDegreesOfFreedom(
     const DRT::Discretization& sourcedis, const DRT::Discretization& newdis, const int start)
 {
-  if (!sourcedis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
-  if (!sourcedis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
-  if (!sourcedis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
+  if (!sourcedis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
+  if (!sourcedis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
+  if (!sourcedis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
-  if (!newdis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
-  if (!newdis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
-  if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
+  if (!newdis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
+  if (!newdis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
+  if (!newdis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
   // build dofrowmap
   std::set<int> dofrowset;
@@ -100,7 +100,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
     const int lid = sourcenode->LID();
     if (lid == -1)
     {
-      dserror("required node %d not on proc", newnode->Id());
+      FOUR_C_THROW("required node %d not on proc", newnode->Id());
     }
     const std::vector<int> dofs = sourcedis.Dof(0, sourcenode);
     const int newlid = newnode->LID();
@@ -110,7 +110,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
     {
       (*idxcolnodes_)[newlid] = dofs[0];
       //        if(numdofs!=(int)dofs.size())
-      //        dserror("numdofs %d!=%d for node %d",numdofs,(int)dofs.size(),newnode->Id());
+      //        FOUR_C_THROW("numdofs %d!=%d for node %d",numdofs,(int)dofs.size(),newnode->Id());
 
       for (int idof = 0; idof < numdofs; ++idof)
       {
@@ -132,13 +132,13 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
 void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     const DRT::Discretization& sourcedis, const DRT::Discretization& newdis, const int start)
 {
-  if (!sourcedis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
-  if (!sourcedis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
-  if (!sourcedis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
+  if (!sourcedis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
+  if (!sourcedis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
+  if (!sourcedis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
-  if (!newdis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
-  if (!newdis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
-  if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
+  if (!newdis.DofRowMap()->UniqueGIDs()) FOUR_C_THROW("DofRowMap is not unique");
+  if (!newdis.NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("NodeRowMap is not unique");
+  if (!newdis.ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("ElementRowMap is not unique");
 
   // list all my rownode ids
 
@@ -260,7 +260,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
       printf("This is node %d  (%12.5e,%12.5e,%12.5e)\n", newnode->Id(), newnode->X()[0],
           newnode->X()[1], newnode->X()[2]);
 
-      dserror("spooky, isn't it? dofs to overwrite %d != %d dofs.size() to set \n", numdofs,
+      FOUR_C_THROW("spooky, isn't it? dofs to overwrite %d != %d dofs.size() to set \n", numdofs,
           dofs.size());
     }
 
@@ -306,7 +306,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     {
       (*idxcolnodes_)[newlid] = dofs[0];
       if (numdofs != (int)dofs.size())
-        dserror("numdofs %d!=%d for node %d", numdofs, dofs.size(), newnode->Id());
+        FOUR_C_THROW("numdofs %d!=%d for node %d", numdofs, dofs.size(), newnode->Id());
 
       for (int idof = 0; idof < numdofs; ++idof)
       {
@@ -363,7 +363,7 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
       int numproc = sourcedis_->Comm().NumProc();
       if (numproc == 1)
       {
-        dserror(
+        FOUR_C_THROW(
             "I have a one-processor problem but the node is not on the proc. "
             "sourcedis_->NodeRowMap() is probably currupted.");
       }
@@ -475,7 +475,7 @@ void DRT::TransparentDofSet::ReceiveBlock(int numproc, int myrank, std::vector<c
   // you didn't
   if (rblock.empty() == false)
   {
-    dserror("rblock not empty");
+    FOUR_C_THROW("rblock not empty");
   }
 
   // receive from predecessor
@@ -483,7 +483,7 @@ void DRT::TransparentDofSet::ReceiveBlock(int numproc, int myrank, std::vector<c
 
   if (tag != (myrank + numproc - 1) % numproc)
   {
-    dserror("received wrong message (ReceiveAny)");
+    FOUR_C_THROW("received wrong message (ReceiveAny)");
   }
 
   exporter.Wait(request);

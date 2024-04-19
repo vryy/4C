@@ -56,7 +56,7 @@ void PARTICLEINTERACTION::SPHKernelBase::KernelSpaceDimension(int& dim) const
     }
     default:
     {
-      dserror("unknown kernel space dimension!");
+      FOUR_C_THROW("unknown kernel space dimension!");
       break;
     }
   }
@@ -100,7 +100,7 @@ double PARTICLEINTERACTION::SPHKernelCubicSpline::NormalizationConstant(const do
     }
     default:
     {
-      dserror("unknown kernel space dimension!");
+      FOUR_C_THROW("unknown kernel space dimension!");
       break;
     }
   }
@@ -188,7 +188,7 @@ double PARTICLEINTERACTION::SPHKernelQuinticSpline::NormalizationConstant(const 
     }
     default:
     {
-      dserror("unknown kernel space dimension!");
+      FOUR_C_THROW("unknown kernel space dimension!");
       break;
     }
   }

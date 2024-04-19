@@ -58,7 +58,7 @@ void PARTICLEWALL::WallResultTest::TestNode(INPUT::LineDefinition& res, int& ner
 
   // safety check
   if (not havenodeonanyproc)
-    dserror("node %d does not belong to discretization %s", node + 1,
+    FOUR_C_THROW("node %d does not belong to discretization %s", node + 1,
         walldiscretization_->Name().c_str());
 
 
@@ -103,8 +103,8 @@ void PARTICLEWALL::WallResultTest::TestNode(INPUT::LineDefinition& res, int& ner
           const Epetra_BlockMap& disnpmap = disp->Map();
           int lid = disnpmap.LID(walldiscretization_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", quantity.c_str(), idx,
-                actnode->Id());
+            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", quantity.c_str(),
+                idx, actnode->Id());
           actresult += (*disp)[lid];
         }
       }
@@ -130,13 +130,13 @@ void PARTICLEWALL::WallResultTest::TestNode(INPUT::LineDefinition& res, int& ner
         const Epetra_BlockMap& disnpmap = disp->Map();
         int lid = disnpmap.LID(walldiscretization_->Dof(0, actnode, idx));
         if (lid < 0)
-          dserror("You tried to test %s on nonexistent dof %d on node %d", quantity.c_str(), idx,
-              actnode->Id());
+          FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", quantity.c_str(),
+              idx, actnode->Id());
         actresult = (*disp)[lid];
       }
     }
     else
-      dserror("result check failed with unknown quantity '%s'!", quantity.c_str());
+      FOUR_C_THROW("result check failed with unknown quantity '%s'!", quantity.c_str());
 
     // compare values
     const int err = CompareValues(actresult, "NODE", res);
@@ -169,7 +169,7 @@ void PARTICLEWALL::WallResultTest::TestSpecial(
   else if (quantity == "nwallnodes")
     actresult = walldiscretization_->NumGlobalNodes();
   else
-    dserror("result check failed with unknown quantity '%s'!", quantity.c_str());
+    FOUR_C_THROW("result check failed with unknown quantity '%s'!", quantity.c_str());
 
   // compare values
   const int err = CompareValues(actresult, "SPECIAL", res);

@@ -271,7 +271,7 @@ namespace DRT
           ) override;
 
       //! calculation of convective element matrix in convective form -- additional conservative
-      //! contributions (off diagonal term fluid) not yet implemented --> dserror
+      //! contributions (off diagonal term fluid) not yet implemented --> FOUR_C_THROW
       void CalcMatConvAddConsODFluid(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
@@ -590,7 +590,7 @@ namespace DRT
               break;
 
             default:
-              dserror(
+              FOUR_C_THROW(
                   "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
               break;
           }
@@ -626,7 +626,7 @@ namespace DRT
         for (auto& k : scalartophasemap_)
         {
           if (k.phaseID < 0 or k.phaseID >= numfluidphases)
-            dserror("Invalid phase ID %i", k.phaseID);
+            FOUR_C_THROW("Invalid phase ID %i", k.phaseID);
         }
 
         // set convective term
@@ -645,7 +645,7 @@ namespace DRT
               break;
 
             default:
-              dserror(
+              FOUR_C_THROW(
                   "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
               break;
           }
@@ -657,12 +657,13 @@ namespace DRT
       void SetFluidPoromultiphaseMaterial(DRT::Element* ele)
       {
         // check if we actually have three materials
-        if (ele->NumMaterial() < 3) dserror("no third material available");
+        if (ele->NumMaterial() < 3) FOUR_C_THROW("no third material available");
 
         // here we rely that the PoroMultiPhase material has been added as third material
         multiphasemat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(
             ele->Material(ndsscatra_porofluid_));
-        if (multiphasemat_ == Teuchos::null) dserror("cast to MAT::FluidPoroMultiPhase failed!");
+        if (multiphasemat_ == Teuchos::null)
+          FOUR_C_THROW("cast to MAT::FluidPoroMultiPhase failed!");
 
         materialset_ = true;
       }
@@ -680,7 +681,7 @@ namespace DRT
             return pressure_[scalartophasemap_[k].phaseID];
 
           default:
-            dserror("ScalartophaseID = %i for species %i", scalartophasemap_[k].phaseID, k);
+            FOUR_C_THROW("ScalartophaseID = %i for species %i", scalartophasemap_[k].phaseID, k);
             return 0;
         }
       };
@@ -697,7 +698,7 @@ namespace DRT
             return saturation_[scalartophasemap_[k].phaseID];
 
           default:
-            dserror("ScalartophaseID = %i for species %i", scalartophasemap_[k].phaseID, k);
+            FOUR_C_THROW("ScalartophaseID = %i for species %i", scalartophasemap_[k].phaseID, k);
             return 0;
         }
       };
@@ -722,7 +723,7 @@ namespace DRT
             return 1.0;
 
           default:
-            dserror(
+            FOUR_C_THROW(
                 "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             return 0;
         }
@@ -744,7 +745,7 @@ namespace DRT
             return volfrac_[GetPhaseID(k) - phasemanager_->NumFluidPhases()];
 
           default:
-            dserror("ScalartophaseID = %i for species %i", scalartophasemap_[k].phaseID, k);
+            FOUR_C_THROW("ScalartophaseID = %i for species %i", scalartophasemap_[k].phaseID, k);
             return 0;
         }
       };
@@ -767,7 +768,7 @@ namespace DRT
       int GetPhaseID(const int scalarID) const
       {
         if (scalartophasemap_[scalarID].phaseID < 0)
-          dserror(
+          FOUR_C_THROW(
               "ScalartophaseID = %i for species %i", scalartophasemap_[scalarID].phaseID, scalarID);
 
         return scalartophasemap_[scalarID].phaseID;
@@ -894,7 +895,7 @@ namespace DRT
             break;
           }
           default:
-            dserror(
+            FOUR_C_THROW(
                 "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
         }  // switch(species type)
@@ -983,7 +984,7 @@ namespace DRT
           }
           default:
           {
-            dserror(
+            FOUR_C_THROW(
                 "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
           }
@@ -1071,7 +1072,7 @@ namespace DRT
           (*prefaclinconvodfluid)[phase + numvolfrac] += laplawf;
         }
         else
-          dserror("GetPreFacLinConvODFluid has been called with phase %i", phase);
+          FOUR_C_THROW("GetPreFacLinConvODFluid has been called with phase %i", phase);
 
         return;
       };
@@ -1154,7 +1155,7 @@ namespace DRT
             break;
           }
           default:
-            dserror(
+            FOUR_C_THROW(
                 "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
         }  // switch(species type)
@@ -1256,7 +1257,7 @@ namespace DRT
           }
           default:
           {
-            dserror(
+            FOUR_C_THROW(
                 "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
           }
@@ -1280,7 +1281,7 @@ namespace DRT
           }
           case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
           default:
-            dserror(
+            FOUR_C_THROW(
                 "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
         }  // switch(species type)
@@ -1320,7 +1321,7 @@ namespace DRT
           refgradpres.Multiply(xjm, pressuregrad_[phase]);
         }
         else
-          dserror("GetRefGradPres has been called with phase %i", phase);
+          FOUR_C_THROW("GetRefGradPres has been called with phase %i", phase);
 
         return;
       }
@@ -1358,7 +1359,7 @@ namespace DRT
           }
           default:
           {
-            dserror(
+            FOUR_C_THROW(
                 "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
           }
@@ -1434,7 +1435,7 @@ namespace DRT
           }
 
           default:
-            dserror(
+            FOUR_C_THROW(
                 "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
             break;
         }  // switch(species type)
@@ -1462,7 +1463,7 @@ namespace DRT
       Teuchos::RCP<MAT::FluidPoroMultiPhase> MultiphaseMat()
       {
         if (!materialset_)
-          dserror("Fluid-Multiphase Material has not yet been set in Variablemanager");
+          FOUR_C_THROW("Fluid-Multiphase Material has not yet been set in Variablemanager");
 
         return multiphasemat_;
       }

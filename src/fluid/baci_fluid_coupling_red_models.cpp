@@ -51,7 +51,7 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
   double remainder = dt_f3_ - double(quotient) * dt_rm_;
   if (remainder != 0.0)
   {
-    dserror("\"Fluid 3D\" must have a time step multiple of that of \"reduced-D\" problem");
+    FOUR_C_THROW("\"Fluid 3D\" must have a time step multiple of that of \"reduced-D\" problem");
   }
 
   // ---------------------------------------------------------------------
@@ -74,7 +74,7 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
   // ---------------------------------------------------------------------
   if (numcondlines != couplingcond2.size())
   {
-    dserror(
+    FOUR_C_THROW(
         "coupled problem beween reduced-D and 3D must have equal number of condition on both sides "
         "of the discretization boundaries");
   }
@@ -110,7 +110,8 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
       }
       if (!CondIsFine)
       {
-        dserror("[3D/Reduced-D COUPLING] condition [%d] is defined only on the 3D side", condid);
+        FOUR_C_THROW(
+            "[3D/Reduced-D COUPLING] condition [%d] is defined only on the 3D side", condid);
       }
     }
 
@@ -136,7 +137,7 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
       }
       int thisN_iter = *couplingcond[i]->Get<int>("MaximumIterations");
       if (thisN_iter != N_iter)
-        dserror(
+        FOUR_C_THROW(
             "all maximum number of iterations on the coupling boundary between 3-D and reduced-D "
             "boundary should be the same!!!");
 
@@ -153,7 +154,7 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
       // -----------------------------------------------------------------
       bool inserted = coup_map3D_.insert(std::make_pair(condid, couplingbc)).second;
       if (!inserted)
-        dserror(
+        FOUR_C_THROW(
             "There are more than one 3D-to-OneD coupling condition lines with the same ID. This "
             "can not yet be handled.");
     }  // end loop over condition lines from input
@@ -316,7 +317,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::ApplyBoundaryConditions(
           auto itr = map3_Dnp_->find(CouplingVariable.str());
           if (itr == map3_Dnp_->end())
           {
-            dserror("[3D/Reduced-D COUPLING] 3D map has no variable %s for condition [%d]",
+            FOUR_C_THROW("[3D/Reduced-D COUPLING] 3D map has no variable %s for condition [%d]",
                 variable_str.c_str(), condID);
           }
           (*map3_Dnp_)[CouplingVariable.str()] =
@@ -327,7 +328,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::ApplyBoundaryConditions(
           std::map<std::string, double>::iterator itr = map3_Dnp_->find(CouplingVariable.str());
           if (itr == map3_Dnp_->end())
           {
-            dserror("[3D/Reduced-D COUPLING] 3D map has no variable %s for condition [%d]",
+            FOUR_C_THROW("[3D/Reduced-D COUPLING] 3D map has no variable %s for condition [%d]",
                 variable_str.c_str(), condID);
           }
           double density = 0.0;
@@ -340,7 +341,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::ApplyBoundaryConditions(
         }
         else
         {
-          dserror("(%s): No such coupling variable on the 3D side is defined yet",
+          FOUR_C_THROW("(%s): No such coupling variable on the 3D side is defined yet",
               variable_str.c_str());
         }
         if (discret3D_->Comm().MyPID() == 0)
@@ -386,7 +387,8 @@ void FLD::UTILS::FluidCouplingWrapperBase::ApplyBoundaryConditions(
             auto itr = mapRed_Dnp_->find(CouplingVariable.str());
             if (itr == mapRed_Dnp_->end())
             {
-              dserror("[3D/Reduced-D COUPLING] reduced-D map has no variable %s for condition [%d]",
+              FOUR_C_THROW(
+                  "[3D/Reduced-D COUPLING] reduced-D map has no variable %s for condition [%d]",
                   variable_str.c_str(), condID);
             }
             (*mapRed_Dnp_)[CouplingVariable.str()] = 0.0;
@@ -396,7 +398,8 @@ void FLD::UTILS::FluidCouplingWrapperBase::ApplyBoundaryConditions(
             std::map<std::string, double>::iterator itr = mapRed_Dnp_->find(CouplingVariable.str());
             if (itr == mapRed_Dnp_->end())
             {
-              dserror("[3D/Reduced-D COUPLING] reduced-D map has no variable %s for condition [%d]",
+              FOUR_C_THROW(
+                  "[3D/Reduced-D COUPLING] reduced-D map has no variable %s for condition [%d]",
                   variable_str.c_str(), condID);
             }
             (*mapRed_Dnp_)[CouplingVariable.str()] = 0.0;
@@ -404,7 +407,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::ApplyBoundaryConditions(
 
           else
           {
-            dserror("(%s): No such coupling variable on the 3D side is defined yet",
+            FOUR_C_THROW("(%s): No such coupling variable on the 3D side is defined yet",
                 variable_str.c_str());
           }
           break;
@@ -513,7 +516,8 @@ void FLD::UTILS::FluidCouplingWrapperBase::ApplyBoundaryConditions(
     }
     else
     {
-      dserror("Reduced-dimensional problem, returned a value of type [%s] at the condition (%d)",
+      FOUR_C_THROW(
+          "Reduced-dimensional problem, returned a value of type [%s] at the condition (%d)",
           ReturnedVariable.c_str(), ID);
       exit(0);
     }
@@ -757,7 +761,7 @@ FLD::UTILS::FluidCouplingBc::FluidCouplingBc(Teuchos::RCP<DRT::Discretization> d
     double area = this->Area(density, viscosity, condid);
     if (flowrate == 0.0)
     {
-      dserror(
+      FOUR_C_THROW(
           "3D SURF condition (%d) expects a flowrate from 1D problem,\nthus it must have a "
           "Dirichlet BC of 1 in the direction of flow",
           condid);
@@ -876,7 +880,7 @@ double FLD::UTILS::FluidCouplingBc::Area(double& density, double& viscosity, int
       theproc = i;
       break;
     }
-  if (theproc < 0) dserror("Something parallel went terribly wrong!");
+  if (theproc < 0) FOUR_C_THROW("Something parallel went terribly wrong!");
 
   // do the actual communication of density ...
   discret_3D_->Comm().Broadcast(&density, 1, theproc);
@@ -1131,7 +1135,7 @@ void FLD::UTILS::FluidCouplingBc::EvaluateDirichlet(
 {
   return;
   std::cout << "Evaluating Dirich!" << std::endl;
-  // dserror("Dirichlet coupling is not fixed yet, if you see the message then something is
+  // FOUR_C_THROW("Dirichlet coupling is not fixed yet, if you see the message then something is
   // wrong!");
   //  std::cout<<"3D discretization:"<<std::endl<<*discret_3D_<<std::endl;
   std::vector<DRT::Condition*> conds_red;
@@ -1205,7 +1209,7 @@ void FLD::UTILS::FluidCouplingBc::EvaluateDirichlet(
           //        std::cout<<"Vel["<<gid<<"]: "<<(*velnp) [lid]<<std::endl;
           if ((*velnp)[lid] > 1.0)
           {
-            dserror("coupled 3D/Reduced-D must have Dirichlet BC = 1");
+            FOUR_C_THROW("coupled 3D/Reduced-D must have Dirichlet BC = 1");
             exit(1);
           }
           std::cout << "[" << dof_gid << "]\t|" << val << "\t<-<" << (*velnp)[lid] << "|\t";

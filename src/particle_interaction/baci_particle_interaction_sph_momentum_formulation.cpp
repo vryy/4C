@@ -78,7 +78,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ShearForces(const doub
   const double diffusion_coeff = 5.0 * scaled_viscosity - bulk_viscosity;
 
   // safety check
-  if (diffusion_coeff < 0.0) dserror("diffusion coefficient is negative!");
+  if (diffusion_coeff < 0.0) FOUR_C_THROW("diffusion coefficient is negative!");
 
   double vel_ij[3];
   UTILS::VecSet(vel_ij, vel_i);

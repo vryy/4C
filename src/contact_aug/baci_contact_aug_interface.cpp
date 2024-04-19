@@ -99,7 +99,7 @@ void CONTACT::AUG::Interface::Setup()
   {
     int gid = selerowmap_->GID(i);
     DRT::Element* ele = idiscret_->gElement(gid);
-    if (!ele) dserror("Cannot find slave element with gid %i", gid);
+    if (!ele) FOUR_C_THROW("Cannot find slave element with gid %i", gid);
 
     MORTAR::Element* sele = static_cast<MORTAR::Element*>(ele);
     if (myMinEdgeLength > sele->MinEdgeSize()) myMinEdgeLength = sele->MinEdgeSize();
@@ -113,7 +113,7 @@ void CONTACT::AUG::Interface::Setup()
   {
     int gid = melerowmap_->GID(i);
     DRT::Element* ele = idiscret_->gElement(gid);
-    if (!ele) dserror("Cannot find master element with gid %i", gid);
+    if (!ele) FOUR_C_THROW("Cannot find master element with gid %i", gid);
 
     MORTAR::Element* mele = static_cast<MORTAR::Element*>(ele);
     if (myMinEdgeLength > mele->MinEdgeSize()) myMinEdgeLength = mele->MinEdgeSize();
@@ -141,7 +141,7 @@ void CONTACT::AUG::Interface::Setup()
   Comm().MinAll(lMins.data(), gMins.data(), 2);
 
   if (gMins[0] == 1.0e12 or gMins[0] < 0.0)
-    dserror(
+    FOUR_C_THROW(
         "ERROR: Global minimal interface edge length couldn't"
         " be calculated! (value: %d)",
         gMins[0]);
@@ -151,7 +151,7 @@ void CONTACT::AUG::Interface::Setup()
   if (interfaceData_.PenBound() < 0.0) interfaceData_.PenBound() = 0.5 * gMins[0];
 
   if (gMins[1] == 1.0e12 or gMins[1] < 0.0)
-    dserror(
+    FOUR_C_THROW(
         "ERROR: Global minimal master element area couldn't"
         " be calculated! (value: %d)",
         gMins[1]);
@@ -196,7 +196,7 @@ void CONTACT::AUG::Interface::SetupAssembleStrategy()
     }
     default:
     {
-      dserror("Unknown interface assemble strategy! (enum=%d)", type);
+      FOUR_C_THROW("Unknown interface assemble strategy! (enum=%d)", type);
       exit(EXIT_FAILURE);
     }
   }
@@ -224,7 +224,7 @@ CONTACT::AUG::Interface::CreateNodeBasedAssembleStrategy()
     }
     default:
     {
-      dserror("Unknown variational approach! (var_type= \"%s\" | %d)",
+      FOUR_C_THROW("Unknown variational approach! (var_type= \"%s\" | %d)",
           INPAR::CONTACT::VariationalApproach2String(var_type).c_str(), var_type);
       exit(EXIT_FAILURE);
     }
@@ -255,7 +255,7 @@ void CONTACT::AUG::Interface::Initialize()
 
     DRT::Node* node = Discret().gNode(gid);
     Node* cnode = dynamic_cast<Node*>(node);
-    if (not cnode) dserror("Dynamic cast for node gid %d failed!", gid);
+    if (not cnode) FOUR_C_THROW("Dynamic cast for node gid %d failed!", gid);
 
     cnode->InitializeAugDataContainer(
         interfaceData_.SlMaElementAreaRatio(), interfaceData_.IsTriangleOnMaster());
@@ -313,7 +313,8 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
   // interface needs to be complete
-  if (!Filled() && Comm().MyPID() == 0) dserror("FillComplete() not called on interface %", id_);
+  if (!Filled() && Comm().MyPID() == 0)
+    FOUR_C_THROW("FillComplete() not called on interface %", id_);
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -325,7 +326,7 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
     const int gid1 = myelementgids[i];
 
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
+    if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
     if (selement->ZeroSized()) continue;
@@ -343,7 +344,7 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
         augIntegrationWrapper.IntegrateDerivSlaveElement((*selement), Comm(), mparams_ptr);
         break;
       default:
-        dserror("RedEvaluate: Dim value has to be 2 or 3!");
+        FOUR_C_THROW("RedEvaluate: Dim value has to be 2 or 3!");
         exit(EXIT_FAILURE);
     }
     /**************************************************************************
@@ -369,7 +370,7 @@ void CONTACT::AUG::Interface::EvaluateNodalNormals() const
   {
     const int gid = mygids[i];
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node& cnode = dynamic_cast<CONTACT::Node&>(*node);
 
     /*------------------------------------------------------------------------*/
@@ -418,7 +419,7 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
     {
       int gid = my_rgids[i];
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& normals_i = normals[gid];
@@ -447,12 +448,12 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
     {
       int gid = my_cgids[i];
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node& cnode = dynamic_cast<Node&>(*node);
 
       Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& normals_i = normals[gid];
 
-      if (normals_i.is_null()) dserror("GID %d could not be found!", gid);
+      if (normals_i.is_null()) FOUR_C_THROW("GID %d could not be found!", gid);
 
       // fill nodal matrix
       const CORE::LINALG::SerialDenseMatrix& n_i = *normals_i;
@@ -576,7 +577,7 @@ void CONTACT::AUG::Interface::EvalActiveContributions(
   else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
     EvaluateSearchBinarytree();
   else
-    dserror("Invalid search algorithm");
+    FOUR_C_THROW("Invalid search algorithm");
 
   // set active slave node map of this interface and start the
   // coupling evaluation
@@ -655,7 +656,7 @@ void CONTACT::AUG::Interface::AssembleActiveGapVectors(
   const int* mynodegids = activenodes_->MyGlobalElements();
 
   int* myactiven_gids = activen_->MyGlobalElements();
-  if (nummynodes != activen_->NumMyElements()) dserror("Dimension mismatch!");
+  if (nummynodes != activen_->NumMyElements()) FOUR_C_THROW("Dimension mismatch!");
 
   double* aWGapVec_vals = aWGapVec.Values();
   double* wGapVec_vals = wGapVec.Values();
@@ -666,7 +667,7 @@ void CONTACT::AUG::Interface::AssembleActiveGapVectors(
 
     DRT::Node* node = idiscret_->gNode(gid);
     Node* cnode = dynamic_cast<Node*>(node);
-    if (not cnode) dserror("Dynamic_cast to Node failed! [node-gid=%d]", gid);
+    if (not cnode) FOUR_C_THROW("Dynamic_cast to Node failed! [node-gid=%d]", gid);
 
     // calculate averaged weighted gap
     const double wGap = cnode->AugData().GetWGap();
@@ -674,7 +675,7 @@ void CONTACT::AUG::Interface::AssembleActiveGapVectors(
     double aWGap = wGap;
 
     if (kappa == 1.0e12 or aWGap == 1.0e12)
-      dserror(
+      FOUR_C_THROW(
           "ERROR: Kappa and/or the weighted gap should "
           "not be equal 1.0e12 for active nodes!");
 
@@ -684,13 +685,13 @@ void CONTACT::AUG::Interface::AssembleActiveGapVectors(
 
     // --- averaged weighted gap vector
     int rlid = aWGapVec.Map().LID(rgid);
-    if (rlid == -1) dserror("Sparse vector aWGapVec does not have global row %d", rgid);
+    if (rlid == -1) FOUR_C_THROW("Sparse vector aWGapVec does not have global row %d", rgid);
 
     aWGapVec_vals[rlid] += aWGap;
 
     // --- weighted gap vector
     rlid = wGapVec.Map().LID(rgid);
-    if (rlid == -1) dserror("Sparse vector wGapVec does not have global row %d", rgid);
+    if (rlid == -1) FOUR_C_THROW("Sparse vector wGapVec does not have global row %d", rgid);
 
     wGapVec_vals[rlid] += wGap;
   }
@@ -708,7 +709,8 @@ void CONTACT::AUG::Interface::AssembleGapVectorOfAllSlNodes(Epetra_Vector& wGapA
   const int* mynodegids = snoderowmap_->MyGlobalElements();
 
   int* myslndof_gids = interfaceData_.SNDofRowMap()->MyGlobalElements();
-  if (nummynodes != interfaceData_.SNDofRowMap()->NumMyElements()) dserror("Dimension mismatch!");
+  if (nummynodes != interfaceData_.SNDofRowMap()->NumMyElements())
+    FOUR_C_THROW("Dimension mismatch!");
 
   double* wGapAllVec_vals = wGapAllSlNodesVec.Values();
 
@@ -718,14 +720,14 @@ void CONTACT::AUG::Interface::AssembleGapVectorOfAllSlNodes(Epetra_Vector& wGapA
 
     DRT::Node* node = idiscret_->gNode(gid);
     Node* cnode = dynamic_cast<Node*>(node);
-    if (not cnode) dserror("Dynamic_cast to Node failed! [node-gid=%d]", gid);
+    if (not cnode) FOUR_C_THROW("Dynamic_cast to Node failed! [node-gid=%d]", gid);
     const double wGap = cnode->AugData().GetWGap();
 
     const int rgid = myslndof_gids[i];
 
     // --- weighted gap vector
     const int rlid = wGapAllSlNodesVec.Map().LID(rgid);
-    if (rlid == -1) dserror("Sparse vector wGapVec does not have global row %d", rgid);
+    if (rlid == -1) FOUR_C_THROW("Sparse vector wGapVec does not have global row %d", rgid);
 
     wGapAllVec_vals[rlid] += wGap;
   }
@@ -744,7 +746,7 @@ void CONTACT::AUG::Interface::AssembleLmNVector(Epetra_Vector& lmNVec) const
   const int* mynodegids = activenodes_->MyGlobalElements();
 
   int* myactiven_gids = activen_->MyGlobalElements();
-  if (nummynodes != activen_->NumMyElements()) dserror("Dimension mismatch!");
+  if (nummynodes != activen_->NumMyElements()) FOUR_C_THROW("Dimension mismatch!");
 
   double* lmNVec_vals = lmNVec.Values();
 
@@ -754,7 +756,7 @@ void CONTACT::AUG::Interface::AssembleLmNVector(Epetra_Vector& lmNVec) const
 
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node)
-      dserror(
+      FOUR_C_THROW(
           "ERROR: AssembleDGLmrhs: Cannot find slave"
           " node with gid %",
           gid);
@@ -766,7 +768,7 @@ void CONTACT::AUG::Interface::AssembleLmNVector(Epetra_Vector& lmNVec) const
 
     // --- normal lagrange multiplier vector
     int rlid = lmNVec.Map().LID(rgid);
-    if (rlid == -1) dserror("Sparse vector lmNVec does not have global row %d", rgid);
+    if (rlid == -1) FOUR_C_THROW("Sparse vector lmNVec does not have global row %d", rgid);
 
     lmNVec_vals[rlid] += lmn;
   }
@@ -792,7 +794,7 @@ void CONTACT::AUG::Interface::AssembleAugAVector(
     const int gid = mynodegids[i];
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
 
     Node* cnode = static_cast<Node*>(node);
 
@@ -802,12 +804,12 @@ void CONTACT::AUG::Interface::AssembleAugAVector(
     if (augA > 0.0)
     {
       const int lid = augAVec.Map().LID(gid);
-      if (lid == -1) dserror("Sparse vector augAVec does not have global row %d", gid);
+      if (lid == -1) FOUR_C_THROW("Sparse vector augAVec does not have global row %d", gid);
 
       augA_values[lid] += augA;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "ERROR: The augmented nodal area shouldn't be equal/lower than zero! "
           "(value= %.2e)",
           augA);
@@ -820,12 +822,12 @@ void CONTACT::AUG::Interface::AssembleAugAVector(
       if (kappa > 0.0)
       {
         const int lid = kappaVec.Map().LID(gid);
-        if (lid == -1) dserror("Sparse vector kappaVec does not have global row %d", gid);
+        if (lid == -1) FOUR_C_THROW("Sparse vector kappaVec does not have global row %d", gid);
 
         kappa_values[lid] += kappa;
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "ERROR: The weighted area kappa shouldn't be equal/lower than zero! "
             "(value= %.2e)",
             augA);
@@ -855,10 +857,10 @@ void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
     const int gid = mynodegids[i];
 
     Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("Cannot find inactive slave node with gid %", gid);
+    if (!cnode) FOUR_C_THROW("Cannot find inactive slave node with gid %", gid);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror(
+      FOUR_C_THROW(
           "ERROR: AugmentedInterface::AssembleInactiverhs: "
           "Node ownership inconsistency!");
 
@@ -905,13 +907,13 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) cons
 
     Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
     if (!cnode)
-      dserror(
+      FOUR_C_THROW(
           "ERROR: AssembleDLmTLmTRhs: Cannot find active"
           " slave node with gid %",
           gid);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("AssembleDLmTLmTrhs: Node ownership inconsistency!");
+      FOUR_C_THROW("AssembleDLmTLmTrhs: Node ownership inconsistency!");
 
     // Get the Lagrange multiplier and txi of the current node
     double* lm = cnode->MoData().lm();
@@ -975,13 +977,13 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(CORE::LINALG::SparseMatrix& 
 
     Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
     if (!cnode)
-      dserror(
+      FOUR_C_THROW(
           "ERROR: AssembleDLmTLmTrhs: Cannot find slave"
           " node with gid %",
           gid);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("AssembleDLmTLmTrhs: Node ownership inconsistency!");
+      FOUR_C_THROW("AssembleDLmTLmTrhs: Node ownership inconsistency!");
 
     // get weighted element area
     const double kappa = cnode->AugData().GetKappa();
@@ -1023,10 +1025,11 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(
     const int gid = mynodegids[i];
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleDGLmLin: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID())
+      FOUR_C_THROW("AssembleDGLmLin: Node ownership inconsistency!");
 
     double* lm = cnode->MoData().lm();
     Deriv1stMap& augALinMap = cnode->AugData().GetDeriv1st_Kappa();
@@ -1073,13 +1076,13 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
 
     Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
     if (!cnode)
-      dserror(
+      FOUR_C_THROW(
           "ERROR: AssembleAugInactiveMatrix: Cannot find"
           " inactive slave node with gid %",
           gid);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror(
+      FOUR_C_THROW(
           "ERROR: AugmentedInterface::AssembleAugInactiveMatrix:"
           " Node ownership inconsistency!");
 
@@ -1130,13 +1133,13 @@ void CONTACT::AUG::Interface::AssembleAugInactiveLinMatrix(
 
     Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
     if (!cnode)
-      dserror(
+      FOUR_C_THROW(
           "ERROR: AssembleAugInactiveMatrix: Cannot find"
           " inactive slave node with gid %",
           gid);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror(
+      FOUR_C_THROW(
           "ERROR: AugmentedInterface::AssembleAugInactiveMatrix:"
           " Node ownership inconsistency!");
 
@@ -1180,15 +1183,15 @@ void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
 
     Node* cnode = static_cast<Node*>(idiscret_->gNode(gid));
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
 
     const double cn = cnVec[cnVec.Map().LID(gid)];
 
     const double wgap = cnode->AugData().GetWGap();
-    dsassert(wgap != 1.0e12, "ERROR: WGap is equal 1.e12 for a active node!");
+    FOUR_C_ASSERT(wgap != 1.0e12, "ERROR: WGap is equal 1.e12 for a active node!");
 
     const double kappa = cnode->AugData().GetKappa();
-    dsassert(kappa != 1.0e12, "ERROR: Kappa is equal 1.e12 for a active node! (node-id: %d)");
+    FOUR_C_ASSERT(kappa != 1.0e12, "ERROR: Kappa is equal 1.e12 for a active node! (node-id: %d)");
 
     // get the Lagrange multiplier
     const double* lm = cnode->MoData().lm();
@@ -1220,10 +1223,10 @@ void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
     int gid = augInactiveSlaveNodes->GID(i);
     Node* cnode = static_cast<Node*>(idiscret_->gNode(gid));
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
 
     const int cn_lid = cnVec.Map().LID(gid);
-    if (cn_lid < 0) dserror("Couldn't find the cn-LID for GID %d.", gid);
+    if (cn_lid < 0) FOUR_C_THROW("Couldn't find the cn-LID for GID %d.", gid);
     const double cn_inv = 1.0 / cnVec[cn_lid];
     const double augA = cnode->AugData().GetAugA();
 
@@ -1262,7 +1265,7 @@ bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
     const int gid = mynodegids[i];
 
     Node* cnode = dynamic_cast<Node*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("Cannot find node with gid %i", gid);
+    if (!cnode) FOUR_C_THROW("Cannot find node with gid %i", gid);
 
     const int numdof = cnode->NumDof();
 
@@ -1360,7 +1363,7 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
   // dimension check
   const double dimcheck = (activedofs_->NumGlobalElements()) / (activenodes_->NumGlobalElements());
 
-  if (dimcheck != Dim()) dserror("SplitAugActiveDofs: Nodes <-> Dofs dimension mismatch!");
+  if (dimcheck != Dim()) FOUR_C_THROW("SplitAugActiveDofs: Nodes <-> Dofs dimension mismatch!");
 
   // loop over all augmented active row nodes
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
@@ -1368,7 +1371,7 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
     int gid = activenodes_->GID(i);
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
 
     Node* cnode = static_cast<Node*>(node);
 
@@ -1395,7 +1398,7 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
 
   // check global dimensions
   if ((gCountN + gCountT) != activedofs_->NumGlobalElements())
-    dserror("SplitAugActiveDofs: Splitting went wrong!");
+    FOUR_C_THROW("SplitAugActiveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
   activen_ = Teuchos::rcp(new Epetra_Map(gCountN, countN, myNGids.data(), 0, Comm()));
@@ -1424,14 +1427,14 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
 
   // dimension check
   double dimcheck = (sdofrowmap_->NumGlobalElements()) / (snoderowmap_->NumGlobalElements());
-  if (dimcheck != Dim()) dserror("SplitSlaveDofs: Nodes <-> Dofs dimension mismatch!");
+  if (dimcheck != Dim()) FOUR_C_THROW("SplitSlaveDofs: Nodes <-> Dofs dimension mismatch!");
 
   // loop over all augmented active row nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     Node* cnode = static_cast<Node*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("Cannot find slave node with gid %", gid);
+    if (!cnode) FOUR_C_THROW("Cannot find slave node with gid %", gid);
 
     // add first dof to nMap
     myNGids[countN] = cnode->Dofs()[0];
@@ -1459,7 +1462,7 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
 
   // check global dimensions
   if ((gCountN + gCountT) != sdofrowmap_->NumGlobalElements())
-    dserror("SplitSlaveDofs: Splitting went wrong!");
+    FOUR_C_THROW("SplitSlaveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
   interfaceData_.SNDofRowMap() =
@@ -1488,7 +1491,7 @@ void CONTACT::AUG::Interface::BuildActiveColMaps()
       const int rgid = active_row_node_gids[i];
       const int rlid = active_row_nodes.Map().LID(rgid);
       if (rlid == -1)
-        dserror("Active slave node GID #%d is no part of the slave row nodes?!", rgid);
+        FOUR_C_THROW("Active slave node GID #%d is no part of the slave row nodes?!", rgid);
 
       arow_node_vals[rlid] = 1;
     }
@@ -1575,7 +1578,7 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContribution(
     const Epetra_Vector& dincr, const Epetra_Vector& str_grad, Epetra_Vector& lmincr) const
 {
   if (dincr.Map().NumMyElements() != str_grad.Map().NumMyElements())
-    dserror("The number of local elements does not coincide!");
+    FOUR_C_THROW("The number of local elements does not coincide!");
 
   const double* dincr_vals = dincr.Values();
   const double* str_grad_vals = str_grad.Values();
@@ -1586,7 +1589,7 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContribution(
   const int* mynodegids = activenodes_->MyGlobalElements();
 
   if (nummynodes != lmincr.Map().NumMyElements())
-    dserror(
+    FOUR_C_THROW(
         "Number of elements does not coincide! Currently we"
         "support only Lagrange Multiplier vectors in normal direction"
         "only!");
@@ -1598,13 +1601,13 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContribution(
     const int gid = mynodegids[lid];
 
     Node* cnode = static_cast<Node*>(idiscret_->gNode(gid));
-    if (not cnode) dserror("Cannot find slave node with gid %", gid);
+    if (not cnode) FOUR_C_THROW("Cannot find slave node with gid %", gid);
 
     const int ndof = cnode->Dofs()[0];
     const int nlid_j = lmincr.Map().LID(ndof);
     if (nlid_j == -1)
     {
-      dserror(
+      FOUR_C_THROW(
           "Couldn't find the normal-dof GID %d in the "
           "Lagrange multiplier increment vector on proc %d!",
           ndof, Comm().MyPID());
@@ -1679,7 +1682,7 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContribution(
     const Epetra_Vector& dincr, const Epetra_Vector& lm, Epetra_Vector& lmincr) const
 {
   if (lmincr.Map().NumMyElements() != lm.Map().NumMyElements())
-    dserror("The number of local elements does not coincide!");
+    FOUR_C_THROW("The number of local elements does not coincide!");
 
   const double* dincr_vals = dincr.Values();
   const Epetra_BlockMap& dincr_block_map = dincr.Map();
@@ -1693,7 +1696,7 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContribution(
   const int* mynodegids = activenodes_->MyGlobalElements();
 
   if (nummynodes != lmincr.Map().NumMyElements())
-    dserror(
+    FOUR_C_THROW(
         "Number of elements does not coincide! Currently we"
         "support only Lagrange Multiplier vectors in normal direction!");
 
@@ -1704,13 +1707,13 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContribution(
     const int kgid = mynodegids[k];
 
     Node* cnode_k = static_cast<Node*>(idiscret_->gNode(kgid));
-    dsassert(cnode_k, "ERROR: Cannot find slave node!");
+    FOUR_C_ASSERT(cnode_k, "ERROR: Cannot find slave node!");
 
     const int ndof_k = cnode_k->Dofs()[0];
     const int nlid_k = lm.Map().LID(ndof_k);
     if (nlid_k == -1)
     {
-      dserror(
+      FOUR_C_THROW(
           "Couldn't find the normal-dof GID %d in the "
           "Lagrange multiplier vector on proc %d!",
           ndof_k, Comm().MyPID());
@@ -1764,7 +1767,7 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContributionOfSide(const i
       const int jgid = mynodegids[j];
 
       Node* cnode_j = static_cast<Node*>(idiscret_->gNode(jgid));
-      dsassert(cnode_j, "ERROR: Cannot find slave node!");
+      FOUR_C_ASSERT(cnode_j, "ERROR: Cannot find slave node!");
 
       const Deriv2ndMap& varWGapLinSideMap = GetVarWGapLinOfSide<side>(*cnode_j);
 
@@ -1775,7 +1778,7 @@ void CONTACT::AUG::Interface::AssembleGradientBBMatrixContributionOfSide(const i
       const int nlid_j = lm_block_map.LID(ndof_j);
       if (nlid_j == -1)
       {
-        dserror(
+        FOUR_C_THROW(
             "Couldn't find the normal-dof GID %d in the "
             "Lagrange multiplier increment vector on proc %d!",
             ndof_j, Comm().MyPID());
@@ -1846,7 +1849,7 @@ template <class T>
 void CONTACT::AUG::AssembleMapIntoMatrix(
     int row, double scal, const T& values, CORE::LINALG::SparseMatrix& mat, double threshold)
 {
-  dsassert(threshold >= 0.0, "The threshold value has to be positive!");
+  FOUR_C_ASSERT(threshold >= 0.0, "The threshold value has to be positive!");
 
   for (typename T::const_iterator pp = values.begin(); pp != values.end(); ++pp)
   {
@@ -1879,7 +1882,7 @@ double CONTACT::AUG::Interface::GetMySquareOfWeightedGapGradientError() const
   for (int i = 0; i < num_my_anodes; ++i)
   {
     const Node* cnode = dynamic_cast<const Node*>(idiscret_->gNode(my_anode_gids[i]));
-    if (not cnode) dserror("Dynamic cast failed!");
+    if (not cnode) FOUR_C_THROW("Dynamic cast failed!");
 
     {
       const Deriv1stMap& d_wgap_sl = cnode->AugData().GetDeriv1st_WGapSl();
@@ -1906,7 +1909,7 @@ double CONTACT::AUG::Interface::GetMySquareOfWeightedGapGradientError() const
         my_square_error += e * e;
       }
 
-      if (sl_sanity_count != d_wgap_sl.size()) dserror("Size mismatch for the slave side!");
+      if (sl_sanity_count != d_wgap_sl.size()) FOUR_C_THROW("Size mismatch for the slave side!");
     }
 
     {
@@ -1934,7 +1937,7 @@ double CONTACT::AUG::Interface::GetMySquareOfWeightedGapGradientError() const
         my_square_error += e * e;
       }
 
-      if (ma_sanity_count != d_wgap_ma.size()) dserror("Size mismatch for the master side!");
+      if (ma_sanity_count != d_wgap_ma.size()) FOUR_C_THROW("Size mismatch for the master side!");
     }
   }
 
@@ -1954,7 +1957,7 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
   for (int i = 0; i < num_my_entries; ++i)
   {
     const DRT::Element* ele = idiscret_->gElement(my_gids[i]);
-    if (not ele) dserror("Couldn't find the element! (ele-GID=%d)", my_gids[i]);
+    if (not ele) FOUR_C_THROW("Couldn't find the element! (ele-GID=%d)", my_gids[i]);
 
     const DRT::Node* const* nodes = ele->Nodes();
     switch (ele->Shape())
@@ -1974,7 +1977,7 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
         break;
       }
       default:
-        dserror(
+        FOUR_C_THROW(
             "You have to implement the characteristic element length"
             " calculation for the given element type. (ele-type=%s)",
             CORE::FE::CellTypeToString(ele->Shape()).c_str());
@@ -2069,7 +2072,7 @@ void CONTACT::AUG::Interface::SplitIntoFarAndCloseSets(std::vector<int>& close_s
       // get element
       int gid = SlaveRowElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
-      if (!ele) dserror("Cannot find element with gid %", gid);
+      if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
 
       const bool close = et_selerow[i] > threshold;
       if (close)
@@ -2124,7 +2127,7 @@ Teuchos::RCP<const Epetra_Map> CONTACT::AUG::InterfaceDataContainer::ElementRowM
     case SideType::slave_master:
       return ElementRowMapPtr<SideType::slave_master>();
     default:
-      dserror("Unknown sidetype. (enum=%d)", stype);
+      FOUR_C_THROW("Unknown sidetype. (enum=%d)", stype);
       exit(EXIT_FAILURE);
   }
 }
@@ -2135,7 +2138,7 @@ template <>
 Teuchos::RCP<const Epetra_Map>
 CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>() const
 {
-  if (MEleRowMap().is_null()) dserror("Master element row map ptr is nullptr.");
+  if (MEleRowMap().is_null()) FOUR_C_THROW("Master element row map ptr is nullptr.");
 
   return MEleRowMap();
 }
@@ -2146,7 +2149,7 @@ template <>
 Teuchos::RCP<const Epetra_Map>
 CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() const
 {
-  if (SEleRowMap().is_null()) dserror("Slave element row map ptr is nullptr.");
+  if (SEleRowMap().is_null()) FOUR_C_THROW("Slave element row map ptr is nullptr.");
 
   return SEleRowMap();
 }

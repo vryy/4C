@@ -38,10 +38,10 @@ namespace
   static inline Number ComputeAbsoluteErrorWhenSkippingSnapshot(
       std::size_t i, const std::vector<std::tuple<double, Number>>& evaluated_integrand)
   {
-    dsassert(i > 0,
+    FOUR_C_ASSERT(i > 0,
         "This function should only be called for an item in the interior such that it can still be "
         "integrated with a Simpson's rule if we remove point i (0 < i < size-2)");
-    dsassert(i < evaluated_integrand.size() - 2,
+    FOUR_C_ASSERT(i < evaluated_integrand.size() - 2,
         "This function should only be called for an item in the interior such that it can still be "
         "integrated with a Simpson's rule if we remove point i (0 < i < size-2)");
 
@@ -106,7 +106,7 @@ namespace
       Number history_integration)
   {
     const size_t size = interval.timesteps.size();
-    if (size == 0) dserror("The history is empty. I cannot integrate.");
+    if (size == 0) FOUR_C_THROW("The history is empty. I cannot integrate.");
     if (size == 1)
     {
       // can only apply trapezoidal rule
@@ -159,7 +159,7 @@ namespace
   static inline void ReinitializeState(
       MIXTURE::FullConstrainedMixtureFiber<Number>& fiber, const Number lambda_f, const double time)
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     fiber.state_is_set_ = true;
 #endif
     fiber.current_state_.lambda_f = lambda_f;
@@ -179,7 +179,7 @@ namespace
 
     if (!IsNear(deposition_history_inverval.base_dt, dt))
     {
-      dserror(
+      FOUR_C_THROW(
           "The timestep is not constant within the interval. The interval currently relies on a "
           "constant timestep of %f. You are stepping with %f (err = %f). You need to extend the "
           "implementation such that it can also handle adaptive/non equidistant timestepping.",
@@ -219,7 +219,7 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::FullConstrainedMixtureFiber(
 template <typename Number>
 void MIXTURE::FullConstrainedMixtureFiber<Number>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("Packing and Unpacking is currently only implemented for the double-specialization");
+  FOUR_C_THROW("Packing and Unpacking is currently only implemented for the double-specialization");
 }
 
 template <>
@@ -261,7 +261,7 @@ template <typename Number>
 void MIXTURE::FullConstrainedMixtureFiber<Number>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  dserror("Packing and Unpacking is currently only implemented for the double-specialization");
+  FOUR_C_THROW("Packing and Unpacking is currently only implemented for the double-specialization");
 }
 
 template <>
@@ -395,7 +395,7 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::DScaledCauchyStressIntegran
     const MIXTURE::MassIncrement<Number>& mass_increment, const double time,
     const Number current_lambda_f) const
 {
-  dsassert(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
+  FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
   return mass_increment.growth_scalar *
          growth_evolution_.EvaluateSurvivalFunction(time - mass_increment.deposition_time) *
          EvaluateFiberMaterialCauchyStress<Number>(
@@ -407,7 +407,7 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::DScaledCauchyStressIntegran
     const MIXTURE::MassIncrement<Number>& mass_increment, const double time,
     const Number current_lambda_f) const
 {
-  dsassert(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
+  FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
   return mass_increment.growth_scalar_production_rate *
          growth_evolution_.EvaluateSurvivalFunction(time - mass_increment.deposition_time) *
          EvaluateFiberMaterialCauchyStress<Number>(
@@ -419,7 +419,7 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::DScaledCauchyStressIntegran
     const MIXTURE::MassIncrement<Number>& mass_increment, const double time,
     const Number current_lambda_f) const
 {
-  dsassert(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
+  FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
   return mass_increment.growth_scalar_production_rate * mass_increment.growth_scalar *
          growth_evolution_.EvaluateSurvivalFunction(time - mass_increment.deposition_time) *
          EvaluateDFiberMaterialCauchyStressDLambdaESq<Number>(
@@ -432,7 +432,7 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::DScaledCauchyStressIntegran
     const MIXTURE::MassIncrement<Number>& mass_increment, const double time,
     const Number current_lambda_f) const
 {
-  dsassert(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
+  FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
   return mass_increment.growth_scalar_production_rate * mass_increment.growth_scalar *
          growth_evolution_.EvaluateSurvivalFunction(time - mass_increment.deposition_time) *
          EvaluateDFiberMaterialCauchyStressDLambdaESq<Number>(
@@ -445,9 +445,9 @@ std::function<std::tuple<CORE::LINALG::Matrix<2, 1, Number>, CORE::LINALG::Matri
     const CORE::LINALG::Matrix<2, 1, Number>&)>
 MIXTURE::FullConstrainedMixtureFiber<Number>::GetLocalNewtonEvaluator() const
 {
-  dsassert(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
-  dsassert(current_time_shift_ == 0.0, "The timeshift should be zero if growth is enabled");
-  dsassert(
+  FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
+  FOUR_C_ASSERT(current_time_shift_ == 0.0, "The timeshift should be zero if growth is enabled");
+  FOUR_C_ASSERT(
       history_.size() > 0, "The history is empty. Please initialize it with ReinitializeHistory()");
 
   const auto growth_scalar_integrand = [&](const MassIncrement<Number>& mass_increment)
@@ -553,9 +553,9 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::EvaluateDResiduumGrowthScal
 template <typename Number>
 Number MIXTURE::FullConstrainedMixtureFiber<Number>::EvaluateDResiduumCauchyStressDLambdaFSq() const
 {
-  dsassert(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
-  dsassert(current_time_shift_ == 0.0, "The timeshift should be zero if growth is enabled");
-  dsassert(
+  FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
+  FOUR_C_ASSERT(current_time_shift_ == 0.0, "The timeshift should be zero if growth is enabled");
+  FOUR_C_ASSERT(
       history_.size() > 0, "The history is empty. Please initialize it with ReinitializeHistory()");
 
   const auto dscaled_cauchy_stress_integrand_d_lambda_f_sq =
@@ -734,7 +734,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::ReinitializeHistory(
 
   if (!IsNear(mass_increment.deposition_time, last_mass_increment.deposition_time))
   {
-    dserror(
+    FOUR_C_THROW(
         "The history is not empty, but you reinitialized the fiber with a different deposition "
         "time than the previous one. I don't know what happened in between. This is fatal. You "
         "maybe forgot to adapt the depositon time of all previous times?");
@@ -749,7 +749,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::ReinitializeHistory(
   history_.emplace_back();
   history_.back().timesteps.emplace_back(std::move(mass_increment));
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   state_is_set_ = false;
 #endif
 }
@@ -779,7 +779,8 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
 {
   if (growth_enabled_)
   {
-    dsassert(current_time_shift_ == 0.0, "The time shift should be zero if growth is enabled!");
+    FOUR_C_ASSERT(
+        current_time_shift_ == 0.0, "The time shift should be zero if growth is enabled!");
     history_.back().timesteps.emplace_back(
         EvaluateCurrentMassIncrement(computed_growth_scalar_, computed_sigma_));
 
@@ -916,7 +917,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
           break;
         }
         default:
-          dserror("unknown history adaption strategy");
+          FOUR_C_THROW("unknown history adaption strategy");
       }
     }
   }
@@ -927,7 +928,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
   }
 
   current_time_shift_ = 0.0;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   state_is_set_ = false;
 #endif
 }
@@ -944,7 +945,7 @@ template <typename Number>
 Number MIXTURE::FullConstrainedMixtureFiber<Number>::EvaluateDCurrentFiberPK2StressDLambdafsq()
     const
 {
-  dsassert(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
+  FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
   const Number lambda_f_sq = std::pow(current_state_.lambda_f, 2);
   return (computed_dsigma_dlambda_f_sq_ * lambda_f_sq - computed_sigma_) / std::pow(lambda_f_sq, 2);
 }

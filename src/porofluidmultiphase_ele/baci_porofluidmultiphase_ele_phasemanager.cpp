@@ -103,7 +103,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
           phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<3>(phasemanager));
           break;
         default:
-          dserror("invalid dimension for creating phase manager!");
+          FOUR_C_THROW("invalid dimension for creating phase manager!");
       }
       break;
     }
@@ -127,7 +127,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
           phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<3>(phasemanager));
           break;
         default:
-          dserror("invalid dimension for creating phase manager!");
+          FOUR_C_THROW("invalid dimension for creating phase manager!");
       }
       break;
     }
@@ -154,7 +154,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
           phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<3>(phasemanager));
           break;
         default:
-          dserror("invalid dimension for creating phase manager!");
+          FOUR_C_THROW("invalid dimension for creating phase manager!");
       }
 
       if (mattype == INPAR::MAT::m_fluidporo_multiphase_reactions)
@@ -175,7 +175,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
             phasemanager = Teuchos::rcp(new PhaseManagerVolFrac<3>(phasemanager));
             break;
           default:
-            dserror("invalid dimension for creating phase manager!");
+            FOUR_C_THROW("invalid dimension for creating phase manager!");
         }
       }
 
@@ -199,7 +199,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
           phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<3>(phasemanager));
           break;
         default:
-          dserror("invalid dimension for creating phase manager!");
+          FOUR_C_THROW("invalid dimension for creating phase manager!");
       }
 
       break;
@@ -212,7 +212,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
       break;
     }
     default:
-      dserror("unknown action %i for creating the phase manager!", action);
+      FOUR_C_THROW("unknown action %i for creating the phase manager!", action);
       break;
   }  // switch(action)
 
@@ -279,7 +279,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(const PhaseM
 void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
     const DRT::Element* ele, const int matnum)
 {
-  dsassert(ele != nullptr, "Element is null pointer for setup of phase manager!");
+  FOUR_C_ASSERT(ele != nullptr, "Element is null pointer for setup of phase manager!");
   // save current element
   ele_ = ele;
   // get material
@@ -288,7 +288,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
   // check the material
   if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
       material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-    dserror("only poro multiphase and poro multiphase reactions material valid");
+    FOUR_C_THROW("only poro multiphase and poro multiphase reactions material valid");
 
   // cast
   const MAT::FluidPoroMultiPhase& multiphasemat =
@@ -297,7 +297,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
   // safety check
   if (numfluidphases_ != multiphasemat.NumFluidPhases() ||
       totalnumdofpernode_ != multiphasemat.NumMat() || numvolfrac_ != multiphasemat.NumVolFrac())
-    dserror(
+    FOUR_C_THROW(
         "Number of phases given by the poro multiphase material does not match number "
         "of DOFs (%i phases and %i Fluid DOFs, %i vol fracs and %i volfracs, %i total dofs and %i "
         "Total DOFs)!",
@@ -309,8 +309,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
   invbulkmodulifluid_.resize(numfluidphases_, 0.0);
 
   // access second material in structure element
-  dsassert(ele_->NumMaterial() > 1, "no second material defined for element ");
-  dsassert(ele_->Material(1)->MaterialType() == INPAR::MAT::m_structporo,
+  FOUR_C_ASSERT(ele_->NumMaterial() > 1, "no second material defined for element ");
+  FOUR_C_ASSERT(ele_->Material(1)->MaterialType() == INPAR::MAT::m_structporo,
       "invalid structure material for poroelasticity");
 
   // cast second material to poro material
@@ -354,17 +354,17 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
 {
   CheckIsSetup();
 
-  if (isevaluated_ == true) dserror("state has already been set!");
+  if (isevaluated_ == true) FOUR_C_THROW("state has already been set!");
 
   // get material
-  dsassert(ele_->Material(matnum) != Teuchos::null, "Material of element is null pointer!");
+  FOUR_C_ASSERT(ele_->Material(matnum) != Teuchos::null, "Material of element is null pointer!");
   const MAT::Material& material = *(ele_->Material(matnum));
 
   // access state vector
   const std::vector<double>& phinp = *varmanager.Phinp();
 
   if (totalnumdofpernode_ != (int)phinp.size())
-    dserror("Length of phinp vector is not equal to the number of dofs");
+    FOUR_C_THROW("Length of phinp vector is not equal to the number of dofs");
 
   // fluid primary variables at phinp[0 ... numfluidphases - 1]
   const std::vector<double> fluid_phinp(phinp.data(), phinp.data() + numfluidphases_);
@@ -377,7 +377,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
       phinp.data() + numfluidphases_ + numvolfrac_ + numvolfrac_);
 
   if (numfluidphases_ != (int)fluid_phinp.size())
-    dserror("Length of fluid-phinp vector is not equal to the number of phases");
+    FOUR_C_THROW("Length of fluid-phinp vector is not equal to the number of phases");
 
   // cast the material to multiphase material
   const MAT::FluidPoroMultiPhase& multiphasemat =
@@ -393,12 +393,13 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
   // evaluate the volume fractions
   volfrac_ = volfrac;
   if (numvolfrac_ != (int)volfrac.size())
-    dserror("Length of volfrac vector is not equal to the number of volume fractions");
+    FOUR_C_THROW("Length of volfrac vector is not equal to the number of volume fractions");
   sumaddvolfrac_ = 0.0;
   for (int ivolfrac = 0; ivolfrac < numvolfrac_; ivolfrac++) sumaddvolfrac_ += volfrac_[ivolfrac];
   volfracpressure_ = volfracpressure;
   if (numvolfrac_ != (int)volfracpressure.size())
-    dserror("Length of volfrac pressure vector is not equal to the number of volume fractions");
+    FOUR_C_THROW(
+        "Length of volfrac pressure vector is not equal to the number of volume fractions");
 
   // evaluate the pressures
   multiphasemat.EvaluateGenPressure(genpressure_, fluid_phinp);
@@ -677,7 +678,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   if (numfluidphases == 0) return;
 
   // get material
-  dsassert(phasemanager_->Element()->Material(matnum) != Teuchos::null,
+  FOUR_C_ASSERT(phasemanager_->Element()->Material(matnum) != Teuchos::null,
       "Material of element is null pointer!");
   const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
@@ -690,13 +691,13 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   const std::vector<double>& phinp = *varmanager.Phinp();
 
   if (phasemanager_->TotalNumDof() != (int)phinp.size())
-    dserror("Length of phinp vector is not equal to the number of dofs");
+    FOUR_C_THROW("Length of phinp vector is not equal to the number of dofs");
 
   // get fluid primary variable
   const std::vector<double> fluid_phinp(phinp.data(), phinp.data() + numfluidphases);
 
   if (numfluidphases != (int)fluid_phinp.size())
-    dserror("Length of phinp vector is not equal to the number of phases");
+    FOUR_C_THROW("Length of phinp vector is not equal to the number of phases");
 
   // cast
   const MAT::FluidPoroMultiPhase& multiphasemat =
@@ -714,7 +715,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
     inverse.setMatrix(pressurederiv_);
     int err = inverse.invert();
     if (err != 0)
-      dserror("Inversion of matrix for pressure derivative failed with error code %d.", err);
+      FOUR_C_THROW("Inversion of matrix for pressure derivative failed with error code %d.", err);
   }
 
   // calculate derivatives of saturation w.r.t. pressure
@@ -869,8 +870,9 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::EvaluateGPSt
   PhaseManagerDeriv::EvaluateGPState(J, varmanager, matnum);
 
   // access second material in structure element
-  dsassert(phasemanager_->Element()->NumMaterial() > 1, "no second material defined for element ");
-  dsassert(phasemanager_->Element()->Material(1)->MaterialType() == INPAR::MAT::m_structporo,
+  FOUR_C_ASSERT(
+      phasemanager_->Element()->NumMaterial() > 1, "no second material defined for element ");
+  FOUR_C_ASSERT(phasemanager_->Element()->Material(1)->MaterialType() == INPAR::MAT::m_structporo,
       "invalid structure material for poroelasticity");
 
   // cast second material to poro material
@@ -1085,7 +1087,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
             MAT::ScatraMatMultiPoro::SpeciesType::species_temperature;
       }
       else
-        dserror("only MAT_scatra_multiporo_(fluid,volfrac,solid,temperature) valid here");
+        FOUR_C_THROW("only MAT_scatra_multiporo_(fluid,volfrac,solid,temperature) valid here");
     }
   }
   else if (scatramat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid)
@@ -1115,7 +1117,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
     scalartophasemap_[0].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_temperature;
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "only MAT_matlist_reactions, MAT_matlist or "
         "MAT_scatra_multiporo_(fluid,volfrac,solid,temperature) valid here");
 
@@ -1145,12 +1147,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::EvaluateGPState(
   phasemanager_->EvaluateGPState(J, varmanager, matnum);
 
   // get material
-  dsassert(phasemanager_->Element()->Material(matnum) != Teuchos::null,
+  FOUR_C_ASSERT(phasemanager_->Element()->Material(matnum) != Teuchos::null,
       "Material of element is null pointer!");
   const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
   if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-    dserror(
+    FOUR_C_THROW(
         "Invalid material! Only MAT_FluidPoroMultiPhaseReactions material valid for reaction "
         "evaluation!");
 
@@ -1360,7 +1362,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::Setup(
   // check material type
   if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
       material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-    dserror("only poro multiphase material valid");
+    FOUR_C_THROW("only poro multiphase material valid");
 
   // cast to multiphase material
   const MAT::FluidPoroMultiPhase& multiphasemat =
@@ -1411,7 +1413,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPStat
   phasemanager_->EvaluateGPState(J, varmanager, matnum);
 
   // get material
-  dsassert(phasemanager_->Element()->Material(matnum) != Teuchos::null,
+  FOUR_C_ASSERT(phasemanager_->Element()->Material(matnum) != Teuchos::null,
       "Material of element is null pointer!");
   const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
@@ -1425,7 +1427,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPStat
   // check material type
   if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
       material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-    dserror("only poro multiphase material valid");
+    FOUR_C_THROW("only poro multiphase material valid");
 
   // cast to multiphase material
   const MAT::FluidPoroMultiPhase& multiphasemat =
@@ -1678,7 +1680,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::Setup(
   const int numvolfrac = phasemanager_->NumVolFrac();
 
   if (numfluidphases >= totalnumdof)
-    dserror("We should not be here, total numdof is %d, numfluidphases is %d",
+    FOUR_C_THROW("We should not be here, total numdof is %d, numfluidphases is %d",
         phasemanager_->TotalNumDof(), phasemanager_->NumFluidPhases());
 
   difftensorsvolfrac_.resize(numvolfrac);
@@ -1692,7 +1694,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::Setup(
   // check the material
   if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
       material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-    dserror("only poro multiphase and poro multiphase reactions material valid");
+    FOUR_C_THROW("only poro multiphase and poro multiphase reactions material valid");
 
   for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
   {
@@ -1733,7 +1735,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::EvaluateGPState(
 
   // safety check
   if (phasemanager_->InvBulkmodulusSolid() > 1.0e-14)
-    dserror("So far volume fractions are only possible for an incompressible solid");
+    FOUR_C_THROW("So far volume fractions are only possible for an incompressible solid");
 
   const int numfluidphases = phasemanager_->NumFluidPhases();
   const int numvolfrac = phasemanager_->NumVolFrac();
@@ -1741,7 +1743,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::EvaluateGPState(
   scalardiffs_.resize(numvolfrac);
 
   // get material
-  dsassert(phasemanager_->Element()->Material(matnum) != Teuchos::null,
+  FOUR_C_ASSERT(phasemanager_->Element()->Material(matnum) != Teuchos::null,
       "Material of element is null pointer!");
   const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
@@ -1755,7 +1757,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::EvaluateGPState(
     if (this->HasAddScalarDependentFlux(ivolfrac))
     {
       if (phasemanager_->NumScal() != singlevolfracmat.NumScal())
-        dserror("Wrong number of scalars for additional scalar dependent flux");
+        FOUR_C_THROW("Wrong number of scalars for additional scalar dependent flux");
 
       // has to be inside loop, otherwise phasemanager might not have scalars
       const std::vector<double> scalars = *varmanager.Scalarnp();

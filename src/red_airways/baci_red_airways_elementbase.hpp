@@ -63,7 +63,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented");
+        FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
@@ -127,7 +127,7 @@ namespace DRT
           return 1;
         else
         {
-          dserror("Could not determine number of lines");
+          FOUR_C_THROW("Could not determine number of lines");
           return -1;
         }
       }
@@ -448,7 +448,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented");
+        FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
@@ -512,7 +512,7 @@ namespace DRT
           return 1;
         else
         {
-          dserror("Could not determine number of lines");
+          FOUR_C_THROW("Could not determine number of lines");
           return -1;
         }
       }
@@ -843,7 +843,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented");
+        FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
@@ -907,7 +907,7 @@ namespace DRT
           return 1;
         else
         {
-          dserror("Could not determine number of lines");
+          FOUR_C_THROW("Could not determine number of lines");
           return -1;
         }
       }
@@ -1215,7 +1215,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented");
+        FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
@@ -1275,7 +1275,7 @@ namespace DRT
           return 1;
         else
         {
-          dserror("Could not determine number of lines");
+          FOUR_C_THROW("Could not determine number of lines");
           return -1;
         }
       }
@@ -1583,7 +1583,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented");
+        FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
@@ -1650,7 +1650,7 @@ namespace DRT
         }
         else
         {
-          dserror("Could not determine number of lines");
+          FOUR_C_THROW("Could not determine number of lines");
           return -1;
         }
       }

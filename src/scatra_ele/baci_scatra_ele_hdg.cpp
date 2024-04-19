@@ -109,7 +109,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ScaTraHDGType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented right now!");
+  FOUR_C_THROW("method ComputeNullSpace not implemented right now!");
   return nullspace;
 }
 
@@ -230,7 +230,7 @@ void DRT::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
 
   int val = 0;
   ExtractfromPack(position, data, val);
-  dsassert(val >= 0 && val < 255, "Degree out of range");
+  FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
   degree_ = val;
   ExtractfromPack(position, data, val);
   completepol_ = val;
@@ -238,7 +238,7 @@ void DRT::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
   degree_old_ = val;
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -253,7 +253,7 @@ void DRT::ELEMENTS::ScaTraHDG::PackMaterial(CORE::COMM::PackBuffer& data) const
     Material()->Pack(data);
   }
   else
-    dserror("No material defined to pack!");
+    FOUR_C_THROW("No material defined to pack!");
 }
 
 /*----------------------------------------------------------------------*
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::ScaTraHDG::UnpackMaterial(const std::vector<char>& data) con
     actmat->UnpackMaterial(data);
   }
   else
-    dserror("No material defined to unpack!");
+    FOUR_C_THROW("No material defined to unpack!");
 }
 
 /*----------------------------------------------------------------------*
@@ -316,7 +316,7 @@ int DRT::ELEMENTS::ScaTraHDG::Initialize()
           gp = 729;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Integration rule for TET elements only until polynomial order 5 for TET defined. "
               "You specified a degree of %d ",
               degree_old_);
@@ -440,7 +440,7 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
         act = SCATRA::Action::project_dirich_field;
         break;
       default:
-        dserror("HDG Action type not supported");
+        FOUR_C_THROW("HDG Action type not supported");
     }
   }
   else
@@ -496,7 +496,7 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
       break;
 
     default:
-      dserror("Unknown type of action '%i' for ScaTraHDG", act);
+      FOUR_C_THROW("Unknown type of action '%i' for ScaTraHDG", act);
       break;
   }  // switch(action)
 
@@ -613,7 +613,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Unpack(const std::vector<char>& data)
   // distype_ = static_cast<CORE::FE::CellType>( ExtractInt(position,data) );
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -636,7 +636,7 @@ void DRT::ELEMENTS::ScaTraHDGBoundary::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Lines()
 {
-  dserror("Lines of ScaTraHDGBoundary not implemented");
+  FOUR_C_THROW("Lines of ScaTraHDGBoundary not implemented");
 }
 
 
@@ -645,7 +645,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Lines(
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Surfaces()
 {
-  dserror("Surfaces of ScaTraHDGBoundary not implemented");
+  FOUR_C_THROW("Surfaces of ScaTraHDGBoundary not implemented");
 }
 
 
@@ -791,7 +791,7 @@ CORE::FE::CellType DRT::ELEMENTS::ScaTraHDGIntFace::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraHDGIntFace::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("this ScaTraHDGIntFace element does not support communication");
+  FOUR_C_THROW("this ScaTraHDGIntFace element does not support communication");
   return;
 }
 
@@ -801,7 +801,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::Pack(CORE::COMM::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraHDGIntFace::Unpack(const std::vector<char>& data)
 {
-  dserror("this ScaTraHDGIntFace element does not support communication");
+  FOUR_C_THROW("this ScaTraHDGIntFace element does not support communication");
   return;
 }
 
@@ -834,7 +834,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
-    dserror("wrong number of nodes for master element");
+    FOUR_C_THROW("wrong number of nodes for master element");
   }
 
   //-----------------------------------------------------------------------
@@ -843,7 +843,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
-    dserror("wrong number of nodes for slave element");
+    FOUR_C_THROW("wrong number of nodes for slave element");
   }
 
   //-----------------------------------------------------------------------
@@ -887,7 +887,8 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
     const int size = discretization.NumDof(dofset, node);
     const int offset = size * nds_master[k];
 
-    dsassert(dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
+    FOUR_C_ASSERT(
+        dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
 
     // insert a pair of node-Id and current length of master_lm ( to get the start offset for node's
     // dofs)
@@ -929,7 +930,8 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
       const int size = discretization.NumDof(dofset, node);
       const int offset = size * nds_slave[k];
 
-      dsassert(dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
+      FOUR_C_ASSERT(
+          dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
       for (int j = 0; j < size; ++j)
       {
         int actdof = dof[offset + j];
@@ -961,7 +963,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
       }
 
       if (offset % size != 0)
-        dserror("there was at least one node with not %d dofs per node", size);
+        FOUR_C_THROW("there was at least one node with not %d dofs per node", size);
       int patchnode_index = offset / size;
 
       lm_slaveNodeToPatch.push_back(patchnode_index);
@@ -996,7 +998,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
       }
     }
     else
-      dserror("face's nodes not contained in masternodes_offset map");
+      FOUR_C_THROW("face's nodes not contained in masternodes_offset map");
   }
 
   return;
@@ -1019,7 +1021,7 @@ void DRT::ELEMENTS::ScaTraHDGIntFace::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Lines()
 {
-  dserror("Lines of ScaTraHDGIntFace not implemented");
+  FOUR_C_THROW("Lines of ScaTraHDGIntFace not implemented");
 }
 
 /*----------------------------------------------------------------------*
@@ -1027,7 +1029,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Surfaces()
 {
-  dserror("Surfaces of ScaTraHDGIntFace not implemented");
+  FOUR_C_THROW("Surfaces of ScaTraHDGIntFace not implemented");
 }
 
 /*----------------------------------------------------------------------*
@@ -1044,7 +1046,7 @@ int DRT::ELEMENTS::ScaTraHDGIntFace::Evaluate(Teuchos::ParameterList& params,
   //         this line avoids linker errors
   DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface::Impl(this);
 
-  dserror("not available");
+  FOUR_C_THROW("not available");
 
   return 0;
 }
@@ -1057,7 +1059,7 @@ int DRT::ELEMENTS::ScaTraHDGIntFace::EvaluateNeumann(Teuchos::ParameterList& par
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("not available");
+  FOUR_C_THROW("not available");
 
   return 0;
 }

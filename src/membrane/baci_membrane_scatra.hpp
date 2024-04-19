@@ -83,7 +83,7 @@ namespace DRT
             return MembraneScatraQuad9Type::Instance().UniqueParObjectId();
           }
           default:
-            dserror("unknown element type!");
+            FOUR_C_THROW("unknown element type!");
             break;
         }
         // Intel compiler needs a return so
@@ -141,7 +141,7 @@ namespace DRT
           }
           break;
           default:
-            dserror("unknown element type!");
+            FOUR_C_THROW("unknown element type!");
             break;
         }
         // Intel compiler needs a return so

@@ -71,7 +71,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
 
   if (elhyper.Summands().size() != 2)
   {
-    dserror(
+    FOUR_C_THROW(
         "Currrently, the prestressing technique is only implemented for an ElastHyper constituent "
         "using an IsoNeoHooke summand with Sussman-Bathe penalty (Hence, exactly 2 summands are "
         "needed)");
@@ -84,14 +84,14 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
 
   if (Teuchos::is_null(matiso))
   {
-    dserror(
+    FOUR_C_THROW(
         "The first summand of the constituent needs to be an IsoNeoHooke material law. This is a "
         "requirement from the prestressing technique.");
   }
 
   if (Teuchos::is_null(matvol))
   {
-    dserror(
+    FOUR_C_THROW(
         "The second summand of the constituent needs to be a Sussman-Bathe penalty term. This is a "
         "requirement from the prestressing technique.");
   }
@@ -106,7 +106,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
 
   if (Teuchos::is_null(cylinderCosy))
   {
-    dserror(
+    FOUR_C_THROW(
         "No cylinder coordinate system is defined but required by the cylinder prestress "
         "strategy!");
   }
@@ -187,7 +187,7 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
 
   if (Teuchos::is_null(cylinderCosy))
   {
-    dserror(
+    FOUR_C_THROW(
         "No cylinder coordinate system is defined but required by the cylinder prestress "
         "strategy!");
   }

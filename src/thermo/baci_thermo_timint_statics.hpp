@@ -77,7 +77,7 @@ namespace THR
     //! Give local order of accuracy of temperature part
     int MethodOrderOfAccuracy() override
     {
-      dserror("Sensible to ask?");
+      FOUR_C_THROW("Sensible to ask?");
       return 0;
     }
 
@@ -85,7 +85,7 @@ namespace THR
     // virtual double MethodLinErrCoeffTemp()
     double MethodLinErrCoeff() override
     {
-      dserror("Sensible to ask?");
+      FOUR_C_THROW("Sensible to ask?");
       return 0.0;
     }
 

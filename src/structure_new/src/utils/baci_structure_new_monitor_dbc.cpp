@@ -101,7 +101,7 @@ int STR::MonitorDbc::GetUniqueId(int tagged_id, DRT::Condition::GeometryType gty
     case DRT::Condition::Surface:
       return tagged_id + 10000;
     default:
-      dserror("Unsupported geometry type! (enum=%d)", gtype);
+      FOUR_C_THROW("Unsupported geometry type! (enum=%d)", gtype);
       exit(EXIT_FAILURE);
   }
 }
@@ -148,7 +148,7 @@ void STR::MonitorDbc::Setup()
         std::make_pair(rcond.Id(), std::vector<Teuchos::RCP<Epetra_Map>>(3, Teuchos::null)));
 
     if (not ipair.second)
-      dserror("The reaction condition id #%d seems to be non-unique!", rcond.Id());
+      FOUR_C_THROW("The reaction condition id #%d seems to be non-unique!", rcond.Id());
 
     CreateReactionMaps(*discret_ptr_, rcond, ipair.first->second.data());
   }
@@ -219,7 +219,8 @@ void STR::MonitorDbc::ReadResultsPriorRestartStepAndWriteToFile(
   if (Comm().MyPID() != 0) return;
 
   if (full_restart_filepaths.size() != full_filepaths_.size())
-    dserror(" Your monitoring of dbc's has changed after restart, this is not supported right now");
+    FOUR_C_THROW(
+        " Your monitoring of dbc's has changed after restart, this is not supported right now");
 
   for (unsigned int i = 0; i < full_restart_filepaths.size(); ++i)
   {
@@ -228,7 +229,8 @@ void STR::MonitorDbc::ReadResultsPriorRestartStepAndWriteToFile(
     restart_file.open(full_restart_filepaths[i].c_str(), std::ios_base::out);
 
     // check if file was found
-    if (not restart_file) dserror(" restart file for monitoring structure dbcs could not be found");
+    if (not restart_file)
+      FOUR_C_THROW(" restart file for monitoring structure dbcs could not be found");
 
     // loop over lines of restarted collection file
     std::string line;
@@ -443,7 +445,7 @@ void STR::MonitorDbc::GetArea(double area[], const DRT::Condition* rcond) const
   {
     const DRT::Element* cele = cele_pair.second.get();
     const DRT::FaceElement* fele = dynamic_cast<const DRT::FaceElement*>(cele);
-    if (!fele) dserror("No face element!");
+    if (!fele) FOUR_C_THROW("No face element!");
 
     if (!fele->ParentElement() or fele->ParentElement()->Owner() != discret.Comm().MyPID())
       continue;
@@ -481,7 +483,7 @@ void STR::MonitorDbc::GetArea(double area[], const DRT::Condition* rcond) const
         }
 
         if (fedof_count == fele_dofs.size())
-          dserror(
+          FOUR_C_THROW(
               "Couln't find the face element dof corresponding to the "
               "current node!");
 
@@ -566,8 +568,8 @@ double STR::MonitorDbc::GetReactionMoment(CORE::LINALG::Matrix<DIM, 1>& rmoment_
       {
         const int lid = complete_freact.Map().LID(node_gid[i]);
         if (lid < 0)
-          dserror("Proc %d: Cannot find gid=%d in Epetra_Vector", complete_freact.Comm().MyPID(),
-              node_gid[i]);
+          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector",
+              complete_freact.Comm().MyPID(), node_gid[i]);
         node_reaction_force(i) = complete_freact[lid];
       }
     }

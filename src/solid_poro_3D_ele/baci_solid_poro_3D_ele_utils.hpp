@@ -50,7 +50,7 @@ namespace STR::UTILS::READELEMENT
       return INPAR::SCATRA::impltype_std;
     else
     {
-      dserror("Invalid TYPE for SOLIDPORO elements!");
+      FOUR_C_THROW("Invalid TYPE for SOLIDPORO elements!");
       return INPAR::SCATRA::impltype_undefined;
     }
   }
@@ -66,7 +66,7 @@ namespace STR::UTILS::READELEMENT
       return INPAR::PORO::PoroType::pressure_based;
     else
     {
-      dserror("Invalid POROTYPE for SolidPoro elements!");
+      FOUR_C_THROW("Invalid POROTYPE for SolidPoro elements!");
       return INPAR::PORO::PoroType::undefined;
     }
   }

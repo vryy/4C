@@ -41,7 +41,7 @@ namespace CORE::LINALG
 
    The matrix B may or may not be completed. If B is completed, no new elements can be
    inserted and the addition only succeeds in case the sparsity pattern of B is a superset of
-   the sparsity pattern of A (otherwise: dserror).
+   the sparsity pattern of A (otherwise: FOUR_C_THROW).
 
    Performance characterization: If B is filled (completed), this function is pretty fast,
    typically on the order of two to four matrix-vector products with B. The case where B is
@@ -70,7 +70,7 @@ namespace CORE::LINALG
 
    The matrix B may or may not be completed. If B is completed, no new elements can be
    inserted and the addition only succeeds in case the sparsity pattern of B is a superset of
-   the sparsity pattern of A (otherwise: dserror).
+   the sparsity pattern of A (otherwise: FOUR_C_THROW).
 
    Performance characterization: If B is filled (completed), this function is pretty fast,
    typically on the order of two to four matrix-vector products with B. The case where B is

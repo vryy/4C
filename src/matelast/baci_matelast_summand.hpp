@@ -145,7 +145,7 @@ namespace MAT
           int eleGID     ///< element GID
       )
       {
-        dserror("Summand does not support calculation of strain energy");
+        FOUR_C_THROW("Summand does not support calculation of strain energy");
       };
 
       //! add shear modulus equivalent
@@ -156,7 +156,7 @@ namespace MAT
       //! add young's modulus equivalent
       virtual void AddYoungsMod(double& young, double& shear, double& bulk)
       {
-        dserror("Summand does not support calculation of youngs modulus");
+        FOUR_C_THROW("Summand does not support calculation of youngs modulus");
       };
 
       /*!
@@ -269,7 +269,7 @@ namespace MAT
           int gp,                                       ///< Gauss point
           int eleGID)                                   ///< element GID
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
         return;  // do nothing
       }
 
@@ -710,7 +710,7 @@ namespace MAT
       virtual void SetFiberVecs(const CORE::LINALG::Matrix<3, 1>& fibervec  ///< new fiber vector
       )
       {
-        dserror("Not implemented yet for this type of anisotropic material;");
+        FOUR_C_THROW("Not implemented yet for this type of anisotropic material;");
       };
 
       //! Get fiber directions

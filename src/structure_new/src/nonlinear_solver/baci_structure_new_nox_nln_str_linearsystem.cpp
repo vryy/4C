@@ -111,7 +111,8 @@ NOX::NLN::SolutionType NOX::NLN::STR::LinearSystem::GetActiveLinSolver(
     Teuchos::RCP<CORE::LINALG::Solver>& currSolver)
 {
   // check input
-  if (solvers.size() > 1) dserror("There has to be exactly one CORE::LINALG::Solver (structure)!");
+  if (solvers.size() > 1)
+    FOUR_C_THROW("There has to be exactly one CORE::LINALG::Solver (structure)!");
 
   currSolver = solvers.at(NOX::NLN::sol_structure);
   return NOX::NLN::sol_structure;

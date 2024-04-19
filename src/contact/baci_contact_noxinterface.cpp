@@ -111,7 +111,7 @@ double CONTACT::NoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
     }
     default:
     {
-      dserror("Unsupported quantity type!");
+      FOUR_C_THROW("Unsupported quantity type!");
       break;
     }
   }
@@ -158,7 +158,7 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateRMS(const Epetra_Vector
     }
     default:
     {
-      dserror("Unsupported quantity type!");
+      FOUR_C_THROW("Unsupported quantity type!");
       break;
     }
   }
@@ -202,7 +202,7 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateNorms(const Epetra_Vect
     }
     default:
     {
-      dserror("Unsupported quantity type!");
+      FOUR_C_THROW("Unsupported quantity type!");
       break;
     }
   }
@@ -259,7 +259,7 @@ double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_Ve
     }
     default:
     {
-      dserror("The given quantity type is unsupported!");
+      FOUR_C_THROW("The given quantity type is unsupported!");
       break;
     }
   }
@@ -280,7 +280,7 @@ enum ::NOX::StatusTest::StatusType CONTACT::NoxInterface::GetActiveSetInfo(
     NOX::NLN::StatusTest::QuantityType checkQuantity, int& activesetsize) const
 {
   bool semismooth = CORE::UTILS::IntegralValue<int>(Strategy().Params(), "SEMI_SMOOTH_NEWTON");
-  if (not semismooth) dserror("Currently we support only the semi-smooth Newton case!");
+  if (not semismooth) FOUR_C_THROW("Currently we support only the semi-smooth Newton case!");
   // ---------------------------------------------------------------------------
   // get the number of active nodes for the given active set type
   // ---------------------------------------------------------------------------
@@ -298,7 +298,7 @@ enum ::NOX::StatusTest::StatusType CONTACT::NoxInterface::GetActiveSetInfo(
     }
     default:
     {
-      dserror("The given quantity type is unsupported!");
+      FOUR_C_THROW("The given quantity type is unsupported!");
       break;
     }
   }
@@ -331,7 +331,7 @@ Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::GetCurrentActiveSetMap(
     }
     default:
     {
-      dserror("The given active set type is unsupported!");
+      FOUR_C_THROW("The given active set type is unsupported!");
       break;
     }
   }  // switch (active_set_type)
@@ -358,7 +358,7 @@ Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::GetOldActiveSetMap(
     }
     default:
     {
-      dserror("The given active set type is unsupported!");
+      FOUR_C_THROW("The given active set type is unsupported!");
       break;
     }
   }  // switch (active_set_type)
@@ -391,11 +391,11 @@ double CONTACT::NoxInterface::GetModelValue(NOX::NLN::MeritFunction::MeritFctNam
       return 0.0;
     }
     default:
-      dserror("Unsupported Merit function name! (enum = %d)", name);
+      FOUR_C_THROW("Unsupported Merit function name! (enum = %d)", name);
       exit(EXIT_FAILURE);
   }
 
-  dserror("Impossible to reach this point.");
+  FOUR_C_THROW("Impossible to reach this point.");
   exit(EXIT_FAILURE);
 }
 
@@ -423,11 +423,11 @@ double CONTACT::NoxInterface::GetLinearizedModelTerms(const Epetra_Vector& dir,
       return lin_val;
     }
     default:
-      dserror("Unsupported Merit function name! (enum = %d)", name);
+      FOUR_C_THROW("Unsupported Merit function name! (enum = %d)", name);
       exit(EXIT_FAILURE);
   }
 
-  dserror("Impossible to reach this point.");
+  FOUR_C_THROW("Impossible to reach this point.");
   exit(EXIT_FAILURE);
 }
 

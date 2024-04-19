@@ -62,7 +62,7 @@ namespace
       if (maybe_function.has_value()) return maybe_function;
     }
 
-    dserror("Internal error: could not create a function that I should be able to create.");
+    FOUR_C_THROW("Internal error: could not create a function that I should be able to create.");
   }
 
   // add one level of indirection to dispatch on the dimension later when the global problem is
@@ -78,7 +78,7 @@ namespace
       case 3:
         return CreateBuiltinFunction<3>(function_line_defs);
       default:
-        dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+        FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
     }
   }
 }  // namespace
@@ -203,7 +203,7 @@ void CORE::UTILS::FunctionManager::ReadInput(INPUT::DatFileReader& reader)
               ss << '\n' << line;
             }
 
-            dserror("Could not parse the following lines into a Function known to BACI:\n%s",
+            FOUR_C_THROW("Could not parse the following lines into a Function known to BACI:\n%s",
                 ss.str().c_str());
           }
         });

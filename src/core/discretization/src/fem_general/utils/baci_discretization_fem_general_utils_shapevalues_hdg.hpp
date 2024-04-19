@@ -72,9 +72,9 @@ namespace CORE::FE
     /// (rather than implementing operator < with many if statements)
     std::size_t ToInt() const
     {
-      dsassert(degree_ < 32, "Not implemented");
-      dsassert(quadraturedegree_ < 64, "Not implemented");
-      dsassert(face_ < 8, "Not implemented");
+      FOUR_C_ASSERT(degree_ < 32, "Not implemented");
+      FOUR_C_ASSERT(quadraturedegree_ < 64, "Not implemented");
+      FOUR_C_ASSERT(face_ < 8, "Not implemented");
       // Simply encode the various integer values into a single number, all of
       // them take small numbers so this is easily possible. Beware about this when
       // adding further information, tough (might overflow when larger than 4 billion).

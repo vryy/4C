@@ -104,17 +104,17 @@ namespace
       const CORE::FE::GaussIntegration& gauss_integration, Teuchos::ParameterList& params,
       const std::string& target_name)
   {
-    dsassert(discretization.HasState(field_index, field_name),
+    FOUR_C_ASSERT(discretization.HasState(field_index, field_name),
         "Could not find the requested field in the discretization.");
 
-    dsassert(
+    FOUR_C_ASSERT(
         !is_scalar || num_scalars == 1, "numscalars must be 1 if result type is not a vector!");
 
     // get quantitiy from discretization
     Teuchos::RCP<const Epetra_Vector> quantitites_np =
         discretization.GetState(field_index, field_name);
     if (quantitites_np == Teuchos::null)
-      dserror("Cannot get state vector '%s' ", field_name.c_str());
+      FOUR_C_THROW("Cannot get state vector '%s' ", field_name.c_str());
 
     // extract my values
     auto my_quantities = std::vector<double>(la[field_index].lm_.size(), 0.0);
@@ -275,7 +275,7 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype,
   if (mass.has_value() && !equal_integration_mass_stiffness)
   {
     // integrate mass matrix
-    dsassert(element_mass > 0, "It looks like the element mass is 0.0");
+    FOUR_C_ASSERT(element_mass > 0, "It looks like the element mass is 0.0");
     ForEachGaussPoint<celltype>(nodal_coordinates, mass_matrix_integration_,
         [&](const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -514,7 +514,7 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::InitializeGa
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  dsassert(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
   AskAndAddQuantitiesToGaussPointDataOutput(
@@ -526,7 +526,7 @@ void DRT::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::EvaluateGaus
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  dsassert(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
   CollectAndAssembleGaussPointDataOutput<celltype>(

@@ -31,7 +31,7 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
       (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
 
   if (output_every_iteration_)
-    dserror("Every iteration output not implemented for structure vtp output!");
+    FOUR_C_THROW("Every iteration output not implemented for structure vtp output!");
 
   output_owner_ = (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
 
@@ -52,7 +52,7 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeVtpOutput::Setup()
 {
-  dsassert(IsInit(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -63,7 +63,7 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeVtpOutput::CheckInitSetup() const
 {
-  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

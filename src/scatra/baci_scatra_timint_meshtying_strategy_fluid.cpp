@@ -70,7 +70,8 @@ void SCATRA::MeshtyingStrategyFluid::IncludeDirichletInCondensation() const
 void SCATRA::MeshtyingStrategyFluid::SetupMeshtying()
 {
   // safety check
-  if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
+  if (scatratimint_->NumScal() < 1)
+    FOUR_C_THROW("Number of transported scalars not correctly set!");
 
   // define coupling and initialize system matrix
   std::vector<int> coupleddof(scatratimint_->NumScal(), 1);
@@ -94,7 +95,7 @@ void SCATRA::MeshtyingStrategyFluid::InitMeshtying()
 
   // safety checks
   if (type_ == INPAR::FLUID::condensed_bmat)
-    dserror(
+    FOUR_C_THROW(
         "The 2x2 block solver algorithm for a block matrix system has not been activated yet. Just "
         "do it!");
 
@@ -139,7 +140,7 @@ void SCATRA::MeshtyingStrategyFluid::Solve(
  *-------------------------------------------------------------------------*/
 const CORE::LINALG::Solver& SCATRA::MeshtyingStrategyFluid::Solver() const
 {
-  if (scatratimint_->Solver() == Teuchos::null) dserror("Invalid linear solver!");
+  if (scatratimint_->Solver() == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
   return *scatratimint_->Solver();
 }
 

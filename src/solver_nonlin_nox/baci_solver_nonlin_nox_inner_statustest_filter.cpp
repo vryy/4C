@@ -320,7 +320,7 @@ bool NOX::NLN::INNER::StatusTest::Filter::Point::IsFeasible(const double tol) co
 {
   if (is_feasible_) return true;
 
-  if (not is_filter_point_) dserror("The point is expected to be a filter point.");
+  if (not is_filter_point_) FOUR_C_THROW("The point is expected to be a filter point.");
 
   const double used_tol = std::max(0.0, tol);
   for (unsigned i = num_obj_coords_; i < num_coords_; ++i)
@@ -338,7 +338,7 @@ bool NOX::NLN::INNER::StatusTest::Filter::Point::IsFeasible(const double tol) co
 bool NOX::NLN::INNER::StatusTest::Filter::Point::IsSufficientlyReducedComparedToMaxTheta(
     const double& red_fac) const
 {
-  if (not is_filter_point_) dserror("This routine is only meant for filter points!");
+  if (not is_filter_point_) FOUR_C_THROW("This routine is only meant for filter points!");
 
   unsigned j = 0;
   for (unsigned i = num_obj_coords_; i < num_coords_; ++i, ++j)
@@ -442,7 +442,7 @@ void NOX::NLN::INNER::StatusTest::Filter::InitPoints(const Interface::Required& 
   {
     case 0:
     {
-      dserror("Not supposed to be called for Newton iteration zero!");
+      FOUR_C_THROW("Not supposed to be called for Newton iteration zero!");
       break;
     }
     // --------------------------------------------------------------------
@@ -484,7 +484,7 @@ enum NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter
 {
   const NOX::NLN::LineSearch::Generic* linesearch_ptr =
       dynamic_cast<const NOX::NLN::LineSearch::Generic*>(&interface);
-  if (not linesearch_ptr) dserror("Dynamic cast failed!");
+  if (not linesearch_ptr) FOUR_C_THROW("Dynamic cast failed!");
   const NOX::NLN::LineSearch::Generic& linesearch = *linesearch_ptr;
 
   // do stuff at the beginning of a line search call
@@ -594,7 +594,7 @@ void NOX::NLN::INNER::StatusTest::Filter::ExecuteCheckStatus(
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Unexpected filter status type: "
           "The filer %s.",
           FilterStatus2String(filter_status_).c_str());
@@ -609,7 +609,7 @@ double NOX::NLN::INNER::StatusTest::Filter::GetConstraintTolerance(
 {
   const NOX::NLN::Solver::LineSearchBased* ls_solver =
       dynamic_cast<const NOX::NLN::Solver::LineSearchBased*>(&solver);
-  if (not ls_solver) dserror("The given non-linear solver is not line search based!");
+  if (not ls_solver) FOUR_C_THROW("The given non-linear solver is not line search based!");
 
   ::NOX::StatusTest::Generic* normf_test =
       ls_solver->GetOuterStatusTestWithQuantity<NOX::NLN::StatusTest::NormF>(
@@ -619,7 +619,7 @@ double NOX::NLN::INNER::StatusTest::Filter::GetConstraintTolerance(
   {
     const double true_tol = dynamic_cast<NOX::NLN::StatusTest::NormF&>(*normf_test)
                                 .GetTrueTolerance(NOX::NLN::StatusTest::quantity_contact_normal);
-    if (true_tol < 0.0) dserror("Something went wrong!");
+    if (true_tol < 0.0) FOUR_C_THROW("Something went wrong!");
 
     utils_.out(::NOX::Utils::Debug)
         << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "\n"
@@ -758,7 +758,7 @@ void NOX::NLN::INNER::StatusTest::Filter::ThrowIfStepTooShort(
   const enum ::NOX::StatusTest::StatusType active_set_status = GetActiveSetStatus(solver);
 
   if (status_ == status_step_too_short)
-    dserror(
+    FOUR_C_THROW(
         "The step-length %1.6e is lower than the minimal allowed step length"
         "amin = %1.6e. This indicates that we can't find a feasible solution "
         "in the current search direction and we decide to stop here. (active-set status = %s)",
@@ -813,7 +813,7 @@ NOX::NLN::CorrectionType NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrect
     // no SOC correction type
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Unsupported Second Order Correction type detected. "
           "Given type = \"%s\"",
           CorrectionType2String(user_type_).c_str());
@@ -908,7 +908,7 @@ void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::solve(
       dynamic_cast<const NOX::NLN::Solver::LineSearchBased&>(solver);
   ::NOX::Direction::Generic& direction = nln_solver.GetDirection();
   bool success = direction.compute(*nox_dir, grp, solver);
-  if (not success) dserror("Solving of the SOC system failed!");
+  if (not success) FOUR_C_THROW("Solving of the SOC system failed!");
 
   // update the state in the group object
   grp.computeX(grp, *nox_dir, linesearch.GetStepLength());
@@ -942,7 +942,7 @@ void NOX::NLN::INNER::StatusTest::Filter::BackupState::create(
     const ::NOX::Abstract::Group& grp, const ::NOX::Abstract::Vector& dir)
 {
   const NOX::NLN::Group* nln_grp_ptr = dynamic_cast<const NOX::NLN::Group*>(&grp);
-  if (not nln_grp_ptr) dserror("Dynamic_cast failed!");
+  if (not nln_grp_ptr) FOUR_C_THROW("Dynamic_cast failed!");
 
   if (xvector_.is_null())
   {
@@ -962,7 +962,7 @@ void NOX::NLN::INNER::StatusTest::Filter::BackupState::create(
  *----------------------------------------------------------------------------*/
 void NOX::NLN::INNER::StatusTest::Filter::BackupState::recover(::NOX::Abstract::Group& grp) const
 {
-  if (xvector_.is_null()) dserror("The xvector_ is not set!");
+  if (xvector_.is_null()) FOUR_C_THROW("The xvector_ is not set!");
 
   grp.setX(*xvector_);
 
@@ -985,7 +985,7 @@ void NOX::NLN::INNER::StatusTest::Filter::BackupState::checkRecoveredState(
   const double ratiof = recovered_normf / normf_;
 
   if (ratiof < 1.0 - rtol or ratiof > 1.0 + rtol)
-    dserror(
+    FOUR_C_THROW(
         "The recovery from the previously stored state failed! "
         "[recovery_normf / backup_normf = %.15e ]",
         ratiof);
@@ -1016,7 +1016,7 @@ enum ::NOX::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter::GetActiv
 {
   const NOX::NLN::Solver::LineSearchBased* ls_solver =
       dynamic_cast<const NOX::NLN::Solver::LineSearchBased*>(&solver);
-  if (not ls_solver) dserror("The given non-linear solver is not line search based!");
+  if (not ls_solver) FOUR_C_THROW("The given non-linear solver is not line search based!");
 
   ::NOX::StatusTest::Generic* active_set_test =
       ls_solver->GetOuterStatusTest<NOX::NLN::StatusTest::ActiveSet>();
@@ -1222,7 +1222,7 @@ void NOX::NLN::INNER::StatusTest::Filter::SetupModelTerms(const ::NOX::Abstract:
     model_mixed_terms_(0) = lagrangian.computeMixed2ndOrderTerms(dir, grp);
   }
   else
-    dserror("Currently unsupported merit function type: \"%s\"", merit_func.name().c_str());
+    FOUR_C_THROW("Currently unsupported merit function type: \"%s\"", merit_func.name().c_str());
 
   theta_.computeSlope(dir, grp, model_lin_terms_.values() + Point::num_obj_coords_);
   theta_.computeMixed2ndOrderTerms(dir, grp, model_mixed_terms_.values() + Point::num_obj_coords_);
@@ -1360,10 +1360,10 @@ double NOX::NLN::INNER::StatusTest::Filter::MinimalStepLengthEstimateOfFTypeCond
   const double d = std::pow(scale_of_max_theta, st_) / std::pow(Point::scale_(0), sf_);
 
   const double f_lbound = computeFTypeSwitchingCondition(lBound, d);
-  if (f_lbound > 0.0) dserror("The function value for the lower bound is greater than zero!");
+  if (f_lbound > 0.0) FOUR_C_THROW("The function value for the lower bound is greater than zero!");
 
   const double f_ubound = computeFTypeSwitchingCondition(uBound, d);
-  if (f_ubound < 0.0) dserror("The function value for the upper bound is lower than zero!");
+  if (f_ubound < 0.0) FOUR_C_THROW("The function value for the upper bound is lower than zero!");
 
   // set initial value (secant value)
   double amin = f_lbound / (f_lbound - f_ubound);
@@ -1397,7 +1397,7 @@ double NOX::NLN::INNER::StatusTest::Filter::MinimalStepLengthEstimateOfFTypeCond
 
     ++iter;
   }
-  if (not isconverged) dserror("The local Newton did not converge in %d steps!", iter);
+  if (not isconverged) FOUR_C_THROW("The local Newton did not converge in %d steps!", iter);
 
   return amin;
 }
@@ -1426,7 +1426,7 @@ bool NOX::NLN::INNER::StatusTest::Filter::CheckFTypeSwitchingCondition(const dou
 double NOX::NLN::INNER::StatusTest::Filter::computeFTypeSwitchingCondition(
     const double step, const double d) const
 {
-  dsassert(d > 0.0, "The scaling factor d is smaller than / equal to zero!");
+  FOUR_C_ASSERT(d > 0.0, "The scaling factor d is smaller than / equal to zero!");
 
   const double max_theta = curr_points_.first->maxTheta();
 

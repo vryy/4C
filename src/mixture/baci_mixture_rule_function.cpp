@@ -41,7 +41,7 @@ namespace
 
       const std::string errorMessage =
           "pointer to mass fraction function with id " + std::to_string(id) + " is nullptr!";
-      dsassert(function != nullptr, errorMessage.c_str());
+      FOUR_C_ASSERT(function != nullptr, errorMessage.c_str());
 
       functions.emplace_back(function);
     }
@@ -122,7 +122,7 @@ void MIXTURE::FunctionMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
 
   // validity check whether mass fractions summed up to 1
   if (std::abs(1.0 - sum) > 1e-8)
-    dserror("Evaluated mass fractions don't sum up to 1, which is unphysical.");
+    FOUR_C_THROW("Evaluated mass fractions don't sum up to 1, which is unphysical.");
 }
 
 

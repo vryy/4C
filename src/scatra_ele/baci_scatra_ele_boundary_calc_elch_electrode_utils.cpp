@@ -113,7 +113,7 @@ void DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmod
     }  // case INPAR::S2I::kinetics_butlervolmerreducedwithresistance
     default:
     {
-      dserror("Unknown scatra-scatra interface kinetic model: %i", kineticmodel);
+      FOUR_C_THROW("Unknown scatra-scatra interface kinetic model: %i", kineticmodel);
     }
   }  // switch(kineticmodel)
 }
@@ -182,7 +182,7 @@ double DRT::ELEMENTS::CalculateButlerVolmerExchangeMassFluxDensity(const double 
     const double c_el, const int kinetic_model,
     const DRT::Condition::ConditionType& s2i_condition_type)
 {
-  dsassert(s2i_condition_type == DRT::Condition::S2IKinetics,
+  FOUR_C_ASSERT(s2i_condition_type == DRT::Condition::S2IKinetics,
       "This method is called with the wrong condition type. Check the implementation!");
 
   if (IsReducedButlerVolmer(kinetic_model))
@@ -236,7 +236,7 @@ double DRT::ELEMENTS::CalculateModifiedButlerVolmerMassFluxDensity(const double 
         break;
       }
       else if (iternum == itemax)
-        dserror(
+        FOUR_C_THROW(
             "Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
 
       // compute linearization of current Newton-Raphson residual w.r.t. Butler-Volmer current

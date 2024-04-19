@@ -122,21 +122,21 @@ void CORE::LINEAR_SOLVER::Parameters::FixNullSpace(std::string field, const Epet
   Teuchos::ParameterList& params = *params_ptr;
 
   const int ndim = params.get("null space: dimension", -1);
-  if (ndim == -1) dserror("List does not contain nullspace dimension");
+  if (ndim == -1) FOUR_C_THROW("List does not contain nullspace dimension");
 
   Teuchos::RCP<Epetra_MultiVector> nullspace =
       params.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
-  if (nullspace == Teuchos::null) dserror("List does not contain nullspace");
+  if (nullspace == Teuchos::null) FOUR_C_THROW("List does not contain nullspace");
 
   const int nullspaceLength = nullspace->MyLength();
   const int newmapLength = newmap.NumMyElements();
 
   if (nullspaceLength == newmapLength) return;
   if (nullspaceLength != oldmap.NumMyElements())
-    dserror("Nullspace map of length %d does not match old map length of %d", nullspaceLength,
+    FOUR_C_THROW("Nullspace map of length %d does not match old map length of %d", nullspaceLength,
         oldmap.NumMyElements());
   if (newmapLength > nullspaceLength)
-    dserror("New problem size larger than old - full rebuild of nullspace neccessary");
+    FOUR_C_THROW("New problem size larger than old - full rebuild of nullspace neccessary");
 
   Teuchos::RCP<Epetra_MultiVector> nullspaceNew =
       Teuchos::rcp(new Epetra_MultiVector(newmap, ndim, true));

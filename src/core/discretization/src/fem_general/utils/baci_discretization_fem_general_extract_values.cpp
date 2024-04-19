@@ -34,7 +34,7 @@ void CORE::FE::ExtractMyValues(
   {
     const int lid = global.Map().LID(lm[i]);
     if (lid < 0)
-      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), lm[i]);
+      FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), lm[i]);
     local[i] = global[lid];
   }
   return;
@@ -52,7 +52,7 @@ void CORE::FE::ExtractMyValues(
   {
     const int lid = global.Map().LID(lm[i]);
     if (lid < 0)
-      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), lm[i]);
+      FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), lm[i]);
     local[i] = global[lid];
   }
   return;
@@ -74,7 +74,8 @@ void CORE::FE::ExtractMyValues(
   {
     const int lid = global.Map().LID(lm[i]);
     if (lid < 0)
-      dserror("Proc %d: Cannot find gid=%d in Epetra_MultiVector", global.Comm().MyPID(), lm[i]);
+      FOUR_C_THROW(
+          "Proc %d: Cannot find gid=%d in Epetra_MultiVector", global.Comm().MyPID(), lm[i]);
 
     // loop over multi vector columns (numcol=1 for Epetra_Vector)
     for (int col = 0; col < numcol; col++)
@@ -102,7 +103,7 @@ void CORE::FE::ExtractMyNodeBasedValues(
     const int nodegid = (ele->Nodes()[i])->Id();
     const int lid = global.Map().LID(nodegid);
     if (lid < 0)
-      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), nodegid);
+      FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), nodegid);
 
     // loop over multi vector columns (numcol=1 for Epetra_Vector)
     for (int col = 0; col < numcol; col++)
@@ -121,11 +122,11 @@ void CORE::FE::ExtractMyNodeBasedValues(const DRT::Element* ele,
     CORE::LINALG::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
     const int nsd)
 {
-  if (global == Teuchos::null) dserror("received a TEUCHOS::null pointer");
+  if (global == Teuchos::null) FOUR_C_THROW("received a TEUCHOS::null pointer");
   if (nsd > global->NumVectors())
-    dserror("Requested %d of %d available columns", nsd, global->NumVectors());
+    FOUR_C_THROW("Requested %d of %d available columns", nsd, global->NumVectors());
   const int iel = ele->NumNode();  // number of nodes
-  if (local.length() != (iel * nsd)) dserror("vector size mismatch.");
+  if (local.length() != (iel * nsd)) FOUR_C_THROW("vector size mismatch.");
 
   // TODO: might we do change the loops?
   for (int i = 0; i < nsd; i++)
@@ -138,7 +139,7 @@ void CORE::FE::ExtractMyNodeBasedValues(const DRT::Element* ele,
       const int nodegid = (ele->Nodes()[j])->Id();
       const int lid = global->Map().LID(nodegid);
       if (lid < 0)
-        dserror(
+        FOUR_C_THROW(
             "Proc %d: Cannot find gid=%d in Epetra_MultiVector", global->Comm().MyPID(), nodegid);
       local(i + (nsd * j)) = globalcolumn[lid];
     }
@@ -152,10 +153,10 @@ void CORE::FE::ExtractMyNodeBasedValues(const DRT::Node* node,
     CORE::LINALG::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
     const int nsd)
 {
-  if (global == Teuchos::null) dserror("received a TEUCHOS::null pointer");
+  if (global == Teuchos::null) FOUR_C_THROW("received a TEUCHOS::null pointer");
   if (nsd > global->NumVectors())
-    dserror("Requested %d of %d available columns", nsd, global->NumVectors());
-  if (local.length() != nsd) dserror("vector size mismatch.");
+    FOUR_C_THROW("Requested %d of %d available columns", nsd, global->NumVectors());
+  if (local.length() != nsd) FOUR_C_THROW("vector size mismatch.");
 
   const int nodegid = node->Id();
   const int lid = global->Map().LID(nodegid);

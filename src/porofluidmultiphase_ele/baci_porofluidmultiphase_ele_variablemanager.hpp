@@ -175,14 +175,14 @@ namespace DRT
         void CheckIsEvaluated() const override
         {
           if (not isevaluated_)
-            dserror("EvaluateGPVariables has not been called on variable manager!");
+            FOUR_C_THROW("EvaluateGPVariables has not been called on variable manager!");
         };
 
         //! check if ExtractElementAndNodeValues has been called
         void CheckIsExtracted() const override
         {
           if (not isextracted_)
-            dserror("ExtractElementAndNodeValues has not been called on variable manager!");
+            FOUR_C_THROW("ExtractElementAndNodeValues has not been called on variable manager!");
         };
 
         //! return number of DOFs per node
@@ -191,72 +191,72 @@ namespace DRT
         //! @name Access methods (throw error by default)
         const std::vector<double>* Phinp() const override
         {
-          dserror("Access method Phinp() not implemented! Wrong VariableManager?");
+          FOUR_C_THROW("Access method Phinp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
         const CORE::LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const override
         {
-          dserror("Access method ElementPhinp() not implemented! Wrong VariableManager?");
+          FOUR_C_THROW("Access method ElementPhinp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
         bool ElementHasValidVolFracPressure(const int ivolfrac) const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Access method ElementHasValidVolFracPressure() not implemented! Wrong "
               "VariableManager?");
           return 0.0;
         };
         bool ElementHasValidVolFracSpecies(const int ivolfrac) const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Access method ElementHasValidVolFracSpecies() not implemented! Wrong "
               "VariableManager?");
           return 0.0;
         };
         const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradPhinp() const override
         {
-          dserror("Access method GradPhinp() not implemented! Wrong VariableManager?");
+          FOUR_C_THROW("Access method GradPhinp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
         const std::vector<double>* Phidtnp() const override
         {
-          dserror("Access method Phidtnp() not implemented! Wrong VariableManager?");
+          FOUR_C_THROW("Access method Phidtnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
 
         const std::vector<double>* Hist() const override
         {
-          dserror("Access method Hist() not implemented! Wrong VariableManager?");
+          FOUR_C_THROW("Access method Hist() not implemented! Wrong VariableManager?");
           return nullptr;
         };
         const CORE::LINALG::Matrix<nsd, 1>* ConVelnp() const override
         {
-          dserror("Access method ConVelnp() not implemented! Wrong VariableManager?");
+          FOUR_C_THROW("Access method ConVelnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
         double DivConVelnp() const override
         {
-          dserror("Access method DivConVelnp() not implemented! Wrong VariableManager?");
+          FOUR_C_THROW("Access method DivConVelnp() not implemented! Wrong VariableManager?");
           return 0.0;
         };
         const CORE::LINALG::Matrix<nsd, nen>* EConVelnp() const override
         {
-          dserror("Access method EConVelnp() not implemented! Wrong VariableManager?");
+          FOUR_C_THROW("Access method EConVelnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
         const CORE::LINALG::Matrix<nsd, 1>* Dispnp() const override
         {
-          dserror("Access method Dispnp() not implemented! Wrong VariableManager?");
+          FOUR_C_THROW("Access method Dispnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
         const std::vector<double>* Scalarnp() const override
         {
-          dserror("Access method Salarnp() not implemented! Wrong VariableManager?");
+          FOUR_C_THROW("Access method Salarnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
         const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradScalarnp() const override
         {
-          dserror("Access method GradScalarnp() not implemented! Wrong VariableManager?");
+          FOUR_C_THROW("Access method GradScalarnp() not implemented! Wrong VariableManager?");
           return nullptr;
         };
 
@@ -723,7 +723,8 @@ namespace DRT
         {
           this->varmanager_->CheckIsExtracted();
           if (ivolfrac >= numvolfrac_)
-            dserror("%i is bigger than the number of volume fractions %i in the VariableManager",
+            FOUR_C_THROW(
+                "%i is bigger than the number of volume fractions %i in the VariableManager",
                 ivolfrac + 1, numvolfrac_);
 
           return ele_has_valid_volfrac_press_[ivolfrac];
@@ -733,7 +734,8 @@ namespace DRT
         {
           this->varmanager_->CheckIsExtracted();
           if (ivolfrac >= numvolfrac_)
-            dserror("%i is bigger than the number of volume fractions %i in the VariableManager",
+            FOUR_C_THROW(
+                "%i is bigger than the number of volume fractions %i in the VariableManager",
                 ivolfrac + 1, numvolfrac_);
 
           return ele_has_valid_volfrac_spec_[ivolfrac];

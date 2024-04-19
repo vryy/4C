@@ -107,7 +107,7 @@ int CORE::FE::getNumberOfElementNodes(const CORE::FE::CellType& distype)
       return 5;
       break;
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
 
@@ -149,7 +149,7 @@ int CORE::FE::getNumberOfElementCornerNodes(const CORE::FE::CellType& distype)
       break;
     }
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return numCornerNodes;
@@ -240,7 +240,7 @@ std::vector<int> CORE::FE::getNumberOfFaceElementCornerNodes(const CORE::FE::Cel
       break;
     }
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return faceNodeMap;
@@ -319,7 +319,7 @@ std::vector<int> CORE::FE::getNumberOfFaceElementInternalNodes(const CORE::FE::C
       break;
     }
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return faceNodeMap;
@@ -368,7 +368,7 @@ int CORE::FE::getNumberOfElementLines(const CORE::FE::CellType& distype)
       numLines = 1;
       break;
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return numLines;
@@ -414,7 +414,7 @@ int CORE::FE::getNumberOfElementSurfaces(const CORE::FE::CellType& distype)
       numSurf = 0;
       break;
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return numSurf;
@@ -451,7 +451,7 @@ int CORE::FE::getNumberOfElementVolumes(const CORE::FE::CellType& distype)
       return numVol = 0;
       break;
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return numVol;
@@ -468,7 +468,7 @@ int CORE::FE::getNumberOfElementFaces(const CORE::FE::CellType& distype)
   else if (dim == 1)
     return 2;
   else
-    dserror("discretization type %s not yet implemented",
+    FOUR_C_THROW("discretization type %s not yet implemented",
         (CORE::FE::CellTypeToString(distype)).c_str());
   return 0;
 }
@@ -551,7 +551,7 @@ CORE::FE::CellType CORE::FE::getEleFaceShapeType(
       type = DisTypeToFaceShapeType<CORE::FE::CellType::point1>::shape;
       break;
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
       break;
   }
@@ -572,7 +572,7 @@ std::vector<std::vector<int>> CORE::FE::getEleNodeNumberingFaces(const CORE::FE:
       return getEleNodeNumberingLines(distype);
       break;
     default:
-      dserror("spatial dimension not supported");
+      FOUR_C_THROW("spatial dimension not supported");
       break;
   }
 
@@ -788,7 +788,7 @@ std::vector<std::vector<int>> CORE::FE::getEleNodeNumberingSurfaces(
       break;
     }
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
 
@@ -1063,7 +1063,7 @@ std::vector<std::vector<int>> CORE::FE::getEleNodeNumberingLines(const CORE::FE:
       break;
     }
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
 
@@ -1103,7 +1103,7 @@ std::vector<std::vector<int>> CORE::FE::getEleNodeNumbering_lines_surfaces(
     }
   }
   else
-    dserror("discretization type %s not yet implemented",
+    FOUR_C_THROW("discretization type %s not yet implemented",
         (CORE::FE::CellTypeToString(distype)).c_str());
 
 
@@ -1249,7 +1249,7 @@ CORE::LINALG::SerialDenseMatrix CORE::FE::getEleNodeNumbering_nodes_paramspace(
       break;
     }
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
 
@@ -1261,7 +1261,7 @@ template <int probdim>
 CORE::LINALG::Matrix<probdim, 1> CORE::FE::GetNodeCoordinates(
     const int nodeId, const CORE::FE::CellType distype)
 {
-  dsassert(nodeId < getNumberOfElementNodes(distype), "node number is not correct");
+  FOUR_C_ASSERT(nodeId < getNumberOfElementNodes(distype), "node number is not correct");
 
   const int dim = getDimension(distype);
   CORE::LINALG::Matrix<probdim, 1> coord(true);
@@ -1317,7 +1317,7 @@ CORE::LINALG::Matrix<probdim, 1> CORE::FE::GetNodeCoordinates(
       break;
     }
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
 
@@ -1338,7 +1338,7 @@ void CORE::FE::getCornerNodeIndices(
         index2 = 1;
       }
       else
-        dserror("no valid line3 edge found");
+        FOUR_C_THROW("no valid line3 edge found");
       break;
     }
     case CORE::FE::CellType::tri6:
@@ -1359,7 +1359,7 @@ void CORE::FE::getCornerNodeIndices(
         index2 = 0;
       }
       else
-        dserror("no valid tri6 edge found");
+        FOUR_C_THROW("no valid tri6 edge found");
       break;
     }
     case CORE::FE::CellType::quad8:
@@ -1386,11 +1386,11 @@ void CORE::FE::getCornerNodeIndices(
         index2 = 0;
       }
       else
-        dserror("no valid quad8/9 edge found");
+        FOUR_C_THROW("no valid quad8/9 edge found");
       break;
     }
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
 }
@@ -1487,7 +1487,7 @@ int CORE::FE::getDimension(const CORE::FE::CellType distype)
       dim = CORE::FE::dim<CORE::FE::CellType::point1>;
       break;
     default:
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return dim;
@@ -1577,7 +1577,7 @@ int CORE::FE::getOrder(const CORE::FE::CellType distype, std::optional<int> defa
       break;
     default:
       if (default_order.has_value()) return default_order.value();
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
   }
   return order;
@@ -1667,7 +1667,7 @@ int CORE::FE::getDegree(const CORE::FE::CellType distype, std::optional<int> def
       break;
     default:
       if (default_degree.has_value()) return default_degree.value();
-      dserror("discretization type %s not yet implemented",
+      FOUR_C_THROW("discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(distype)).c_str());
       break;
   }
@@ -1697,7 +1697,7 @@ CORE::FE::CellType CORE::FE::getShapeOfBoundaryElement(
       else if (parentshape == CORE::FE::CellType::nurbs8)
         return CORE::FE::CellType::nurbs2;
       else
-        dserror(
+        FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
             nen, CORE::FE::CellTypeToString(parentshape).c_str());
@@ -1722,7 +1722,7 @@ CORE::FE::CellType CORE::FE::getShapeOfBoundaryElement(
                parentshape == CORE::FE::CellType::pyramid5)
         return CORE::FE::CellType::tri3;
       else
-        dserror(
+        FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
             nen, CORE::FE::CellTypeToString(parentshape).c_str());
@@ -1735,7 +1735,7 @@ CORE::FE::CellType CORE::FE::getShapeOfBoundaryElement(
       else if (parentshape == CORE::FE::CellType::nurbs8)
         return CORE::FE::CellType::nurbs4;
       else
-        dserror(
+        FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
             nen, CORE::FE::CellTypeToString(parentshape).c_str());
@@ -1745,7 +1745,7 @@ CORE::FE::CellType CORE::FE::getShapeOfBoundaryElement(
       if (parentshape == CORE::FE::CellType::tet10 || parentshape == CORE::FE::CellType::wedge15)
         return CORE::FE::CellType::tri6;
       else
-        dserror(
+        FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
             nen, CORE::FE::CellTypeToString(parentshape).c_str());
@@ -1755,7 +1755,7 @@ CORE::FE::CellType CORE::FE::getShapeOfBoundaryElement(
       if (parentshape == CORE::FE::CellType::hex20 || parentshape == CORE::FE::CellType::wedge15)
         return CORE::FE::CellType::quad8;
       else
-        dserror(
+        FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
             nen, CORE::FE::CellTypeToString(parentshape).c_str());
@@ -1767,12 +1767,12 @@ CORE::FE::CellType CORE::FE::getShapeOfBoundaryElement(
       else if (parentshape == CORE::FE::CellType::nurbs27)
         return CORE::FE::CellType::nurbs9;
       else
-        dserror(
+        FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
             nen, CORE::FE::CellTypeToString(parentshape).c_str());
     default:
-      dserror("unexpected number of nodes %d for boundary element", nen);
+      FOUR_C_THROW("unexpected number of nodes %d for boundary element", nen);
   }
   return CORE::FE::CellType::dis_none;
 }
@@ -1807,7 +1807,7 @@ int CORE::FE::getParentNodeNumberFromFaceNodeNumber(
       return eleNodeNumbering_nurbs27_surfaces[faceId][faceNodeId];
       break;
     default:
-      dserror("not implemented for this distype");
+      FOUR_C_THROW("not implemented for this distype");
   }
   return -1;
 }

@@ -276,7 +276,7 @@ namespace CORE::FE::NURBS
       }
       default:
       {
-        dserror("Unknown distype for nurbs line element evaluation\n");
+        FOUR_C_THROW("Unknown distype for nurbs line element evaluation\n");
       }
     }
   }
@@ -621,7 +621,7 @@ namespace CORE::FE::NURBS
       }
       default:
       {
-        dserror("Unknown distype for nurbs line element evaluation\n");
+        FOUR_C_THROW("Unknown distype for nurbs line element evaluation\n");
       }
     }
   }
@@ -760,7 +760,7 @@ namespace CORE::FE::NURBS
       }
       default:
       {
-        dserror("Unknown distype for nurbs line element evaluation\n");
+        FOUR_C_THROW("Unknown distype for nurbs line element evaluation\n");
       }
     }
   }
@@ -1056,7 +1056,7 @@ namespace CORE::FE::NURBS
       }
       default:
       {
-        dserror("Unknown distype for nurbs element evaluation\n");
+        FOUR_C_THROW("Unknown distype for nurbs element evaluation\n");
       }
     }
     return false;
@@ -1468,7 +1468,7 @@ namespace CORE::FE::NURBS
       }
       default:
       {
-        dserror("Unknown distype for nurbs element evaluation\n");
+        FOUR_C_THROW("Unknown distype for nurbs element evaluation\n");
       }
     }
   }
@@ -2067,7 +2067,7 @@ namespace CORE::FE::NURBS
       }
       default:
       {
-        dserror("Unknown distype for nurbs element evaluation\n");
+        FOUR_C_THROW("Unknown distype for nurbs element evaluation\n");
       }
     }
   }
@@ -2434,7 +2434,7 @@ namespace CORE::FE::NURBS
       }
       default:
       {
-        dserror("Unknown distype for nurbs element evaluation\n");
+        FOUR_C_THROW("Unknown distype for nurbs element evaluation\n");
       }
     }
   }
@@ -2955,7 +2955,7 @@ namespace CORE::FE::NURBS
       }
       default:
       {
-        dserror("Unknown distype for nurbs element evaluation\n");
+        FOUR_C_THROW("Unknown distype for nurbs element evaluation\n");
       }
     }
   }
@@ -3829,7 +3829,7 @@ namespace CORE::FE::NURBS
       }
       default:
       {
-        dserror("Unknown distype for nurbs element evaluation\n");
+        FOUR_C_THROW("Unknown distype for nurbs element evaluation\n");
       }
     }
   }
@@ -3860,7 +3860,7 @@ namespace CORE::FE::NURBS
             nurbs_shape_deriv, nurbs_shape_deriv2, uv(0), knots[0], weights, distype);
       }
       default:
-        dserror("dimension of the element is not correct");
+        FOUR_C_THROW("dimension of the element is not correct");
         exit(EXIT_FAILURE);
     }
   }
@@ -3889,7 +3889,7 @@ namespace CORE::FE::NURBS
             nurbs_shape_funct, nurbs_shape_deriv, uv(0), knots[0], weights, distype);
       }
       default:
-        dserror("dimension of the element is not correct");
+        FOUR_C_THROW("dimension of the element is not correct");
         exit(EXIT_FAILURE);
     }
   }
@@ -3916,7 +3916,7 @@ namespace CORE::FE::NURBS
             nurbs_shape_funct, uv(0), knots[0], weights, distype);
       }
       default:
-        dserror("dimension of the element is not correct");
+        FOUR_C_THROW("dimension of the element is not correct");
         exit(EXIT_FAILURE);
     }
   }

@@ -206,7 +206,7 @@ namespace DRT
         //    // if we have a zero sized element due to a interpolated point -> exit here
         //    if(zero_size)
         //      return(0);
-        dserror("compute error not implemented for nurbs");
+        FOUR_C_THROW("compute error not implemented for nurbs");
       }  // Nurbs specific stuff
 
       if (ele->IsAle())
@@ -254,7 +254,7 @@ namespace DRT
           my::visc_ = actmat->Viscosity() / actmat->Density();
         }
         else
-          dserror("Material is not Newtonian Fluid");
+          FOUR_C_THROW("Material is not Newtonian Fluid");
 
         AnalyticalReference(calcerr,  ///< which reference solution
             calcerrfunctno,           ///< error function number
@@ -379,7 +379,7 @@ namespace DRT
             position[2] = xyzint(2);
           }
           else
-            dserror("invalid nsd %d", nsd_);
+            FOUR_C_THROW("invalid nsd %d", nsd_);
 
           // evaluate velocity and pressure
           Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> function = Teuchos::null;
@@ -391,7 +391,7 @@ namespace DRT
           MAT::PAR::Parameter* params = mat->Parameter();
           auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
 
-          if (!fparams) dserror("Material does not cast to Newtonian fluid");
+          if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
 
           // evaluate velocity and pressure
           // evaluate the velocity gradient
@@ -406,7 +406,7 @@ namespace DRT
             p = function->Evaluate(position, t, 3);
           }
           else
-            dserror("case 'kimmoin_stat' is a 3D specific case");
+            FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
 
 
           if (nsd_ == 3)
@@ -424,7 +424,7 @@ namespace DRT
             grad_u(2, 2) = function_grad->Evaluate(position, t, 8);  // w,z
           }
           else
-            dserror("case 'kimmoin_stat' is a 3D specific case");
+            FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
         }
         break;
 
@@ -487,7 +487,7 @@ namespace DRT
                 exp(-visc * d * d * t);  // w,z
           }
           else
-            dserror("action 'calc_fluid_beltrami_error' is a 3D specific action");
+            FOUR_C_THROW("action 'calc_fluid_beltrami_error' is a 3D specific action");
         }
         break;
 
@@ -506,7 +506,7 @@ namespace DRT
             position[2] = xyzint(2);
           }
           else
-            dserror("invalid nsd %d", nsd_);
+            FOUR_C_THROW("invalid nsd %d", nsd_);
 
           // evaluate velocity and pressure
           Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> function = Teuchos::null;
@@ -532,7 +532,7 @@ namespace DRT
           // get material
           MAT::PAR::Parameter* params = mat->Parameter();
           auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
-          if (!fparams) dserror("Material does not cast to Newtonian fluid");
+          if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
 
           function = Teuchos::rcp(new FLD::KimMoinUP(*fparams, is_stationary));
           function_grad = Teuchos::rcp(new FLD::KimMoinGradU(*fparams, is_stationary));
@@ -545,7 +545,7 @@ namespace DRT
             p = function->Evaluate(position, t, 3);
           }
           else
-            dserror("case 'kimmoin_stat' is a 3D specific case");
+            FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
 
 
           if (nsd_ == 3)
@@ -563,7 +563,7 @@ namespace DRT
             grad_u(2, 2) = function_grad->Evaluate(position, t, 8);  // w,z
           }
           else
-            dserror("case 'kimmoin_stat' is a 3D specific case");
+            FOUR_C_THROW("case 'kimmoin_stat' is a 3D specific case");
         }
         break;
 
@@ -631,7 +631,7 @@ namespace DRT
             u(1) = 0.0;
           }
           else
-            dserror("3D analytical solution is not implemented yet");
+            FOUR_C_THROW("3D analytical solution is not implemented yet");
         }
         break;
 
@@ -653,7 +653,7 @@ namespace DRT
             position[2] = xyzint(2);
           }
           else
-            dserror("invalid nsd %d", nsd_);
+            FOUR_C_THROW("invalid nsd %d", nsd_);
 
           if (nsd_ == 2)
           {
@@ -767,12 +767,12 @@ namespace DRT
             //      grad_u(2,0) = 0.0;       grad_u(2,1) =  0.0;       grad_u(2,2) = 0.0;
           }
           else
-            dserror("invalid dimension");
+            FOUR_C_THROW("invalid dimension");
         }
         break;
 
         default:
-          dserror("analytical solution is not defined");
+          FOUR_C_THROW("analytical solution is not defined");
           break;
       }
     }
@@ -797,8 +797,8 @@ namespace DRT
         Teuchos::ParameterList& params                      ///< parameter list
     )
     {
-#ifdef BACI_DEBUG
-      if (cond_manager == Teuchos::null) dserror("set the condition manager!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (cond_manager == Teuchos::null) FOUR_C_THROW("set the condition manager!");
 #endif
 
       const int calcerr =
@@ -957,10 +957,11 @@ namespace DRT
 
         std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
             bcells.find(coup_sid);
-        if (j == bcells.end()) dserror("missing boundary cell");
+        if (j == bcells.end()) FOUR_C_THROW("missing boundary cell");
 
         const std::vector<CORE::GEO::CUT::BoundaryCell*>& bcs = j->second;
-        if (bcs.size() != cutintpoints.size()) dserror("boundary cell integration rules mismatch");
+        if (bcs.size() != cutintpoints.size())
+          FOUR_C_THROW("boundary cell integration rules mismatch");
 
 
         //---------------------------------------------------------------------------------
@@ -970,13 +971,13 @@ namespace DRT
 
         Teuchos::RCP<DRT::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
-          dserror(
+          FOUR_C_THROW(
               "side cannot be a levelset-coupling side and a mesh coupling side at once: side %i",
               coup_sid);
         if (!is_ls_coupling_side and !is_mesh_coupling_side)
-          dserror("side is neither a levelset-coupling side nor a mesh coupling side: side %i",
+          FOUR_C_THROW("side is neither a levelset-coupling side nor a mesh coupling side: side %i",
               coup_sid);
 #endif
         //-----------------------------------------------------------------------------------
@@ -1298,8 +1299,8 @@ namespace DRT
         const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
     )
     {
-#ifdef BACI_DEBUG
-      if (cond_manager == Teuchos::null) dserror("set the condition manager!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (cond_manager == Teuchos::null) FOUR_C_THROW("set the condition manager!");
 #endif
 
       //--------------------------------------------------------
@@ -1315,12 +1316,12 @@ namespace DRT
         case INPAR::XFEM::Hybrid_LM_Cauchy_stress:
           break;
         case INPAR::XFEM::Nitsche:
-          dserror(
+          FOUR_C_THROW(
               "Wrong evaluation routine for Nitsche coupling. Try ElementXfemInterfaceNIT/NIT2 "
               "instead.");
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Landed in evaluation routine for stress-based LM, given an unknown or unsupported "
               "coupling method.");
           break;
@@ -1448,7 +1449,8 @@ namespace DRT
         // gamma <--> 2 * n
         double mhvs_param = fldparaxfem_->NITStabScaling() / 2.0;
         if (fabs(mhvs_param) < 1.e-8)
-          dserror("MHVS stabilizing parameter n appears in denominator. Please avoid choosing 0.");
+          FOUR_C_THROW(
+              "MHVS stabilizing parameter n appears in denominator. Please avoid choosing 0.");
       }
 
       // build volumetric coupling matrices
@@ -1494,7 +1496,7 @@ namespace DRT
           continue;  // no coupling with current side
 
         if (cond_manager->IsLevelSetCoupling(coup_sid))
-          dserror(
+          FOUR_C_THROW(
               "PatchLocationVector for level-set coupling not supported for hybrid-lm methods yet");
 
         // get coupling matrices for the current side (boundary element)
@@ -1502,7 +1504,7 @@ namespace DRT
             Cuiui_coupling[coup_sid];  // create new vector of Coupling matrices
 
         std::map<int, std::vector<int>>::const_iterator j = patchcouplm.find(coup_sid);
-        if (j == patchcouplm.end()) dserror("missing side");
+        if (j == patchcouplm.end()) FOUR_C_THROW("missing side");
 
         const std::vector<int>& patchlm = j->second;
 
@@ -1513,7 +1515,7 @@ namespace DRT
         patchelementslm.insert(patchelementslm.end(), patchlm.begin(), patchlm.end());
 
         if (averaging_strategy != INPAR::XFEM::Xfluid_Sided)
-          dserror(
+          FOUR_C_THROW(
               "Embedded-sided or Mean or Harmonic coupling for stress-based hybrid LM approach is "
               "not yet available!");
 
@@ -1592,10 +1594,11 @@ namespace DRT
         // get side's boundary cells
         std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
             bcells.find(coup_sid);
-        if (j == bcells.end()) dserror("missing boundary cell");
+        if (j == bcells.end()) FOUR_C_THROW("missing boundary cell");
 
         const std::vector<CORE::GEO::CUT::BoundaryCell*>& bcs = j->second;
-        if (bcs.size() != cutintpoints.size()) dserror("boundary cell integration rules mismatch");
+        if (bcs.size() != cutintpoints.size())
+          FOUR_C_THROW("boundary cell integration rules mismatch");
 
         //---------------------------------------------------------------------------------
         // set flags used for coupling with given levelset/mesh coupling side
@@ -1604,13 +1607,13 @@ namespace DRT
 
         Teuchos::RCP<DRT::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
-          dserror(
+          FOUR_C_THROW(
               "side cannot be a levelset-coupling side and a mesh coupling side at once: side %i",
               coup_sid);
         if (!is_ls_coupling_side and !is_mesh_coupling_side)
-          dserror("side is neither a levelset-coupling side nor a mesh coupling side: side %i",
+          FOUR_C_THROW("side is neither a levelset-coupling side nor a mesh coupling side: side %i",
               coup_sid);
 #endif
 
@@ -1658,7 +1661,7 @@ namespace DRT
         {
           if (averaging_strategy == INPAR::XFEM::Embedded_Sided or
               averaging_strategy == INPAR::XFEM::Mean)  // for coupling-sided and two-sided coupling
-            dserror("embedded or two-sided coupling not supported");
+            FOUR_C_THROW("embedded or two-sided coupling not supported");
           else
           {
             // TODO get the coupling element / the coupling side!!!
@@ -1691,7 +1694,8 @@ namespace DRT
           std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices = c->second;
 
           if (side_matrices.size() != 3)
-            dserror("Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
+            FOUR_C_THROW(
+                "Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
 
           // coupling matrices between background element and one! side
           CORE::LINALG::SerialDenseMatrix& C_uiu = side_matrices[0];
@@ -1707,7 +1711,7 @@ namespace DRT
 
           if (averaging_strategy == INPAR::XFEM::Embedded_Sided or
               averaging_strategy == INPAR::XFEM::Mean)  // for coupling-sided and two-sided coupling
-            dserror("embedded or two-sided coupling not supported");
+            FOUR_C_THROW("embedded or two-sided coupling not supported");
 
           ci[coup_sid] =
               DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidSided(
@@ -1784,7 +1788,7 @@ namespace DRT
           {
             if (cond_manager->IsCoupling(coup_sid, my::eid_))  //... for two-sided problems
             {
-              dserror(
+              FOUR_C_THROW(
                   "convective terms for hybrid lm coupling not implemented yet for level-set cuts");
             }
             else
@@ -1795,7 +1799,7 @@ namespace DRT
             }
           }
           else
-            dserror("no mesh-/level-set coupling object for coupling sid %i", coup_sid);
+            FOUR_C_THROW("no mesh-/level-set coupling object for coupling sid %i", coup_sid);
         }
 
         // Set State for current and previous time
@@ -1868,7 +1872,7 @@ namespace DRT
 
               if (averaging_strategy == INPAR::XFEM::Embedded_Sided or
                   averaging_strategy == INPAR::XFEM::Mean)
-                dserror(
+                FOUR_C_THROW(
                     "embedded or two-sided weighting not supported");  // evaluate embedded
                                                                        // element's shape functions
                                                                        // at gauss-point coordinates
@@ -1884,7 +1888,7 @@ namespace DRT
             else if (is_ls_coupling_side)
             {
               if (cond_manager->IsCoupling(coup_sid, my::eid_))
-                dserror(
+                FOUR_C_THROW(
                     "coupling for level-sets not supported here");  // evaluate embedded element's
                                                                     // shape functions at
                                                                     // gauss-point coordinates
@@ -1925,12 +1929,12 @@ namespace DRT
             double kappa_m = 0.0;
             double kappa_s = 0.0;
             double visc_m = 0.0;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
             // Only Navier Slip used kappa_m,kappa_s and visc_m defined just before!
             // To use Navier Slip specify them correct!
             if (cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP ||
                 cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
-              dserror(
+              FOUR_C_THROW(
                   "ElementXfemInterfaceHybridLM with Navier Slip, what to do with kappa_m/kappa_s "
                   "for the dyn_visc in the traction_jump?");
 #endif
@@ -1956,7 +1960,8 @@ namespace DRT
 
               if (my::fldparatimint_->IsNewOSTImplementation())
               {
-                dserror("how to deal with Neumann boundary condition and new OSTImplementation");
+                FOUR_C_THROW(
+                    "how to deal with Neumann boundary condition and new OSTImplementation");
               }
             }
             else  // standard Hybrid lm terms
@@ -2064,9 +2069,9 @@ namespace DRT
 
               if (my::fldparatimint_->IsNewOSTImplementation())
               {
-                dserror(
+                FOUR_C_THROW(
                     "New OST for HybridLM not implemented - check out the code below this "
-                    "dserror!");
+                    "FOUR_C_THROW!");
                 //            // get velocity at integration point
                 //            // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
                 //            my::velintn_.Multiply(eveln,my::funct_);
@@ -2465,20 +2470,21 @@ namespace DRT
           std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator cc =
               side_coupling_extra.find(coup_sid);
           std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra = cc->second;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
           if (side_matrices.size() != 3)
-            dserror("Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
+            FOUR_C_THROW(
+                "Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
           if (side_matrices_extra.size() != 4)
-            dserror("Obtained only %d conv. side coupling matrices. 4 required.",
+            FOUR_C_THROW("Obtained only %d conv. side coupling matrices. 4 required.",
                 side_matrices_extra.size());
 #endif
 
           for (int i = 0; i < 3; ++i)
           {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
             if (side_matrices[i].numRows() != side_matrices_extra[i].numRows() ||
                 side_matrices[i].numCols() != side_matrices_extra[i].numCols())
-              dserror(
+              FOUR_C_THROW(
                   "Mismatch in matrix dimensions of convective stabilization matrix and MHCS/MHVS "
                   "coupling matrix");
 #endif
@@ -2499,15 +2505,16 @@ namespace DRT
           std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator cc =
               side_coupling_extra.find(coup_sid);
           std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra = cc->second;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
           if (side_matrices.size() != 3)
-            dserror("Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
+            FOUR_C_THROW(
+                "Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
           if (side_matrices_extra.size() != 4)
-            dserror("Obtained only %d conv. side coupling matrices. 4 required.",
+            FOUR_C_THROW("Obtained only %d conv. side coupling matrices. 4 required.",
                 side_matrices_extra.size());
           if (side_matrices[2].numRows() != side_matrices_extra[2].numRows() ||
               side_matrices[2].numCols() != side_matrices_extra[2].numCols())
-            dserror(
+            FOUR_C_THROW(
                 "Mismatch in matrix dimensions of convective stabilization matrix and MHCS/MHVS "
                 "coupling matrix");
 #endif
@@ -3195,8 +3202,8 @@ namespace DRT
         std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>& side_coupling,
         CORE::LINALG::SerialDenseMatrix& Cuiui, bool evaluated_cut)
     {
-#ifdef BACI_DEBUG
-      if (cond_manager == Teuchos::null) dserror("set the condition manager!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (cond_manager == Teuchos::null) FOUR_C_THROW("set the condition manager!");
 #endif
 
 
@@ -3281,7 +3288,7 @@ namespace DRT
             Cuiui_coupling[coup_sid];  // create new vector of Coupling matrices
 
         std::map<int, std::vector<int>>::const_iterator j = patchcouplm.find(coup_sid);
-        if (j == patchcouplm.end()) dserror("missing side");
+        if (j == patchcouplm.end()) FOUR_C_THROW("missing side");
 
         // get number of dofs for coupling side/element
         const size_t ndof_i = j->second.size();
@@ -3321,7 +3328,7 @@ namespace DRT
         {
           std::cout << "Surface tension for master side: " << gamma_m_
                     << ", is not equal to surface tension on slave side:" << gamma_s_ << std::endl;
-          dserror("Non-matching surface tension provided for Master and Slave side.");
+          FOUR_C_THROW("Non-matching surface tension provided for Master and Slave side.");
         }
       }
       else
@@ -3389,10 +3396,11 @@ namespace DRT
 
         std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator j =
             bcells.find(coup_sid);
-        if (j == bcells.end()) dserror("missing boundary cell");
+        if (j == bcells.end()) FOUR_C_THROW("missing boundary cell");
 
         const std::vector<CORE::GEO::CUT::BoundaryCell*>& bcs = j->second;
-        if (bcs.size() != cutintpoints.size()) dserror("boundary cell integration rules mismatch");
+        if (bcs.size() != cutintpoints.size())
+          FOUR_C_THROW("boundary cell integration rules mismatch");
 
         //-----------------------------------------------------------------------------------
         // define average weights
@@ -3410,13 +3418,13 @@ namespace DRT
 
         Teuchos::RCP<DRT::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
-          dserror(
+          FOUR_C_THROW(
               "side cannot be a levelset-coupling side and a mesh coupling side at once: side %i",
               coup_sid);
         if (!is_ls_coupling_side and !is_mesh_coupling_side)
-          dserror("side is neither a levelset-coupling side nor a mesh coupling side: side %i",
+          FOUR_C_THROW("side is neither a levelset-coupling side nor a mesh coupling side: side %i",
               coup_sid);
 #endif
 
@@ -3481,7 +3489,7 @@ namespace DRT
         {
           coupl_ele = cond_manager->GetCouplingElement(coup_sid, ele);
           if (coupl_ele == nullptr)
-            dserror("Failed to obtain coupling element for global coup_sid %d", coup_sid);
+            FOUR_C_THROW("Failed to obtain coupling element for global coup_sid %d", coup_sid);
           CORE::GEO::InitialPositionArray(coupl_xyze, coupl_ele);
         }
 
@@ -3762,7 +3770,8 @@ namespace DRT
 
               if (my::fldparatimint_->IsNewOSTImplementation())
               {
-                dserror("how to deal with Neumann boundary condition and new OSTImplementation");
+                FOUR_C_THROW(
+                    "how to deal with Neumann boundary condition and new OSTImplementation");
               }
             }
 
@@ -3852,7 +3861,7 @@ namespace DRT
                 {
                   if (my::fldparatimint_->IsNewOSTImplementation())
                   {
-                    dserror(
+                    FOUR_C_THROW(
                         "How to deal with NavierSlip boundary condition and new "
                         "OSTImplementation?");
                   }
@@ -4116,7 +4125,7 @@ namespace DRT
         }
         // Neumann boundary conditions for Mesh and Levelset
         default:
-          dserror(
+          FOUR_C_THROW(
               "invalid type of condition %i, which prescribed interface vectors have to be set?",
               cond_type);
           break;
@@ -4202,7 +4211,7 @@ namespace DRT
         case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
         case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
         {
-          dserror("Navier Slip Condition not implemented for NEWOst yet!");
+          FOUR_C_THROW("Navier Slip Condition not implemented for NEWOst yet!");
           // here you would need the dyn_visc for summing up vel_jump and traction_jump...
           break;
         }
@@ -4220,7 +4229,7 @@ namespace DRT
         }
         case INPAR::XFEM::CouplingCond_SURF_FPI_MONO:
         {
-          dserror("Fluid Poro Structure Interaction not implemented for NEWOst yet!");
+          FOUR_C_THROW("Fluid Poro Structure Interaction not implemented for NEWOst yet!");
           break;
         }
         case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:
@@ -4268,7 +4277,7 @@ namespace DRT
         }
         // Neumann boundary conditions for Mesh and Levelset
         default:
-          dserror(
+          FOUR_C_THROW(
               "invalid type of condition %i, which prescribed interface vectors have to be set?",
               cond_type);
           break;
@@ -4334,7 +4343,7 @@ namespace DRT
     {
       if (fldparaxfem_->GetCouplingMethod() != INPAR::XFEM::Hybrid_LM_Cauchy_stress &&
           fldparaxfem_->GetCouplingMethod() != INPAR::XFEM::Hybrid_LM_viscous_stress)
-        dserror("Do not call this method with a non-Lagrange multiplier based approach!");
+        FOUR_C_THROW("Do not call this method with a non-Lagrange multiplier based approach!");
 
       for (std::set<int>::const_iterator bgid = begids.begin(); bgid != begids.end(); ++bgid)
       {
@@ -4344,7 +4353,7 @@ namespace DRT
           continue;  // no coupling with current side
 
         if (cond_manager->IsLevelSetCoupling(coup_sid))
-          dserror(
+          FOUR_C_THROW(
               "HybridLM_CreateSpecialContributionMatrices for level-set coupling not supported "
               "yet");
 

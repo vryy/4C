@@ -81,7 +81,7 @@ bool NTS::Interpolator::Interpolate(MORTAR::Node& snode, std::vector<MORTAR::Ele
   else if (dim_ == 3)
     return Interpolate3D(snode, meles);
   else
-    dserror("wrong dimension");
+    FOUR_C_THROW("wrong dimension");
 
   return true;
 }
@@ -99,7 +99,7 @@ void NTS::Interpolator::Interpolate2D(MORTAR::Node& snode, std::vector<MORTAR::E
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!snode.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
+      FOUR_C_THROW("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   }
 
   // contact with wear
@@ -193,7 +193,7 @@ void NTS::Interpolator::Interpolate2D(MORTAR::Node& snode, std::vector<MORTAR::E
       }
       else
       {
-        dserror("Chosen element type not supported for NTS!");
+        FOUR_C_THROW("Chosen element type not supported for NTS!");
       }
       //**************************************************************
 
@@ -213,7 +213,7 @@ void NTS::Interpolator::Interpolate2D(MORTAR::Node& snode, std::vector<MORTAR::E
       // calculate node-wise wear
       if (wear)
       {
-        dserror("stop");
+        FOUR_C_THROW("stop");
         nwWear2D(mynode, *meles[nummaster], mval, mderiv, scoord, mcoord, scoordold, mcoordold,
             lagmult, lid, linsize, jumpval, area, gpn, dmxi, dslipmatrix, dwear);
       }
@@ -228,7 +228,7 @@ void NTS::Interpolator::Interpolate2D(MORTAR::Node& snode, std::vector<MORTAR::E
       // calculate node-wise wear (prim. var.)
       if (weartype_ == INPAR::WEAR::wear_primvar)
       {
-        dserror("stop");
+        FOUR_C_THROW("stop");
         nwTE2D(mynode, area, jumpval, dslipmatrix);
       }
     }  // End hit ele
@@ -319,7 +319,7 @@ bool NTS::Interpolator::Interpolate3D(MORTAR::Node& snode, std::vector<MORTAR::E
       sxi[1] = 0;
     }
     else
-      dserror("ERORR: wrong node LID");
+      FOUR_C_THROW("ERORR: wrong node LID");
   }
   else if (sele->Shape() == CORE::FE::CellType::tri3 or sele->Shape() == CORE::FE::CellType::tri6)
   {
@@ -354,11 +354,11 @@ bool NTS::Interpolator::Interpolate3D(MORTAR::Node& snode, std::vector<MORTAR::E
       sxi[1] = 0.5;
     }
     else
-      dserror("ERORR: wrong node LID");
+      FOUR_C_THROW("ERORR: wrong node LID");
   }
   else
   {
-    dserror("Chosen element type not supported for NTS!");
+    FOUR_C_THROW("Chosen element type not supported for NTS!");
   }
 
   //**************************************************************
@@ -466,7 +466,7 @@ void NTS::Interpolator::InterpolateMasterTemp3D(
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("InterpolateMasterTemp3D called on a wrong type of MORTAR::Element pair!");
+      FOUR_C_THROW("InterpolateMasterTemp3D called on a wrong type of MORTAR::Element pair!");
   }
 
   //**************************************************************
@@ -527,7 +527,7 @@ void NTS::Interpolator::InterpolateMasterTemp3D(
         sxi[1] = 0;
       }
       else
-        dserror("ERORR: wrong node LID");
+        FOUR_C_THROW("ERORR: wrong node LID");
     }
     else if (sele.Shape() == CORE::FE::CellType::tri3 or sele.Shape() == CORE::FE::CellType::tri6)
     {
@@ -562,11 +562,11 @@ void NTS::Interpolator::InterpolateMasterTemp3D(
         sxi[1] = 0.5;
       }
       else
-        dserror("ERORR: wrong node LID");
+        FOUR_C_THROW("ERORR: wrong node LID");
     }
     else
     {
-      dserror("Chosen element type not supported for NTS!");
+      FOUR_C_THROW("Chosen element type not supported for NTS!");
     }
 
     //**************************************************************
@@ -718,7 +718,7 @@ void NTS::Interpolator::nwSlip2D(CONTACT::Node& mynode, MORTAR::Element& mele,
 
   // normalize interpolated GP tangent back to length 1.0 !!!
   tanlength = sqrt(tanv[0] * tanv[0] + tanv[1] * tanv[1] + tanv[2] * tanv[2]);
-  if (tanlength < 1.0e-12) dserror("nwSlip2D: Divide by zero!");
+  if (tanlength < 1.0e-12) FOUR_C_THROW("nwSlip2D: Divide by zero!");
 
   for (int i = 0; i < 3; i++) tanv[i] /= tanlength;
 
@@ -855,7 +855,7 @@ void NTS::Interpolator::nwWear2D(CONTACT::Node& mynode, MORTAR::Element& mele,
 
   // normalize interpolated GP tangent back to length 1.0 !!!
   lengtht = sqrt(gpt[0] * gpt[0] + gpt[1] * gpt[1] + gpt[2] * gpt[2]);
-  if (abs(lengtht) < 1.0e-12) dserror("IntegrateAndDerivSegment: Divide by zero!");
+  if (abs(lengtht) < 1.0e-12) FOUR_C_THROW("IntegrateAndDerivSegment: Divide by zero!");
 
   for (int i = 0; i < 3; i++) gpt[i] /= lengtht;
 
@@ -1066,7 +1066,7 @@ void NTS::Interpolator::nwGap2D(CONTACT::Node& mynode, MORTAR::Element& sele, MO
 
   // normalize interpolated GP normal back to length 1.0 !!!
   double lengthn = sqrt(gpn[0] * gpn[0] + gpn[1] * gpn[1] + gpn[2] * gpn[2]);
-  if (lengthn < 1.0e-12) dserror("Divide by zero!");
+  if (lengthn < 1.0e-12) FOUR_C_THROW("Divide by zero!");
 
   for (int i = 0; i < 3; ++i) gpn[i] /= lengthn;
 
@@ -1152,7 +1152,7 @@ void NTS::Interpolator::nwGap3D(CONTACT::Node& mynode, MORTAR::Element& mele,
 
   // normalize interpolated GP normal back to length 1.0 !!!
   double lengthn = sqrt(gpn[0] * gpn[0] + gpn[1] * gpn[1] + gpn[2] * gpn[2]);
-  if (lengthn < 1.0e-12) dserror("Divide by zero!");
+  if (lengthn < 1.0e-12) FOUR_C_THROW("Divide by zero!");
 
   for (int i = 0; i < 3; ++i) gpn[i] /= lengthn;
 
@@ -1380,13 +1380,13 @@ void NTS::Interpolator::DerivXiGP2D(MORTAR::Element& sele, MORTAR::Element& mele
   for (int i = 0; i < numsnode; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
-    if (!smrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
+    if (!smrtrnodes[i]) FOUR_C_THROW("DerivXiAB2D: Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
     mmrtrnodes[i] = dynamic_cast<MORTAR::Node*>(mnodes[i]);
-    if (!mmrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
+    if (!mmrtrnodes[i]) FOUR_C_THROW("DerivXiAB2D: Null pointer!");
   }
 
   // we also need shape function derivs in A and B
@@ -1416,7 +1416,7 @@ void NTS::Interpolator::DerivXiGP2D(MORTAR::Element& sele, MORTAR::Element& mele
 
   // normalize interpolated GP normal back to length 1.0 !!!
   const double length = sqrt(sgpn[0] * sgpn[0] + sgpn[1] * sgpn[1] + sgpn[2] * sgpn[2]);
-  if (length < 1.0e-12) dserror("DerivXiGP2D: Divide by zero!");
+  if (length < 1.0e-12) FOUR_C_THROW("DerivXiGP2D: Divide by zero!");
   for (int i = 0; i < 3; ++i) sgpn[i] /= length;
 
   // compute factors and leading constants for master
@@ -1562,13 +1562,13 @@ void NTS::Interpolator::DerivXiGP3D(MORTAR::Element& sele, MORTAR::Element& mele
   for (int i = 0; i < numsnode; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
-    if (!smrtrnodes[i]) dserror("DerivXiGP3D: Null pointer!");
+    if (!smrtrnodes[i]) FOUR_C_THROW("DerivXiGP3D: Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
     mmrtrnodes[i] = dynamic_cast<MORTAR::Node*>(mnodes[i]);
-    if (!mmrtrnodes[i]) dserror("DerivXiGP3D: Null pointer!");
+    if (!mmrtrnodes[i]) FOUR_C_THROW("DerivXiGP3D: Null pointer!");
   }
 
   // we also need shape function derivs at the GP
@@ -1601,7 +1601,7 @@ void NTS::Interpolator::DerivXiGP3D(MORTAR::Element& sele, MORTAR::Element& mele
     }
 
   // get inverse of the 3x3 matrix L (in place)
-  if (abs(lmatrix.Determinant()) < 1e-12) dserror("Singular lmatrix for derivgp3d");
+  if (abs(lmatrix.Determinant()) < 1e-12) FOUR_C_THROW("Singular lmatrix for derivgp3d");
 
   lmatrix.Invert();
 
@@ -1764,7 +1764,7 @@ NTS::MTInterpolator* NTS::MTInterpolator::Impl(std::vector<MORTAR::Element*> mel
           CORE::UTILS::SingletonAction::create);
     }
     default:
-      dserror("Chosen element type not supported!");
+      FOUR_C_THROW("Chosen element type not supported!");
       break;
   }
   return nullptr;
@@ -1807,7 +1807,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate(
   else if (ndim_ == 3)
     Interpolate3D(snode, meles);
   else
-    dserror("wrong dimension!");
+    FOUR_C_THROW("wrong dimension!");
 
   return;
 }
@@ -1827,7 +1827,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!snode.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
+      FOUR_C_THROW("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   }
 
   // bool for projection onto a master node
@@ -1889,7 +1889,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!snode.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
+      FOUR_C_THROW("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   }
 
   bool kink_projection = false;
@@ -1957,7 +1957,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
       sxi[1] = 0;
     }
     else
-      dserror("ERORR: wrong node LID");
+      FOUR_C_THROW("ERORR: wrong node LID");
   }
   else if (sele->Shape() == CORE::FE::CellType::tri3 or sele->Shape() == CORE::FE::CellType::tri6)
   {
@@ -1992,11 +1992,11 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
       sxi[1] = 0.5;
     }
     else
-      dserror("ERORR: wrong node LID");
+      FOUR_C_THROW("ERORR: wrong node LID");
   }
   else
   {
-    dserror("Chosen element type not supported for NTS!");
+    FOUR_C_THROW("Chosen element type not supported for NTS!");
   }
 
   //**************************************************************

@@ -160,7 +160,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(
     block_vec_ptr = constrman_->GetError();
 
     if (block_vec_ptr.is_null())
-      dserror(
+      FOUR_C_THROW(
           "The constraint model vector is a nullptr pointer, although \n"
           "the structural part indicates, that constraint contributions \n"
           "are present!");
@@ -303,7 +303,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::ResetStepState()
 {
   CheckInitSetup();
 
-  dserror("Not yet implemented");
+  FOUR_C_THROW("Not yet implemented");
 }
 
 /*----------------------------------------------------------------------*

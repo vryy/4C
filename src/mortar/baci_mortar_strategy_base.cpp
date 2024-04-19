@@ -86,7 +86,7 @@ void MORTAR::StrategyBase::SetTimeIntegrationInfo(
       Data().SetDynParameterN(time_fac);
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "Unsupported time integration detected! [\"%s\"]", DynamicTypeString(dyntype).c_str());
       exit(EXIT_FAILURE);
   }

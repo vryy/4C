@@ -38,7 +38,7 @@ namespace RTD
     // open ascii file for writing the cell type information
     std::ofstream elementinformationfile(elementinformationfilename.c_str());
     if (!elementinformationfile)
-      dserror("failed to open file: %s", elementinformationfilename.c_str());
+      FOUR_C_THROW("failed to open file: %s", elementinformationfilename.c_str());
     elementinformationfile << "# yaml file created using baci version (git SHA1):\n";
     elementinformationfile << "# " << BaciGitHash.c_str() << "\n#\n";
 
@@ -53,7 +53,7 @@ namespace RTD
     // open ascii file for writing all header parameters
     std::ofstream headerdocumentationfile(headerdocumentationfilename.c_str());
     if (!headerdocumentationfile)
-      dserror("failed to open file: %s", headerdocumentationfilename.c_str());
+      FOUR_C_THROW("failed to open file: %s", headerdocumentationfilename.c_str());
     headerdocumentationfile << "..\n   Created using baci version (git SHA1):\n";
     headerdocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
     headerdocumentationfile << ".. _headerparameters:\n\n";
@@ -69,7 +69,7 @@ namespace RTD
     // open ascii file for writing all header parameters
     std::ofstream celltypeocumentationfile(celltypedocumentationfilename.c_str());
     if (!celltypeocumentationfile)
-      dserror("failed to open file: %s", celltypedocumentationfilename.c_str());
+      FOUR_C_THROW("failed to open file: %s", celltypedocumentationfilename.c_str());
     celltypeocumentationfile << "..\n   Created using baci version (git SHA1):\n";
     celltypeocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
 
@@ -84,7 +84,7 @@ namespace RTD
     // open ascii file for writing all material parameters
     std::ofstream materialdocumentationfile(materialdocumentationfilename.c_str());
     if (!materialdocumentationfile)
-      dserror("failed to open file: %s", materialdocumentationfilename.c_str());
+      FOUR_C_THROW("failed to open file: %s", materialdocumentationfilename.c_str());
     materialdocumentationfile << "..\n   Created using baci version (git SHA1):\n";
     materialdocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
     WriteMaterialReference(materialdocumentationfile, *INPUT::ValidMaterials());
@@ -98,7 +98,7 @@ namespace RTD
     // open ascii file for writing all constrains / conditions parameters
     std::ofstream conditiondocumentationfile(conditiondocumentationfilename.c_str());
     if (!conditiondocumentationfile)
-      dserror("failed to open file: %s", conditiondocumentationfilename.c_str());
+      FOUR_C_THROW("failed to open file: %s", conditiondocumentationfilename.c_str());
     conditiondocumentationfile << "..\n   Created using baci version (git SHA1):\n";
     conditiondocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
     WriteConditionsReference(conditiondocumentationfile, *INPUT::ValidConditions());
@@ -114,7 +114,7 @@ namespace RTD
     // open ascii file for writing other (non header) parameters
     std::ofstream variousdocumentationfile(variousdocumentationfilename.c_str());
     if (!variousdocumentationfile)
-      dserror("failed to open file: %s", variousdocumentationfilename.c_str());
+      FOUR_C_THROW("failed to open file: %s", variousdocumentationfilename.c_str());
     variousdocumentationfile << "..\n   Created using baci version (git SHA1):\n";
     variousdocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
     WriteVariousReference(variousdocumentationfile);

@@ -222,7 +222,7 @@ void EnsightWriter::WriteGeoFile(const std::string& geofilename)
   if (myrank_ == 0)
   {
     geofile.open(geofilename.c_str());
-    if (!geofile) dserror("failed to open file: %s", geofilename.c_str());
+    if (!geofile) FOUR_C_THROW("failed to open file: %s", geofilename.c_str());
   }
 
   // header
@@ -288,7 +288,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
 
     if (nurbsdis == nullptr)
     {
-      dserror("This probably isn't a NurbsDiscretization\n");
+      FOUR_C_THROW("This probably isn't a NurbsDiscretization\n");
     }
 
     // get number of patches
@@ -371,7 +371,7 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
     }
     default:
     {
-      dserror("Undefined spatial approximation type.");
+      FOUR_C_THROW("Undefined spatial approximation type.");
     }
   }
 
@@ -571,7 +571,7 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
           }
           break;
           default:
-            dserror("don't know, how to write this element type as a cell");
+            FOUR_C_THROW("don't know, how to write this element type as a cell");
         }
       }
     }
@@ -639,7 +639,7 @@ void EnsightWriter::WriteNodeConnectivityPar(std::ofstream& geofile,
       exporter.ReceiveAny(frompid, tag, rblock, length);
       if (tag != 0)
       {
-        dserror("Proc 0 received wrong message (ReceiveAny)");
+        FOUR_C_THROW("Proc 0 received wrong message (ReceiveAny)");
       }
       exporter.Wait(request);
     }
@@ -848,7 +848,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
         exporter.ReceiveAny(frompid, tag, rblock, length);
         if (tag != 0)
         {
-          dserror("Proc 0 received wrong message (ReceiveAny)");
+          FOUR_C_THROW("Proc 0 received wrong message (ReceiveAny)");
         }
         exporter.Wait(request);
       }
@@ -905,7 +905,8 @@ std::string EnsightWriter::GetEnsightString(const CORE::FE::CellType distype) co
       break;
   }
   if (entry == distype2ensightstring_.end())
-    dserror("No entry in distype2ensightstring_ found for CORE::FE::CellType = '%d'.", distype);
+    FOUR_C_THROW(
+        "No entry in distype2ensightstring_ found for CORE::FE::CellType = '%d'.", distype);
   return entry->second;
 }
 
@@ -982,7 +983,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
       if (myrank_ == 0)
       {
         stepsize = ((int)file.tellp()) - startfilepos;
-        if (stepsize <= 0) dserror("found invalid step size for result file");
+        if (stepsize <= 0) FOUR_C_THROW("found invalid step size for result file");
       }
       else
         stepsize = 1;  // use dummy value on other procs
@@ -1015,7 +1016,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
       if (myrank_ == 0)
       {
         stepsize = ((int)file.tellp()) - startfilepos;
-        if (stepsize <= 0) dserror("found invalid step size for result file");
+        if (stepsize <= 0) FOUR_C_THROW("found invalid step size for result file");
       }
       else
         stepsize = 1;  // use dummy value on other procs
@@ -1043,7 +1044,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
       if (myrank_ == 0)
       {
         stepsize = ((int)file.tellp()) - startfilepos;
-        if (stepsize <= 0) dserror("found invalid step size for result file");
+        if (stepsize <= 0) FOUR_C_THROW("found invalid step size for result file");
       }
       else
         stepsize = 1;  // use dummy value on other procs
@@ -1071,7 +1072,7 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
       if (myrank_ == 0)
       {
         stepsize = ((int)file.tellp()) - startfilepos;
-        if (stepsize <= 0) dserror("found invalid step size for result file");
+        if (stepsize <= 0) FOUR_C_THROW("found invalid step size for result file");
       }
       else
         stepsize = 1;  // use dummy value on other procs
@@ -1090,10 +1091,10 @@ void EnsightWriter::WriteResult(const std::string groupname, const std::string n
 
     case no_restype:
     case max_restype:
-      dserror("found invalid result type");
+      FOUR_C_THROW("found invalid result type");
       break;
     default:
-      dserror("Invalid output type in WriteResult");
+      FOUR_C_THROW("Invalid output type in WriteResult");
   }  // end of switch(restype)
 
   // store information for later case file creation
@@ -1123,7 +1124,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
     bool laststep, const int from)
 {
   if (not map_has_map(result.group(), groupname.c_str()))
-    dserror("expected result: %s in step %i. Probably a return is missing here. But check!",
+    FOUR_C_THROW("expected result: %s in step %i. Probably a return is missing here. But check!",
         groupname.c_str(), result.step());
 
   // FILE CONTINUATION NOT SUPPORTED DUE TO ITS COMPLEXITY FOR VARIABLE GEOMETRY ghamm 03.03.2014
@@ -1184,7 +1185,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
         if (myrank_ == 0)
         {
           stepsize = ((int)file.tellp()) - startfilepos;
-          if (stepsize <= 0) dserror("found invalid step size for result file");
+          if (stepsize <= 0) FOUR_C_THROW("found invalid step size for result file");
         }
         else
           stepsize = 1;  // use dummy value on other procs
@@ -1192,7 +1193,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
         const int indexsize = 80 + 2 * sizeof(int) + (file.tellp() / stepsize + 2) * sizeof(long);
         if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >= FILE_SIZE_LIMIT_)
         {
-          dserror("file continuation not supported for variable geometries");
+          FOUR_C_THROW("file continuation not supported for variable geometries");
           FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
         }
       }
@@ -1211,7 +1212,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
       if (myrank_ == 0)
       {
         stepsize = ((int)file.tellp()) - startfilepos;
-        if (stepsize <= 0) dserror("found invalid step size for result file");
+        if (stepsize <= 0) FOUR_C_THROW("found invalid step size for result file");
       }
       else
         stepsize = 1;  // use dummy value on other procs
@@ -1219,7 +1220,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
       const int indexsize = 80 + 2 * sizeof(int) + (file.tellp() / stepsize + 2) * sizeof(long);
       if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >= FILE_SIZE_LIMIT_)
       {
-        dserror("file continuation not supported for variable geometries");
+        FOUR_C_THROW("file continuation not supported for variable geometries");
         FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
       }
     }
@@ -1237,7 +1238,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
       if (myrank_ == 0)
       {
         stepsize = ((int)file.tellp()) - startfilepos;
-        if (stepsize <= 0) dserror("found invalid step size for result file");
+        if (stepsize <= 0) FOUR_C_THROW("found invalid step size for result file");
       }
       else
         stepsize = 1;  // use dummy value on other procs
@@ -1245,7 +1246,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
       const int indexsize = 80 + 2 * sizeof(int) + (file.tellp() / stepsize + 2) * sizeof(long);
       if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >= FILE_SIZE_LIMIT_)
       {
-        dserror("file continuation not supported for variable geometries");
+        FOUR_C_THROW("file continuation not supported for variable geometries");
         FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
       }
     }
@@ -1263,7 +1264,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
       if (myrank_ == 0)
       {
         stepsize = ((int)file.tellp()) - startfilepos;
-        if (stepsize <= 0) dserror("found invalid step size for result file");
+        if (stepsize <= 0) FOUR_C_THROW("found invalid step size for result file");
       }
       else
         stepsize = 1;  // use dummy value on other procs
@@ -1271,7 +1272,7 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
       const int indexsize = 80 + 2 * sizeof(int) + (file.tellp() / stepsize + 2) * sizeof(long);
       if (static_cast<long unsigned int>(file.tellp()) + stepsize + indexsize >= FILE_SIZE_LIMIT_)
       {
-        dserror("file continuation not supported for variable geometries");
+        FOUR_C_THROW("file continuation not supported for variable geometries");
         FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
       }
     }
@@ -1279,10 +1280,10 @@ void EnsightWriter::WriteResultOneTimeStep(PostResult& result, const std::string
 
     case no_restype:
     case max_restype:
-      dserror("found invalid result type");
+      FOUR_C_THROW("found invalid result type");
       break;
     default:
-      dserror("Invalid output type in WriteResult");
+      FOUR_C_THROW("Invalid output type in WriteResult");
       break;
   }  // end of switch(restype)
 
@@ -1373,7 +1374,7 @@ void EnsightWriter::WriteSpecialField(SpecialFieldInterface& special, PostResult
     for (int i = 0; i < numfiles; ++i)
     {
       stepsize[i] = ((int)files[i]->tellp()) - startfilepos[i];
-      if (stepsize[i] <= 0) dserror("found invalid step size for result file");
+      if (stepsize[i] <= 0) FOUR_C_THROW("found invalid step size for result file");
     }
   }
   else
@@ -1405,7 +1406,7 @@ void EnsightWriter::WriteSpecialField(SpecialFieldInterface& special, PostResult
   // store information for later case file creation
 
   const std::vector<int> numdfmap = special.NumDfMap();
-  dsassert(
+  FOUR_C_ASSERT(
       static_cast<int>(numdfmap.size()) == numfiles, "Wrong number of components in NumDfMap.");
   for (int i = 0; i < numfiles; ++i)
   {
@@ -1566,7 +1567,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
     Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
     Teuchos::RCP<Epetra_Vector> proc0data = Teuchos::rcp(new Epetra_Vector(*proc0datamap));
     int err = proc0data->Import(*data, proc0dataimporter, Insert);
-    if (err > 0) dserror("Importing everything to proc 0 went wrong. Import returns %d", err);
+    if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
     const Epetra_BlockMap& finaldatamap = proc0data->Map();
 
@@ -1593,7 +1594,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
         }
         else
         {
-          dserror("Error while creating Epetra_MultiVector dofgidperlocalnodeid");
+          FOUR_C_THROW("Error while creating Epetra_MultiVector dofgidperlocalnodeid");
         }
       }
     }
@@ -1603,7 +1604,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
         Teuchos::rcp(new Epetra_MultiVector(*proc0map_, numdf));
     Epetra_Import proc0dofimporter(*proc0map_, *nodemap);
     err = dofgidpernodelid_proc0->Import(*dofgidpernodelid, proc0dofimporter, Insert);
-    if (err > 0) dserror("Importing everything to proc 0 went wrong. Import returns %d", err);
+    if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
 
     //---------------
@@ -1629,7 +1630,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
           const int doflid = inode + (idf * numnp);
           // get the dof global id
           const int actdofgid = (int)(dofgids[doflid]);
-          dsassert(actdofgid >= 0, "error while getting dof global id");
+          FOUR_C_ASSERT(actdofgid >= 0, "error while getting dof global id");
           // get the dof local id w.r.t. the finaldatamap
           int lid = finaldatamap.LID(actdofgid);
           if (lid > -1)
@@ -1655,7 +1656,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
             if (fillzeros)
               Write<float>(file, 0.);
             else
-              dserror("received illegal dof local id: %d (gid=%d)", lid, actdofgid);
+              FOUR_C_THROW("received illegal dof local id: %d (gid=%d)", lid, actdofgid);
           }
         }
       }  // for idf
@@ -1673,7 +1674,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
   }
   else
   {
-    dserror("Undefined spatial approximation type.\n");
+    FOUR_C_THROW("Undefined spatial approximation type.\n");
   }
 
   Write(file, "END TIME STEP");
@@ -1738,7 +1739,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
         Teuchos::rcp(new Epetra_MultiVector(*proc0map_, numdf));
     Epetra_Import proc0dofimporter(*proc0map_, datamap);
     int err = data_proc0->Import(*data, proc0dofimporter, Insert);
-    if (err > 0) dserror("Importing everything to proc 0 went wrong. Import returns %d", err);
+    if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
     //---------------
     // write results
@@ -1781,7 +1782,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   }  // polynomial || meshfree
   else
   {
-    dserror("Undefined spatial approximation type.\n");
+    FOUR_C_THROW("Undefined spatial approximation type.\n");
   }
 
   Write(file, "END TIME STEP");
@@ -1833,7 +1834,7 @@ void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& r
   Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
   Teuchos::RCP<Epetra_Vector> proc0data = Teuchos::rcp(new Epetra_Vector(*proc0datamap));
   int err = proc0data->Import(*data, proc0dataimporter, Insert);
-  if (err > 0) dserror("Importing everything to proc 0 went wrong. Import returns %d", err);
+  if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   const Epetra_BlockMap& finaldatamap = proc0data->Map();
 
@@ -1858,7 +1859,7 @@ void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& r
       }
       else
       {
-        dserror("Error while creating Epetra_MultiVector dofgidperlocalnodeid");
+        FOUR_C_THROW("Error while creating Epetra_MultiVector dofgidperlocalnodeid");
       }
     }
   }
@@ -1868,7 +1869,7 @@ void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& r
       Teuchos::rcp(new Epetra_MultiVector(*proc0map_, numdof));
   Epetra_Import proc0dofimporter(*proc0map_, *elementmap);
   err = dofgidperelementlid_proc0->Import(*dofgidperelementlid, proc0dofimporter, Insert);
-  if (err > 0) dserror("Importing everything to proc 0 went wrong. Import returns %d", err);
+  if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   const int numglobelem = elementmap->NumGlobalElements();
 
@@ -1891,7 +1892,7 @@ void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& r
     //---------------
     if (myrank_ == 0)
     {
-      if (eleGidPerDisType_.empty() == true) dserror("no element types available");
+      if (eleGidPerDisType_.empty() == true) FOUR_C_THROW("no element types available");
     }
 
     if (myrank_ == 0)  // ensures pointer dofgids is valid
@@ -1906,7 +1907,7 @@ void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& r
           const int doflid = ielem + (idof * numglobelem);
           // get the dof global id
           const int actdofgid = (int)(dofgids[doflid]);
-          dsassert(actdofgid >= 0, "error while getting dof global id");
+          FOUR_C_ASSERT(actdofgid >= 0, "error while getting dof global id");
           // get the dof local id w.r.t. the finaldatamap
           int lid = finaldatamap.LID(actdofgid);
           if (lid > -1)
@@ -1914,7 +1915,7 @@ void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& r
             Write(file, static_cast<float>((*proc0data)[lid]));
           }
           else
-            dserror("received illegal dof local id: %d", lid);
+            FOUR_C_THROW("received illegal dof local id: %d", lid);
         }
       }
     }  // for idf
@@ -2003,7 +2004,7 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file,
   Teuchos::RCP<Epetra_MultiVector> proc0data =
       Teuchos::rcp(new Epetra_MultiVector(*proc0datamap, numcol));
   int err = proc0data->Import(*data, proc0dataimporter, Insert);
-  if (err > 0) dserror("Importing everything to proc 0 went wrong. Import returns %d", err);
+  if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   const Epetra_BlockMap& finaldatamap = proc0data->Map();
 
@@ -2012,7 +2013,7 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file,
   //-------------------------
   if (myrank_ == 0)
   {
-    if (eleGidPerDisType_.empty() == true) dserror("no element types available");
+    if (eleGidPerDisType_.empty() == true) FOUR_C_THROW("no element types available");
   }
   // loop over the different element types present
   EleGidPerDisType::const_iterator iter;
@@ -2033,7 +2034,8 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file,
     //---------------
     if (myrank_ == 0)
     {
-      if (numdf + from > numcol) dserror("violated column range of Epetra_MultiVector: %d", numcol);
+      if (numdf + from > numcol)
+        FOUR_C_THROW("violated column range of Epetra_MultiVector: %d", numcol);
       std::vector<int> mycols(numdf);
       std::iota(std::begin(mycols), std::end(mycols), 0);
       // swap entries 5 and 6 (inside BACI we use XY, YZ, XZ, however, ensight-format expects
@@ -2062,7 +2064,7 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file,
             for (int i = 0; i < numsubele; ++i) Write(file, static_cast<float>((*datacolumn)[lid]));
           }
           else
-            dserror("received illegal dof local id: %d", lid);
+            FOUR_C_THROW("received illegal dof local id: %d", lid);
         }
       }
     }  // if (myrank_==0)
@@ -2142,15 +2144,15 @@ std::string EnsightWriter::GetVariableSection(std::map<std::string, std::vector<
     const std::string filename_nopath = filename.substr(found_path + 1);
 
     std::map<std::string, int>::const_iterator timeentry = timesetnumbermap_.find(key);
-    if (timeentry == timesetnumbermap_.end()) dserror("key not found!");
+    if (timeentry == timesetnumbermap_.end()) FOUR_C_THROW("key not found!");
     const int timesetnumber = timeentry->second;
 
     std::map<std::string, int>::const_iterator entry1 = filesetnumbermap_.find(key);
-    if (entry1 == filesetnumbermap_.end()) dserror("key not found!");
+    if (entry1 == filesetnumbermap_.end()) FOUR_C_THROW("key not found!");
     const int setnumber = entry1->second;
 
     std::map<std::string, std::vector<int>>::const_iterator entry2 = filesetmap.find(key);
-    if (entry2 == filesetmap.end()) dserror("filesetmap not defined for '%s'", key.c_str());
+    if (entry2 == filesetmap.end()) FOUR_C_THROW("filesetmap not defined for '%s'", key.c_str());
 
     const int numsubfilesteps = entry2->second.size();
     std::string filename_for_casefile;
@@ -2178,7 +2180,7 @@ std::string EnsightWriter::GetVariableEntryForCaseFile(const int numdf, const un
 
   // determine the type of this result variable (node-/element-based)
   std::map<std::string, std::string>::const_iterator entry = variableresulttypemap_.find(name);
-  if (entry == variableresulttypemap_.end()) dserror("key not found!");
+  if (entry == variableresulttypemap_.end()) FOUR_C_THROW("key not found!");
   const std::string restypestring = entry->second;
 
   // create variable entry in the case-file
@@ -2202,7 +2204,7 @@ std::string EnsightWriter::GetVariableEntryForCaseFile(const int numdf, const un
           << "\t" << filename << "\n";
       break;
     default:
-      dserror("unknown number of dof per node");
+      FOUR_C_THROW("unknown number of dof per node");
   };
   return str.str();
 }
@@ -2248,7 +2250,7 @@ std::string EnsightWriter::GetTimeSectionStringFromTimesets(
   {
     std::string key = timeset->first;
     std::map<std::string, int>::const_iterator entry = timesetnumbermap_.find(key);
-    if (entry == timesetnumbermap_.end()) dserror("key not found!");
+    if (entry == timesetnumbermap_.end()) FOUR_C_THROW("key not found!");
     const int timesetnumber = entry->second;
     const std::vector<double> soltimes = timeset->second;
     if (donetimesets.find(timesetnumber) == donetimesets.end())  // do not write redundant time sets
@@ -2275,9 +2277,9 @@ std::string EnsightWriter::GetFileSectionStringFromFilesets(
   // print filesets in increasing numbering, starting with "geo"
 
   std::map<std::string, int>::const_iterator entry = filesetnumbermap_.find("geo");
-  if (entry == filesetnumbermap_.end()) dserror("key 'geo' not found!");
+  if (entry == filesetnumbermap_.end()) FOUR_C_THROW("key 'geo' not found!");
   const int setnumber = entry->second;
-  if (setnumber != 1) dserror("geometry file must have file set number 1");
+  if (setnumber != 1) FOUR_C_THROW("geometry file must have file set number 1");
   fileset = filesetmap.find("geo");
   std::vector<int> stepsperfile = fileset->second;
   s << "file set:\t\t" << setnumber << "\n";
@@ -2302,7 +2304,7 @@ std::string EnsightWriter::GetFileSectionStringFromFilesets(
     if (key == "geo") continue;
 
     std::map<std::string, int>::const_iterator entry = filesetnumbermap_.find(key);
-    if (entry == filesetnumbermap_.end()) dserror("key not found!");
+    if (entry == filesetnumbermap_.end()) FOUR_C_THROW("key not found!");
     const int setnumber = entry->second;
     std::vector<int> stepsperfile = fileset->second;
     s << "file set:\t\t" << setnumber << "\n";
@@ -2366,7 +2368,7 @@ void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions(std::ofstream& g
   Teuchos::RCP<Epetra_MultiVector> allnodecoords =
       Teuchos::rcp(new Epetra_MultiVector(*proc0map, 3));
   int err = allnodecoords->Import(*nodecoords, proc0importer, Insert);
-  if (err > 0) dserror("Importing everything to proc 0 went wrong. Import returns %d", err);
+  if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   // write the node coordinates (only proc 0)
   // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
@@ -2375,7 +2377,7 @@ void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions(std::ofstream& g
   {
     double* coords = allnodecoords->Values();
     int numentries = (3 * (allnodecoords->GlobalLength()));
-    dsassert(numentries == (3 * nodemap->NumGlobalElements()),
+    FOUR_C_ASSERT(numentries == (3 * nodemap->NumGlobalElements()),
         "proc 0 has not all of the node coordinates");
     if (nodeidgiven_)
     {

@@ -133,7 +133,7 @@ namespace MORTAR
     else if (name == "thermo_lm")
       type = state_thermo_lagrange_multiplier;
     else
-      dserror("Unknown state type name. (name = %s)", name.c_str());
+      FOUR_C_THROW("Unknown state type name. (name = %s)", name.c_str());
 
     return type;
   }
@@ -344,7 +344,7 @@ namespace MORTAR
 
     inline CORE::COMM::Exporter& Exporter()
     {
-      if (sl_exporter_.is_null()) dserror("The exporter has not been initialized.");
+      if (sl_exporter_.is_null()) FOUR_C_THROW("The exporter has not been initialized.");
 
       return *sl_exporter_;
     }
@@ -358,7 +358,7 @@ namespace MORTAR
 
     const Interface& GetMaSharingRefInterface() const
     {
-      if (masharingrefinterface_ == nullptr) dserror("nullpointer");
+      if (masharingrefinterface_ == nullptr) FOUR_C_THROW("nullpointer");
       return *masharingrefinterface_;
     }
 
@@ -682,7 +682,7 @@ namespace MORTAR
       if (Filled())
         return oldnodecolmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -694,7 +694,7 @@ namespace MORTAR
       if (Filled())
         return oldelecolmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -706,7 +706,7 @@ namespace MORTAR
       if (Filled())
         return snoderowmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -717,7 +717,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PSlaveRowNodes() const
     {
-      if (not Filled()) dserror("MORTAR::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
 
       return interfaceData_->PSNodeRowMap();
     }
@@ -730,7 +730,7 @@ namespace MORTAR
       if (Filled())
         return mnoderowmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -741,7 +741,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PMasterRowNodes() const
     {
-      if (not Filled()) dserror("MORTAR::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
 
       return interfaceData_->PMNodeRowMap();
     }
@@ -754,7 +754,7 @@ namespace MORTAR
       if (Filled())
         return snodecolmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -766,7 +766,7 @@ namespace MORTAR
       if (Filled())
         return mnodecolmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -778,7 +778,7 @@ namespace MORTAR
       if (Filled())
         return snoderowmapbound_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -790,7 +790,7 @@ namespace MORTAR
       if (Filled())
         return snodecolmapbound_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -802,7 +802,7 @@ namespace MORTAR
       if (Filled())
         return mnoderowmapnobound_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -814,7 +814,7 @@ namespace MORTAR
       if (Filled())
         return mnodecolmapnobound_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -826,7 +826,7 @@ namespace MORTAR
       if (Filled())
         return selerowmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -838,7 +838,7 @@ namespace MORTAR
       if (Filled())
         return melerowmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -850,7 +850,7 @@ namespace MORTAR
       if (Filled())
         return selecolmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -862,7 +862,7 @@ namespace MORTAR
       if (Filled())
         return melecolmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -874,7 +874,7 @@ namespace MORTAR
       if (Filled())
         return sdofrowmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -886,7 +886,7 @@ namespace MORTAR
       if (Filled())
         return sdofcolmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -897,7 +897,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PSlaveRowDofs() const
     {
-      if (not Filled()) dserror("MORTAR::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
 
       return interfaceData_->PSDofRowMap();
     }
@@ -910,7 +910,7 @@ namespace MORTAR
       if (Filled())
         return mdofrowmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -922,7 +922,7 @@ namespace MORTAR
       if (Filled())
         return mdofcolmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -933,7 +933,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PMasterRowDofs() const
     {
-      if (not Filled()) dserror("MORTAR::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
 
       return interfaceData_->PMDofRowMap();
     }
@@ -946,7 +946,7 @@ namespace MORTAR
       if (Filled())
         return lmdofmap_;
       else
-        dserror("MORTAR::Interface::FillComplete was not called");
+        FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -955,7 +955,7 @@ namespace MORTAR
     */
     int MaxDofGlobal() const
     {
-      if (maxdofglobal_ < 0) dserror("MaxDofGlobal not yet initialized");
+      if (maxdofglobal_ < 0) FOUR_C_THROW("MaxDofGlobal not yet initialized");
       return maxdofglobal_;
     }
 

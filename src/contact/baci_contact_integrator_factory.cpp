@@ -104,7 +104,7 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::BuildIntegrator(
     }
     default:
     {
-      dserror("Unsupported solving strategy! (stype = %s | %d)",
+      FOUR_C_THROW("Unsupported solving strategy! (stype = %s | %d)",
           INPAR::CONTACT::SolvingStrategy2String(sol_type).c_str(), sol_type);
       exit(EXIT_FAILURE);
     }

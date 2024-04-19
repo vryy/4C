@@ -195,7 +195,7 @@ namespace MORTAR
     */
     const int& GetSlaveId() const
     {
-      if (slaveId_ < 0) dserror("Invalid slave element ID for this integration cell!");
+      if (slaveId_ < 0) FOUR_C_THROW("Invalid slave element ID for this integration cell!");
 
       return slaveId_;
     }
@@ -215,7 +215,7 @@ namespace MORTAR
     */
     const int& GetMasterId() const
     {
-      if (masterId_ < 0) dserror("Invalid master element ID for this integration cell!");
+      if (masterId_ < 0) FOUR_C_THROW("Invalid master element ID for this integration cell!");
 
       return masterId_;
     }
@@ -264,12 +264,12 @@ namespace MORTAR
     {
       if (shape_ == CORE::FE::CellType::line2)
       {
-        if (i < 0 || i > 1) dserror("IntLine has 2 vertex linearizations only!");
+        if (i < 0 || i > 1) FOUR_C_THROW("IntLine has 2 vertex linearizations only!");
         return linvertex_[i];
       }
       else
       {
-        if (i < 0 || i > 2) dserror("IntCell has 3 vertex linearizations only!");
+        if (i < 0 || i > 2) FOUR_C_THROW("IntCell has 3 vertex linearizations only!");
         return linvertex_[i];
       }
     }
@@ -460,7 +460,7 @@ namespace MORTAR
     */
     virtual bool& EntryExit()
     {
-      if (!intersect_) dserror("EntryExit only for intersections");
+      if (!intersect_) FOUR_C_THROW("EntryExit only for intersections");
       return entryexit_;
     }
 
@@ -473,7 +473,7 @@ namespace MORTAR
     */
     virtual Vertex* Neighbor()
     {
-      if (!intersect_) dserror("Neighbor only for intersections");
+      if (!intersect_) FOUR_C_THROW("Neighbor only for intersections");
       return neighbor_;
     }
 
@@ -483,7 +483,7 @@ namespace MORTAR
     */
     virtual void AssignNeighbor(Vertex* assign)
     {
-      if (!intersect_) dserror("Neighbor only for intersections");
+      if (!intersect_) FOUR_C_THROW("Neighbor only for intersections");
       neighbor_ = assign;
       return;
     }
@@ -504,9 +504,9 @@ namespace MORTAR
 
     */
     virtual std::vector<int>& Nodeids()
-    {  // if(type_==Vertex::slave && nodeids_.size()!=1) dserror("Error: Vertex Ids");
-      // if(type_==Vertex::projmaster && nodeids_.size()!=1) dserror("Error: Vertex Ids");
-      // if(type_==Vertex::lineclip && nodeids_.size()!=4) dserror("Error: Vertex Ids");
+    {  // if(type_==Vertex::slave && nodeids_.size()!=1) FOUR_C_THROW("Error: Vertex Ids");
+      // if(type_==Vertex::projmaster && nodeids_.size()!=1) FOUR_C_THROW("Error: Vertex Ids");
+      // if(type_==Vertex::lineclip && nodeids_.size()!=4) FOUR_C_THROW("Error: Vertex Ids");
       return nodeids_;
     }
 

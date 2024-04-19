@@ -38,7 +38,8 @@ void DRT::ELEMENTS::SoSh8p8::EasUpdateIncrementally(CORE::LINALG::SerialDenseMat
   oldKaainv = &data.invKaa;
   oldKad = &data.Kda;  // actually k_ad
   oldKap = &data.Kap;
-  if (!alpha || !oldKaainv || !oldKad || !oldKap || !oldfeas) dserror("Missing EAS history-data");
+  if (!alpha || !oldKaainv || !oldKad || !oldKap || !oldfeas)
+    FOUR_C_THROW("Missing EAS history-data");
 
   // feas^{k+1} := feas^k + k_ad^k . Ddisp^k + k_ap^k . Dpres^k
   CORE::LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMEAS_T, NUMDISP_, 1>(

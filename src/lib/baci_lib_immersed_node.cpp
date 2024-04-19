@@ -47,7 +47,7 @@ DRT::ImmersedNode::ImmersedNode(const DRT::ImmersedNode& old)
       IsBoundaryImmersed_(old.IsBoundaryImmersed_),
       IsPseudoBoundary_(old.IsPseudoBoundary_)
 {
-  dserror("ERROR: ImmersedNode copy-ctor has not been used before. Be careful when using it.");
+  FOUR_C_THROW("ERROR: ImmersedNode copy-ctor has not been used before. Be careful when using it.");
   return;
 }
 
@@ -140,7 +140,7 @@ void DRT::ImmersedNode::Unpack(const std::vector<char>& data)
   ismatched_ = ExtractInt(position, data);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -164,7 +164,7 @@ bool DRT::ImmersedNode::VisData(const std::string& name, std::vector<double>& da
 {
   if (name == "IsBoundaryImmersedNode")
   {
-    if ((int)data.size() < 1) dserror("Size mismatch");
+    if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
     data[0] = IsBoundaryImmersed();
     return true;
   }

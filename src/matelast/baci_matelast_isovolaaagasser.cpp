@@ -67,7 +67,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::CalcCele(const int eleGID)
   // new style
   double normdist_myele = params_->GetParameter(params_->normdist, eleGID);
   double cele_myele = -999.0;
-  if (normdist_myele == -999.0) dserror("Aneurysm mean ilt distance not found.");
+  if (normdist_myele == -999.0) FOUR_C_THROW("Aneurysm mean ilt distance not found.");
 
 
   if (0.0 <= normdist_myele and normdist_myele <= 0.5)
@@ -83,7 +83,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::CalcCele(const int eleGID)
     params_->SetParameter(params_->cele, cele_myele, eleGID);
   }
   else
-    dserror("Unable to calculate valid stiffness parameter in material AAAGasser");
+    FOUR_C_THROW("Unable to calculate valid stiffness parameter in material AAAGasser");
 }
 
 void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
@@ -118,7 +118,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params, con
 
 
     if (params_->GetParameter(params_->normdist, eleGID) == -999.0)
-      dserror("Aneurysm mean ilt distance not found.");
+      FOUR_C_THROW("Aneurysm mean ilt distance not found.");
 
     // recalculate cele_
     CalcCele(eleGID);
@@ -154,7 +154,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(double& psi,
            (beta_myele * log(detF) + pow(detF, -beta_myele) - 1.0);
   }
   else
-    dserror("Material parameters have not been initialized yet!");
+    FOUR_C_THROW("Material parameters have not been initialized yet!");
 }
 
 void MAT::ELASTIC::IsoVolAAAGasser::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& dPmodI,
@@ -183,7 +183,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddDerivativesModified(CORE::LINALG::Matrix<
                    ((1. - 2. * nue_myele) * beta_myele * modinv(2) * modinv(2));
   }
   else
-    dserror("Material parameters have not been initialized yet!");
+    FOUR_C_THROW("Material parameters have not been initialized yet!");
 }
 
 void MAT::ELASTIC::IsoVolAAAGasser::VisNames(std::map<std::string, int>& names)
@@ -203,7 +203,7 @@ bool MAT::ELASTIC::IsoVolAAAGasser::VisData(
 
   if (name == "cele")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     data[0] = params_->GetParameter(params_->cele, eleGID);
   }
   else

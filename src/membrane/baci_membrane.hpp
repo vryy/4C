@@ -165,7 +165,7 @@ namespace DRT
             return MembraneQuad9Type::Instance().UniqueParObjectId();
           }
           default:
-            dserror("unknown element type!");
+            FOUR_C_THROW("unknown element type!");
             break;
         }
         // Intel compiler needs a return so
@@ -258,7 +258,7 @@ namespace DRT
           }
           break;
           default:
-            dserror("unknown element type!");
+            FOUR_C_THROW("unknown element type!");
             break;
         }
         // Intel compiler needs a return so
@@ -409,7 +409,7 @@ namespace DRT
        *  \date 04/16 */
       inline DRT::ELEMENTS::ParamsInterface& ParamsInterface()
       {
-        if (not IsParamsInterface()) dserror("The interface ptr is not set!");
+        if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
       }
 
@@ -529,7 +529,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented!");
+        FOUR_C_THROW("method ComputeNullSpace not implemented!");
         return nullspace;
       }
 
@@ -558,7 +558,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented!");
+        FOUR_C_THROW("method ComputeNullSpace not implemented!");
         return nullspace;
       }
 
@@ -641,7 +641,7 @@ namespace DRT
             return MembraneLine3Type::Instance().UniqueParObjectId();
           }
           default:
-            dserror("unknown line type!");
+            FOUR_C_THROW("unknown line type!");
             break;
         }
         // Intel compiler needs a return so
@@ -706,7 +706,7 @@ namespace DRT
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::Membrane<distype2>*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Membrane<distype2>*>(parent) != nullptr,
             "Parent element is no membrane element");
         return static_cast<DRT::ELEMENTS::Membrane<distype2>*>(parent);
       }
@@ -729,7 +729,7 @@ namespace DRT
             return MembraneLine3Type::Instance();
           }
           default:
-            dserror("unknown line type!");
+            FOUR_C_THROW("unknown line type!");
             break;
         }
         // Intel compiler needs a return so

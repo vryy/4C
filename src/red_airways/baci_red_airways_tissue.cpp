@@ -36,12 +36,12 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   std::vector<DRT::Condition*> surfneumcond;
   std::vector<int> tmp;
   Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
-  if (structdis == Teuchos::null) dserror("no structure discretization available");
+  if (structdis == Teuchos::null) FOUR_C_THROW("no structure discretization available");
 
   // First get all Neumann conditions on structure
   structdis->GetCondition("SurfaceNeumann", surfneumcond);
   unsigned int numneumcond = surfneumcond.size();
-  if (numneumcond == 0) dserror("no Neumann conditions on structure");
+  if (numneumcond == 0) FOUR_C_THROW("no Neumann conditions on structure");
 
   // Now filter those Neumann conditions that are due to the coupling
   std::vector<DRT::Condition*> coupcond;
@@ -51,7 +51,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
     if (actcond->Type() == DRT::Condition::RedAirwayTissue) coupcond.push_back(actcond);
   }
   unsigned int numcond = coupcond.size();
-  if (numcond == 0) dserror("no coupling conditions found");
+  if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
 
   for (unsigned int i = 0; i < numcond; ++i)
   {
@@ -71,12 +71,13 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   std::vector<DRT::Condition*> nodecond;
   Teuchos::RCP<DRT::Discretization> redairwaydis =
       GLOBAL::Problem::Instance()->GetDis("red_airway");
-  if (redairwaydis == Teuchos::null) dserror("no redairway discretization available");
+  if (redairwaydis == Teuchos::null) FOUR_C_THROW("no redairway discretization available");
 
   // First get all redairway prescribed conditions on structure
   redairwaydis->GetCondition("RedAirwayPrescribedCond", nodecond);
   unsigned int numnodecond = nodecond.size();
-  if (numnodecond == 0) dserror("no redairway prescribed conditions on redairway discretization");
+  if (numnodecond == 0)
+    FOUR_C_THROW("no redairway prescribed conditions on redairway discretization");
 
   // Now filter those node conditions that are due to the coupling
   std::vector<DRT::Condition*> nodecoupcond;
@@ -86,7 +87,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
     if (actcond->Type() == DRT::Condition::RedAirwayNodeTissue) nodecoupcond.push_back(actcond);
   }
   unsigned int numnodecoupcond = nodecoupcond.size();
-  if (numnodecoupcond == 0) dserror("no coupling conditions found");
+  if (numnodecoupcond == 0) FOUR_C_THROW("no coupling conditions found");
 
   for (unsigned int i = 0; i < numnodecoupcond; ++i)
   {
@@ -127,11 +128,11 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
       sdyn.get<double>("MAXTIME") != timeparams.get<double>("MAXTIME") or
       rawdyn.get<double>("TIMESTEP") != timeparams.get<double>("TIMESTEP") or
       rawdyn.get<int>("NUMSTEP") != timeparams.get<int>("NUMSTEP"))
-    dserror("Parameter(s) for time integrators inconsistent");
+    FOUR_C_THROW("Parameter(s) for time integrators inconsistent");
 
   // Check Time integration parameters
   if (sdyn.get<int>("RESTARTEVRY") != rawdyn.get<int>("RESTARTEVRY"))
-    dserror("Parameters for restart inconsistent");
+    FOUR_C_THROW("Parameters for restart inconsistent");
 
   // Get coupling parameters
   const Teuchos::ParameterList& rawtisdyn =
@@ -201,7 +202,7 @@ void AIRWAY::RedAirwayTissue::Integrate()
 
     if ((iter >= itermax_) && (couppres_ip_->Comm().MyPID() == 0))
     {
-      dserror("FIELD ITERATION NOT CONVERGED IN %d STEPS AT TIME T=%f", itermax_, Time());
+      FOUR_C_THROW("FIELD ITERATION NOT CONVERGED IN %d STEPS AT TIME T=%f", itermax_, Time());
     }
 
     UpdateAndOutput();
@@ -309,14 +310,14 @@ void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
     // not implemented yet...
     case INPAR::ARTNET::SD:
     {
-      dserror(
+      FOUR_C_THROW(
           "Currently only two types of RELAXTYPE possible: norelaxation, fixedrelaxation, Aitken");
     }
     break;
 
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Currently only two types of RELAXTYPE possible: norelaxation, fixedrelaxation, Aitken");
     }
     break;
@@ -479,7 +480,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   const int linsolvernumber = rawdyn.get<int>("LINEAR_SOLVER");
   // Check if the present solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC "
         "to a valid number!");
   std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(

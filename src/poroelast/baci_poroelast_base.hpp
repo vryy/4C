@@ -72,7 +72,7 @@ namespace POROELAST
     //! build combined dirichlet map for the monolithic problem
     virtual void BuildCombinedDBCMap()
     {
-      dserror(
+      FOUR_C_THROW(
           "BuildCombinedDBCMap() not implemented in base class. must be implemented in sub "
           "classes.");
     }
@@ -88,21 +88,21 @@ namespace POROELAST
     //! composed system matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
     {
-      dserror("SystemMatrix() only available for monolithic schemes!");
+      FOUR_C_THROW("SystemMatrix() only available for monolithic schemes!");
       return Teuchos::null;
     }
 
     //! block system matrix
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
-      dserror("BlockSystemMatrix() only available for monolithic schemes!");
+      FOUR_C_THROW("BlockSystemMatrix() only available for monolithic schemes!");
       return Teuchos::null;
     }
 
     //! full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() override
     {
-      dserror("DofRowMap() only available for monolithic schemes!");
+      FOUR_C_THROW("DofRowMap() only available for monolithic schemes!");
       return Teuchos::null;
     }
 
@@ -115,21 +115,21 @@ namespace POROELAST
     //! extractor to communicate between full monolithic map and block maps
     virtual Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const
     {
-      dserror("ExtractorPointer only available for monolithic schemes!");
+      FOUR_C_THROW("ExtractorPointer only available for monolithic schemes!");
       return Teuchos::null;
     }
 
     //! unique map of all dofs that should be constrained with DBC
     virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const
     {
-      dserror("CombinedDBCMap() only available for monolithic schemes!");
+      FOUR_C_THROW("CombinedDBCMap() only available for monolithic schemes!");
       return Teuchos::null;
     }
 
     //! return rhs of poro problem
     Teuchos::RCP<const Epetra_Vector> RHS() override
     {
-      dserror("RHS() only available for monolithic schemes!");
+      FOUR_C_THROW("RHS() only available for monolithic schemes!");
       return Teuchos::null;
     }
 
@@ -140,7 +140,7 @@ namespace POROELAST
         Teuchos::RCP<const Epetra_Vector> iterinc  //!< increment between iteration i and i+1
         ) override
     {
-      dserror("UpdateStateIncrementally() only available for monolithic schemes!");
+      FOUR_C_THROW("UpdateStateIncrementally() only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
@@ -148,14 +148,14 @@ namespace POROELAST
         Teuchos::RCP<const Epetra_Vector> iterinc  //!< increment between iteration i and i+1
         ) override
     {
-      dserror("Evaluate() only available for monolithic schemes!");
+      FOUR_C_THROW("Evaluate() only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx)
     {
-      dserror("Evaluate(sx,fx) only available for monolithic schemes!");
+      FOUR_C_THROW("Evaluate(sx,fx) only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
@@ -163,14 +163,14 @@ namespace POROELAST
         Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
         bool firstiter) override
     {
-      dserror("Evaluate() only available for monolithic schemes!");
+      FOUR_C_THROW("Evaluate() only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx, bool firstiter)
     {
-      dserror("Evaluate(sx,fx) only available for monolithic schemes!");
+      FOUR_C_THROW("Evaluate(sx,fx) only available for monolithic schemes!");
     }
 
     //! solve time step (depending on algorithm)
@@ -184,7 +184,7 @@ namespace POROELAST
 
     virtual void SetupRHS(bool firstcall = false)
     {
-      dserror("SetupRHS() only available for monolithic schemes!");
+      FOUR_C_THROW("SetupRHS() only available for monolithic schemes!");
     }
 
     //! @name Time loop building blocks

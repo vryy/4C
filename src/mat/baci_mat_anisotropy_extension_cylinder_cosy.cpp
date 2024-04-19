@@ -66,7 +66,7 @@ MAT::CylinderCoordinateSystemAnisotropyExtension::GetCylinderCoordinateSystem(in
 {
   if (cosyLocation_ == CosyLocation::None)
   {
-    dserror("No cylinder coordinate system defined!");
+    FOUR_C_THROW("No cylinder coordinate system defined!");
   }
 
   if (cosyLocation_ == CosyLocation::ElementCosy)

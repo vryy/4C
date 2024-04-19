@@ -340,7 +340,7 @@ const char* map_read_string(MAP* map, const char* key)
 
   if (!map_find_string(map, key, &string))
   {
-    dserror("no string attribute '%s' in map", key);
+    FOUR_C_THROW("no string attribute '%s' in map", key);
   }
 
   return string;
@@ -363,7 +363,7 @@ int map_read_int(MAP* map, const char* key)
 
   if (!map_find_int(map, key, &integer))
   {
-    dserror("no int attribute '%s' in map", key);
+    FOUR_C_THROW("no int attribute '%s' in map", key);
   }
 
   return integer;
@@ -387,7 +387,7 @@ double map_read_real(MAP* map, const char* key)
   if (!map_find_real(map, key, &real))
   {
     int value;
-    if (!map_find_int(map, key, &value)) dserror("no real attribute '%s' in map", key);
+    if (!map_find_int(map, key, &value)) FOUR_C_THROW("no real attribute '%s' in map", key);
     real = value;
   }
 
@@ -411,7 +411,7 @@ MAP* map_read_map(MAP* map, const char* key)
 
   if (!map_find_map(map, key, &dir))
   {
-    dserror("no dir attribute '%s' in map", key);
+    FOUR_C_THROW("no dir attribute '%s' in map", key);
   }
 
   return dir;
@@ -793,7 +793,7 @@ void map_prepend_symbols(MAP* map, const char* key, SYMBOL* symbol, int count)
   }
   else
   {
-    dserror("no node for key '%s'", key);
+    FOUR_C_THROW("no node for key '%s'", key);
   }
 }
 
@@ -1001,7 +1001,7 @@ MAP* symbol_map(const SYMBOL* symbol)
   }
   else
   {
-    dserror("Wrong symbol type %d", symbol->type);
+    FOUR_C_THROW("Wrong symbol type %d", symbol->type);
   }
 
   return ret;
@@ -1101,7 +1101,7 @@ static void init_parser_data(ParserData* data, const char* filename, MPI_Comm co
 
     if (file == nullptr)
     {
-      dserror("cannot read file '%s'", filename);
+      FOUR_C_THROW("cannot read file '%s'", filename);
     }
 
     /* find out the control file size */
@@ -1115,7 +1115,7 @@ static void init_parser_data(ParserData* data, const char* filename, MPI_Comm co
     bytes_read = fread(data->file_buffer, sizeof(char), (size_t)data->file_size, file);
     if (bytes_read != data->file_size)
     {
-      dserror("failed to read file %s", filename);
+      FOUR_C_THROW("failed to read file %s", filename);
     }
     /* a trailing zero helps a lot */
     data->file_buffer[data->file_size] = '\0';
@@ -1129,7 +1129,7 @@ static void init_parser_data(ParserData* data, const char* filename, MPI_Comm co
     err = MPI_Bcast(&data->file_size, 1, MPI_INT, 0, comm);
     if (err != 0)
     {
-      dserror("MPI_Bcast failed: %d", err);
+      FOUR_C_THROW("MPI_Bcast failed: %d", err);
     }
     if (myrank > 0)
     {
@@ -1138,7 +1138,7 @@ static void init_parser_data(ParserData* data, const char* filename, MPI_Comm co
     err = MPI_Bcast(data->file_buffer, data->file_size + 1, MPI_CHAR, 0, comm);
     if (err != 0)
     {
-      dserror("MPI_Bcast failed: %d", err);
+      FOUR_C_THROW("MPI_Bcast failed: %d", err);
     }
   }
 }
@@ -1248,7 +1248,7 @@ static void lexan(ParserData* data)
         {
           if (indention > data->indent_level)
           {
-            dsassert(data->indent_level == 0, "non-zero intention at first line?!");
+            FOUR_C_ASSERT(data->indent_level == 0, "non-zero intention at first line?!");
             data->indent_step = indention;
             data->indent_level = indention;
             data->token_int = 1;
@@ -1256,7 +1256,7 @@ static void lexan(ParserData* data)
           }
           else
           {
-            dserror("dedent at toplevel!");
+            FOUR_C_THROW("dedent at toplevel!");
           }
         }
         else
@@ -1264,7 +1264,7 @@ static void lexan(ParserData* data)
           if (indention > data->indent_level)
           {
             data->tok = tok_indent;
-            dsassert(
+            FOUR_C_ASSERT(
                 (indention - data->indent_level) % data->indent_step == 0, "malformed indention");
             data->token_int = (indention - data->indent_level) / data->indent_step;
             data->indent_level = indention;
@@ -1272,7 +1272,7 @@ static void lexan(ParserData* data)
           else
           {
             data->tok = tok_dedent;
-            dsassert(
+            FOUR_C_ASSERT(
                 (data->indent_level - indention) % data->indent_step == 0, "malformed dedention");
             data->token_int = (data->indent_level - indention) / data->indent_step;
             data->indent_level = indention;
@@ -1318,7 +1318,7 @@ static void lexan(ParserData* data)
             }
             else
             {
-              dserror("no digits after point at line %d", data->lineno);
+              FOUR_C_THROW("no digits after point at line %d", data->lineno);
             }
           }
           if ((t == 'E') || (t == 'e'))
@@ -1337,7 +1337,7 @@ static void lexan(ParserData* data)
             }
             else
             {
-              dserror("no digits after exponent at line %d", data->lineno);
+              FOUR_C_THROW("no digits after exponent at line %d", data->lineno);
             }
           }
           if (t != EOF)
@@ -1372,7 +1372,7 @@ static void lexan(ParserData* data)
             t = getnext(data);
             if (t == EOF)
             {
-              dserror("expected closing \" on line %d", data->lineno);
+              FOUR_C_THROW("expected closing \" on line %d", data->lineno);
             }
           }
           data->tok = tok_string;
@@ -1392,9 +1392,9 @@ static void lexan(ParserData* data)
         else
         {
           if (t >= 32)
-            dserror("unexpected char '%c' at line %d", t, data->lineno);
+            FOUR_C_THROW("unexpected char '%c' at line %d", t, data->lineno);
           else
-            dserror("unexpected char '%d' at line %d", t, data->lineno);
+            FOUR_C_THROW("unexpected char '%d' at line %d", t, data->lineno);
           data->tok = tok_none;
           goto end;
         }
@@ -1448,7 +1448,7 @@ static void parse_definitions(ParserData* data, MAP* dir)
             lexan(data);
             if ((data->tok != tok_indent) || (data->token_int != 1))
             {
-              dserror("Syntaxerror at line %d: single indention expected", data->lineno);
+              FOUR_C_THROW("Syntaxerror at line %d: single indention expected", data->lineno);
             }
 
             map = new MAP;
@@ -1489,11 +1489,11 @@ static void parse_definitions(ParserData* data, MAP* dir)
                 map_insert_real(dir, data->token_real, name);
                 break;
               default:
-                dserror("Syntaxerror at line %d: string, int or real expected", data->lineno);
+                FOUR_C_THROW("Syntaxerror at line %d: string, int or real expected", data->lineno);
             }
             break;
           default:
-            dserror("Syntaxerror at line %d: ':' or '=' expected", data->lineno);
+            FOUR_C_THROW("Syntaxerror at line %d: ':' or '=' expected", data->lineno);
         }
         break;
       }
@@ -1501,7 +1501,7 @@ static void parse_definitions(ParserData* data, MAP* dir)
         data->token_int--;
         goto end;
       default:
-        dserror("Syntaxerror at line %d: name expected", data->lineno);
+        FOUR_C_THROW("Syntaxerror at line %d: name expected", data->lineno);
     }
 
     lexan(data);
@@ -1543,7 +1543,7 @@ void parse_control_file_serial(MAP* map, const char* filename)
 
   if (file == nullptr)
   {
-    dserror("cannot read file '%s'", filename);
+    FOUR_C_THROW("cannot read file '%s'", filename);
   }
 
   /* find out the control file size */
@@ -1557,7 +1557,7 @@ void parse_control_file_serial(MAP* map, const char* filename)
   bytes_read = fread(data.file_buffer, sizeof(char), (size_t)data.file_size, file);
   if (bytes_read != data.file_size)
   {
-    dserror("failed to read file %s", filename);
+    FOUR_C_THROW("failed to read file %s", filename);
   }
   /* a trailing zero helps a lot */
   data.file_buffer[data.file_size] = '\0';

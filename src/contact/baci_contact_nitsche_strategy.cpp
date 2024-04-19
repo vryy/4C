@@ -58,9 +58,9 @@ void CONTACT::NitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> di
   // now we also did this state
   curr_state_eval_ = true;
 
-  if (fc->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble failed");
+  if (fc->GlobalAssemble(Add, false) != 0) FOUR_C_THROW("GlobalAssemble failed");
   // add negative contact force here since the time integrator handed me a rhs!
-  if (f->Update(-1., *fc, 1.)) dserror("update went wrong");
+  if (f->Update(-1., *fc, 1.)) FOUR_C_THROW("update went wrong");
   dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add);
   kt->UnComplete();
   kt->Add(*kc, false, 1., 1.);
@@ -80,7 +80,7 @@ void CONTACT::NitscheStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   // such as the activetoggle or sliptoggle vectors, but rather
   // initialize the restart active and slip sets as being empty)
   bool restartwithcontact = CORE::UTILS::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
-  if (restartwithcontact) dserror("not supported for nitsche contact");
+  if (restartwithcontact) FOUR_C_THROW("not supported for nitsche contact");
 
   // set restart displacement state
   SetState(MORTAR::state_new_displacement, *dis);
@@ -144,7 +144,7 @@ void CONTACT::NitscheStrategy::SetParentState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
   Teuchos::RCP<DRT::Discretization> dis = GLOBAL::Problem::Instance()->GetDis("structure");
-  if (dis == Teuchos::null) dserror("didn't get my discretization");
+  if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
   if (statename == MORTAR::state_new_displacement || statename == MORTAR::state_svelocity)
   {
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(), true));
@@ -185,7 +185,7 @@ void CONTACT::NitscheStrategy::SetParentState(
             break;
           }
           default:
-            dserror("unknown statename");
+            FOUR_C_THROW("unknown statename");
         }
       }
     }
@@ -250,7 +250,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::SetupRhsBlockVec(
       return Teuchos::rcp(
           new Epetra_FEVector(*GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap()));
     default:
-      dserror("you should not be here");
+      FOUR_C_THROW("you should not be here");
       break;
   }
   return Teuchos::null;
@@ -259,7 +259,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::SetupRhsBlockVec(
 Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::CreateRhsBlockPtr(
     const enum CONTACT::VecBlockType& bt) const
 {
-  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
   Teuchos::RCP<Epetra_FEVector> fc = SetupRhsBlockVec(bt);
 
@@ -272,7 +272,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::CreateRhsBlockPtr(
       mele->GetNitscheContainer().AssembleRHS(mele, bt, fc);
     }
   }
-  if (fc->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble failed");
+  if (fc->GlobalAssemble(Add, false) != 0) FOUR_C_THROW("GlobalAssemble failed");
 
   return fc;
 }
@@ -280,7 +280,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::CreateRhsBlockPtr(
 Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategy::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bt) const
 {
-  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
   switch (bt)
   {
     case CONTACT::VecBlockType::displ:
@@ -288,7 +288,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategy::GetRhsBlockPtr(
     case CONTACT::VecBlockType::constraint:
       return Teuchos::null;
     default:
-      dserror("GetRhsBlockPtr: your type is no treated properly!");
+      FOUR_C_THROW("GetRhsBlockPtr: your type is no treated properly!");
       break;
   }
 
@@ -306,7 +306,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::SetupMatrixBl
               *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap()),
           100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
-      dserror("you should not be here");
+      FOUR_C_THROW("you should not be here");
       break;
   }
   return Teuchos::null;
@@ -321,7 +321,7 @@ void CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(
       kc->Complete();
       break;
     default:
-      dserror("you should not be here");
+      FOUR_C_THROW("you should not be here");
       break;
   }
 }
@@ -329,7 +329,7 @@ void CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::CreateMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt)
 {
-  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> kc = SetupMatrixBlockPtr(bt);
 
@@ -351,12 +351,12 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::CreateMatrixB
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategy::GetMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
-  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
   if (bt == CONTACT::MatBlockType::displ_displ)
     return kc_;
   else
-    dserror("GetMatrixBlockPtr: your type is no treated properly!");
+    FOUR_C_THROW("GetMatrixBlockPtr: your type is no treated properly!");
 
   return Teuchos::null;
 }
@@ -441,16 +441,16 @@ void CONTACT::NitscheStrategy::ReconnectParentElements()
       const int gid = ielecolmap->GID(i);
 
       DRT::Element* ele = contact_interface->Discret().gElement(gid);
-      if (!ele) dserror("Cannot find element with gid %", gid);
+      if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
       auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
 
       const int volgid = faceele->ParentElementId();
       if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
-        dserror(
+        FOUR_C_THROW(
             "Manager::ReconnectParentElements: Element %d does not exist on this Proc!", volgid);
 
       DRT::Element* vele = voldis->gElement(volgid);
-      if (!vele) dserror("Cannot find element with gid %", volgid);
+      if (!vele) FOUR_C_THROW("Cannot find element with gid %", volgid);
 
       faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
 

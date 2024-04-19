@@ -264,13 +264,13 @@ namespace STR
 
       inline void CheckInitSetup() const
       {
-        dsassert(
+        FOUR_C_ASSERT(
             IsInit() and IsSetup(), "Call STR::BaseDataGlobalState::Init() and Setup() first!");
       }
 
       inline void CheckInit() const
       {
-        dsassert(IsInit(), "STR::BaseDataGlobalState::Init() has not been called, yet!");
+        FOUR_C_ASSERT(IsInit(), "STR::BaseDataGlobalState::Init() has not been called, yet!");
       }
 
      public:
@@ -603,7 +603,7 @@ namespace STR
       Epetra_Map BlockMap(const INPAR::STR::ModelType& mt) const
       {
         if (model_maps_.find(mt) == model_maps_.end())
-          dserror(
+          FOUR_C_THROW(
               "There is no block map for the given "
               "modeltype \"%s\".",
               INPAR::STR::ModelTypeString(mt).c_str());
@@ -634,7 +634,7 @@ namespace STR
       /// Returns global problem map
       const Epetra_Map& GlobalProblemMap() const
       {
-        dsassert(!gproblem_map_ptr_.is_null(), "The global problem map is not defined!");
+        FOUR_C_ASSERT(!gproblem_map_ptr_.is_null(), "The global problem map is not defined!");
         return *gproblem_map_ptr_;
       };
 

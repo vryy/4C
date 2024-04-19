@@ -92,7 +92,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(Teuchos::ParameterLi
       alphaF_ = parameters.get<double>("alpha_F");
       timefac_ *= alphaF_;
     }
-    if (timefac_ < 0.0) dserror("time factor is negative.");
+    if (timefac_ < 0.0) FOUR_C_THROW("time factor is negative.");
   }
 
   if (not is_stationary_)

@@ -357,7 +357,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented");
+        FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       };
 
@@ -462,7 +462,7 @@ namespace DRT
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentMasterElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(parent) != nullptr,
             "Master element is no elemag_diff element");
         return static_cast<DRT::ELEMENTS::ElemagDiff*>(parent);
       }
@@ -474,7 +474,7 @@ namespace DRT
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentSlaveElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(parent) != nullptr,
             "Slave element is no elemag_diff element");
         return static_cast<DRT::ELEMENTS::ElemagDiff*>(parent);
       }

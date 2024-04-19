@@ -83,7 +83,7 @@ namespace DRT
       */
       DRT::Element* Clone() const override
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return nullptr;
       };
 
@@ -95,14 +95,14 @@ namespace DRT
       */
       int UniqueParObjectId() const override
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return -1234;
       }
 
       /*!
       \brief Each element whose nodes are all covered by an immersed dis. are set IsImmersed
       */
-      virtual void SetIsImmersed(int isimmersed) { dserror("not implemented in base class"); };
+      virtual void SetIsImmersed(int isimmersed) { FOUR_C_THROW("not implemented in base class"); };
 
       /*!
       \brief Each element which has nodes covered by the immersed dis. but at least one node that is
@@ -114,7 +114,7 @@ namespace DRT
       */
       virtual void SetBoundaryIsImmersed(int IsBoundaryImmersed)
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
       };
 
       /*!
@@ -123,7 +123,7 @@ namespace DRT
       */
       virtual void SetHasProjectedDirichlet(int has_projected_dirichletvalues)
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
       };
 
       /*!
@@ -131,7 +131,7 @@ namespace DRT
       */
       virtual void SetIntPointHasProjectedDivergence(int gp, int intpoint_has_projected_divergence)
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
       };
 
       /*!
@@ -139,7 +139,7 @@ namespace DRT
       */
       virtual void StoreProjectedIntPointDivergence(int gp, double projected_intpoint_divergence)
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
       };
 
       /*!
@@ -147,7 +147,7 @@ namespace DRT
       */
       virtual int IsImmersed()
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return -1234;
       };
 
@@ -156,7 +156,7 @@ namespace DRT
       */
       virtual int IsBoundaryImmersed()
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return -1234;
       };
 
@@ -165,7 +165,7 @@ namespace DRT
       */
       virtual int HasProjectedDirichlet()
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return -1234;
       };
 
@@ -175,7 +175,7 @@ namespace DRT
       */
       virtual int IntPointHasProjectedDivergence(int gp)
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return -1234;
       };
 
@@ -184,7 +184,7 @@ namespace DRT
       */
       virtual double ProjectedIntPointDivergence(int gp)
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return -1234.0;
       };
 
@@ -193,7 +193,7 @@ namespace DRT
       */
       virtual Teuchos::RCP<std::vector<int>> GetRCPIntPointHasProjectedDivergence()
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return Teuchos::null;
       };
 
@@ -202,7 +202,7 @@ namespace DRT
       */
       virtual Teuchos::RCP<std::vector<double>> GetRCPProjectedIntPointDivergence()
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return Teuchos::null;
       };
 
@@ -211,7 +211,7 @@ namespace DRT
       */
       virtual void VisIsImmersed(std::map<std::string, int>& names)
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return;
       }
 
@@ -220,7 +220,7 @@ namespace DRT
       */
       virtual void VisIsBoundaryImmersed(std::map<std::string, int>& names)
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return;
       }
 
@@ -229,7 +229,7 @@ namespace DRT
       */
       virtual void ConstructElementRCP(int size)
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return;
       };
 
@@ -238,7 +238,7 @@ namespace DRT
       */
       virtual void DestroyElementRCP()
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return;
       };
 
@@ -259,7 +259,7 @@ namespace DRT
       */
       bool VisData(const std::string& name, std::vector<double>& data) override
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
         return false;
       }
 
@@ -271,7 +271,7 @@ namespace DRT
       */
       void Pack(CORE::COMM::PackBuffer& data) const override
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
       };
 
       /*!
@@ -281,7 +281,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override
       {
-        dserror("not implemented in base class");
+        FOUR_C_THROW("not implemented in base class");
       };
 
 

@@ -261,7 +261,7 @@ bool CORE::GEO::CUT::SelfCut::MergeCoincidingNodes(Side* keep, Side* replace)
       // created for two coinciding nodes ---> need to be checked
       else if (cutnod->isAtSameLocation(scnod))
       {
-        dserror("not implemented yet");
+        FOUR_C_THROW("not implemented yet");
       }
 
       // now that we have all the informations about coinciding nodes
@@ -697,13 +697,13 @@ void CORE::GEO::CUT::SelfCut::FindSelfCutTriangulation()
         if (maincycletriangle.size() != 3)
         {
           //          Output(*cutside, "FindSelfCutTriangulation");
-          dserror("SelfCut: triangulation unsuccessful; triangle without 3 points");
+          FOUR_C_THROW("SelfCut: triangulation unsuccessful; triangle without 3 points");
         }
         if (maincycletriangle[0]->Id() == maincycletriangle[1]->Id() or
             maincycletriangle[0]->Id() == maincycletriangle[2]->Id() or
             maincycletriangle[1]->Id() == maincycletriangle[2]->Id())
         {
-          dserror("SelfCut: triangulation unsuccessful; triangle with two identical points");
+          FOUR_C_THROW("SelfCut: triangulation unsuccessful; triangle with two identical points");
         }
         cutside->GetSelfCutTriangle(maincycletriangle);
       }
@@ -766,20 +766,20 @@ void CORE::GEO::CUT::SelfCut::CreateSelfCutSides()
           std::cout << "Ids: " << cutsidenode->Id() << "\n";
         }
         //        Output(*cutside, "CreateSelfCutSides");
-        dserror("SelfCut: creating sides unsuccessful; didn't find 3-id-set");
+        FOUR_C_THROW("SelfCut: creating sides unsuccessful; didn't find 3-id-set");
       }
       if (selfcutsidenodeids.size() != 3)
       {
         std::cout << "selfcutsidenodeids.size(): " << selfcutsidenodeids.size() << "\n";
         //        Output(*cutside, "CreateSelfCutSides");
-        dserror("SelfCut: creating sides unsuccessful; didn't find 3 ids");
+        FOUR_C_THROW("SelfCut: creating sides unsuccessful; didn't find 3 ids");
       }
       if (selfcutsidenodeids[0] == selfcutsidenodeids[1] or
           selfcutsidenodeids[0] == selfcutsidenodeids[2] or
           selfcutsidenodeids[1] == selfcutsidenodeids[2])
       {
         //        Output(*cutside, "CreateSelfCutSides");
-        dserror("SelfCut: triangulation unsuccessful; triangle with two identical points");
+        FOUR_C_THROW("SelfCut: triangulation unsuccessful; triangle with two identical points");
       }
       Side* selfcutside =
           mesh_.CreateSide(cutside->Id(), selfcutsidenodeids, CORE::FE::CellType::tri3);
@@ -1023,7 +1023,7 @@ void CORE::GEO::CUT::SelfCut::PropagateSelfCutPosition()
             if ((cutsideedgeposition != Point::undecided) and
                 (cutsideedgepos != cutsideedgeposition))
             {
-              dserror("SelfCut: mixed PointPosition of cutsideedges");
+              FOUR_C_THROW("SelfCut: mixed PointPosition of cutsideedges");
             }
             cutsideedgeposition = cutsideedgepos;
             break;
@@ -1041,7 +1041,7 @@ void CORE::GEO::CUT::SelfCut::PropagateSelfCutPosition()
   }
   if (selfcut_sides_.size() == undecidedsides.size() and selfcut_sides_.size() > 0)
   {
-    dserror("SelfCut: all cutsides undecided");
+    FOUR_C_THROW("SelfCut: all cutsides undecided");
   }
   while (undecidedsides.size() > 0)
   {
@@ -1079,11 +1079,11 @@ void CORE::GEO::CUT::SelfCut::PropagateSelfCutPosition()
               case Point::undecided:
                 if (undecidedsides.count(siblingside))
                 {
-                  dserror("SelfCut: uncomplete set of undecided cutsides");
+                  FOUR_C_THROW("SelfCut: uncomplete set of undecided cutsides");
                 }
                 break;
               case Point::oncutsurface:
-                dserror("SelfCut: illegal side position");
+                FOUR_C_THROW("SelfCut: illegal side position");
                 break;
               case Point::inside:
               case Point::outside:
@@ -1120,7 +1120,7 @@ void CORE::GEO::CUT::SelfCut::PropagateSelfCutPosition()
       }
     }
     if (undecidedsidesize == undecidedsides.size())
-      dserror("SelfCut: no progress in cutside position");
+      FOUR_C_THROW("SelfCut: no progress in cutside position");
   }
 }
 
@@ -1149,7 +1149,7 @@ void CORE::GEO::CUT::SelfCut::EraseInsideSides()
   }
   EraseInsideSide(cutsideids);
   if (mesh_.Sides().size() == 0)
-    dserror(
+    FOUR_C_THROW(
         "All self-cut positions are undecided\n. The inital number of cutsides is %d, the number "
         "of erased cutsides is %d",
         initial_cutsides, final_cutsides);
@@ -1570,7 +1570,7 @@ void CORE::GEO::CUT::SelfCut::CuttedSideStatusGmsh(const std::string& name)
     }
     else
     {
-      dserror("SelfCut: irregular side");
+      FOUR_C_THROW("SelfCut: irregular side");
     }
 
     file << "){";
@@ -1741,7 +1741,7 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
     }
     else
     {
-      dserror("SelfCut: irregular side");
+      FOUR_C_THROW("SelfCut: irregular side");
     }
     file << "){";
     Point::PointPosition cutsideselfcutposition = cutside->SelfCutPosition();
@@ -1882,7 +1882,7 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
     }
     else
     {
-      dserror("SelfCut: irregular side");
+      FOUR_C_THROW("SelfCut: irregular side");
     }
     file << "){";
     double cutsideselfcutposition = -0.5;
@@ -2127,7 +2127,7 @@ void CORE::GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
     }
     else
     {
-      // dserror("SelfCut: irregular side");
+      // FOUR_C_THROW("SelfCut: irregular side");
       std::cout << "==| WARNING: SelfCut: irregular side 4 |==" << std::endl;
     }
     file << "){";
@@ -2260,7 +2260,7 @@ void CORE::GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
     }
     else
     {
-      // dserror("SelfCut: irregular side");
+      // FOUR_C_THROW("SelfCut: irregular side");
       std::cout << "==| WARNING: SelfCut: irregular side 5 |==" << std::endl;
     }
     file << "){";
@@ -2431,7 +2431,7 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
     }
     else
     {
-      // dserror("SelfCut: irregular side");
+      // FOUR_C_THROW("SelfCut: irregular side");
       std::cout << "==| WARNING: SelfCut: irregular side 6 |==" << std::endl;
     }
     file << "){";
@@ -2570,7 +2570,7 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
     }
     else
     {
-      // dserror("SelfCut: irregular side");
+      // FOUR_C_THROW("SelfCut: irregular side");
       std::cout << "==| WARNING: SelfCut: irregular side 7 |==" << std::endl;
     }
     file << "){";
@@ -2841,7 +2841,7 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     }
     else
     {
-      // dserror("SelfCut: irregular side");
+      // FOUR_C_THROW("SelfCut: irregular side");
       std::cout << "==| WARNING: SelfCut: irregular side 8 |==" << std::endl;
     }
     file << "){";
@@ -2980,7 +2980,7 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     }
     else
     {
-      // dserror("SelfCut: irregular side");
+      // FOUR_C_THROW("SelfCut: irregular side");
       std::cout << "==| WARNING: SelfCut: irregular side 9 |==" << std::endl;
     }
     file << "){";

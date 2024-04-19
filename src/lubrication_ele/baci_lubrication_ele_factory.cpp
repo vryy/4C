@@ -35,7 +35,7 @@ DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::Provi
       else if (ndim == 3)
         return DefineProblemType<CORE::FE::CellType::quad4, 3>(disname);
       else
-        dserror("invalid problem dimension for quad4 lubrication element!");
+        FOUR_C_THROW("invalid problem dimension for quad4 lubrication element!");
       break;
     }
     case CORE::FE::CellType::quad8:
@@ -45,7 +45,7 @@ DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::Provi
       else if (ndim == 3)
         return DefineProblemType<CORE::FE::CellType::quad8, 3>(disname);
       else
-        dserror("invalid problem dimension for quad8 lubrication element!");
+        FOUR_C_THROW("invalid problem dimension for quad8 lubrication element!");
       break;
     }
     case CORE::FE::CellType::quad9:
@@ -55,7 +55,7 @@ DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::Provi
       else if (ndim == 3)
         return DefineProblemType<CORE::FE::CellType::quad9, 3>(disname);
       else
-        dserror("invalid problem dimension for quad9 lubrication element!");
+        FOUR_C_THROW("invalid problem dimension for quad9 lubrication element!");
       break;
     }
     case CORE::FE::CellType::tri3:
@@ -65,7 +65,7 @@ DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::Provi
       else if (ndim == 3)
         return DefineProblemType<CORE::FE::CellType::tri3, 3>(disname);
       else
-        dserror("invalid problem dimension for tri3 lubrication element!");
+        FOUR_C_THROW("invalid problem dimension for tri3 lubrication element!");
       break;
     }
     case CORE::FE::CellType::tri6:
@@ -75,7 +75,7 @@ DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::Provi
       else if (ndim == 3)
         return DefineProblemType<CORE::FE::CellType::tri6, 3>(disname);
       else
-        dserror("invalid problem dimension for tri6 lubrication element!");
+        FOUR_C_THROW("invalid problem dimension for tri6 lubrication element!");
       break;
     }
     case CORE::FE::CellType::line2:
@@ -87,7 +87,7 @@ DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::Provi
       else if (ndim == 3)
         return DefineProblemType<CORE::FE::CellType::line2, 3>(disname);
       else
-        dserror("invalid problem dimension for line2 lubrication element!");
+        FOUR_C_THROW("invalid problem dimension for line2 lubrication element!");
       break;
     }
     case CORE::FE::CellType::line3:
@@ -99,11 +99,11 @@ DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::Provi
       else if (ndim == 3)
         return DefineProblemType<CORE::FE::CellType::line3, 3>(disname);
       else
-        dserror("invalid problem dimension for line3 lubrication element!");
+        FOUR_C_THROW("invalid problem dimension for line3 lubrication element!");
       break;
     }
     default:
-      dserror("Element shape %s not activated. Just do it.",
+      FOUR_C_THROW("Element shape %s not activated. Just do it.",
           CORE::FE::CellTypeToString(distype).c_str());
       break;
   }

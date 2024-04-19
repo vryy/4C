@@ -76,7 +76,7 @@ namespace ADAPTER
     // return the used poro lagrange strategy
     Teuchos::RCP<CONTACT::LagrangeStrategyPoro> GetPoroStrategy()
     {
-      if (porolagstrategy_ == Teuchos::null) dserror("GetPoroStrategy(): No strategy set!");
+      if (porolagstrategy_ == Teuchos::null) FOUR_C_THROW("GetPoroStrategy(): No strategy set!");
       return porolagstrategy_;
     };
 

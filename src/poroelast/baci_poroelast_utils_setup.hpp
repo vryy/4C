@@ -49,14 +49,14 @@ namespace POROELAST
       if (!fluiddis->Filled()) fluiddis->FillComplete();
 
       // we use the structure discretization as layout for the fluid discretization
-      if (structdis->NumGlobalNodes() == 0) dserror("Structure discretization is empty!");
+      if (structdis->NumGlobalNodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
 
       // create fluid elements if the fluid discretization is empty
       if (fluiddis->NumGlobalNodes() == 0)
       {
         if (!matchinggrid)
         {
-          dserror(
+          FOUR_C_THROW(
               "MATCHINGGRID is set to 'no' in POROELASTICITY DYNAMIC section, but fluid "
               "discretization is empty!");
         }
@@ -92,9 +92,9 @@ namespace POROELAST
 
           // check if FluidField has 2 discretizations, so that coupling is possible
           if (fluiddis->AddDofSet(structsubdofset) != 1)
-            dserror("unexpected dof sets in fluid field");
+            FOUR_C_THROW("unexpected dof sets in fluid field");
           if (structdis->AddDofSet(fluidsubdofset) != 1)
-            dserror("unexpected dof sets in structure field");
+            FOUR_C_THROW("unexpected dof sets in structure field");
         }
         else
         {
@@ -104,9 +104,10 @@ namespace POROELAST
           Teuchos::RCP<DRT::DofSetInterface> fluiddofset = fluiddis->GetDofSetProxy();
 
           // check if FluidField has 2 discretizations, so that coupling is possible
-          if (fluiddis->AddDofSet(structdofset) != 1) dserror("unexpected dof sets in fluid field");
+          if (fluiddis->AddDofSet(structdofset) != 1)
+            FOUR_C_THROW("unexpected dof sets in fluid field");
           if (structdis->AddDofSet(fluiddofset) != 1)
-            dserror("unexpected dof sets in structure field");
+            FOUR_C_THROW("unexpected dof sets in structure field");
         }
 
         structdis->FillComplete();
@@ -116,7 +117,7 @@ namespace POROELAST
       {
         if (matchinggrid)
         {
-          dserror(
+          FOUR_C_THROW(
               "MATCHINGGRID is set to 'yes' in POROELASTICITY DYNAMIC section, but fluid "
               "discretization is not empty!");
         }
@@ -135,10 +136,11 @@ namespace POROELAST
         Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
         dofsetaux = Teuchos::rcp(
             new DRT::DofSetPredefinedDoFNumber(ndofpernode_fluid, ndofperelement_fluid, 0, true));
-        if (structdis->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in structure field");
+        if (structdis->AddDofSet(dofsetaux) != 1)
+          FOUR_C_THROW("unexpected dof sets in structure field");
         dofsetaux = Teuchos::rcp(
             new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
-        if (fluiddis->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in fluid field");
+        if (fluiddis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
 
         // call AssignDegreesOfFreedom also for auxiliary dofsets
         // note: the order of FillComplete() calls determines the gid numbering!

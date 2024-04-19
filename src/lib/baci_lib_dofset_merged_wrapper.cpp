@@ -35,8 +35,8 @@ DRT::DofSetMergedWrapper::DofSetMergedWrapper(Teuchos::RCP<DofSetInterface> sour
       couplingcond_slave_(couplingcond_slave),
       filled_(false)
 {
-  if (sourcedofset_ == Teuchos::null) dserror("Source dof set is null pointer.");
-  if (sourcedis_ == Teuchos::null) dserror("Source discretization is null pointer.");
+  if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("Source dof set is null pointer.");
+  if (sourcedis_ == Teuchos::null) FOUR_C_THROW("Source discretization is null pointer.");
 
   sourcedofset_->Register(this);
 }
@@ -71,8 +71,9 @@ const Epetra_Map* DRT::DofSetMergedWrapper::DofColMap() const
 int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(
     const Discretization& dis, const unsigned dspos, const int start)
 {
-  if (sourcedofset_ == Teuchos::null) dserror("No source dof set assigned to merged dof set!");
-  if (sourcedis_ == Teuchos::null) dserror("No source discretization assigned to mapping dof set!");
+  if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("No source dof set assigned to merged dof set!");
+  if (sourcedis_ == Teuchos::null)
+    FOUR_C_THROW("No source discretization assigned to mapping dof set!");
 
   // get nodes to be coupled
   std::vector<int> masternodes;
@@ -92,7 +93,7 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(
 
   // all nodes should be coupled
   if (masternodes.size() != coupling.size())
-    dserror(
+    FOUR_C_THROW(
         "Did not get 1:1 correspondence. \nmasternodes.size()=%d, coupling.size()=%d."
         "DofSetMergedWrapper requires matching slave and master meshes!",
         masternodes.size(), coupling.size());
@@ -115,7 +116,7 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(
       std::pair<int, double>& coupled = coupling[gid];
       int slavegid = coupled.first;
       int slavelid = dis.NodeRowMap()->LID(slavegid);
-      if (slavelid == -1) dserror("slave gid %d was not found on this proc", slavegid);
+      if (slavelid == -1) FOUR_C_THROW("slave gid %d was not found on this proc", slavegid);
 
       // save master gid at col lid of corresponding slave node
       (*my_master_nodegids_row_layout)[slavelid] = gid;
@@ -150,7 +151,7 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(
 
   // all nodes should be coupled
   if (masternodes.size() != coupling.size())
-    dserror(
+    FOUR_C_THROW(
         "Did not get 1:1 correspondence. \nmasternodes.size()=%d, coupling.size()=%d."
         "DofSetMergedWrapper requires matching slave and master meshes!",
         masternodes.size(), coupling.size());
@@ -173,7 +174,7 @@ int DRT::DofSetMergedWrapper::AssignDegreesOfFreedom(
       std::pair<int, double>& coupled = coupling[gid];
       int slavegid = coupled.first;
       int slavelid = dis.NodeRowMap()->LID(slavegid);
-      if (slavelid == -1) dserror("slave gid %d was not found on this proc", slavegid);
+      if (slavelid == -1) FOUR_C_THROW("slave gid %d was not found on this proc", slavegid);
 
       // save master gid at col lid of corresponding slave node
       (*my_slave_nodegids_row_layout)[slavelid] = gid;
@@ -218,7 +219,7 @@ void DRT::DofSetMergedWrapper::Disconnect(DofSetInterface* dofset)
     sourcedis_ = Teuchos::null;
   }
   else
-    dserror("cannot disconnect from non-connected DofSet");
+    FOUR_C_THROW("cannot disconnect from non-connected DofSet");
 
   // clear my Teuchos::rcps.
   Reset();

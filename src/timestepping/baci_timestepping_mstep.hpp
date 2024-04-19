@@ -58,7 +58,7 @@ namespace TIMESTEPPING
     STATE& operator[](const int step  //!< inquiry step
     )
     {
-      if (not StepExists(step)) dserror("Step %d is not admissible", step);
+      if (not StepExists(step)) FOUR_C_THROW("Step %d is not admissible", step);
       return state_[IndexByStep(step)];
     }
 
@@ -66,7 +66,7 @@ namespace TIMESTEPPING
     const STATE& operator[](const int step  //!< inquiry step
     ) const
     {
-      if (not StepExists(step)) dserror("Step %d is not admissible", step);
+      if (not StepExists(step)) FOUR_C_THROW("Step %d is not admissible", step);
       return state_[IndexByStep(step)];
     }
 
@@ -74,7 +74,7 @@ namespace TIMESTEPPING
     Teuchos::RCP<STATE> operator()(const int step  //!< inquiry step
     )
     {
-      if (not StepExists(step)) dserror("Step %d is not admissible", step);
+      if (not StepExists(step)) FOUR_C_THROW("Step %d is not admissible", step);
       return Teuchos::rcp<STATE>(&(state_[IndexByStep(step)]), false);
     }
 
@@ -109,7 +109,7 @@ namespace TIMESTEPPING
           state_()
     {
       // verify a positive #steps_
-      if (steps_ <= 0) dserror("Past step must be lower or equal to future step");
+      if (steps_ <= 0) FOUR_C_THROW("Past step must be lower or equal to future step");
 
       return;
     }
@@ -127,10 +127,10 @@ namespace TIMESTEPPING
       bool sane = true;
 
       sane = sane and (steppast <= stepfuture);
-      if (not sane) dserror("Past step must be lower than future step");
+      if (not sane) FOUR_C_THROW("Past step must be lower than future step");
 
       sane = sane and (stepfuture == stepfuture_);
-      if (not sane) dserror("Future step cannot be changed");
+      if (not sane) FOUR_C_THROW("Future step cannot be changed");
 
       return sane;
     }
@@ -161,7 +161,7 @@ namespace TIMESTEPPING
     ) const
     {
       int index = step - steppast_;
-      dsassert(IndexExists(index), "step is not permissible!");
+      FOUR_C_ASSERT(IndexExists(index), "step is not permissible!");
       return (unsigned)index;
     }
 
@@ -222,7 +222,7 @@ namespace TIMESTEPPING
       // check this
       {
         bool sane = MStepBase::ResizeSane(steppast, stepfuture);
-        if (not sane) dserror("Sanity check not passed.");
+        if (not sane) FOUR_C_THROW("Sanity check not passed.");
       }
 
       // add states for steps in past
@@ -322,7 +322,7 @@ namespace TIMESTEPPING
       // check this
       {
         bool sane = MStepBase::ResizeSane(steppast, stepfuture);
-        if (not sane) dserror("Sanity check not passed.");
+        if (not sane) FOUR_C_THROW("Sanity check not passed.");
       }
 
       // add states for steps in past

@@ -281,7 +281,7 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
     unsigned cbid) const
 {
   if (not isJacobian())
-    dserror(
+    FOUR_C_THROW(
         "It is not possible to access the Jacobian since it has not yet "
         "been evaluated.");
 
@@ -303,7 +303,8 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
   Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
       Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this));
 
-  if (nlnSharedLinearSystem.is_null()) dserror("Dynamic cast of the shared linear system failed!");
+  if (nlnSharedLinearSystem.is_null())
+    FOUR_C_THROW("Dynamic cast of the shared linear system failed!");
 
   isValidRHS = false;
   isValidJacobian = false;
@@ -311,7 +312,7 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
   const bool success =
       nlnSharedLinearSystem->computeCorrectionSystem(type, *this, xVector, RHSVector);
 
-  if (not success) dserror("computeCorrectionSystem failed!");
+  if (not success) FOUR_C_THROW("computeCorrectionSystem failed!");
 
   isValidRHS = true;
   isValidJacobian = true;
@@ -629,7 +630,7 @@ void NOX::NLN::Group::throwError(const std::string& functionName, const std::str
   std::ostringstream msg;
   msg << "ERROR - NOX::NLN::Group::" << functionName << " - " << errorMsg << std::endl;
 
-  dserror(msg.str());
+  FOUR_C_THROW(msg.str());
 }
 
 /*----------------------------------------------------------------------------*
@@ -647,7 +648,7 @@ void NOX::NLN::Group::CreateBackupState(const ::NOX::Abstract::Vector& dir) cons
       Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr, true);
 
   const ::NOX::Epetra::Vector* epetra_dir = dynamic_cast<const ::NOX::Epetra::Vector*>(&dir);
-  if (not epetra_dir) dserror("Dynamic cast failed.");
+  if (not epetra_dir) FOUR_C_THROW("Dynamic cast failed.");
 
   nln_required->CreateBackupState(epetra_dir->getEpetraVector());
 }
@@ -659,7 +660,7 @@ void NOX::NLN::Group::RecoverFromBackupState()
   Teuchos::RCP<NOX::NLN::Interface::Required> nln_required =
       Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr);
 
-  if (nln_required.is_null()) dserror("Dynamic cast failed.");
+  if (nln_required.is_null()) FOUR_C_THROW("Dynamic cast failed.");
 
   nln_required->RecoverFromBackupState();
 }
@@ -669,7 +670,7 @@ void NOX::NLN::Group::RecoverFromBackupState()
 const Epetra_Map& NOX::NLN::Group::getJacobianRangeMap(unsigned rbid, unsigned cbid) const
 {
   if (not isJacobian())
-    dserror(
+    FOUR_C_THROW(
         "It is not possible to access the Jacobian since it has not yet "
         "been evaluated.");
 
@@ -684,7 +685,7 @@ const Epetra_Map& NOX::NLN::Group::getJacobianRangeMap(unsigned rbid, unsigned c
 Teuchos::RCP<Epetra_Vector> NOX::NLN::Group::getDiagonalOfJacobian(unsigned diag_bid) const
 {
   if (not isJacobian())
-    dserror(
+    FOUR_C_THROW(
         "It is not possible to access the Jacobian since it has not yet "
         "been evaluated.");
 
@@ -700,7 +701,7 @@ void NOX::NLN::Group::replaceDiagonalOfJacobian(
     const Epetra_Vector& new_diag, unsigned diag_bid) const
 {
   if (not isJacobian())
-    dserror(
+    FOUR_C_THROW(
         "It is not possible to access the Jacobian since it has not yet "
         "been evaluated.");
 
@@ -717,9 +718,10 @@ void NOX::NLN::Group::replaceDiagonalOfJacobian(
 {
   if (isConditionNumber()) return ::NOX::Abstract::Group::Ok;
 
-  if (xVector.getEpetraVector().Comm().NumProc() != 1) dserror("Only serial mode is supported!");
+  if (xVector.getEpetraVector().Comm().NumProc() != 1)
+    FOUR_C_THROW("Only serial mode is supported!");
 
-  if (!isJacobian()) dserror("Jacobian is invalid wrt the solution.");
+  if (!isJacobian()) FOUR_C_THROW("Jacobian is invalid wrt the solution.");
 
   switch (condnum_type)
   {
@@ -749,7 +751,7 @@ void NOX::NLN::Group::replaceDiagonalOfJacobian(
       break;
     }
     default:
-      dserror("Unknown LinSystem::ConditionNumber type!");
+      FOUR_C_THROW("Unknown LinSystem::ConditionNumber type!");
       exit(EXIT_FAILURE);
   }
 
@@ -767,7 +769,7 @@ void NOX::NLN::Group::replaceDiagonalOfJacobian(
 ::NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeSerialJacobianEigenvalues(
     bool printOutput)
 {
-  if (xVector.getEpetraVector().Comm().NumProc() != 1) dserror("Works only in serial mode!");
+  if (xVector.getEpetraVector().Comm().NumProc() != 1) FOUR_C_THROW("Works only in serial mode!");
 
   if (ev_.isvalid_) return ::NOX::Abstract::Group::Ok;
 
@@ -799,7 +801,7 @@ bool NOX::NLN::Group::isEigenvalues() const { return ev_.isvalid_; }
  *----------------------------------------------------------------------------*/
 const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::getJacobianRealEigenvalues() const
 {
-  if (not isEigenvalues()) dserror("The eigenvalues has not yet been computed!");
+  if (not isEigenvalues()) FOUR_C_THROW("The eigenvalues has not yet been computed!");
   return ev_.realpart_;
 }
 
@@ -807,7 +809,7 @@ const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::getJacobianRealEigenvalu
  *----------------------------------------------------------------------------*/
 const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::getJacobianImaginaryEigenvalues() const
 {
-  if (not isEigenvalues()) dserror("The eigenvalues has not yet been computed!");
+  if (not isEigenvalues()) FOUR_C_THROW("The eigenvalues has not yet been computed!");
   return ev_.imaginarypart_;
 }
 
@@ -815,7 +817,7 @@ const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::getJacobianImaginaryEige
  *----------------------------------------------------------------------------*/
 double NOX::NLN::Group::getJacobianMaxRealEigenvalue() const
 {
-  if (not isEigenvalues()) dserror("The eigenvalues has not yet been computed!");
+  if (not isEigenvalues()) FOUR_C_THROW("The eigenvalues has not yet been computed!");
   return ev_.real_max_;
 }
 
@@ -823,7 +825,7 @@ double NOX::NLN::Group::getJacobianMaxRealEigenvalue() const
  *----------------------------------------------------------------------------*/
 double NOX::NLN::Group::getJacobianMinRealEigenvalue() const
 {
-  if (not isEigenvalues()) dserror("The eigenvalues has not yet been computed!");
+  if (not isEigenvalues()) FOUR_C_THROW("The eigenvalues has not yet been computed!");
   return ev_.real_min_;
 }
 

@@ -53,7 +53,7 @@ namespace DRT
         // get state of the global vector
         Teuchos::RCP<const Epetra_Vector> matrix_state = slavedis.GetState(disp_statename_);
         if (matrix_state == Teuchos::null)
-          dserror("Cannot get state vector %s", disp_statename_.c_str());
+          FOUR_C_THROW("Cannot get state vector %s", disp_statename_.c_str());
 
         // extract local values of the global vector
         CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
@@ -92,7 +92,7 @@ namespace DRT
         // get state of the global vector
         Teuchos::RCP<const Epetra_Vector> matrix_state = slavedis.GetState(vel_statename_);
         if (matrix_state == Teuchos::null)
-          dserror("Cannot get state vector %s", vel_statename_.c_str());
+          FOUR_C_THROW("Cannot get state vector %s", vel_statename_.c_str());
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
@@ -125,7 +125,7 @@ namespace DRT
         // get state of the global vector
         Teuchos::RCP<const Epetra_Vector> matrix_state = slavedis.GetState(veln_statename_);
         if (matrix_state == Teuchos::null)
-          dserror("Cannot get state vector %s", veln_statename_.c_str());
+          FOUR_C_THROW("Cannot get state vector %s", veln_statename_.c_str());
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
@@ -240,7 +240,8 @@ namespace DRT
       {
         // get state of the global vector
         Teuchos::RCP<const Epetra_Vector> matrix_state = cutterdis.GetState(state);
-        if (matrix_state == Teuchos::null) dserror("Cannot get state vector %s", state.c_str());
+        if (matrix_state == Teuchos::null)
+          FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
@@ -272,7 +273,8 @@ namespace DRT
       {
         // get state of the global vector
         Teuchos::RCP<const Epetra_Vector> matrix_state = cutterdis.GetState(state);
-        if (matrix_state == Teuchos::null) dserror("Cannot get state vector %s", state.c_str());
+        if (matrix_state == Teuchos::null)
+          FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
@@ -342,7 +344,7 @@ namespace DRT
           CORE::FE::shape_function_2D(slave_funct_, xslave(0), xslave(1), slave_distype);
           rst_slave(0) = xslave(0);
           rst_slave(1) = xslave(1);
-          //    dserror("You called 3D evaluation routine when coupling with a 2D element.");
+          //    FOUR_C_THROW("You called 3D evaluation routine when coupling with a 2D element.");
           return;
         }
 
@@ -361,7 +363,7 @@ namespace DRT
               slave_deriv_, rst_slave(0), rst_slave(1), rst_slave(2), slave_distype);
         }
         else
-          dserror("Unsupported dimension clash!");
+          FOUR_C_THROW("Unsupported dimension clash!");
 
 
         CORE::LINALG::Matrix<nsd_, nsd_> slave_xjm(true);
@@ -421,10 +423,10 @@ namespace DRT
         //  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::ProjectOnSide" );
 
         // check, if called on a 3D-element
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (slave_nsd_ == nsd_)
         {
-          dserror(
+          FOUR_C_THROW(
               "You can't project onto a 3D coupling slave element directly. You need an associated "
               "boundary element!");
         }
@@ -447,7 +449,7 @@ namespace DRT
         }
         else
         {
-          dserror("Define start side xi-coordinates for unsupported cell type");
+          FOUR_C_THROW("Define start side xi-coordinates for unsupported cell type");
         }
         proj_sol_(2) = 0.0;
 
@@ -573,7 +575,7 @@ namespace DRT
           std::cout << "x_gp_lin" << x_gp_lin << std::endl;
           std::cout << "side " << slave_xyze_ << std::endl;
 
-          dserror("Newton scheme in ProjectOnSide not converged! ");
+          FOUR_C_THROW("Newton scheme in ProjectOnSide not converged! ");
         }
 
         // evaluate shape function at solution
@@ -603,7 +605,7 @@ namespace DRT
           }
           default:
           {
-            dserror("Element volume for non 3D element type?");
+            FOUR_C_THROW("Element volume for non 3D element type?");
             return 0.0;
           }
         }

@@ -83,7 +83,7 @@ namespace FSI
      *  condition maps and other maps from structure, fluid and ALE to a FSI-global
      *  condition map and other map.
      */
-    void SetupDBCMapExtractor() override { dserror("Not implemented, yet."); }
+    void SetupDBCMapExtractor() override { FOUR_C_THROW("Not implemented, yet."); }
 
     /// setup RHS contributions based on single field residuals
     void SetupRHSResidual(Epetra_Vector& f) override;

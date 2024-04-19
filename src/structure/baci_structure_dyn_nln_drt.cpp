@@ -56,7 +56,8 @@ void caldyn_drt()
       dyn_nlnstructural_drt();
       break;
     default:
-      dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+      FOUR_C_THROW(
+          "unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
       break;
   }
 

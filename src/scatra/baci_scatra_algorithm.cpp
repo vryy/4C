@@ -49,8 +49,8 @@ void SCATRA::ScaTraAlgorithm::Setup()
       Teuchos::rcp(new Epetra_Vector(*(FluidField()->ExtractVelocityPart(FluidField()->Velnp()))));
   phiincnp_ = Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phinp())));
 
-  if (velincnp_ == Teuchos::null) dserror("velincnp_ == Teuchos::null");
-  if (phiincnp_ == Teuchos::null) dserror("phiincnp_ == Teuchos::null");
+  if (velincnp_ == Teuchos::null) FOUR_C_THROW("velincnp_ == Teuchos::null");
+  if (phiincnp_ == Teuchos::null) FOUR_C_THROW("phiincnp_ == Teuchos::null");
 }
 
 /*----------------------------------------------------------------------*/
@@ -162,7 +162,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeLoopTwoWay()
       break;
     default:
     {
-      dserror("Selected time integration scheme is not available!");
+      FOUR_C_THROW("Selected time integration scheme is not available!");
       break;
     }
   }
@@ -227,7 +227,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStepConvection()
     }
     default:
     {
-      dserror("Selected time integration scheme is not available!");
+      FOUR_C_THROW("Selected time integration scheme is not available!");
       break;
     }
   }
@@ -322,7 +322,7 @@ void SCATRA::ScaTraAlgorithm::SetVelocityField()
     }
     default:
     {
-      dserror("Time integration scheme not supported");
+      FOUR_C_THROW("Time integration scheme not supported");
       break;
     }
   }

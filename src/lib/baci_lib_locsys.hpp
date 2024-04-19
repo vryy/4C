@@ -145,7 +145,7 @@ namespace DRT
       {
         if (k >= numlocsys_)
         {
-          dserror("Invalid vector index");
+          FOUR_C_THROW("Invalid vector index");
           return nullptr;
         }
         else
@@ -172,7 +172,7 @@ namespace DRT
        */
       inline DRT::Condition::ConditionType TypeLocsys(int k) const
       {
-        if (k >= numlocsys_) dserror("Invalid vector index");
+        if (k >= numlocsys_) FOUR_C_THROW("Invalid vector index");
         return typelocsys_[k];
       };
 

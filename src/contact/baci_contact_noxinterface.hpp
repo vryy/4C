@@ -95,13 +95,13 @@ namespace CONTACT
     /// Check if Init() has been called
     inline void CheckInit() const
     {
-      if (not IsInit()) dserror("Call Init() first!");
+      if (not IsInit()) FOUR_C_THROW("Call Init() first!");
     };
 
     /// Check if Init() and Setup() have been called, yet.
     inline void CheckInitSetup() const
     {
-      if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+      if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
     };
 
     /// Access the underlying strategy

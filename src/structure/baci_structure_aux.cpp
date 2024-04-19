@@ -54,7 +54,7 @@ double STR::CalculateVectorNorm(const enum INPAR::STR::VectorNorm norm,
   }
   else
   {
-    dserror("Cannot handle vector norm");
+    FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
 }

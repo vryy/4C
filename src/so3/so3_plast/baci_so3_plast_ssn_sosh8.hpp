@@ -222,7 +222,7 @@ namespace DRT
 
       const CORE::LINALG::Matrix<nsd_, nsd_>& Jac_curr() const
       {
-        if (jac_curr_.first == false) dserror("jac_curr_ not valid");
+        if (jac_curr_.first == false) FOUR_C_THROW("jac_curr_ not valid");
         return jac_curr_.second;
       }
       CORE::LINALG::Matrix<nsd_, nsd_>& SetJac_curr()
@@ -233,7 +233,7 @@ namespace DRT
 
       const CORE::LINALG::Matrix<nsd_, nsd_>& Jac_refe() const
       {
-        if (jac_refe_.first == false) dserror("jac_refe_ not valid");
+        if (jac_refe_.first == false) FOUR_C_THROW("jac_refe_ not valid");
         return jac_refe_.second;
       }
       CORE::LINALG::Matrix<nsd_, nsd_>& SetJac_refe()
@@ -244,7 +244,7 @@ namespace DRT
 
       const CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& B_ans_loc() const
       {
-        if (B_ans_loc_.first == false) dserror("B_ans_loc_ not valid");
+        if (B_ans_loc_.first == false) FOUR_C_THROW("B_ans_loc_ not valid");
         return B_ans_loc_.second;
       }
       CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& SetB_ans_loc()
@@ -255,7 +255,7 @@ namespace DRT
 
       const CORE::LINALG::Matrix<numstr_, numstr_>& TinvT() const
       {
-        if (TinvT_.first == false) dserror("TinvT_ not valid");
+        if (TinvT_.first == false) FOUR_C_THROW("TinvT_ not valid");
         return TinvT_.second;
       }
       CORE::LINALG::Matrix<numstr_, numstr_>& SetTinvT()

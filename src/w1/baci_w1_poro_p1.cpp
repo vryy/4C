@@ -61,7 +61,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::Unpack(const std::vector<char>& data)
   Base::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
 
 template <CORE::FE::CellType distype>
@@ -96,7 +96,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::UniqueParObjectId() const
     case CORE::FE::CellType::quad9:
       return DRT::ELEMENTS::WallQuad9PoroP1Type::Instance().UniqueParObjectId();
     default:
-      dserror("unknown element type");
+      FOUR_C_THROW("unknown element type");
   }
   return -1;
 }
@@ -114,7 +114,7 @@ DRT::ElementType& DRT::ELEMENTS::Wall1PoroP1<distype>::ElementType() const
       case CORE::FE::CellType::quad9:
         return DRT::ELEMENTS::WallQuad9PoroP1Type::Instance();
       default:
-        dserror("unknown element type");
+        FOUR_C_THROW("unknown element type");
     }
     return DRT::ELEMENTS::WallQuad4PoroP1Type::Instance();
   }

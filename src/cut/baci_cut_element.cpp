@@ -117,7 +117,7 @@ struct NextSideAlongRay
       std::cout << "side 1: " << *s1 << std::endl;
       std::cout << "side 2: " << *s2 << std::endl;
       std::cout << "startpoint: " << startpoint_xyz_ << std::endl;
-      dserror(
+      FOUR_C_THROW(
           "ray-tracing-based comparisons to find the nearest side along the ray failed for the "
           "first time!");
     }
@@ -168,7 +168,7 @@ CORE::GEO::CUT::Element::Element(
  *-----------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Element::setQuadCorners(Mesh& mesh, const std::vector<int>& nodeids)
 {
-  if (not isShadow_) dserror("You can't set Quad-corners for non-shadow element\n");
+  if (not isShadow_) FOUR_C_THROW("You can't set Quad-corners for non-shadow element\n");
 
   for (unsigned i = 0; i < nodeids.size(); i++)
   {
@@ -184,7 +184,7 @@ void CORE::GEO::CUT::Element::setQuadCorners(Mesh& mesh, const std::vector<int>&
 std::vector<CORE::GEO::CUT::Node*> CORE::GEO::CUT::Element::getQuadCorners()
 {
   if ((not isShadow_) or quadCorners_.size() == 0)
-    dserror("what?! you want Quadratic element corners for linear element?\n");
+    FOUR_C_THROW("what?! you want Quadratic element corners for linear element?\n");
   return quadCorners_;
 }
 
@@ -562,7 +562,7 @@ bool CORE::GEO::CUT::Element::ComputePosition(Point* p, Point* cutpoint, Facet* 
     std::cout << "Warning: there is not a unique element's volumecell, number="
               << adjacent_cells.size() << ", the line and facet is adjacent to-> Check this"
               << std::endl;
-    dserror("Warning: there is not a unique element's volumecell");
+    FOUR_C_THROW("Warning: there is not a unique element's volumecell");
   }
   else if (adjacent_cells.size() == 0)
   {
@@ -570,7 +570,7 @@ bool CORE::GEO::CUT::Element::ComputePosition(Point* p, Point* cutpoint, Facet* 
     std::cout << "Warning: there is no adjacent volumecell, the line and facet is adjacent "
                  "to-> Check this"
               << std::endl;
-    dserror("Warning: there is no adjacent volumecell");
+    FOUR_C_THROW("Warning: there is no adjacent volumecell");
   }
 
   // that's the adjacent volume-cell
@@ -663,7 +663,7 @@ bool CORE::GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s
   if (n_norm < MERGING_TOLERANCE or l_norm < MERGING_TOLERANCE)
   {
     double distance_between = CORE::GEO::CUT::DistanceBetweenPoints(p, cutpoint);
-    dserror(
+    FOUR_C_THROW(
         " the norm of line_vec or n_norm is smaller than %lf, should these "
         "points be one point in pointpool?, lnorm=%lf, nnorm=%lf, distance between them = %lf",
         REFERENCETOL, l_norm, n_norm, distance_between);
@@ -722,13 +722,13 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
     {
       std::cout << "point: " << p_xyz << std::endl;
       std::cout << "cutpoint: " << cut_point_xyz << std::endl;
-      dserror("the line has nearly zero length: %d", line_norm);
+      FOUR_C_THROW("the line has nearly zero length: %d", line_norm);
     }
 
     if (s->Shape() != CORE::FE::CellType::tri3)
     {
       std::cout << "HERE !tri3 cutsides are used!!!" << std::endl;
-      //      dserror("expect only tri3 cutsides!");
+      //      FOUR_C_THROW("expect only tri3 cutsides!");
     }
 
     // tri3/quad4 element center
@@ -743,7 +743,7 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
       rs = CORE::FE::getLocalCenterPosition<2>(CORE::FE::CellType::quad4);
     }
     else
-      dserror("unsupported side-shape");
+      FOUR_C_THROW("unsupported side-shape");
 
     CORE::LINALG::Matrix<3, 1> normal(true);
     s->Normal(rs, normal);
@@ -826,7 +826,7 @@ bool CORE::GEO::CUT::Element::OnSide(const std::vector<Point*>& facet_points)
  *----------------------------------------------------------------------*/
 void CORE::GEO::CUT::Element::GetIntegrationCells(plain_integrationcell_set& cells)
 {
-  dserror("be aware of using this function! Read comment!");
+  FOUR_C_THROW("be aware of using this function! Read comment!");
 
   /* for non-Tessellation approaches there are no integration cells stored,
    * do you want to have all cells or sorted by position? */
@@ -841,7 +841,7 @@ void CORE::GEO::CUT::Element::GetIntegrationCells(plain_integrationcell_set& cel
  *----------------------------------------------------------------------*/
 void CORE::GEO::CUT::Element::GetBoundaryCells(plain_boundarycell_set& bcells)
 {
-  dserror(
+  FOUR_C_THROW(
       "Be aware of using this function! \n\n"
       "When asking the element for boundary cells it is questionable which \n"
       "cells you want to have, for Tesselation boundary cells are stored for\n"
@@ -896,7 +896,7 @@ void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool
   if (Dim() == 1)
   {
     if (tetcellsonly or (not mesh.CreateOptions().SimpleShapes()))
-      dserror(
+      FOUR_C_THROW(
           "You have to switch \"tetcellsonly\" OFF and "
           "\"SimpleShapes()\" ON for the 1-D integration cell creation!");
   }
@@ -934,7 +934,7 @@ void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool
   for (plain_facet_set::iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
     Facet* f = *i;
-    if (f->OnBoundaryCellSide() and f->HasHoles()) dserror("no holes in cut facet possible");
+    if (f->OnBoundaryCellSide() and f->HasHoles()) FOUR_C_THROW("no holes in cut facet possible");
     f->GetAllPoints(mesh, cut_points, f->BelongsToLevelSetSide() and f->OnBoundaryCellSide());
   }
 
@@ -974,7 +974,7 @@ bool CORE::GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh& mesh)
       //      // check if the unique integration cell equals the whole (sub-)element
       //      plain_integrationcell_set intcells;
       //      vc->GetIntegrationCells( intcells );
-      //      if(intcells.size() != 1) dserror("there is not a unique integration cell");
+      //      if(intcells.size() != 1) FOUR_C_THROW("there is not a unique integration cell");
       //      if(this->Shape() == intcells[0]->Shape())
       //      {
       //        CORE::LINALG::SerialDenseMatrix xyze(3, intcells[0]->Points().size());
@@ -1058,7 +1058,7 @@ bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>
 void CORE::GEO::CUT::Element::LocalCoordinatesQuad(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
-  if (not isShadow_) dserror("This is not a shadow elemenet\n");
+  if (not isShadow_) FOUR_C_THROW("This is not a shadow elemenet\n");
 
   Teuchos::RCP<Position> pos = Position::Create(quadCorners_, xyz, getQuadShape());
 
@@ -1340,7 +1340,7 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::CreateElem
       break;
     default:
     {
-      dserror("Unsupported element type! ( %d | %s )", elementtype,
+      FOUR_C_THROW("Unsupported element type! ( %d | %s )", elementtype,
           CORE::FE::CellTypeToString(elementtype).c_str());
       break;
     }

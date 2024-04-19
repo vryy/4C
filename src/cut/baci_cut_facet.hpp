@@ -353,7 +353,7 @@ namespace CORE::GEO
           }
           else
           {
-            dserror("not unique");
+            FOUR_C_THROW("not unique");
           }
         }
       }
@@ -404,7 +404,7 @@ namespace CORE::GEO
         }
       }
       // This is probably an unnecessary call as side here is a tet, i.e. side.size() == 4.
-      if (side.size() == 3) dserror("The TET is degenerate! It does not contain 4 points!");
+      if (side.size() == 3) FOUR_C_THROW("The TET is degenerate! It does not contain 4 points!");
       // Might be able to remove this call requires side.size()==3
       RemoveNonmatchingTriangulatedFacets(side, facets);
     }

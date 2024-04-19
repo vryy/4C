@@ -52,7 +52,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     // get the action required
     std::string action = params.get<std::string>("action", "calc_none");
     if (action == "calc_none")
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
       act = ELEMENTS::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
@@ -80,7 +80,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     else if (action == "calc_struct_energy")
       act = ELEMENTS::struct_calc_energy;
     else
-      dserror("Unknown type of action '%s' for Beam3eb", action.c_str());
+      FOUR_C_THROW("Unknown type of action '%s' for Beam3eb", action.c_str());
   }
 
   std::string test = params.get<std::string>("action", "calc_none");
@@ -96,7 +96,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_linstiff:
     {
       // only nonlinear case implemented!
-      dserror("linear stiffness matrix called, but not implemented");
+      FOUR_C_THROW("linear stiffness matrix called, but not implemented");
     }
     break;
 
@@ -113,13 +113,13 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
       // get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get residual displacements
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-      if (res == Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
+      if (res == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       CORE::FE::ExtractMyValues(*res, myres, lm);
 
@@ -134,7 +134,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
           INPAR::STR::dyna_statics)
       {
         vel = discretization.GetState("velocity");
-        if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+        if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
         CORE::FE::ExtractMyValues(*vel, myvel, lm);
       }
 
@@ -163,13 +163,13 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     {
       // get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
-      if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+      if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
@@ -178,7 +178,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       else if (act == ELEMENTS::struct_calc_brownianstiff)
         CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, &elemat1, &elevec1);
       else
-        dserror("You shouldn't be here.");
+        FOUR_C_THROW("You shouldn't be here.");
 
       break;
     }
@@ -200,7 +200,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       if (elevec1 != Teuchos::null)  // old structural time integration
       {
         if (elevec1.numRows() != 1)
-          dserror(
+          FOUR_C_THROW(
               "energy vector of invalid size %i, expected row dimension 1 (total elastic energy of "
               "element)!",
               elevec1.numRows());
@@ -225,7 +225,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     }
     default:
       std::cout << "\ncalled element with action type " << ActionType2String(act);
-      dserror("This action type is not implemented for Beam3eb");
+      FOUR_C_THROW("This action type is not implemented for Beam3eb");
       break;
   }
 
@@ -242,7 +242,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // get element displacements
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
-  if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement new'");
+  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -261,7 +261,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
       INPAR::STR::dyna_statics)
   {
     Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
-    if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+    if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
     std::vector<double> myvel(lm.size());
     CORE::FE::ExtractMyValues(*vel, myvel, lm);
   }
@@ -305,7 +305,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     else if ((*nodeids)[0] == Nodes()[1]->Id())
       insert = 1;
 
-    if (insert == -1) dserror("\nNode could not be found on nodemap!\n");
+    if (insert == -1) FOUR_C_THROW("\nNode could not be found on nodemap!\n");
 
 
     // amplitude of load curve at current time called
@@ -418,14 +418,14 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     for (int dof = 3; dof < 6; ++dof)
     {
       if (tmp_funct and (*tmp_funct)[dof] > 0)
-        dserror(
+        FOUR_C_THROW(
             "Line Neumann conditions for distributed moments are not implemented for beam3eb so "
             "far! Only the function first three function flags (i.e. related to forces) can be "
             "set!");
     }
 
 #ifdef SIMPLECALC
-    dserror("SIMPLECALC not implemented for LineNeumann conditions so far!!!");
+    FOUR_C_THROW("SIMPLECALC not implemented for LineNeumann conditions so far!!!");
 #endif
 
 #ifndef BEAM3EBDISCRETELINENEUMANN
@@ -460,7 +460,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
       CORE::FE::shape_function_hermite_1D_order5(N_i, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #else
-      dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+      FOUR_C_THROW("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
 #endif
 
       // position vector at the gauss point at reference configuration needed for function
@@ -482,7 +482,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
                         Tref_[node](dof) * N_i(3 * node + 1) + Kref_[node](dof) * N_i(3 * node + 2);
         }
 #else
-        dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+        FOUR_C_THROW("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
 #endif
       }
 
@@ -550,7 +550,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
       CORE::FE::shape_function_hermite_1D_order5(N_i, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #else
-      dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+      FOUR_C_THROW("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
 #endif
 
       // load vector ar
@@ -562,7 +562,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
       for (int dof = 0; dof < 3; ++dof)
       {
         if (ar[dof + 3] != 0)
-          dserror("No discrete moment loads in the elements interior implemented so far!");
+          FOUR_C_THROW("No discrete moment loads in the elements interior implemented so far!");
       }
 
       // sum up load components
@@ -668,7 +668,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 // some matrices necessary for ANS approach
 #ifdef ANS_BEAM3EB
 #if (NODALDOFS == 3)
-    dserror(
+    FOUR_C_THROW(
         "ANS_BEAM3EB approach so far only defined for third order Hermitian shape functions, set "
         "NODALDOFS=2!!!");
 #endif
@@ -770,7 +770,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
           CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
           break;
         default:
-          dserror("Index k should only run from 1 to 3 (three collocation points)!");
+          FOUR_C_THROW("Index k should only run from 1 to 3 (three collocation points)!");
           break;
       }
 
@@ -849,7 +849,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       CORE::FE::shape_function_hermite_1D_order5_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #else
-      dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+      FOUR_C_THROW("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
 #endif
 
 
@@ -1093,7 +1093,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     // some matrices necessary for ANS approach
 #ifdef ANS_BEAM3EB
 #if (NODALDOFS == 3)
-    dserror(
+    FOUR_C_THROW(
         "ANS approach so far only defined for third order Hermitian shape functions, set "
         "NODALDOFS=2!!!");
 #endif
@@ -1167,7 +1167,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
                   disp_totlag(11) * disp_totlag(11));
 
     if (tangentnorm1 < 1.0e-12 or tangentnorm2 < 1.0e-12)
-      dserror("Tangent of norm zero --> deformation to large!!!");
+      FOUR_C_THROW("Tangent of norm zero --> deformation to large!!!");
 
       // Calculate epsilon at collocation points
 #ifdef ANS_BEAM3EB
@@ -1236,7 +1236,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
           CORE::FE::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
           break;
         default:
-          dserror("Index k should only run from 1 to 3 (three collocation points)!");
+          FOUR_C_THROW("Index k should only run from 1 to 3 (three collocation points)!");
           break;
       }
 
@@ -1392,7 +1392,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       CORE::FE::shape_function_hermite_1D_order5_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #else
-      dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+      FOUR_C_THROW("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
 #endif
 
       // calculate r' and r''
@@ -1770,9 +1770,9 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       CORE::FE::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #elif (NODALDOFS == 3)
-      dserror("massmatrix only implemented for the case NODALDOFS == 2!!!");
+      FOUR_C_THROW("massmatrix only implemented for the case NODALDOFS == 2!!!");
 #else
-      dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+      FOUR_C_THROW("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
 #endif
 
       for (int i = 0; i < 3; ++i)
@@ -1894,7 +1894,7 @@ template <int nnode>
 void DRT::ELEMENTS::Beam3eb::EvaluatePTC(
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elemat1)
 {
-  if (nnode > 2) dserror("PTC implemented for 2-noded elements only");
+  if (nnode > 2) FOUR_C_THROW("PTC implemented for 2-noded elements only");
   for (int node = 0; node < nnode; node++)
   {
     CORE::LINALG::Matrix<3, 1> t0(true);

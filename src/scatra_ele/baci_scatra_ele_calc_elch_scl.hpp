@@ -217,7 +217,7 @@ namespace DRT
       void SetTransNum(const double transnum, const int k) override
       {
         if (transnum != 1.0)
-          dserror("Only transference number of 1.0 is allowed in the SCL-model.");
+          FOUR_C_THROW("Only transference number of 1.0 is allowed in the SCL-model.");
         dmdiffcond::SetTransNum(transnum, k);
       }
 
@@ -225,7 +225,7 @@ namespace DRT
       {
         if (derivtransnum != 0.0)
         {
-          dserror(
+          FOUR_C_THROW(
               "Only constant transference number (1.0) is allowed. Derivative w.r.t. concentration "
               "has to be zero.");
         }
@@ -235,14 +235,15 @@ namespace DRT
       void SetPhasePoro(const double eps, const int phase) override
       {
         // Only porosity of 1.0 can be assigned to the SCL-material
-        if (eps != 1.0) dserror("Only constant porosity (1.0) is allowed for SCL-material.");
+        if (eps != 1.0) FOUR_C_THROW("Only constant porosity (1.0) is allowed for SCL-material.");
         dmdiffcond::SetPhasePoro(eps, phase);
       }
 
       void SetPhaseTort(const double tort, const int phase) override
       {
         // only tortuosity of 1.0 can be assigned to the SCL-material
-        if (tort != 1.0) dserror("Only constant tortuosity (1.0) is allowed for SCL-material.");
+        if (tort != 1.0)
+          FOUR_C_THROW("Only constant tortuosity (1.0) is allowed for SCL-material.");
         dmdiffcond::SetPhaseTort(tort, phase);
       }
 

@@ -74,13 +74,13 @@ namespace MORTAR
 
     inline void ThrowIfNotInit() const
     {
-      if (not isinit_) dserror("Call Init() first!");
+      if (not isinit_) FOUR_C_THROW("Call Init() first!");
     }
 
     inline void ThrowIfNotInitAndSetup() const
     {
       ThrowIfNotInit();
-      if (not issetup_) dserror("Call Setup() first!");
+      if (not issetup_) FOUR_C_THROW("Call Setup() first!");
     }
 
     void ResetExporter(Teuchos::RCP<Epetra_Export>& exporter) const;

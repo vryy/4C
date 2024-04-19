@@ -45,7 +45,7 @@ void STR::IMPLICIT::Statics::Setup()
 
   // check for valid parameter combinations:
   if (EvalData().GetDampingType() != INPAR::STR::damp_none)
-    dserror("ERROR: Damping not provided for statics time integration!");
+    FOUR_C_THROW("ERROR: Damping not provided for statics time integration!");
 
   issetup_ = true;
 }

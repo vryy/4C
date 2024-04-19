@@ -259,8 +259,8 @@ namespace DRT
     */
     virtual inline DRT::Element* lRowFace(int lid) const
     {
-#ifdef BACI_DEBUG
-      if (!Filled()) dserror("DRT::DiscretizationFaces::lRowIntFace: Filled() != true");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (!Filled()) FOUR_C_THROW("DRT::DiscretizationFaces::lRowIntFace: Filled() != true");
 #endif
       return facerowptr_[lid];
     }
@@ -276,8 +276,8 @@ namespace DRT
     */
     virtual inline DRT::Element* lColFace(int lid) const
     {
-#ifdef BACI_DEBUG
-      if (!Filled()) dserror("DRT::DiscretizationFaces::lColIntFace: Filled() != true");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (!Filled()) FOUR_C_THROW("DRT::DiscretizationFaces::lColIntFace: Filled() != true");
 #endif
       return facecolptr_[lid];
     }

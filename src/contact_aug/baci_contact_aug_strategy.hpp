@@ -73,14 +73,14 @@ namespace CONTACT
       CONTACT::AUG::STEEPESTASCENT::DataContainer& SaData()
       {
         if (sa_data_ptr_.is_null())
-          dserror("The steepest ascent sub data container was not initialized!");
+          FOUR_C_THROW("The steepest ascent sub data container was not initialized!");
         return *sa_data_ptr_;
       }
 
       const CONTACT::AUG::STEEPESTASCENT::DataContainer& SaData() const
       {
         if (sa_data_ptr_.is_null())
-          dserror("The steepest ascent sub data container was not initialized!");
+          FOUR_C_THROW("The steepest ascent sub data container was not initialized!");
         return *sa_data_ptr_;
       }
 
@@ -134,7 +134,7 @@ namespace CONTACT
       //! access constant semi smooth cn (coming from the Input file)
       double ConstantCn() const
       {
-        if (cn_ < 0.0) dserror("cn was not set correctly! (cn_ = %d)", cn_);
+        if (cn_ < 0.0) FOUR_C_THROW("cn was not set correctly! (cn_ = %d)", cn_);
         return cn_;
       };
 
@@ -172,7 +172,8 @@ namespace CONTACT
 
       CONTACT::AUG::ParallelDistributionController& PDController()
       {
-        if (pd_control_.is_null()) dserror("ParallelDistributionController is not initialized!");
+        if (pd_control_.is_null())
+          FOUR_C_THROW("ParallelDistributionController is not initialized!");
 
         return *pd_control_;
       }
@@ -188,7 +189,7 @@ namespace CONTACT
       MORTAR::MatrixRowColTransformer& MatrixRowColTransformer() const
       {
         if (mat_row_col_transformer_.is_null())
-          dserror("The mat_row_col_transformer was not initialized correctly!");
+          FOUR_C_THROW("The mat_row_col_transformer was not initialized correctly!");
 
         return *mat_row_col_transformer_;
       }
@@ -232,7 +233,7 @@ namespace CONTACT
       Teuchos::RCP<const CORE::LINALG::SparseMatrix> BMatrixPtr() const { return BMatrixPtr_; }
       CORE::LINALG::SparseMatrix& BMatrix()
       {
-        if (BMatrixPtr_.is_null()) dserror("The BMatrixPtr_ is not initialized!");
+        if (BMatrixPtr_.is_null()) FOUR_C_THROW("The BMatrixPtr_ is not initialized!");
         return *BMatrixPtr_;
       }
 
@@ -244,7 +245,7 @@ namespace CONTACT
       }
       CORE::LINALG::SparseMatrix& DGLmLinMatrix()
       {
-        if (dGLmLinMatrixPtr_.is_null()) dserror("The dGLmLinMatrixPtr_ is not initialized!");
+        if (dGLmLinMatrixPtr_.is_null()) FOUR_C_THROW("The dGLmLinMatrixPtr_ is not initialized!");
         return *dGLmLinMatrixPtr_;
       }
 
@@ -256,7 +257,7 @@ namespace CONTACT
       }
       CORE::LINALG::SparseMatrix& DGGLinMatrix()
       {
-        if (dGGLinMatrixPtr_.is_null()) dserror("The dGGLinMatrixPtr_ is not initialized!");
+        if (dGGLinMatrixPtr_.is_null()) FOUR_C_THROW("The dGGLinMatrixPtr_ is not initialized!");
         return *dGGLinMatrixPtr_;
       }
 
@@ -272,7 +273,7 @@ namespace CONTACT
       CORE::LINALG::SparseMatrix& DLmNWGapLinMatrix()
       {
         if (dLmNWGapLinMatrixPtr_.is_null())
-          dserror("The dLmNWGapLinMatrixPtr_ is not initialized!");
+          FOUR_C_THROW("The dLmNWGapLinMatrixPtr_ is not initialized!");
         return *dLmNWGapLinMatrixPtr_;
       }
 
@@ -284,7 +285,7 @@ namespace CONTACT
       }
       CORE::LINALG::SparseMatrix& DLmTLmTMatrix()
       {
-        if (dLmTLmTMatrixPtr_.is_null()) dserror("The dLmTLmTMatrixPtr_ is not initialized!");
+        if (dLmTLmTMatrixPtr_.is_null()) FOUR_C_THROW("The dLmTLmTMatrixPtr_ is not initialized!");
         return *dLmTLmTMatrixPtr_;
       }
 
@@ -299,7 +300,8 @@ namespace CONTACT
       }
       CORE::LINALG::SparseMatrix& DLmTLmTLinMatrix()
       {
-        if (dLmTLmTLinMatrixPtr_.is_null()) dserror("The dLmTLmTLinMatrixPtr_ is not initialized!");
+        if (dLmTLmTLinMatrixPtr_.is_null())
+          FOUR_C_THROW("The dLmTLmTLinMatrixPtr_ is not initialized!");
         return *dLmTLmTLinMatrixPtr_;
       }
 
@@ -314,7 +316,7 @@ namespace CONTACT
       CORE::LINALG::SparseMatrix& InactiveLinMatrix()
       {
         if (inactiveLinMatrixPtr_.is_null())
-          dserror("The augInactiveLinMatrixPtr_ is not initialized!");
+          FOUR_C_THROW("The augInactiveLinMatrixPtr_ is not initialized!");
         return *inactiveLinMatrixPtr_;
       }
 
@@ -329,7 +331,7 @@ namespace CONTACT
       CORE::LINALG::SparseMatrix& InactiveDDMatrix()
       {
         if (inactive_dd_matrixPtr_.is_null())
-          dserror("The inactive_dd_matrixPtr_ is not initialized!");
+          FOUR_C_THROW("The inactive_dd_matrixPtr_ is not initialized!");
         return *inactive_dd_matrixPtr_;
       }
       //! @}
@@ -344,7 +346,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> AVecPtr() const { return aPtr_; }
       Epetra_Vector& AVec()
       {
-        if (aPtr_.is_null()) dserror("The augAPtr_ is not initialized!");
+        if (aPtr_.is_null()) FOUR_C_THROW("The augAPtr_ is not initialized!");
         return *aPtr_;
       }
 
@@ -357,7 +359,7 @@ namespace CONTACT
       Epetra_Vector& InactiveDiagMatrix()
       {
         if (inactiveDiagMatrixPtr_.is_null())
-          dserror("The inactiveDiagMatrixPtr_ is not initialized!");
+          FOUR_C_THROW("The inactiveDiagMatrixPtr_ is not initialized!");
         return *inactiveDiagMatrixPtr_;
       }
 
@@ -368,7 +370,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> KappaVecPtr() const { return kappaPtr_; }
       Epetra_Vector& KappaVec()
       {
-        if (kappaPtr_.is_null()) dserror("The kappaPtr_ is not initialized!");
+        if (kappaPtr_.is_null()) FOUR_C_THROW("The kappaPtr_ is not initialized!");
         return *kappaPtr_;
       }
 
@@ -377,7 +379,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> LmNPtr() const { return lmNPtr_; }
       Epetra_Vector& LmN()
       {
-        if (lmNPtr_.is_null()) dserror("The lmNPtr_ is not initialized!");
+        if (lmNPtr_.is_null()) FOUR_C_THROW("The lmNPtr_ is not initialized!");
         return *lmNPtr_;
       }
 
@@ -386,7 +388,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> AWGapPtr() const { return aWGapPtr_; }
       Epetra_Vector& AWGap()
       {
-        if (aWGapPtr_.is_null()) dserror("The aWGapRhsPtr_ is not initialized!");
+        if (aWGapPtr_.is_null()) FOUR_C_THROW("The aWGapRhsPtr_ is not initialized!");
         return *aWGapPtr_;
       }
 
@@ -395,7 +397,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> WGapAllSlNodesPtr() const { return wGapAllPtr_; };
       Epetra_Vector& WGapAllSlNodes()
       {
-        if (wGapAllPtr_.is_null()) dserror("The wgap_all_ vector is not initialized!");
+        if (wGapAllPtr_.is_null()) FOUR_C_THROW("The wgap_all_ vector is not initialized!");
         return *wGapAllPtr_;
       }
 
@@ -407,7 +409,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> DLmTLmTRhsPtr() const { return dLmTLmTRhsPtr_; }
       Epetra_Vector& DLmTLmTRhs()
       {
-        if (dLmTLmTRhsPtr_.is_null()) dserror("The dLmTLmTRhsPtr_ is not initialized!");
+        if (dLmTLmTRhsPtr_.is_null()) FOUR_C_THROW("The dLmTLmTRhsPtr_ is not initialized!");
         return *dLmTLmTRhsPtr_;
       }
 
@@ -416,7 +418,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> SlForceLmPtr() const { return slForceLmPtr_.getConst(); }
       Epetra_Vector& SlForceLm()
       {
-        if (slForceLmPtr_.is_null()) dserror("The slForceLmPtr_ is not initialized!");
+        if (slForceLmPtr_.is_null()) FOUR_C_THROW("The slForceLmPtr_ is not initialized!");
         return *slForceLmPtr_;
       }
 
@@ -429,7 +431,7 @@ namespace CONTACT
       Epetra_Vector& SlForceLmInactive()
       {
         if (slForceLmInactivePtr_.is_null())
-          dserror("The slForceLmInactivePtr_ is not initialized!");
+          FOUR_C_THROW("The slForceLmInactivePtr_ is not initialized!");
         return *slForceLmInactivePtr_;
       }
 
@@ -438,7 +440,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> SlForceGPtr() const { return slForceGPtr_.getConst(); }
       Epetra_Vector& SlForceG()
       {
-        if (slForceGPtr_.is_null()) dserror("The slForceGPtr_ is not initialized!");
+        if (slForceGPtr_.is_null()) FOUR_C_THROW("The slForceGPtr_ is not initialized!");
         return *slForceGPtr_;
       }
 
@@ -447,7 +449,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> MaForceLmPtr() const { return maForceLmPtr_.getConst(); }
       Epetra_Vector& MaForceLm()
       {
-        if (maForceLmPtr_.is_null()) dserror("The maForceLmPtr_ is not initialized!");
+        if (maForceLmPtr_.is_null()) FOUR_C_THROW("The maForceLmPtr_ is not initialized!");
         return *maForceLmPtr_;
       }
 
@@ -456,7 +458,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> MaForceGPtr() const { return maForceGPtr_.getConst(); }
       Epetra_Vector& MaForceG()
       {
-        if (maForceGPtr_.is_null()) dserror("The maForceGPtr_ is not initialized!");
+        if (maForceGPtr_.is_null()) FOUR_C_THROW("The maForceGPtr_ is not initialized!");
         return *maForceGPtr_;
       }
 
@@ -465,12 +467,12 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> CnPtr() const { return cnPtr_; }
       Epetra_Vector& Cn()
       {
-        if (cnPtr_.is_null()) dserror("The cnPtr_ is not initialized!");
+        if (cnPtr_.is_null()) FOUR_C_THROW("The cnPtr_ is not initialized!");
         return *cnPtr_;
       }
       const Epetra_Vector& Cn() const
       {
-        if (cnPtr_.is_null()) dserror("The cnPtr_ is not initialized!");
+        if (cnPtr_.is_null()) FOUR_C_THROW("The cnPtr_ is not initialized!");
         return *cnPtr_;
       }
 
@@ -482,7 +484,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Map> GSlNormalDofRowMapPtr() const { return gsndofrowmapPtr_; }
       Epetra_Map& GSlNormalDofRowMap()
       {
-        if (gsndofrowmapPtr_.is_null()) dserror("The gsndofrowmapPtr_ is not initialized!");
+        if (gsndofrowmapPtr_.is_null()) FOUR_C_THROW("The gsndofrowmapPtr_ is not initialized!");
         return *gsndofrowmapPtr_;
       }
 
@@ -490,7 +492,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Map> GSlTangentialDofRowMapPtr() const { return gstdofrowmapPtr_; }
       Epetra_Map& GSlTangentialDofRowMap()
       {
-        if (gstdofrowmapPtr_.is_null()) dserror("The gstdofrowmapPtr_ is not initialized!");
+        if (gstdofrowmapPtr_.is_null()) FOUR_C_THROW("The gstdofrowmapPtr_ is not initialized!");
         return *gstdofrowmapPtr_;
       }
 
@@ -502,7 +504,7 @@ namespace CONTACT
       Epetra_Map& GOldActiveSlaveNodes()
       {
         if (gOldActiveSlaveNodesPtr_.is_null())
-          dserror("The gAugOldActiveSlaveNodesPtr_ is not initialized!");
+          FOUR_C_THROW("The gAugOldActiveSlaveNodesPtr_ is not initialized!");
         return *gOldActiveSlaveNodesPtr_;
       }
 
@@ -510,7 +512,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Map> GSeleRowMapPtr() const { return gSeleRowMapPtr_; }
       Epetra_Map& GSeleRowMap()
       {
-        if (gSeleRowMapPtr_.is_null()) dserror("The gSeleRowMapPtr_ is not initialized!");
+        if (gSeleRowMapPtr_.is_null()) FOUR_C_THROW("The gSeleRowMapPtr_ is not initialized!");
         return *gSeleRowMapPtr_;
       }
 
@@ -518,7 +520,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Map> GSeleColMapPtr() const { return gSeleColMapPtr_; }
       Epetra_Map& GSeleColMap()
       {
-        if (gSeleColMapPtr_.is_null()) dserror("The gSeleColMapPtr_ is not initialized!");
+        if (gSeleColMapPtr_.is_null()) FOUR_C_THROW("The gSeleColMapPtr_ is not initialized!");
         return *gSeleColMapPtr_;
       }
 
@@ -526,7 +528,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Map> GMeleRowMapPtr() const { return gMeleRowMapPtr_; }
       Epetra_Map& GMeleRowMap()
       {
-        if (gMeleRowMapPtr_.is_null()) dserror("The gMeleRowMapPtr_ is not initialized!");
+        if (gMeleRowMapPtr_.is_null()) FOUR_C_THROW("The gMeleRowMapPtr_ is not initialized!");
         return *gMeleRowMapPtr_;
       }
 
@@ -534,7 +536,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Map> GMeleColMapPtr() const { return gMeleColMapPtr_; }
       Epetra_Map& GMeleColMap()
       {
-        if (gMeleColMapPtr_.is_null()) dserror("The gMeleColMapPtr_ is not initialized!");
+        if (gMeleColMapPtr_.is_null()) FOUR_C_THROW("The gMeleColMapPtr_ is not initialized!");
         return *gMeleColMapPtr_;
       }
       //! @}
@@ -774,7 +776,7 @@ namespace CONTACT
       //! Return the slip node row map of the previous Newton step
       Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const override
       {
-        dserror("No frictional contact for the augmented Lagrangian contact formulation!");
+        FOUR_C_THROW("No frictional contact for the augmented Lagrangian contact formulation!");
         exit(EXIT_FAILURE);
       };
 
@@ -788,7 +790,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Map> SlNormalDoFRowMapPtr(const bool& redist) const override
       {
         if ((not redist) and ParRedist())
-          dserror("The original / not redistributed slave normal row map is not available!");
+          FOUR_C_THROW("The original / not redistributed slave normal row map is not available!");
 
         return Data().GSlNormalDofRowMapPtr();
       };
@@ -807,7 +809,8 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Map> SlTangentialDoFRowMapPtr(const bool& redist) const override
       {
         if ((not redist) and ParRedist())
-          dserror("The original / not redistributed slave tangential row map is not available!");
+          FOUR_C_THROW(
+              "The original / not redistributed slave tangential row map is not available!");
 
         return Data().GSlTangentialDofRowMapPtr();
       };
@@ -824,7 +827,7 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
           Epetra_Vector& f, const double& timefac_np) const override
       {
-        dserror("There is no condensed rhs pointer in the augmented Lagrangian case!");
+        FOUR_C_THROW("There is no condensed rhs pointer in the augmented Lagrangian case!");
         exit(EXIT_FAILURE);
       };
 
@@ -837,7 +840,7 @@ namespace CONTACT
       Teuchos::RCP<CORE::LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
           Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteff, const double& timefac_np) const override
       {
-        dserror("There is no condensed matrix block in the augmented Lagrangian case!");
+        FOUR_C_THROW("There is no condensed matrix block in the augmented Lagrangian case!");
         exit(EXIT_FAILURE);
       };
 
@@ -1319,7 +1322,7 @@ namespace CONTACT
       int ActiveSetSteps() override { return -1; };
       void UpdateActiveSet() override
       {
-        dserror("No support for fixed nested active set strategy!");
+        FOUR_C_THROW("No support for fixed nested active set strategy!");
       };
       //! @}
 
@@ -1328,32 +1331,32 @@ namespace CONTACT
       void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
-        dserror("Deprecated function call!");
+        FOUR_C_THROW("Deprecated function call!");
       };
       void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
-        dserror("Deprecated function call!");
+        FOUR_C_THROW("Deprecated function call!");
       };
       void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
           Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
           Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
           Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
       {
-        dserror("Deprecated function call!");
+        FOUR_C_THROW("Deprecated function call!");
       };
       void UpdateDisplacementsAndLMincrements(
           Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
       {
-        dserror("Deprecated function call!");
+        FOUR_C_THROW("Deprecated function call!");
       };
       void Recover(Teuchos::RCP<Epetra_Vector> disi) override
       {
-        dserror("Deprecated function call! Replaced by RunPostComputeX().");
+        FOUR_C_THROW("Deprecated function call! Replaced by RunPostComputeX().");
       };
       void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override
       {
-        dserror(
+        FOUR_C_THROW(
             "Deprecated function call! Replaced by "
             "UpdateActiveSetSemiSmooth( const CONTACT::ParamsInterface& ).");
       };
@@ -1363,7 +1366,7 @@ namespace CONTACT
       //! @{
       void EvaluateRelMovPredict() override
       {
-        if (Data().IsFriction()) dserror("No frictional contact support at the moment!");
+        if (Data().IsFriction()) FOUR_C_THROW("No frictional contact support at the moment!");
         return;
       };
       //! @}
@@ -1376,18 +1379,18 @@ namespace CONTACT
       //! @{
       double InitialPenalty() override
       {
-        dserror("Wrong strategy!");
+        FOUR_C_THROW("Wrong strategy!");
         exit(EXIT_FAILURE);
       };
       void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
-        dserror("Wrong strategy!");
+        FOUR_C_THROW("Wrong strategy!");
       };
-      void ResetPenalty() override { dserror("Wrong strategy!"); };
-      void ModifyPenalty() override { dserror("Wrong strategy!"); };
-      void UpdateUzawaAugmentedLagrange() override { dserror("Wrong strategy!"); };
-      void UpdateConstraintNorm(int uzawaiter = 0) override { dserror("Wrong strategy!"); };
+      void ResetPenalty() override { FOUR_C_THROW("Wrong strategy!"); };
+      void ModifyPenalty() override { FOUR_C_THROW("Wrong strategy!"); };
+      void UpdateUzawaAugmentedLagrange() override { FOUR_C_THROW("Wrong strategy!"); };
+      void UpdateConstraintNorm(int uzawaiter = 0) override { FOUR_C_THROW("Wrong strategy!"); };
       bool IsPenalty() const override { return false; };
       //! @}
       //! @}

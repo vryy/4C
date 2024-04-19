@@ -96,7 +96,7 @@ namespace ADAPTER
     virtual void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp = Teuchos::null,
         Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null)
     {
-      dserror("Not implemented in base class");
+      FOUR_C_THROW("Not implemented in base class");
     }
 
     /// linear fluid solve with just a interface load

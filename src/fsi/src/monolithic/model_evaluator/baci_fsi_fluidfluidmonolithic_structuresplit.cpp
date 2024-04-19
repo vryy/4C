@@ -42,7 +42,7 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(
   // XFFSI_Full_Newton is an invalid choice together with NOX,
   // because DOF-maps can change from one iteration step to the other (XFEM cut)
   if (FluidField()->MonolithicXffsiApproach() == INPAR::XFEM::XFFSI_Full_Newton)
-    dserror("NOX-based XFFSI Approach does not work with XFFSI_Full_Newton!");
+    FOUR_C_THROW("NOX-based XFFSI Approach does not work with XFFSI_Full_Newton!");
 }
 
 /*----------------------------------------------------------------------*/
@@ -109,7 +109,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupDBCMapExtractor()
   dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
   if (dbcmaps_ == Teuchos::null)
   {
-    dserror("Creation of Dirichlet map extractor failed.");
+    FOUR_C_THROW("Creation of Dirichlet map extractor failed.");
   }
 }
 

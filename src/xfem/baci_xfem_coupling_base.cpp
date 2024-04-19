@@ -53,7 +53,7 @@ INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& 
     return INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP;
   else if (condname == "XFEMSurfNavierSlipTwoPhase")
     return INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE;
-  // else dserror("condition type not supported: %s", condname.c_str());
+  // else FOUR_C_THROW("condition type not supported: %s", condname.c_str());
 
   return INPAR::XFEM::CouplingCond_NONE;
 }
@@ -105,7 +105,7 @@ void XFEM::CouplingBase::Init()
   // do Init
   // ---------------------------------------------------------------------------
 
-  if (dofset_coupling_map_.empty()) dserror("Call SetDofSetCouplingMap() first!");
+  if (dofset_coupling_map_.empty()) FOUR_C_THROW("Call SetDofSetCouplingMap() first!");
 
   SetCouplingDofsets();
 
@@ -302,7 +302,7 @@ void XFEM::CouplingBase::SetElementConditions()
       else if (mynewcond.size() > 1)
       {
         // get the right condition
-        dserror(
+        FOUR_C_THROW(
             "%i conditions of the same name with coupling id %i, for element %i! %s "
             "coupling-condition not unique!",
             mynewcond.size(), coupling_id_, cutele->Id(), conditions_to_copy_[cond].c_str());
@@ -311,7 +311,7 @@ void XFEM::CouplingBase::SetElementConditions()
       // non-unique conditions for one cutter element
       if (cutterele_conds_[lid].first != INPAR::XFEM::CouplingCond_NONE)
       {
-        dserror(
+        FOUR_C_THROW(
             "There are two different condition types for the same cutter dis element with id %i: "
             "1st %i, 2nd %i. Make the XFEM coupling conditions unique!",
             cutele->Id(), cutterele_conds_[lid].first, cond_type);
@@ -328,7 +328,7 @@ void XFEM::CouplingBase::SetElementConditions()
   for (int lid = 0; lid < nummycolele; lid++)
   {
     if (cutterele_conds_[lid].first == INPAR::XFEM::CouplingCond_NONE)
-      dserror("cutter element with local id %i has no valid coupling-condition", lid);
+      FOUR_C_THROW("cutter element with local id %i has no valid coupling-condition", lid);
   }
 }
 
@@ -382,7 +382,7 @@ void XFEM::CouplingBase::SetAveragingStrategy()
       averaging_strategy_ = static_cast<INPAR::XFEM::AveragingStrategy>(val);
       // check unhandled cased
       if (averaging_strategy_ == INPAR::XFEM::Mean || averaging_strategy_ == INPAR::XFEM::Harmonic)
-        dserror(
+        FOUR_C_THROW(
             "XFEM::CouplingBase::SetAveragingStrategy(): Strategy Mean/Harmoninc not available for "
             "FSI monolithic, ... coming soon!");
       break;
@@ -419,7 +419,7 @@ void XFEM::CouplingBase::SetAveragingStrategy()
       break;
     }
     default:
-      dserror("which is the averaging strategy for this type of coupling %i?", cond_type);
+      FOUR_C_THROW("which is the averaging strategy for this type of coupling %i?", cond_type);
       break;
   }
 }
@@ -450,7 +450,7 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
         coupl_dis_ = cond_dis_;
       }
       else
-        dserror("Invalid coupling strategy for XFF or XFSI application");
+        FOUR_C_THROW("Invalid coupling strategy for XFF or XFSI application");
       break;
     }
     case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:
@@ -478,7 +478,7 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
       break;
     }
     default:
-      dserror("which is the coupling discretization for this type of coupling %i?", cond_type);
+      FOUR_C_THROW("which is the coupling discretization for this type of coupling %i?", cond_type);
       break;
   }
 }
@@ -504,7 +504,8 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<3, 1>& itr
   const auto condtype = *cond->Get<std::string>("type");
 
   // get usual body force
-  if (!(condtype == "neum_dead" or condtype == "neum_live")) dserror("Unknown Neumann condition");
+  if (!(condtype == "neum_dead" or condtype == "neum_live"))
+    FOUR_C_THROW("Unknown Neumann condition");
   //---------------------------------------
 
   EvaluateFunction(final_values, x.A(), cond, time);
@@ -523,7 +524,8 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itr
   const auto condtype = *cond->Get<std::string>("type");
 
   // get usual body force
-  if (!(condtype == "neum_dead" or condtype == "neum_live")) dserror("Unknown Neumann condition");
+  if (!(condtype == "neum_dead" or condtype == "neum_live"))
+    FOUR_C_THROW("Unknown Neumann condition");
   //---------------------------------------
 
   EvaluateFunction(final_values, x.A(), cond, time);
@@ -534,13 +536,13 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itr
 void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, const double* x,
     const DRT::Condition* cond, const double time)
 {
-  if (cond == nullptr) dserror("invalid condition");
+  if (cond == nullptr) FOUR_C_THROW("invalid condition");
 
   const int numdof = *cond->Get<int>("numdof");
 
   if (numdof != (int)final_values.size())
-    dserror("you specified NUMDOF %i in the input file, however, only %i dofs allowed!", numdof,
-        (int)final_values.size());
+    FOUR_C_THROW("you specified NUMDOF %i in the input file, however, only %i dofs allowed!",
+        numdof, (int)final_values.size());
 
   //---------------------------------------
   // get values and switches from the condition
@@ -553,7 +555,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
   auto& secondary = const_cast<DRT::Condition&>(*cond);
   const auto* percentage = secondary.GetIf<double>("randnoise");
 
-  if (time < -1e-14) dserror("Negative time in curve/function evaluation: time = %f", time);
+  if (time < -1e-14) FOUR_C_THROW("Negative time in curve/function evaluation: time = %f", time);
 
   //---------------------------------------
   // set this condition
@@ -598,7 +600,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
 void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const double* x,
     const double& val, const DRT::Condition* cond, const double time)
 {
-  if (cond == nullptr) dserror("invalid condition");
+  if (cond == nullptr) FOUR_C_THROW("invalid condition");
 
   const int numdof = 1;
 
@@ -610,7 +612,7 @@ void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const doub
   auto& secondary = const_cast<DRT::Condition&>(*cond);
   const auto* percentage = secondary.GetIf<double>("randnoise");
 
-  if (time < -1e-14) dserror("Negative time in curve/function evaluation: time = %f", time);
+  if (time < -1e-14) FOUR_C_THROW("Negative time in curve/function evaluation: time = %f", time);
 
   //---------------------------------------
   // set this condition
@@ -668,7 +670,7 @@ void XFEM::CouplingBase::GetViscosityMaster(DRT::Element* xfele,  ///< xfluid el
   if (mat_m->MaterialType() == INPAR::MAT::m_fluid)
     visc_m = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_m)->Viscosity();
   else
-    dserror("GetCouplingSpecificAverageWeights: Master Material not a fluid material?");
+    FOUR_C_THROW("GetCouplingSpecificAverageWeights: Master Material not a fluid material?");
   return;
 }
 

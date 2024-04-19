@@ -77,7 +77,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactBase::Setup(
 
   // safety check
   if (not boundarytypes_.count(PARTICLEENGINE::RigidPhase))
-    dserror("no rigid particles defined but a rigid particle contact formulation is set!");
+    FOUR_C_THROW("no rigid particles defined but a rigid particle contact formulation is set!");
 }
 
 void PARTICLEINTERACTION::SPHRigidParticleContactBase::SetupParticleInteractionWriter()
@@ -107,8 +107,8 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::Setup(
       particleengineinterface, particlewallinterface, particleinteractionwriter, neighborpairs);
 
   // safety check
-  if (not(stiff_ > 0.0)) dserror("rigid particle contact stiffness not positive!");
-  if (damp_ < 0.0) dserror("rigid particle contact damping parameter not positive or zero!");
+  if (not(stiff_ > 0.0)) FOUR_C_THROW("rigid particle contact stiffness not positive!");
+  if (damp_ < 0.0) FOUR_C_THROW("rigid particle contact damping parameter not positive or zero!");
 }
 
 void PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution()
@@ -336,7 +336,7 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticle
       // assemble nodal forces
       const int err = walldatastate->GetForceCol()->SumIntoGlobalValues(
           numnodes * 3, nodal_force.data(), lmele.data());
-      if (err < 0) dserror("sum into Epetra_Vector failed!");
+      if (err < 0) FOUR_C_THROW("sum into Epetra_Vector failed!");
     }
   }
 

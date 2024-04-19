@@ -532,7 +532,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
 
       std::ifstream file_stream(map_file_path);
 
-      if (file_stream.fail()) dserror("Invalid file %s!", map_file_path.c_str());
+      if (file_stream.fail()) FOUR_C_THROW("Invalid file %s!", map_file_path.c_str());
 
       auto map_reduction_operation = [](actMapType&& acc, actMapType&& next)
       {
@@ -4143,7 +4143,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
 
       std::ifstream file_stream(map_file_path);
 
-      if (file_stream.fail()) dserror("Invalid file %s!", map_file_path.c_str());
+      if (file_stream.fail()) FOUR_C_THROW("Invalid file %s!", map_file_path.c_str());
 
       auto map_reduction_operation = [](mapType&& acc, mapType&& next)
       {

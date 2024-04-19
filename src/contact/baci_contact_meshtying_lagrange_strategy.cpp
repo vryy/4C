@@ -80,11 +80,11 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+  if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd_->ReplaceDiagonalValues(*diag);
-  if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+  if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
 
   // do the multiplication M^ = inv(D) * M
   mhatmatrix_ = CORE::LINALG::MLMultiply(*invd_, false, *mmatrix_, false, false, false, true);
@@ -324,7 +324,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+  if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   Teuchos::RCP<Epetra_Vector> lmDBC = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
   CORE::LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -334,7 +334,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
 
   // re-insert inverted diagonal into invd
   err = invd_->ReplaceDiagonalValues(*diag);
-  if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+  if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
 
   // do the multiplication M^ = inv(D) * M
   mhatmatrix_ = CORE::LINALG::MLMultiply(*invd_, false, *mmatrix_, false, false, false, true);
@@ -367,7 +367,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(
       systype == INPAR::CONTACT::system_condensed_lagmult)
   {
     // double-check if this is a dual LM system
-    if (shapefcn != INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
+    if (shapefcn != INPAR::MORTAR::shape_dual) FOUR_C_THROW("Condensation only for dual LM");
 
     // complete stiffness matrix
     // (this is a prerequisite for the Split2x2 methods to be called later)
@@ -835,7 +835,7 @@ void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(
   // invalid system types
   //**********************************************************************
   else
-    dserror("Invalid system type in SaddlePontSolve");
+    FOUR_C_THROW("Invalid system type in SaddlePontSolve");
 
   return;
 }
@@ -886,7 +886,7 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
       systype == INPAR::CONTACT::system_condensed_lagmult)
   {
     // double-check if this is a dual LM system
-    if (shapefcn != INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
+    if (shapefcn != INPAR::MORTAR::shape_dual) FOUR_C_THROW("Condensation only for dual LM");
 
     // extract slave displacements from disi
     Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -997,7 +997,7 @@ bool CONTACT::MtLagrangeStrategy::EvaluateForce(const Teuchos::RCP<const Epetra_
   {
     // add meshtying force terms
     Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    if (dmatrix_->Multiply(true, *z_, *fs)) dserror("multiply failed");
+    if (dmatrix_->Multiply(true, *z_, *fs)) FOUR_C_THROW("multiply failed");
     Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
     CORE::LINALG::Export(*fs, *fsexp);
     f_->Update(1.0, *fsexp, 1.0);
@@ -1092,7 +1092,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::GetRhsBlockPtr(
     }
     default:
     {
-      dserror("Unknown STR::VecBlockType!");
+      FOUR_C_THROW("Unknown STR::VecBlockType!");
       break;
     }
   }
@@ -1112,19 +1112,19 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::MtLagrangeStrategy::GetMatrixB
       mat_ptr = Teuchos::null;
       break;
     case CONTACT::MatBlockType::displ_lm:
-      if (dm_matrix_.is_null()) dserror("matrix not available");
+      if (dm_matrix_.is_null()) FOUR_C_THROW("matrix not available");
       mat_ptr = dm_matrix_;
       break;
     case CONTACT::MatBlockType::lm_displ:
-      if (dm_matrix_t_.is_null()) dserror("matrix not available");
+      if (dm_matrix_t_.is_null()) FOUR_C_THROW("matrix not available");
       mat_ptr = dm_matrix_t_;
       break;
     case CONTACT::MatBlockType::lm_lm:
-      if (lm_diag_matrix_.is_null()) dserror("matrix not available");
+      if (lm_diag_matrix_.is_null()) FOUR_C_THROW("matrix not available");
       mat_ptr = lm_diag_matrix_;
       break;
     default:
-      dserror("Unknown STR::MatBlockType!");
+      FOUR_C_THROW("Unknown STR::MatBlockType!");
       break;
   }
   return mat_ptr;

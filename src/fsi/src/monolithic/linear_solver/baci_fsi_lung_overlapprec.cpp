@@ -103,19 +103,19 @@ void FSI::LungOverlappingBlockMatrix::SetupPreconditioner()
     Epetra_Vector structDiagVec(StructInnerOp.RowMap(), false);
     StructInnerOp.ExtractDiagonalCopy(structDiagVec);
     int err = structDiagVec.Reciprocal(structDiagVec);
-    if (err) dserror("Epetra_MultiVector::Reciprocal (structure matrix) returned %d", err);
+    if (err) FOUR_C_THROW("Epetra_MultiVector::Reciprocal (structure matrix) returned %d", err);
     CORE::LINALG::SparseMatrix invstructDiag(structDiagVec);
 
     Epetra_Vector fluidDiagVec(FluidInnerOp.RowMap(), false);
     FluidInnerOp.ExtractDiagonalCopy(fluidDiagVec);
     err = fluidDiagVec.Reciprocal(fluidDiagVec);
-    if (err) dserror("Epetra_MultiVector::Reciprocal (fluid matrix) returned %d", err);
+    if (err) FOUR_C_THROW("Epetra_MultiVector::Reciprocal (fluid matrix) returned %d", err);
     CORE::LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
 
     Epetra_Vector aleDiagVec(AleInnerOp.RowMap(), false);
     AleInnerOp.ExtractDiagonalCopy(aleDiagVec);
     err = aleDiagVec.Reciprocal(aleDiagVec);
-    if (err) dserror("Epetra_MultiVector::Reciprocal (ale matrix) returned %d", err);
+    if (err) FOUR_C_THROW("Epetra_MultiVector::Reciprocal (ale matrix) returned %d", err);
     CORE::LINALG::SparseMatrix invaleDiag(aleDiagVec);
 
     invDiag_->Assign(0, 0, CORE::LINALG::View, invstructDiag);
@@ -128,17 +128,17 @@ void FSI::LungOverlappingBlockMatrix::SetupPreconditioner()
 
     Epetra_Vector structDiagVec(StructInnerOp.RowMap(), false);
     int err = StructInnerOp.EpetraMatrix()->InvRowSums(structDiagVec);
-    if (err) dserror("Epetra_CrsMatrix::InvRowSums (structure matrix) returned %d", err);
+    if (err) FOUR_C_THROW("Epetra_CrsMatrix::InvRowSums (structure matrix) returned %d", err);
     CORE::LINALG::SparseMatrix invstructDiag(structDiagVec);
 
     Epetra_Vector fluidDiagVec(FluidInnerOp.RowMap(), false);
     err = FluidInnerOp.EpetraMatrix()->InvRowSums(fluidDiagVec);
-    if (err) dserror("Epetra_CrsMatrix::InvRowSums (fluid matrix) returned %d", err);
+    if (err) FOUR_C_THROW("Epetra_CrsMatrix::InvRowSums (fluid matrix) returned %d", err);
     CORE::LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
 
     Epetra_Vector aleDiagVec(AleInnerOp.RowMap(), false);
     err = AleInnerOp.EpetraMatrix()->InvRowSums(aleDiagVec);
-    if (err) dserror("Epetra_CrsMatrix::InvRowSums (ale matrix) returned %d", err);
+    if (err) FOUR_C_THROW("Epetra_CrsMatrix::InvRowSums (ale matrix) returned %d", err);
     CORE::LINALG::SparseMatrix invaleDiag(aleDiagVec);
 
     invDiag_->Assign(0, 0, CORE::LINALG::View, invstructDiag);
@@ -146,7 +146,7 @@ void FSI::LungOverlappingBlockMatrix::SetupPreconditioner()
     invDiag_->Assign(2, 2, CORE::LINALG::View, invaleDiag);
   }
   else
-    dserror("Unknown type of preconditioner for constraint fsi system");
+    FOUR_C_THROW("Unknown type of preconditioner for constraint fsi system");
 
   invDiag_->Complete();
 
@@ -395,9 +395,9 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> FSI::LungSchurComplement::CalculateSchu
     const CORE::LINALG::SparseMatrix& C)
 {
   // make sure FillComplete was called on the matrices
-  if (!A.Filled()) dserror("A has to be FillComplete");
-  if (!B.Filled()) dserror("B has to be FillComplete");
-  if (!C.Filled()) dserror("C has to be FillComplete");
+  if (!A.Filled()) FOUR_C_THROW("A has to be FillComplete");
+  if (!B.Filled()) FOUR_C_THROW("B has to be FillComplete");
+  if (!C.Filled()) FOUR_C_THROW("C has to be FillComplete");
 
   temp_ = CORE::LINALG::MLMultiply(A, B, true);
   res_ = CORE::LINALG::MLMultiply(*temp_, C, true);

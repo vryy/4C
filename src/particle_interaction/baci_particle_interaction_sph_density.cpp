@@ -915,7 +915,7 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::InitDensityCorrectionHandler
     }
     default:
     {
-      dserror("no density correction scheme set via parameter 'DENSITYCORRECTION'!");
+      FOUR_C_THROW("no density correction scheme set via parameter 'DENSITYCORRECTION'!");
       break;
     }
   }

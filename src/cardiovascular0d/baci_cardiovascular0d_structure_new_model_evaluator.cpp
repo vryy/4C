@@ -158,7 +158,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
   block_vec_ptr = cardvasc0dman_->GetCardiovascular0DRHS();
 
   if (block_vec_ptr.is_null())
-    dserror(
+    FOUR_C_THROW(
         "The 0D cardiovascular model vector is a nullptr pointer, although \n"
         "the structural part indicates, that 0D cardiovascular model contributions \n"
         "are present!");
@@ -317,7 +317,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::ResetStepState()
 {
   CheckInitSetup();
 
-  dserror("Not yet implemented");
+  FOUR_C_THROW("Not yet implemented");
 
   return;
 }

@@ -67,7 +67,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
   if (this->line_to_3D_segments_.size() == 0)
     return false;
   else if (this->line_to_3D_segments_.size() > 1)
-    dserror("There can be a maximum of one segment!");
+    FOUR_C_THROW("There can be a maximum of one segment!");
 
   // Get the vector with the projection points for this pair.
   const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& projection_points =

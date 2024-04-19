@@ -76,7 +76,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::FacFor
       J = CalcJatIntPoint<CORE::FE::CellType::tri3, CORE::FE::CellType::pyramid5>(
           iquad, bele, pele, params, discretization);
     else
-      dserror("Parent element not supported here!");
+      FOUR_C_THROW("Parent element not supported here!");
   }
   else if (bele->Shape() == CORE::FE::CellType::quad4)
   {
@@ -87,10 +87,10 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::FacFor
       J = CalcJatIntPoint<CORE::FE::CellType::quad4, CORE::FE::CellType::pyramid5>(
           iquad, bele, pele, params, discretization);
     else
-      dserror("Parent element not supported here!");
+      FOUR_C_THROW("Parent element not supported here!");
   }
   else
-    dserror("Boundary element not supported here!");
+    FOUR_C_THROW("Boundary element not supported here!");
 
   return 1.0 / J;
 }
@@ -117,15 +117,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   // number of boundary spatial dimensions
   const int bnsd = CORE::FE::dim<bdistype>;
 
-  if (pnsd != nsd_) dserror("dimension do not match!");
-  if (bnsd != nsd_ele_) dserror("dimension do not match!");
+  if (pnsd != nsd_) FOUR_C_THROW("dimension do not match!");
+  if (bnsd != nsd_ele_) FOUR_C_THROW("dimension do not match!");
 
   // number of parent element nodes
   const int pnen = CORE::FE::num_nodes<pdistype>;
   // number of (boundary) element nodes
   static const int bnen = CORE::FE::num_nodes<bdistype>;
 
-  if (bnen != nen_) dserror("Number of element nodes do not match!");
+  if (bnen != nen_) FOUR_C_THROW("Number of element nodes do not match!");
 
   // get local node coordinates
   CORE::LINALG::Matrix<pnsd, pnen> pxyze(true);
@@ -140,7 +140,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
     const int ndsdisp = my::scatraparams_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // parent element location array
     DRT::Element::LocationArray pla(discretization.NumDofSets());

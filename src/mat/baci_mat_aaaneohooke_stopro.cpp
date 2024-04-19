@@ -116,11 +116,12 @@ void MAT::AaAneohookeStopro::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::AaAneohookeStopro*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 
@@ -141,7 +142,7 @@ void MAT::AaAneohookeStopro::Init(double value_stopro, std::string stochpar)
   }
   else
   {
-    dserror("Unknown parameter in AAAneohooke_stopro::Init()");
+    FOUR_C_THROW("Unknown parameter in AAAneohooke_stopro::Init()");
   }
 
   return;
@@ -171,7 +172,7 @@ void MAT::AaAneohookeStopro::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     youngs = youngs_;
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Stochastic Parameters of AAAneohooke_stopro have not been initialized! \n "
         "AAAneohooke_stopro for use with MLMC ONLY!!!");
 
@@ -200,7 +201,7 @@ void MAT::AaAneohookeStopro::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   double detf = 0.0;
   if (iiinv < 0.0)
-    dserror("fatal failure in aneurysmatic artery wall material");
+    FOUR_C_THROW("fatal failure in aneurysmatic artery wall material");
   else
     detf = sqrt(iiinv);  // determinate of deformation gradient
 
@@ -260,7 +261,7 @@ void MAT::AaAneohookeStopro::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
                pow(iiinv, -twthi);
   }
   else
-    dserror("give valid parameter for differentiation");
+    FOUR_C_THROW("give valid parameter for differentiation");
 
   // contribution: Cinv
   CORE::LINALG::Matrix<6, 1> pktwoiso(invc);
@@ -392,7 +393,7 @@ void MAT::AaAneohookeStopro::StrainEnergy(
     youngs = youngs_;
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Stochastic Parameters of AAAneohooke_stopro have not been initialized! \n "
         "AAAneohooke_stopro for use with MLMC ONLY!!!");
 
@@ -421,7 +422,7 @@ void MAT::AaAneohookeStopro::StrainEnergy(
 
   double detf = 0.0;
   if (iiinv < 0.0)
-    dserror("fatal failure in aneurysmatic artery wall material");
+    FOUR_C_THROW("fatal failure in aneurysmatic artery wall material");
   else
     detf = sqrt(iiinv);  // determinate of deformation gradient
   //--- prepare some constants -----------------------------------------------------------
@@ -453,17 +454,17 @@ bool MAT::AaAneohookeStopro::VisData(
 {
   if (name == "beta")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     data[0] = Beta();
   }
   else if (name == "youngs")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     data[0] = Youngs();
   }
   else if (name == "BaciEleId")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     data[0] = eleID;
   }
   else

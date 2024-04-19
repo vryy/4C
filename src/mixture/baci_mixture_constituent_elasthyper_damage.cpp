@@ -85,7 +85,7 @@ void MIXTURE::MixtureConstituentElastHyperDamage::Update(CORE::LINALG::Matrix<3,
   double totaltime = params.get<double>("total time", -1);
   if (totaltime < 0.0)
   {
-    dserror("Parameter 'total time' could not be read!");
+    FOUR_C_THROW("Parameter 'total time' could not be read!");
   }
 
   current_reference_growth_[gp] =
@@ -105,7 +105,7 @@ void MIXTURE::MixtureConstituentElastHyperDamage::Evaluate(const CORE::LINALG::M
     const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
-  dserror("This constituent does not support Evaluation without an elastic part.");
+  FOUR_C_THROW("This constituent does not support Evaluation without an elastic part.");
 }
 
 void MIXTURE::MixtureConstituentElastHyperDamage::EvaluateElasticPart(

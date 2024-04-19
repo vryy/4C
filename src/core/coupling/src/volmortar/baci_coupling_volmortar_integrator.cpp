@@ -249,7 +249,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     //*******************************
     default:
     {
-      dserror("ERROR: VolMortarIntegrator: This element type is not implemented!");
+      FOUR_C_THROW("ERROR: VolMortarIntegrator: This element type is not implemented!");
       break;
     }
   }  // switch(eletype)
@@ -402,7 +402,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         }
         default:
         {
-          dserror("ERROR: unknown shape!");
+          FOUR_C_THROW("ERROR: unknown shape!");
           break;
         }
       }
@@ -592,7 +592,7 @@ bool CORE::VOLMORTAR::VolMortarEleBasedGP(DRT::Element& sele, DRT::Element* mele
     }
     else
     {
-      dserror("ERROR: Uknown shape!");
+      FOUR_C_THROW("ERROR: Uknown shape!");
     }
   }
 
@@ -711,7 +711,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     else if (domain == 1)
       intshape = distypeM;
     else
-      dserror("integration domain not specified!");
+      FOUR_C_THROW("integration domain not specified!");
   }
   else
   {
@@ -720,7 +720,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     else if (ndim_ == 3)
       intshape = shape;
     else
-      dserror("wrong dimension!");
+      FOUR_C_THROW("wrong dimension!");
   }
 
   //*******************************
@@ -848,7 +848,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
     }
     default:
     {
-      dserror("ERROR: VolMortarIntegrator: This element type is not implemented!");
+      FOUR_C_THROW("ERROR: VolMortarIntegrator: This element type is not implemented!");
       break;
     }
   }  // switch(eletype)
@@ -892,7 +892,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
 
     // Check parameter space mapping
     bool proj = CheckMapping2D(sele, mele, sxi, mxi);
-    if (proj == false) dserror("ERROR: Mapping failed!");
+    if (proj == false) FOUR_C_THROW("ERROR: Mapping failed!");
 
     // evaluate trace space shape functions (on both elements)
     UTILS::shape_function<distypeS>(sval, sxi);
@@ -1010,7 +1010,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
     }
     else
     {
-      dserror("ERROR: Unknown shape function!");
+      FOUR_C_THROW("ERROR: Unknown shape function!");
     }
   }  // end gp loop
 
@@ -1029,7 +1029,8 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
     Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
     int sdofset_A, int mdofset_A, int sdofset_B, int mdofset_B)
 {
-  if (shape_ == INPAR::VOLMORTAR::shape_std) dserror("ERORR: std. shape functions not supported");
+  if (shape_ == INPAR::VOLMORTAR::shape_std)
+    FOUR_C_THROW("ERORR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval_A;
@@ -1063,7 +1064,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
     else if (cell->Shape() == CORE::FE::CellType::hex8)
       jac = cell->CalcJac(eta);
     else
-      dserror("used shape not supported in volmortar integrator!");
+      FOUR_C_THROW("used shape not supported in volmortar integrator!");
 
     // Check parameter space mapping
     // std::cout << "globgp " << globgp[0] <<"  "<< globgp[1] <<"  "<< globgp[2] <<std::endl;
@@ -1168,7 +1169,8 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D_
     Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
     int sdofset_A, int mdofset_A, int sdofset_B, int mdofset_B)
 {
-  if (shape_ == INPAR::VOLMORTAR::shape_std) dserror("ERORR: std. shape functions not supported");
+  if (shape_ == INPAR::VOLMORTAR::shape_std)
+    FOUR_C_THROW("ERORR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval_A;
@@ -1313,7 +1315,8 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased
     CORE::LINALG::SparseMatrix& mmatrix_A, Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis, int dofsetA, int dofsetB)
 {
-  if (shape_ == INPAR::VOLMORTAR::shape_std) dserror("ERORR: std. shape functions not supported");
+  if (shape_ == INPAR::VOLMORTAR::shape_std)
+    FOUR_C_THROW("ERORR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval_A;
@@ -1438,7 +1441,8 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased
     CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis, int dofsetA, int dofsetB)
 {
-  if (shape_ == INPAR::VOLMORTAR::shape_std) dserror("ERORR: std. shape functions not supported");
+  if (shape_ == INPAR::VOLMORTAR::shape_std)
+    FOUR_C_THROW("ERORR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> mval_A;
@@ -1566,7 +1570,8 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
     Teuchos::RCP<const DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
     int mdofset_B)
 {
-  if (shape_ == INPAR::VOLMORTAR::shape_std) dserror("ERORR: std. shape functions not supported");
+  if (shape_ == INPAR::VOLMORTAR::shape_std)
+    FOUR_C_THROW("ERORR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval_A;
@@ -1603,7 +1608,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
       UTILS::LocalToGlobal<distypeM>(Bele, eta, globgp);
     }
     else
-      dserror("wrong domain for integration!");
+      FOUR_C_THROW("wrong domain for integration!");
 
 
     // map gp into A and B para space
@@ -1733,7 +1738,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
     }
   }
   else
-    dserror("Wrong element type!");
+    FOUR_C_THROW("Wrong element type!");
 
   // check GP projection (MASTER)
   if (distypeM == CORE::FE::CellType::quad4 || distypeM == CORE::FE::CellType::quad8 ||
@@ -1759,7 +1764,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping2D(
     }
   }
   else
-    dserror("Wrong element type!");
+    FOUR_C_THROW("Wrong element type!");
 
   return true;
 }
@@ -1845,7 +1850,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
     }
   }
   else
-    dserror("Wrong element type!");
+    FOUR_C_THROW("Wrong element type!");
 
   // check GP projection (MASTER)
   if (distypeM == CORE::FE::CellType::hex8 || distypeM == CORE::FE::CellType::hex20 ||
@@ -1916,7 +1921,7 @@ bool CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::CheckMapping3D(
     }
   }
   else
-    dserror("Wrong element type!");
+    FOUR_C_THROW("Wrong element type!");
 
   return true;
 }
@@ -2140,7 +2145,7 @@ void CORE::VOLMORTAR::ConsInterpolator::Interpolate(DRT::Node* node,
       }
       default:
       {
-        dserror("ERROR: unknown shape!");
+        FOUR_C_THROW("ERROR: unknown shape!");
         break;
       }
     }  // end switch

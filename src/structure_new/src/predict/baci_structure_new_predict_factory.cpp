@@ -50,7 +50,7 @@ Teuchos::RCP<STR::PREDICT::Generic> STR::PREDICT::Factory::BuildPredictor(
       break;
     case INPAR::STR::pred_vague:
     default:
-      dserror("Unknown predictor type!");
+      FOUR_C_THROW("Unknown predictor type!");
       break;
   }
 

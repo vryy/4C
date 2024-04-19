@@ -134,7 +134,7 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
   // discretizations
   if (no_penetration_ and (not matchinggrid_))
   {
-    dserror(
+    FOUR_C_THROW(
         "The contact no penetration constraint does not yet work for non-matching "
         "discretizations!");
   }
@@ -251,7 +251,7 @@ void POROELAST::Monolithic::Solve()
   }
   else if (iter_ >= itermax_)
   {
-    dserror("Newton unconverged in %d iterations", iter_);
+    FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
   }
 }
 
@@ -327,7 +327,7 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc, 
   // check whether we have a sanely filled tangent matrix
   if (not systemmatrix_->Filled())
   {
-    dserror("Effective tangent matrix must be filled here");
+    FOUR_C_THROW("Effective tangent matrix must be filled here");
   }
 
   // create full monolithic rhs vector
@@ -351,7 +351,7 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> s_iterinc
   // check whether we have a sanely filled tangent matrix
   if (not systemmatrix_->Filled())
   {
-    dserror("Effective tangent matrix must be filled here");
+    FOUR_C_THROW("Effective tangent matrix must be filled here");
   }
 
   // create full monolithic rhs vector
@@ -426,8 +426,8 @@ void POROELAST::Monolithic::SetupSystem()
     // use its own DofRowMap, that is the 0th map of the discretization
     vecSpaces.push_back(FluidField()->DofRowMap(0));
 
-    if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No structure equation. Panic.");
-    if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
+    if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
+    if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
 
     // full Poroelasticity-map
     fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
@@ -479,7 +479,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBas
   // matrix W
   Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
 
-  if (k_ss == Teuchos::null) dserror("structure system matrix null pointer!");
+  if (k_ss == Teuchos::null) FOUR_C_THROW("structure system matrix null pointer!");
 
   /*----------------------------------------------------------------------*/
   // structural part k_sf (3nxn)
@@ -509,7 +509,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBas
   // matrix W
   Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ff = FluidField()->SystemMatrix();
 
-  if (k_ff == Teuchos::null) dserror("fuid system matrix null pointer!");
+  if (k_ff == Teuchos::null) FOUR_C_THROW("fuid system matrix null pointer!");
 
   if (nopen_handle_->HasCond())
   {
@@ -617,7 +617,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
   const int linsolvernumber = porodyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
   {
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for monolithic Poroelasticity. Please set LINEAR_SOLVER in "
         "POROELASTICITY DYNAMIC to a valid number!");
   }
@@ -630,7 +630,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
   // check if the structural solver has a valid solver number
   if (slinsolvernumber == (-1))
   {
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
   }
@@ -643,7 +643,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
   // check if the fluid solver has a valid solver number
   if (flinsolvernumber == (-1))
   {
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for fluid field. Please set LINEAR_SOLVER in FLUID DYNAMIC to a "
         "valid number!");
   }
@@ -664,7 +664,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("Iterative solver expected");
+    FOUR_C_THROW("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(porosolverparams, "AZPREC");
@@ -681,7 +681,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
     }
     break;
     default:
-      dserror("Block Gauss-Seidel BGS2x2 preconditioner expected");
+      FOUR_C_THROW("Block Gauss-Seidel BGS2x2 preconditioner expected");
       break;
   }
 
@@ -745,7 +745,7 @@ bool POROELAST::Monolithic::Converged()
                  normincfluidpres_ < tolinc_pressure_ and normincporo_ < tolinc_porosity_);
       break;
     default:
-      dserror("Cannot check for convergence of residual values!");
+      FOUR_C_THROW("Cannot check for convergence of residual values!");
       break;
   }
 
@@ -760,7 +760,7 @@ bool POROELAST::Monolithic::Converged()
                   normrhsfluidpres_ < tolfres_pressure_ and normrhsporo_ < tolfres_porosity_);
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }
 
@@ -771,7 +771,7 @@ bool POROELAST::Monolithic::Converged()
   else if (combincfres_ == INPAR::POROELAST::bop_or)
     conv = convinc or convfres;
   else
-    dserror("Something went terribly wrong with binary operator!");
+    FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
   if (conv)
   {
@@ -820,7 +820,7 @@ void POROELAST::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == nullptr) dserror("no ofile available");
+  if (ofile == nullptr) FOUR_C_THROW("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -860,7 +860,7 @@ void POROELAST::Monolithic::PrintNewtonIterHeaderStream(std::ostringstream& oss)
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_pressure_ << ")";
       break;
     default:
-      dserror("Unknown or undefined convergence form for residual.");
+      FOUR_C_THROW("Unknown or undefined convergence form for residual.");
       break;
   }
 
@@ -883,7 +883,7 @@ void POROELAST::Monolithic::PrintNewtonIterHeaderStream(std::ostringstream& oss)
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_pressure_ << ")";
       break;
     default:
-      dserror("Unknown or undefined convergence form for increment.");
+      FOUR_C_THROW("Unknown or undefined convergence form for increment.");
       break;
   }
 }
@@ -901,7 +901,7 @@ void POROELAST::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == nullptr) dserror("no ofile available");
+  if (ofile == nullptr) FOUR_C_THROW("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -925,7 +925,7 @@ void POROELAST::Monolithic::PrintNewtonIterTextStream(std::ostringstream& oss)
     case INPAR::POROELAST::convnorm_abs_singlefields:
       break;
     default:
-      dserror("Unknown or undefined convergence form for global residual.");
+      FOUR_C_THROW("Unknown or undefined convergence form for global residual.");
       break;
   }
   // increments
@@ -937,7 +937,7 @@ void POROELAST::Monolithic::PrintNewtonIterTextStream(std::ostringstream& oss)
     case INPAR::POROELAST::convnorm_abs_singlefields:
       break;
     default:
-      dserror("Unknown or undefined convergence form for global increment.");
+      FOUR_C_THROW("Unknown or undefined convergence form for global increment.");
       break;
   }
 
@@ -954,7 +954,7 @@ void POROELAST::Monolithic::PrintNewtonIterTextStream(std::ostringstream& oss)
     case INPAR::POROELAST::convnorm_abs_global:
       break;
     default:
-      dserror("Unknown or undefined convergence form for single field residual.");
+      FOUR_C_THROW("Unknown or undefined convergence form for single field residual.");
       break;
   }
 
@@ -970,7 +970,7 @@ void POROELAST::Monolithic::PrintNewtonIterTextStream(std::ostringstream& oss)
     case INPAR::POROELAST::convnorm_abs_global:
       break;
     default:
-      dserror("Unknown or undefined convergence form for single field increment.");
+      FOUR_C_THROW("Unknown or undefined convergence form for single field increment.");
       break;
   }
 }
@@ -1380,7 +1380,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<CORE::LINALG::Spa
     std::cout << "******************finite difference check done***************\n\n" << std::endl;
   }
   else
-    dserror("PoroFDCheck failed in step: %d, iter: %d", Step(), iter_);
+    FOUR_C_THROW("PoroFDCheck failed in step: %d, iter: %d", Step(), iter_);
 }
 
 void POROELAST::Monolithic::EvaluateCondition(
@@ -1426,7 +1426,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> POROELAST::Monolithic::StructFluidCoupl
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_sf_);
-  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
+  if (sparse == Teuchos::null) FOUR_C_THROW("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }
@@ -1435,7 +1435,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> POROELAST::Monolithic::FluidStructCoupl
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_fs_);
-  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
+  if (sparse == Teuchos::null) FOUR_C_THROW("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }
@@ -1445,7 +1445,8 @@ POROELAST::Monolithic::StructFluidCouplingBlockMatrix()
 {
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocksparse =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(k_sf_);
-  if (blocksparse == Teuchos::null) dserror("cast to CORE::LINALG::BlockSparseMatrixBase failed!");
+  if (blocksparse == Teuchos::null)
+    FOUR_C_THROW("cast to CORE::LINALG::BlockSparseMatrixBase failed!");
 
   return blocksparse;
 }
@@ -1456,7 +1457,8 @@ POROELAST::Monolithic::FluidStructCouplingBlockMatrix()
 {
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocksparse =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(k_fs_);
-  if (blocksparse == Teuchos::null) dserror("cast to CORE::LINALG::BlockSparseMatrixBase failed!");
+  if (blocksparse == Teuchos::null)
+    FOUR_C_THROW("cast to CORE::LINALG::BlockSparseMatrixBase failed!");
 
   return blocksparse;
 }
@@ -1570,7 +1572,7 @@ bool POROELAST::Monolithic::SetupSolver()
   // check if the poroelasticity solver has a valid solver number
   if (linsolvernumber == (-1))
   {
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for poroelasticity. Please set LINEAR_SOLVER in POROELASTICITY "
         "DYNAMIC to a valid number!");
   }

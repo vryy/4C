@@ -30,10 +30,10 @@ namespace
   {
     Teuchos::RCP<MAT::PAR::Material> mat = GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
     if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-      dserror("Material %d is not a weakly compressible fluid", mat_id);
+      FOUR_C_THROW("Material %d is not a weakly compressible fluid", mat_id);
     MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
-    if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
+    if (!fparams) FOUR_C_THROW("Material does not cast to Weakly compressible fluid");
     return *fparams;
   }
 
@@ -41,10 +41,10 @@ namespace
   const MAT::PAR::NewtonianFluid& GetNewtonianFluidMatPars(int mat_id)
   {
     Teuchos::RCP<MAT::PAR::Material> mat = GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
-    if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid", mat_id);
+    if (mat->Type() != INPAR::MAT::m_fluid) FOUR_C_THROW("Material %d is not a fluid", mat_id);
     MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
-    if (!fparams) dserror("Material does not cast to Newtonian fluid");
+    if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
     return *fparams;
   }
 
@@ -53,10 +53,10 @@ namespace
   {
     Teuchos::RCP<MAT::PAR::Material> mat = GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
     if (mat->Type() != INPAR::MAT::m_stvenant)
-      dserror("Material %d is not a St.Venant-Kirchhoff structure material", mat_id);
+      FOUR_C_THROW("Material %d is not a St.Venant-Kirchhoff structure material", mat_id);
     MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params);
-    if (!fparams) dserror("Material does not cast to St.Venant-Kirchhoff structure material");
+    if (!fparams) FOUR_C_THROW("Material does not cast to St.Venant-Kirchhoff structure material");
     return *fparams;
   }
 
@@ -96,10 +96,11 @@ namespace
       function_lin_def.ExtractDouble("R", R);
       function_lin_def.ExtractDouble("U", U);
 
-      if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE");
-      if (L <= 0) dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE");
-      if (R <= 0) dserror("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE");
-      if (U <= 0) dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+      if (mat_id <= 0)
+        FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+      if (L <= 0) FOUR_C_THROW("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+      if (R <= 0) FOUR_C_THROW("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+      if (U <= 0) FOUR_C_THROW("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE");
 
       // get materials
       auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
@@ -120,10 +121,13 @@ namespace
       function_lin_def.ExtractDouble("U", U);
 
       if (mat_id <= 0)
-        dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
-      if (L <= 0) dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
-      if (R <= 0) dserror("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
-      if (U <= 0) dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+        FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+      if (L <= 0)
+        FOUR_C_THROW("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+      if (R <= 0)
+        FOUR_C_THROW("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+      if (U <= 0)
+        FOUR_C_THROW("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
 
       // get materials
       auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
@@ -138,7 +142,7 @@ namespace
       function_lin_def.ExtractInt("MAT", mat_id);
 
       if (mat_id <= 0)
-        dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
+        FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
 
       // get materials
       auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
@@ -153,7 +157,8 @@ namespace
       function_lin_def.ExtractInt("MAT", mat_id);
 
       if (mat_id <= 0)
-        dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE");
+        FOUR_C_THROW(
+            "Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE");
 
       // get materials
       auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
@@ -168,7 +173,7 @@ namespace
       function_lin_def.ExtractInt("MAT", mat_id);
 
       if (mat_id <= 0)
-        dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
+        FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
 
       // get materials
       auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
@@ -183,7 +188,7 @@ namespace
       function_lin_def.ExtractInt("MAT", mat_id);
 
       if (mat_id <= 0)
-        dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
+        FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
 
       // get materials
       auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
@@ -198,7 +203,8 @@ namespace
       function_lin_def.ExtractInt("MAT", mat_id);
 
       if (mat_id <= 0)
-        dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY");
+        FOUR_C_THROW(
+            "Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY");
 
       // get materials
       auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
@@ -215,9 +221,11 @@ namespace
       function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
 
       if (mat_id_fluid <= 0)
-        dserror("Please give a (reasonable) 'MAT_FLUID' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
+        FOUR_C_THROW(
+            "Please give a (reasonable) 'MAT_FLUID' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
       if (mat_id_struc <= 0)
-        dserror("Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
+        FOUR_C_THROW(
+            "Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
 
       // get materials
       auto fparams_fluid = GetWeaklyCompressibleFluidMatPars(mat_id_fluid);
@@ -237,13 +245,13 @@ namespace
 
       if (mat_id_fluid <= 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Please give a (reasonable) 'MAT_FLUID' in "
             "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
       }
       if (mat_id_struc <= 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Please give a (reasonable) 'MAT_STRUC' in "
             "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
       }
@@ -266,13 +274,13 @@ namespace
 
       if (mat_id_fluid <= 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Please give a (reasonable) 'MAT_FLUID' in "
             "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
       }
       if (mat_id_struc <= 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Please give a (reasonable) 'MAT_STRUC' in "
             "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
       }
@@ -291,7 +299,7 @@ namespace
 
       function_lin_def.ExtractInt("MAT", mat_id);
 
-      if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
+      if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
 
       // get material
       auto fparams = GetNewtonianFluidMatPars(mat_id);
@@ -307,7 +315,7 @@ namespace
       function_lin_def.ExtractInt("MAT", mat_id);
       function_lin_def.ExtractInt("ISSTOKES", is_stokes);
 
-      if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-RHS");
+      if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in BELTRAMI-RHS");
 
       // get material
       auto fparams = GetNewtonianFluidMatPars(mat_id);
@@ -323,7 +331,7 @@ namespace
       function_lin_def.ExtractInt("MAT", mat_id);
       function_lin_def.ExtractInt("ISSTAT", is_stationary);
 
-      if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
+      if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
 
       // get material
       auto fparams = GetNewtonianFluidMatPars(mat_id);
@@ -341,7 +349,7 @@ namespace
       function_lin_def.ExtractInt("ISSTAT", is_stationary);
       function_lin_def.ExtractInt("ISSTOKES", is_stokes);
 
-      if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-RHS");
+      if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-RHS");
 
       // get material
       auto fparams = GetNewtonianFluidMatPars(mat_id);
@@ -359,7 +367,7 @@ namespace
       function_lin_def.ExtractInt("ISSTAT", is_stationary);
       function_lin_def.ExtractDouble("AMPLITUDE", amplitude);
 
-      if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
+      if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
 
       // get material
       auto fparams = GetNewtonianFluidMatPars(mat_id);
@@ -529,7 +537,7 @@ double FLD::BeltramiFunction::Evaluate(
   double d = M_PI / 2.0;
 
   int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
-  if (id == -1) dserror("Newtonian fluid material could not be found");
+  if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
   const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
   const auto* actmat = dynamic_cast<const MAT::PAR::NewtonianFluid*>(mat);
   double dens = actmat->density_;
@@ -577,7 +585,7 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
   double d = M_PI / 2.0;
 
   int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
-  if (id == -1) dserror("Newtonian fluid material could not be found");
+  if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
   const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
   const auto* actmat = dynamic_cast<const MAT::PAR::NewtonianFluid*>(mat);
   double dens = actmat->density_;
@@ -677,7 +685,7 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -695,7 +703,7 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
     int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
         INPAR::MAT::m_fluid_linear_density_viscosity);
     if (id == -1)
-      dserror(
+      FOUR_C_THROW(
           "Fluid with Murnaghan-Tait equation of state or with "
           "linear law (pressure-dependent) for the density and the viscosity could not be found");
     const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
@@ -824,7 +832,7 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
 
     if (actmat->matparameter_ != 1.0)
     {
-      dserror("The analytical solution is only valid for material parameter = 1");
+      FOUR_C_THROW("The analytical solution is only valid for material parameter = 1");
     }
 
     double x = xp[0];
@@ -918,7 +926,7 @@ std::vector<double> FLD::ChannelWeaklyCompressibleFunction::EvaluateTimeDerivati
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -936,7 +944,7 @@ double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
     int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
         INPAR::MAT::m_fluid_linear_density_viscosity);
     if (id == -1)
-      dserror(
+      FOUR_C_THROW(
           "Fluid with Murnaghan-Tait equation of state or with "
           "linear law (pressure-dependent) for the density and the viscosity could not be found");
     const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
@@ -947,7 +955,7 @@ double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
 
     if (actmat->coeffviscosity_ > 1.0e-5)
     {
-      dserror("The correction term is only valid for viscosity coefficient -> 0");
+      FOUR_C_THROW("The correction term is only valid for viscosity coefficient -> 0");
     }
 
     double L = 10.0;
@@ -999,7 +1007,7 @@ double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
 
     if (actmat->matparameter_ != 1.0)
     {
-      dserror("The correction term is only valid for material parameter = 1");
+      FOUR_C_THROW("The correction term is only valid for material parameter = 1");
     }
 
     double x = xp[0];
@@ -1074,7 +1082,7 @@ std::vector<double> FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evalua
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -1181,7 +1189,7 @@ std::vector<double> FLD::WeaklyCompressiblePoiseuilleFunction::EvaluateTimeDeriv
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -1271,7 +1279,7 @@ std::vector<double> FLD::WeaklyCompressiblePoiseuilleForceFunction::EvaluateTime
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -1420,7 +1428,7 @@ std::vector<double> FLD::WeaklyCompressibleManufacturedFlowFunction::EvaluateTim
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -1700,7 +1708,7 @@ std::vector<double> FLD::WeaklyCompressibleManufacturedFlowForceFunction::Evalua
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -1854,7 +1862,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDFunction::EvaluateTimeDeriv
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -2270,7 +2278,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDForceFunction::EvaluateTime
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -2332,7 +2340,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDViscosityFunction::Evaluate
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -2686,7 +2694,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidFunction::EvaluateTime
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -6523,7 +6531,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::Evaluat
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -6721,7 +6729,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::Eva
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -6759,7 +6767,7 @@ double FLD::BeltramiUP::Evaluate(
     case 3:
       return c * (1.0 / K3 + 1.0 / K2 + 1.0 / K1) * density_;
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 
@@ -6788,7 +6796,7 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
         res[1] = 0;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -6805,7 +6813,7 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
         res[2] = 0;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -6813,7 +6821,7 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -6860,7 +6868,7 @@ double FLD::BeltramiGradU::Evaluate(
     case 8:  // w,z
       return a * b * (K2 - K3);
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 
@@ -6894,7 +6902,7 @@ std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
         res[1] = 0;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -6916,7 +6924,7 @@ std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
         res[2] = 0;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -6924,7 +6932,7 @@ std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -6982,7 +6990,7 @@ double FLD::BeltramiRHS::Evaluate(
       return c * (-b / K3 - a / K2 + (a + b) / K1 - 2. * kinviscosity_ * (b * K2 - a * K3)) +
              conv_z;
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 
@@ -7010,7 +7018,7 @@ std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
         res[1] = 0;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -7026,7 +7034,7 @@ std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
         res[2] = 0;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -7034,7 +7042,7 @@ std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -7082,7 +7090,7 @@ double FLD::KimMoinUP::Evaluate(const double* xp, const double t, const std::siz
     case 3:
       return -1. / 4. * (cos(2.0 * a_pi_x) + cos(2.0 * a_pi_y)) * gp * density_;
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 
@@ -7138,7 +7146,7 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
         res[1] = -1. / 4. * (cos(2.0 * a_pi_x) + cos(2.0 * a_pi_y)) * gp * density_;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -7175,7 +7183,7 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
         res[2] = -1. / 4. * (cos(2.0 * a_pi_x) + cos(2.0 * a_pi_y)) * gp * density_;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -7183,7 +7191,7 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -7241,7 +7249,7 @@ double FLD::KimMoinGradU::Evaluate(
     case 8:  // w,z
       return 0.0;
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 
@@ -7313,7 +7321,7 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
         res[1] = 0.0;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -7361,7 +7369,7 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
         res[2] = 0.0;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -7369,7 +7377,7 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -7441,7 +7449,7 @@ double FLD::KimMoinRHS::Evaluate(
     case 2:
       return 0.0;
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 
@@ -7507,7 +7515,7 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
         res[1] = 0.0;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -7557,7 +7565,7 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
         res[2] = 0.0;
         [[fallthrough]];
       default:
-        dserror("wrong component %d", component);
+        FOUR_C_THROW("wrong component %d", component);
         break;
     }
   }
@@ -7565,7 +7573,7 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -7581,7 +7589,7 @@ FLD::KimMoinStress::KimMoinStress(
       amplitude_(amplitude)
 {
   if (amplitude_ != 1.0)
-    dserror(
+    FOUR_C_THROW(
         "At the moment other implementation of Kimmoin Functions do not include the amplitude "
         "functionality!");
 }
@@ -7632,7 +7640,7 @@ double FLD::KimMoinStress::Evaluate(
     case 5:  // sigma_zx
       return 0.0;
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 

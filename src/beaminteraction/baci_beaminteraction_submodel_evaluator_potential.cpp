@@ -168,7 +168,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
 
           // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
           if (npotlaw1 > (int)BeamPotentialParams().PotentialLawPrefactors().size())
-            dserror(
+            FOUR_C_THROW(
                 "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
 
@@ -257,7 +257,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
 
           // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
           if (npotlaw1 > (int)BeamPotentialParams().PotentialLawPrefactors().size())
-            dserror(
+            FOUR_C_THROW(
                 "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
 
@@ -357,7 +357,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
 
           // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
           if (npotlaw1 > (int)BeamPotentialParams().PotentialLawPrefactors().size())
-            dserror(
+            FOUR_C_THROW(
                 "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
 
@@ -568,7 +568,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::GetHalfInteractionDistan
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "You have to set a cutoff radius for beam-to-? potential-based interactions in order "
         "to use REPARTITIONSTRATEGY = Adaptive!");
   }
@@ -664,8 +664,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       nodes1 = currele->Nodes();
       nodes2 = currneighborele->Nodes();
 
-      dsassert(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
-      dsassert(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
+      FOUR_C_ASSERT(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
+      FOUR_C_ASSERT(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
 
       nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
 
@@ -675,7 +675,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       else if (BEAMINTERACTION::UTILS::IsRigidSphereElement(*currneighborele))
         nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conds2);
       else
-        dserror(
+        FOUR_C_THROW(
             "Only beam-to-beampotential or beam-to-sphere -based interaction is implemented yet. "
             "No other types of elements allowed!");
 
@@ -800,8 +800,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   nodes1 = ele1->Nodes();
   nodes2 = ele2->Nodes();
 
-  dsassert(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
-  dsassert(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
+  FOUR_C_ASSERT(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
+  FOUR_C_ASSERT(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
 
   nodes1[0]->GetCondition("BeamPotentialLineCharge", conditions_element1);
 
@@ -811,7 +811,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   else if (BEAMINTERACTION::UTILS::IsRigidSphereElement(*ele2))
     nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conditions_element2);
   else
-    dserror(
+    FOUR_C_THROW(
         "Only beam-to-beam or beam-to-sphere potential-based interaction is implemented yet. "
         "No other types of elements allowed!");
 }
@@ -839,7 +839,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PrintConsoleWelcomeMessa
         break;
       }
       default:
-        dserror("Potential type not supported!");
+        FOUR_C_THROW("Potential type not supported!");
     }
 
     std::cout << "Potential Law:       Phi(r) = ";
@@ -924,7 +924,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeBeamPo
   {
     // Todo: this won't perfectly work in parallel yet since some communication would be required
     //    if ( GState().GetMyRank() != 0 )
-    //      dserror("visualization of resulting forces not implemented in parallel yet!");
+    //      FOUR_C_THROW("visualization of resulting forces not implemented in parallel yet!");
 
     num_row_points = Discret().NumGlobalElements() *
                      BeamPotentialParams().NumberIntegrationSegments() *
@@ -972,15 +972,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeBeamPo
     const unsigned int num_interacting_points_per_element =
         (unsigned int)coordinates_ele1_this_pair.size();
 
-    dsassert(num_interacting_points_per_element == (unsigned int)coordinates_ele2_this_pair.size(),
+    FOUR_C_ASSERT(
+        num_interacting_points_per_element == (unsigned int)coordinates_ele2_this_pair.size(),
         "number of interacting points on element 1 does not match number of interacting points "
         "on element 2!");
 
-    dsassert(
+    FOUR_C_ASSERT(
         num_interacting_points_per_element == (unsigned int)potential_forces_ele1_this_pair.size(),
         "number of interacting points on element 1 does not match number of potential forces!");
 
-    dsassert(
+    FOUR_C_ASSERT(
         num_interacting_points_per_element == (unsigned int)potential_forces_ele2_this_pair.size(),
         "number of interacting points on element 2 does not match number of potential forces!");
 

@@ -90,31 +90,31 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> DLinMatrix()
     {
-      if (DLin_ == Teuchos::null) dserror("ERROR: DLin Matrix is null pointer!");
+      if (DLin_ == Teuchos::null) FOUR_C_THROW("ERROR: DLin Matrix is null pointer!");
       return DLin_;
     };
 
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> MLinMatrix()
     {
-      if (MLin_ == Teuchos::null) dserror("ERROR: MLin Matrix is null pointer!");
+      if (MLin_ == Teuchos::null) FOUR_C_THROW("ERROR: MLin Matrix is null pointer!");
       return MLin_;
     };
 
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> HMatrix()
     {
-      if (H_ == Teuchos::null) dserror("ERROR: H Matrix is null pointer!");
+      if (H_ == Teuchos::null) FOUR_C_THROW("ERROR: H Matrix is null pointer!");
       return H_;
     };
 
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> TMatrix()
     {
-      if (T_ == Teuchos::null) dserror("ERROR: T Matrix is null pointer!");
+      if (T_ == Teuchos::null) FOUR_C_THROW("ERROR: T Matrix is null pointer!");
       return T_;
     };
 
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> NMatrix()
     {
-      if (N_ == Teuchos::null) dserror("ERROR: N Matrix is null pointer!");
+      if (N_ == Teuchos::null) FOUR_C_THROW("ERROR: N Matrix is null pointer!");
       return N_;
     };
 
@@ -123,7 +123,7 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<Epetra_Vector> Gap()
     {
-      if (gap_ == Teuchos::null) dserror("ERROR: gap vector is null pointer!");
+      if (gap_ == Teuchos::null) FOUR_C_THROW("ERROR: gap vector is null pointer!");
       return gap_;
     };
 
@@ -198,7 +198,7 @@ namespace ADAPTER
     /// check init and setup call
     void CheckSetup() const override
     {
-      if (!IsSetup()) dserror("ERROR: Call Setup() first!");
+      if (!IsSetup()) FOUR_C_THROW("ERROR: Call Setup() first!");
     }
 
    protected:

@@ -120,10 +120,10 @@ void ADAPTER::FBIPenaltyConstraintenforcer::PrintViolation(double time, int step
                 *(Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(GetFluid(), true)->Velnp()),
                 *violation);
 
-    if (err != 0) dserror(" Matrix vector product threw error code %i ", err);
+    if (err != 0) FOUR_C_THROW(" Matrix vector product threw error code %i ", err);
 
     err = violation->Update(1.0, *AssembleFluidCouplingResidual(), -1.0);
-    if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
+    if (err != 0) FOUR_C_THROW(" Epetra_Vector update threw error code %i ", err);
 
     double norm = 0.0, normf = 0.0, norms = 0.0, norm_vel = 0.0;
 

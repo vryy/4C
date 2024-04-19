@@ -96,7 +96,7 @@ namespace DRT
       */
       CORE::FE::CellType Shape() const override
       {
-        dserror("ConstraintElement3 has no shape!");
+        FOUR_C_THROW("ConstraintElement3 has no shape!");
         return CORE::FE::CellType::dis_none;
       };
 
@@ -182,7 +182,7 @@ namespace DRT
       /*!
       \brief Evaluate a Neumann boundary condition
 
-      Since the element has no physics attached this method will give a dserror
+      Since the element has no physics attached this method will give a FOUR_C_THROW
 
       \return 0 if successful, negative otherwise
       */

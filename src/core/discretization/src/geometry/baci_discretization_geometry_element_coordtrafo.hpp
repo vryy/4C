@@ -110,7 +110,7 @@ namespace CORE::GEO
         break;
       default:
         std::cout << CORE::FE::CellTypeToString(distype) << std::endl;
-        dserror("add your 3D distype to this switch!");
+        FOUR_C_THROW("add your 3D distype to this switch!");
         break;
     }
     return;
@@ -167,7 +167,7 @@ namespace CORE::GEO
         break;
       }
       default:
-        dserror("distype not yet implemented");
+        FOUR_C_THROW("distype not yet implemented");
         break;
     }
     return;
@@ -227,7 +227,7 @@ namespace CORE::GEO
         b_tet(3) = 1.0;
 
         double det = CORE::LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
-        if (fabs(det) < 1E-14) dserror("determinant is near zero %d", det);
+        if (fabs(det) < 1E-14) FOUR_C_THROW("determinant is near zero %d", det);
 
         bool inside = true;
         for (int i = 0; i < 4; ++i)
@@ -277,7 +277,7 @@ namespace CORE::GEO
         b_tet(3) = 1.0;
 
         det = CORE::LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
-        if (fabs(det) < 1E-14) dserror("determinant is near zero %d", det);
+        if (fabs(det) < 1E-14) FOUR_C_THROW("determinant is near zero %d", det);
 
         inside = true;
         for (int i = 0; i < 4; ++i)
@@ -327,7 +327,7 @@ namespace CORE::GEO
         b_tet(3) = 1.0;
 
         det = CORE::LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
-        if (fabs(det) < 1E-14) dserror("determinant is near zero %d", det);
+        if (fabs(det) < 1E-14) FOUR_C_THROW("determinant is near zero %d", det);
 
         inside = true;
         for (int i = 0; i < 4; ++i)
@@ -377,7 +377,7 @@ namespace CORE::GEO
         b_tet(3) = 1.0;
 
         det = CORE::LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
-        if (fabs(det) < 1E-14) dserror("determinant is near zero %d", det);
+        if (fabs(det) < 1E-14) FOUR_C_THROW("determinant is near zero %d", det);
 
         inside = true;
         for (int i = 0; i < 4; ++i)
@@ -427,7 +427,7 @@ namespace CORE::GEO
         b_tet(3) = 1.0;
 
         det = CORE::LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
-        if (fabs(det) < 1E-14) dserror("determinant is near zero %d", det);
+        if (fabs(det) < 1E-14) FOUR_C_THROW("determinant is near zero %d", det);
 
         inside = true;
         for (int i = 0; i < 4; ++i)
@@ -456,37 +456,37 @@ namespace CORE::GEO
       case FE::CellType::tet4:
       case FE::CellType::tet10:
       {
-        dserror("no fast initial guess implemented");
+        FOUR_C_THROW("no fast initial guess implemented");
         break;
       }
       case FE::CellType::quad4:
       case FE::CellType::quad8:
       case FE::CellType::quad9:
       {
-        dserror("no fast initial guess implemented");
+        FOUR_C_THROW("no fast initial guess implemented");
         break;
       }
       case FE::CellType::tri3:
       case FE::CellType::tri6:
       {
-        dserror("no fast initial guess implemented");
+        FOUR_C_THROW("no fast initial guess implemented");
         break;
       }
       case FE::CellType::line2:
       case FE::CellType::line3:
       {
-        dserror("no fast initial guess implemented");
+        FOUR_C_THROW("no fast initial guess implemented");
         break;
       }
       case FE::CellType::wedge6:
       case FE::CellType::wedge15:
       case FE::CellType::pyramid5:
       {
-        dserror("no fast initial guess implemented");
+        FOUR_C_THROW("no fast initial guess implemented");
         break;
       }
       default:
-        dserror("distype not yet implemented");
+        FOUR_C_THROW("distype not yet implemented");
         break;
     }
     return false;
@@ -567,7 +567,7 @@ namespace CORE::GEO
           return false;
         break;
       default:
-        dserror("distype not yet implemented");
+        FOUR_C_THROW("distype not yet implemented");
         break;
     }
     return true;
@@ -642,11 +642,11 @@ namespace CORE::GEO
     // REMARK: This function seemed to deliver wrong results!
     // It seems that some matrices (especially dx) were not cleared at the beginning!
     // we fixed this at 11.09.2012
-    // if you want to use this function you can remove the dserror, but please check carefully if it
-    // works properly REMARK: tested this method for quite a while and seems to be fine now
+    // if you want to use this function you can remove the FOUR_C_THROW, but please check carefully
+    // if it works properly REMARK: tested this method for quite a while and seems to be fine now
     // (28.11.2012 ghamm)
-    //  dserror("This function seems to deliver wrong results! Check carefully before use or use a
-    //  different function, e.g. CORE::GEO::CUT::Position");
+    //  FOUR_C_THROW("This function seems to deliver wrong results! Check carefully before use or
+    //  use a different function, e.g. CORE::GEO::CUT::Position");
     // REMARK: Added a scaling of the function -> biggest entry is 1 and thus this function should
     // work for elements far away from the origin as well. (27.07.2015 winter & seitz)
 
@@ -721,7 +721,7 @@ namespace CORE::GEO
 
       if (fabs(det) < CORE::GEO::TOL14)
       {
-        dserror("determinant is near zero %d", det);
+        FOUR_C_THROW("determinant is near zero %d", det);
       }
 
       xsi += dx;
@@ -798,7 +798,7 @@ namespace CORE::GEO
         break;
       default:
         std::cout << CORE::FE::CellTypeToString(distype) << std::endl;
-        dserror("add your 3D distype to this switch!");
+        FOUR_C_THROW("add your 3D distype to this switch!");
         nodeWithinElement = false;
         break;
     }
@@ -984,7 +984,7 @@ namespace CORE::GEO
             xyze_surfaceElement, physCoord, eleCoord);
         break;
       default:
-        dserror("please add your surface element type here");
+        FOUR_C_THROW("please add your surface element type here");
         break;
     }
   }
@@ -1087,7 +1087,7 @@ namespace CORE::GEO
             xyze_lineElement, physCoord, eleCoord);
         break;
       default:
-        dserror("please add your line element type here");
+        FOUR_C_THROW("please add your line element type here");
         break;
     }
   }
@@ -1148,7 +1148,7 @@ namespace CORE::GEO
 
       if (fabs(det) < CORE::GEO::TOL14)
       {
-        dserror("determinant is near zero %d", det);
+        FOUR_C_THROW("determinant is near zero %d", det);
       }
 
       // update rhs b= -(x(xi)-x_point)

@@ -52,7 +52,7 @@ int XFEM::XFieldField::CouplingDofSet::MyNumDofPerNode(const int& node_gid) cons
 {
   std::map<int, int>::const_iterator pos = my_num_dof_per_node_.find(node_gid);
   if (pos == my_num_dof_per_node_.end())
-    dserror("The given node GID %d is no coupling interface node!", node_gid);
+    FOUR_C_THROW("The given node GID %d is no coupling interface node!", node_gid);
 
   return pos->second;
 }

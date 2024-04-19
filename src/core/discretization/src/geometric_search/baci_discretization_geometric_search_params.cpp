@@ -24,12 +24,12 @@ CORE::GEOMETRICSEARCH::GeometricSearchParams::GeometricSearchParams(
 {
   beam_radius_extension_factor_ =
       geometric_search_params.get<double>("BEAM_RADIUS_EXTENSION_FACTOR");
-  dsassert(!std::signbit(beam_radius_extension_factor_),
+  FOUR_C_ASSERT(!std::signbit(beam_radius_extension_factor_),
       "Beam radius extension factor needs to be positive!");
 
   sphere_radius_extension_factor_ =
       geometric_search_params.get<double>("SPHERE_RADIUS_EXTENSION_FACTOR");
-  dsassert(!std::signbit(sphere_radius_extension_factor_),
+  FOUR_C_ASSERT(!std::signbit(sphere_radius_extension_factor_),
       "Sphere radius extension factor needs to be positive!");
 
   verbosity_ = CORE::UTILS::IntegralValue<IO::Verbositylevel>(io_params, "VERBOSITY");

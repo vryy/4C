@@ -143,7 +143,7 @@ void STR::TIMINT::BaseDataGlobalState::Init(const Teuchos::RCP<DRT::Discretizati
 
     // initialize restart step
     restartstep_ = GLOBAL::Problem::Instance()->Restart();
-    if (restartstep_ < 0) dserror("The restart step is expected to be positive.");
+    if (restartstep_ < 0) FOUR_C_THROW("The restart step is expected to be positive.");
   }
 
   // end of initialization
@@ -212,13 +212,13 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
       /* Since our element evaluate routine is only designed for two input matrices
        * (stiffness and damping or stiffness and mass) its not possible, to have nonlinear
        * inertia forces AND material damping. */
-      dserror("So far it is not possible to model nonlinear inertia forces and damping!");
+      FOUR_C_THROW("So far it is not possible to model nonlinear inertia forces and damping!");
     }
   }
 
   if (datasdyn_->GetDynamicType() == INPAR::STR::dyna_statics and
       datasdyn_->GetMassLinType() != INPAR::STR::ml_none)
-    dserror(
+    FOUR_C_THROW(
         "Do not set parameter MASSLIN in static simulations as this leads to undesired"
         " evaluation of mass matrix on element level!");
 
@@ -336,7 +336,7 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
         model_block_id_[mt] = 0;
       }
       else
-        dserror("I don't know what to do");
+        FOUR_C_THROW("I don't know what to do");
       break;
     }
     case INPAR::STR::model_cardiovascular0d:
@@ -407,7 +407,7 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
     default:
     {
       // FixMe please
-      dserror("Augment this function for your model type!");
+      FOUR_C_THROW("Augment this function for your model type!");
       break;
     }
   }
@@ -473,7 +473,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
     const auto check = mapextractors_.insert(
         std::pair<INPAR::STR::EleTech, CORE::LINALG::MultiMapExtractor>(et, mapext));
 
-    if (not check.second) dserror("Insert failed!");
+    if (not check.second) FOUR_C_THROW("Insert failed!");
   }
 }
 
@@ -484,7 +484,7 @@ STR::TIMINT::BaseDataGlobalState::GetElementTechnologyMapExtractor(
     const enum INPAR::STR::EleTech etech) const
 {
   if (mapextractors_.find(etech) == mapextractors_.end())
-    dserror("Could not find element technology \"%s\" in map extractors.",
+    FOUR_C_THROW("Could not find element technology \"%s\" in map extractors.",
         INPAR::STR::EleTechString(etech).c_str());
 
   return mapextractors_.at(etech);
@@ -530,7 +530,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor(
 
       if (nodaladditdofs.size() + nodalrotvecdofs.size() !=
           (unsigned)beameleptr->NumDofPerNode(*nodeptr))
-        dserror("Expected %d DoFs for node with GID %d but collected %d DoFs",
+        FOUR_C_THROW("Expected %d DoFs for node with GID %d but collected %d DoFs",
             beameleptr->NumDofPerNode(*nodeptr), discret_->NodeRowMap()->GID(i),
             nodaladditdofs.size() + nodalrotvecdofs.size());
     }
@@ -601,7 +601,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlob
     /* use the last converged state to construct a new solution vector */
     case VecInitType::last_time_step:
     {
-      dsassert(!modeleval_ptr.is_null(), "We need access to the STR::ModelEvaluator object!");
+      FOUR_C_ASSERT(!modeleval_ptr.is_null(), "We need access to the STR::ModelEvaluator object!");
 
       std::map<INPAR::STR::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
@@ -619,7 +619,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlob
     /* use the current global state to construct a new solution vector */
     case VecInitType::init_current_state:
     {
-      dsassert(!modeleval_ptr.is_null(), "We need access to the STR::ModelEvaluator object!");
+      FOUR_C_ASSERT(!modeleval_ptr.is_null(), "We need access to the STR::ModelEvaluator object!");
 
       std::map<INPAR::STR::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
@@ -823,7 +823,7 @@ void STR::TIMINT::BaseDataGlobalState::ExtractElementTechnologies(
     }
     default:
     {
-      dserror("Element technology doesn't use any extra DOFs.");
+      FOUR_C_THROW("Element technology doesn't use any extra DOFs.");
       exit(EXIT_FAILURE);
     }
   }
@@ -896,7 +896,7 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOper
   if (blockmat_ptr != nullptr)
   {
     if (MaxBlockNumber() < 2)
-      dserror(
+      FOUR_C_THROW(
           "The jacobian is a CORE::LINALG::BlockSparseMatrix but has less than"
           " two blocks! Seems wrong.");
 
@@ -925,7 +925,7 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOper
       }
       default:
       {
-        dserror("model block %s is not supported", MatBlockType2String(bt).c_str());
+        FOUR_C_THROW("model block %s is not supported", MatBlockType2String(bt).c_str());
         break;
       }
     }
@@ -934,7 +934,7 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOper
 
   // sanity check
   if (model_block_id_.find(mt) == model_block_id_.end() or bt != MatBlockType::displ_displ)
-    dserror(
+    FOUR_C_THROW(
         "It seems as you are trying to access a matrix block which has "
         "not been created.");
 
@@ -945,7 +945,7 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOper
     return;
   }
 
-  dserror(
+  FOUR_C_THROW(
       "The jacobian has the wrong type! (no CORE::LINALG::SparseMatrix "
       "and no CORE::LINALG::BlockSparseMatrix)");
 }
@@ -963,7 +963,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
   if (blockmat_ptr != nullptr)
   {
     if (MaxBlockNumber() < 2)
-      dserror(
+      FOUR_C_THROW(
           "The jacobian is a CORE::LINALG::BlockSparseMatrix but has less than"
           " two blocks! Seems wrong.");
     const int& b_id = model_block_id_.at(mt);
@@ -991,7 +991,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
       }
       default:
       {
-        dserror("model block %s is not supported", MatBlockType2String(bt).c_str());
+        FOUR_C_THROW("model block %s is not supported", MatBlockType2String(bt).c_str());
         break;
       }
     }
@@ -1000,7 +1000,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
 
   // sanity check
   if (model_block_id_.find(mt) == model_block_id_.end() or bt != MatBlockType::displ_displ)
-    dserror(
+    FOUR_C_THROW(
         "It seems as you are trying to access a matrix block which has "
         "not been created.");
 
@@ -1011,7 +1011,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
     return block;
   }
 
-  dserror(
+  FOUR_C_THROW(
       "The jacobian has the wrong type! (no CORE::LINALG::SparseMatrix "
       "and no CORE::LINALG::BlockSparseMatrix)");
   exit(EXIT_FAILURE);
@@ -1039,7 +1039,7 @@ STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
   if (blockmat_ptr != nullptr)
   {
     if (MaxBlockNumber() < 2)
-      dserror(
+      FOUR_C_THROW(
           "The jacobian is a CORE::LINALG::BlockSparseMatrix but has less than"
           " two blocks! Seems wrong.");
     const int& b_id = model_block_id_.at(mt);
@@ -1054,7 +1054,7 @@ STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
 
   // sanity check
   if (model_block_id_.find(mt) == model_block_id_.end())
-    dserror(
+    FOUR_C_THROW(
         "It seems as you are trying to access a matrix block row which has "
         "not been created.");
 
@@ -1066,7 +1066,7 @@ STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
     return rowofblocks;
   }
 
-  dserror(
+  FOUR_C_THROW(
       "The jacobian has the wrong type! (no CORE::LINALG::SparseMatrix "
       "and no CORE::LINALG::BlockSparseMatrix)");
   exit(EXIT_FAILURE);
@@ -1085,7 +1085,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
 Teuchos::RCP<const CORE::LINALG::SparseMatrix>
 STR::TIMINT::BaseDataGlobalState::GetJacobianDisplBlock() const
 {
-  dsassert(!jac_.is_null(), "The jacobian is not initialized!");
+  FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
   return ExtractDisplBlock(*jac_);
 }
 
@@ -1093,7 +1093,7 @@ STR::TIMINT::BaseDataGlobalState::GetJacobianDisplBlock() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::JacobianDisplBlock()
 {
-  dsassert(!jac_.is_null(), "The jacobian is not initialized!");
+  FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
   return ExtractDisplBlock(*jac_);
 }
 
@@ -1102,7 +1102,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Jacob
 Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::GetJacobianBlock(
     const INPAR::STR::ModelType mt, const MatBlockType bt) const
 {
-  dsassert(!jac_.is_null(), "The jacobian is not initialized!");
+  FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
 
   return ExtractModelBlock(*jac_, mt, bt);
 }
@@ -1112,7 +1112,7 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState:
 int STR::TIMINT::BaseDataGlobalState::GetLastLinIterationNumber(const unsigned step) const
 {
   CheckInitSetup();
-  if (step < 1) dserror("The given step number must be larger than 1. (step=%d)", step);
+  if (step < 1) FOUR_C_THROW("The given step number must be larger than 1. (step=%d)", step);
 
   auto linsolvers = datasdyn_->GetLinSolvers();
   int iter = -1;
@@ -1135,7 +1135,8 @@ int STR::TIMINT::BaseDataGlobalState::GetLastLinIterationNumber(const unsigned s
         break;
       }
       default:
-        dserror("The given model type '%s' is not supported for linear iteration output right now.",
+        FOUR_C_THROW(
+            "The given model type '%s' is not supported for linear iteration output right now.",
             INPAR::STR::model_structure);
     }
   }
@@ -1148,7 +1149,7 @@ int STR::TIMINT::BaseDataGlobalState::GetLastLinIterationNumber(const unsigned s
 int STR::TIMINT::BaseDataGlobalState::GetNlnIterationNumber(const unsigned step) const
 {
   CheckInitSetup();
-  if (step < 1) dserror("The given step number must be larger than 1. (step=%d)", step);
+  if (step < 1) FOUR_C_THROW("The given step number must be larger than 1. (step=%d)", step);
 
   auto cit = nln_iter_numbers_.begin();
   while (cit != nln_iter_numbers_.end())
@@ -1157,7 +1158,7 @@ int STR::TIMINT::BaseDataGlobalState::GetNlnIterationNumber(const unsigned step)
     ++cit;
   }
 
-  dserror("There is no nonlinear iteration number for the given step %d.", step);
+  FOUR_C_THROW("There is no nonlinear iteration number for the given step %d.", step);
   exit(EXIT_FAILURE);
 }
 
@@ -1173,7 +1174,7 @@ void STR::TIMINT::BaseDataGlobalState::SetNlnIterationNumber(const int nln_iter)
     if (cit->first == stepn_)
     {
       if (cit->second != nln_iter)
-        dserror(
+        FOUR_C_THROW(
             "There is already a different nonlinear iteration number "
             "for step %d.",
             stepn_);
@@ -1221,7 +1222,7 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
   /* since parallel distribution is node-wise, the three entries belonging to
    * a rotation vector should be stored on the same processor: safety-check */
   if (x_rotvec.Map().NumMyElements() % 3 != 0 or dir_rotvec.Map().NumMyElements() % 3 != 0)
-    dserror(
+    FOUR_C_THROW(
         "fatal error: apparently, the three DOFs of a nodal rotation vector are"
         " not stored on this processor. Can't apply multiplicative update!");
 

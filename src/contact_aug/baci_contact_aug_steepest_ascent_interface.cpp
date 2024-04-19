@@ -60,7 +60,7 @@ CONTACT::AUG::STEEPESTASCENT::Interface::CreateNodeBasedAssembleStrategy()
     }
     default:
     {
-      dserror("Unknown variational approach! (var_type= \"%s\" | %d)",
+      FOUR_C_THROW("Unknown variational approach! (var_type= \"%s\" | %d)",
           INPAR::CONTACT::VariationalApproach2String(var_type).c_str(), var_type);
       exit(EXIT_FAILURE);
     }

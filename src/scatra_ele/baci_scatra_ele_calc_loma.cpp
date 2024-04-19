@@ -69,7 +69,7 @@ DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
 
   // safety check
   if (my::turbparams_->MfsConservative())
-    dserror("Conservative formulation not supported for loma!");
+    FOUR_C_THROW("Conservative formulation not supported for loma!");
 
   return;
 }
@@ -108,7 +108,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Materials(
   else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
     MatYoghurt(material, k, densn, densnp, densam, visc);
   else
-    dserror("Material type is not supported");
+    FOUR_C_THROW("Material type is not supported");
 
   return;
 }
@@ -194,7 +194,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
 
   // compute temperature at n+1 or n+alpha_F and check whether it is positive
   const double tempnp = my::scatravarmanager_->Phinp(0);
-  if (tempnp < 0.0) dserror("Negative temperature in ScaTra Sutherland material evaluation!");
+  if (tempnp < 0.0) FOUR_C_THROW("Negative temperature in ScaTra Sutherland material evaluation!");
 
   // compute diffusivity according to Sutherland's law
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp), k);
@@ -255,7 +255,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatTempDepWater(
 
   // compute temperature at n+1 or n+alpha_F and check whether it is positive
   const double tempnp = my::scatravarmanager_->Phinp(0);
-  if (tempnp < 0.0) dserror("Negative temperature in ScaTra Sutherland material evaluation!");
+  if (tempnp < 0.0) FOUR_C_THROW("Negative temperature in ScaTra Sutherland material evaluation!");
 
   // compute diffusivity
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp), k);
@@ -317,7 +317,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
   // compute temperature at n+1 or n+alpha_F and check whether it is positive
   const double tempnp = actmat->ComputeTemperature(provarnp);
   if (tempnp < 0.0)
-    dserror("Negative temperature in ScaTra Arrhenius progress-variable material evaluation!");
+    FOUR_C_THROW("Negative temperature in ScaTra Arrhenius progress-variable material evaluation!");
 
   // compute density at n+1 or n+alpha_F
   densnp = actmat->ComputeDensity(provarnp);
@@ -385,7 +385,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
   // compute temperature at n+1 or n+alpha_F and check whether it is positive
   const double tempnp = my::scatravarmanager_->Phinp(my::numscal_ - 1);
   if (tempnp < 0.0)
-    dserror("Negative temperature in ScaTra Arrhenius species material evaluation!");
+    FOUR_C_THROW("Negative temperature in ScaTra Arrhenius species material evaluation!");
 
   // compute diffusivity according to Sutherland's law
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp), k);
@@ -442,7 +442,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
 )
 {
   if (k != my::numscal_ - 1)
-    dserror("Temperature always needs to be the last variable for this Arrhenius-type system!");
+    FOUR_C_THROW(
+        "Temperature always needs to be the last variable for this Arrhenius-type system!");
 
   const Teuchos::RCP<const MAT::ArrheniusTemp>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::ArrheniusTemp>(material);
@@ -457,7 +458,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
   const double spmfnp = my::scatravarmanager_->Phinp(0);
   const double tempnp = my::scatravarmanager_->Phinp(k);
   if (tempnp < 0.0)
-    dserror("Negative temperature in ScaTra Arrhenius temperature material evaluation!");
+    FOUR_C_THROW("Negative temperature in ScaTra Arrhenius temperature material evaluation!");
 
   // compute diffusivity according to Sutherland's law
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp), k);
@@ -527,7 +528,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
   // compute temperature at n+1 or n+alpha_F and check whether it is positive
   const double tempnp = actmat->ComputeTemperature(provarnp);
   if (tempnp < 0.0)
-    dserror(
+    FOUR_C_THROW(
         "Negative temperature in ScaTra Ferziger and Echekki progress-variable material "
         "evaluation!");
 
@@ -619,8 +620,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatThermoStVenantKirchhoff(
   // and set derivative of reaction coefficient
   // if (reacoef > 1e-14) reaction_ = true;
   // if (reacoef < -1e-14)
-  //  dserror("Reaction coefficient for Thermo St. Venant-Kirchhoff material is not positive: %f",0,
-  //  reacoef);
+  //  FOUR_C_THROW("Reaction coefficient for Thermo St. Venant-Kirchhoff material is not positive:
+  //  %f",0, reacoef);
   // reacoeffderiv_[0] = reacoef;
 
   // set different reaction terms in the reaction manager
@@ -672,7 +673,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
   {
     // compute temperature at n+1 or n+alpha_F and check whether it is positive
     const double tempnp = my::scatravarmanager_->Phinp(0);
-    if (tempnp < 0.0) dserror("Negative temperature in ScaTra yoghurt material evaluation!");
+    if (tempnp < 0.0) FOUR_C_THROW("Negative temperature in ScaTra yoghurt material evaluation!");
 
     // compute rate of strain
     double rateofstrain = -1.0e30;

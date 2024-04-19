@@ -62,13 +62,13 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     }
 
     Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
-    if (structdis == Teuchos::null) dserror("no structure discretization available");
+    if (structdis == Teuchos::null) FOUR_C_THROW("no structure discretization available");
 
     // first get all Neumann conditions on structure
     structdis->GetCondition("SurfaceNeumannCardiovascular0D", cardiovascular0dstructcoupcond_);
 
     unsigned int numcoupcond = cardiovascular0dstructcoupcond_.size();
-    if (numcoupcond == 0) dserror("no coupling conditions found");
+    if (numcoupcond == 0) FOUR_C_THROW("no coupling conditions found");
 
     std::vector<int> wkID(cardiovascular0dcond_.size());
     for (unsigned int i = 0; i < cardiovascular0dcond_.size(); i++)
@@ -89,7 +89,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
             atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_prescribed)
         {
           if (*condtype[i] == "atrium_left" or *condtype[i] == "atrium_right")
-            dserror(
+            FOUR_C_THROW(
                 "Set ATRIUM_MODEL to '3D' if you want to couple the 0D vascular system to a 3D "
                 "atrial structure!");
         }
@@ -105,56 +105,57 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
             if (cardiovascular0dcond_.size() == 2)
             {
               if (*condtype[0] != "ventricle_left" and *condtype[1] != "ventricle_left")
-                dserror("No left/right ventricle type of condition specified!");
+                FOUR_C_THROW("No left/right ventricle type of condition specified!");
               if (*condtype[0] != "ventricle_right" and *condtype[1] != "ventricle_right")
-                dserror("No left/right ventricle type of condition specified!");
+                FOUR_C_THROW("No left/right ventricle type of condition specified!");
             }
             else
-              dserror("You need 2 conditions (left + right ventricle)!");
+              FOUR_C_THROW("You need 2 conditions (left + right ventricle)!");
           }
           if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d or
               ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_prescribed)
           {
             if (cardiovascular0dcond_.size() == 1)
             {
-              if (*condtype[0] != "dummy") dserror("Only specify 1 dummy condition!");
+              if (*condtype[0] != "dummy") FOUR_C_THROW("Only specify 1 dummy condition!");
             }
             else
-              dserror("You're only allowed to specify 1 (dummy) condition!");
+              FOUR_C_THROW("You're only allowed to specify 1 (dummy) condition!");
           }
         }
         break;
         case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
         {
           if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d)
-            dserror("You cannot use 3D atria with 0D ventricles!");
+            FOUR_C_THROW("You cannot use 3D atria with 0D ventricles!");
 
           if (cardiovascular0dcond_.size() == 4)
           {
             if (*condtype[0] != "atrium_left" and *condtype[1] != "atrium_left" and
                 *condtype[2] != "atrium_left" and *condtype[3] != "atrium_left")
-              dserror(
+              FOUR_C_THROW(
                   "ATRIUM_MODEL is set to '3D' but you don't have a left/right atrium type of "
                   "condition specified!");
             if (*condtype[0] != "atrium_right" and *condtype[1] != "atrium_right" and
                 *condtype[2] != "atrium_right" and *condtype[3] != "atrium_right")
-              dserror(
+              FOUR_C_THROW(
                   "ATRIUM_MODEL is set to '3D' but you don't have a left/right atrium type of "
                   "condition specified!");
 
             if (*condtype[0] != "ventricle_left" and *condtype[1] != "ventricle_left" and
                 *condtype[2] != "ventricle_left" and *condtype[3] != "ventricle_left")
-              dserror("No left/right ventricle type of condition specified!");
+              FOUR_C_THROW("No left/right ventricle type of condition specified!");
             if (*condtype[0] != "ventricle_right" and *condtype[1] != "ventricle_right" and
                 *condtype[2] != "ventricle_right" and *condtype[3] != "ventricle_right")
-              dserror("No left/right ventricle type of condition specified!");
+              FOUR_C_THROW("No left/right ventricle type of condition specified!");
           }
           else
-            dserror("You need 4 conditions (left + right ventricle, and left + right atrium)!");
+            FOUR_C_THROW(
+                "You need 4 conditions (left + right ventricle, and left + right atrium)!");
         }
         break;
         default:
-          dserror("Unknown ATRIUM_MODEL!");
+          FOUR_C_THROW("Unknown ATRIUM_MODEL!");
           break;
       }  // end of switch
     }    // end if (cardiovascular0dtype_ == cardvasc0d_syspulcirculation)
@@ -175,28 +176,30 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     }
 
     if (cardiovascular0dcond_.size() != cardiovascular0dstructcoupcond_.size())
-      dserror(
+      FOUR_C_THROW(
           "Number of cardiovascular 0D conditions has to be equal to number of cardiovascular 0d "
           "structure coupling conditions!");
 
     if (*std::min_element(wkID.begin(), wkID.end()) != 0)
-      dserror("Start your ID numbering from 0 on!");
+      FOUR_C_THROW("Start your ID numbering from 0 on!");
     if (*std::min_element(coupcondID.begin(), coupcondID.end()) != 0)
-      dserror("Start your coupling_id numbering from 0 on!");
+      FOUR_C_THROW("Start your coupling_id numbering from 0 on!");
 
     if (*std::min_element(wkID.begin(), wkID.end()) !=
         *std::min_element(coupcondID.begin(), coupcondID.end()))
-      dserror("Min cardiovascular0d id not equal to min cardiovascular0d structure coupling id!");
+      FOUR_C_THROW(
+          "Min cardiovascular0d id not equal to min cardiovascular0d structure coupling id!");
     if (*std::max_element(wkID.begin(), wkID.end()) !=
         *std::max_element(coupcondID.begin(), coupcondID.end()))
-      dserror("Max cardiovascular0d id not equal to max cardiovascular0d structure coupling id!");
+      FOUR_C_THROW(
+          "Max cardiovascular0d id not equal to max cardiovascular0d structure coupling id!");
 
     if (*std::max_element(wkID.begin(), wkID.end()) !=
         static_cast<int>(cardiovascular0dcond_.size()) - 1)
-      dserror("Max ID should be the number of conditions minus 1!");
+      FOUR_C_THROW("Max ID should be the number of conditions minus 1!");
     if (*std::max_element(coupcondID.begin(), coupcondID.end()) !=
         static_cast<int>(cardiovascular0dstructcoupcond_.size()) - 1)
-      dserror("Max coupling_id should be the number of conditions minus 1!");
+      FOUR_C_THROW("Max coupling_id should be the number of conditions minus 1!");
   }
   else
   {
@@ -228,7 +231,7 @@ UTILS::Cardiovascular0D::Cardiovascular0DType UTILS::Cardiovascular0D::GetCardio
 void UTILS::Cardiovascular0D::Initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
-  dserror("Overridden by derived class!");
+  FOUR_C_THROW("Overridden by derived class!");
   return;
 }
 
@@ -244,7 +247,7 @@ void UTILS::Cardiovascular0D::Evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
-  dserror("Overridden by derived class!");
+  FOUR_C_THROW("Overridden by derived class!");
   return;
 }
 
@@ -273,7 +276,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
     case none:
       return;
     default:
-      dserror("Unknown Cardiovascular0D type to be evaluated in Cardiovascular0D class!");
+      FOUR_C_THROW("Unknown Cardiovascular0D type to be evaluated in Cardiovascular0D class!");
       break;
   }
 
@@ -307,7 +310,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
     std::map<int, Teuchos::RCP<DRT::Element>>& geom = coupcond->Geometry();
-    // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+    // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
@@ -337,7 +340,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
 
       xc.shape(numnode, 3);
 
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement new'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
       Teuchos::RCP<const Epetra_Vector> curdispl = actdisc_->GetState("displacement");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*curdispl, mydisp, lm);
@@ -375,7 +378,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
           gaussrule_ = CORE::FE::GaussRule2D::quad_9point;
           break;
         default:
-          dserror("shape type unknown!\n");
+          FOUR_C_THROW("shape type unknown!\n");
           break;
       }
 
@@ -470,7 +473,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
         case none:
           return;
         default:
-          dserror("Unknown Cardiovascular0D type to be evaluated in Cardiovascular0D class!");
+          FOUR_C_THROW("Unknown Cardiovascular0D type to be evaluated in Cardiovascular0D class!");
           break;
       }
 

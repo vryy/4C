@@ -126,7 +126,7 @@ void STR::TIMINT::Base::Setup()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::Reset()
 {
-  dserror(
+  FOUR_C_THROW(
       "Reset of all class variables is not yet implemented for "
       "the modelevaluator!");
   // ModelEvaluator().Reset();
@@ -174,7 +174,7 @@ void STR::TIMINT::Base::SetRestart(int stepn, double timen, Teuchos::RCP<Epetra_
 {
   CheckInitSetup();
 
-  dserror("SetRestartState() is deprecated, use the ReadRestart() routine instead!");
+  FOUR_C_THROW("SetRestartState() is deprecated, use the ReadRestart() routine instead!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -414,7 +414,7 @@ void STR::TIMINT::Base::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<doub
   // get restart data is only for simple structure problems
   // hence if the model set is larger than one, we throw an error
   if (datasdyn_->GetModelTypes().size() > 1)
-    dserror("The GetRestartData routine supports the structural model case ONLY!");
+    FOUR_C_THROW("The GetRestartData routine supports the structural model case ONLY!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -567,7 +567,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
 
   // ToDo write output on micro-scale (multi-scale analysis)
   //  if (HaveMicroMat())
-  //    dserror("OutputMicro() is not yet implemented!"); // OutputMicro();
+  //    FOUR_C_THROW("OutputMicro() is not yet implemented!"); // OutputMicro();
 }
 
 /*----------------------------------------------------------------------------*
@@ -672,7 +672,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         text = "gauss_2PK_stresses_xyz";
         break;
       default:
-        dserror("Requested stress type is not supported!");
+        FOUR_C_THROW("Requested stress type is not supported!");
         break;
     }
     output_ptr->WriteVector(text, evaldata.StressData(), *(Discretization()->ElementRowMap()));
@@ -695,7 +695,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         text = "gauss_2PK_coupling_stresses_xyz";
         break;
       default:
-        dserror("Requested coupling stress type is not supported!");
+        FOUR_C_THROW("Requested coupling stress type is not supported!");
         break;
     }
     output_ptr->WriteVector(
@@ -722,7 +722,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         text = "gauss_LOG_strains_xyz";
         break;
       default:
-        dserror("Requested strain type is not supported!");
+        FOUR_C_THROW("Requested strain type is not supported!");
         break;
     }
     output_ptr->WriteVector(text, evaldata.StrainData(), *(Discretization()->ElementRowMap()));
@@ -745,7 +745,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         text = "gauss_pl_GL_strains_xyz";
         break;
       default:
-        dserror("Requested plastic strain type is not supported!");
+        FOUR_C_THROW("Requested plastic strain type is not supported!");
         break;
     }
     output_ptr->WriteVector(
@@ -806,7 +806,7 @@ void STR::TIMINT::Base::OutputOptionalQuantity()
         text = "gauss_membrane_thickness";
         break;
       default:
-        dserror("Requested optional quantity type is not supported!");
+        FOUR_C_THROW("Requested optional quantity type is not supported!");
         break;
     }
     output_ptr->WriteVector(text, evaldata.OptQuantityData(), *(Discretization()->ElementRowMap()));

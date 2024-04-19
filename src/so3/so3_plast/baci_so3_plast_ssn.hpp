@@ -304,7 +304,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix* d2q_dT_dd, CORE::LINALG::SerialDenseMatrix* d2q_dT_dn,
           CORE::LINALG::SerialDenseMatrix* d2q_dT_dpxi)
       {
-        dserror("wrong spatial dimension");
+        FOUR_C_THROW("wrong spatial dimension");
       }
 
 
@@ -758,7 +758,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nen_, 1>& Weights() const
       {
-        dsassert(weights_.first, "weights_ not valid");
+        FOUR_C_ASSERT(weights_.first, "weights_ not valid");
         return weights_.second;
       }
       inline CORE::LINALG::Matrix<nen_, 1>& SetWeights()
@@ -769,7 +769,7 @@ namespace DRT
 
       inline const std::vector<CORE::LINALG::SerialDenseVector>& Knots() const
       {
-        dsassert(knots_.first, "weights_ not valid");
+        FOUR_C_ASSERT(knots_.first, "weights_ not valid");
         return knots_.second;
       }
       inline std::vector<CORE::LINALG::SerialDenseVector>& SetKnots()
@@ -801,31 +801,31 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nen_, nsd_>& Xrefe()
       {
-        dsassert(xrefe_.first == true, "xrefe not valid");
+        FOUR_C_ASSERT(xrefe_.first == true, "xrefe not valid");
         return xrefe_.second;
       }
 
       inline const CORE::LINALG::Matrix<nen_, nsd_>& Xcurr()
       {
-        dsassert(xcurr_.first, "xcurr_ not valid");
+        FOUR_C_ASSERT(xcurr_.first, "xcurr_ not valid");
         return xcurr_.second;
       }
 
       inline const CORE::LINALG::Matrix<nen_, nsd_>& XcurrRate()
       {
-        dsassert(xcurr_rate_.first, "xcurr_rate_ not valid");
+        FOUR_C_ASSERT(xcurr_rate_.first, "xcurr_rate_ not valid");
         return xcurr_rate_.second;
       }
 
       inline const CORE::LINALG::Matrix<nen_, 1>& Temp()
       {
-        dsassert(etemp_.first, "etemp not valid");
+        FOUR_C_ASSERT(etemp_.first, "etemp not valid");
         return etemp_.second;
       }
 
       inline const CORE::LINALG::Matrix<nen_, 1>& ShapeFunction() const
       {
-        dsassert(shapefunct_.first, "shape function not valid");
+        FOUR_C_ASSERT(shapefunct_.first, "shape function not valid");
         return shapefunct_.second;
       }
       inline CORE::LINALG::Matrix<nen_, 1>& SetShapeFunction()
@@ -836,7 +836,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nsd_, nen_>& DerivShapeFunction() const
       {
-        dsassert(deriv_.first, "deriv shape function not valid");
+        FOUR_C_ASSERT(deriv_.first, "deriv shape function not valid");
         return deriv_.second;
       }
       inline CORE::LINALG::Matrix<nsd_, nen_>& SetDerivShapeFunction()
@@ -847,7 +847,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nsd_, nen_>& DerivShapeFunctionXYZ() const
       {
-        dsassert(N_XYZ_.first, "deriv shape function not valid");
+        FOUR_C_ASSERT(N_XYZ_.first, "deriv shape function not valid");
         return N_XYZ_.second;
       }
       inline CORE::LINALG::Matrix<nsd_, nen_>& SetDerivShapeFunctionXYZ()
@@ -858,7 +858,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nsd_, nsd_>& InvJ() const
       {
-        dsassert(invJ_.first, "invJ_ not valid");
+        FOUR_C_ASSERT(invJ_.first, "invJ_ not valid");
         return invJ_.second;
       }
       inline CORE::LINALG::Matrix<nsd_, nsd_>& SetInvJ()
@@ -869,7 +869,7 @@ namespace DRT
 
       inline const double& DetJ() const
       {
-        dsassert(detJ_.first, "detJ_ not valid");
+        FOUR_C_ASSERT(detJ_.first, "detJ_ not valid");
         return detJ_.second;
       }
       inline double& SetDetJ()
@@ -880,7 +880,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nsd_, nsd_>& Defgrd() const
       {
-        dsassert(defgrd_.first, "defgrd_ not valid");
+        FOUR_C_ASSERT(defgrd_.first, "defgrd_ not valid");
         return defgrd_.second;
       }
       inline CORE::LINALG::Matrix<nsd_, nsd_>& SetDefgrd()
@@ -891,7 +891,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nsd_, nsd_>& DefgrdMod() const
       {
-        dsassert(defgrd_mod_.first, "defgrd_mod_ not valid");
+        FOUR_C_ASSERT(defgrd_mod_.first, "defgrd_mod_ not valid");
         return defgrd_mod_.second;
       }
       inline CORE::LINALG::Matrix<nsd_, nsd_>& SetDefgrdMod()
@@ -902,7 +902,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nsd_, nsd_>& RCG() const
       {
-        dsassert(rcg_.first, "rcg_ not valid");
+        FOUR_C_ASSERT(rcg_.first, "rcg_ not valid");
         return rcg_.second;
       }
       inline CORE::LINALG::Matrix<nsd_, nsd_>& SetRCG()
@@ -913,7 +913,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nsd_, nsd_>& DeltaLp() const
       {
-        dsassert(delta_Lp_.first, "delta_Lp_ not valid");
+        FOUR_C_ASSERT(delta_Lp_.first, "delta_Lp_ not valid");
         return delta_Lp_.second;
       }
       inline CORE::LINALG::Matrix<nsd_, nsd_>& SetDeltaLp()
@@ -924,7 +924,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<numstr_, numdofperelement_>& Bop() const
       {
-        dsassert(bop_.first, "bop_ not valid");
+        FOUR_C_ASSERT(bop_.first, "bop_ not valid");
         return bop_.second;
       }
       inline CORE::LINALG::Matrix<numstr_, numdofperelement_>& SetBop()
@@ -935,7 +935,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<numstr_, 1>& PK2() const
       {
-        dsassert(pk2_.first, "pk2_ not valid");
+        FOUR_C_ASSERT(pk2_.first, "pk2_ not valid");
         return pk2_.second;
       }
       inline CORE::LINALG::Matrix<numstr_, 1>& SetPK2()
@@ -946,7 +946,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<numstr_, numstr_>& Cmat() const
       {
-        dsassert(cmat_.first, "cmat_ not valid");
+        FOUR_C_ASSERT(cmat_.first, "cmat_ not valid");
         return cmat_.second;
       }
       inline CORE::LINALG::Matrix<numstr_, numstr_>& SetCmat()
@@ -957,7 +957,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nsd_, nen_>& DerivShapeFunctionXYZ_0() const
       {
-        dsassert(N_XYZ_0_.first, "deriv shape function not valid");
+        FOUR_C_ASSERT(N_XYZ_0_.first, "deriv shape function not valid");
         return N_XYZ_0_.second;
       }
       inline CORE::LINALG::Matrix<nsd_, nen_>& SetDerivShapeFunctionXYZ_0()
@@ -968,7 +968,7 @@ namespace DRT
 
       inline const double& DetF() const
       {
-        dsassert(detF_.first, "detF_ not valid");
+        FOUR_C_ASSERT(detF_.first, "detF_ not valid");
         return detF_.second;
       }
       inline double& SetDetF()
@@ -979,7 +979,7 @@ namespace DRT
 
       inline const double& DetF_0() const
       {
-        dsassert(detF_0_.first, "detF_0_ not valid");
+        FOUR_C_ASSERT(detF_0_.first, "detF_0_ not valid");
         return detF_0_.second;
       }
       inline double& SetDetF_0()
@@ -990,7 +990,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nsd_, nsd_>& InvDefgrd() const
       {
-        dsassert(inv_defgrd_.first, "inv_defgrd_ not valid");
+        FOUR_C_ASSERT(inv_defgrd_.first, "inv_defgrd_ not valid");
         return inv_defgrd_.second;
       }
       inline CORE::LINALG::Matrix<nsd_, nsd_>& SetInvDefgrd()
@@ -1001,7 +1001,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nsd_, nsd_>& InvDefgrd_0() const
       {
-        dsassert(inv_defgrd_0_.first, "inv_defgrd_0_ not valid");
+        FOUR_C_ASSERT(inv_defgrd_0_.first, "inv_defgrd_0_ not valid");
         return inv_defgrd_0_.second;
       }
       inline CORE::LINALG::Matrix<nsd_, nsd_>& SetInvDefgrd_0()
@@ -1012,7 +1012,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<nsd_, nsd_>& Jac_0() const
       {
-        dsassert(jac_0_.first, "jac_0_ not valid");
+        FOUR_C_ASSERT(jac_0_.first, "jac_0_ not valid");
         return jac_0_.second;
       }
       inline CORE::LINALG::Matrix<nsd_, nsd_>& SetJac_0()
@@ -1023,7 +1023,7 @@ namespace DRT
 
       inline const double& DetJac_0() const
       {
-        dsassert(det_jac_0_.first, "det_jac_0_ not valid");
+        FOUR_C_ASSERT(det_jac_0_.first, "det_jac_0_ not valid");
         return det_jac_0_.second;
       }
       inline double& SetDetJac_0()
@@ -1034,7 +1034,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<numstr_, 1>& RCGvec() const
       {
-        dsassert(rcg_vec_.first, "rcg_vec_ not valid");
+        FOUR_C_ASSERT(rcg_vec_.first, "rcg_vec_ not valid");
         return rcg_vec_.second;
       }
       inline CORE::LINALG::Matrix<numstr_, 1>& SetRCGvec()
@@ -1045,7 +1045,7 @@ namespace DRT
 
       inline const double& FbarFac() const
       {
-        dsassert(f_bar_fac_.first, "f_bar_fac_ not valid");
+        FOUR_C_ASSERT(f_bar_fac_.first, "f_bar_fac_ not valid");
         return f_bar_fac_.second;
       }
       inline double& SetFbarFac()
@@ -1056,7 +1056,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<numdofperelement_, 1>& Htensor() const
       {
-        dsassert(htensor_.first, "htensor_ not valid");
+        FOUR_C_ASSERT(htensor_.first, "htensor_ not valid");
         return htensor_.second;
       }
       inline CORE::LINALG::Matrix<numdofperelement_, 1>& SetHtensor()
@@ -1086,7 +1086,7 @@ namespace DRT
 
       void SetupFbarGp()
       {
-        if (DetF() < 0. || DetF_0() < 0.) dserror("element distortion too large");
+        if (DetF() < 0. || DetF_0() < 0.) FOUR_C_THROW("element distortion too large");
         SetFbarFac() = pow(DetF_0() / DetF(), 1. / 3.);
         SetDefgrdMod().Update(SetFbarFac(), Defgrd());
         SetHtensor().Clear();
@@ -1099,7 +1099,7 @@ namespace DRT
 
       inline const CORE::LINALG::Matrix<numstr_, numstr_>& T0invT() const
       {
-        dsassert(T0invT_.first, "T0invT_ not valid");
+        FOUR_C_ASSERT(T0invT_.first, "T0invT_ not valid");
         return T0invT_.second;
       }
       inline CORE::LINALG::Matrix<numstr_, numstr_>& SetT0invT()
@@ -1110,7 +1110,7 @@ namespace DRT
 
       inline const CORE::LINALG::SerialDenseMatrix& M_eas() const
       {
-        dsassert(M_eas_.first, "M_eas_ not valid");
+        FOUR_C_ASSERT(M_eas_.first, "M_eas_ not valid");
         return M_eas_.second;
       }
       inline CORE::LINALG::SerialDenseMatrix& SetM_eas()

@@ -306,7 +306,7 @@ namespace CORE::LINALG::VOIGT
     {
       assertRangeVoigtIndex(voigt_row);
       assertRangeVoigtIndex(voigt_col);
-      dsassert(target_index < 4, "target index for fourth order tensor out of range");
+      FOUR_C_ASSERT(target_index < 4, "target index for fourth order tensor out of range");
       static constexpr int FOURTH[6][6][4] = {
           {{0, 0, 0, 0}, {0, 0, 1, 1}, {0, 0, 2, 2}, {0, 0, 0, 1}, {0, 0, 1, 2}, {0, 0, 0, 2}},
           {{1, 1, 0, 0}, {1, 1, 1, 1}, {1, 1, 2, 2}, {1, 1, 0, 1}, {1, 1, 1, 2}, {1, 1, 0, 2}},
@@ -323,13 +323,13 @@ namespace CORE::LINALG::VOIGT
    private:
     static inline void assertRangeMatrixIndex(unsigned int row, unsigned int col)
     {
-      dsassert(row < 3, "given row index out of range [0,2]");
-      dsassert(col < 3, "given col index out of range [0,2]");
+      FOUR_C_ASSERT(row < 3, "given row index out of range [0,2]");
+      FOUR_C_ASSERT(col < 3, "given col index out of range [0,2]");
     }
 
     static inline void assertRangeVoigtIndex(unsigned int index)
     {
-      dsassert(index < 6, "given index out of range [0,5]");
+      FOUR_C_ASSERT(index < 6, "given index out of range [0,5]");
     }
   };
 

@@ -78,14 +78,14 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::Setup()
 void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::ThrowErrorIfNotInitAndSetup()
     const
 {
-  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+  if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::ThrowErrorIfNotInit() const
 {
-  if (!IsInit()) dserror("Init() has not been called, yet!");
+  if (!IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

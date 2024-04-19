@@ -76,8 +76,8 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
     vecSpaces.push_back(StructureField()->DofRowMap());
     vecSpaces.push_back(FluidField()->DofRowMap());
 
-    if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No structure equation. Panic.");
-    if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
+    if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
+    if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
 
     // full Poroelasticity-map
     fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
@@ -241,9 +241,9 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix(
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix");
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> s = StructureField()->SystemMatrix();
-  if (s == Teuchos::null) dserror("expect structure matrix");
+  if (s == Teuchos::null) FOUR_C_THROW("expect structure matrix");
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> f = FluidField()->BlockSystemMatrix();
-  if (f == Teuchos::null) dserror("expect fluid block matrix");
+  if (f == Teuchos::null) FOUR_C_THROW("expect fluid block matrix");
 
   // Get Idx of fluid and structure field map extractor
   const int& fidx_other = FLD::UTILS::MapExtractor::cond_other;
@@ -524,7 +524,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  if (err > 0) FOUR_C_THROW("ERROR: Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd->ReplaceDiagonalValues(*diag);

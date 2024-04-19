@@ -28,7 +28,7 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
   if (ndim != 3)
-    dserror("Problem defined as %dd, but found Reduced dimensional AIRWAY element.", ndim);
+    FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional AIRWAY element.", ndim);
 
   // Read number of material model
   int material = 0;
@@ -93,7 +93,7 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Reading type of RED_AIRWAY element failed. Possible types: ComplientResistive/"
         "PoiseuilleResistive/TurbulentPoiseuilleResistive/InductoResistive/RLC/ViscoElasticRLC/"
         "ConvectiveViscoElasticRLC");
@@ -112,7 +112,7 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
   if (ndim != 3)
-    dserror("Problem defined as %dd, but found Reduced dimensional ACINUS element.", ndim);
+    FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional ACINUS element.", ndim);
 
   // Read number of material model
   int material = 0;
@@ -144,7 +144,7 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Reading type of RED_ACINUS element failed. Possible types: NeoHookean/ Exponential"
         "/ DoubleExponential/ VolumetricOgden");
     exit(1);
@@ -162,7 +162,7 @@ bool DRT::ELEMENTS::RedInterAcinarDep::ReadElement(
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
   if (ndim != 3)
-    dserror(
+    FOUR_C_THROW(
         "Problem defined as %dd, but found Reduced dimensional INTER ACINAR DEPENDENCE element.",
         ndim);
 
@@ -188,7 +188,7 @@ bool DRT::ELEMENTS::RedAirBloodScatra::ReadElement(
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
   if (ndim != 3)
-    dserror("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
+    FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
 
   // read number of material model
   const int generation = -2;
@@ -218,7 +218,7 @@ bool DRT::ELEMENTS::RedAirBloodScatraLine3::ReadElement(
 {
   const int ndim = GLOBAL::Problem::Instance()->NDim();
   if (ndim != 3)
-    dserror("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
+    FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
 
   double diff = 0.0;
   linedef->ExtractDouble("DiffusionCoefficient", diff);

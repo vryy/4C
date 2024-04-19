@@ -110,7 +110,7 @@ void MAT::StructPoroReaction::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::StructPoroReaction*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -151,7 +151,7 @@ void MAT::StructPoroReaction::ConstitutiveDerivatives(Teuchos::ParameterList& pa
     double* W)
 {
   if (porosity == 0.0)
-    dserror(
+    FOUR_C_THROW(
         "porosity equals zero!! Wrong initial porosity? (or wrong collagen density for ecm "
         "material)");
 
@@ -239,7 +239,7 @@ bool MAT::StructPoroReaction::VisData(
   if (StructPoro::VisData(name, data, numgp, eleID)) return true;
   if (name == "reference_porosity")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     data[0] = RefPorosityAv();
     return true;
   }

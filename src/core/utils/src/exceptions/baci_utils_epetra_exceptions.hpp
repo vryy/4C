@@ -37,7 +37,7 @@ void set_trace_back_mode(int tracebackmode);
     int epetra_error = a;                                                                         \
     if (epetra_error < 0)                                                                         \
     {                                                                                             \
-      dserror("EPETRA_ERROR %d caught!", epetra_error);                                           \
+      FOUR_C_THROW("EPETRA_ERROR %d caught!", epetra_error);                                      \
     }                                                                                             \
     else if (epetra_error > 0)                                                                    \
     {                                                                                             \

@@ -127,7 +127,7 @@ namespace MAT
     */
     virtual void Setup(INPUT::LineDefinition* linedef)
     {
-      dserror(
+      FOUR_C_THROW(
           "Setup not implemented yet! Check your material type, "
           "maybe you are still using the base class MAT_0D_MAXWELL_ACINUS.");
     }
@@ -141,7 +141,7 @@ namespace MAT
         const DRT::REDAIRWAYS::ElemParams& params, const double NumOfAcini, const double Vo,
         double time, double dt)
     {
-      dserror("Evaluate not implemented yet !");
+      FOUR_C_THROW("Evaluate not implemented yet !");
     }
 
     //@}

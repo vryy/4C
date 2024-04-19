@@ -33,7 +33,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::Creat
   // parameter is set in the input file.
   INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->GetStrategy();
   if (strategy != INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section)
-    dserror(
+    FOUR_C_THROW(
         "The 2D-3D beam-to-volume mesh tying pair only works with the cross section projection "
         "geometry pair. This has to be specified in the input file.");
   this->geometry_pair_ = Teuchos::rcp(

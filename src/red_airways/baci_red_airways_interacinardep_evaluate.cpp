@@ -42,7 +42,7 @@ int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
   // get the action required
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_sys_matrix_rhs")
     act = RedInterAcinarDep::calc_sys_matrix_rhs;
   else if (action == "calc_sys_matrix_rhs_iad")
@@ -77,7 +77,7 @@ int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
     sprintf(
         errorout, "Unknown type of action (%s) for inter-acinar linker element", action.c_str());
 
-    dserror(errorout);
+    FOUR_C_THROW(errorout);
   }
 
   /*
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     default:
-      dserror("Unknown type of action for reduced dimensional acinuss");
+      FOUR_C_THROW("Unknown type of action for reduced dimensional acinuss");
       break;
   }  // end of switch(act)
 
@@ -206,7 +206,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::getOptimalGaussrule(
       rule = CORE::FE::GaussRule1D::line_3point;
       break;
     default:
-      dserror("Unknown number of nodes for Gaussrule initialization in inter-acinar linker.");
+      FOUR_C_THROW("Unknown number of nodes for Gaussrule initialization in inter-acinar linker.");
       break;
   }
   return rule;
@@ -229,7 +229,7 @@ bool DRT::ELEMENTS::RedInterAcinarDep::isHigherOrderElement(const CORE::FE::Cell
       hoel = false;
       break;
     default:
-      dserror("distype unknown!");
+      FOUR_C_THROW("distype unknown!");
       break;
   }
   return hoel;

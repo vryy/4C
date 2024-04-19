@@ -88,9 +88,9 @@ To give you an idea on how good we are doing, the following estimates are used t
 
 |FOURC| is **not** an ideal code project.
 
-Take for example ``dserror`` statements. ``dserror`` statements can only be tested with unit tests but not all code in |FOURC| is testable with unit tests.
-Therefore, ``dserror`` statements might decrease code coverage because they can add untestable lines of code.
-However, adding ``dserror`` statements as safety checks for valid parameter choices in
+Take for example ``FOUR_C_THROW`` statements. ``FOUR_C_THROW`` statements can only be tested with unit tests but not all code in |FOURC| is testable with unit tests.
+Therefore, ``FOUR_C_THROW`` statements might decrease code coverage because they can add untestable lines of code.
+However, adding ``FOUR_C_THROW`` statements as safety checks for valid parameter choices in
 fact increases code quality. 
 
 .. _code_coverage:

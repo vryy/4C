@@ -141,7 +141,7 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate(const Teuchos::ParameterList
       probtype == GLOBAL::ProblemType::ac_fsi or probtype == GLOBAL::ProblemType::biofilm_fsi or
       probtype == GLOBAL::ProblemType::thermo_fsi)
   {
-    dserror("no explicit time integration with fsi");
+    FOUR_C_THROW("no explicit time integration with fsi");
   }
 
   // create specific time integrator

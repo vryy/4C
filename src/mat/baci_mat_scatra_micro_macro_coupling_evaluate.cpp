@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 void MAT::ScatraMicroMacroCoupling::Initialize(const int ele_id, const int gp_id, const bool is_ale)
 {
   // safety check
-  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // initialize multi-scale scalar transport material
   if (matgp_.find(gp_id) == matgp_.end())
@@ -52,7 +52,7 @@ void MAT::ScatraMicroMacroCoupling::PrepareTimeStep(
     const int gp_id, const std::vector<double>& phinp_macro) const
 {
   // safety check
-  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // prepare time step on micro scale
   matgp_.at(gp_id)->PrepareTimeStep(phinp_macro);
@@ -65,7 +65,7 @@ void MAT::ScatraMicroMacroCoupling::Evaluate(const int gp_id,
     const double detF, const bool solve) const
 {
   // safety check
-  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // evaluate multi-scale scalar transport sub material at macro-scale Gauss point
   matgp_.at(gp_id)->Evaluate(phinp_macro, q_micro, dq_dphi_micro, detF, solve);
@@ -77,7 +77,7 @@ void MAT::ScatraMicroMacroCoupling::Evaluate(const int gp_id,
 double MAT::ScatraMicroMacroCoupling::EvaluateMeanConcentration(const int gp_id) const
 {
   // safety check
-  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // evaluate mean concentration on micro scale
   return matgp_.at(gp_id)->EvaluateMeanConcentration();
@@ -88,7 +88,7 @@ double MAT::ScatraMicroMacroCoupling::EvaluateMeanConcentration(const int gp_id)
 double MAT::ScatraMicroMacroCoupling::EvaluateMeanConcentrationTimeDerivative(const int gp_id) const
 {
   // safety check
-  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // evaluate mean concentration time derivative on micro scale
   return matgp_.at(gp_id)->EvaluateMeanConcentrationTimeDerivative();
@@ -99,7 +99,7 @@ double MAT::ScatraMicroMacroCoupling::EvaluateMeanConcentrationTimeDerivative(co
 void MAT::ScatraMicroMacroCoupling::Update(const int gp_id) const
 {
   // safety check
-  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // update multi-scale scalar transport submaterial at macro-scale Gauss point
   matgp_.at(gp_id)->Update();
@@ -110,7 +110,7 @@ void MAT::ScatraMicroMacroCoupling::Update(const int gp_id) const
 void MAT::ScatraMicroMacroCoupling::Output(const int gp_id) const
 {
   // safety check
-  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // create output on micro scale
   matgp_.at(gp_id)->Output();
@@ -121,7 +121,7 @@ void MAT::ScatraMicroMacroCoupling::Output(const int gp_id) const
 void MAT::ScatraMicroMacroCoupling::ReadRestart(const int gp_id) const
 {
   // safety check
-  if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
+  if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");
 
   // read restart on micro scale
   matgp_.at(gp_id)->ReadRestart();

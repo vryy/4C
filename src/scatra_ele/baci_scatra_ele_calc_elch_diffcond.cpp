@@ -71,7 +71,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::ScaTraEleCalcElchDif
       break;
     default:
     {
-      dserror("Invalid closing equation for electric potential!");
+      FOUR_C_THROW("Invalid closing equation for electric potential!");
       break;
     }
   }
@@ -80,13 +80,13 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::ScaTraEleCalcElchDif
   if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization or
       my::scatrapara_->TauDef() != INPAR::SCATRA::tau_zero)
   {
-    dserror(
+    FOUR_C_THROW(
         "No stabilization available for the diffusion-conduction formulation, since we had no "
         "problems so far.");
   }
   if (my::scatrapara_->MatGP() == false or my::scatrapara_->TauGP() == false)
   {
-    dserror(
+    FOUR_C_THROW(
         "Since most of the materials of the Diffusion-conduction formulation depend on the "
         "concentration,\n"
         "an evaluation of the material and the stabilization parameter at the element center is "
@@ -315,7 +315,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhsOu
       }
     }
     else
-      dserror("(div i, ENC) are the options available in the Diffusion-Conduction framework");
+      FOUR_C_THROW("(div i, ENC) are the options available in the Diffusion-Conduction framework");
   }
   // equation for current is solved independently
   else
@@ -373,7 +373,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhsOu
       }
     }
     else
-      dserror("(div i, ENC) are the options available in the Diffusion-Conduction framework");
+      FOUR_C_THROW("(div i, ENC) are the options available in the Diffusion-Conduction framework");
   }
 }
 
@@ -436,7 +436,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondConc
 {
   // additional safety check in the beginning for Newman materials
   if (k != 0)
-    dserror("Material Newman is only valid for one scalar (binary electrolyte utilizing the ENC)");
+    FOUR_C_THROW(
+        "Material Newman is only valid for one scalar (binary electrolyte utilizing the ENC)");
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -676,7 +677,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatPotEquDi
         }
       }
       else
-        dserror("Diffusion-Conduction material is not specified");
+        FOUR_C_THROW("Diffusion-Conduction material is not specified");
     }
   }
 }
@@ -855,7 +856,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquCo
             }
           }
           else
-            dserror("Diffusion-Conduction material is not specified");
+            FOUR_C_THROW("Diffusion-Conduction material is not specified");
         }
       }
     }  // for ui
@@ -994,7 +995,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsPotEquDi
           laplawf2;
     }
     else
-      dserror("Diffusion-Conduction material is not specified");
+      FOUR_C_THROW("Diffusion-Conduction material is not specified");
   }
 }
 
@@ -1092,7 +1093,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquCo
           }
         }
         else
-          dserror("Diffusion-Conduction material is not specified");
+          FOUR_C_THROW("Diffusion-Conduction material is not specified");
       }
     }
   }
@@ -1196,7 +1197,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::GetMaterialPara
         DiffManager(), diffcondmat_);
   }
   else
-    dserror("Invalid material type!");
+    FOUR_C_THROW("Invalid material type!");
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams
 
 

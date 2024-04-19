@@ -42,7 +42,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
   int numdim = params_.get<int>("number of velocity degrees of freedom");
   if (numdim != 3)
   {
-    dserror("Evaluation of turbulence statistics only for 3d flows!");
+    FOUR_C_THROW("Evaluation of turbulence statistics only for 3d flows!");
   }
 
   //----------------------------------------------------------------------
@@ -71,7 +71,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
     }
     else
     {
-      dserror("homogeneous direction for this flow was specified incorrectly. (need z)");
+      FOUR_C_THROW("homogeneous direction for this flow was specified incorrectly. (need z)");
     }
   }
 
@@ -99,7 +99,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
 
   if (nurbsdis == nullptr)
   {
-    dserror("Need Nurbs mesh for turbulent flows around a circular cylinder\n");
+    FOUR_C_THROW("Need Nurbs mesh for turbulent flows around a circular cylinder\n");
   }
   else
   {
@@ -296,7 +296,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
           break;
         }
         default:
-          dserror(
+          FOUR_C_THROW(
               "Unknown element shape for a nurbs element or nurbs type not valid for turbulence "
               "calculation\n");
       }
@@ -328,7 +328,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
       {
         if (fabs(nodeshells_numnodes[rr]) < 1e-9)
         {
-          dserror("zero nodes in shell layer %d\n", rr);
+          FOUR_C_THROW("zero nodes in shell layer %d\n", rr);
         }
 
         (*nodeshells_)[rr] /= (double)(nodeshells_numnodes[rr]);
@@ -339,7 +339,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
       {
         if (fabs(shellcoordinates_numnodes[rr]) < 1e-9)
         {
-          dserror("zero nodes in sampling shell layer %d\n", rr);
+          FOUR_C_THROW("zero nodes in sampling shell layer %d\n", rr);
         }
 
         (*shellcoordinates_)[rr] /= (double)(shellcoordinates_numnodes[rr]);
@@ -485,15 +485,15 @@ void FLD::TurbulenceStatisticsCcy::DoTimeSample(Teuchos::RCP<Epetra_Vector> veln
     if (scanp != Teuchos::null)
       meanscanp_->Update(1.0, *scanp, 0.0);
     else
-      dserror("Vector scanp is Teuchos::null");
+      FOUR_C_THROW("Vector scanp is Teuchos::null");
 
     if (fullphinp != Teuchos::null)
     {
       int err = meanfullphinp_->Update(1.0, *fullphinp, 0.0);
-      if (err) dserror("Could not update meanfullphinp_");
+      if (err) FOUR_C_THROW("Could not update meanfullphinp_");
     }
     else
-      dserror("Vector fullphinp is Teuchos::null");
+      FOUR_C_THROW("Vector fullphinp is Teuchos::null");
   }
 
   //----------------------------------------------------------------------
@@ -573,7 +573,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
 
-  if (nurbsdis == nullptr) dserror("Oops. Your discretization is not a NurbsDiscretization.");
+  if (nurbsdis == nullptr) FOUR_C_THROW("Oops. Your discretization is not a NurbsDiscretization.");
 
   nurbsdis->SetState("velnp", meanvelnp_);
 
@@ -584,10 +584,10 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
     scatranurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*scatradis_));
     if (scatranurbsdis == nullptr)
-      dserror("Oops. Your discretization is not a NurbsDiscretization.");
+      FOUR_C_THROW("Oops. Your discretization is not a NurbsDiscretization.");
 
     if (meanfullphinp_ == Teuchos::null)
-      dserror("Teuchos::RCP is Teuchos::null");
+      FOUR_C_THROW("Teuchos::RCP is Teuchos::null");
     else
       scatranurbsdis->SetState("phinp_for_statistics", meanfullphinp_);
 
@@ -595,7 +595,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     {
       scatranurbsdis->DofRowMap()->Print(std::cout);
       meanfullphinp_->Map().Print(std::cout);
-      dserror("Global dof numbering in maps does not match");
+      FOUR_C_THROW("Global dof numbering in maps does not match");
     }
   }
 
@@ -702,7 +702,8 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
       // get pointer to corresponding scatra element with identical global id
       DRT::Element* const actscatraele = scatranurbsdis->gElement(gid);
-      if (actscatraele == nullptr) dserror("could not access transport element with gid %d", gid);
+      if (actscatraele == nullptr)
+        FOUR_C_THROW("could not access transport element with gid %d", gid);
 
       // extract local values from the global vectors
       std::vector<int> scatralm;
@@ -712,7 +713,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
       actscatraele->LocationVector(*scatranurbsdis, scatralm, scatralmowner, scatralmstride);
 
       Teuchos::RCP<const Epetra_Vector> phinp = scatranurbsdis->GetState("phinp_for_statistics");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp' for statistics");
+      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp' for statistics");
       std::vector<double> myphinp(scatralm.size());
       CORE::FE::ExtractMyValues(*phinp, myphinp, scatralm);
 
@@ -831,7 +832,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
             std::map<double, int, PlaneSortCriterion>::iterator shell = countpoints.find(r);
             if (shell == countpoints.end())
             {
-              dserror("radial coordinate %12.5e was not map\n", r);
+              FOUR_C_THROW("radial coordinate %12.5e was not map\n", r);
             }
             else
             {
@@ -927,7 +928,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
               std::map<double, int, PlaneSortCriterion>::iterator shell = countpoints.find(r);
               if (shell == countpoints.end())
               {
-                dserror("radial coordinate %12.5e was not map\n", r);
+                FOUR_C_THROW("radial coordinate %12.5e was not map\n", r);
               }
               else
               {
@@ -1028,7 +1029,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
               std::map<double, int, PlaneSortCriterion>::iterator shell = countpoints.find(r);
               if (shell == countpoints.end())
               {
-                dserror("radial coordinate %12.5e was not map\n", r);
+                FOUR_C_THROW("radial coordinate %12.5e was not map\n", r);
               }
               else
               {
@@ -1055,7 +1056,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
         break;
       }
       default:
-        dserror(
+        FOUR_C_THROW(
             "Unknown element shape for a nurbs element or nurbs type not valid for turbulence "
             "calculation\n");
     }
@@ -1130,7 +1131,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
   {
     if (fabs(pointcount[rr]) < 1e-6)
     {
-      dserror("zero pointcount during computation of averages, layer %d\n", rr);
+      FOUR_C_THROW("zero pointcount during computation of averages, layer %d\n", rr);
     }
 
     lmeanu.push_back(shell->second / pointcount[rr]);
@@ -1274,10 +1275,10 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
     // safety checks
     if ((size != pointsumphi_->numRows()) or (size != pointsumphiphi_->numRows()))
-      dserror("Size mismatch: size = %d <-> M = %d", size, pointsumphi_->numRows());
+      FOUR_C_THROW("Size mismatch: size = %d <-> M = %d", size, pointsumphi_->numRows());
     if ((numscatradofpernode_ != pointsumphi_->numCols()) or
         (numscatradofpernode_ != pointsumphiphi_->numCols()))
-      dserror(
+      FOUR_C_THROW(
           "Size mismatch: numdof = %d <-> N = %d", numscatradofpernode_, pointsumphi_->numCols());
 
     // loop all available scatra fields
@@ -1333,7 +1334,7 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
 {
   if (numsamp_ == 0)
   {
-    dserror("No samples to do time average");
+    FOUR_C_THROW("No samples to do time average");
   }
 
   //----------------------------------------------------------------------
@@ -1464,7 +1465,7 @@ void FLD::TurbulenceStatisticsCcy::ClearStatistics()
     }
 
     if (meanscanp_ == Teuchos::null)
-      dserror("meanscanp_ is Teuchos::null");
+      FOUR_C_THROW("meanscanp_ is Teuchos::null");
     else
       meanscanp_->PutScalar(0.0);
 
@@ -1494,7 +1495,7 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
   if (withscatra_)
   {
     if (scatradis == Teuchos::null)
-      dserror("Halleluja.");
+      FOUR_C_THROW("Halleluja.");
     else
       scatradis_ = scatradis;  // now we have access
 

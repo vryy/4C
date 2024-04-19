@@ -42,14 +42,14 @@ namespace MORTAR
     bool LocalToGlobal(MORTAR::Element& ele, const double* xi, double* globcoord, int inttype)
     {
       // check input
-      if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
-      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
+      if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
+      if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
 
       static constexpr int n = CORE::FE::num_nodes<distype>;
       static constexpr int ndim = CORE::FE::dim<distype> + 1;
 
       DRT::Node** mynodes = ele.Points();
-      if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
+      if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       std::fill(globcoord, globcoord + ndim, 0.0);
 
@@ -112,7 +112,7 @@ namespace MORTAR
             }
             default:
             {
-              dserror("Wrong Dimension");
+              FOUR_C_THROW("Wrong Dimension");
               exit(EXIT_FAILURE);
             }
           }
@@ -120,7 +120,7 @@ namespace MORTAR
           for (int i = 0; i < n; ++i)
           {
             Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
-            dsassert(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
+            FOUR_C_ASSERT(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
 
             for (int j = 0; j < ndim; ++j)
             {
@@ -189,14 +189,14 @@ namespace MORTAR
             }
             default:
             {
-              dserror("Wrong Dimension");
+              FOUR_C_THROW("Wrong Dimension");
               break;
             }
           }
           for (int i = 0; i < n; ++i)
           {
             Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
-            dsassert(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
+            FOUR_C_ASSERT(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
 
             for (int j = 0; j < ndim; ++j)
             {
@@ -264,7 +264,7 @@ namespace MORTAR
             }
             default:
             {
-              dserror("Wrong Dimension");
+              FOUR_C_THROW("Wrong Dimension");
               exit(EXIT_FAILURE);
             }
           }
@@ -272,7 +272,7 @@ namespace MORTAR
           for (int i = 0; i < n; ++i)
           {
             Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
-            dsassert(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
+            FOUR_C_ASSERT(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
 
             if constexpr (ndim > 2)
             {
@@ -283,13 +283,13 @@ namespace MORTAR
               }
             }
             else
-              dserror("Not implemented.");
+              FOUR_C_THROW("Not implemented.");
           }
           break;
         }
         default:
         {
-          dserror("ERROR: Invalid interpolation type requested, only 0,1,2!");
+          FOUR_C_THROW("ERROR: Invalid interpolation type requested, only 0,1,2!");
           exit(EXIT_FAILURE);
         }
       }
@@ -304,14 +304,14 @@ namespace MORTAR
     bool LocalToGlobal(DRT::Element& ele, const double* xi, double* globcoord)
     {
       // check input
-      if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
-      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
+      if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
+      if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
 
       static constexpr int n = CORE::FE::num_nodes<distype>;
       static constexpr int ndim = CORE::FE::dim<distype> + 1;
 
       DRT::Node** mynodes = ele.Nodes();
-      if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
+      if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;
 
@@ -323,7 +323,7 @@ namespace MORTAR
       else if (ndim == 3)
         CORE::FE::shape_function_2D(val, xi[0], xi[1], distype);
       else
-        dserror("Wrong Dimension");
+        FOUR_C_THROW("Wrong Dimension");
 
       for (int i = 0; i < n; ++i)
       {
@@ -357,18 +357,18 @@ namespace MORTAR
         const std::vector<double> edisp, double* globcoord)
     {
       // check input
-      if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
-      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
+      if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
+      if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
 
       static constexpr int n = CORE::FE::num_nodes<distype>;
       static constexpr int ndim = CORE::FE::dim<distype>;
 
       if ((int)edisp.size() != n * globdim)
-        dserror("ERROR: vector of element displacements has wrong dimension (%d != %d)",
+        FOUR_C_THROW("ERROR: vector of element displacements has wrong dimension (%d != %d)",
             n * globdim, edisp.size());
 
       DRT::Node** mynodes = ele.Nodes();
-      if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
+      if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < globdim; ++i) globcoord[i] = 0.0;
 
@@ -383,7 +383,7 @@ namespace MORTAR
         CORE::FE::shape_function_3D(val, xi[0], xi[1], xi[2], distype);
 
       else
-        dserror("Wrong Dimension");
+        FOUR_C_THROW("Wrong Dimension");
 
       for (int i = 0; i < n; ++i)
       {
@@ -441,7 +441,7 @@ namespace MORTAR
         }
         else
         {
-          dserror("ERROR: Element type not supported for parameter space mapping!");
+          FOUR_C_THROW("ERROR: Element type not supported for parameter space mapping!");
         }
       }
 
@@ -471,7 +471,7 @@ namespace MORTAR
           CORE::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
-          dserror("ERROR");
+          FOUR_C_THROW("ERROR");
 
         for (int k = 0; k < numnod; ++k)
           for (int p = 0; p < ndim; ++p)
@@ -501,11 +501,11 @@ namespace MORTAR
         // solve equation
         if (abs(xjm.Determinant()) < 1e-15)
         {
-          dserror("*** WARNING: jacobi singular ***");
+          FOUR_C_THROW("*** WARNING: jacobi singular ***");
         }
 
         double xjm_invert = xjm.Invert();
-        if (abs(xjm_invert) < 1e-12) dserror("ERROR: Singular Jacobian for advection map");
+        if (abs(xjm_invert) < 1e-12) FOUR_C_THROW("ERROR: Singular Jacobian for advection map");
 
         double deltaxi[ndim];
         for (int p = 0; p < ndim; ++p) deltaxi[p] = 0.0;
@@ -520,7 +520,7 @@ namespace MORTAR
       }  // end loop
       //************************************************
 
-      if (!converged) dserror("Evaluation of element coordinates not converged!");
+      if (!converged) FOUR_C_THROW("Evaluation of element coordinates not converged!");
 
       return;
     };
@@ -572,7 +572,7 @@ namespace MORTAR
         }
         else
         {
-          dserror("ERROR: Element type not supported for parameter space mapping!");
+          FOUR_C_THROW("ERROR: Element type not supported for parameter space mapping!");
         }
       }
       double rhs[ndim];
@@ -598,7 +598,7 @@ namespace MORTAR
           CORE::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
-          dserror("ERROR");
+          FOUR_C_THROW("ERROR");
 
         for (int k = 0; k < numnod; ++k)
           for (int p = 0; p < ndim; ++p)
@@ -626,13 +626,13 @@ namespace MORTAR
                     << std::endl;
           std::cout << "JAC= " << xjm.Determinant() << std::endl;
           std::cout << "CONVERGED= " << converged << std::endl;
-          //       dserror("*** WARNING: jacobi singular ***");
+          //       FOUR_C_THROW("*** WARNING: jacobi singular ***");
           converged = false;
           break;
         }
 
         double xjm_invert = xjm.Invert();
-        if (abs(xjm_invert) < 1e-15) dserror("ERROR: Singular Jacobian");
+        if (abs(xjm_invert) < 1e-15) FOUR_C_THROW("ERROR: Singular Jacobian");
 
         double deltaxi[3];
         for (int p = 0; p < ndim; ++p) deltaxi[p] = 0.0;
@@ -702,7 +702,7 @@ namespace MORTAR
           CORE::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
-          dserror("ERROR");
+          FOUR_C_THROW("ERROR");
 
         for (int k = 0; k < numnod; ++k)
           for (int p = 0; p < ndim; ++p)
@@ -727,13 +727,13 @@ namespace MORTAR
                     << std::endl;
           std::cout << "JAC= " << xjm.Determinant() << std::endl;
           std::cout << "CONVERGED= " << converged << std::endl;
-          //       dserror("*** WARNING: jacobi singular ***");
+          //       FOUR_C_THROW("*** WARNING: jacobi singular ***");
           converged = false;
           break;
         }
 
         double xjm_invert = xjm.Invert();
-        if (abs(xjm_invert) < 1e-15) dserror("ERROR: Singular Jacobian");
+        if (abs(xjm_invert) < 1e-15) FOUR_C_THROW("ERROR: Singular Jacobian");
 
         double deltaxi[3];
         for (int p = 0; p < ndim; ++p) deltaxi[p] = 0.0;

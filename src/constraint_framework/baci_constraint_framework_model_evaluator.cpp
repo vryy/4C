@@ -96,7 +96,7 @@ void STR::MODELEVALUATOR::Constraints::CreateSubModelEvaluators()
 
       default:
       {
-        dserror(
+        FOUR_C_THROW(
             "Something went wrong: Apparently a Constraint ME was created that is not "
             "required. Check the Adapter");
       }
@@ -232,7 +232,7 @@ void STR::MODELEVALUATOR::Constraints::DetermineStressStrain() {}
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Constraints::DetermineEnergy()
 {
-  dserror("This function is not implemented");
+  FOUR_C_THROW("This function is not implemented");
 }
 
 /*----------------------------------------------------------------------------*
@@ -242,7 +242,7 @@ void STR::MODELEVALUATOR::Constraints::DetermineOptionalQuantity() {}
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Constraints::ResetStepState()
 {
-  dserror("This function is not implemented");
+  FOUR_C_THROW("This function is not implemented");
 }
 
 /*----------------------------------------------------------------------------*
@@ -268,7 +268,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Constraints::GetBlockDofRowM
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Constraints::GetCurrentSolutionPtr() const
 {
-  dserror("This function is not yet implemented");
+  FOUR_C_THROW("This function is not yet implemented");
 }
 
 /*----------------------------------------------------------------------------*
@@ -276,7 +276,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Constraints::GetCurrentSo
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Constraints::GetLastTimeStepSolutionPtr()
     const
 {
-  dserror("This function is not yet implemented");
+  FOUR_C_THROW("This function is not yet implemented");
 }
 
 /*----------------------------------------------------------------------------*
@@ -287,7 +287,7 @@ void STR::MODELEVALUATOR::Constraints::PostOutput() {}
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Constraints::EvaluateJacobianContributionsFromElementLevelForPTC()
 {
-  dserror("This function is not yet implemented");
+  FOUR_C_THROW("This function is not yet implemented");
 }
 
 /*----------------------------------------------------------------------------*
@@ -295,21 +295,21 @@ void STR::MODELEVALUATOR::Constraints::EvaluateJacobianContributionsFromElementL
 void STR::MODELEVALUATOR::Constraints::AssembleJacobianContributionsFromElementLevelForPTC(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n)
 {
-  dserror("This function is not yet implemented");
+  FOUR_C_THROW("This function is not yet implemented");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Constraints::CreateBackupState(const Epetra_Vector& dir)
 {
-  dserror("This function is not yet implemented");
+  FOUR_C_THROW("This function is not yet implemented");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Constraints::RecoverFromBackupState()
 {
-  dserror("This function is not yet implemented");
+  FOUR_C_THROW("This function is not yet implemented");
 }
 
 FOUR_C_NAMESPACE_CLOSE

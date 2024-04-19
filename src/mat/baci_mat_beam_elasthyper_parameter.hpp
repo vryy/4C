@@ -168,7 +168,7 @@ namespace MAT
       double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
-          dserror(
+          FOUR_C_THROW(
               "the radius of a beam which is to be used for interactions (contact, potentials, "
               "viscous drag in background fluid ...) has not been specified in the material "
               "definition!");
@@ -256,7 +256,7 @@ namespace MAT
       double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
-          dserror(
+          FOUR_C_THROW(
               "the radius of a beam which is to be used for interactions (contact, potentials, "
               "viscous drag in background fluid ...) has not been specified in the material "
               "definition!");
@@ -355,7 +355,7 @@ namespace MAT
       double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
-          dserror(
+          FOUR_C_THROW(
               "the radius of a beam which is to be used for interactions (contact, potentials, "
               "viscous drag in background fluid ...) has not been specified in the material "
               "definition!");
@@ -434,7 +434,7 @@ namespace MAT
       double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
-          dserror(
+          FOUR_C_THROW(
               "the radius of a beam which is to be used for interactions (contact, potentials, "
               "viscous drag in background fluid ...) has not been specified in the material "
               "definition!");
@@ -518,7 +518,7 @@ namespace MAT
       double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
-          dserror(
+          FOUR_C_THROW(
               "the radius of a beam which is to be used for interactions (contact, potentials, "
               "viscous drag in background fluid ...) has not been specified in the material "
               "definition!");
@@ -592,7 +592,7 @@ namespace MAT
       double GetInteractionRadius() const override
       {
         if (radius_interaction_ == -1.0)
-          dserror(
+          FOUR_C_THROW(
               "the radius of a beam which is to be used for interactions (contact, potentials, "
               "viscous drag in background fluid ...) has not been specified in the material "
               "definition!");

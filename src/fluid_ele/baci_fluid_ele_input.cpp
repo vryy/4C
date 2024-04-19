@@ -39,7 +39,7 @@ bool DRT::ELEMENTS::Fluid::ReadElement(
   else if (na == "euler" or na == "EULER" or na == "Euler")
     is_ale_ = false;
   else
-    dserror("Reading of fluid element failed: Euler/Ale");
+    FOUR_C_THROW("Reading of fluid element failed: Euler/Ale");
 
   return true;
 }

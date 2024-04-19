@@ -180,13 +180,13 @@ namespace IO
     /// Throw if Init() has not been called.
     inline void ThrowIfNotInitialized(const int line) const
     {
-      if (not isinit_) dserror("LINE %d: Call Init() first!", line);
+      if (not isinit_) FOUR_C_THROW("LINE %d: Call Init() first!", line);
     }
 
     /// Throw if Setup() has not been called.
     inline void ThrowIfNotSetup(const int line) const
     {
-      if (not issetup_) dserror("LINE %d: Call Setup() first!", line);
+      if (not issetup_) FOUR_C_THROW("LINE %d: Call Setup() first!", line);
     }
 
     /// Returns true if the current load/time step is supposed to be written.
@@ -205,7 +205,7 @@ namespace IO
     /// Read-only access to the parent discretization writer.
     const IO::DiscretizationWriter& ParentWriter() const
     {
-      if (not parent_writer_) dserror("The parent writer has not been initialized correctly.");
+      if (not parent_writer_) FOUR_C_THROW("The parent writer has not been initialized correctly.");
 
       return *parent_writer_;
     }
@@ -214,7 +214,7 @@ namespace IO
     EveryIterationWriterInterface& Interface()
     {
       if (not interface_)
-        dserror("The every iteration interface has not been initialized correctly.");
+        FOUR_C_THROW("The every iteration interface has not been initialized correctly.");
 
       return *interface_;
     }

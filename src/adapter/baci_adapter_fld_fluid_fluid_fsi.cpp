@@ -26,10 +26,11 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> xfluidfluid, Teuchos::
 {
   // cast fluid to XFluidFluid
   xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluidfluid);
-  if (xfluidfluid_ == Teuchos::null) dserror("Failed to cast ADAPTER::Fluid to FLD::XFluidFluid.");
+  if (xfluidfluid_ == Teuchos::null)
+    FOUR_C_THROW("Failed to cast ADAPTER::Fluid to FLD::XFluidFluid.");
   fluidimpl_ = Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(embfluid);
   if (fluidimpl_ == Teuchos::null)
-    dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimInt.");
+    FOUR_C_THROW("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimInt.");
 }
 
 /*----------------------------------------------------------------------*/
@@ -48,10 +49,11 @@ void ADAPTER::FluidFluidFSI::Init()
   relaxing_ale_every_ = xfluiddyn.get<int>("RELAXING_ALE_EVERY");
 
   if (!relaxing_ale_ && relaxing_ale_every_ != 0)
-    dserror("You don't want to relax the ALE but provide a relaxation interval != 0 ?!");
+    FOUR_C_THROW("You don't want to relax the ALE but provide a relaxation interval != 0 ?!");
 
   if (relaxing_ale_every_ < 0)
-    dserror("Please provide a reasonable relaxation interval. We can't travel back in time yet.");
+    FOUR_C_THROW(
+        "Please provide a reasonable relaxation interval. We can't travel back in time yet.");
 
   // create map extractor for combined fluid domains
   // (to distinguish between FSI interface DOF / merged inner embedded & background fluid DOF)
@@ -152,7 +154,7 @@ void ADAPTER::FluidFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vec
 Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::BlockSystemMatrix()
 {
   if (mergedfluidinterface_ == Teuchos::null)
-    dserror(
+    FOUR_C_THROW(
         "Uninitialized map FSI/inner fluid map extractor! Failed to create fluid block matrix.");
 
   // Create a local copy of the inner & conditioned map
@@ -260,7 +262,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::ShapeD
 void ADAPTER::FluidFluidFSI::SetupInterface(const int nds_master)
 {
   // check nds_master
-  if (nds_master != 0) dserror("nds_master is supposed to be 0 here");
+  if (nds_master != 0) FOUR_C_THROW("nds_master is supposed to be 0 here");
 
   if (mergedfluidinterface_ == Teuchos::null)
   {
@@ -268,7 +270,7 @@ void ADAPTER::FluidFluidFSI::SetupInterface(const int nds_master)
     errmsg
         << "Uninitialized map  map extractor for merged background & embedded inner/FSI fluid DOFs."
         << "\nFailed to perform map extractor setup.";
-    dserror(errmsg.str());
+    FOUR_C_THROW(errmsg.str());
   }
 
   FluidFSI::SetupInterface();

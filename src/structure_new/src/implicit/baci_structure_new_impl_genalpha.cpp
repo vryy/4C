@@ -70,22 +70,22 @@ void STR::IMPLICIT::GenAlpha::Setup()
     if (rhoinf_ > 0.0) std::cout << "   rho = " << rhoinf_ << std::endl;
     // beta
     if ((beta_ <= 0.0) or (beta_ > 0.5))
-      dserror("beta out of range (0.0,0.5]");
+      FOUR_C_THROW("beta out of range (0.0,0.5]");
     else
       std::cout << "   beta = " << beta_ << std::endl;
     // gamma
     if ((gamma_ <= 0.0) or (gamma_ > 1.0))
-      dserror("gamma out of range (0.0,1.0]");
+      FOUR_C_THROW("gamma out of range (0.0,1.0]");
     else
       std::cout << "   gamma = " << gamma_ << std::endl;
     // alpha_f
     if ((alphaf_ < 0.0) or (alphaf_ >= 1.0))
-      dserror("alpha_f out of range [0.0,1.0)");
+      FOUR_C_THROW("alpha_f out of range [0.0,1.0)");
     else
       std::cout << "   alpha_f = " << alphaf_ << std::endl;
     // alpha_m
     if ((alpham_ < -1.0) or (alpham_ >= 1.0))
-      dserror("alpha_m out of range [-1.0,1.0)");
+      FOUR_C_THROW("alpha_m out of range [-1.0,1.0)");
     else
       std::cout << "   alpha_m = " << alpham_ << std::endl;
 
@@ -101,7 +101,7 @@ void STR::IMPLICIT::GenAlpha::Setup()
      * extrapolation of history variables, etc. becomes obsolete. */
     const enum INPAR::STR::MidAverageEnum& midavg = genalpha_sdyn.GetMidAverageType();
     if (midavg != INPAR::STR::midavg_trlike)
-      dserror("mid-averaging of internal forces only implemented TR-like");
+      FOUR_C_THROW("mid-averaging of internal forces only implemented TR-like");
     else
       std::cout << "   midavg = " << INPAR::STR::MidAverageString(midavg) << std::endl;
   }
@@ -143,7 +143,7 @@ void STR::IMPLICIT::GenAlpha::PostSetup()
   // set the constant parameters for the element evaluation
   if (TimInt().GetDataSDyn().GetMassLinType() == INPAR::STR::ml_rotations)
   {
-    dserror(
+    FOUR_C_THROW(
         "MASSLIN=ml_rotations is not supported by classical GenAlpha! "
         "Choose GenAlphaLieGroup instead!");
   }
@@ -432,7 +432,7 @@ double STR::IMPLICIT::GenAlpha::CalcRefNormForce(
     const enum ::NOX::Abstract::Vector::NormType& type) const
 {
   CheckInitSetup();
-  dserror("Not yet implemented! (see the Statics integration for an example)");
+  FOUR_C_THROW("Not yet implemented! (see the Statics integration for an example)");
   return -1.0;
 }
 

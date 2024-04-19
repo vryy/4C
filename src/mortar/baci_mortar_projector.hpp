@@ -150,7 +150,7 @@ namespace MORTAR
     bool ProjectGaussPoint2D(
         MORTAR::Element& gpele, const double* gpeta, MORTAR::Element& ele, double* xi) override
     {
-      dserror("Called ele-based projection for segment-based integration!!!");
+      FOUR_C_THROW("Called ele-based projection for segment-based integration!!!");
       return false;
     };
 
@@ -172,7 +172,7 @@ namespace MORTAR
     bool ProjectGaussPoint3D(MORTAR::Element& gpele, const double* gpeta, MORTAR::Element& ele,
         double* xi, double& par) override
     {
-      dserror("Called ele-based projection for segment-based integration!!!");
+      FOUR_C_THROW("Called ele-based projection for segment-based integration!!!");
       return false;
     };
 
@@ -315,7 +315,7 @@ namespace MORTAR
     */
     bool ProjectNodalNormal(MORTAR::Node& node, MORTAR::Element& ele, double* xi) override
     {
-      dserror("Called segment-based projection for element-based integration!!!");
+      FOUR_C_THROW("Called segment-based projection for element-based integration!!!");
       return false;
     };
 
@@ -339,7 +339,7 @@ namespace MORTAR
     */
     bool ProjectElementNormal(MORTAR::Node& node, MORTAR::Element& ele, double* xi) override
     {
-      dserror("Called segment-based projection for element-based integration!!!");
+      FOUR_C_THROW("Called segment-based projection for element-based integration!!!");
       return false;
     };
 
@@ -396,14 +396,14 @@ namespace MORTAR
     bool ProjectGaussPointAuxn3D(const double* globgp, const double* auxn, MORTAR::Element& ele,
         double* xi, double& par) override
     {
-      dserror("Called Aux.-plane projection for element-based integration!!!");
+      FOUR_C_THROW("Called Aux.-plane projection for element-based integration!!!");
       return false;
     };
 
     bool ProjectSNodeByMNormal(MORTAR::Node& snode, MORTAR::Element& mele, double* xi,
         double* normal, double& dist) override
     {
-      dserror("ERROR");
+      FOUR_C_THROW("ERROR");
       return false;
     };
 
@@ -411,7 +411,7 @@ namespace MORTAR
         double* normal, double& dist,
         std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin) override
     {
-      dserror("ERROR");
+      FOUR_C_THROW("ERROR");
       return false;
     };
 
@@ -419,7 +419,7 @@ namespace MORTAR
         double* normal, double& dist,
         std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin) override
     {
-      dserror("ERROR");
+      FOUR_C_THROW("ERROR");
       return false;
     };
 

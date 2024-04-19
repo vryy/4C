@@ -115,8 +115,8 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
-  if (!actdisc_->Filled()) dserror("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!actdisc_->Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   params.set("action", "calc_struct_volconstrstiff");
 
@@ -227,7 +227,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     }
     break;
     default:
-      dserror("Undefined atrium_model!");
+      FOUR_C_THROW("Undefined atrium_model!");
       break;
   }
 
@@ -252,7 +252,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     }
     break;
     default:
-      dserror("Undefined ventricle_model!");
+      FOUR_C_THROW("Undefined ventricle_model!");
       break;
   }
 
@@ -338,7 +338,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
       }
       break;
       default:
-        dserror("Undefined atrium_model!");
+        FOUR_C_THROW("Undefined atrium_model!");
         break;
     }
 
@@ -358,7 +358,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
       }
       break;
       default:
-        dserror("Undefined ventricle_model!");
+        FOUR_C_THROW("Undefined ventricle_model!");
         break;
     }
 
@@ -544,7 +544,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     for (int j = 0; j < 16; j++)
     {
       int err = sysvec1->SumIntoGlobalValues(1, &df_np[j], &gindex[j]);
-      if (err) dserror("SumIntoGlobalValues failed!");
+      if (err) FOUR_C_THROW("SumIntoGlobalValues failed!");
     }
   }
   // rhs part f_np
@@ -553,7 +553,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     for (int j = 0; j < 16; j++)
     {
       int err = sysvec2->SumIntoGlobalValues(1, &f_np[j], &gindex[j]);
-      if (err) dserror("SumIntoGlobalValues failed!");
+      if (err) FOUR_C_THROW("SumIntoGlobalValues failed!");
     }
   }
 
@@ -621,7 +621,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     CORE::LINALG::SerialDenseVector elevector3;
 
     std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
-    // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+    // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
@@ -645,7 +645,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
       // call the element specific evaluate method
       int err = curr->second->Evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-      if (err) dserror("error while evaluating elements");
+      if (err) FOUR_C_THROW("error while evaluating elements");
 
       // assembly
       int eid = curr->second->Id();
@@ -695,8 +695,8 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
 void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
-  if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
   // get the current time
   // const double time = params.get("total time",-1.0);
 
@@ -750,7 +750,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
   int err16 = sysvec2->SumIntoGlobalValues(1, &q_ven_pul_0, &gindex[15]);
   if (err1 or err2 or err3 or err4 or err5 or err6 or err7 or err8 or err9 or err10 or err11 or
       err12 or err13 or err14 or err15 or err16)
-    dserror("SumIntoGlobalValues failed!");
+    FOUR_C_THROW("SumIntoGlobalValues failed!");
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -792,7 +792,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
       // call the element specific evaluate method
       int err = curr->second->Evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-      if (err) dserror("error while evaluating elements");
+      if (err) FOUR_C_THROW("error while evaluating elements");
 
       // assembly
 

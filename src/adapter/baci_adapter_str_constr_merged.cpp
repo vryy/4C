@@ -43,7 +43,8 @@ void ADAPTER::StructureConstrMerged::Setup()
   StructureWrapper::Setup();
 
   // make sure
-  if (structure_ == Teuchos::null) dserror("Failed to create the underlying structural adapter");
+  if (structure_ == Teuchos::null)
+    FOUR_C_THROW("Failed to create the underlying structural adapter");
 
   // build merged dof row map
   dofrowmap_ = CORE::LINALG::MergeMap(
@@ -66,7 +67,7 @@ void ADAPTER::StructureConstrMerged::Setup()
 /* */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::InitialGuess()
 {
-  if (not issetup_) dserror("Call Setup() first!");
+  if (not issetup_) FOUR_C_THROW("Call Setup() first!");
 
   // get initial guesses from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strucGuess = structure_->InitialGuess();
@@ -203,7 +204,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::StructureConstrMerged::SystemM
 Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
 ADAPTER::StructureConstrMerged::BlockSystemMatrix()
 {
-  dserror("constrained BlockSparseMatrix never to be implemented");
+  FOUR_C_THROW("constrained BlockSparseMatrix never to be implemented");
   return Teuchos::null;
 }
 

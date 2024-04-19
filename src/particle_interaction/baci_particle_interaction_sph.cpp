@@ -96,7 +96,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
 
   // safety check
   if (surfacetension_ and virtualwallparticle_)
-    dserror("surface tension formulation with wall interaction not implemented!");
+    FOUR_C_THROW("surface tension formulation with wall interaction not implemented!");
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
@@ -238,7 +238,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");
 
   // safety check
-  if (not(initialparticlespacing > 0.0)) dserror("negative initial particle spacing!");
+  if (not(initialparticlespacing > 0.0)) FOUR_C_THROW("negative initial particle spacing!");
 
   // compute initial particle volume
   const double initialparticlevolume = std::pow(initialparticlespacing, kernelspacedim);
@@ -304,7 +304,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
       }
       else
       {
-        dserror("inertia for particles only in two and three dimensional evaluation given!");
+        FOUR_C_THROW("inertia for particles only in two and three dimensional evaluation given!");
       }
 
       // set initial inertia for respective particles of current type
@@ -462,7 +462,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitKernelHandler()
     }
     default:
     {
-      dserror("unknown kernel type!");
+      FOUR_C_THROW("unknown kernel type!");
       break;
     }
   }
@@ -520,7 +520,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitDensityHandler()
     }
     default:
     {
-      dserror("unknown density evaluation scheme type!");
+      FOUR_C_THROW("unknown density evaluation scheme type!");
       break;
     }
   }
@@ -532,7 +532,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitDensityHandler()
   if (densityevaluationscheme != INPAR::PARTICLE::DensityPredictCorrect and
       CORE::UTILS::IntegralValue<INPAR::PARTICLE::DensityCorrectionScheme>(
           params_sph_, "DENSITYCORRECTION") != INPAR::PARTICLE::NoCorrection)
-    dserror(
+    FOUR_C_THROW(
         "the density correction scheme set is not valid with the current density evaluation "
         "scheme!");
 }
@@ -570,7 +570,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitTemperatureHandler()
     }
     default:
     {
-      dserror("unknown temperature evaluation scheme!");
+      FOUR_C_THROW("unknown temperature evaluation scheme!");
       break;
     }
   }
@@ -612,7 +612,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitSurfaceTensionHandler()
     }
     default:
     {
-      dserror("unknown surface tension formulation type!");
+      FOUR_C_THROW("unknown surface tension formulation type!");
       break;
     }
   }
@@ -644,7 +644,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitBoundaryParticleHandler()
     }
     default:
     {
-      dserror("unknown boundary particle formulation type!");
+      FOUR_C_THROW("unknown boundary particle formulation type!");
       break;
     }
   }
@@ -676,7 +676,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitDirichletOpenBoundaryHandl
     }
     default:
     {
-      dserror("unknown dirichlet open boundary type!");
+      FOUR_C_THROW("unknown dirichlet open boundary type!");
       break;
     }
   }
@@ -708,7 +708,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitNeumannOpenBoundaryHandler
     }
     default:
     {
-      dserror("unknown neumann open boundary type!");
+      FOUR_C_THROW("unknown neumann open boundary type!");
       break;
     }
   }
@@ -740,7 +740,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitVirtualWallParticleHandler
     }
     default:
     {
-      dserror("unknown wall formulation type!");
+      FOUR_C_THROW("unknown wall formulation type!");
       break;
     }
   }
@@ -783,7 +783,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
     }
     default:
     {
-      dserror("unknown boundary particle formulation type!");
+      FOUR_C_THROW("unknown boundary particle formulation type!");
       break;
     }
   }
@@ -816,7 +816,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitRigidParticleContactHandle
     }
     default:
     {
-      dserror("unknown rigid particle contact type!");
+      FOUR_C_THROW("unknown rigid particle contact type!");
       break;
     }
   }

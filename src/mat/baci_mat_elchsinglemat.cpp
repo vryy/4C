@@ -41,15 +41,16 @@ MAT::PAR::ElchSingleMat::ElchSingleMat(Teuchos::RCP<MAT::PAR::Material> matdata)
 {
   // safety checks
   if (number_diffusion_coefficent_params_ != static_cast<int>(diffusion_coefficent_params_.size()))
-    dserror("Mismatch in number of parameters for diffusion coefficient!");
+    FOUR_C_THROW("Mismatch in number of parameters for diffusion coefficient!");
   if (number_conductivity_params_ != static_cast<int>(conductivity_params_.size()))
-    dserror("Mismatch in number of parameters for conductivity!");
+    FOUR_C_THROW("Mismatch in number of parameters for conductivity!");
   if (number_diffusion_temp_scale_funct_params_ !=
       static_cast<int>(diffusion_temp_scale_funct_params_.size()))
-    dserror("Mismatch in number of parameters for temp scale function for diffusion coefficient!");
+    FOUR_C_THROW(
+        "Mismatch in number of parameters for temp scale function for diffusion coefficient!");
   if (number_conductivity_temp_scale_funct_params_ !=
       static_cast<int>(conductivity_temp_scale_funct_params_.size()))
-    dserror("Mismatch in number of parameters for temp scale function for conductivity!");
+    FOUR_C_THROW("Mismatch in number of parameters for temp scale function for conductivity!");
   CheckProvidedParams(
       diffusion_coefficient_concentration_dependence_funct_num_, diffusion_coefficent_params_);
   CheckProvidedParams(conductivity_concentration_dependence_funct_num_, conductivity_params_);
@@ -203,7 +204,7 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
       }
       default:
       {
-        dserror("Curve number %i is not implemented", functnr);
+        FOUR_C_THROW("Curve number %i is not implemented", functnr);
         break;
       }
     }
@@ -211,7 +212,7 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
     // safety check
     if (functparams.size() != nfunctparams)
     {
-      dserror(
+      FOUR_C_THROW(
           "Number of provided parameters does not match number of expected parameters for function "
           "with curve number %i (%s)!",
           functnr, functionname.c_str());
@@ -250,7 +251,7 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficientConcentrationDependent(
   }
   else if (DiffusionCoefficientConcentrationDependenceFunctNum() == 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "'DIFF_COEF_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of "
         "the implemented models, or set a positive value and make use of the function framework!");
   }
@@ -291,7 +292,7 @@ double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactor(const double t
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "You have to set a reasonable function number for the temperature dependence.\n This can "
         "be either 0 if no temperature dependence is desired, the number of the function in which "
         "you defined the temperature dependence, or a negative number representing a predefined "
@@ -319,7 +320,7 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfDiffusionCoefficient(
   }
   else if (DiffusionCoefficientConcentrationDependenceFunctNum() == 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "'DIFF_COEF_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of "
         "the implemented models, or set a positive value and make use of the function framework!");
   }
@@ -383,7 +384,7 @@ double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactorDeriv(const dou
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "You have to set a reasonable function number for the temperature dependence.\n This can "
         "be either 0 if no temperature dependence is desired or the number of the function in "
         "which you defined the temperature dependence.");
@@ -421,7 +422,7 @@ double MAT::ElchSingleMat::ComputeConductivityConcentrationDependent(
   }
   else if (ConductivityConcentrationDependenceFunctNum() == 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "'COND_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of the "
         "implemented models, or set a positive value and make use of the function framework!");
   }
@@ -454,7 +455,7 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfConductivity(
   }
   else if (ConductivityConcentrationDependenceFunctNum() == 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "'COND_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of the "
         "implemented models, or set a positive value and make use of the function framework!");
   }
@@ -581,13 +582,13 @@ double MAT::ElchSingleMat::EvalPreDefinedFunct(
     case GOLDIN:
     {
       // safety check
-      if (scalar < 1.e-12) dserror("scalar value %lf is zero or negative!", scalar);
+      if (scalar < 1.e-12) FOUR_C_THROW("scalar value %lf is zero or negative!", scalar);
 
       const double exponent = functparams[1] * std::pow(scalar, functparams[2]);
 
       // safety check
       if (exponent > 20.)
-        dserror("Overflow detected during conductivity evaluation! Exponent is too large: %lf",
+        FOUR_C_THROW("Overflow detected during conductivity evaluation! Exponent is too large: %lf",
             exponent);
 
       functval = functparams[0] * scalar * std::exp(exponent);
@@ -638,7 +639,7 @@ double MAT::ElchSingleMat::EvalPreDefinedFunct(
     }
     default:
     {
-      dserror("Curve number %i is not implemented!", functnr);
+      FOUR_C_THROW("Curve number %i is not implemented!", functnr);
       break;
     }
   }
@@ -748,14 +749,14 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
     case GOLDIN:
     {
       // safety check
-      if (scalar < 1.0e-12) dserror("scalar value %lf is zero or negative!", scalar);
+      if (scalar < 1.0e-12) FOUR_C_THROW("scalar value %lf is zero or negative!", scalar);
 
       const double exponent = functparams[1] * std::pow(scalar, functparams[2]);
 
       // safety check
       if (std::abs(exponent) > 20.0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Overflow detected during conductivity evaluation! Absolute value of exponent is too "
             "large: %lf",
             exponent);
@@ -811,7 +812,7 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
     }
     default:
     {
-      dserror("Curve number %i is not implemented!", functnr);
+      FOUR_C_THROW("Curve number %i is not implemented!", functnr);
       break;
     }
   }

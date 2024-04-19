@@ -74,26 +74,28 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Init()
   boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
 
   // safety check
-  if (not(alpha0_ > 0.0)) dserror("constant factor of surface tension coefficient not positive!");
+  if (not(alpha0_ > 0.0))
+    FOUR_C_THROW("constant factor of surface tension coefficient not positive!");
 
   if (not(alpha0_ > alphamin_))
-    dserror("constant part smaller than minimum surface tension coefficient!");
+    FOUR_C_THROW("constant part smaller than minimum surface tension coefficient!");
 
   if (alphaT_ != 0.0)
   {
     if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
-      dserror("temperature evaluation needed for temperature dependent surface tension!");
+      FOUR_C_THROW("temperature evaluation needed for temperature dependent surface tension!");
 
     if (CORE::UTILS::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT") == false)
-      dserror("temperature gradient evaluation needed for temperature dependent surface tension!");
+      FOUR_C_THROW(
+          "temperature gradient evaluation needed for temperature dependent surface tension!");
   }
 
   if (trans_dT_surf_ > 0.0 or trans_dT_mara_ > 0.0 or trans_dT_curv_ > 0.0 or trans_dT_wet_ > 0.0)
   {
     if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
-      dserror("temperature evaluation needed for linear transition of surface tension!");
+      FOUR_C_THROW("temperature evaluation needed for linear transition of surface tension!");
   }
 }
 
@@ -133,7 +135,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Setup(
   // safety check
   for (const auto& type_i : fluidtypes_)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
-      dserror("no particle container for particle type '%s' found!",
+      FOUR_C_THROW("no particle container for particle type '%s' found!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 
   // update with actual boundary particle types

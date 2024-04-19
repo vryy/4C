@@ -354,7 +354,7 @@ namespace CORE::GEO
       // TODO note which ones???
       void GetBoundaryCells(plain_boundarycell_set& bcells) override
       {
-        dserror(
+        FOUR_C_THROW(
             "Deprecated function! Use the GetBoundaryCellSet( Point::PointPosition ), "
             "instead!");
         element_->GetBoundaryCells(bcells);

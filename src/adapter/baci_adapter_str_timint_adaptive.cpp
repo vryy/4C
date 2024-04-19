@@ -26,7 +26,7 @@ ADAPTER::StructureTimIntAda::StructureTimIntAda(
     : StructureWrapper(sti), sta_(sta)
 {
   // make sure
-  if (sta_ == Teuchos::null) dserror("Failed to create structural integrator");
+  if (sta_ == Teuchos::null) FOUR_C_THROW("Failed to create structural integrator");
 }
 
 

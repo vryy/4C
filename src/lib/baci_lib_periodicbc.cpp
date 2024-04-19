@@ -351,7 +351,8 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
                   // check for angle of rotation (has to be zero for master plane)
                   const double angle = *mastercond->Get<double>("Angle of rotation");
-                  if (abs(angle) > 1e-13) dserror("Angle is not zero for master plane: %f", angle);
+                  if (abs(angle) > 1e-13)
+                    FOUR_C_THROW("Angle is not zero for master plane: %f", angle);
                 }
               }
               else if (*mymasterslavetoggle == "Slave")
@@ -388,14 +389,14 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                   if (abs(angle) > 1e-13)
                   {
                     if ((*thisplane != "xz") && (*thisplane != "yz"))
-                      dserror("Rotation of slave plane only implemented for xz and yz planes");
+                      FOUR_C_THROW("Rotation of slave plane only implemented for xz and yz planes");
                     else
                     {
                       rotangles[pbcid] = angle * M_PI / 180.0;  // convert from DEG to RAD!
                       if (pbcid > 0)
                       {
                         if (rotangles[pbcid] != rotangles[pbcid - 1])
-                          dserror("Angle has to be the same for all pairs in pbc");
+                          FOUR_C_THROW("Angle has to be the same for all pairs in pbc");
                       }
                     }
                   }
@@ -403,7 +404,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
               }
               else
               {
-                dserror("pbc is neither master nor slave");
+                FOUR_C_THROW("pbc is neither master nor slave");
               }
 
 
@@ -421,7 +422,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
               {
                 if (fabs(abs_tol - tol) > 1e-5)
                 {
-                  dserror(
+                  FOUR_C_THROW(
                       "none matching tolerances %12.5e neq %12.5e for nodmatching octree. All "
                       "values in direction %s have to match\n",
                       abs_tol, tol, (*thisplane).c_str());
@@ -516,7 +517,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
           {
             if (masternodeids.size() != midtosid.size())
             {
-              // before throwing dserror, print helpful information to screen
+              // before throwing FOUR_C_THROW, print helpful information to screen
               for (size_t i = 0; i < masternodeids.size(); i++)
               {
                 int mid = masternodeids[i];
@@ -537,8 +538,8 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                             << "  coord: x=" << x[0] << " y=" << x[1] << " z=" << x[2];
                 }
               }
-              // now it is time for the dserror
-              dserror("have %d masters in midtosid list, %d expected\n", midtosid.size(),
+              // now it is time for the FOUR_C_THROW
+              FOUR_C_THROW("have %d masters in midtosid list, %d expected\n", midtosid.size(),
                   masternodeids.size());
             }
           }
@@ -698,7 +699,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
       {
         slaveid = *i;
         if (slaveid == masterid)
-          dserror("Node %d is master AND slave node of periodic boundary condition", masterid);
+          FOUR_C_THROW("Node %d is master AND slave node of periodic boundary condition", masterid);
 
         // is masterid already in allcoupledrownodes?
         {
@@ -837,7 +838,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
           int from = -1;
           exporter.ReceiveAny(from, tag, rdata, length);
           if (tag != 1337 or from != fromrank)
-            dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
+            FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
                 myrank, from, myrank);
 
           // ---- unpack ----
@@ -1126,7 +1127,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
 
       if (gn != discret_->NumGlobalNodes())
       {
-        dserror(
+        FOUR_C_THROW(
             "Unmatching numbers of nodes before and after call Redistribution. Nodemap constructor "
             "will crash.\n");
       }
@@ -1146,7 +1147,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
     {
       Epetra_Export exporter(*discret_->NodeRowMap(), *newrownodemap);
       int err = nodegraph.Export(*oldnodegraph, exporter, Add);
-      if (err < 0) dserror("Graph export returned err=%d", err);
+      if (err < 0) FOUR_C_THROW("Graph export returned err=%d", err);
     }
     nodegraph.FillComplete();
     nodegraph.OptimizeStorage();
@@ -1211,7 +1212,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
       {
         if (curr->second.empty())
         {
-          dserror("inverse slave-master matching incomplete");
+          FOUR_C_THROW("inverse slave-master matching incomplete");
         }
         int mymaster = curr->second[0];
         if (newcolnodemap->LID(mymaster) < 0)
@@ -1252,7 +1253,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
       {
         if (curr->second.empty())
         {
-          dserror("master-slave matching incomplete");
+          FOUR_C_THROW("master-slave matching incomplete");
         }
         for (size_t i = 0; i < curr->second.size(); ++i)
         {
@@ -1374,7 +1375,7 @@ void PeriodicBoundaryConditions::BalanceLoad()
     {
       const int node_gid = noderowmap->GID(node_lid);
       DRT::Node* node = discret_->gNode(node_gid);
-      if (!node) dserror("cant find node");
+      if (!node) FOUR_C_THROW("cant find node");
       double weight = 0.0;
 
       // loop over adjacent elements of this node and find element with highest cost
@@ -1440,7 +1441,7 @@ void PeriodicBoundaryConditions::BalanceLoad()
         {
           int neighbor_node = node_gids_per_ele[col];
           const int err = nodegraph->InsertGlobalIndices(node_gid, 1, &neighbor_node);
-          if (err < 0) dserror("nodegraph->InsertGlobalIndices returned err=%d", err);
+          if (err < 0) FOUR_C_THROW("nodegraph->InsertGlobalIndices returned err=%d", err);
         }
       }
     }
@@ -1483,13 +1484,13 @@ void PeriodicBoundaryConditions::BalanceLoad()
               for (auto other_slave_gid : other_slave_gids)
               {
                 int err = nodegraph->InsertGlobalIndices(node_gid, 1, &other_slave_gid);
-                if (err < 0) dserror("nodegraph->InsertGlobalIndices returned err=%d", err);
+                if (err < 0) FOUR_C_THROW("nodegraph->InsertGlobalIndices returned err=%d", err);
 
                 if (noderowmap->MyGID(other_slave_gid))
                 {
                   int masterindex = node_gid;
                   err = nodegraph->InsertGlobalIndices(other_slave_gid, 1, &masterindex);
-                  if (err < 0) dserror("nodegraph->InsertGlobalIndices returned err=%d", err);
+                  if (err < 0) FOUR_C_THROW("nodegraph->InsertGlobalIndices returned err=%d", err);
                 }
               }
             }
@@ -1500,7 +1501,7 @@ void PeriodicBoundaryConditions::BalanceLoad()
 
     // finalize construction of initial graph
     int err = nodegraph->FillComplete();
-    if (err) dserror("graph->FillComplete returned %d", err);
+    if (err) FOUR_C_THROW("graph->FillComplete returned %d", err);
 
     //
     // nodegraph: row for each node, column with nodes from the same element and coupled nodes
@@ -1529,7 +1530,7 @@ void PeriodicBoundaryConditions::BalanceLoad()
 
         std::vector<double> values(numentries, 1.0);
         edge_weights->InsertGlobalValues(grow, numentries, values.data(), indices.data());
-        if (err < 0) dserror("edge_weights->InsertGlobalValues returned err=%d", err);
+        if (err < 0) FOUR_C_THROW("edge_weights->InsertGlobalValues returned err=%d", err);
       }
 
       // loop all master nodes on this proc
@@ -1556,9 +1557,9 @@ void PeriodicBoundaryConditions::BalanceLoad()
           std::vector<double> value(1, 99.0);
 
           err = edge_weights->InsertGlobalValues(master->Id(), 1, value.data(), slave_gid.data());
-          if (err < 0) dserror("InsertGlobalIndices returned err=%d", err);
+          if (err < 0) FOUR_C_THROW("InsertGlobalIndices returned err=%d", err);
           err = edge_weights->InsertGlobalValues(slave->Id(), 1, value.data(), master_gid.data());
-          if (err < 0) dserror("InsertGlobalIndices returned err=%d", err);
+          if (err < 0) FOUR_C_THROW("InsertGlobalIndices returned err=%d", err);
         }
       }
 

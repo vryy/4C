@@ -28,13 +28,13 @@ MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int ma
   // for the sake of safety
   if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
   {
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }
 
   // yet another safety check
   if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
   {
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
   }
 
   // retrieve problem instance to read from
@@ -60,7 +60,7 @@ MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int ma
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::ConstantPrestressStrategy>(curmat);
     }
     default:
-      dserror(
+      FOUR_C_THROW(
           "The referenced material with id %d is not registered as a prestress strategy!", matid);
   }
 

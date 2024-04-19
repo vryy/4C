@@ -51,7 +51,7 @@ DRT::ELEMENTS::RedAcinusImplInterface* DRT::ELEMENTS::RedAcinusImplInterface::Im
       return acinus;
     }
     default:
-      dserror("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
+      FOUR_C_THROW("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
       break;
   }
   return nullptr;
@@ -112,7 +112,7 @@ void Sysmat(DRT::ELEMENTS::RedAcinus* ele, CORE::LINALG::SerialDenseVector& epnp
   }
   else
   {
-    dserror("Material law is not a valid reduced dimensional lung acinus material.");
+    FOUR_C_THROW("Material law is not a valid reduced dimensional lung acinus material.");
     exit(1);
   }
 }
@@ -153,7 +153,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
   Teuchos::RCP<const Epetra_Vector> ial = discretization.GetState("intr_ac_link");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
-    dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
+    FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -297,7 +297,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
         // check if O2 properties material exists
         if (id == -1)
         {
-          dserror("A material defining O2 properties in air could not be found");
+          FOUR_C_THROW("A material defining O2 properties in air could not be found");
           exit(1);
         }
         const MAT::PAR::Parameter* smat =
@@ -324,7 +324,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
       }
       else
       {
-        dserror("0D Acinus scatra must be predefined as \"air\" only");
+        FOUR_C_THROW("0D Acinus scatra must be predefined as \"air\" only");
         exit(1);
       }
     }
@@ -354,7 +354,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
 
   Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
 
-  if (pnp == Teuchos::null) dserror("Cannot get state vectors 'pnp'");
+  if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -405,7 +405,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           }
           else
           {
-            dserror("no boundary condition defined!");
+            FOUR_C_THROW("no boundary condition defined!");
             exit(1);
           }
 
@@ -440,7 +440,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
           if (local_id < 0)
           {
-            dserror("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
                 discretization.Comm().MyPID());
             exit(1);
           }
@@ -460,7 +460,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           // -----------------------------------------------------------------
           if (CoupledTo3DParams.get() == nullptr)
           {
-            dserror(
+            FOUR_C_THROW(
                 "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters "
                 "passed don't exist");
             exit(1);
@@ -546,7 +546,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           }
           else
           {
-            dserror("no boundary condition defined!");
+            FOUR_C_THROW("no boundary condition defined!");
             exit(1);
           }
 
@@ -554,7 +554,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
           if (local_id < 0)
           {
-            dserror("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
                 discretization.Comm().MyPID());
             exit(1);
           }
@@ -603,7 +603,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
               if (((ppl_Type == "Linear_Polynomial") or (ppl_Type == "Nonlinear_Polynomial")) and
                   (TLC != 0.0))
               {
-                dserror(
+                FOUR_C_THROW(
                     "TLC is not used for the following type of VolumeDependentPleuralPressure BC: "
                     "%s.\n Set TLC = 0.0",
                     ppl_Type.c_str());
@@ -613,7 +613,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
               if ((ppl_Type == "Nonlinear_Ogden") and
                   ((TLC != 0.0) or (ap != 0.0) or (bp != 0.0) or (dp == 0.0)))
               {
-                dserror(
+                FOUR_C_THROW(
                     "Parameters are not set correctly for Nonlinear_Ogden. Only P_PLEURAL_NONLIN, "
                     "TAU and RV are used. Set all others to zero. TAU is not allowed to be zero.");
               }
@@ -652,13 +652,13 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
               }
               else
               {
-                dserror("Unknown volume pleural pressure type: %s", ppl_Type.c_str());
+                FOUR_C_THROW("Unknown volume pleural pressure type: %s", ppl_Type.c_str());
               }
               Pp_np *= curvefac * ((*vals)[0]);
             }
             else
             {
-              dserror("No volume dependent pleural pressure condition was defined");
+              FOUR_C_THROW("No volume dependent pleural pressure condition was defined");
             }
             BCin += Pp_np;
           }
@@ -695,7 +695,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
         }
         else
         {
-          dserror("prescribed [%s] is not defined for reduced acinuss", Bc.c_str());
+          FOUR_C_THROW("prescribed [%s] is not defined for reduced acinuss", Bc.c_str());
           exit(1);
         }
       }
@@ -711,7 +711,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
           if (local_id < 0)
           {
-            dserror("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
                 discretization.Comm().MyPID());
             exit(1);
           }
@@ -768,7 +768,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   Teuchos::RCP<const Epetra_Vector> pnm = discretization.GetState("pnm");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
-    dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
+    FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -887,7 +887,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
 
   Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
 
-  if (pnp == Teuchos::null) dserror("Cannot get state vectors 'pnp'");
+  if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -920,7 +920,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
         // -----------------------------------------------------------------
         if (CoupledTo3DParams.get() == nullptr)
         {
-          dserror(
+          FOUR_C_THROW(
               "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters "
               "passed don't exist");
           exit(1);
@@ -967,7 +967,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
         else
         {
           std::string str = (*condition->Get<std::string>("ReturnedVariable"));
-          dserror("%s, is an unimplimented type of coupling", str.c_str());
+          FOUR_C_THROW("%s, is an unimplimented type of coupling", str.c_str());
           exit(1);
         }
         std::stringstream returnedBCwithId;
@@ -987,7 +987,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
         itrMap1D = map1D->find(returnedBCwithId.str());
         if (itrMap1D == map1D->end())
         {
-          dserror("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",
+          FOUR_C_THROW("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",
               returnedBC.c_str(), ID);
           exit(1);
         }
@@ -1167,7 +1167,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
       // check if O2 properties material exists
       if (id == -1)
       {
-        dserror("A material defining O2 properties in air could not be found");
+        FOUR_C_THROW("A material defining O2 properties in air could not be found");
         exit(1);
       }
       const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
@@ -1402,7 +1402,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
   }
   else
   {
-    dserror("A scalar transport element must be defined either as \"air\"");
+    FOUR_C_THROW("A scalar transport element must be defined either as \"air\"");
     exit(1);
   }
 
@@ -1423,7 +1423,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
     // check if O2 properties material exists
     if (id == -1)
     {
-      dserror("A material defining O2 properties in air could not be found");
+      FOUR_C_THROW("A material defining O2 properties in air could not be found");
       exit(1);
     }
     const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
@@ -1447,7 +1447,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
   }
   else
   {
-    dserror("A scalar transport element must be defined either as \"air\" or \"blood\"");
+    FOUR_C_THROW("A scalar transport element must be defined either as \"air\" or \"blood\"");
     exit(1);
   }
 

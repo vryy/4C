@@ -109,7 +109,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
 {
   // safety check before setup of coupling
   if (ssi_mono.ScaTraField()->NumDofPerNode() != ssi_mono.ScaTraManifold()->NumDofPerNode())
-    dserror("Number of dofs per node of scatra field and scatra manifold field must be equal");
+    FOUR_C_THROW("Number of dofs per node of scatra field and scatra manifold field must be equal");
 
   std::vector<DRT::Condition*> conditions_manifold;
   scatra_manifold_->ScaTraField()->Discretization()->GetCondition(
@@ -171,7 +171,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
     }
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -230,7 +230,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixManifoldScaTra()
     }
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -255,7 +255,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixManifoldStructure()
     }
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -280,7 +280,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixScaTraManifold()
     }
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -305,7 +305,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixScaTraStructure()
     }
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -592,7 +592,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::AddConditionContribution()
     }
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -727,7 +727,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
     }
     default:
     {
-      dserror("Unknown kinetics type for manifold couplign");
+      FOUR_C_THROW("Unknown kinetics type for manifold couplign");
       break;
     }
   }
@@ -739,7 +739,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::Output()
 {
-  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+  FOUR_C_ASSERT(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
   std::map<std::string, std::vector<double>> output_data;
   for (const auto& inflow_comp : inflow_)
@@ -831,7 +831,7 @@ SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
 
     if (ssi_meshtying_->MeshTyingHandlers().empty())
     {
-      dserror(
+      FOUR_C_THROW(
           "Could not create mesh tying between manifold fields. They are not intersecting. "
           "Disable 'MESHTYING_MANIFOLD' or create intersecting manifold conditions.");
     }
@@ -1016,23 +1016,23 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldMatrix(
       {
         // extract global ID of current slave-side row
         const int dofgid_slave = slave_dof_map->GID(doflid_slave);
-        if (dofgid_slave < 0) dserror("Local ID not found!");
+        if (dofgid_slave < 0) FOUR_C_THROW("Local ID not found!");
 
         // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column indices
         if (ssi_manifold_sparse->Filled())
         {
           const int rowlid_slave = ssi_manifold_sparse->RowMap().LID(dofgid_slave);
-          if (rowlid_slave < 0) dserror("Global ID not found!");
+          if (rowlid_slave < 0) FOUR_C_THROW("Global ID not found!");
           if (ssi_manifold_sparse->EpetraMatrix()->ReplaceMyValues(
                   rowlid_slave, 1, &one, &rowlid_slave))
-            dserror("ReplaceMyValues failed!");
+            FOUR_C_THROW("ReplaceMyValues failed!");
         }
 
         // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and column
         // indices
         else if (ssi_manifold_sparse->EpetraMatrix()->InsertGlobalValues(
                      dofgid_slave, 1, &one, &dofgid_slave))
-          dserror("InsertGlobalValues failed!");
+          FOUR_C_THROW("InsertGlobalValues failed!");
       }
     }
   }
@@ -1094,7 +1094,7 @@ void SSI::ManifoldMeshTyingStrategyBlock::ApplyMeshtyingToManifoldMatrix(
             {
               // extract global ID of current slave-side row
               const int dofgid_slave = slave_dof_map->GID(doflid_slave);
-              if (dofgid_slave < 0) dserror("Local ID not found!");
+              if (dofgid_slave < 0) FOUR_C_THROW("Local ID not found!");
 
               // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column
               // indices
@@ -1102,17 +1102,17 @@ void SSI::ManifoldMeshTyingStrategyBlock::ApplyMeshtyingToManifoldMatrix(
               {
                 const int rowlid_slave =
                     ssi_manifold_block->Matrix(row, row).RowMap().LID(dofgid_slave);
-                if (rowlid_slave < 0) dserror("Global ID not found!");
+                if (rowlid_slave < 0) FOUR_C_THROW("Global ID not found!");
                 if (ssi_manifold_block->Matrix(row, row).EpetraMatrix()->ReplaceMyValues(
                         rowlid_slave, 1, &one, &rowlid_slave))
-                  dserror("ReplaceMyValues failed!");
+                  FOUR_C_THROW("ReplaceMyValues failed!");
               }
 
               // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and
               // column indices
               else if (ssi_manifold_block->Matrix(row, row).EpetraMatrix()->InsertGlobalValues(
                            dofgid_slave, 1, &one, &dofgid_slave))
-                dserror("InsertGlobalValues failed!");
+                FOUR_C_THROW("InsertGlobalValues failed!");
             }
           }
         }
@@ -1394,7 +1394,7 @@ Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> SSI::BuildManifoldMeshTyingStra
 
     default:
     {
-      dserror("unknown matrix type of Manifold field");
+      FOUR_C_THROW("unknown matrix type of Manifold field");
       break;
     }
   }

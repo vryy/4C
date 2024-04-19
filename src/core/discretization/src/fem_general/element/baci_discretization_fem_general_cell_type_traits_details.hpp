@@ -122,7 +122,7 @@ namespace CORE::FE::DETAILS
     }
 
     unsupported_celltype_callable(std::integral_constant<CellType, celltype>{});
-    dserror("Your unsupported celltype callable does not throw or return a compatible type!");
+    FOUR_C_THROW("Your unsupported celltype callable does not throw or return a compatible type!");
   }
 
   template <typename celltype_sequence>
@@ -145,7 +145,7 @@ namespace CORE::FE::DETAILS
         celltypes_str_acc += item;
       }
 
-      dserror(
+      FOUR_C_THROW(
           "The function you are calling is not implemented for the cell type %s. Supported "
           "celltypes are %s",
           DETAILS::CellTypeInformation<celltype_t()>::name, celltypes_str_acc.c_str());

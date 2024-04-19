@@ -35,7 +35,7 @@ namespace
     if (activation_type == INPAR::MAT::ActivationType::function_of_space_time)
     {
       auto actFunctId = *matdata->Get<int>("FUNCTID");
-      if (actFunctId <= 0) dserror("Function id must be positive");
+      if (actFunctId <= 0) FOUR_C_THROW("Function id must be positive");
       return actFunctId;
     }
     else if (activation_type == INPAR::MAT::ActivationType::map)
@@ -61,7 +61,7 @@ namespace
 
     MAT::MuscleCombo::ActivationEvaluatorVariant operator()(const std::monostate& /*unused*/) const
     {
-      dserror(
+      FOUR_C_THROW(
           "Error in ActivationParamsVisitor. You're calling it with the default-constructed "
           "state.");
     }
@@ -84,7 +84,7 @@ namespace
 
     double operator()(const std::monostate& /*unused*/) const
     {
-      dserror(
+      FOUR_C_THROW(
           "Error in ActivationEvalVisitor. You're calling it with the default-constructed state.");
     }
 
@@ -112,23 +112,23 @@ MAT::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<MAT::PAR::Material> matdata)
 {
   // error handling for parameter ranges
   // passive material parameters
-  if (alpha_ <= 0.0) dserror("Material parameter ALPHA must be greater zero");
-  if (beta_ <= 0.0) dserror("Material parameter BETA must be greater zero");
-  if (gamma_ <= 0.0) dserror("Material parameter GAMMA must be greater zero");
-  if (omega0_ < 0.0 || omega0_ > 1.0) dserror("Material parameter OMEGA0 must be in [0;1]");
+  if (alpha_ <= 0.0) FOUR_C_THROW("Material parameter ALPHA must be greater zero");
+  if (beta_ <= 0.0) FOUR_C_THROW("Material parameter BETA must be greater zero");
+  if (gamma_ <= 0.0) FOUR_C_THROW("Material parameter GAMMA must be greater zero");
+  if (omega0_ < 0.0 || omega0_ > 1.0) FOUR_C_THROW("Material parameter OMEGA0 must be in [0;1]");
 
   // active material parameters
   if (Popt_ < 0.0)
   {
-    dserror("Material parameter POPT must be postive or zero");
+    FOUR_C_THROW("Material parameter POPT must be postive or zero");
   }
 
   // stretch dependent parameters
-  if (lambdaMin_ <= 0.0) dserror("Material parameter LAMBDAMIN must be postive");
-  if (lambdaOpt_ <= 0.0) dserror("Material parameter LAMBDAOPT must be postive");
+  if (lambdaMin_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAMIN must be postive");
+  if (lambdaOpt_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAOPT must be postive");
 
   // density
-  if (density_ < 0.0) dserror("DENS should be positive");
+  if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::MuscleCombo::CreateMaterial()
@@ -220,14 +220,15 @@ void MAT::MuscleCombo::Unpack(const std::vector<char>& data)
         activationEvaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
       }
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
 
   anisotropyExtension_.UnpackAnisotropy(data, position);
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 void MAT::MuscleCombo::Setup(int numgp, INPUT::LineDefinition* linedef)
@@ -401,10 +402,11 @@ void MAT::MuscleCombo::EvaluateActiveNominalStress(Teuchos::ParameterList& param
 {
   // save current simulation time
   double t_tot = params.get<double>("total time", -1);
-  if (abs(t_tot + 1.0) < 1e-14) dserror("No total time given for muscle Combo material!");
+  if (abs(t_tot + 1.0) < 1e-14) FOUR_C_THROW("No total time given for muscle Combo material!");
   // save (time) step size
   double timestep = params.get<double>("delta time", -1);
-  if (abs(timestep + 1.0) < 1e-14) dserror("No time step size given for muscle Combo material!");
+  if (abs(timestep + 1.0) < 1e-14)
+    FOUR_C_THROW("No time step size given for muscle Combo material!");
 
   // get active parameters from params_
   const double lambdaMin = params_->lambdaMin_;

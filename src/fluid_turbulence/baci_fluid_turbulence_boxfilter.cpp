@@ -93,7 +93,7 @@ FLD::Boxfilter::Boxfilter(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::Par
     reynoldsstress_ = true;
     modeled_subgrid_stress_ = true;
   }
-  if (loma_ and vreman_dynamic_) dserror("Dynamic Vreman model not implemented for loma!");
+  if (loma_ and vreman_dynamic_) FOUR_C_THROW("Dynamic Vreman model not implemented for loma!");
 
   return;
 }
@@ -310,7 +310,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
     // against heaviside function element
     int err = ele->Evaluate(filterparams, *discret_, lm, emat1, emat2, evec1, evec2, evec2);
     if (err)
-      dserror("Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), ele->Id(), err);
+      FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), ele->Id(), err);
 
     // get contribution to patch volume of this element. Add it up.
     double volume_contribution = filterparams.get<double>("volume_contribution");
@@ -433,7 +433,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
         if ((discret_->gNode(master_gid))->Owner() != discret_->Comm().MyPID()) continue;
 
         int lid = noderowmap->LID(master_gid);
-        if (lid < 0) dserror("nodelid < 0 ?");
+        if (lid < 0) FOUR_C_THROW("nodelid < 0 ?");
 
         val = (*patchvol)[lid];
 
@@ -495,7 +495,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
         // replace value by sum
         lid = noderowmap->LID(master_gid);
         int error = patchvol->ReplaceMyValues(1, &val, &lid);
-        if (error != 0) dserror("dof not on proc");
+        if (error != 0) FOUR_C_THROW("dof not on proc");
 
         {
           int err = 0;
@@ -504,7 +504,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
             err += filtered_dens_strainrate_->ReplaceMyValues(1, &dens_strainrate_val, &lid);
           if (expression_) err += filtered_expression_->ReplaceMyValues(1, &expression_val, &lid);
           if (alpha2_) err += filtered_alpha2_->ReplaceMyValues(1, &alpha2_val, &lid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
 
         for (int idim = 0; idim < numdim; ++idim)
@@ -532,7 +532,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
               err +=
                   ((*filtered_alphaij_)(ij))->ReplaceMyValues(1, &(alphaij_val[idim][jdim]), &lid);
           }  // end loop jdim
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }  // end loop idim
 
         // loop all this masters slaves
@@ -549,7 +549,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
               err += filtered_dens_strainrate_->ReplaceMyValues(1, &dens_strainrate_val, &lid);
             if (expression_) err += filtered_expression_->ReplaceMyValues(1, &expression_val, &lid);
             if (alpha2_) err += filtered_alpha2_->ReplaceMyValues(1, &alpha2_val, &lid);
-            if (err != 0) dserror("dof not on proc");
+            if (err != 0) FOUR_C_THROW("dof not on proc");
           }
 
           for (int idim = 0; idim < numdim; ++idim)
@@ -577,7 +577,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
                            ->ReplaceMyValues(1, &(alphaij_val[idim][jdim]), &lid);
             }  // end loop jdim
           }    // end loop idim
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }  // end loop slaves
       }    // end loop masters
     }
@@ -635,7 +635,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
            // not want to multiply the reynolds stress by density
           int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
           if (id == -1)
-            dserror("Could not find Newtonian fluid material");
+            FOUR_C_THROW("Could not find Newtonian fluid material");
           else
           {
             const MAT::PAR::Parameter* mat =
@@ -759,7 +759,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
 
         double volval = 1.0;
         err += patchvol->ReplaceMyValues(1, &volval, &lnodeid);
-        if (err != 0) dserror("dof/node not on proc");
+        if (err != 0) FOUR_C_THROW("dof/node not on proc");
       }  // is dirichlet node
     }    // end loop all nodes
   }
@@ -836,7 +836,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
           err += ((*filtered_alphaij_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
         }
       }  // end loop jdim
-      if (err != 0) dserror("dof not on proc");
+      if (err != 0) FOUR_C_THROW("dof not on proc");
     }  // end loop idim
   }    // end loop nodes
 
@@ -848,7 +848,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
   {
     // fine scale veocity requires filtered velocity
     if (not velocity_)
-      dserror(
+      FOUR_C_THROW(
           "filtered velocity is required in the box filter to calculate the fine scale velocity");
     // loop all elements on this proc
     for (int nid = 0; nid < discret_->NumMyRowNodes(); ++nid)
@@ -871,7 +871,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
         double val = vel - filteredvel;
         // calculate fine scale velocity
         int err = ((*fs_vel_)(d))->ReplaceMyValues(1, &val, &nid);
-        if (err != 0) dserror("dof not on proc");
+        if (err != 0) FOUR_C_THROW("dof not on proc");
       }
     }
   }
@@ -930,7 +930,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
     const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle, const int ndsvel)
 {
   TEUCHOS_FUNC_TIME_MONITOR("ApplyFilterForDynamicComputationOfPrt");
-  if (apply_box_filter_ == true) dserror("not yet considered");
+  if (apply_box_filter_ == true) FOUR_C_THROW("not yet considered");
   // LES turbulence modeling is only valid for 3 dimensions
   const int numdim = 3;
 
@@ -1047,7 +1047,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
     // against heaviside function element
     int err = ele->Evaluate(filterparams, *scatradiscret_, la, emat1, emat2, evec1, evec2, evec2);
     if (err)
-      dserror(
+      FOUR_C_THROW(
           "Proc %d: Element %d returned err=%d", scatradiscret_->Comm().MyPID(), ele->Id(), err);
 
     // get contribution to patch volume of this element. Add it up.
@@ -1142,7 +1142,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
           continue;
 
         int lid = noderowmap->LID(master_gid);
-        if (lid < 0) dserror("nodelid < 0 ?");
+        if (lid < 0) FOUR_C_THROW("nodelid < 0 ?");
 
         val = (*patchvol)[lid];
 
@@ -1202,7 +1202,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
         // replace value by sum
         lid = noderowmap->LID(master_gid);
         int error = patchvol->ReplaceMyValues(1, &val, &lid);
-        if (error != 0) dserror("dof not on proc");
+        if (error != 0) FOUR_C_THROW("dof not on proc");
 
         int e = 0;
         e += filtered_dens_->ReplaceMyValues(1, &dens_val, &lid);
@@ -1211,7 +1211,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
         if (phi2_) e += filtered_phi2_->ReplaceMyValues(1, &phi2_val, &lid);
         if (phiexpression_)
           e += filtered_phiexpression_->ReplaceMyValues(1, &phiexpression_val, &lid);
-        if (e != 0) dserror("dof not on proc");
+        if (e != 0) FOUR_C_THROW("dof not on proc");
 
         for (int idim = 0; idim < numdim; ++idim)
         {
@@ -1232,7 +1232,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
                          ->ReplaceMyValues(1, &(alphaijsc_val[idim][jdim]), &lid);
             }  // end loop jdim
           }
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
 
         // loop all this masters slaves
@@ -1269,7 +1269,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
             }
           }
 
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }  // end loop slaves
       }    // end loop masters
     }
@@ -1279,7 +1279,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
   // extract convective velocity from scatra discretization
   Teuchos::RCP<const Epetra_Vector> convel =
       scatradiscret_->GetState(ndsvel, "convective velocity field");
-  if (convel == Teuchos::null) dserror("Cannot extract convective velocity field");
+  if (convel == Teuchos::null) FOUR_C_THROW("Cannot extract convective velocity field");
 
   // replace values at dirichlet nodes
   {
@@ -1289,7 +1289,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
     // as we want to identify nodes at walls,
     // we have to be sure that fluid and scatra are still matching
     if (not scatradiscret_->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
-      dserror("Fluid and ScaTra noderowmaps are NOT identical.");
+      FOUR_C_THROW("Fluid and ScaTra noderowmaps are NOT identical.");
 
     // loop all nodes on the processor
     for (int lnodeid = 0; lnodeid < scatradiscret_->NumMyRowNodes(); ++lnodeid)
@@ -1307,10 +1307,10 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
       // yes, we have a dirichlet boundary condition
       if (dbccond.size() > 0)
       {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if ((lnode->X()[0] != fluidlnode->X()[0]) or (lnode->X()[1] != fluidlnode->X()[1]) or
             (lnode->X()[2] != fluidlnode->X()[2]))
-          dserror("Nodes do not match.");
+          FOUR_C_THROW("Nodes do not match.");
 #endif
         // we only want to modify nodes at the wall, as the model should vanish there
         // check, whether we have a no-slip node
@@ -1320,7 +1320,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
           // get global and local dof IDs
           const int gid = nodedofs[idim];
           const int lid = convel->Map().LID(gid);
-          if (lid < 0) dserror("Local ID not found in map for given global ID!");
+          if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
           double vel_i = (*convel)[lid];
           if (abs(vel_i) < 1e-12) no_slip_node++;
@@ -1333,7 +1333,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
           // get the set of temperature degrees of freedom associated with the node
           std::vector<int> nodedofset = scatradiscret_->Dof(0, lnode);
           if (nodedofset.size() > 1)
-            dserror(
+            FOUR_C_THROW(
                 "Dynamic Smagorinsky or dynamic Vreman currently only implemented for one scalar "
                 "field!");
 
@@ -1383,7 +1383,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
             // get global and local dof IDs
             const int gid = nodedofs[idim];
             const int lid = convel->Map().LID(gid);
-            if (lid < 0) dserror("Local ID not found in map for given global ID!");
+            if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
             double valvel_i = (*convel)[lid];
             err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &valvel_i, &lnodeid);
@@ -1435,7 +1435,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
 
           double volval = 1.0;
           err += patchvol->ReplaceMyValues(1, &volval, &lnodeid);
-          if (err != 0) dserror("dof/node not on proc");
+          if (err != 0) FOUR_C_THROW("dof/node not on proc");
         }
       }
     }
@@ -1494,7 +1494,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
         }  // end loop jdim
       }
     }  // end loop idim
-    if (err != 0) dserror("dof not on proc");
+    if (err != 0) FOUR_C_THROW("dof not on proc");
   }  // end loop nodes
 
   // clean up

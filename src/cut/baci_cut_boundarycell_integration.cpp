@@ -35,7 +35,7 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
   }
 
   /*if(rhs_bcell_temp(0)<0.0)
-    dserror("Negative area found in base function integration. Is ordering of vertices a
+    FOUR_C_THROW("Negative area found in base function integration. Is ordering of vertices a
     problem?");*/
 
   CORE::LINALG::SerialDenseVector Bcellweights;
@@ -215,7 +215,7 @@ void CORE::GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(
   }
   else
   {
-    dserror("the projection plane is not set");
+    FOUR_C_THROW("the projection plane is not set");
     exit(1);
   }
 
@@ -346,7 +346,7 @@ void CORE::GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(
           (eqn[3] - eqn[0] * bcGausspts[i][dim2] - eqn[2] * bcGausspts[i][dim1]) / eqn[1];
     else
     {
-      dserror("projection type not assigned");
+      FOUR_C_THROW("projection type not assigned");
       exit(1);
     }
   }

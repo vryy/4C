@@ -40,7 +40,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::AddQuantityIfNotExistant(
   {
     if (item->second != size)
     {
-      dserror(
+      FOUR_C_THROW(
           "The quantity %s is already registered, but with a different size (%d vs. %d). This is "
           "fatal!",
           name.c_str(), size, item->second);
@@ -50,7 +50,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::AddQuantityIfNotExistant(
   {
     if (name.find(MPI_DELIMITER) != std::string::npos)
     {
-      dserror(
+      FOUR_C_THROW(
           "The quantity name %s for Gauss Point VTK runtime output contains the delimiter %s that "
           "is used for MPI communication. This is not allowed.",
           name.c_str(), MPI_DELIMITER);
@@ -95,9 +95,9 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareData(
       PrepareGaussPointDataVectors(element_row_map);
       break;
     case INPAR::STR::GaussPointDataOutputType::none:
-      dserror("Your Gauss point data output type is none, so you don't need to prepare data!");
+      FOUR_C_THROW("Your Gauss point data output type is none, so you don't need to prepare data!");
     default:
-      dserror("Unknown Gauss point data output type");
+      FOUR_C_THROW("Unknown Gauss point data output type");
   }
 }
 

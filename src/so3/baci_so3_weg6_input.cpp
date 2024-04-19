@@ -29,21 +29,21 @@ bool DRT::ELEMENTS::SoWeg6::ReadElement(
   if (buffer == "linear")
   {
     kintype_ = INPAR::STR::KinemType::linear;
-    dserror("Reading of SO_WEG6 element failed only nonlinear kinematics implemented");
+    FOUR_C_THROW("Reading of SO_WEG6 element failed only nonlinear kinematics implemented");
   }
   else if (buffer == "nonlinear")
   {
     kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
-    dserror("Reading SO_WEG6 element failed KINEM unknwon");
+    FOUR_C_THROW("Reading SO_WEG6 element failed KINEM unknwon");
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
 
   // Validate that materials doesn't use extended update call.
   if (SolidMaterial()->UsesExtendedUpdate())
-    dserror("This element currently does not support the extended update call.");
+    FOUR_C_THROW("This element currently does not support the extended update call.");
 
   return true;
 }

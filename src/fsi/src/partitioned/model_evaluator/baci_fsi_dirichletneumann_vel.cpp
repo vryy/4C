@@ -53,17 +53,17 @@ void FSI::DirichletNeumannVel::Setup()
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   if (CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp)
-    dserror("Please set the fsi coupling variable to Velocity or Force!\n");
+    FOUR_C_THROW("Please set the fsi coupling variable to Velocity or Force!\n");
   SetKinematicCoupling(
       CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::vel);
   if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(StructureField(), true) ==
       Teuchos::null)
   {
-    dserror("Something went very wrong here! You should have a FBIStructureWrapper!\n");
+    FOUR_C_THROW("Something went very wrong here! You should have a FBIStructureWrapper!\n");
   }
   if (Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField(), true) == Teuchos::null)
   {
-    dserror("Something went very wrong here! You should have a FBIFluidMB adapter!\n");
+    FOUR_C_THROW("Something went very wrong here! You should have a FBIFluidMB adapter!\n");
   }
 }
 /*----------------------------------------------------------------------*/
@@ -77,7 +77,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidOp(
 
   if (fillFlag == User)
   {
-    dserror("Not implemented!\n");
+    FOUR_C_THROW("Not implemented!\n");
     return FluidToStruct(MBFluidField()->RelaxationSolve(Teuchos::null, Dt()));
   }
   else
@@ -116,7 +116,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
     if (not use_old_structure_)
       StructureField()->ApplyInterfaceForces(iforce);
     else
-      dserror(
+      FOUR_C_THROW(
           "Fluid beam interaction is not tested with the old structure time. You should not be "
           "here! Change the IntStrategy in your Input file to Standard.\n");
   }
@@ -154,12 +154,12 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::InitialGuess()
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
     if (CORE::UTILS::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
     {
-      dserror(
+      FOUR_C_THROW(
           "unknown interface force predictor '%s'", fsipart.get<std::string>("PREDICTOR").c_str());
     }
     return InterfaceForce();
   }
-  dserror("Something went very wrong here!\n");
+  FOUR_C_THROW("Something went very wrong here!\n");
   return Teuchos::null;
 }
 

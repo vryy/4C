@@ -76,7 +76,7 @@ int DRT::ELEMENTS::WallQuad4PoroType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad4>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to Wall1_Poro* failed");
+    if (!actele) FOUR_C_THROW("cast to Wall1_Poro* failed");
     actele->InitElement();
   }
   return 0;
@@ -139,7 +139,7 @@ int DRT::ELEMENTS::WallQuad9PoroType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::quad9>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to Wall1_Poro* failed");
+    if (!actele) FOUR_C_THROW("cast to Wall1_Poro* failed");
     actele->InitElement();
   }
   return 0;
@@ -206,7 +206,7 @@ int DRT::ELEMENTS::WallNurbs4PoroType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs4>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to Wall1_Poro* failed");
+    if (!actele) FOUR_C_THROW("cast to Wall1_Poro* failed");
     actele->InitElement();
   }
   return 0;
@@ -273,7 +273,7 @@ int DRT::ELEMENTS::WallNurbs9PoroType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::nurbs9>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to Wall1_Poro* failed");
+    if (!actele) FOUR_C_THROW("cast to Wall1_Poro* failed");
     actele->InitElement();
   }
   return 0;
@@ -339,7 +339,7 @@ int DRT::ELEMENTS::WallTri3PoroType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1Poro<CORE::FE::CellType::tri3>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to Wall1_Poro* failed");
+    if (!actele) FOUR_C_THROW("cast to Wall1_Poro* failed");
     actele->InitElement();
   }
   return 0;

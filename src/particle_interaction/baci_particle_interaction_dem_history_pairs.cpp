@@ -348,7 +348,7 @@ void PARTICLEINTERACTION::DEMHistoryPairs::UnpackHistoryPairs(const std::vector<
     historydata[globalid_i][globalid_j] = std::make_pair(true, historypair);
   }
   if (position != buffer.size())
-    dserror("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
+    FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
 }
 
 template <typename historypairtype>

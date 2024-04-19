@@ -85,7 +85,7 @@ void STR::PREDICT::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
     }
     default:
     {
-      dserror("Unsupported ConstDisVelAccPress predictor!");
+      FOUR_C_THROW("Unsupported ConstDisVelAccPress predictor!");
       break;
     }
   }

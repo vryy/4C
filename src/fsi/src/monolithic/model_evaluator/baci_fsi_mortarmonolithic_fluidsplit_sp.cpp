@@ -72,7 +72,7 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoin
     //        // do only nodes that I have in my discretization
     //        if (!FluidField()->Discretization()->NodeColMap()->MyGID(gid)) continue;
     //        DRT::Node* node = FluidField()->Discretization()->gNode(gid);
-    //        if (!node) dserror("Cannot find node with gid %",gid);
+    //        if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
 
     //        std::vector<int> nodedofs = FluidField()->Discretization()->Dof(node);
 
@@ -141,7 +141,7 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoin
                 "------------+"
              << std::endl;
 
-    dserror(errormsg.str());
+    FOUR_C_THROW(errormsg.str());
   }
   // ---------------------------------------------------------------------------
 
@@ -158,22 +158,22 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoin
   CreateLagrangeMultiplierDofRowMap();
   SetLagMult();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (coupling_solid_fluid_mortar_ == Teuchos::null)
   {
-    dserror("Allocation of 'coupling_solid_fluid_mortar_' failed.");
+    FOUR_C_THROW("Allocation of 'coupling_solid_fluid_mortar_' failed.");
   }
   if (ale_inner_interf_transform_ == Teuchos::null)
   {
-    dserror("Allocation of 'ale_inner_interf_transform_' failed.");
+    FOUR_C_THROW("Allocation of 'ale_inner_interf_transform_' failed.");
   }
   if (fluid_mesh_inner_inner_transform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fluid_mesh_inner_inner_transform_' failed.");
+    FOUR_C_THROW("Allocation of 'fluid_mesh_inner_inner_transform_' failed.");
   }
   if (lag_mult_ == Teuchos::null)
   {
-    dserror("Allocation of 'lag_mult_' failed.");
+    FOUR_C_THROW("Allocation of 'lag_mult_' failed.");
   }
 #endif
 }
@@ -298,7 +298,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::CreateCombinedDofRowMap()
   vecSpaces.push_back(lag_mult_dof_map_);
 
   if (vecSpaces[1]->NumGlobalElements() == 0)
-    dserror("No inner fluid equations. Splitting not possible.");
+    FOUR_C_THROW("No inner fluid equations. Splitting not possible.");
 
   SetDofRowMaps(vecSpaces);
 }
@@ -526,7 +526,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupDBCMapExtractor()
 
   // Finally, create the global FSI Dirichlet map extractor
   dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
-  if (dbcmaps_ == Teuchos::null) dserror("Creation of FSI Dirichlet map extractor failed.");
+  if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Creation of FSI Dirichlet map extractor failed.");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -988,7 +988,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::ScaleSystem(
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     // do scaling of ale rows
     A = mat.Matrix(2, 2).EpetraMatrix();
@@ -1003,14 +1003,14 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::ScaleSystem(
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(3, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
 
     // do scaling of structure and ale rhs vectors
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -1033,8 +1033,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
     Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 2);
 
-    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("structure scaling failed");
-    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sy, 0, x);
     Extractor().InsertVector(*ay, 2, x);
@@ -1042,8 +1042,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -1058,7 +1058,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::UnscaleSolution(
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(2, 2).EpetraMatrix();
     arowsum_->Reciprocal(*arowsum_);
@@ -1070,7 +1070,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::UnscaleSolution(
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(3, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
   }
 
   Epetra_Vector r(b.Map());
@@ -1116,7 +1116,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate(
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate");
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether all fields have the same time step size
   CheckIfDtsSame();
 #endif
@@ -1185,8 +1185,9 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::ExtractFieldVectors(
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicFluidSplitSaddlePoint::ExtractFieldVectors");
 
-#ifdef BACI_DEBUG
-  if (ddgpred_ == Teuchos::null) dserror("Vector 'ddgpred_' has not been initialized properly.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (ddgpred_ == Teuchos::null)
+    FOUR_C_THROW("Vector 'ddgpred_' has not been initialized properly.");
 #endif
 
   // get the mortar structure to fluid coupling matrix M
@@ -1368,7 +1369,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::CreateNodeOwnerRelationship(
     Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
     const INPAR::FSI::Redistribute domain)
 {
-  dserror("Not implemented, yet.");
+  FOUR_C_THROW("Not implemented, yet.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -51,7 +51,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   nv = gdata[2];
   np = gdata[3];
 
-  if (!(nv + np)) dserror("Cannot determine nodal block size");
+  if (!(nv + np)) FOUR_C_THROW("Cannot determine nodal block size");
 
   // store nv and np at unique location in solver parameter list
   solveparams.sublist("NodalBlockInformation").set("number of momentum dofs", nv);
@@ -97,8 +97,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // or want to recompute it anyway
   // -> compute nullspace
   // do the usual tests
-  if (!Filled()) dserror("FillComplete was not called on discretization");
-  if (!HaveDofs()) dserror("Discretization has no dofs assigned");
+  if (!Filled()) FOUR_C_THROW("FillComplete was not called on discretization");
+  if (!HaveDofs()) FOUR_C_THROW("Discretization has no dofs assigned");
 
   // compute solver parameters and set them into list
   CORE::LINEAR_SOLVER::Parameters::ComputeSolverParameters(*this, mllist);

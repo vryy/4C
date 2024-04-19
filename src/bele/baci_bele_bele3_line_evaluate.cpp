@@ -34,11 +34,11 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::Bele3Line::ActionType act = Bele3Line::none;
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "integrate_Shapefunction")
     act = Bele3Line::integrate_Shapefunction;
   else
-    dserror("Unknown type of action for Bele3Line");
+    FOUR_C_THROW("Unknown type of action for Bele3Line");
 
   switch (act)
   {
@@ -66,7 +66,7 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     default:
-      dserror("Unknown type of action for Bele3Line");
+      FOUR_C_THROW("Unknown type of action for Bele3Line");
       break;
   }  // end of switch(act)
 
@@ -179,7 +179,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
   }  // end of loop over integrationen points
 
 
-  // dserror("Line Neumann condition not yet implemented for Bele3");
+  // FOUR_C_THROW("Line Neumann condition not yet implemented for Bele3");
   return 0;
 }
 
@@ -196,7 +196,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Bele3Line::getOptimalGaussrule(
       rule = CORE::FE::GaussRule1D::line_3point;
       break;
     default:
-      dserror("unknown number of nodes for gaussrule initialization");
+      FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
       break;
   }
   return rule;
@@ -257,7 +257,7 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& pa
 
   //  if (parent_->IsMoving())
   {
-    dsassert(edispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(edispnp.size() != 0, "paranoid");
 
     for (size_t i = 0; i < iel; i++)
     {

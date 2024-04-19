@@ -37,7 +37,7 @@ bool DRT::ELEMENTS::NStet5::ReadElement(
   {
     // kintype_ not yet implemented for nstet5
     // kintype_ = sonstet5_linear;
-    dserror("Reading of SO_NSTET5 element failed only nonlinear kinematics implemented");
+    FOUR_C_THROW("Reading of SO_NSTET5 element failed only nonlinear kinematics implemented");
   }
   else if (buffer == "nonlinear")
   {
@@ -45,7 +45,7 @@ bool DRT::ELEMENTS::NStet5::ReadElement(
     // kintype_ = sonstet5_nonlinear;
   }
   else
-    dserror("Reading SO_NSTET5 element failed KINEM unknown");
+    FOUR_C_THROW("Reading SO_NSTET5 element failed KINEM unknown");
 
   return true;
 }

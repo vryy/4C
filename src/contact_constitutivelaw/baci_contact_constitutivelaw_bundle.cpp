@@ -55,7 +55,8 @@ void CONTACT::CONSTITUTIVELAW::Bundle::MakeParameters()
       Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> lawpar = m->second;
       if (law != Teuchos::null) continue;
     }
-    dserror("Allocation of quick access parameters failed for contact constitutivelaw %d", lawid);
+    FOUR_C_THROW(
+        "Allocation of quick access parameters failed for contact constitutivelaw %d", lawid);
   }
 }
 
@@ -66,10 +67,10 @@ Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> CONTACT::CONSTITUTIVELAW::Bund
   std::map<int, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container>>::const_iterator m =
       map_.find(id);
 
-  if (map_.size() == 0) dserror("No contact constitutivelaws available, num=%d", id);
+  if (map_.size() == 0) FOUR_C_THROW("No contact constitutivelaws available, num=%d", id);
 
   if (m == map_.end())
-    dserror("Contact Constitutive Law 'Law %d' could not be found", id);
+    FOUR_C_THROW("Contact Constitutive Law 'Law %d' could not be found", id);
   else
     return m->second;
 

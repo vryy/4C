@@ -193,10 +193,11 @@ MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::GetCoupledStructuralTensor_str
     case FiberLocation::GPFibers:
       return A1A2_[gp];
     default:
-      dserror("You have not specified, whether you want fibers on GP level or on element level.");
+      FOUR_C_THROW(
+          "You have not specified, whether you want fibers on GP level or on element level.");
   }
 
-  // Can not land here because of the dserror(). Just here to ensure no compiler warning.
+  // Can not land here because of the FOUR_C_THROW(). Just here to ensure no compiler warning.
   std::abort();
 }
 
@@ -209,10 +210,11 @@ double MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::GetCoupledScalarProduct
     case FiberLocation::GPFibers:
       return a1a2_[gp];
     default:
-      dserror("You have not specified, whether you want fibers on GP level or on element level.");
+      FOUR_C_THROW(
+          "You have not specified, whether you want fibers on GP level or on element level.");
   }
 
-  // Can not land here because of the dserror(). Just here to ensure no compiler warning.
+  // Can not land here because of the FOUR_C_THROW(). Just here to ensure no compiler warning.
   std::abort();
 }
 

@@ -199,7 +199,7 @@ namespace FSI
         Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
         const INPAR::FSI::Redistribute domain) override
     {
-      dserror("Not implemented!");
+      FOUR_C_THROW("Not implemented!");
     }
 
    protected:
@@ -239,9 +239,9 @@ namespace FSI
     //! set the Lagrange multiplier (e.g. after restart, to be called from subclass)
     virtual void SetLambda(Teuchos::RCP<Epetra_Vector> lambdanew)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (lambdanew == Teuchos::null || !lambdanew->Map().PointSameAs(lambda_->Map()))
-        dserror("Map failure! Attempting to assign invalid vector to lambda_.");
+        FOUR_C_THROW("Map failure! Attempting to assign invalid vector to lambda_.");
 #endif
       lambda_ = lambdanew;
     }

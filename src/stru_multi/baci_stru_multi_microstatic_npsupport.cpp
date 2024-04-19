@@ -167,7 +167,7 @@ void STRUMULTI::np_support_drt()
         return;
       }
       default:
-        dserror("Supporting processors do not know what to do (%i)!", whattodo);
+        FOUR_C_THROW("Supporting processors do not know what to do (%i)!", whattodo);
         break;
     }
 

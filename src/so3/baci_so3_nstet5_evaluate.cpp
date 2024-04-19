@@ -48,9 +48,9 @@ void DRT::ELEMENTS::NStet5::InitElement()
 
     V_ = J.Determinant() / 6.0;
     if (V_ == 0.0)
-      dserror("Element volume is zero");
+      FOUR_C_THROW("Element volume is zero");
     else if (V_ < 0.0)
-      dserror("Element volume is negative");
+      FOUR_C_THROW("Element volume is negative");
   }
 
   //------------------------------------------------------------------subtets
@@ -100,9 +100,9 @@ void DRT::ELEMENTS::NStet5::InitElement()
     }
     subV_[i] = J.Determinant() / 6.0;
     if (subV_[i] == 0.0)
-      dserror("NSTET5 %d Subelement %d volume is zero %10.6e", Id(), i, subV_[i]);
+      FOUR_C_THROW("NSTET5 %d Subelement %d volume is zero %10.6e", Id(), i, subV_[i]);
     else if (subV_[i] < 0.0)
-      dserror("NSTET5 %d Subelement %d volume is negative %10.6e", Id(), i, subV_[i]);
+      FOUR_C_THROW("NSTET5 %d Subelement %d volume is negative %10.6e", Id(), i, subV_[i]);
 
     // spatial derivatives of shape functions
     tmp.MultiplyTN(xrefe, deriv);
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
     solver.FactorWithEquilibration(true);
     int err = solver.Factor();
     int err2 = solver.Solve();
-    if (err || err2) dserror("Inversion of Jacobian failed");
+    if (err || err2) FOUR_C_THROW("Inversion of Jacobian failed");
     subnxyz_[i].Multiply(deriv, partials);
   }  // for (int i=0; i<4; ++i)
 
@@ -150,7 +150,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_linstiff")
     act = NStet5::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
@@ -182,7 +182,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_struct_predict")
     return 0;
   else
-    dserror("Unknown type of action for NStet5");
+    FOUR_C_THROW("Unknown type of action for NStet5");
 
   // what should the element do
   switch (act)
@@ -194,7 +194,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       nstet5nlnstiffmass(lm, mydisp, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
@@ -209,7 +209,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       CORE::LINALG::Matrix<15, 15>* elemat1ptr = nullptr;
@@ -225,7 +225,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       // CORE::LINALG::Matrix<15,15> myemat(true);
@@ -245,14 +245,14 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
       Teuchos::RCP<std::vector<char>> straindata =
           params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-      if (stressdata == Teuchos::null) dserror("Cannot get stress 'data'");
-      if (straindata == Teuchos::null) dserror("Cannot get strain 'data'");
+      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
+      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get strain 'data'");
       auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
           params, "iostress", INPAR::STR::stress_none);
       auto iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
           params, "iostrain", INPAR::STR::strain_none);
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       CORE::LINALG::Matrix<1, 6> stress(true);
@@ -270,7 +270,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       {
         const int gid = Nodes()[i]->Id();
         const int lid = nodestress->Map().LID(gid);
-        if (lid == -1) dserror("Cannot find matching nodal stresses/strains");
+        if (lid == -1) FOUR_C_THROW("Cannot find matching nodal stresses/strains");
         for (int j = 0; j < 6; ++j)
         {
           stress(0, j) += (*(*nodestress)(j))[lid];
@@ -312,12 +312,12 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     case calc_struct_eleload:
-      dserror("this class is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this class is not supposed to evaluate a load, use EvaluateNeumann(...)");
       break;
 
     //==================================================================================
     case calc_struct_fsiload:
-      dserror("Case not yet implemented");
+      FOUR_C_THROW("Case not yet implemented");
       break;
 
     //==================================================================================
@@ -342,13 +342,13 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     // linear stiffness and consistent mass matrix
     case calc_struct_linstiffmass:
-      dserror("Case 'calc_struct_linstiffmass' not implemented");
+      FOUR_C_THROW("Case 'calc_struct_linstiffmass' not implemented");
       break;
 
     //==================================================================================
     // linear stiffness
     case calc_struct_linstiff:
-      dserror("action calc_struct_linstiff currently not supported");
+      FOUR_C_THROW("action calc_struct_linstiff currently not supported");
       break;
 
     //==================================================================================
@@ -367,7 +367,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     default:
-      dserror("Unknown type of action for NStet5");
+      FOUR_C_THROW("Unknown type of action for NStet5");
   }
   return 0;
 }
@@ -506,7 +506,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
       {
         case INPAR::STR::strain_gl:
         {
-          if (elestrain == nullptr) dserror("no strain data available");
+          if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
           for (int i = 0; i < 3; ++i)
             (*elestrain)(0, i) += (SubV(sub) / Vol() * ALPHA_NSTET5 * glstrainbar(i));
           for (int i = 0; i < 3; ++i)
@@ -515,7 +515,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
         break;
         case INPAR::STR::strain_ea:
         {
-          if (elestrain == nullptr) dserror("no strain data available");
+          if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
           CORE::LINALG::Matrix<3, 3> gl;
           gl(0, 0) = glstrainbar(0);  // divide off-diagonals by 2
           gl(0, 1) = 0.5 * glstrainbar(3);
@@ -552,14 +552,14 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
         case INPAR::STR::strain_none:
           break;
         default:
-          dserror("requested strain option not available");
+          FOUR_C_THROW("requested strain option not available");
       }
       //-----------------------------------------------------------------stress
       switch (iostress)
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == nullptr) dserror("no stress data available");
+          if (elestress == nullptr) FOUR_C_THROW("no stress data available");
 
           for (int i = 0; i < 6; ++i)
             (*elestress)(0, i) += (SubV(sub) / Vol() * stress(i));  // ALPHA_NSTET already in stress
@@ -567,7 +567,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
         break;
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == nullptr) dserror("no stress data available");
+          if (elestress == nullptr) FOUR_C_THROW("no stress data available");
 
           CORE::LINALG::Matrix<3, 3> pkstress;
           pkstress(0, 0) = stress(0);  // ALPHA_NSTET already in stress
@@ -602,7 +602,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
         case INPAR::STR::stress_none:
           break;
         default:
-          dserror("requested stress type not available");
+          FOUR_C_THROW("requested stress type not available");
       }
     }
 
@@ -814,7 +814,7 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
       break;
     }
     default:
-      dserror("Illegal type %d of material for element NStet5 tet4", mat->MaterialType());
+      FOUR_C_THROW("Illegal type %d of material for element NStet5 tet4", mat->MaterialType());
       break;
   }
 
@@ -831,7 +831,7 @@ int DRT::ELEMENTS::NStet5::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("DRT::ELEMENTS::NStet5::EvaluateNeumann not implemented");
+  FOUR_C_THROW("DRT::ELEMENTS::NStet5::EvaluateNeumann not implemented");
   return -1;
 }  // DRT::ELEMENTS::NStet5::EvaluateNeumann
 

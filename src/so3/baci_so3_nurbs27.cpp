@@ -188,7 +188,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::Unpack(const std::vector<char>& data)
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

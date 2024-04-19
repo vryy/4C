@@ -74,13 +74,13 @@ namespace ADAPTER
 
     Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) override
     {
-      dserror("Do not call RexationSolve for XFFSI.");
+      FOUR_C_THROW("Do not call RexationSolve for XFFSI.");
       return Teuchos::null;
     }
 
     Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override
     {
-      dserror("Do not call ExtractInterfaceForces for XFFSI.");
+      FOUR_C_THROW("Do not call ExtractInterfaceForces for XFFSI.");
       return Teuchos::null;
     }
 
@@ -123,7 +123,7 @@ namespace ADAPTER
     /// Apply initial mesh displacement
     void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override
     {
-      dserror("Not implemented, yet!");
+      FOUR_C_THROW("Not implemented, yet!");
     }
 
     // apply ALE-mesh displacements to embedded fluid

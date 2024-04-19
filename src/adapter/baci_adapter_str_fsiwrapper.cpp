@@ -106,13 +106,13 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
     }
     case 2:
       // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
-      dserror("interface velocity v(n-1) not available");
+      FOUR_C_THROW("interface velocity v(n-1) not available");
       break;
     case 3:
     {
       // d(n)+dt*v(n)
       if (PrestressIsActive(Time()))
-        dserror("only constant interface predictor useful for prestressing");
+        FOUR_C_THROW("only constant interface predictor useful for prestressing");
 
       double dt = Dt();
 
@@ -126,7 +126,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
     {
       // d(n)+dt*v(n)+0.5*dt^2*a(n)
       if (PrestressIsActive(Time()))
-        dserror("only constant interface predictor useful for prestressing");
+        FOUR_C_THROW("only constant interface predictor useful for prestressing");
 
       double dt = Dt();
 
@@ -138,11 +138,12 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
       break;
     }
     default:
-      dserror("unknown interface displacement predictor '%s'", GLOBAL::Problem::Instance()
-                                                                   ->FSIDynamicParams()
-                                                                   .sublist("PARTITIONED SOLVER")
-                                                                   .get<std::string>("PREDICTOR")
-                                                                   .c_str());
+      FOUR_C_THROW(
+          "unknown interface displacement predictor '%s'", GLOBAL::Problem::Instance()
+                                                               ->FSIDynamicParams()
+                                                               .sublist("PARTITIONED SOLVER")
+                                                               .get<std::string>("PREDICTOR")
+                                                               .c_str());
       break;
   }
 
@@ -154,7 +155,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispn()
 {
-  dsassert(interface_->FullMap()->PointSameAs(Dispn()->Map()),
+  FOUR_C_ASSERT(interface_->FullMap()->PointSameAs(Dispn()->Map()),
       "Full map of map extractor and Dispn() do not match.");
 
   // prestressing business
@@ -173,7 +174,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispn(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp()
 {
-  dsassert(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
+  FOUR_C_ASSERT(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
       "Full map of map extractor and Dispnp() do not match.");
 
   // prestressing business

@@ -82,9 +82,9 @@ void PARTICLEENGINE::ParticleContainer::DecreaseContainerSize()
   // set size of particle container (at least one)
   containersize_ = (newsize > 0) ? newsize : 1;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (particlestored_ > containersize_)
-    dserror(
+    FOUR_C_THROW(
         "decreasing size of container not possible: particles stored %d > new container size %d!",
         particlestored_, containersize_);
 #endif
@@ -122,9 +122,9 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
     // state handed over
     else
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (static_cast<int>(states[state].size()) != statedim_[state])
-        dserror("can not add particle: dimensions of state '%s' do not match!",
+        FOUR_C_THROW("can not add particle: dimensions of state '%s' do not match!",
             EnumToStateName(state).c_str());
 #endif
 
@@ -144,9 +144,9 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
 void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
     int index, int globalid, const ParticleStates& states)
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not replace particle as index %d out of bounds!", index);
+    FOUR_C_THROW("can not replace particle as index %d out of bounds!", index);
 #endif
 
   // replace global id in container
@@ -163,9 +163,9 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
     // state handed over
     else
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (static_cast<int>(states[state].size()) != statedim_[state])
-        dserror("can not replace particle: dimensions of state '%s' do not match!",
+        FOUR_C_THROW("can not replace particle: dimensions of state '%s' do not match!",
             EnumToStateName(state).c_str());
 #endif
 
@@ -179,9 +179,9 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
 void PARTICLEENGINE::ParticleContainer::GetParticle(
     int index, int& globalid, ParticleStates& states) const
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not return particle as index %d out of bounds!", index);
+    FOUR_C_THROW("can not return particle as index %d out of bounds!", index);
 #endif
 
   // get global id from container
@@ -203,9 +203,9 @@ void PARTICLEENGINE::ParticleContainer::GetParticle(
 
 void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (index < 0 or index > (particlestored_ - 1))
-    dserror("can not remove particle as index %d out of bounds!", index);
+    FOUR_C_THROW("can not remove particle as index %d out of bounds!", index);
 #endif
 
   // decrease counter of stored particles
@@ -226,9 +226,9 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
 
 double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(ParticleState state) const
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not storedstates_.count(state))
-    dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
+    FOUR_C_THROW("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif
 
   if (particlestored_ <= 0) return 0.0;
@@ -243,9 +243,9 @@ double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(ParticleState state
 
 double PARTICLEENGINE::ParticleContainer::GetMaxValueOfState(ParticleState state) const
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not storedstates_.count(state))
-    dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
+    FOUR_C_THROW("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif
 
   if (particlestored_ <= 0) return 0.0;

@@ -43,7 +43,8 @@ int DRT::DiscretizationXFEM::InitialFillComplete(const std::vector<int>& nds,
       DRT::Discretization::FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
   if (!assigndegreesoffreedom)
-    dserror("DiscretizationXFEM: Call InitialFillComplete() with assigndegreesoffreedom = true!");
+    FOUR_C_THROW(
+        "DiscretizationXFEM: Call InitialFillComplete() with assigndegreesoffreedom = true!");
 
   // Store initial dofs of the discretisation
   StoreInitialDofs(nds);
@@ -56,7 +57,7 @@ int DRT::DiscretizationXFEM::InitialFillComplete(const std::vector<int>& nds,
 bool DRT::DiscretizationXFEM::Initialized() const
 {
   if (!initialized_)
-    dserror("DiscretizationXFEM is not initialized! - Call InitialFillComplete() once!");
+    FOUR_C_THROW("DiscretizationXFEM is not initialized! - Call InitialFillComplete() once!");
   return initialized_;
 }
 
@@ -66,7 +67,7 @@ bool DRT::DiscretizationXFEM::Initialized() const
 void DRT::DiscretizationXFEM::StoreInitialDofs(const std::vector<int>& nds)
 {
   if (nds.size() != 1)
-    dserror(
+    FOUR_C_THROW(
         "DiscretizationXFEM: At the moment just one initial dofset to be initialized is supported "
         "by DiscretisationXFEM!");
 
@@ -78,28 +79,29 @@ void DRT::DiscretizationXFEM::StoreInitialDofs(const std::vector<int>& nds)
 
   // store map required for export to active dofs
   if (initialdofsets_.size() > 1)
-    dserror(
+    FOUR_C_THROW(
         "DiscretizationXFEM: At the moment just one initial dofset is supported by "
         "DiscretisationXFEM!");
 
   Teuchos::RCP<DRT::FixedSizeDofSet> fsds =
       Teuchos::rcp_dynamic_cast<DRT::FixedSizeDofSet>(initialdofsets_[0]);
-  if (fsds == Teuchos::null) dserror("DiscretizationXFEM: Cast to DRT::FixedSizeDofSet failed!");
+  if (fsds == Teuchos::null)
+    FOUR_C_THROW("DiscretizationXFEM: Cast to DRT::FixedSizeDofSet failed!");
 
   Teuchos::RCP<XFEM::XFEMDofSet> xfds =
       Teuchos::rcp_dynamic_cast<XFEM::XFEMDofSet>(initialdofsets_[0]);
   if (xfds != Teuchos::null)
-    dserror("DiscretizationXFEM: Initial Dofset shouldn't be a XFEM::XFEMDofSet!");
+    FOUR_C_THROW("DiscretizationXFEM: Initial Dofset shouldn't be a XFEM::XFEMDofSet!");
 
   int numdofspernode = 0;
   fsds->GetReservedMaxNumDofperNode(numdofspernode);
 
-  if (NumMyColNodes() == 0) dserror("no column node on this proc available!");
+  if (NumMyColNodes() == 0) FOUR_C_THROW("no column node on this proc available!");
   int numdofspernodedofset = fsds->NumDof(lColNode(0));
   int numdofsetspernode = 0;
 
   if (numdofspernode % numdofspernodedofset)
-    dserror("DiscretizationXFEM: Dividing numdofspernode / numdofspernodedofset failed!");
+    FOUR_C_THROW("DiscretizationXFEM: Dividing numdofspernode / numdofspernodedofset failed!");
   else
     numdofsetspernode = numdofspernode / numdofspernodedofset;
 
@@ -138,7 +140,7 @@ void DRT::DiscretizationXFEM::ExportInitialtoActiveVector(
     {
       Epetra_Import importer(fullvec->Map(), initialvec->Map());
       int err = fullvec->Import(*initialvec, importer, Insert);
-      if (err) dserror("Export using exporter returned err=%d", err);
+      if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
     }
   }
   fullvec->ReplaceMap(*initialfulldofrowmap_);  /// replace |1 2 3 4|1 2 3 4| -> |1 2 3 4|5 6 7 8|
@@ -164,7 +166,7 @@ void DRT::DiscretizationXFEM::ExportActivetoInitialVector(
 const Epetra_Map* DRT::DiscretizationXFEM::InitialDofRowMap(unsigned nds) const
 {
   Initialized();
-  dsassert(nds < initialdofsets_.size(), "undefined initial dof set");
+  FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined initial dof set");
 
   return initialdofsets_[nds]->DofRowMap();
 }
@@ -176,7 +178,7 @@ const Epetra_Map* DRT::DiscretizationXFEM::InitialDofRowMap(unsigned nds) const
 const Epetra_Map* DRT::DiscretizationXFEM::InitialDofColMap(unsigned nds) const
 {
   Initialized();
-  dsassert(nds < initialdofsets_.size(), "undefined initial dof set");
+  FOUR_C_ASSERT(nds < initialdofsets_.size(), "undefined initial dof set");
 
   return initialdofsets_[nds]->DofColMap();
 }
@@ -193,7 +195,7 @@ Teuchos::RCP<Epetra_Map> DRT::DiscretizationXFEM::ExtendMap(
   std::vector<int> dstgids;
   for (int i = 0; i < numsrcelements; i += numdofspernodedofset)
   {
-    if (numsrcelements < i + numdofspernodedofset) dserror("ExtendMap(): Check your srcmap!");
+    if (numsrcelements < i + numdofspernodedofset) FOUR_C_THROW("ExtendMap(): Check your srcmap!");
     for (int dofset = 0; dofset < numdofsets; ++dofset)
     {
       for (int dof = 0; dof < numdofspernodedofset; ++dof)
@@ -214,7 +216,7 @@ void DRT::DiscretizationXFEM::SetInitialState(
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::DiscretizationXFEM::SetInitialState");
 
-  if (!HaveDofs()) dserror("FillComplete() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("FillComplete() was not called");
   const Epetra_Map* colmap = InitialDofColMap(nds);
   const Epetra_BlockMap& vecmap = state->Map();
 
@@ -230,10 +232,11 @@ void DRT::DiscretizationXFEM::SetInitialState(
   }
   else  // if it's not in column map export and allocate
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (not InitialDofRowMap(nds)->SameAs(state->Map()))
     {
-      dserror("row map of discretization and state vector %s are different. This is a fatal bug!",
+      FOUR_C_THROW(
+          "row map of discretization and state vector %s are different. This is a fatal bug!",
           name.c_str());
     }
 #endif

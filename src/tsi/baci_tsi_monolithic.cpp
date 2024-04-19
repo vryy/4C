@@ -94,7 +94,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
   // another setup of structural time integration with the correct initial temperature is required,
   // so get the temperature
-  if (ThermoField()->Tempnp() == Teuchos::null) dserror("this is nullptr");
+  if (ThermoField()->Tempnp() == Teuchos::null) FOUR_C_THROW("this is nullptr");
 
   if (matchinggrid_)
     StructureField()->Discretization()->SetState(1, "temperature", ThermoField()->Tempnp());
@@ -254,7 +254,7 @@ void TSI::Monolithic::CreateLinearSolver()
   const int linsolvernumber = tsidynmono_.get<int>("LINEAR_SOLVER");
   // check if the TSI solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for monolithic TSI. Please set LINEAR_SOLVER in TSI DYNAMIC to a "
         "valid number!");
 
@@ -274,7 +274,7 @@ void TSI::Monolithic::CreateLinearSolver()
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("Iterative solver expected");
+    FOUR_C_THROW("Iterative solver expected");
   }
 
   // prepare linear solvers and preconditioners
@@ -296,7 +296,7 @@ void TSI::Monolithic::CreateLinearSolver()
       const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
       // check if the structural solver has a valid solver number
       if (slinsolvernumber == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
             "DYNAMIC to a valid number!");
 
@@ -307,7 +307,7 @@ void TSI::Monolithic::CreateLinearSolver()
       const int tlinsolvernumber = tdyn.get<int>("LINEAR_SOLVER");
       // check if the TSI solver has a valid solver number
       if (tlinsolvernumber == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for thermal field. Please set LINEAR_SOLVER in THERMAL "
             "DYNAMIC "
             "to a valid number!");
@@ -350,7 +350,7 @@ void TSI::Monolithic::CreateLinearSolver()
       break;
     }
     default:
-      dserror(
+      FOUR_C_THROW(
           "Block Gauss-Seidel BGS2x2 preconditioner expected. Alternatively you can define your "
           "own AMG block preconditioner (using an xml file). This is experimental.");
       break;
@@ -377,7 +377,7 @@ void TSI::Monolithic::Solve()
       break;
     // catch problems
     default:
-      dserror("Solution technique \"%s\" is not implemented",
+      FOUR_C_THROW("Solution technique \"%s\" is not implemented",
           INPAR::TSI::NlnSolTechString(soltech_).c_str());
       break;
   }  // end switch (soltechnique_)
@@ -464,7 +464,7 @@ void TSI::Monolithic::NewtonFull()
   SetupSystemMatrix();
 
   // check whether we have a sanely filled tangent matrix
-  if (not systemmatrix_->Filled()) dserror("Effective tangent matrix must be filled here");
+  if (not systemmatrix_->Filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
 
   // create full monolithic rhs vector
   // make negative residual not necessary: rhs_ is already negative
@@ -534,7 +534,7 @@ void TSI::Monolithic::NewtonFull()
     SetupSystemMatrix();
 
     // check whether we have a sanely filled tangent matrix
-    if (not systemmatrix_->Filled()) dserror("Effective tangent matrix must be filled here");
+    if (not systemmatrix_->Filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
 
     // create full monolithic rhs vector
     // make negative residual not necessary: rhs_ is already negative
@@ -592,7 +592,7 @@ void TSI::Monolithic::NewtonFull()
       }
       break;
       default:
-        dserror("unknown line search strategy");
+        FOUR_C_THROW("unknown line search strategy");
     }  // end line search
 
     // --------------------------------------------- build residual norms
@@ -656,7 +656,7 @@ void TSI::Monolithic::NewtonFull()
         INPAR::STR::divcont_continue)
       ;  // do nothing
     else
-      dserror("Newton unconverged in %d iterations", iter_);
+      FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
   }
   // for validation with literature calculate nodal TSI values
   if ((CORE::UTILS::IntegralValue<bool>(tsidynmono_, "CALC_NECKING_TSI_VALUES")) == true)
@@ -709,7 +709,7 @@ void TSI::Monolithic::PTC()
   SetupSystemMatrix();
 
   // check whether we have a sanely filled tangent matrix
-  if (not systemmatrix_->Filled()) dserror("Effective tangent matrix must be filled here");
+  if (not systemmatrix_->Filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
 
   // create full monolithic rhs vector
   // make negative residual not necessary: rhs_ is already negative
@@ -814,7 +814,7 @@ void TSI::Monolithic::PTC()
     SetupSystemMatrix();
 
     // check whether we have a sanely filled tangent matrix
-    if (not systemmatrix_->Filled()) dserror("Effective tangent matrix must be filled here");
+    if (not systemmatrix_->Filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
 
     // create full monolithic rhs vector
     // make negative residual not necessary: rhs_ is already negative
@@ -896,7 +896,7 @@ void TSI::Monolithic::PTC()
     PrintNewtonConv();
   }
   else if (iter_ >= itermax_)
-    dserror("PTC unconverged in %d iterations", iter_);
+    FOUR_C_THROW("PTC unconverged in %d iterations", iter_);
 
 }  // PTC()
 
@@ -1120,8 +1120,8 @@ void TSI::Monolithic::SetDofRowMaps()
   vecSpaces.push_back(StructureField()->DofRowMap(0));
   vecSpaces.push_back(ThermoField()->DofRowMap(0));
 
-  if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No temperature equation. Panic.");
+  if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No temperature equation. Panic.");
 
   Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
 
@@ -1391,7 +1391,7 @@ bool TSI::Monolithic::Converged()
       convrhs = ((normrhs_ < tolrhs_) and (normrhs_ < std::max(normrhsiter0_ * tolrhs_, 1.0e-15)));
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }
 
@@ -1408,7 +1408,7 @@ bool TSI::Monolithic::Converged()
       convinc = norminc_ < std::max(norminciter0_ * tolinc_, 1e-15);
       break;
     default:
-      dserror("Cannot check for convergence of increments!");
+      FOUR_C_THROW("Cannot check for convergence of increments!");
       break;
   }  // switch (normtypeinc_)
 
@@ -1428,7 +1428,7 @@ bool TSI::Monolithic::Converged()
                     (normstrrhs_ < std::max(normstrrhsiter0_ * tolstrrhs_, 1e-15)));
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }  // switch (normtypestrrhs_)
 
@@ -1446,7 +1446,7 @@ bool TSI::Monolithic::Converged()
           ((normdisi_ < toldisi_) or (normdisi_ < std::max(normdisiiter0_ * toldisi_, 1e-15)));
       break;
     default:
-      dserror("Cannot check for convergence of displacements!");
+      FOUR_C_THROW("Cannot check for convergence of displacements!");
       break;
   }  // switch (normtypedisi_)
 
@@ -1464,7 +1464,7 @@ bool TSI::Monolithic::Converged()
       convthrrhs = ((normthrrhs_ < tolthrrhs_) or (normthrrhs_ < normthrrhsiter0_ * tolthrrhs_));
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }  // switch (normtypethrrhs_)
 
@@ -1481,7 +1481,7 @@ bool TSI::Monolithic::Converged()
       convtemp = ((normtempi_ < toltempi_) or (normtempi_ < normtempiiter0_ * toltempi_));
       break;
     default:
-      dserror("Cannot check for convergence of temperatures!");
+      FOUR_C_THROW("Cannot check for convergence of temperatures!");
       break;
   }  // switch (normtypetempi_)
 
@@ -1502,7 +1502,7 @@ bool TSI::Monolithic::Converged()
   else if (combincrhs_ == INPAR::TSI::bop_or_singl)
     conv = (convdisp or convstrrhs or convtemp or convthrrhs);
   else
-    dserror("Something went terribly wrong with binary operator!");
+    FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
   // convergence of active contact set
   if (contact_strategy_lagrange_ != Teuchos::null)
@@ -1568,7 +1568,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(15) << "mix-res-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1581,7 +1581,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(15) << "rel-inc-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1599,7 +1599,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(18) << "mix-str-res-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypestrrhs_)
 
@@ -1615,7 +1615,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(16) << "mix-dis-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypedisi_)
 
@@ -1632,7 +1632,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(18) << "mix-thr-res-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypethrrhs_)
 
@@ -1648,7 +1648,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(16) << "mix-temp-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypetempi_)
 
@@ -1681,7 +1681,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == nullptr) dserror("no ofile available");
+  if (ofile == nullptr) FOUR_C_THROW("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -1725,7 +1725,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(normrhs_, normrhs_ / normrhsiter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1742,7 +1742,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(norminc_, norminc_ / norminciter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypeinc_)
 
@@ -1764,7 +1764,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(normstrrhs_, normstrrhs_ / normstrrhsiter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypestrrhs_)
 
@@ -1781,7 +1781,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(normdisi_, normdisi_ / normdisiiter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypedisi_)
 
@@ -1800,7 +1800,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(normthrrhs_, normthrrhs_ / normthrrhsiter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypethrrhs_)
 
@@ -1818,7 +1818,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(normtempi_, normtempi_ / normtempiiter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypetempi_)
 
@@ -1855,7 +1855,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == nullptr) dserror("no ofile available");
+  if (ofile == nullptr) FOUR_C_THROW("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -1961,7 +1961,7 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
       break;
     }
     default:
-      dserror("Don't know what to do...");
+      FOUR_C_THROW("Don't know what to do...");
       break;
   }  // end of switch(strmethodname_)
 
@@ -2025,7 +2025,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
     case INPAR::THR::dyna_undefined:
     default:
     {
-      dserror("Don't know what to do...");
+      FOUR_C_THROW("Don't know what to do...");
       break;
     }
   }  // switch (THR::DynamicType)
@@ -2055,7 +2055,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
       break;
     }
     default:
-      dserror("Don't know what to do...");
+      FOUR_C_THROW("Don't know what to do...");
       break;
   }
 
@@ -2152,7 +2152,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
       case INPAR::THR::dyna_undefined:
       default:
       {
-        dserror("Don't know what to do...");
+        FOUR_C_THROW("Don't know what to do...");
         break;
       }
     }  // end(switch)
@@ -2237,7 +2237,7 @@ void TSI::Monolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epet
     if ((A->LeftScale(*srowsum_)) or (A->RightScale(*scolsum_)) or
         (mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_)) or
         (mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_)))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(1, 1).EpetraMatrix();
     trowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
@@ -2247,13 +2247,13 @@ void TSI::Monolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epet
     if ((A->LeftScale(*trowsum_)) or (A->RightScale(*tcolsum_)) or
         (mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*trowsum_)) or
         (mat.Matrix(0, 1).EpetraMatrix()->RightScale(*tcolsum_)))
-      dserror("thermo scaling failed");
+      FOUR_C_THROW("thermo scaling failed");
 
     Teuchos::RCP<Epetra_Vector> sx = Extractor()->ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> tx = Extractor()->ExtractVector(b, 1);
 
-    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (tx->Multiply(1.0, *trowsum_, *tx, 0.0)) dserror("thermo scaling failed");
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (tx->Multiply(1.0, *trowsum_, *tx, 0.0)) FOUR_C_THROW("thermo scaling failed");
 
     Extractor()->InsertVector(*sx, 0, b);
     Extractor()->InsertVector(*tx, 1, b);
@@ -2274,8 +2274,8 @@ void TSI::Monolithic::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sy = Extractor()->ExtractVector(x, 0);
     Teuchos::RCP<Epetra_Vector> ty = Extractor()->ExtractVector(x, 1);
 
-    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("structure scaling failed");
-    if (ty->Multiply(1.0, *tcolsum_, *ty, 0.0)) dserror("thermo scaling failed");
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ty->Multiply(1.0, *tcolsum_, *ty, 0.0)) FOUR_C_THROW("thermo scaling failed");
 
     Extractor()->InsertVector(*sy, 0, x);
     Extractor()->InsertVector(*ty, 1, x);
@@ -2283,8 +2283,8 @@ void TSI::Monolithic::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sx = Extractor()->ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> tx = Extractor()->ExtractVector(b, 1);
 
-    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (tx->ReciprocalMultiply(1.0, *trowsum_, *tx, 0.0)) dserror("thermo scaling failed");
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (tx->ReciprocalMultiply(1.0, *trowsum_, *tx, 0.0)) FOUR_C_THROW("thermo scaling failed");
 
     Extractor()->InsertVector(*sx, 0, b);
     Extractor()->InsertVector(*tx, 1, b);
@@ -2295,7 +2295,7 @@ void TSI::Monolithic::UnscaleSolution(
     if ((A->LeftScale(*srowsum_)) or (A->RightScale(*scolsum_)) or
         (mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_)) or
         (mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_)))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(1, 1).EpetraMatrix();
     trowsum_->Reciprocal(*trowsum_);
@@ -2303,7 +2303,7 @@ void TSI::Monolithic::UnscaleSolution(
     if ((A->LeftScale(*trowsum_)) or (A->RightScale(*tcolsum_)) or
         (mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*trowsum_)) or
         (mat.Matrix(0, 1).EpetraMatrix()->RightScale(*tcolsum_)))
-      dserror("thermo scaling failed");
+      FOUR_C_THROW("thermo scaling failed");
 
   }  // if (scaling_infnorm)
 
@@ -2357,7 +2357,7 @@ double TSI::Monolithic::CalculateVectorNorm(
   }
   else
   {
-    dserror("Cannot handle vector norm");
+    FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
 }  // CalculateVectorNorm()
@@ -2437,7 +2437,7 @@ void TSI::Monolithic::SetDefaultParameters()
     }
     default:
     {
-      dserror("Something went terribly wrong with binary operator!");
+      FOUR_C_THROW("Something went terribly wrong with binary operator!");
       break;
     }
   }  // switch (combincrhs_)
@@ -2461,7 +2461,7 @@ void TSI::Monolithic::SetDefaultParameters()
       break;
     case INPAR::STR::norm_vague:
     default:
-      dserror("STR norm is not determined");
+      FOUR_C_THROW("STR norm is not determined");
       break;
   }  // switch (striternorm)
 
@@ -2483,7 +2483,7 @@ void TSI::Monolithic::SetDefaultParameters()
     case INPAR::THR::norm_vague:
     default:
     {
-      dserror("THR norm is not determined.");
+      FOUR_C_THROW("THR norm is not determined.");
       break;
     }
   }  // switch (thriternorm)
@@ -2574,7 +2574,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   {
     // get nodes which have DBCs
     const std::vector<int>* nodeids_withdbc = dbc[i]->GetNodes();
-    if (!nodeids_withdbc) dserror("Condition does not have Node Ids");
+    if (!nodeids_withdbc) FOUR_C_THROW("Condition does not have Node Ids");
 
     // loop over DBC nodes
     for (int k = 0; k < (int)(*nodeids_withdbc).size(); ++k)
@@ -2586,7 +2586,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
       // -------------------- evaluation in special direction, here z-direction
       // get node with global id gid
       DRT::Node* node = StructureField()->Discretization()->gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       // check coordinates in z-direction, i.e. third value of X()
       double zcoord = node->X()[2];
       // possible push-back
@@ -2855,7 +2855,7 @@ void TSI::Monolithic::FixTimeIntegrationParams()
 
     if (rhoinf != -1.)
     {
-      if ((rhoinf < 0.0) or (rhoinf > 1.0)) dserror("rho_inf out of range [0.0,1.0]");
+      if ((rhoinf < 0.0) or (rhoinf > 1.0)) FOUR_C_THROW("rho_inf out of range [0.0,1.0]");
       double alpham = 0.5 * (3.0 - rhoinf) / (rhoinf + 1.0);
       double alphaf = 1.0 / (rhoinf + 1.0);
       double gamma = 0.5 + alpham - alphaf;
@@ -2975,7 +2975,7 @@ bool TSI::Monolithic::LSadmissible()
       return (normstrrhs_ < last_iter_res_.first && normthrrhs_ < last_iter_res_.second);
     case INPAR::TSI::LS_none:
     default:
-      dserror("you should not be here");
+      FOUR_C_THROW("you should not be here");
       return false;
   }
 }

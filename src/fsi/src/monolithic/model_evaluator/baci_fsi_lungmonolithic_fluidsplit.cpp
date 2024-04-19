@@ -162,7 +162,7 @@ void FSI::LungMonolithicFluidSplit::CreateCombinedDofRowMap()
   vecSpaces.push_back(ConstrMap_);
 
   if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No inner structural equations. Splitting not possible. Panic.");
+    FOUR_C_THROW("No inner structural equations. Splitting not possible. Panic.");
 
   SetDofRowMaps(vecSpaces);
 
@@ -420,7 +420,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseM
 
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
-  if (a == Teuchos::null) dserror("expect ale block matrix");
+  if (a == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
   a->Complete();
 

@@ -107,18 +107,19 @@ void MAT::Maxwell0dAcinus::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Maxwell0dAcinus*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double MAT::Maxwell0dAcinus::GetParams(std::string parametername)
 {
-  dserror("GetParams not implemented yet for this material!");
+  FOUR_C_THROW("GetParams not implemented yet for this material!");
   return 0;
 }
 
@@ -126,7 +127,7 @@ double MAT::Maxwell0dAcinus::GetParams(std::string parametername)
 /*----------------------------------------------------------------------*/
 void MAT::Maxwell0dAcinus::SetParams(std::string parametername, double new_value)
 {
-  dserror("SetParams not implemented yet for this material!");
+  FOUR_C_THROW("SetParams not implemented yet for this material!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

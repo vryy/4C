@@ -38,7 +38,7 @@ namespace DRT::ELEMENTS
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
     {
       Teuchos::SerialDenseMatrix<int, double> nullspace;
-      dserror("method ComputeNullSpace not implemented!");
+      FOUR_C_THROW("method ComputeNullSpace not implemented!");
     }
 
    private:
@@ -114,7 +114,7 @@ namespace DRT::ELEMENTS
     {
       DRT::Element* parent = this->DRT::FaceElement::ParentElement();
       // make sure the static cast below is really valid
-      dsassert(dynamic_cast<DRT::ELEMENTS::Shell7p*>(parent) != nullptr,
+      FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Shell7p*>(parent) != nullptr,
           "Parent element is no shell element");
       return static_cast<DRT::ELEMENTS::Shell7p*>(parent);
     }

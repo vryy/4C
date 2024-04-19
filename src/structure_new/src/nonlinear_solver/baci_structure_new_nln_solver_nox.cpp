@@ -224,7 +224,7 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::ConvertFinalStatus(
       convstatus = INPAR::STR::conv_success;
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "Conversion of the ::NOX::StatusTest::StatusType to "
           "a INPAR::STR::ConvergenceStatus is not possible!");
       break;

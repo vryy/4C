@@ -25,7 +25,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
 )
 {
   // check material
-  if (ele->Material()->MaterialType() != INPAR::MAT::m_matlist) dserror("Invalid material type!");
+  if (ele->Material()->MaterialType() != INPAR::MAT::m_matlist)
+    FOUR_C_THROW("Invalid material type!");
 
   // check type of closing equation
   switch (myelch::elchparams_->EquPot())
@@ -41,7 +42,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
     }
     default:
     {
-      dserror("Invalid closing equation for electric potential!");
+      FOUR_C_THROW("Invalid closing equation for electric potential!");
       break;
     }
   }
@@ -49,7 +50,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
   // check stabilization
   if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization and
       my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_SUPG)
-    dserror(
+    FOUR_C_THROW(
         "Only SUPG-type stabilization available for electrochemistry problems governed by "
         "Nernst-Planck formulation!");
 
@@ -141,13 +142,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPo
 
     case INPAR::ELCH::equpot_poisson:
     {
-      dserror("Poisson equation combined with electrode boundary conditions not implemented!");
+      FOUR_C_THROW("Poisson equation combined with electrode boundary conditions not implemented!");
       break;
     }
 
     default:
     {
-      dserror("Unknown closing equation for electric potential!");
+      FOUR_C_THROW("Unknown closing equation for electric potential!");
       break;
     }
   }  // switch(myelch::elchparams_->EquPot())
@@ -236,7 +237,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
 
     default:
     {
-      dserror("received illegal flag inside flux evaluation for whole domain");
+      FOUR_C_THROW("received illegal flag inside flux evaluation for whole domain");
       break;
     }
   };
@@ -256,11 +257,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
 
 
   if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)
-    dserror("How did you get here?");
+    FOUR_C_THROW("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
   // in the ALE case add nodal displacements
-  if (my::scatrapara_->IsAle()) dserror("No ALE for Kwok & Wu error calculation allowed.");
+  if (my::scatrapara_->IsAle()) FOUR_C_THROW("No ALE for Kwok & Wu error calculation allowed.");
 
   // set constants for analytical solution
   const double t =
@@ -303,7 +304,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
       //   A 3D finite element approach for the coupled numerical simulation of
       //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339-1359.
 
-      if (my::numscal_ != 2) dserror("Numscal_ != 2 for desired error calculation.");
+      if (my::numscal_ != 2) FOUR_C_THROW("Numscal_ != 2 for desired error calculation.");
 
       // working arrays
       double potint(0.0);
@@ -333,7 +334,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
             ((myelch::DiffManager()->GetIsotropicDiff(0) * myelch::DiffManager()->GetValence(0)) -
                 (myelch::DiffManager()->GetIsotropicDiff(1) *
                     myelch::DiffManager()->GetValence(1)));
-        if (abs(d) == 0.0) dserror("division by zero");
+        if (abs(d) == 0.0) FOUR_C_THROW("division by zero");
         const double D =
             frt *
             ((myelch::DiffManager()->GetValence(0) * myelch::DiffManager()->GetIsotropicDiff(0) *
@@ -373,7 +374,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
           c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m) * t * M_PI * M_PI));
         }
         else
-          dserror("Illegal number of space dimensions for analyt. solution: %d", nsd_);
+          FOUR_C_THROW("Illegal number of space dimensions for analyt. solution: %d", nsd_);
 
         // compute analytical solution for anion concentration
         c(1) =
@@ -403,7 +404,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
       //   A 3D finite element approach for the coupled numerical simulation of
       //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339-1359.
 
-      if (my::numscal_ != 2) dserror("Numscal_ != 2 for desired error calculation.");
+      if (my::numscal_ != 2) FOUR_C_THROW("Numscal_ != 2 for desired error calculation.");
 
       // working arrays
       CORE::LINALG::Matrix<2, 1> conint(true);
@@ -440,7 +441,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
           c(0) = c0_inner + ((c0_outer - c0_inner) * (log(r) - log(r_inner)) / b);
         }
         else
-          dserror("Illegal number of space dimensions for analyt. solution: %d", nsd_);
+          FOUR_C_THROW("Illegal number of space dimensions for analyt. solution: %d", nsd_);
 
         // compute analytical solution for anion concentration
         c(1) =
@@ -451,7 +452,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
             ((myelch::DiffManager()->GetIsotropicDiff(0) * myelch::DiffManager()->GetValence(0)) -
                 (myelch::DiffManager()->GetIsotropicDiff(1) *
                     myelch::DiffManager()->GetValence(1)));
-        if (abs(d) == 0.0) dserror("division by zero");
+        if (abs(d) == 0.0) FOUR_C_THROW("division by zero");
         // reference value + ohmic resistance + concentration potential
         const double pot =
             pot_inner +
@@ -491,7 +492,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
     }
     break;
     default:
-      dserror("Unknown analytical solution!");
+      FOUR_C_THROW("Unknown analytical solution!");
       break;
   }  // switch(errortype)
 

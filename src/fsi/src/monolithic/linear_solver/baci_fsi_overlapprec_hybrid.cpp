@@ -42,7 +42,7 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
       additiveschwarzeverywhere_(true)
 {
   if (strategy_ != INPAR::FSI::HybridSchwarz)
-    dserror("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
+    FOUR_C_THROW("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
 
   const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -53,7 +53,7 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
       CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "INNERPREC");
 
   if (innerstrategy != INPAR::FSI::PreconditionedKrylov)
-    dserror("Type of INNERPREC parameter not recognized by this class");
+    FOUR_C_THROW("Type of INNERPREC parameter not recognized by this class");
 
   // create 'mulitplicative' part of hybrid preconditioner
   amgprec_ = Teuchos::rcp(new FSI::OverlappingBlockMatrixFSIAMG(maps, structure, fluid, ale,
@@ -98,7 +98,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Unknown type %s for Hybrid Additive Schwarz local solver type "
           "'HYBRID_AS_TYPE'.");
       break;
@@ -177,7 +177,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
         {
           int err = rows[j][c]->ExtractGlobalRowCopy(
               fieldmap.GID(i), maxNumEntries, numEntries, values.data(), indices.data());
-          if (err != 0) dserror("ExtractGlobalRowCopy failed, error = %d!", err);
+          if (err != 0) FOUR_C_THROW("ExtractGlobalRowCopy failed, error = %d!", err);
         }
         else
         {
@@ -193,7 +193,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
           int err =
               A->InsertGlobalValues(fieldmap.GID(i), numEntries, values.data(), indices.data());
           if (err != 0)
-            dserror(
+            FOUR_C_THROW(
                 "InsertGlobalValues failed, error = %d!.\n"
                 "Available number of row entries is %d.",
                 err, numEntries);
@@ -270,7 +270,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   //
   //  int err = testmat->InsertGlobalValues(myrank * 2, numproc * 2, values, indices);
   //  if (err != 0)
-  //    dserror("InsertGlobalValues failed, error = %d!",err);
+  //    FOUR_C_THROW("InsertGlobalValues failed, error = %d!",err);
   //
   //  for (int i=0; i<2*numproc; ++i){
   //    if (i==myrank*2+1) // diagonal
@@ -284,7 +284,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   //
   //  err = testmat->InsertGlobalValues(myrank * 2 + 1, numproc * 2, values, indices);
   //  if (err != 0)
-  //    dserror("InsertGlobalValues failed, error = %d!",err);
+  //    FOUR_C_THROW("InsertGlobalValues failed, error = %d!",err);
   //
   //  testmat->FillComplete();
   //  testmat->OptimizeStorage();
@@ -310,15 +310,15 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   //  int err = directifpackprec_->SetParameters(ifpacklist);
   //  std::cout<<"\nparamserr: "<<err;
   //  if (err != 0)
-  //    dserror("\nSet parameters failed, error code %d",err);
+  //    FOUR_C_THROW("\nSet parameters failed, error code %d",err);
   //  err = directifpackprec_->Initialize();
   //  std::cout<<"\niniterr: "<<err;
   //  if (err != 0)
-  //    dserror("\nInitialization of preconditioner failed, error code %d",err);
+  //    FOUR_C_THROW("\nInitialization of preconditioner failed, error code %d",err);
   //  err = directifpackprec_->Compute();
   //  std::cout<<"\ncomperr: "<<err;
   //  if (err != 0)
-  //    dserror("\nComputation of preconditioner failed, error code %d",err);
+  //    FOUR_C_THROW("\nComputation of preconditioner failed, error code %d",err);
 
   return;
 }
@@ -334,13 +334,13 @@ int FSI::OverlappingBlockMatrixHybridSchwarz::ApplyInverse(
 
   // apply 'additive' part
   int err = ifpackprec_->PrecOperator()->ApplyInverse(*b, *z);
-  if (err != 0) dserror("Preconditioning 1 failed.");
+  if (err != 0) FOUR_C_THROW("Preconditioning 1 failed.");
 
   Teuchos::RCP<Epetra_Vector> Az = Teuchos::rcp(new Epetra_Vector(Copy, X, 0));
   Az->Update(0.0, *b, 0.0);
 
   err = this->Apply(*z, *Az);
-  if (err != 0) dserror("Matrix 1 failed.");
+  if (err != 0) FOUR_C_THROW("Matrix 1 failed.");
 
   Teuchos::RCP<Epetra_Vector> tmpb = Teuchos::rcp(new Epetra_Vector(Copy, *b, 0));
   tmpb->Update(-1.0, *Az, 1.0);
@@ -350,13 +350,13 @@ int FSI::OverlappingBlockMatrixHybridSchwarz::ApplyInverse(
 
   // apply 'multiplicative' part
   err = amgprec_->ApplyInverse(*tmpb, *tmpz);
-  if (err != 0) dserror("Preconditioning 2 failed.");
+  if (err != 0) FOUR_C_THROW("Preconditioning 2 failed.");
 
   z->Update(1.0, *tmpz, 1.0);
 
   Az->Update(0.0, *b, 0.0);
   err = this->Apply(*z, *Az);
-  if (err != 0) dserror("Matrix 2 failed.");
+  if (err != 0) FOUR_C_THROW("Matrix 2 failed.");
 
   tmpb->Update(1.0, *b, 0.0);
   tmpb->Update(-1.0, *Az, 1.0);
@@ -364,7 +364,7 @@ int FSI::OverlappingBlockMatrixHybridSchwarz::ApplyInverse(
 
   // apply 'additive' part
   err = ifpackprec_->PrecOperator()->ApplyInverse(*tmpb, *tmpz);
-  if (err != 0) dserror("Preconditioning 3 failed.");
+  if (err != 0) FOUR_C_THROW("Preconditioning 3 failed.");
 
   z->Update(1.0, *tmpz, 1.0);
 

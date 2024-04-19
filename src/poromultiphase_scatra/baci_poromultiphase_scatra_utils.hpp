@@ -114,7 +114,7 @@ namespace POROMULTIPHASESCATRA
       }
       if (!converged)
       {
-        dserror("local Newton for computation of oxygen partial pressure unconverged");
+        FOUR_C_THROW("local Newton for computation of oxygen partial pressure unconverged");
       }
     }
 

@@ -68,7 +68,7 @@ bool FLD::IsSlaveNodeOfRotSymPBC(const DRT::Node* node, double& rotangle)
       rotangle = GetRotAngleFromCondition(pbc[j]);
       if (abs(rotangle) > 1e-13)  // angle is not zero
       {
-        if (isrotsymslave) dserror("Node is slave of more than one rot.sym. periodic bc");
+        if (isrotsymslave) FOUR_C_THROW("Node is slave of more than one rot.sym. periodic bc");
         isrotsymslave = true;
       }
     }

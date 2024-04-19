@@ -33,7 +33,7 @@ MIXTURE::PAR::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase
   // check, if size of summands fits to the number of summands
   if (nummat_ != (int)matids_->size())
   {
-    dserror(
+    FOUR_C_THROW(
         "number of summands %d does not fit to the size of the summands vector"
         " %d",
         nummat_, matids_->size());
@@ -53,7 +53,7 @@ MIXTURE::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
   for (const auto& matid : *params_->matids_)
   {
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-    if (sum == Teuchos::null) dserror("Failed to read elastic summand.");
+    if (sum == Teuchos::null) FOUR_C_THROW("Failed to read elastic summand.");
     potsum_.push_back(sum);
   }
 
@@ -116,7 +116,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
       }
       else
       {
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
       }
     }
@@ -144,7 +144,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
     {
       const int summatid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(summatid);
-      if (sum == Teuchos::null) dserror("Failed to allocate");
+      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
 
@@ -176,7 +176,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::ReadElement(
 
   if (summandProperties_.viscoGeneral)
   {
-    dserror("Never use viscoelastic materials in Elasthyper-Toolbox.");
+    FOUR_C_THROW("Never use viscoelastic materials in Elasthyper-Toolbox.");
   }
 }
 

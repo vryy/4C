@@ -146,7 +146,7 @@ DRT::ELEMENTS::SoHex8::SoHex8(int id, int owner)
   if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::struct_ale)
   {
     if (kintype_ == INPAR::STR::KinemType::linear)
-      dserror("Structure-Ale approach only for nonlinear kinematics !!!");
+      FOUR_C_THROW("Structure-Ale approach only for nonlinear kinematics !!!");
 
     structale_ = true;
   }
@@ -187,7 +187,7 @@ DRT::ELEMENTS::SoHex8::SoHex8(const DRT::ELEMENTS::SoHex8& old)
   if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::struct_ale)
   {
     if (kintype_ == INPAR::STR::KinemType::linear)
-      dserror("Structure-Ale approach only for nonlinear kinematics !!!");
+      FOUR_C_THROW("Structure-Ale approach only for nonlinear kinematics !!!");
 
     structale_ = true;
   }
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::SoHex8::Unpack(const std::vector<char>& data)
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

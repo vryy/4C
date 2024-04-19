@@ -122,7 +122,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::BuildLin
     // default case
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "ERROR - NOX::NLN::LinSystem::Factory::BuildLinearSystem - "
           "No capable LinearSystem constructor was found (enum = %s|%i)!",
           NOX::NLN::LinSystem::LinearSystemType2String(linsystype).c_str(), linsystype);

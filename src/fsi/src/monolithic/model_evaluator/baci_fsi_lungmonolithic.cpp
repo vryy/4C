@@ -61,7 +61,7 @@ FSI::LungMonolithic::LungMonolithic(
   for (int i = 0; i < asimap->NumMyElements(); ++i)
   {
     if (structfield->LungConstrMap()->LID(asimap->GID(i)) == -1)
-      dserror("dof of asi coupling is not contained in enclosing boundary");
+      FOUR_C_THROW("dof of asi coupling is not contained in enclosing boundary");
   }
 
   std::set<int> FluidLungVolConIDs;
@@ -81,7 +81,7 @@ FSI::LungMonolithic::LungMonolithic(
        ++iter)
   {
     if (StructLungVolConIDs.find(*iter) == StructLungVolConIDs.end())
-      dserror("No matching in fluid and structure lung volume constraints");
+      FOUR_C_THROW("No matching in fluid and structure lung volume constraints");
   }
 
   NumConstrID_ = FluidLungVolConIDs.size();
@@ -241,10 +241,10 @@ void FSI::LungMonolithic::GeneralSetup()
   // interface dof map for all fields and have just one transfer
   // operator from the interface map to the full field map.
   if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
-    dserror("structure interface dof maps do not match");
+    FOUR_C_THROW("structure interface dof maps do not match");
 
   if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
-    dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+    FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
@@ -266,21 +266,21 @@ void FSI::LungMonolithic::GeneralSetup()
       StructureField()->Interface()->LungASICondMap(), *AleField()->Discretization(),
       AleField()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
   if (coupsaout_->MasterDofMap()->NumGlobalElements() == 0)
-    dserror("No nodes in matching structure ale interface. Empty coupling condition?");
+    FOUR_C_THROW("No nodes in matching structure ale interface. Empty coupling condition?");
 
   // coupling of fluid and structure dofs at airway outflow
   coupfsout_->SetupConstrainedConditionCoupling(*FluidField()->Discretization(),
       FluidField()->Interface()->LungASICondMap(), *StructureField()->Discretization(),
       StructureField()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
   if (coupfsout_->MasterDofMap()->NumGlobalElements() == 0)
-    dserror("No nodes in matching structure ale/fluid interface. Empty coupling condition?");
+    FOUR_C_THROW("No nodes in matching structure ale/fluid interface. Empty coupling condition?");
 
   // coupling of fluid and ale dofs at airway outflow
   coupfaout_->SetupConstrainedConditionCoupling(*FluidField()->Discretization(),
       FluidField()->Interface()->LungASICondMap(), *AleField()->Discretization(),
       AleField()->Interface()->LungASICondMap(), "StructAleCoupling", "FSICoupling", ndim);
   if (coupfaout_->MasterDofMap()->NumGlobalElements() == 0)
-    dserror("No nodes in matching ale fluid ouflow interface. Empty coupling condition?");
+    FOUR_C_THROW("No nodes in matching ale fluid ouflow interface. Empty coupling condition?");
 
   //-----------------------------------------------------------------------------
   // enable output of changes in volumes in text file
@@ -461,7 +461,7 @@ void FSI::LungMonolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, 
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(2, 2).EpetraMatrix();
     arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
@@ -475,13 +475,13 @@ void FSI::LungMonolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, 
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(3, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
 
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -503,8 +503,8 @@ void FSI::LungMonolithic::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
     Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 2);
 
-    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("structure scaling failed");
-    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sy, 0, x);
     Extractor().InsertVector(*ay, 2, x);
@@ -512,8 +512,8 @@ void FSI::LungMonolithic::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -528,7 +528,7 @@ void FSI::LungMonolithic::UnscaleSolution(
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(2, 2).EpetraMatrix();
     arowsum_->Reciprocal(*arowsum_);
@@ -540,7 +540,7 @@ void FSI::LungMonolithic::UnscaleSolution(
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(3, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
   }
 
   // very simple hack just to see the linear solution
@@ -601,7 +601,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::LungMonolithic::CreateLinearSyste
   else if (dirParams.get("Method", "User Defined") == "NonlinearCG")
     lsParams = &(dirParams.sublist("Nonlinear CG").sublist("Linear Solver"));
   else
-    dserror("Unknown nonlinear method");
+    FOUR_C_THROW("Unknown nonlinear method");
 
   ::NOX::Epetra::Interface::Jacobian* iJac = this;
   ::NOX::Epetra::Interface::Preconditioner* iPrec = this;
@@ -616,7 +616,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::LungMonolithic::CreateLinearSyste
               Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
     default:
-      dserror("Unsupported type of monolithic solver/preconditioner!");
+      FOUR_C_THROW("Unsupported type of monolithic solver/preconditioner!");
       break;
   }
 
@@ -974,7 +974,7 @@ void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
           spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0], apciter[0]));
       break;
     default:
-      dserror("Unsupported type of monolithic solver");
+      FOUR_C_THROW("Unsupported type of monolithic solver");
       break;
   }
 }

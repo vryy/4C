@@ -26,8 +26,8 @@ DRT::DofSetGIDBasedWrapper::DofSetGIDBasedWrapper(
       sourcedofset_(sourcedofset),
       isassigned_(sourcedofset->Filled())
 {
-  if (sourcedofset_ == Teuchos::null) dserror("Source dof set is null pointer.");
-  if (sourcedis_ == Teuchos::null) dserror("Source discretization is null pointer.");
+  if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("Source dof set is null pointer.");
+  if (sourcedis_ == Teuchos::null) FOUR_C_THROW("Source discretization is null pointer.");
 
   sourcedofset_->Register(this);
 }
@@ -60,8 +60,8 @@ int DRT::DofSetGIDBasedWrapper::AssignDegreesOfFreedom(
  *----------------------------------------------------------------------*/
 void DRT::DofSetGIDBasedWrapper::NotifyAssigned()
 {
-  if (sourcedis_->NodeColMap() == nullptr) dserror("No NodeColMap on sourcedis");
-  if (sourcedis_->ElementColMap() == nullptr) dserror("No ElementColMap on sourcedis");
+  if (sourcedis_->NodeColMap() == nullptr) FOUR_C_THROW("No NodeColMap on sourcedis");
+  if (sourcedis_->ElementColMap() == nullptr) FOUR_C_THROW("No ElementColMap on sourcedis");
 
   isassigned_ = sourcedofset_->Filled();
 
@@ -79,7 +79,7 @@ void DRT::DofSetGIDBasedWrapper::Disconnect(DofSetInterface* dofset)
     sourcedis_ = Teuchos::null;
   }
   else
-    dserror("cannot disconnect from non-connected DofSet");
+    FOUR_C_THROW("cannot disconnect from non-connected DofSet");
 
   // clear my Teuchos::rcps.
   Reset();
@@ -90,10 +90,10 @@ void DRT::DofSetGIDBasedWrapper::Disconnect(DofSetInterface* dofset)
 void DRT::DofSetGIDBasedWrapper::CheckIsAssigned() const
 {
   // checks in debug mode only
-  dsassert(isassigned_,
+  FOUR_C_ASSERT(isassigned_,
       "AssignDegreesOfFreedom was not called on parent dofset of this proxy,\n"
       "and/or this proxy was not notified.");
-  dsassert(sourcedofset_ != Teuchos::null, "dofset_ pointer is nullptr");
+  FOUR_C_ASSERT(sourcedofset_ != Teuchos::null, "dofset_ pointer is nullptr");
 
   return;
 }

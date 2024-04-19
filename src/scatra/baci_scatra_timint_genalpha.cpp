@@ -70,7 +70,7 @@ void SCATRA::TimIntGenAlpha::Setup()
 
   // compute specific time factor for generalized-alpha time integration:
   // genalphatimefac = gamma*alpha_F/alpha_M
-  if (alphaM_ < 1e-12) dserror("factor alpha_M lower than or equal zero");
+  if (alphaM_ < 1e-12) FOUR_C_THROW("factor alpha_M lower than or equal zero");
   genalphafac_ = gamma_ / alphaM_;
 
   // fine-scale vector at time n+alpha_F
@@ -274,7 +274,7 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCs()
     }
     else
     {
-      dserror("Teuchos::RCP<FLD::DynSmagFilter> DynSmag_ = Teuchos::null");
+      FOUR_C_THROW("Teuchos::RCP<FLD::DynSmagFilter> DynSmag_ = Teuchos::null");
     }
   }
 }

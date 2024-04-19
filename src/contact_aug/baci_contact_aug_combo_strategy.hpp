@@ -300,28 +300,28 @@ namespace CONTACT
       void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
-        dserror("Deprecated function call!");
+        FOUR_C_THROW("Deprecated function call!");
       };
       void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
-        dserror("Deprecated function call!");
+        FOUR_C_THROW("Deprecated function call!");
       };
       void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
           Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
           Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
           Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
       {
-        dserror("Deprecated function call!");
+        FOUR_C_THROW("Deprecated function call!");
       };
       void UpdateDisplacementsAndLMincrements(
           Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
       {
-        dserror("Deprecated function call!");
+        FOUR_C_THROW("Deprecated function call!");
       };
       void Recover(Teuchos::RCP<Epetra_Vector> disi) override
       {
-        dserror("Deprecated function call! Replaced by RunPostComputeX().");
+        FOUR_C_THROW("Deprecated function call! Replaced by RunPostComputeX().");
       };
       //! @}
 
@@ -333,18 +333,18 @@ namespace CONTACT
       //! @{
       double InitialPenalty() override
       {
-        dserror("Wrong strategy!");
+        FOUR_C_THROW("Wrong strategy!");
         exit(EXIT_FAILURE);
       };
       void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
-        dserror("Wrong strategy!");
+        FOUR_C_THROW("Wrong strategy!");
       };
-      void ResetPenalty() override { dserror("Wrong strategy!"); };
-      void ModifyPenalty() override { dserror("Wrong strategy!"); };
-      void UpdateUzawaAugmentedLagrange() override { dserror("Wrong strategy!"); };
-      void UpdateConstraintNorm(int uzawaiter = 0) override { dserror("Wrong strategy!"); };
+      void ResetPenalty() override { FOUR_C_THROW("Wrong strategy!"); };
+      void ModifyPenalty() override { FOUR_C_THROW("Wrong strategy!"); };
+      void UpdateUzawaAugmentedLagrange() override { FOUR_C_THROW("Wrong strategy!"); };
+      void UpdateConstraintNorm(int uzawaiter = 0) override { FOUR_C_THROW("Wrong strategy!"); };
       bool IsPenalty() const override { return false; };
       //! @}
       //! @}

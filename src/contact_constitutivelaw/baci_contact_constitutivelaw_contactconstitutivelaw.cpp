@@ -35,10 +35,10 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(const int id)
 
   // for the sake of safety
   if (GLOBAL::Problem::Instance(probinst)->ContactConstitutiveLaws() == Teuchos::null)
-    dserror("Cannot work out problem instance!");
+    FOUR_C_THROW("Cannot work out problem instance!");
   // yet another safety check
   if (GLOBAL::Problem::Instance(probinst)->ContactConstitutiveLaws()->Num() == 0)
-    dserror("Cannot find any contact constitutive law!");
+    FOUR_C_THROW("Cannot find any contact constitutive law!");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> coconstlawdata =
@@ -87,18 +87,19 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
           new CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams(contactconstitutivelawdata);
       return params->CreateConstitutiveLaw();
 #else
-      dserror(
+      FOUR_C_THROW(
           "You are trying to use MIRCO contact consitutive law with BACI_WITH_MIRCO flag turned "
           "off. Please enable this flag and build BACI again");
 #endif
     }
     case INPAR::CONTACT::ConstitutiveLawType::colaw_none:
     {
-      dserror("No contact constitutive law found\n");
+      FOUR_C_THROW("No contact constitutive law found\n");
       break;
     }
     default:
-      dserror("unknown type of contact constitutive law %d\n", contactconstitutivelawdata->Type());
+      FOUR_C_THROW(
+          "unknown type of contact constitutive law %d\n", contactconstitutivelawdata->Type());
       break;
   }
 

@@ -98,7 +98,8 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
               " If you run a turbulent inflow generation, calling this function twice is ok!\n ")
           << std::endl
           << std::endl;
-    //    dserror(" general face fluid XFEM parameters should be set only once!! -> Check this?!");
+    //    FOUR_C_THROW(" general face fluid XFEM parameters should be set only once!! -> Check
+    //    this?!");
   }
 
 
@@ -107,7 +108,7 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
   if ((physicaltype_ != INPAR::FLUID::incompressible) and
       (physicaltype_ != INPAR::FLUID::stokes) and (physicaltype_ != INPAR::FLUID::oseen) and
       (physicaltype_ != INPAR::FLUID::poro))
-    dserror("physical type is not supported for face stabilizations.");
+    FOUR_C_THROW("physical type is not supported for face stabilizations.");
 
   // get function number of given Oseen advective field if necessary
   if (physicaltype_ == INPAR::FLUID::oseen) oseenfieldfuncno_ = params.get<int>("OSEENFIELDFUNCNO");
@@ -136,9 +137,9 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
   EOS_div_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EosDiv>(stablist_edgebased, "EOS_DIV");
 
   if (physicaltype_ == INPAR::FLUID::stokes and EOS_conv_stream_)
-    dserror("no EOS_CONV_STREAM stabilization required for Stokes problems");
+    FOUR_C_THROW("no EOS_CONV_STREAM stabilization required for Stokes problems");
   if (physicaltype_ == INPAR::FLUID::stokes and EOS_conv_cross_)
-    dserror("no EOS_CONV_CROSS stabilization required for Stokes problems");
+    FOUR_C_THROW("no EOS_CONV_CROSS stabilization required for Stokes problems");
 
   // activate special least-squares condition for pseudo 2D examples where pressure level is
   // determined via Krylov-projection
@@ -152,33 +153,34 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
     // edge-based terms are activated (i.e., ghost penalties)
 
     if (EOS_pres_ != INPAR::FLUID::EOS_PRES_xfem_gp and EOS_pres_ != INPAR::FLUID::EOS_PRES_none)
-      dserror(
+      FOUR_C_THROW(
           "check the combination of edge-based pressure-EOS and non-edge-based stabtype! Do you "
           "really want to use this combination?");
     if (EOS_conv_stream_ != INPAR::FLUID::EOS_CONV_STREAM_xfem_gp and
         EOS_conv_stream_ != INPAR::FLUID::EOS_CONV_STREAM_none)
-      dserror(
+      FOUR_C_THROW(
           "check the combination of edge-based pressure-EOS and non-edge-based stabtype! Do you "
           "really want to use this combination?");
     if (EOS_conv_cross_ != INPAR::FLUID::EOS_CONV_CROSS_xfem_gp and
         EOS_conv_cross_ != INPAR::FLUID::EOS_CONV_CROSS_none)
-      dserror(
+      FOUR_C_THROW(
           "check the combination of edge-based pressure-EOS and non-edge-based stabtype! Do you "
           "really want to use this combination?");
     if (EOS_div_ != INPAR::FLUID::EOS_DIV_div_jump_xfem_gp and
         EOS_div_ != INPAR::FLUID::EOS_DIV_vel_jump_xfem_gp and
         EOS_div_ != INPAR::FLUID::EOS_DIV_none)
-      dserror(
+      FOUR_C_THROW(
           "check the combination of edge-based pressure-EOS and non-edge-based stabtype! Do you "
           "really want to use this combination?");
 
     if (presKrylov2Dz_)
-      dserror(
+      FOUR_C_THROW(
           "pressure Krylov 2Dz condition not reasonable for non-pure edge-based stabilizations");
   }
 
   if (presKrylov2Dz_ and EOS_pres_ != INPAR::FLUID::EOS_PRES_std_eos)
-    dserror("pressure Krylov 2Dz condition only reasonable for full p-EOS: EOS_PRES = std_eos");
+    FOUR_C_THROW(
+        "pressure Krylov 2Dz condition only reasonable for full p-EOS: EOS_PRES = std_eos");
 
   EOS_element_length_ = CORE::UTILS::IntegralValue<INPAR::FLUID::EosElementLength>(
       stablist_edgebased, "EOS_H_DEFINITION");
@@ -211,7 +213,7 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralXFEMParameter(
     set_face_general_XFEM_parameter_ = true;
   else
   {
-    dserror(" general face fluid XFEM parameters should be set only once!! -> Check this?!");
+    FOUR_C_THROW(" general face fluid XFEM parameters should be set only once!! -> Check this?!");
   }
 
   // --------------------------------
@@ -230,7 +232,7 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralXFEMParameter(
 
   // safety check
   if (fldparatimint_->IsStationary() and ghost_penalty_trans_)
-    dserror("Do not use transient ghost penalties for stationary problems");
+    FOUR_C_THROW("Do not use transient ghost penalties for stationary problems");
 
   ghost_penalty_u_p_2nd_ =
       (bool)CORE::UTILS::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_2nd_STAB");
@@ -335,7 +337,7 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
     Set_Face_GP_u_p_2nd(false);
   }
   else
-    dserror("unknown face_type!!!");
+    FOUR_C_THROW("unknown face_type!!!");
 
   // which pattern has to be activated?
   // TODO: this can be improved if only pressure is assembled and so on!

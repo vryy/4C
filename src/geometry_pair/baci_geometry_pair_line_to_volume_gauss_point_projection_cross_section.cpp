@@ -163,7 +163,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
 {
   // Only zero one segments are expected.
   if (segments.size() > 1)
-    dserror(
+    FOUR_C_THROW(
         "There should be zero or one segments for the Gauss point cylinder projection method. The "
         "actual value is %d!",
         segments.size());
@@ -180,7 +180,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
       unsigned int valid_projection_points = 0;
       for (auto const& value : projection_vector)
         if (value) valid_projection_points += 1;
-      dserror(
+      FOUR_C_THROW(
           "The cross section projection currently only works if all points on a line project! Of "
           "the %d points, only %d projected.",
           projection_vector.size(), valid_projection_points);

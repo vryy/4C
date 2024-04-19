@@ -43,7 +43,7 @@ const Epetra_Map& CONTACT::AUG::INTERFACE::AssembleStrategy::SlNodeRowMap(
     case MapType::active_slave_nodes:
       return *IData().ActiveNodes();
     default:
-      dserror("Unknown MapType! (enum=%d)", map_type);
+      FOUR_C_THROW("Unknown MapType! (enum=%d)", map_type);
       exit(EXIT_FAILURE);
   }
 }
@@ -60,7 +60,7 @@ const Epetra_Map& CONTACT::AUG::INTERFACE::AssembleStrategy::SlNDofRowMap(
     case MapType::active_slave_nodes:
       return *IData().ActiveN();
     default:
-      dserror("Unknown MapType! (enum=%d)", map_type);
+      FOUR_C_THROW("Unknown MapType! (enum=%d)", map_type);
       exit(EXIT_FAILURE);
   }
 }
@@ -89,7 +89,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
   const int nummysnodes = IData().SNodeRowMap()->NumMyElements();
   const int* mysnodegids = IData().SNodeRowMap()->MyGlobalElements();
 
-  if (nummysnodes != nummyndof) dserror("Dimension mismatch");
+  if (nummysnodes != nummyndof) FOUR_C_THROW("Dimension mismatch");
 
   for (int i = 0; i < nummysnodes; ++i)
   {
@@ -97,9 +97,9 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
 
     DRT::Node* node = idiscret_.gNode(sgid);
     Node* cnode = dynamic_cast<Node*>(node);
-    if (not cnode) dserror("Dynamic cast failed!");
+    if (not cnode) FOUR_C_THROW("Dynamic cast failed!");
 
-    dsassert(cnode->Owner() == Inter().Comm().MyPID(), "Node ownership inconsistency!");
+    FOUR_C_ASSERT(cnode->Owner() == Inter().Comm().MyPID(), "Node ownership inconsistency!");
 
     // get the corresponding normal dof gid
     const int rowId = myndofs[i];
@@ -141,10 +141,10 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Add_Va
     const int agid = myanodegids[i];
 
     Node* cnode = dynamic_cast<Node*>(idiscret_.gNode(agid));
-    if (not cnode) dserror("Cannot find the active node with gid %", agid);
+    if (not cnode) FOUR_C_THROW("Cannot find the active node with gid %", agid);
 
     const int cn_lid = cnVec.Map().LID(agid);
-    if (cn_lid == -1) dserror("Couldn't find the GID %d in the cn-vector.", agid);
+    if (cn_lid == -1) FOUR_C_THROW("Couldn't find the GID %d in the cn-vector.", agid);
     const double cn = cnVec[cn_lid];
 
     NodeDataContainer& augdata = cnode->AugData();
@@ -164,7 +164,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Add_Va
     Epetra_Export exCol2Row(*IData().SDofColMap(), *IData().SDofRowMap());
 
     int err = sl_force_g_row.Export(sl_force_g_col, exCol2Row, Add);
-    if (err) dserror("Export failed with error code %d.", err);
+    if (err) FOUR_C_THROW("Export failed with error code %d.", err);
 
     CORE::LINALG::AssembleMyVector(1.0, sl_force_g, 1.0, sl_force_g_row);
   }
@@ -189,10 +189,10 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
     const int igid = myinodegids[i];
 
     Node* cnode = dynamic_cast<Node*>(idiscret_.gNode(igid));
-    if (not cnode) dserror("Cannot find the inactive node with gid %", igid);
+    if (not cnode) FOUR_C_THROW("Cannot find the inactive node with gid %", igid);
 
     const int cn_lid = cnVec.Map().LID(igid);
-    if (cn_lid == -1) dserror("Couldn't find the GID %d in the cn-vector.", igid);
+    if (cn_lid == -1) FOUR_C_THROW("Couldn't find the GID %d in the cn-vector.", igid);
     const double cn = cnVec[cn_lid];
 
     NodeDataContainer& augdata = cnode->AugData();
@@ -214,7 +214,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
     Epetra_Export exCol2Row(*IData().SDofColMap(), *IData().SDofRowMap());
 
     int err = sl_force_lmi_row.Export(sl_force_lmi_col, exCol2Row, Add);
-    if (err) dserror("Export failed with error code %d.", err);
+    if (err) FOUR_C_THROW("Export failed with error code %d.", err);
 
     CORE::LINALG::AssembleMyVector(1.0, sl_force_lm_inactive, 1.0, sl_force_lmi_row);
   }
@@ -248,14 +248,14 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     const int igid = myinodegids[i];
 
     Node* cnode = dynamic_cast<Node*>(idiscret_.gNode(igid));
-    if (not cnode) dserror("Cannot find the inactive node with gid %", igid);
+    if (not cnode) FOUR_C_THROW("Cannot find the inactive node with gid %", igid);
 
     const double lmn = cnode->MoData().lm()[0];
 
     NodeDataContainer& augdata = cnode->AugData();
 
     const int cn_lid = cnVec.Map().LID(igid);
-    if (cn_lid == -1) dserror("Couldn't find the GID %d in the cn-vector.", igid);
+    if (cn_lid == -1) FOUR_C_THROW("Couldn't find the GID %d in the cn-vector.", igid);
     const double cn_scale = inactive_scale / cnVec[cn_lid];
     const double scale = cn_scale * lmn * lmn;
 
@@ -284,7 +284,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     const int agid = myanodegids[i];
 
     Node* cnode = static_cast<Node*>(idiscret_.gNode(agid));
-    if (!cnode) dserror("Cannot find active node with gid %", agid);
+    if (!cnode) FOUR_C_THROW("Cannot find active node with gid %", agid);
 
     // get Lagrange multiplier in normal direction
     const double lm_n = cnode->MoData().lm()[0];
@@ -333,14 +333,14 @@ void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
     const int agid = myanodegids[i];
 
     Node* cnode = dynamic_cast<Node*>(this->idiscret_.gNode(agid));
-    if (not cnode) dserror("Cannot find the active node with gid %", agid);
+    if (not cnode) FOUR_C_THROW("Cannot find the active node with gid %", agid);
 
     NodeDataContainer& augdata = cnode->AugData();
 
     const double a_inv = 1.0 / augdata.GetKappa();
 
     const int cn_lid = cnVec.Map().LID(agid);
-    if (cn_lid == -1) dserror("Couldn't find the GID %d in the cn-vector.", agid);
+    if (cn_lid == -1) FOUR_C_THROW("Couldn't find the GID %d in the cn-vector.", agid);
     const double cn = cnVec[cn_lid];
 
     /*------------------------------------------------------------------------*/
@@ -409,7 +409,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     const int agid = myanodegids[i];
 
     Node* cnode = dynamic_cast<Node*>(idiscret_.gNode(agid));
-    if (not cnode) dserror("Cannot find the active node with gid %", agid);
+    if (not cnode) FOUR_C_THROW("Cannot find the active node with gid %", agid);
 
     NodeDataContainer& augdata = cnode->AugData();
 
@@ -417,7 +417,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
     const double a_inv = 1.0 / augdata.GetKappa();
     const double awgap = wgap * a_inv;
     const int cn_lid = cnVec.Map().LID(agid);
-    if (cn_lid == -1) dserror("Couldn't find the GID %d in the cn-vector.", agid);
+    if (cn_lid == -1) FOUR_C_THROW("Couldn't find the GID %d in the cn-vector.", agid);
     const double cn = cnVec[cn_lid];
 
     /*------------------------------------------------------------------------*/
@@ -531,14 +531,14 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
   const int* mynodegids = snode_rowmap.MyGlobalElements();
 
   const Epetra_Map& ndof_rowmap = this->SlNDofRowMap(map_type);
-  if (not ndof_rowmap.PointSameAs(snode_rowmap)) dserror("Map mismatch!");
+  if (not ndof_rowmap.PointSameAs(snode_rowmap)) FOUR_C_THROW("Map mismatch!");
 
   for (int i = 0; i < nummynodes; ++i)
   {
     const int agid = mynodegids[i];
 
     Node* cnode = dynamic_cast<Node*>(idiscret_.gNode(agid));
-    if (not cnode) dserror("Cannot find the active node with gid %", agid);
+    if (not cnode) FOUR_C_THROW("Cannot find the active node with gid %", agid);
 
     const int rowId = ndof_rowmap.GID(i);
 
@@ -582,7 +582,8 @@ void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_DD_A_GG(const double c
 {
   const Deriv2ndMap& dd_kappa = augdata.GetDeriv2nd_Kappa();
   // sanity check
-  if (dd_kappa.empty()) dserror("The 2-nd order derivative of the active tributary area is empty!");
+  if (dd_kappa.empty())
+    FOUR_C_THROW("The 2-nd order derivative of the active tributary area is empty!");
 
   for (auto& dd_kappa_var : dd_kappa)
   {
@@ -599,7 +600,8 @@ void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::AssembleInactiveDDMatrix(c
 {
   const Deriv2ndMap& dd_a = augdata.GetDeriv2nd_A();
   // sanity check
-  if (dd_a.empty()) dserror("The 2-nd order derivative of the inactive tributary area is empty!");
+  if (dd_a.empty())
+    FOUR_C_THROW("The 2-nd order derivative of the inactive tributary area is empty!");
 
   for (auto& dd_a_var : dd_a)
   {
@@ -608,7 +610,7 @@ void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::AssembleInactiveDDMatrix(c
     //    if ( inactive_dd_matrix.RowMap().LID( rgid ) == -1 )
     //    {
     //      inactive_dd_matrix.RowMap().Print( std::cout );
-    //      dserror( "rgid #%d is no part of the slave row map on proc #%d!", rgid,
+    //      FOUR_C_THROW( "rgid #%d is no part of the slave row map on proc #%d!", rgid,
     //          inactive_dd_matrix.RowMap().Comm().MyPID() );
     //    }
 
@@ -630,7 +632,7 @@ bool CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_Var_A_GG(
   {
     const int lid = sl_force_g.Map().LID(d_kappa_var.first);
     // skip parts which do not belong to this processor
-    if (lid == -1) dserror("Could not find gid %d in the column map!", d_kappa_var.first);
+    if (lid == -1) FOUR_C_THROW("Could not find gid %d in the column map!", d_kappa_var.first);
 
     vals[lid] += d_kappa_var.second * tmp;
   }
@@ -650,7 +652,7 @@ bool CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Assemble_SlForceLmInactive
   {
     const int lid = sl_force_lminactive.Map().LID(d_a_var.first);
     // skip parts which do not belong to this processor
-    if (lid == -1) dserror("Could not find gid %d in the column map!", d_a_var.first);
+    if (lid == -1) FOUR_C_THROW("Could not find gid %d in the column map!", d_a_var.first);
 
     vals[lid] += d_a_var.second * scale;
   }

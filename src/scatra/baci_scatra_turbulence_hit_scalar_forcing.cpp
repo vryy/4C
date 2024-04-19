@@ -95,7 +95,7 @@ namespace SCATRA
       }
       default:
       {
-        dserror("Set problem size! %i", discret_->NumGlobalElements());
+        FOUR_C_THROW("Set problem size! %i", discret_->NumGlobalElements());
         break;
       }
     }
@@ -162,7 +162,7 @@ namespace SCATRA
 
         if (tag != (myrank + numprocs - 1) % numprocs)
         {
-          dserror("received wrong message (ReceiveAny)");
+          FOUR_C_THROW("received wrong message (ReceiveAny)");
         }
 
         exporter.Wait(request);
@@ -256,7 +256,7 @@ namespace SCATRA
           (*scalarvariancespectrum_n_)[rr] = 0.1 * 2.0 * pow((*wavenumbers_)[rr], -1.0);
       }
       else
-        dserror("Other initial spectra than simple algebraic spectrum not yet implemented!");
+        FOUR_C_THROW("Other initial spectra than simple algebraic spectrum not yet implemented!");
     }
 #else
     CalculateForcing(0);
@@ -373,7 +373,7 @@ namespace SCATRA
       (*phi_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
     }
 #else
-    dserror("FFTW required for HIT!");
+    FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
     //----------------------------------------
@@ -441,7 +441,7 @@ namespace SCATRA
               else
               {
                 if (not(k_conj_3 >= 0 and k_conj_3 <= (nummodes_ - 1)))
-                  dserror("k_3 in fftw domain expected!");
+                  FOUR_C_THROW("k_3 in fftw domain expected!");
 
                 // shift k_1 and k_2 into fftw domain
                 if (k_conj_1 < 0) k_conj_1 += nummodes_;
@@ -456,7 +456,7 @@ namespace SCATRA
                   pos_fftw_k_3 = k_conj_3;
                 }
                 else
-                  dserror("Position in fftw domain expected!");
+                  FOUR_C_THROW("Position in fftw domain expected!");
               }
             }
             else
@@ -466,7 +466,7 @@ namespace SCATRA
               int k_shift_3 = k_3;
 
               if (not(k_shift_3 >= 0 and k_shift_3 <= (nummodes_ - 1)))
-                dserror("k_3 in fftw domain expected!");
+                FOUR_C_THROW("k_3 in fftw domain expected!");
 
               // shift k_1 and k_2 into fftw domain
               if (k_shift_1 < 0) k_shift_1 += nummodes_;
@@ -481,7 +481,7 @@ namespace SCATRA
                 pos_fftw_k_3 = k_shift_3;
               }
               else
-                dserror("Position in fftw domain expected!");
+                FOUR_C_THROW("Position in fftw domain expected!");
             }
           }
 
@@ -512,7 +512,7 @@ namespace SCATRA
             }
           }
           else
-            dserror("Unknown forcing type!");
+            FOUR_C_THROW("Unknown forcing type!");
         }
       }
     }
@@ -601,14 +601,14 @@ namespace SCATRA
             }
           }
           else
-            dserror("Unknown forcing type!");
+            FOUR_C_THROW("Unknown forcing type!");
         }
       }
     }
 
     return;
 #else
-    dserror("FFTW required");
+    FOUR_C_THROW("FFTW required");
 #endif
   }
 
@@ -712,7 +712,7 @@ namespace SCATRA
       fftw_destroy_plan(fft);
       fftw_cleanup();
 #else
-      dserror("FFTW required for HIT!");
+      FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
       // scale solution (not done in the fftw routine)
@@ -753,7 +753,7 @@ namespace SCATRA
       fftw_destroy_plan(fft_back);
       fftw_cleanup();
 #else
-      dserror("FFTW required for HIT!");
+      FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
       //----------------------------------------
@@ -801,7 +801,7 @@ namespace SCATRA
         int lid = discret_->DofRowMap()->LID(dofs[0]);
         // set value
         int err = forcing_->ReplaceMyValues(1, &((*fphi)[pos]), &lid);
-        if (err > 0) dserror("Could not set forcing!");
+        if (err > 0) FOUR_C_THROW("Could not set forcing!");
       }
     }
     else
@@ -810,7 +810,7 @@ namespace SCATRA
 
     return;
 #else
-    dserror("FFTW required");
+    FOUR_C_THROW("FFTW required");
 #endif
   }
 

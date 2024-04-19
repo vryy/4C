@@ -35,7 +35,7 @@ DRT::ELEMENTS::Shell7pLine::Shell7pLine(int id, int owner, int nnode, const int*
       gaussrule_ = CORE::FE::GaussRule1D::line_3point;
       break;
     default:
-      dserror("shape type unknown!\n");
+      FOUR_C_THROW("shape type unknown!\n");
   }
 }
 
@@ -59,19 +59,19 @@ CORE::FE::CellType DRT::ELEMENTS::Shell7pLine::Shape() const
     case 3:
       return CORE::FE::CellType::line3;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
   }
 }
 
 void DRT::ELEMENTS::Shell7pLine::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("this Shell7line element does not support communication");
+  FOUR_C_THROW("this Shell7line element does not support communication");
 }
 
 
 void DRT::ELEMENTS::Shell7pLine::Unpack(const std::vector<char>& data)
 {
-  dserror("this Shell line element does not support communication");
+  FOUR_C_THROW("this Shell line element does not support communication");
 }
 
 

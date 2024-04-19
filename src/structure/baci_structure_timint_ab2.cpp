@@ -214,7 +214,7 @@ int STR::TimIntAB2::IntegrateStep()
 
   // obtain new accelerations \f$A_{n+1}\f$
   {
-    dsassert(mass_->Filled(), "Mass matrix has to be completed");
+    FOUR_C_ASSERT(mass_->Filled(), "Mass matrix has to be completed");
     // blank linear momentum zero on DOFs subjected to DBCs
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), frimpn_);
     // get accelerations
@@ -240,7 +240,7 @@ int STR::TimIntAB2::IntegrateStep()
           Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mass_);
       Teuchos::RCP<Epetra_Vector> diagonal = CORE::LINALG::CreateVector(*DofRowMapView(), true);
       int error = massmatrix->ExtractDiagonalCopy(*diagonal);
-      if (error != 0) dserror("ERROR: ExtractDiagonalCopy went wrong");
+      if (error != 0) FOUR_C_THROW("ERROR: ExtractDiagonalCopy went wrong");
       accn_->ReciprocalMultiply(1.0, *diagonal, *frimpn_, 0.0);
     }
   }
@@ -297,7 +297,7 @@ void STR::TimIntAB2::UpdateStepElement()
 /* read restart forces */
 void STR::TimIntAB2::ReadRestartForce()
 {
-  dserror("No restart ability for Adams-Bashforth 2nd order time integrator!");
+  FOUR_C_THROW("No restart ability for Adams-Bashforth 2nd order time integrator!");
   return;
 }
 

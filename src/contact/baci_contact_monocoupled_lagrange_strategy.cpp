@@ -113,7 +113,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-      dserror("Condensation only for dual LM");
+      FOUR_C_THROW("Condensation only for dual LM");
 
     /**********************************************************************/
     /* (3) Split kteff into 3x3 matrix blocks                             */  // just split the rows
@@ -141,7 +141,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
 
     if (ParRedist())  // TODO Check if how to modifiy
     {
-      dserror("ParRedist(): CHECK ME!");
+      FOUR_C_THROW("ParRedist(): CHECK ME!");
       // split and transform to redistributed maps
       //      CORE::LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
       //      ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
@@ -245,7 +245,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
 
     if (ParRedist())  // check what to do
     {
-      dserror("not checked so far!!!");
+      FOUR_C_THROW("not checked so far!!!");
       //----------------------------------------------------------- FIRST LINE
       // nothing to do (ndof-map independent of redistribution)
 
@@ -310,7 +310,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
   }
   else
   {
-    dserror("Trying to use not condensed form --- Feel Free to implement!");
+    FOUR_C_THROW("Trying to use not condensed form --- Feel Free to implement!");
   }
   return;
 }
@@ -346,10 +346,10 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-      dserror("Condensation only for dual LM");
+      FOUR_C_THROW("Condensation only for dual LM");
 
     if (inc.size() != csx_s_.size())
-      dserror(
+      FOUR_C_THROW(
           "CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled: For Recovery the same number of "
           "off-diagonal increment blocks is required! %d != %d !",
           inc.size(), csx_s_.size());
@@ -376,7 +376,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
     {
       inciter = inc.find(matiter->first);
       if (inciter == inc.end())
-        dserror(
+        FOUR_C_THROW(
             "CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled: Couldn't find increment block "
             "%d for recovery of the lagrange multiplier!",
             matiter->first);
@@ -388,7 +388,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
       // thus we have to export the products Dold * zold and Mold^T * zold to fit
       if (IsSelfContact())  // is not considered yet!
       {
-        dserror(
+        FOUR_C_THROW(
             "Trying to make coupled selfcontact condensation... Check if this makes any sense!!!");
         // approximate update
         // z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));

@@ -40,7 +40,7 @@ Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::StructureFactory::Buil
       adapterbase = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithmNew());
       break;
     default:
-      dserror("Unknown integration strategy!");
+      FOUR_C_THROW("Unknown integration strategy!");
       break;
   }
 

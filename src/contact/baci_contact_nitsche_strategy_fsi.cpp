@@ -67,7 +67,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::Interface& contactinterfa
   }
   if (!(cele->Shape() == CORE::FE::CellType::quad4 || cele->Shape() == CORE::FE::CellType::quad8 ||
           cele->Shape() == CORE::FE::CellType::quad9))
-    dserror("This element shape is not yet implemented!");
+    FOUR_C_THROW("This element shape is not yet implemented!");
 
   // find the corresponding master element
   CONTACT::Element* other_cele = nullptr;
@@ -81,7 +81,8 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::Interface& contactinterfa
     if (other_cele) break;
     auto* test_ele = dynamic_cast<CONTACT::Element*>(
         contactinterface.Discret().gElement(cele->MoData().SearchElements()[m]));
-    if (!test_ele) dserror("Cannot find element with gid %d", cele->MoData().SearchElements()[m]);
+    if (!test_ele)
+      FOUR_C_THROW("Cannot find element with gid %d", cele->MoData().SearchElements()[m]);
 
     MORTAR::Projector::Impl(*cele, *test_ele)
         ->ProjectGaussPoint3D(*cele, xsi.A(), *test_ele, mxi, projalpha);
@@ -94,7 +95,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::Interface& contactinterfa
         if (abs(mxi[0]) < 1. + tol && abs(mxi[1]) < 1. + tol) is_inside = true;
         break;
       default:
-        dserror("This element shape is not yet implemented (%d)!", test_ele->Shape());
+        FOUR_C_THROW("This element shape is not yet implemented (%d)!", test_ele->Shape());
     }
     if (is_inside) other_cele = test_ele;
     // distance check

@@ -141,7 +141,7 @@ void BeamDiscretizationRuntimeOutputWriter::SetGeometryFromBeamDiscretization(
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
     std::vector<double> beamelement_displacement_vector;
 
@@ -227,22 +227,22 @@ void BeamDiscretizationRuntimeOutputWriter::SetGeometryFromBeamDiscretization(
   // safety checks
   if (cell_types.size() != cell_offsets.size())
   {
-    dserror("RuntimeVtuWriter expected %d cell type values, but got %d", num_beam_row_elements,
+    FOUR_C_THROW("RuntimeVtuWriter expected %d cell type values, but got %d", num_beam_row_elements,
         cell_types.size());
   }
 
   if (periodic_boundingbox_ != Teuchos::null and !periodic_boundingbox_->HavePBC() and
       (point_coordinates.size() != num_spatial_dimensions * num_visualization_points))
   {
-    dserror("RuntimeVtuWriter expected %d coordinate values, but got %d",
+    FOUR_C_THROW("RuntimeVtuWriter expected %d coordinate values, but got %d",
         num_spatial_dimensions * num_visualization_points, point_coordinates.size());
   }
 
   if (periodic_boundingbox_ != Teuchos::null and !periodic_boundingbox_->HavePBC() and
       (cell_offsets.size() != num_beam_row_elements))
   {
-    dserror("RuntimeVtuWriter expected %d cell offset values, but got %d", num_beam_row_elements,
-        cell_offsets.size());
+    FOUR_C_THROW("RuntimeVtuWriter expected %d cell offset values, but got %d",
+        num_beam_row_elements, cell_offsets.size());
   }
 }
 
@@ -281,7 +281,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendDisplacementField(
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     // get the displacement state vector for this element
@@ -376,7 +376,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendTriadField(
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     // get the displacement state vector for this element
@@ -455,11 +455,11 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementOwningProcessor()
     const DRT::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i) owner.push_back(ele->Owner());
@@ -487,11 +487,11 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementGID()
     const DRT::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i) gid.push_back(ele->Id());
@@ -531,10 +531,10 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementInternalEnergy()
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
@@ -568,10 +568,10 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementKineticEnergy()
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
@@ -607,12 +607,12 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementFilamentIdAndType()
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
     // get filament number (note so far only one filament for each element and node)
     DRT::Condition* cond = ele->Nodes()[0]->GetCondition("BeamLineFilamentCondition");
     if (cond == nullptr)
-      dserror(" No filament number assigned to element with gid %i .", ele->Id());
+      FOUR_C_THROW(" No filament number assigned to element with gid %i .", ele->Id());
 
     double current_id = *cond->Get<int>("FilamentId");
     double current_type =
@@ -656,7 +656,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementCircularCrossSectionRad
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     // this needs to be done for all cells that make up a cut element
@@ -712,7 +712,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendPointCircularCrossSectionInfor
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     const double circular_cross_section_radius =
@@ -814,7 +814,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSection
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     axial_strain_GPs_current_element.clear();
@@ -877,7 +877,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSection
         curvature_2_GPs_current_element.size() != num_GPs_per_element_strains_rotational or
         curvature_3_GPs_current_element.size() != num_GPs_per_element_strains_rotational)
     {
-      dserror("number of Gauss points must be the same for all elements in discretization!");
+      FOUR_C_THROW("number of Gauss points must be the same for all elements in discretization!");
     }
 
     // store the values of current element in the large vectors collecting data from all elements
@@ -987,7 +987,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSection
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     material_axial_force_GPs_current_element.clear();
@@ -1063,7 +1063,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointMaterialCrossSection
         material_bending_moment_3_GPs_current_element.size() !=
             num_GPs_per_element_stresses_rotational)
     {
-      dserror("number of Gauss points must be the same for all elements in discretization!");
+      FOUR_C_THROW("number of Gauss points must be the same for all elements in discretization!");
     }
 
     // store the values of current element in the large vectors collecting data from all elements
@@ -1173,7 +1173,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointSpatialCrossSectionS
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
 
     spatial_axial_force_GPs_current_element.clear();
@@ -1248,7 +1248,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendGaussPointSpatialCrossSectionS
         spatial_bending_moment_3_GPs_current_element.size() !=
             num_GPs_per_element_stresses_rotational)
     {
-      dserror("number of Gauss points must be the same for all elements in discretization!");
+      FOUR_C_THROW("number of Gauss points must be the same for all elements in discretization!");
     }
 
     // store the values of current element in the large vectors collecting data from all elements
@@ -1522,7 +1522,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendRVECrosssectionForces(
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::AppendElementElasticEnergy()
 {
-  dserror("not implemented yet");
+  FOUR_C_THROW("not implemented yet");
 
   //  // count number of nodes and number for each processor; output is completely independent of
   //  // the number of processors involved
@@ -1577,7 +1577,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendRefLength()
     auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     if (beamele == nullptr)
-      dserror("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
+      FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
     // this needs to be done for all cells that make up a cut element
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
@@ -1617,9 +1617,9 @@ int BeamDiscretizationRuntimeOutputWriter::GetGlobalNumberOfGaussPointsPerBeam(
 
   // Safety checks.
   if (my_num_gp_signed > 0 and my_num_gp_signed != global_num_gp)
-    dserror("The number of Gauss points must be the same for all elements in discretization!");
+    FOUR_C_THROW("The number of Gauss points must be the same for all elements in discretization!");
   else if (global_num_gp < 0)
-    dserror("The number of Gauss points must be zero or a positve integer!");
+    FOUR_C_THROW("The number of Gauss points must be zero or a positve integer!");
 
   return global_num_gp;
 }
@@ -1666,7 +1666,7 @@ void BeamDiscretizationRuntimeOutputWriter::CalcInterpolationPolynomialCoefficie
     }
     break;
     default:
-      dserror("Interpolation for Gauss rule not yet implemented.");
+      FOUR_C_THROW("Interpolation for Gauss rule not yet implemented.");
       break;
   }
 
@@ -1720,7 +1720,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendContinuousStressStrainResultan
 
     // Todo safety check for now, may be removed when better tested
     if (sr_beam == nullptr)
-      dserror("Continuous cross section output only implemented for SR beams.");
+      FOUR_C_THROW("Continuous cross section output only implemented for SR beams.");
 
     // get GP stress / strain values from previous element evaluation call
     for (std::size_t i = 0; i < 6; i++) stress_strain_GPs_current_element[i].clear();
@@ -1740,7 +1740,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendContinuousStressStrainResultan
               stress_strain_GPs_current_element[5]);
           break;
         default:
-          dserror("Type of stress strain field not yet implemented.");
+          FOUR_C_THROW("Type of stress strain field not yet implemented.");
       }
     }
 
@@ -1784,7 +1784,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendContinuousStressStrainResultan
           "material_torque", "material_bending_moment_2", "material_bending_moment_3"};
       break;
     default:
-      dserror("Type of stress strain field not yet implemented.");
+      FOUR_C_THROW("Type of stress strain field not yet implemented.");
   }
 
   // finally append the solution vectors to the visualization data of the vtu writer object

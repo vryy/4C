@@ -45,7 +45,7 @@ FLD::TimIntHDG::TimIntHDG(const Teuchos::RCP<DRT::Discretization>& actdis,
 void FLD::TimIntHDG::Init()
 {
   DRT::DiscretizationHDG* hdgdis = dynamic_cast<DRT::DiscretizationHDG*>(discret_.get());
-  if (hdgdis == nullptr) dserror("Did not receive an HDG discretization");
+  if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   int elementndof = hdgdis->NumMyRowElements() > 0
                         ? dynamic_cast<DRT::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))
@@ -65,7 +65,7 @@ void FLD::TimIntHDG::Init()
   for (int j = 0; j < hdgdis->NumMyRowElements(); ++j)
   {
     std::vector<int> dof = hdgdis->Dof(0, hdgdis->lRowElement(j));
-    dsassert(dof.size() >= 1, "Internal error: could not find HDG pressure dof");
+    FOUR_C_ASSERT(dof.size() >= 1, "Internal error: could not find HDG pressure dof");
     for (unsigned int i = 0; i < dof.size(); ++i) conddofset.insert(dof[i]);
   }
   for (int i = 0; i < hdgdis->NumMyRowFaces(); ++i)
@@ -102,7 +102,7 @@ void FLD::TimIntHDG::Init()
     gamma_ = params_->get<double>("theta");
   }
   else if (timealgo_ == INPAR::FLUID::timeint_stationary)
-    dserror("Stationary case not implemented for HDG");
+    FOUR_C_THROW("Stationary case not implemented for HDG");
 
   timealgoset_ = timealgo_;
   timealgo_ = INPAR::FLUID::timeint_afgenalpha;
@@ -201,7 +201,7 @@ void FLD::TimIntHDG::ExplicitPredictor()
     intvelnp_->Update(1.0, *intvelnm_, 2.0 * dta_, *intaccn_, 0.0);
   }
   else
-    dserror("Unknown fluid predictor %s", predictor_.c_str());
+    FOUR_C_THROW("Unknown fluid predictor %s", predictor_.c_str());
 }
 
 /*----------------------------------------------------------------------*
@@ -390,7 +390,8 @@ void FLD::TimIntHDG::SetInitialFlowField(
       if (ele->Owner() == discret_->Comm().MyPID())
       {
         std::vector<int> localDofs = discret_->Dof(1, ele);
-        dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.numRows()), "Internal error");
+        FOUR_C_ASSERT(
+            localDofs.size() == static_cast<std::size_t>(elevec2.numRows()), "Internal error");
         for (unsigned int i = 0; i < localDofs.size(); ++i)
           localDofs[i] = intdofrowmap->LID(localDofs[i]);
         intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.values(), localDofs.data());
@@ -623,7 +624,7 @@ void FLD::TimIntHDG::InitForcing()
       forcing_interface_ = Teuchos::rcp(new FLD::HomIsoTurbForcingHDG(*this));
     }
     else
-      dserror("forcing interface doesn't know this flow");
+      FOUR_C_THROW("forcing interface doesn't know this flow");
   }
   return;
 }

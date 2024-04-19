@@ -65,9 +65,9 @@ namespace
     {
       // Check that the vectors have the right size.
       if (line_elements_.size() != q_line_elements.size())
-        dserror("Size for line elements and line q does not match!");
+        FOUR_C_THROW("Size for line elements and line q does not match!");
       if (volume_elements_.size() != q_volume_elements.size())
-        dserror("Size for volume elements and volume q does not match!");
+        FOUR_C_THROW("Size for volume elements and volume q does not match!");
 
       // Get the element data containers
       std::vector<GEOMETRYPAIR::ElementData<el1, double>> q_line(q_line_elements.size());

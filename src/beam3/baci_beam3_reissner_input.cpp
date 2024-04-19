@@ -40,7 +40,7 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
       Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper_ByModes" and
       Material()->Parameter()->Name() != "MAT_BeamReissnerElastPlastic")
   {
-    dserror(
+    FOUR_C_THROW(
         "The material parameter definition '%s' is not supported by Beam3r element! "
         "Choose MAT_BeamReissnerElastHyper, MAT_BeamReissnerElastHyper_ByModes or "
         "MAT_BeamReissnerElastPlastic!",

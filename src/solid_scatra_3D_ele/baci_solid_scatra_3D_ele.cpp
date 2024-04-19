@@ -178,7 +178,7 @@ void DRT::ELEMENTS::SolidScatra::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  if (ExtractInt(position, data) != UniqueParObjectId()) dserror("wrong instance type data");
+  if (ExtractInt(position, data) != UniqueParObjectId()) FOUR_C_THROW("wrong instance type data");
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -197,7 +197,7 @@ void DRT::ELEMENTS::SolidScatra::Unpack(const std::vector<char>& data)
   DRT::ELEMENTS::Unpack(solid_scatra_calc_variant_, position, data);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 void DRT::ELEMENTS::SolidScatra::VisNames(std::map<std::string, int>& names)

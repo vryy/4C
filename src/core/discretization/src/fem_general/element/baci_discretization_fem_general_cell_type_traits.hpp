@@ -198,7 +198,7 @@ namespace CORE::FE
    *   // do_sth<...>(); must be defined for all celltypes listed in hex_celltypes
    *   return do_sth<celltype_t()>();
    * }, [](auto celltype_t) {
-   *   dserror("unsupported celltype"); // new error message.
+   *   FOUR_C_THROW("unsupported celltype"); // new error message.
    * });
    * @endcode
    *
@@ -328,7 +328,7 @@ namespace CORE::FE
         return DETAILS::CellTypeSwitchItem<CellType::max_distype, celltype_sequence>(
             fct, unsupported_celltype_callable);
     }
-    dserror(
+    FOUR_C_THROW(
         "You are calling this celltype_switch with an unknown cell type. Please add"
         "your cell type to this list above so that the function works as expected.");
   }
@@ -363,7 +363,7 @@ namespace CORE::FE
 
     if (found_position == std::end(all_names))
     {
-      dserror("Unknown celltype %s", celltype_str.c_str());
+      FOUR_C_THROW("Unknown celltype %s", celltype_str.c_str());
     }
 
     constexpr std::array all_celltypes_enum = celltype_array<all_celltypes>;

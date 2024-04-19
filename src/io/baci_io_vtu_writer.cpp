@@ -109,10 +109,10 @@ void VtuWriter::WriteGeometryUnstructuredGrid(const std::vector<double>& point_c
 
   // some sanity checks
   if (point_coordinates.size() % num_spatial_dimensions != 0)
-    dserror("VtuWriter assumes 3D point coordinates here! Extend to 2D if needed");
+    FOUR_C_THROW("VtuWriter assumes 3D point coordinates here! Extend to 2D if needed");
 
   if (cell_offset.size() != cell_types.size())
-    dserror(
+    FOUR_C_THROW(
         "VtuWriter: number of specified cell types does not equal number of "
         "specified index offsets");
 
@@ -289,7 +289,7 @@ void VtuWriter::WritePointDataVector(const IO::visualization_vector_type_variant
   }
 
   if (currentPhase_ != POINTS)
-    dserror(
+    FOUR_C_THROW(
         "VtuWriter cannot write point data at this stage. Most likely, cell and "
         "point data fields are mixed. First, all point data needs to be written, "
         "then all cell data!");
@@ -334,7 +334,7 @@ void VtuWriter::WriteCellDataVector(const IO::visualization_vector_type_variant&
   }
 
   if (currentPhase_ != CELLS)
-    dserror(
+    FOUR_C_THROW(
         "VtuWriter cannot write cell data at this stage. Most likely, cell and "
         "point data fields are mixed. First, all point data needs to be written, "
         "then all cell data!");

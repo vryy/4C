@@ -187,7 +187,8 @@ namespace SCATRA
 
     void ElectrodeKineticsTimeUpdate() override
     {
-      dserror("Galvanostatic-BC is not implemented for the stationary time-integration scheme");
+      FOUR_C_THROW(
+          "Galvanostatic-BC is not implemented for the stationary time-integration scheme");
     };
 
     void ComputeTimeDerivPot0(const bool init) override;

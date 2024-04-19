@@ -114,7 +114,7 @@ void PARTICLERIGIDBODY::RigidBodyResultTest::TestSpecial(
       actresult = mass[globalid];
     }
     else
-      dserror("result check failed with unknown quantity '%s'!", quantity.c_str());
+      FOUR_C_THROW("result check failed with unknown quantity '%s'!", quantity.c_str());
 
     // compare values
     const int err = CompareValues(actresult, "SPECIAL", res);

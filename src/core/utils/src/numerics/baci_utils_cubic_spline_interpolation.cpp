@@ -26,9 +26,9 @@ CORE::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(
 {
   // safety checks
   if (x_.size() != a_.size())
-    dserror("Length of vectors provided to cubic spline interpolation must match!");
+    FOUR_C_THROW("Length of vectors provided to cubic spline interpolation must match!");
   if (not std::is_sorted(x_.begin(), x_.end()))
-    dserror("Data points must be sorted in ascending order!");
+    FOUR_C_THROW("Data points must be sorted in ascending order!");
 
   // temp variables for solution of the linear system
   const int N = static_cast<int>(x_.size());
@@ -74,11 +74,11 @@ double CORE::UTILS::CubicSplineInterpolation::Evaluate(const double x) const
 {
   // safety check
   if (x < x_.front() or x > x_.back())
-    dserror("Sampling point x = %lf lies outside sampling point range!", x);
+    FOUR_C_THROW("Sampling point x = %lf lies outside sampling point range!", x);
 
   auto greater_equal_x = [x](const double val) { return val >= x; };
   auto right_position = std::find_if(x_.begin(), x_.end(), greater_equal_x);
-  dsassert(right_position != x_.begin(), "Internal error.");
+  FOUR_C_ASSERT(right_position != x_.begin(), "Internal error.");
   // the left side of the sought interval is found by deleting 1
   const auto left_position = std::distance(x_.begin(), right_position) - 1;
 
@@ -93,11 +93,11 @@ double CORE::UTILS::CubicSplineInterpolation::EvaluateDerivative(
 {
   // safety check
   if (x < x_.front() or x > x_.back())
-    dserror("Sampling point x = %lf lies outside sampling point range!", x);
+    FOUR_C_THROW("Sampling point x = %lf lies outside sampling point range!", x);
 
   auto greater_equal_x = [x](const double val) { return val >= x; };
   auto right_position = std::find_if(x_.begin(), x_.end(), greater_equal_x);
-  dsassert(right_position != x_.begin(), "Internal error.");
+  FOUR_C_ASSERT(right_position != x_.begin(), "Internal error.");
   // the left side of the sought interval is found by deleting 1
   const auto left_position = std::distance(x_.begin(), right_position) - 1;
 
@@ -116,7 +116,7 @@ double CORE::UTILS::CubicSplineInterpolation::EvaluateDerivative(
     }
   }
 
-  dserror(
+  FOUR_C_THROW(
       "Evaluation of %i derivative is not implemented for CubicSplineInterpolation", deriv_order);
 }
 
@@ -132,7 +132,8 @@ void CORE::UTILS::CubicSplineInterpolation::SolveLinearSystem(CORE::LINALG::Seri
   solver.setVectors(Teuchos::rcpFromRef(c), Teuchos::rcpFromRef(b));
   solver.factorWithEquilibration(true);
   solver.solveToRefinedSolution(true);
-  if (solver.factor() or solver.solve()) dserror("Solution of linear system of equations failed!");
+  if (solver.factor() or solver.solve())
+    FOUR_C_THROW("Solution of linear system of equations failed!");
 }
 
 /*----------------------------------------------------------------------*/

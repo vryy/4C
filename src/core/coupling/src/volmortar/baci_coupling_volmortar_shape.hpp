@@ -350,7 +350,7 @@ namespace CORE::VOLMORTAR
           isnurbs = false;
           break;
         default:
-          dserror("Distype unknown!");
+          FOUR_C_THROW("Distype unknown!");
       }
       return isnurbs;
     }
@@ -466,7 +466,7 @@ namespace CORE::VOLMORTAR
           for (int i = 0; i < nn; ++i)
           {
             const DRT::Node* const* nodes = ele.Nodes();
-            if (!nodes) dserror("Nodes() returned null pointer");
+            if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
             xrefe(i, 0) = nodes[i]->X()[0];
             xrefe(i, 1) = nodes[i]->X()[1];
@@ -478,13 +478,13 @@ namespace CORE::VOLMORTAR
 
           invJ.Multiply(derivs, xrefe);
           jac = invJ.Invert();
-          if (jac <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", jac);
+          if (jac <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", jac);
 
           break;
         }
 
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
 
       return jac;
@@ -572,7 +572,7 @@ namespace CORE::VOLMORTAR
           for (int i = 0; i < nn; ++i)
           {
             const DRT::Node* const* nodes = ele.Nodes();
-            if (!nodes) dserror("Nodes() returned null pointer");
+            if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
             xrefe(i, 0) = nodes[i]->X()[0];
             xrefe(i, 1) = nodes[i]->X()[1];
@@ -584,13 +584,13 @@ namespace CORE::VOLMORTAR
 
           invJ.Multiply(deriv, xrefe);
           jac = invJ.Invert();
-          if (jac <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", jac);
+          if (jac <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", jac);
 
           break;
         }
 
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
 
       return jac;
@@ -629,7 +629,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
       return;
     }
@@ -655,7 +655,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
       return;
     }
@@ -726,7 +726,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
 
       return;
@@ -753,7 +753,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
       return;
     }
@@ -912,7 +912,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
 
       return;
@@ -939,7 +939,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
       return;
     }
@@ -1070,7 +1070,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
 
       return;
@@ -1154,7 +1154,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
 
       return;
@@ -1239,7 +1239,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
       return;
     }
@@ -1324,7 +1324,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
 
       return;
@@ -1411,7 +1411,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
       return;
     }
@@ -1499,7 +1499,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
 
       return;
@@ -1589,7 +1589,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
       return;
     }
@@ -1797,7 +1797,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("shape unknown\n");
+          FOUR_C_THROW("shape unknown\n");
       }
 
       return;
@@ -1811,15 +1811,15 @@ namespace CORE::VOLMORTAR
     bool LocalToGlobal(const DRT::Element& ele, const double* xi, double* globcoord)
     {
       // check input
-      if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
-      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
-      if (IsNurbs<distype>()) dserror("ERROR: Lagr. LocalToGlobal called for NURBS!");
+      if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
+      if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
+      if (IsNurbs<distype>()) FOUR_C_THROW("ERROR: Lagr. LocalToGlobal called for NURBS!");
 
       static constexpr int n = CORE::FE::num_nodes<distype>;
       static constexpr int ndim = CORE::FE::dim<distype>;
 
       const DRT::Node* const* mynodes = ele.Nodes();
-      if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
+      if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;
 
@@ -1872,12 +1872,12 @@ namespace CORE::VOLMORTAR
 
           // not implemented
           else
-            dserror("No lin modification for quadratic elements possible!");
+            FOUR_C_THROW("No lin modification for quadratic elements possible!");
 
           break;
         }
         default:
-          dserror("dimension of the element is not correct");
+          FOUR_C_THROW("dimension of the element is not correct");
           break;
       }
       return;
@@ -1912,7 +1912,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("dimension of the element is not correct");
+          FOUR_C_THROW("dimension of the element is not correct");
           break;
       }
       return;
@@ -1943,7 +1943,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("dimension of the element is not correct");
+          FOUR_C_THROW("dimension of the element is not correct");
           break;
       }
       return;
@@ -1979,7 +1979,7 @@ namespace CORE::VOLMORTAR
           break;
         }
         default:
-          dserror("dimension of the element is not correct");
+          FOUR_C_THROW("dimension of the element is not correct");
           break;
       }
       return;

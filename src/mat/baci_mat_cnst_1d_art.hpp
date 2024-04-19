@@ -210,7 +210,7 @@ namespace MAT
       else if (i == 1)
         return params_->pext2_;
       else
-        dserror("There is no pressure with id %d", i);
+        FOUR_C_THROW("There is no pressure with id %d", i);
       return 0.0;
     }
 

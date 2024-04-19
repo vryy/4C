@@ -157,7 +157,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::ReadRestart(const int restartstep)
       particleengine_->BinDisReader(restartstep);
 
   // safety check
-  if (restartstep != reader->ReadInt("step")) dserror("time step on file not equal to given step!");
+  if (restartstep != reader->ReadInt("step"))
+    FOUR_C_THROW("time step on file not equal to given step!");
 
   // get restart time
   double restarttime = reader->ReadDouble("time");
@@ -409,7 +410,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleWall()
     }
     default:
     {
-      dserror("unknown type of particle wall source!");
+      FOUR_C_THROW("unknown type of particle wall source!");
       break;
     }
   }
@@ -451,7 +452,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleTimeIntegration()
     }
     default:
     {
-      dserror("unknown particle time integration scheme!");
+      FOUR_C_THROW("unknown particle time integration scheme!");
       break;
     }
   }
@@ -488,7 +489,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleInteraction()
     }
     default:
     {
-      dserror("unknown particle interaction type!");
+      FOUR_C_THROW("unknown particle interaction type!");
       break;
     }
   }
@@ -509,7 +510,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::InitParticleGravity()
 
   // safety check
   if (static_cast<int>(gravity.size()) != 3)
-    dserror("dimension (dim = %d) of gravity acceleration vector is wrong!",
+    FOUR_C_THROW("dimension (dim = %d) of gravity acceleration vector is wrong!",
         static_cast<int>(gravity.size()));
 
   // get magnitude of gravity
@@ -569,7 +570,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::DetermineParticleTypes()
   // safety check
   for (auto& particle : particlestodistribute_)
     if (not particlestatestotypes_.count(particle->ReturnParticleType()))
-      dserror("particle type '%s' of initial particle not defined!",
+      FOUR_C_THROW("particle type '%s' of initial particle not defined!",
           PARTICLEENGINE::EnumToTypeName(particle->ReturnParticleType()).c_str());
 }
 
@@ -665,7 +666,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEALGORITHM::ParticleAlgorithm::UpdateConnectivity");
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check number of unique global ids
   particleengine_->CheckNumberOfUniqueGlobalIds();
 #endif
@@ -800,7 +801,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::GetMaxParticlePositionIncrement(
 
   // bin size safety check
   if (maxpositionincrement > particleengine_->MinBinSize())
-    dserror("a particle traveled more than one bin on this processor!");
+    FOUR_C_THROW("a particle traveled more than one bin on this processor!");
 
   // get maximum particle position increment on all processors
   Comm().MaxAll(&maxpositionincrement, &allprocmaxpositionincrement, 1);

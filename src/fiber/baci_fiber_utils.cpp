@@ -35,7 +35,7 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(const DRT::Node* const* nodes
 
     if (fiberNodes[inode] == nullptr)
     {
-      dserror("At least one node of the element does not provide fibers.");
+      FOUR_C_THROW("At least one node of the element does not provide fibers.");
     }
 
     for (const auto& pair : fiberNodes[inode]->CoordinateSystemDirections())
@@ -248,7 +248,7 @@ void DRT::FIBER::UTILS::SetupCardiacFibers(
   }
   else
   {
-    dserror("You have to specify either FIBER1 or CIR, TAN, HELIX and TRANS");
+    FOUR_C_THROW("You have to specify either FIBER1 or CIR, TAN, HELIX and TRANS");
   }
 }
 

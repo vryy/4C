@@ -108,7 +108,7 @@ CORE::LINALG::SolverParams NOX::NLN::MESHTYING::LinearSystem::SetSolverOptions(
     if (solverPtr->Params().isSublist("Belos Parameters"))
     {
       if (iConstrPrec_.size() > 1)
-        dserror(
+        FOUR_C_THROW(
             "Currently only one constraint preconditioner interface can be handled! \n "
             "Needs to be extended!");
 
@@ -132,7 +132,7 @@ CORE::LINALG::SolverParams NOX::NLN::MESHTYING::LinearSystem::SetSolverOptions(
       else if (iConstrPrec_.begin()->first == NOX::NLN::sol_meshtying)
         mueluParams.set<std::string>("GLOBAL::ProblemType", "meshtying");
       else
-        dserror("Currently we support only a pure meshtying OR a pure contact problem!");
+        FOUR_C_THROW("Currently we support only a pure meshtying OR a pure contact problem!");
 
       mueluParams.set<int>("time step", step);
       // increase counter by one (historical reasons)

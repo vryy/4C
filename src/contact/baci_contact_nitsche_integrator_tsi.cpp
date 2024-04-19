@@ -76,7 +76,7 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 {
   if (sele.Owner() != Comm_.MyPID()) return;
 
-  if (dim != Dim()) dserror("dimension inconsistency");
+  if (dim != Dim()) FOUR_C_THROW("dimension inconsistency");
 
   const CORE::GEN::Pairedvector<int, double> empty(0);
 
@@ -91,14 +91,14 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
     for (int d = 0; d < dim; ++d)
       xgp(d) += sval(n) * dynamic_cast<MORTAR::Node*>(sele.Nodes()[n])->xspatial()[d];
 
-  if (frtype_ != INPAR::CONTACT::friction_none && dim != 3) dserror("only 3D friction");
+  if (frtype_ != INPAR::CONTACT::friction_none && dim != 3) FOUR_C_THROW("only 3D friction");
   if (frtype_ != INPAR::CONTACT::friction_none && frtype_ != INPAR::CONTACT::friction_coulomb &&
       frtype_ != INPAR::CONTACT::friction_tresca)
-    dserror("only coulomb or tresca friction");
+    FOUR_C_THROW("only coulomb or tresca friction");
   if (frtype_ == INPAR::CONTACT::friction_coulomb && frcoeff_ < 0.)
-    dserror("negative coulomb friction coefficient");
+    FOUR_C_THROW("negative coulomb friction coefficient");
   if (frtype_ == INPAR::CONTACT::friction_tresca && frbound_ < 0.)
-    dserror("negative tresca friction bound");
+    FOUR_C_THROW("negative tresca friction bound");
 
   CORE::LINALG::Matrix<dim, 1> slave_normal, master_normal;
   std::vector<CORE::GEN::Pairedvector<int, double>> deriv_slave_normal(0, 0);
@@ -376,7 +376,7 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
           break;
         default:
           fr = 0.;
-          dserror("why are you here???");
+          FOUR_C_THROW("why are you here???");
           break;
       }
 
@@ -574,7 +574,7 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
                 wm_thermo * pen_thermo / dynamic_cast<CONTACT::Element&>(mele).TraceHCond();
             break;
           default:
-            dserror("unknown Nitsche weighting");
+            FOUR_C_THROW("unknown Nitsche weighting");
             break;
         }
 
@@ -737,7 +737,8 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
         break;
       }
       default:
-        dserror("unknown method for thermal constraint enforcement in Nitsche contact integrator");
+        FOUR_C_THROW(
+            "unknown method for thermal constraint enforcement in Nitsche contact integrator");
         break;
     }
   }
@@ -1060,7 +1061,7 @@ void CONTACT::IntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::Element& moEle,
 {
   if (moEle.MoData().ParentTemp().size() == 0)
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     std::cout << "***************************************************************\n"
                  "WARNING: we are skipping the evaluation of the cauchy heat flux\n"
                  "         because parent temperatures are not set. This can\n"
@@ -1086,7 +1087,7 @@ void CONTACT::IntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::Element& moEle,
     {
       auto* parent_ele =
           dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>*>(moEle.ParentElement());
-      if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3Plast for now.");
+      if (!parent_ele) FOUR_C_THROW("thermo-mechanical Nitsche contact only for So3Plast for now.");
 
       SoEleGP<CORE::FE::CellType::hex8, dim>(
           moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
@@ -1099,7 +1100,7 @@ void CONTACT::IntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::Element& moEle,
     {
       auto* parent_ele =
           dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex27>*>(moEle.ParentElement());
-      if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3Plast for now.");
+      if (!parent_ele) FOUR_C_THROW("thermo-mechanical Nitsche contact only for So3Plast for now.");
 
       SoEleGP<CORE::FE::CellType::hex27, dim>(
           moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
@@ -1112,7 +1113,7 @@ void CONTACT::IntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::Element& moEle,
     {
       auto* parent_ele =
           dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>*>(moEle.ParentElement());
-      if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3Plast for now.");
+      if (!parent_ele) FOUR_C_THROW("thermo-mechanical Nitsche contact only for So3Plast for now.");
 
       SoEleGP<CORE::FE::CellType::tet4, dim>(
           moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
@@ -1122,7 +1123,7 @@ void CONTACT::IntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::Element& moEle,
       break;
     }
     default:
-      dserror("Nitsche contact not implemented for used (bulk) elements");
+      FOUR_C_THROW("Nitsche contact not implemented for used (bulk) elements");
       break;
   }
 
@@ -1194,7 +1195,7 @@ void CONTACT::IntegratorNitscheTsi::BuildAdjointTestThermo(MORTAR::Element& moEl
   CORE::LINALG::SerialDenseMatrix tmp(moEle.ParentElement()->NumNode(), dim, false);
   CORE::LINALG::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.A(),
       derivtravo_slave.numRows(), derivtravo_slave.numRows(), derivtravo_slave.numCols());
-  if (CORE::LINALG::multiply(tmp, d2q_dT_dpxi, deriv_trafo)) dserror("multiply failed");
+  if (CORE::LINALG::multiply(tmp, d2q_dT_dpxi, deriv_trafo)) FOUR_C_THROW("multiply failed");
   for (int d = 0; d < dim - 1; ++d)
   {
     for (auto p = boundary_gpcoord_lin[d].begin(); p != boundary_gpcoord_lin[d].end(); ++p)

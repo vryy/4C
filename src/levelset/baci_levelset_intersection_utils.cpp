@@ -236,7 +236,7 @@ void SCATRA::LEVELSET::Intersection::CheckBoundaryCellType(CORE::FE::CellType di
 {
   if (distype_bc != CORE::FE::CellType::tri3 and distype_bc != CORE::FE::CellType::quad4)
   {
-    dserror("unexpected type of boundary integration cell: %s",
+    FOUR_C_THROW("unexpected type of boundary integration cell: %s",
         CORE::FE::CellTypeToString(distype_bc).c_str());
   }
 }
@@ -272,18 +272,18 @@ void SCATRA::LEVELSET::Intersection::CollectCutEles(CORE::GEO::CUT::ElementHandl
     case CORE::FE::CellType::line2:
     case CORE::FE::CellType::hex8:
     {
-      if (cuteles.size() != 1) dserror("one cut element expected for linear elements");
+      if (cuteles.size() != 1) FOUR_C_THROW("one cut element expected for linear elements");
       break;
     }
     case CORE::FE::CellType::hex20:
     case CORE::FE::CellType::hex27:
     {
-      if (cuteles.size() != 8) dserror("eight cut elements expected for quadratic elements");
+      if (cuteles.size() != 8) FOUR_C_THROW("eight cut elements expected for quadratic elements");
       break;
     }
     default:
     {
-      dserror("distype unknown for level set cut algorithm");
+      FOUR_C_THROW("distype unknown for level set cut algorithm");
       break;
     }
   }
@@ -322,12 +322,13 @@ void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
           CORE::GEO::fillInitialPositionArray<CORE::FE::CellType::line2, 3>(ele, xyze);
           break;
         default:
-          dserror("Unsupported problem dimension! (probdim = %d)", probdim);
+          FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim);
           exit(EXIT_FAILURE);
       }
       break;
     default:
-      dserror("Unknown elmenet type ( type = %s )", CORE::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW(
+          "Unknown elmenet type ( type = %s )", CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
 
@@ -430,7 +431,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
   int source = myrank - 1;
   if (myrank == 0) source = numproc - 1;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   IO::cout << "proc " << myrank << " interface pieces for " << myinterface.size()
            << " elements available before export" << IO::endl;
 #endif
@@ -455,7 +456,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
     std::vector<int> lengthSend(1, 0);
     lengthSend[0] = dataSend.size();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     IO::cout << "--- sending " << lengthSend[0] << " bytes: from proc " << myrank << " to proc "
              << dest << IO::endl;
 #endif
@@ -478,7 +479,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
     exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
     exporter.Wait(req_data);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     IO::cout << "--- receiving " << lengthRecv[0] << " bytes: to proc " << myrank << " from proc "
              << source << IO::endl;
 #endif
@@ -506,7 +507,7 @@ void SCATRA::LEVELSET::Intersection::ExportInterface(
     // processors wait for each other
     comm.Barrier();
   }
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   IO::cout << "proc " << myrank << " interface pieces for " << myinterface.size()
            << " elements available after export" << IO::endl;
 #endif
@@ -562,7 +563,7 @@ void SCATRA::LEVELSET::Intersection::unpackBoundaryIntCells(
     // extract fluid element gid
     int elegid = -1;
     CORE::COMM::ParObject::ExtractfromPack(posingroup, data, elegid);
-    if (elegid < 0) dserror("extraction of element gid failed");
+    if (elegid < 0) FOUR_C_THROW("extraction of element gid failed");
 
     // extract number of boundary integration cells for this element
     int numvecs = -1;
@@ -582,7 +583,7 @@ void SCATRA::LEVELSET::Intersection::unpackBoundaryIntCells(
       CORE::COMM::ParObject::ExtractfromPack(posingroup, data, distypeint);
       distype = (CORE::FE::CellType)distypeint;
       if (!(distype == CORE::FE::CellType::tri3 || distype == CORE::FE::CellType::quad4))
-        dserror("unexpected distype %d", distypeint);
+        FOUR_C_THROW("unexpected distype %d", distypeint);
 
       CORE::LINALG::SerialDenseMatrix vertices_xi;
       CORE::COMM::ParObject::ExtractfromPack(posingroup, data, vertices_xi);
@@ -602,7 +603,7 @@ void SCATRA::LEVELSET::Intersection::unpackBoundaryIntCells(
   }
   // check correct reading
   if (posingroup != data.size())
-    dserror("mismatch in size of data %d <-> %d", (int)data.size(), posingroup);
+    FOUR_C_THROW("mismatch in size of data %d <-> %d", (int)data.size(), posingroup);
 }
 
 

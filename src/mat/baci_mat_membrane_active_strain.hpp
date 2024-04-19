@@ -151,7 +151,7 @@ namespace MAT
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
-        dserror("element and material kinematics are not compatible");
+        FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// material type
@@ -181,7 +181,7 @@ namespace MAT
         int gp,                              ///< Gauss point
         int eleGID) override                 ///< Element ID
     {
-      dserror("This a membrane material. Calling So3 evaluate does not make sense.");
+      FOUR_C_THROW("This a membrane material. Calling So3 evaluate does not make sense.");
     };
 
     void UpdateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,

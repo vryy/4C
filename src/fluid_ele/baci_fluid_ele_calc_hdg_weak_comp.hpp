@@ -52,7 +52,7 @@ namespace DRT
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const CORE::FE::GaussIntegration& intpoints) override
       {
-        dserror("Not implemented!");
+        FOUR_C_THROW("Not implemented!");
         return 1;
       }
 
@@ -61,7 +61,7 @@ namespace DRT
           const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells) override
       {
-        dserror("Not implemented!");
+        FOUR_C_THROW("Not implemented!");
         return 1;
       };
 
@@ -84,7 +84,7 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> mat)
       {
-        dserror("Not implemented!");
+        FOUR_C_THROW("Not implemented!");
         return 1;
       }
 
@@ -162,7 +162,7 @@ namespace DRT
           Teuchos::ParameterList& params                      ///< parameter list
           ) override
       {
-        dserror("Not implemented!");
+        FOUR_C_THROW("Not implemented!");
         return 1;
       }
 
@@ -177,7 +177,7 @@ namespace DRT
           const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) override
       {
-        dserror("Not implemented!");
+        FOUR_C_THROW("Not implemented!");
         return 1;
       }
 
@@ -205,7 +205,7 @@ namespace DRT
           const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
           ) override
       {
-        dserror("Not implemented!");
+        FOUR_C_THROW("Not implemented!");
         return;
       }
 
@@ -230,7 +230,7 @@ namespace DRT
           bool evaluated_cut  ///< the CUT was updated before this evaluation is called
           ) override
       {
-        dserror("Not implemented!");
+        FOUR_C_THROW("Not implemented!");
         return;
       }
 
@@ -238,14 +238,14 @@ namespace DRT
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           const CORE::FE::GaussIntegration& intpoints) override
       {
-        dserror("Not implemented!");
+        FOUR_C_THROW("Not implemented!");
         return;
       }
 
       void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) override
       {
-        dserror("Not implemented!");
+        FOUR_C_THROW("Not implemented!");
         return;
       }
 

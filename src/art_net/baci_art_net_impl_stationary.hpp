@@ -72,16 +72,22 @@ namespace ART
     /// initialization
     void InitSaveState() override
     {
-      dserror("InitSaveState() not available for stationary formulation");
+      FOUR_C_THROW("InitSaveState() not available for stationary formulation");
     }
 
     // restart
     void ReadRestart(int step, bool CoupledTo3D = false) override;
 
     /// save state
-    void SaveState() override { dserror("SaveState() not available for stationary formulation"); }
+    void SaveState() override
+    {
+      FOUR_C_THROW("SaveState() not available for stationary formulation");
+    }
 
-    void LoadState() override { dserror("LoadState() not available for stationary formulation"); }
+    void LoadState() override
+    {
+      FOUR_C_THROW("LoadState() not available for stationary formulation");
+    }
 
     // output
     void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;

@@ -70,7 +70,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "expected combination tri3/tet4/tet4 or tri6/wedge6/wedge6 for surface/parent/neighbor "
             "pair");
       }
@@ -93,7 +93,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "expected combination tri6/tet10/tet10 or tri6/wedge15/wedge15 for "
             "surface/parent/neighbor pair");
       }
@@ -116,7 +116,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "expected combination quad4/hex8/hex8 or quad4/wedge6/wedge6 for "
             "surface/parent/neighbor pair");
       }
@@ -139,7 +139,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "expected combination quad8/hex20/hex20 or quad8/wedge15/wedge15 for "
             "surface/parent/neighbor pair");
       }
@@ -155,7 +155,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       }
       else
       {
-        dserror("expected combination quad9/hex27/hex27 for surface/parent/neighbor pair");
+        FOUR_C_THROW("expected combination quad9/hex27/hex27 for surface/parent/neighbor pair");
       }
       break;
     }
@@ -176,7 +176,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "expected combination line2/tri3/tri3 or line2/quad4/quad4 for surface/parent/neighbor "
             "pair");
       }
@@ -204,14 +204,15 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "expected combination line3/quad9/quad9 or line3/quad8/quad8 or line3/tri6/tri6 for "
             "surface/parent/neighbor pair");
       }
       break;
     }
     default:
-      dserror("shape %d (%d nodes) not supported by internalfaces stabilization. Just switch on!",
+      FOUR_C_THROW(
+          "shape %d (%d nodes) not supported by internalfaces stabilization. Just switch on!",
           surfele->Shape(), surfele->NumNode());
       break;
   }
@@ -365,7 +366,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
     s_connectivity_ = CORE::FE::getEleNodeNumberingLines(ndistype);
   }
   else
-    dserror("not valid nsd %i", nsd_);
+    FOUR_C_THROW("not valid nsd %i", nsd_);
 
   // get the connectivity between lines and surfaces of an parent element
   connectivity_line_nodes_ = CORE::FE::getEleNodeNumberingLines(pdistype);
@@ -462,7 +463,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Degree
       degree = 2;
       break;
     default:
-      dserror("unsupported parent/neighbor element shape");
+      FOUR_C_THROW("unsupported parent/neighbor element shape");
   }
 
   return degree;
@@ -498,8 +499,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   Fluid* pele = intface->ParentMasterElement();
   Fluid* nele = intface->ParentSlaveElement();
 
-  if (pele == nullptr) dserror("pele is nullptr");
-  if (nele == nullptr) dserror("nele is nullptr");
+  if (pele == nullptr) FOUR_C_THROW("pele is nullptr");
+  if (nele == nullptr) FOUR_C_THROW("nele is nullptr");
 
   //---------------------------------------------------
 
@@ -584,20 +585,20 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   if ((!EOS_vel) and (!EOS_pres) and (!EOS_div))
   {
-    dserror("do not call EvaluateEdgeBasedStabilization if no stab is required!");
+    FOUR_C_THROW("do not call EvaluateEdgeBasedStabilization if no stab is required!");
   }
 
   if (EOS_div_vel_jump)
   {
     if (fldparatimint.IsGenalphaNP())
-      dserror("No combined divergence and streamline(EOS) stabilization for np-gen alpha");
+      FOUR_C_THROW("No combined divergence and streamline(EOS) stabilization for np-gen alpha");
   }
 
 
   if (EOS_div)  // safety check
   {
     if (elemat_blocks.size() < nsd_ * nsd_ + 1)
-      dserror("do not choose diagonal pattern for div_EOS stabilization!");
+      FOUR_C_THROW("do not choose diagonal pattern for div_EOS stabilization!");
   }
   //---------------------------------------------------
 
@@ -611,7 +612,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   if (fldparatimint.TimeAlgo() == INPAR::FLUID::timeint_one_step_theta)
   {
     //    if (fldpara.TimeAlgo()==INPAR::FLUID::timeint_one_step_theta and fldpara.Theta()!=1.0)
-    //      dserror("Read remark!");
+    //      FOUR_C_THROW("Read remark!");
     // Remark:
     // in the following Paper a fully implicit integration of the stabilization terms is proposed
     // this corresponds to theta=1 for the stabilization terms, while theta!=1 may be used for all
@@ -648,7 +649,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     timefacrhs = 1.0;
   }
   else
-    dserror("Unknown time-integration scheme for edge-based stabilization!");
+    FOUR_C_THROW("Unknown time-integration scheme for edge-based stabilization!");
 
   if (ghost_penalty_reconstruct)
   {
@@ -663,11 +664,12 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   const int slave_numdof = lm_slaveToPatch.size();
   const int face_numdof = lm_faceToPatch.size();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (master_numdof != numdofpernode_ * piel)
-    dserror("wrong number of master dofs %i", master_numdof);
-  if (slave_numdof != numdofpernode_ * niel) dserror("wrong number of slave dofs %i", slave_numdof);
-  if (master_numdof != slave_numdof) dserror("Different element typs?");
+    FOUR_C_THROW("wrong number of master dofs %i", master_numdof);
+  if (slave_numdof != numdofpernode_ * niel)
+    FOUR_C_THROW("wrong number of slave dofs %i", slave_numdof);
+  if (master_numdof != slave_numdof) FOUR_C_THROW("Different element typs?");
 #endif
 
   //---------------------------------------------------
@@ -692,7 +694,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   //------------- extract patch velaf velocity---------
   // velocities (intermediate time step, n+alpha_F)
   Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
-  if (velaf == Teuchos::null) dserror("Cannot get state vector 'velaf'");
+  if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
 
   std::vector<double> patch_velaf(ndofinpatch);
@@ -700,7 +702,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   for (int i = 0; i < ndofinpatch; ++i)
   {
     int lid = velaf->Map().LID(patchlm[i]);
-    if (lid == -1) dserror("Cannot find degree of freedom on this proc");
+    if (lid == -1) FOUR_C_THROW("Cannot find degree of freedom on this proc");
     patch_velaf[i] = (*velaf)[lid];
   }
 
@@ -727,13 +729,13 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   {
     // velocities (intermediate time step, n+1)
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-    if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
+    if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
     std::vector<double> patch_velnp(ndofinpatch);
     for (int i = 0; i < ndofinpatch; ++i)
     {
       int lid = velnp->Map().LID(patchlm[i]);
-      if (lid == -1) dserror("Cannot find degree of freedom on this proc");
+      if (lid == -1) FOUR_C_THROW("Cannot find degree of freedom on this proc");
       patch_velnp[i] = (*velnp)[lid];
     }
 
@@ -770,14 +772,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp == Teuchos::null)
     {
-      dserror("Cannot get state vector 'dispnp'");
+      FOUR_C_THROW("Cannot get state vector 'dispnp'");
     }
 
     // ALE-grid velocities
     Teuchos::RCP<const Epetra_Vector> gridv = discretization.GetState("gridv");
     if (gridv == Teuchos::null)
     {
-      dserror("Cannot get state vector 'gridv'");
+      FOUR_C_THROW("Cannot get state vector 'gridv'");
     }
 
     // extract patch dispnp
@@ -788,11 +790,11 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     for (int i = 0; i < ndofinpatch; ++i)
     {
       int lid_1 = dispnp->Map().LID(patchlm[i]);
-      if (lid_1 == -1) dserror("Cannot find degree of freedom on this proc");
+      if (lid_1 == -1) FOUR_C_THROW("Cannot find degree of freedom on this proc");
       patch_dispnp[i] = (*dispnp)[lid_1];
 
       int lid_2 = gridv->Map().LID(patchlm[i]);
-      if (lid_2 == -1) dserror("Cannot find degree of freedom on this proc");
+      if (lid_2 == -1) FOUR_C_THROW("Cannot find degree of freedom on this proc");
       patch_gridv[i] = (*gridv)[lid_2];
     }
 
@@ -870,7 +872,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
                 .Evaluate(jx, time, idim);
     }
 
-    if (pele->IsAle()) dserror("is ALE for Oseen really reasonable");
+    if (pele->IsAle()) FOUR_C_THROW("is ALE for Oseen really reasonable");
   }
   else if (fldintfacepara.PhysicalType() == INPAR::FLUID::stokes)
   {
@@ -878,10 +880,10 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     neconvvelaf_.Clear();
 
     // zero convective terms
-    if (pele->IsAle()) dserror("is ALE for Stokes really reasonable");
+    if (pele->IsAle()) FOUR_C_THROW("is ALE for Stokes really reasonable");
   }
   else
-    dserror("physical type for face-oriented stabilizations not supported so far");
+    FOUR_C_THROW("physical type for face-oriented stabilizations not supported so far");
 
 
 
@@ -950,7 +952,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           break;
         }
         default:
-          dserror("intface type not supported %d", distype);
+          FOUR_C_THROW("intface type not supported %d", distype);
           break;
       }
     }
@@ -1009,7 +1011,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
         n_xi_points_, face_xi_points_slave_, ndistype, distype, intface->FaceSlaveNumber());
   }
   else
-    dserror("invalid nsd");
+    FOUR_C_THROW("invalid nsd");
 
   //------------------------------------------------------------------
   // set flags
@@ -1018,7 +1020,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   if (!GP_visc and !GP_trans and GP_u_p_2nd)
   {
-    dserror(
+    FOUR_C_THROW(
         "do you really want to neglect the gradient based ghost penalty term but stabilize the 2nd "
         "order derivatives?");
   }
@@ -1032,7 +1034,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   {
     // however, force the 2nd order ghost-penalties for real higher order elements (hex20, hex 27
     // etc)
-    dserror("you should switch on the 2nd order ghost penalty terms for u and p!");
+    FOUR_C_THROW("you should switch on the 2nd order ghost penalty terms for u and p!");
   }
 
   if (ishigherorder_ and GP_u_p_2nd) use2ndderiv = true;
@@ -1235,7 +1237,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       }
     }
     else
-      dserror("unknown assembly pattern for given number of epetra block matrices");
+      FOUR_C_THROW("unknown assembly pattern for given number of epetra block matrices");
   }
 
   // elemat.Print(cout);
@@ -1517,7 +1519,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
     // Error messages
     if (numofmaterials > 2)
     {
-      dserror("More than two materials is currently not supported.");
+      FOUR_C_THROW("More than two materials is currently not supported.");
     }
 
     std::vector<double> density(numofmaterials);  // Assume density[0] is on positive side, and
@@ -1551,22 +1553,23 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
         // different types of materials (to be added here)
         //------------------------------------------------
         default:
-          dserror("Only Newtonian fluids supported as input.");
+          FOUR_C_THROW("Only Newtonian fluids supported as input.");
           break;
       }
     }
     if (viscosity[0] != viscosity[1])
-      dserror(
+      FOUR_C_THROW(
           "Edge-based stabilization for smeared two-phase/changing viscosity is not supported.");
     if (density[0] != density[1])
-      dserror("Edge-based stabilization for smeared two-phase/changing density is not supported.");
+      FOUR_C_THROW(
+          "Edge-based stabilization for smeared two-phase/changing density is not supported.");
 
     kinvisc_ = viscosity[0] / density[0];
     density_ = density[0];
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "A Newtonian Fluid is expected. For XFEM this should be checked in "
         "XFEM::XfemEdgeStab::AssembleEdgeStabGhostPenalty(..)!\n");
   }
@@ -1622,7 +1625,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   }
   else
   {
-    dserror("not implemented for nurbs");
+    FOUR_C_THROW("not implemented for nurbs");
   }
 
   // ------------------------------------------------
@@ -1643,7 +1646,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     CORE::FE::shape_function_deriv1<pdistype>(p_xi_gp, pderiv_);
   }
   else
-    dserror("not implemented for nurbs");
+    FOUR_C_THROW("not implemented for nurbs");
 
   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
@@ -1653,7 +1656,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     CORE::FE::shape_function_deriv1<ndistype>(n_xi_gp, nderiv_);
   }
   else
-    dserror("not implemented for nurbs");
+    FOUR_C_THROW("not implemented for nurbs");
 
   //-----------------------------------------------------
 
@@ -1683,7 +1686,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // check for degenerated elements
   if (pdet < 0.0)
   {
-    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", master_eid, pdet);
+    FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", master_eid, pdet);
   }
 
   //-----------------------------------------------------
@@ -1707,7 +1710,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // check for degenerated elements
   if (ndet < 0.0)
   {
-    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", slave_eid, ndet);
+    FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", slave_eid, ndet);
   }
 
   //-----------------------------------------------------
@@ -2027,7 +2030,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   }
   else
   {
-    dserror("not implemented for nurbs");
+    FOUR_C_THROW("not implemented for nurbs");
   }
 
   CORE::LINALG::Matrix<nsd_, 1> x_gp(true);
@@ -2039,7 +2042,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   bool inelement_n = CORE::GEO::ComputeLocalCoordinates<ndistype>(nxyze_, x_gp, nqxg);
 
-  if (!inelement_n) dserror("point does not lie in element");
+  if (!inelement_n) FOUR_C_THROW("point does not lie in element");
 
 
   //---------------
@@ -2048,7 +2051,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   CORE::LINALG::Matrix<nsd_, 1> pqxg(true);
   bool inelement_p = CORE::GEO::ComputeLocalCoordinates<pdistype>(pxyze_, x_gp, pqxg);
 
-  if (!inelement_p) dserror("point does not lie in element");
+  if (!inelement_p) FOUR_C_THROW("point does not lie in element");
 
 
   // ------------------------------------------------
@@ -2069,7 +2072,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     CORE::FE::shape_function_deriv1<pdistype>(pqxg, pderiv_);
   }
   else
-    dserror("not implemented for nurbs");
+    FOUR_C_THROW("not implemented for nurbs");
 
   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
@@ -2079,7 +2082,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     CORE::FE::shape_function_deriv1<ndistype>(nqxg, nderiv_);
   }
   else
-    dserror("not implemented for nurbs");
+    FOUR_C_THROW("not implemented for nurbs");
 
   //-----------------------------------------------------
 
@@ -2109,7 +2112,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // check for degenerated elements
   if (pdet < 0.0)
   {
-    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", master_eid, pdet);
+    FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", master_eid, pdet);
   }
 
   //-----------------------------------------------------
@@ -2133,7 +2136,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // check for degenerated elements
   if (ndet < 0.0)
   {
-    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", slave_eid, ndet);
+    FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", slave_eid, ndet);
   }
 
   //-----------------------------------------------------
@@ -2224,7 +2227,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::SetCo
       break;
     }
     default:
-      dserror(
+      FOUR_C_THROW(
           "Physical type not implemented here. For Poro-problems see derived class "
           "FluidEleCalcPoro.");
       break;
@@ -2251,7 +2254,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Ghost
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: GhostPenalty2ndNormal");
 
 
-  if (numderiv2_n != numderiv2_p) dserror("different dimensions for parent and master element");
+  if (numderiv2_n != numderiv2_p)
+    FOUR_C_THROW("different dimensions for parent and master element");
 
   double tau_timefacfac_tmp = 0.0;
 
@@ -2454,7 +2458,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Ghost
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: GhostPenalty2ndFull");
 
-  if (numderiv2_n != numderiv2_p) dserror("different dimensions for parent and master element");
+  if (numderiv2_n != numderiv2_p)
+    FOUR_C_THROW("different dimensions for parent and master element");
 
   double tau_timefacfac_tmp = 0.0;
 
@@ -2874,7 +2879,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::press
   const int index_symmetry = 2;  // one element layer in z-direction
 
   if (index_symmetry >= nsd_)
-    dserror("the symmetry index exceeds the number of spatial dimensions of the problem!");
+    FOUR_C_THROW("the symmetry index exceeds the number of spatial dimensions of the problem!");
 
 
   // q_master * p_master
@@ -2949,7 +2954,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compu
       p_hk_ = compute_patch_hk_ele_diameter(master, slave);
       break;
     default:
-      dserror("not a valid element length type for EOS stabilization");
+      FOUR_C_THROW("not a valid element length type for EOS stabilization");
       break;
   }
 
@@ -2998,7 +3003,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           diameter2D<9>(true, m_connectivity_[p_surf], h_e);
           break;
         default:
-          dserror("unknown number of nodes for surface of parent element");
+          FOUR_C_THROW("unknown number of nodes for surface of parent element");
           break;
       };
 
@@ -3033,7 +3038,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           diameter2D<9>(false, s_connectivity_[p_surf], h_e);
           break;
         default:
-          dserror("unknown number of nodes for surface of parent element");
+          FOUR_C_THROW("unknown number of nodes for surface of parent element");
           break;
       };
 
@@ -3062,7 +3067,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           diameter1D<3>(true, m_connectivity_[p_line], h_e);
           break;
         default:
-          dserror("unknown number of nodes for line of parent element");
+          FOUR_C_THROW("unknown number of nodes for line of parent element");
           break;
       };
 
@@ -3088,7 +3093,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           diameter1D<3>(false, s_connectivity_[p_line], h_e);
           break;
         default:
-          dserror("unknown number of nodes for line of parent element");
+          FOUR_C_THROW("unknown number of nodes for line of parent element");
           break;
       };
 
@@ -3099,7 +3104,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     return patch_hk;
   }
   else
-    dserror("invalid nsd");
+    FOUR_C_THROW("invalid nsd");
 
   return 0.0;
 }
@@ -3164,7 +3169,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           diameter2D<9>(true, m_connectivity_[p_surf], h_e);
           break;
         default:
-          dserror("unknown number of nodes for surface of parent element");
+          FOUR_C_THROW("unknown number of nodes for surface of parent element");
           break;
       };
 
@@ -3202,7 +3207,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           diameter2D<9>(false, s_connectivity_[p_surf], h_e);
           break;
         default:
-          dserror("unknown number of nodes for surface of parent element");
+          FOUR_C_THROW("unknown number of nodes for surface of parent element");
           break;
       };
 
@@ -3244,7 +3249,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           diameter1D<3>(true, m_connectivity_[p_line], h_e);
           break;
         default:
-          dserror("unknown number of nodes for line of parent element");
+          FOUR_C_THROW("unknown number of nodes for line of parent element");
           break;
       };
 
@@ -3273,7 +3278,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           diameter1D<3>(false, s_connectivity_[p_line], h_e);
           break;
         default:
-          dserror("unknown number of nodes for line of parent element");
+          FOUR_C_THROW("unknown number of nodes for line of parent element");
           break;
       };
 
@@ -3284,7 +3289,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     return patch_hk;
   }
   else
-    dserror("invalid nsd");
+    FOUR_C_THROW("invalid nsd");
 
   return 0.0;
 }
@@ -3325,7 +3330,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::com
         diameter2D<9>(true, m_connectivity_[side_id_master], h_e);
         break;
       default:
-        dserror("unknown number of nodes for surface of parent element");
+        FOUR_C_THROW("unknown number of nodes for surface of parent element");
         break;
     };
 
@@ -3349,14 +3354,14 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::com
         diameter1D<3>(true, m_connectivity_[line_id_master], h_e);
         break;
       default:
-        dserror("unknown number of nodes for line of parent element");
+        FOUR_C_THROW("unknown number of nodes for line of parent element");
         break;
     };
 
     return h_e;
   }
   else
-    dserror("invalid nsd");
+    FOUR_C_THROW("invalid nsd");
 
   return 0.0;
 }
@@ -3386,7 +3391,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // REMARK: in the following we assume the same element type for master and slave element as
   // combination of hex-wedge or tet-wedge is not reasonable with this element length computation
   if (pdistype != ndistype)
-    dserror(
+    FOUR_C_THROW(
         "this type of element lenght is not reasonable for different types of neighboring "
         "elements");
 
@@ -3402,7 +3407,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     FindQUADConnectingLines1D(numnode_intface, side_id_master, side_id_slave, p_lines_master,
         p_lines_slave, opposite_side_id_master, opposite_side_id_slave);
   else
-    dserror("no valid nsd_");
+    FOUR_C_THROW("no valid nsd_");
 
   // map of the connecting lines between surfaces, vector of the line's nodes
   std::map<int, std::vector<int>> p_lines_nodes_m;
@@ -3436,7 +3441,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       max_length_of_lines<2>(false, p_lines_nodes_s, h_e_slave);  // slave element
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "unknown number of nodes for surface of parent element, just reasonable for "
           "quadrilateral/line faces");
       break;
@@ -3482,7 +3487,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_pa
         diameter<27>(true, h_k);
         break;
       default:
-        dserror("not a valid number of nodes for master parent element");
+        FOUR_C_THROW("not a valid number of nodes for master parent element");
         break;
     };
 
@@ -3510,7 +3515,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_pa
         diameter<27>(false, h_k);
         break;
       default:
-        dserror("not a valid number of nodes for slave parent element");
+        FOUR_C_THROW("not a valid number of nodes for slave parent element");
         break;
     };
 
@@ -3539,7 +3544,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_pa
         diameter<6>(true, h_k);
         break;
       default:
-        dserror("not a valid number of nodes for master parent element");
+        FOUR_C_THROW("not a valid number of nodes for master parent element");
         break;
     };
 
@@ -3567,7 +3572,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_pa
         diameter<6>(false, h_k);
         break;
       default:
-        dserror("not a valid number of nodes for slave parent element");
+        FOUR_C_THROW("not a valid number of nodes for slave parent element");
         break;
     };
 
@@ -3577,7 +3582,7 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_pa
     return patch_hk;
   }
   else
-    dserror("invalid nsd");
+    FOUR_C_THROW("invalid nsd");
 
   return 0.0;
 }
@@ -3756,7 +3761,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           gamma_p = 0.25;
       }
       else
-        dserror("no valid dimension");
+        FOUR_C_THROW("no valid dimension");
 
       gamma_u = gamma_p;
       gamma_div = gamma_p;
@@ -3824,7 +3829,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           gamma_p = 0.25;
       }
       else
-        dserror("no valid dimension");
+        FOUR_C_THROW("no valid dimension");
 
       gamma_u = gamma_p;
       gamma_div = gamma_p * 0.001;
@@ -3893,7 +3898,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
           gamma_p = 0.25;
       }
       else
-        dserror("no valid dimension");
+        FOUR_C_THROW("no valid dimension");
 
       gamma_u = gamma_p;
       gamma_div = gamma_p * 0.001;
@@ -4196,7 +4201,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     }
     break;
     default:
-      dserror("unknown definition for tau\n %i  ", tautype);
+      FOUR_C_THROW("unknown definition for tau\n %i  ", tautype);
       break;
   }
 

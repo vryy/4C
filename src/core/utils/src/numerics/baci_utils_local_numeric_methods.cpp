@@ -48,7 +48,7 @@ double CORE::UTILS::Bisection(const std::function<double(double)> &funct, const 
     }
   }
 
-  dserror(
+  FOUR_C_THROW(
       "Maximal number of iterations reached for Bisection method (%d iterations). Error is "
       "still at %14.14f",
       numiter, (b - a) / 2);

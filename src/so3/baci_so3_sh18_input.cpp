@@ -37,14 +37,14 @@ bool DRT::ELEMENTS::SoSh18::ReadElement(
   if (buffer == "linear")
   {
     // kintype_ = soh8_linear;
-    dserror("Only nonlinear kinematics for SO_SH8 implemented!");
+    FOUR_C_THROW("Only nonlinear kinematics for SO_SH8 implemented!");
   }
   else if (buffer == "nonlinear")
   {
     kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
-    dserror("Reading SO_HEX18 element failed KINEM unknown");
+    FOUR_C_THROW("Reading SO_HEX18 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(INPAR::STR::KinemType::nonlinearTotLag);
@@ -56,7 +56,7 @@ bool DRT::ELEMENTS::SoSh18::ReadElement(
   else if (buffer == "none")
     dsg_shear_ = false;
   else
-    dserror("unknown transverse shear locking method");
+    FOUR_C_THROW("unknown transverse shear locking method");
 
   // membrane locking
   linedef->ExtractString("MEL", buffer);
@@ -65,7 +65,7 @@ bool DRT::ELEMENTS::SoSh18::ReadElement(
   else if (buffer == "none")
     dsg_membrane_ = false;
   else
-    dserror("unknown membrane locking method");
+    FOUR_C_THROW("unknown membrane locking method");
 
   // curvature thickness locking
   linedef->ExtractString("CTL", buffer);
@@ -74,7 +74,7 @@ bool DRT::ELEMENTS::SoSh18::ReadElement(
   else if (buffer == "none")
     dsg_ctl_ = false;
   else
-    dserror("unknown curvature thickness locking method");
+    FOUR_C_THROW("unknown curvature thickness locking method");
 
   // volumetric locking
   linedef->ExtractString("VOL", buffer);
@@ -83,7 +83,7 @@ bool DRT::ELEMENTS::SoSh18::ReadElement(
   else if (buffer == "none")
     eas_ = false;
   else
-    dserror("unknown volumetric locking method");
+    FOUR_C_THROW("unknown volumetric locking method");
 
   SetupDSG();
 

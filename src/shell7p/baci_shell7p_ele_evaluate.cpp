@@ -115,7 +115,7 @@ int DRT::ELEMENTS::Shell7p::Evaluate(Teuchos::ParameterList& params,
     break;
     case ELEMENTS::struct_calc_linstiffmass:
     {
-      dserror("Case not yet implemented: struct_calc_linstiffmass");
+      FOUR_C_THROW("Case not yet implemented: struct_calc_linstiffmass");
     }
     case ELEMENTS::struct_calc_nlnstiffmass:   // do mass, stiffness and internal forces
     case ELEMENTS::struct_calc_nlnstifflmass:  // do lump mass, stiffness and internal forces
@@ -153,7 +153,7 @@ int DRT::ELEMENTS::Shell7p::Evaluate(Teuchos::ParameterList& params,
       {
         // old structural time integration
         // check length of elevec1
-        if (elevec1.length() < 1) dserror("The given result vector is too short.");
+        if (elevec1.length() < 1) FOUR_C_THROW("The given result vector is too short.");
         elevec1(0) = int_energy;
       }
     }
@@ -178,7 +178,7 @@ int DRT::ELEMENTS::Shell7p::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     default:
-      dserror("The element action %s is not yet implemented for the Shell element yet",
+      FOUR_C_THROW("The element action %s is not yet implemented for the Shell element yet",
           ActionType2String(action).c_str());
   }
   return 0;

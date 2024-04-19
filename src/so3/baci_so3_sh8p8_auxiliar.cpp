@@ -528,7 +528,7 @@ void DRT::ELEMENTS::SoSh8p8::SqVector6VoigtDiffByItself(
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat, CORE::LINALG::VOIGT::NotationType outvoigt6)
 {
   if (outvoigt6 != CORE::LINALG::VOIGT::NotationType::strain)
-    dserror("Can only produce row of strain-like type");
+    FOUR_C_THROW("Can only produce row of strain-like type");
 
   sqfderf(0, 0) = 2.0 * fmat(0, 0);
   sqfderf(1, 0) = 0.0;
@@ -835,7 +835,7 @@ void DRT::ELEMENTS::SoSh8p8::StretchTensor(double* detut,  // determinant of mat
 )
 {
   if ((ut == nullptr) and (invut == nullptr))
-    dserror("Senseless call: You do not want to compute anything");
+    FOUR_C_THROW("Senseless call: You do not want to compute anything");
 
   // set identity tensor
   CORE::LINALG::Matrix<NUMDIM_, NUMDIM_> it(true);
@@ -869,7 +869,7 @@ void DRT::ELEMENTS::SoSh8p8::StretchTensor(double* detut,  // determinant of mat
       if (fabs(eta) < 1e-6)
         eta = 0.0;
       else
-        dserror("Trouble with negative eta=%g", eta);
+        FOUR_C_THROW("Trouble with negative eta=%g", eta);
     }
 
     // const double zeta = -2.0*ci/3.0
@@ -1078,7 +1078,7 @@ int DRT::ELEMENTS::SoSh8p8::SymSpectralDecompJacIter(CORE::LINALG::Matrix<NUMDIM
   if (itercnt == itermax)
   {
     err = 1;  // failed
-    dserror("Divergent spectral decomposition (Jacobi's iterative method)!");
+    FOUR_C_THROW("Divergent spectral decomposition (Jacobi's iterative method)!");
   }
   else
   {

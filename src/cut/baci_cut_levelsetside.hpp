@@ -36,7 +36,7 @@ namespace CORE::GEO
       /// constructor
       LevelSetSide(int sid) : Side(sid, std::vector<Node*>(), std::vector<Edge*>())
       {
-        if (sid < 0) dserror("The level-set side must have a positive side id!");
+        if (sid < 0) FOUR_C_THROW("The level-set side must have a positive side id!");
       }
 
       /// Returns the geometric shape of this side
@@ -45,7 +45,7 @@ namespace CORE::GEO
       /// element dimension
       unsigned Dim() const override
       {
-        dserror(
+        FOUR_C_THROW(
             "No dimension information for level set sides. It's "
             "likely that you can't call the calling function for level-set sides!");
         exit(EXIT_FAILURE);
@@ -57,7 +57,7 @@ namespace CORE::GEO
       /// number of nodes
       unsigned NumNodes() const override
       {
-        dserror(
+        FOUR_C_THROW(
             "No number of nodes information for level set sides. It's "
             "likely that you can't call the calling function for level-set sides!");
         exit(EXIT_FAILURE);
@@ -66,7 +66,7 @@ namespace CORE::GEO
       /// \brief Returns the topology data for the side from Shards library
       const CellTopologyData* Topology() const override
       {
-        dserror("No topology data for level-set sides!");
+        FOUR_C_THROW("No topology data for level-set sides!");
         exit(EXIT_FAILURE);
       }
 
@@ -94,43 +94,43 @@ namespace CORE::GEO
       bool IsCloserSide(
           const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer) override
       {
-        dserror("no IsCloserSide routine for level set cut side");
+        FOUR_C_THROW("no IsCloserSide routine for level set cut side");
         exit(EXIT_FAILURE);
       }
 
       /*! \brief Returns the global coordinates of the nodes of this side */
       void Coordinates(double* xyze) const override
       {
-        dserror("no coordinates on level set cut side");
+        FOUR_C_THROW("no coordinates on level set cut side");
       }
 
       /*! \brief get all edges adjacent to given local coordinates */
       void EdgeAt(const double* rs, std::vector<Edge*>& edges) override
       {
-        dserror("no edges on level set cut side");
+        FOUR_C_THROW("no edges on level set cut side");
       }
 
       /*! \brief get the global coordinates on side at given local coordinates */
       void PointAt(const double* rs, double* xyz) override
       {
-        dserror("no PointAt on level set cut side defined");
+        FOUR_C_THROW("no PointAt on level set cut side defined");
       }
 
       /*! \brief get global coordinates of the center of the side */
       void SideCenter(double* midpoint) override
       {
-        dserror("no SideCenter on level set cut side defined");
+        FOUR_C_THROW("no SideCenter on level set cut side defined");
       }
 
       bool WithinSide(const double* xyz, double* rs, double& dist) override
       {
-        dserror("no WithinSide check implemented");
+        FOUR_C_THROW("no WithinSide check implemented");
         exit(EXIT_FAILURE);
       }
 
       bool RayCut(const double* p1_xyz, const double* p2_xyz, double* rs, double& line_xi) override
       {
-        dserror("no RayCut with level set cut side implemented");
+        FOUR_C_THROW("no RayCut with level set cut side implemented");
         exit(EXIT_FAILURE);
       }
 
@@ -141,7 +141,7 @@ namespace CORE::GEO
       bool LocalCoordinates(const double* xyz, double* rst, bool allow_dist = false,
           double tol = POSITIONTOL) override
       {
-        dserror("no local coordinates on level set cut side");
+        FOUR_C_THROW("no local coordinates on level set cut side");
         exit(EXIT_FAILURE);
       }
 
@@ -149,14 +149,14 @@ namespace CORE::GEO
        * for all the corner points */
       void LocalCornerCoordinates(double* rst_corners) override
       {
-        dserror("no local coordinates of corner points on level set cut side");
+        FOUR_C_THROW("no local coordinates of corner points on level set cut side");
       }
 
       /*! \brief Calculates the normal vector with respect to the element shape
        *  at local coordinates \c rs */
       void Normal(const double* xsi, double* normal, bool unitnormal = true) override
       {
-        dserror("no normal vector on level set cut side implemented");
+        FOUR_C_THROW("no normal vector on level set cut side implemented");
       }
 
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
@@ -164,7 +164,7 @@ namespace CORE::GEO
        * basis vectors have norm=1 */
       void BasisAtCenter(double* t1, double* t2, double* n) override
       {
-        dserror("no BasisAtCenter on level set cut side implemented");
+        FOUR_C_THROW("no BasisAtCenter on level set cut side implemented");
       }
 
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
@@ -172,7 +172,7 @@ namespace CORE::GEO
        * basis vectors have norm=1. */
       void Basis(const double* xsi, double* t1, double* t2, double* n) override
       {
-        dserror("no Basis on level set cut side implemented");
+        FOUR_C_THROW("no Basis on level set cut side implemented");
       }
     };  // class LevelSetSide
 

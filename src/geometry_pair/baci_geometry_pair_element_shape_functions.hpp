@@ -69,7 +69,7 @@ namespace GEOMETRYPAIR
       }
       else
       {
-        dserror("Got unexpected element dimension %d", element_type::element_dim_);
+        FOUR_C_THROW("Got unexpected element dimension %d", element_type::element_dim_);
       }
     }
 
@@ -101,7 +101,7 @@ namespace GEOMETRYPAIR
       }
       else
       {
-        dserror("Got unexpected element dimension %d", element_type::element_dim_);
+        FOUR_C_THROW("Got unexpected element dimension %d", element_type::element_dim_);
       }
     }
   };
@@ -161,7 +161,7 @@ namespace GEOMETRYPAIR
         V& N, const T& xi, const ShapeFunctionData<element_type>& shape_function_data)
     {
       if (shape_function_data.myknots_.size() == 0)
-        dserror(
+        FOUR_C_THROW(
             "Got shape function data with knot size 0 - did you forget to initialize the element "
             "data with GetElementData::Get?");
 
@@ -178,7 +178,7 @@ namespace GEOMETRYPAIR
       }
       else
       {
-        dserror("Got unexpected element dimension %d", element_type::element_dim_);
+        FOUR_C_THROW("Got unexpected element dimension %d", element_type::element_dim_);
       }
     }
 
@@ -194,7 +194,7 @@ namespace GEOMETRYPAIR
         V& dN, const T& xi, const ShapeFunctionData<element_type>& shape_function_data)
     {
       if (shape_function_data.myknots_.size() == 0)
-        dserror(
+        FOUR_C_THROW(
             "Got shape function data with knot size 0 - did you forget to initialize the element "
             "data with GetElementData::Get?");
 
@@ -214,7 +214,7 @@ namespace GEOMETRYPAIR
       }
       else
       {
-        dserror("Got unexpected element dimension %d", element_type::element_dim_);
+        FOUR_C_THROW("Got unexpected element dimension %d", element_type::element_dim_);
       }
     }
   };

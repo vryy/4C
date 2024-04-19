@@ -92,7 +92,7 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
     mastergnodesPtr = &fluidgnodes;
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "\nDomain redistribution / rebalancing only implemented for mortar "
         "coupling!");
 
@@ -344,7 +344,7 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
     mastergnodesPtr = &fluidgnodes;
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "\nDomain redistribution / rebalancing only implemented for mortar "
         "coupling!");
 
@@ -436,7 +436,7 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
   Epetra_Export exporter(initgraph_map, *switched_rownodes);
 
   int err = final_graph->Export(*initgraph, exporter, Insert);
-  if (err) dserror("Export not successful, error code %d!", err);
+  if (err) FOUR_C_THROW("Export not successful, error code %d!", err);
 
   InsertDeletedEdges(deletedEdgesPtr, switched_rownodes, final_graph);
 
@@ -613,7 +613,7 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
     {
       int success = initgraph->ExtractGlobalRowCopy(
           graphRowGID, graphLength, numGraphEntries, graphIndices.data());
-      if (success != 0) dserror("\nExtract global values failed, error code %d!", success);
+      if (success != 0) FOUR_C_THROW("\nExtract global values failed, error code %d!", success);
     }
 
     for (int proc = 0; proc < numproc; ++proc)
@@ -661,10 +661,12 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
             int success;
             success = crs_ge_weights->InsertGlobalValues(
                 noderowcopy, numGraphEntriesCopy, fieldWeight.data(), graphIndicesCopy.data());
-            if (success != 0) dserror("\nInsert global values failed, error code %d!", success);
+            if (success != 0)
+              FOUR_C_THROW("\nInsert global values failed, error code %d!", success);
             success = initgraph_manip->InsertGlobalIndices(
                 noderowcopy, numGraphEntriesCopy, graphIndicesCopy.data());
-            if (success != 0) dserror("\nInsert global indices failed, error code %d!", success);
+            if (success != 0)
+              FOUR_C_THROW("\nInsert global indices failed, error code %d!", success);
           }
         }
         else if (foundInterfaceNodeSum == 1)
@@ -754,7 +756,7 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
                 }
                 else
                 {  // we expect nodeOwner to be one to one, i.e. foundSum =  {0, 1}
-                  dserror(
+                  FOUR_C_THROW(
                       "\nNode <-> Owner mapping not one-to-one, %d procs have the same node in "
                       "their maps!",
                       foundSum);
@@ -781,17 +783,17 @@ void FSI::BlockMonolithic::BuildWeightedGraph(Teuchos::RCP<Epetra_CrsMatrix> crs
                 success = crs_ge_weights->InsertGlobalValues(
                     noderowcopy, insert_k, insertWeights.data(), insertIndices.data());
                 if (success != 0)
-                  dserror("\nReplace global values failed, error code %d!", success);
+                  FOUR_C_THROW("\nReplace global values failed, error code %d!", success);
                 success = initgraph_manip->InsertGlobalIndices(
                     noderowcopy, insert_k, insertIndices.data());
                 if (success != 0)
-                  dserror("\nInsert global indices failed, error code %d!", success);
+                  FOUR_C_THROW("\nInsert global indices failed, error code %d!", success);
               }
             }  // if (ownercopy != -1){
           }    // for (int proc2=0; proc2<numproc; ++proc2){
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "\n\nNode <-> Owner mapping not one-to-one, %d procs have the same node in their "
               "maps!",
               foundInterfaceNodeSum);
@@ -1076,7 +1078,7 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::SwitchDomains(Teuchos::RCP<E
 
   int switch_err = switched_bal_graph->Export(*bal_graph, exporter, Insert);
 
-  if (switch_err) dserror("Switch of domains not successful, error code %d!", switch_err);
+  if (switch_err) FOUR_C_THROW("Switch of domains not successful, error code %d!", switch_err);
 
   return switched_bal_graph;
 }
@@ -1104,7 +1106,7 @@ void FSI::BlockMonolithic::RestoreRedistStructFluidGraph(
   {
     int gid = monolithicRowmap->GID(i);
     int err = monolithicGraph->ExtractGlobalRowCopy(gid, maxNumIndices, actNumMyNodes, ind.data());
-    if (err != 0) dserror("\nExtractGlobalRowCopy failed, error code %d!", err);
+    if (err != 0) FOUR_C_THROW("\nExtractGlobalRowCopy failed, error code %d!", err);
 
     std::vector<int> insertCoupl;
     std::vector<int> removeCoupl;
@@ -1149,7 +1151,7 @@ void FSI::BlockMonolithic::RestoreRedistStructFluidGraph(
     {  // not a structure row node
       rowlid = finalFluidMap.LID(gid);
       if (rowlid == -1)  // not a fluid row node either
-        dserror("\nNode has to be either structure or fluid node!");
+        FOUR_C_THROW("\nNode has to be either structure or fluid node!");
       else  // fluid row node
       {
         for (int j = 0; j < actNumMyNodes; ++j)
@@ -1232,12 +1234,12 @@ void FSI::BlockMonolithic::RestoreRedistStructFluidGraph(
     if (countFluid > 0)
     {
       int err = fluidGraphRedist->InsertGlobalIndices(gid, countFluid, fluidInd.data());
-      if (err != 0) dserror("\nInsert global indices failed, error code %d!", err);
+      if (err != 0) FOUR_C_THROW("\nInsert global indices failed, error code %d!", err);
     }
     else if (countStructure > 0)
     {
       int err = structureGraphRedist->InsertGlobalIndices(gid, countStructure, structureInd.data());
-      if (err != 0) dserror("\nInsert global indices failed, error code %d!", err);
+      if (err != 0) FOUR_C_THROW("\nInsert global indices failed, error code %d!", err);
     }
   }
 
@@ -1257,7 +1259,7 @@ void FSI::BlockMonolithic::RestoreRedistStructFluidGraph(
       int num = insert.size();
 
       int err = fluidGraphRedist->InsertGlobalIndices(gid, num, insert.data());
-      if (err != 0) dserror("\nInsert global indices failed, error code %d!", err);
+      if (err != 0) FOUR_C_THROW("\nInsert global indices failed, error code %d!", err);
     }
   }
 }
@@ -1286,7 +1288,7 @@ void FSI::BlockMonolithic::InsertDeletedEdges(std::map<int, std::list<int>>* del
         ++k;
       }
       int success = switched_bal_graph->InsertGlobalIndices(row, col_length, col_indices.data());
-      if (success != 0) dserror("\nInsert global indices failed, error code %d!", success);
+      if (success != 0) FOUR_C_THROW("\nInsert global indices failed, error code %d!", success);
     }
   }
 
@@ -1373,7 +1375,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
 
     int err =
         fluidGraph->ExtractGlobalRowCopy(gid, maxNumFluidIndices, actNumIndices, indices_f.data());
-    if (err != 0) dserror("ExtractGlobalRowCopy failed, error = %d!", err);
+    if (err != 0) FOUR_C_THROW("ExtractGlobalRowCopy failed, error = %d!", err);
 
     // check if interface node
 
@@ -1579,7 +1581,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
 
     int err = structureGraph->ExtractGlobalRowCopy(
         gid, maxNumStructureIndices, actNumIndices, indices_s.data());
-    if (err != 0) dserror("ExtractGlobalRowCopy failed, error = %d!", err);
+    if (err != 0) FOUR_C_THROW("ExtractGlobalRowCopy failed, error = %d!", err);
 
 
     // Check if interface node. If so: insert coupling entries from fluid
@@ -1618,7 +1620,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
       }
 
       err = monolithicGraph->InsertGlobalIndices(gid, numInsert, insert_ind.data());
-      if (err != 0) dserror("InsertGlobalIndices failed, error = %d!", err);
+      if (err != 0) FOUR_C_THROW("InsertGlobalIndices failed, error = %d!", err);
     }
     else
     {
@@ -1663,7 +1665,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
       numInsert = insert_ind.size();
 
       err = monolithicGraph->InsertGlobalIndices(gid, numInsert, insert_ind.data());
-      if (err != 0) dserror("InsertGlobalIndices failed, error = %d!", err);
+      if (err != 0) FOUR_C_THROW("InsertGlobalIndices failed, error = %d!", err);
     }
   }  // end of structure part
 
@@ -1726,7 +1728,7 @@ void FSI::BlockMonolithic::BuildMonolithicGraph(Teuchos::RCP<Epetra_CrsGraph> mo
       // insertion
 
       int err = monolithicGraph->InsertGlobalIndices(gid, numInsert, insert_ind.data());
-      if (err != 0) dserror("InsertGlobalIndices failed, error = %d!", err);
+      if (err != 0) FOUR_C_THROW("InsertGlobalIndices failed, error = %d!", err);
     }
 
     //}

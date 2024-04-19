@@ -32,7 +32,7 @@ GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::GeometryPairL
   int myrank = -1;
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
   if (element1->Owner() != myrank)
-    dserror(
+    FOUR_C_THROW(
         "The GeometryPairLineToVolume pair has to be on the same processor as the line element! "
         "Currently the pair is on rank %d, the line element on %d!",
         myrank, element1->Owner());
@@ -126,13 +126,13 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
   // Check the input parameters.
   {
     if (volume::geometry_type_ == DiscretizationTypeGeometry::hexahedron && fixed_parameter > 2)
-      dserror(
+      FOUR_C_THROW(
           "Fixed_parameter in IntersectLineWithVolume has to be smaller than 3 with a hexahedron "
           "element.");
     else if (volume::element_dim_ != 3)
-      dserror("Wrong DiscretizationTypeGeometry type given.");
+      FOUR_C_THROW("Wrong DiscretizationTypeGeometry type given.");
     else if (fixed_parameter > 3)
-      dserror("fixed_parameter in IntersectLineWithVolume can be 3 at maximum.");
+      FOUR_C_THROW("fixed_parameter in IntersectLineWithVolume can be 3 at maximum.");
   }
 
   // Initialize data structures
@@ -263,7 +263,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
   }
   else
   {
-    dserror("Wrong DiscretizationTypeGeometry given!");
+    FOUR_C_THROW("Wrong DiscretizationTypeGeometry given!");
   }
 
   // Clear the input vector.

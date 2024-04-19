@@ -102,7 +102,7 @@ namespace
       }
       else
       {
-        dserror("How did you end up here :)?");
+        FOUR_C_THROW("How did you end up here :)?");
         return Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>(nullptr);
       }
     }
@@ -157,7 +157,7 @@ namespace
         function_lin_def.ExtractDoubleVector("COMBINATION", lin_comb);
       }
       else if (functno == 3)
-        dserror(
+        FOUR_C_THROW(
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
             "DEFINE: COMBINATION C1 C2");
 
@@ -185,7 +185,7 @@ namespace
       if (function_lin_def.HaveNamed("COMBINATION"))
         function_lin_def.ExtractDoubleVector("COMBINATION", lin_comb);
       else if (functno == 3)
-        dserror(
+        FOUR_C_THROW(
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
             "DEFINE: COMBINATION C1 C2");
 
@@ -213,7 +213,7 @@ namespace
       if (function_lin_def.HaveNamed("COMBINATION"))
         function_lin_def.ExtractDoubleVector("COMBINATION", lin_comb);
       else if (functno == 3)
-        dserror(
+        FOUR_C_THROW(
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
             "DEFINE: COMBINATION C1 C2");
 
@@ -787,7 +787,7 @@ double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(
       return (vel_translation[2] + vel_rotation[2]);
     default:
     {
-      dserror("Only u_x, u_y, u_z are provided! No pressure or other higher indices!");
+      FOUR_C_THROW("Only u_x, u_y, u_z are provided! No pressure or other higher indices!");
       return 1.0;
     }
   }
@@ -829,7 +829,7 @@ DRT::UTILS::MovingLevelSetTorusSliplength::MovingLevelSetTorusSliplength(
   else
   {
     std::cout << slipfunct_ << std::endl;
-    dserror("The chosen function is not supported at the moment!!!");
+    FOUR_C_THROW("The chosen function is not supported at the moment!!!");
   }
 }
 
@@ -956,7 +956,7 @@ double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(
     sliplength = pow(2.7182818284590452353602874, -100.0 * (r_base - 0.5));
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Undefined choice of slip-length function for the Moving-Torus case. (So far, 0-4 are "
         "acceptable). And you should have been thrown out earlier than this!!!!");
 
@@ -1039,7 +1039,7 @@ double DRT::UTILS::TaylorCouetteFlow::Evaluate(
       return (c1_ * c1_) * (radius * radius) * 0.5 + 2.0 * c1_ * c2_ * log(radius) -
              (c2_ * c2_) / (2.0 * (radius * radius)) + c3_;
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 
@@ -1095,7 +1095,7 @@ std::vector<double> DRT::UTILS::TaylorCouetteFlow::EvaluateSpatialDerivative(
       break;
     }
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 
@@ -1115,15 +1115,15 @@ DRT::UTILS::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, doubl
       c2_(lincomb[1])
 {
   // kinvisc_=viscosity/density;
-  if (lengthx_ != 1.0) dserror("Not tested for other than length 1.0.");
+  if (lengthx_ != 1.0) FOUR_C_THROW("Not tested for other than length 1.0.");
 
-  if (lengthy_ != 1.0) dserror("Not tested for other than length 1.0.");
+  if (lengthy_ != 1.0) FOUR_C_THROW("Not tested for other than length 1.0.");
 
   if (rotation_ >= 2 * M_PI or rotation_ < 0.0)
-    dserror("The rotation is not in the predefined interval.");
+    FOUR_C_THROW("The rotation is not in the predefined interval.");
 
   if (rotation_ != 0.0)
-    dserror(
+    FOUR_C_THROW(
         "Needs to be implemented! It's not clear how to calculate traction at the boundaries if "
         "the domain is rotated.");
 
@@ -1140,7 +1140,7 @@ DRT::UTILS::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, doubl
     std::cout << "Urquiza-box flow modified -> Mixed 4th-2nd order flow + Quadratic pressure!"
               << std::endl;
   else
-    dserror("Function number not supported!");
+    FOUR_C_THROW("Function number not supported!");
 
   // Create rotation matrix
   (rotvector_[0])[0] = cos(rotation_);
@@ -1265,7 +1265,7 @@ double DRT::UTILS::UrquizaBoxFlow::Evaluate(
     px = (rotx[0] - 1.0) * (rotx[0] - 1.0) * (rotx[1] + 1.0) * (rotx[1] + 1.0) - 64.0 / 36.0;
   }
   else
-    dserror("This error should have been caught in the constructor.");
+    FOUR_C_THROW("This error should have been caught in the constructor.");
 
   std::vector<double> uX(2, 0.0);
   // Transform the reference velocity back to the true domain.
@@ -1293,7 +1293,7 @@ double DRT::UTILS::UrquizaBoxFlow::Evaluate(
     case 3:  // pressure
       return px;
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 
@@ -1331,7 +1331,7 @@ std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(
   //  |- c_1*(- y  + 1) - 3*c_2*x *(- y  + 1)        2*c_1*x*y + 4*c_2*x *y        |
 
 
-  if (rotation_ != 0.0) dserror("Needs to be implemented!");
+  if (rotation_ != 0.0) FOUR_C_THROW("Needs to be implemented!");
 
   std::vector<double> tmp_vec(3, 0.0);
 
@@ -1388,7 +1388,7 @@ std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(
       break;
     }
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 
@@ -1542,7 +1542,7 @@ double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(
     case 2:  // z-dir = 0.0
       return 0.0;
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 
@@ -1598,7 +1598,7 @@ double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(
 
     std::cout << "rotx[0]: " << rotx[0] << std::endl;
     std::cout << "rotx[1]: " << rotx[1] << std::endl;
-    dserror("Gauss point in a corner!");
+    FOUR_C_THROW("Gauss point in a corner!");
   }
   if (!onxsurface and !onysurface)
   {
@@ -1607,7 +1607,7 @@ double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(
 
     std::cout << "rotx[0]: " << rotx[0] << std::endl;
     std::cout << "rotx[1]: " << rotx[1] << std::endl;
-    dserror("Gauss point not on any surface!");
+    FOUR_C_THROW("Gauss point not on any surface!");
   }
 
 
@@ -1690,7 +1690,7 @@ double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(
                          c2_ * 8.0 * rotx[0] * rotx[0] * rotx[0] * rotx[1] * rotx[1] * rotx[1];
   }
   else
-    dserror("This error should have been caught in the constructor.");
+    FOUR_C_THROW("This error should have been caught in the constructor.");
 
 
   // Surface viscous traction
@@ -1723,7 +1723,7 @@ double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(
     case 2:  // z-dir = 0.0
       return 0.0;
     default:
-      dserror("wrong component %d", component);
+      FOUR_C_THROW("wrong component %d", component);
       break;
   }
 

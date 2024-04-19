@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 double CORE::LINALG::DeterminantLU(const CORE::LINALG::SerialDenseMatrix& A)
 {
-#ifdef BACI_DEBUG
-  if (A.numRows() != A.numCols()) dserror("Matrix is not square");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (A.numRows() != A.numCols()) FOUR_C_THROW("Matrix is not square");
 #endif
   CORE::LINALG::SerialDenseMatrix tmp(A);
   const int n = tmp.numCols();
@@ -32,7 +32,7 @@ double CORE::LINALG::DeterminantLU(const CORE::LINALG::SerialDenseMatrix& A)
   lapack.GETRF(m, n, tmp.values(), tmp.stride(), ipiv.data(), &info);
 
   if (info < 0)
-    dserror("Lapack's dgetrf returned %d", info);
+    FOUR_C_THROW("Lapack's dgetrf returned %d", info);
   else if (info > 0)
     return 0.0;
   double d = tmp(0, 0);

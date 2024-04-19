@@ -76,7 +76,7 @@ namespace SCATRA
 
     Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override
     {
-      dserror(
+      FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
           "instead on the initialization of the field. If this changes, you also need to change "
           "'SystemMatrixInitializationNeeded()' to return true");
@@ -86,7 +86,7 @@ namespace SCATRA
 
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
-      dserror("InterfaceMaps() is not implemented in MeshtyingStrategyArtery.");
+      FOUR_C_THROW("InterfaceMaps() is not implemented in MeshtyingStrategyArtery.");
       return Teuchos::null;
     }
 

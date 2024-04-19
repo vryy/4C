@@ -37,7 +37,7 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
       // equation)
       // but if this is ever desired the implementation should be checked carefully
     default:
-      dserror("Only line2 elements available so far");
+      FOUR_C_THROW("Only line2 elements available so far");
       break;
   }
   return nullptr;
@@ -67,7 +67,7 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::DefineProblemTy
     }
     default:
     {
-      dserror("Defined problem type %d does not exist!!", problem);
+      FOUR_C_THROW("Defined problem type %d does not exist!!", problem);
       break;
     }
   }

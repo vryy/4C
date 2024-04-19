@@ -68,13 +68,13 @@ void elch_dyn(int restart)
     {
       // we directly use the elements from the scalar transport elements section
       if (scatradis->NumGlobalNodes() == 0)
-        dserror("No elements in the ---TRANSPORT ELEMENTS section");
+        FOUR_C_THROW("No elements in the ---TRANSPORT ELEMENTS section");
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
       if (linsolvernumber == -1)
       {
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR "
             "TRANSPORT DYNAMIC to a valid number!");
       }
@@ -87,7 +87,7 @@ void elch_dyn(int restart)
       auto dofsetaux = Teuchos::rcp(
           new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
-        dserror("Scatra discretization has illegal number of dofsets!");
+        FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       // now me may redistribute or ghost the scatra discretization
@@ -128,7 +128,7 @@ void elch_dyn(int restart)
     case INPAR::SCATRA::velocity_Navier_Stokes:  // Navier_Stokes
     {
       // we use the fluid discretization as layout for the scalar transport discretization
-      if (fluiddis->NumGlobalNodes() == 0) dserror("Fluid discretization is empty!");
+      if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
       // create scatra elements if the scatra discretization is empty
       if (scatradis->NumGlobalNodes() == 0)
@@ -148,14 +148,14 @@ void elch_dyn(int restart)
         {
           auto* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
           if (element == nullptr)
-            dserror("Invalid element type!");
+            FOUR_C_THROW("Invalid element type!");
           else
             element->SetImplType(impltype);
         }
       }
 
       else
-        dserror("Fluid AND ScaTra discretization present. This is not supported.");
+        FOUR_C_THROW("Fluid AND ScaTra discretization present. This is not supported.");
 
       // support for turbulent flow statistics
       const auto& fdyn = (problem->FluidDynamicParams());
@@ -181,13 +181,13 @@ void elch_dyn(int restart)
           aledis->Evaluate(params);
         }
         else
-          dserror("Providing an ALE mesh is not supported for problemtype Electrochemistry.");
+          FOUR_C_THROW("Providing an ALE mesh is not supported for problemtype Electrochemistry.");
 
         // get linear solver id from SCALAR TRANSPORT DYNAMIC
         const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
         if (linsolvernumber == -1)
         {
-          dserror(
+          FOUR_C_THROW(
               "no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR "
               "TRANSPORT DYNAMIC to a valid number!");
         }
@@ -199,12 +199,12 @@ void elch_dyn(int restart)
 
         // add proxy of fluid degrees of freedom to scatra discretization
         if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
-          dserror("Scatra discretization has illegal number of dofsets!");
+          FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
         elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
         // add proxy of ALE degrees of freedom to scatra discretization
         if (scatradis->AddDofSet(aledis->GetDofSetProxy()) != 2)
-          dserror("Scatra discretization has illegal number of dofsets!");
+          FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
         elch->ScaTraField()->SetNumberOfDofSetDisplacement(2);
 
         // now we must call Init()
@@ -237,7 +237,7 @@ void elch_dyn(int restart)
         const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
         if (linsolvernumber == -1)
         {
-          dserror(
+          FOUR_C_THROW(
               "no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR "
               "TRANSPORT DYNAMIC to a valid number!");
         }
@@ -249,7 +249,7 @@ void elch_dyn(int restart)
 
         // add proxy of fluid degrees of freedom to scatra discretization
         if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
-          dserror("Scatra discretization has illegal number of dofsets!");
+          FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
         elch->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
         // now we must call Init()
@@ -280,7 +280,7 @@ void elch_dyn(int restart)
       break;
     }
     default:
-      dserror("Unknown velocity field type for transport of passive scalar: %d", veltype);
+      FOUR_C_THROW("Unknown velocity field type for transport of passive scalar: %d", veltype);
   }
 }
 

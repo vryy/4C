@@ -74,7 +74,7 @@ BEAMINTERACTION::BeamToFluidMortarManager::BeamToFluidMortarManager(
       break;
     }
     default:
-      dserror("Mortar shape function not implemented!");
+      FOUR_C_THROW("Mortar shape function not implemented!");
   }
 }
 
@@ -159,7 +159,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::Setup()
 
         // Set the global Lagrange multiplier id for this node.
         error_code = node_gid_to_lambda_gid_->ReplaceMyValue(i_node, i_lambda, lagrange_gid);
-        if (error_code != 0) dserror("Got error code %d!", error_code);
+        if (error_code != 0) FOUR_C_THROW("Got error code %d!", error_code);
       }
   }
   if (element_gid_to_lambda_gid_ != Teuchos::null)
@@ -173,7 +173,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::Setup()
 
         // Set the global Lagrange multiplier id for this element.
         error_code = element_gid_to_lambda_gid_->ReplaceMyValue(i_element, i_lambda, lagrange_gid);
-        if (error_code != 0) dserror("Got error code %d!", error_code);
+        if (error_code != 0) FOUR_C_THROW("Got error code %d!", error_code);
       }
   }
 
@@ -207,7 +207,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetGlobalMaps()
     if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
       discretization_structure_->Dof(node, field_dofs[0]);
     else
-      dserror("The given structure element is not a beam element!");
+      FOUR_C_THROW("The given structure element is not a beam element!");
   }
   for (int i_node = 0; i_node < discretization_fluid_->NodeRowMap()->NumMyElements(); i_node++)
   {
@@ -253,7 +253,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::SetLocalMaps(
 
     // The first (beam) element should always be on the same processor as the pair.
     if (pair->Element1()->Owner() != discretization_structure_->Comm().MyPID())
-      dserror(
+      FOUR_C_THROW(
           "The current implementation needs the first element of a beam contact pair to be on the "
           "same processor as the pair!");
 
@@ -365,7 +365,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::LocationVector(
         // Check if the id is in the map. If it is, add it to the output vector.
         auto search_key_in_map = node_gid_to_lambda_gid_map_.find(node_id);
         if (search_key_in_map == node_gid_to_lambda_gid_map_.end())
-          dserror("Global node id %d not in map!", node_id);
+          FOUR_C_THROW("Global node id %d not in map!", node_id);
         for (auto const& lambda_gid : search_key_in_map->second) lambda_row.push_back(lambda_gid);
       }
     }
@@ -382,7 +382,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::LocationVector(
       // Check if the id is in the map. If it is, add it to the output vector.
       auto search_key_in_map = element_gid_to_lambda_gid_map_.find(element_id);
       if (search_key_in_map == element_gid_to_lambda_gid_map_.end())
-        dserror("Global element id %d not in map!", element_id);
+        FOUR_C_THROW("Global element id %d not in map!", element_id);
       for (auto const& lambda_gid : search_key_in_map->second) lambda_row.push_back(lambda_gid);
     }
   }
@@ -400,11 +400,11 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
   // Clear the old values of D, M and kappa.
   int linalg_error = 0;
   linalg_error = global_D_->PutScalar(0.);
-  if (linalg_error != 0) dserror("Error in PutScalar!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in PutScalar!");
   linalg_error = global_M_->PutScalar(0.);
-  if (linalg_error != 0) dserror("Error in PutScalar!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in PutScalar!");
   linalg_error = global_kappa_->PutScalar(0.);
-  if (linalg_error != 0) dserror("Error in PutScalar!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in PutScalar!");
 
   // Local mortar matrices that will be filled up by EvaluateDM.
   CORE::LINALG::SerialDenseMatrix local_D_centerlineDOFs;
@@ -458,11 +458,11 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
       // Save check the matrix sizes.
       if (local_D_elementDOFs.numRows() != (int)lambda_row.size() &&
           local_D_elementDOFs.numCols() != (int)beam_row.size())
-        dserror("Size of local D matrix does not match the GID vectors!");
+        FOUR_C_THROW("Size of local D matrix does not match the GID vectors!");
       if (local_M.numRows() != (int)lambda_row.size() && local_M.numCols() != (int)fluid_row.size())
-        dserror("Size of local M matrix does not match the GID vectors!");
+        FOUR_C_THROW("Size of local M matrix does not match the GID vectors!");
       if (local_kappa.numRows() != (int)lambda_row.size() && local_kappa.numCols() != 1)
-        dserror("Size of local kappa vector does not match the GID vector!");
+        FOUR_C_THROW("Size of local kappa vector does not match the GID vector!");
 
       // Assemble into the global matrices.
       global_D_->FEAssemble(local_D_elementDOFs, lambda_row, beam_row);
@@ -482,8 +482,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
   global_M_->Complete(*fluid_dof_rowmap_, *lambda_dof_rowmap_);
 
   // Complete the global scaling vector.
-  if (global_kappa_->GlobalAssemble(Add, false)) dserror("Error in GlobalAssemble!");
-  if (global_active_lambda_->GlobalAssemble(Add, false)) dserror("Error in GlobalAssemble!");
+  if (global_kappa_->GlobalAssemble(Add, false)) FOUR_C_THROW("Error in GlobalAssemble!");
+  if (global_active_lambda_->GlobalAssemble(Add, false)) FOUR_C_THROW("Error in GlobalAssemble!");
 }
 
 /**
@@ -530,33 +530,33 @@ void BEAMINTERACTION::BeamToFluidMortarManager::AddGlobalForceStiffnessContribut
   if (fluid_force != Teuchos::null)
   {
     if (fluid_vel == Teuchos::null || beam_vel == Teuchos::null)
-      dserror("Force contributions can only be calculated with a given velocity pointer!");
+      FOUR_C_THROW("Force contributions can only be calculated with a given velocity pointer!");
 
     // Temporary vectors for matrix-vector multiplication and vector-vector additions.
     Teuchos::RCP<Epetra_Vector> fluid_temp = Teuchos::rcp(new Epetra_Vector(*fluid_dof_rowmap_));
 
     // Set the values in the global force vector to 0.
     linalg_error = fluid_force->PutScalar(0.);
-    if (linalg_error != 0) dserror("Error in PutScalar!");
+    if (linalg_error != 0) FOUR_C_THROW("Error in PutScalar!");
 
     linalg_error = Dt_kappa_M->Multiply(true, *beam_vel, *fluid_temp);
-    if (linalg_error != 0) dserror("Error in Multiply!");
+    if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
     linalg_error = fluid_force->Update(-1.0, *fluid_temp, 1.0);
-    if (linalg_error != 0) dserror("Error in Update!");
+    if (linalg_error != 0) FOUR_C_THROW("Error in Update!");
   }
 
   Teuchos::RCP<Epetra_Vector> beam_temp = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
   linalg_error = beam_force->PutScalar(0.);
-  if (linalg_error != 0) dserror("Error in PutScalar!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in PutScalar!");
   // Get the force acting on the beam.
   linalg_error = Dt_kappa_D->Multiply(false, *beam_vel, *beam_temp);
-  if (linalg_error != 0) dserror("Error in Multiply!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
   linalg_error = beam_force->Update(1.0, *beam_temp, 1.0);
-  if (linalg_error != 0) dserror("Error in Update!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in Update!");
   linalg_error = Dt_kappa_M->Multiply(false, *fluid_vel, *beam_temp);
-  if (linalg_error != 0) dserror("Error in Multiply!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
   linalg_error = beam_force->Update(-1.0, *beam_temp, 1.0);
-  if (linalg_error != 0) dserror("Error in Update!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in Update!");
 }
 
 
@@ -582,13 +582,13 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobal
   Teuchos::RCP<Epetra_Vector> lambda_temp_1 = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
   Teuchos::RCP<Epetra_Vector> lambda_temp_2 = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
   int linalg_error = global_D_->Multiply(false, *beam_vel, *lambda_temp_2);
-  if (linalg_error != 0) dserror("Error in Multiply!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
   linalg_error = lambda_temp_1->Update(1.0, *lambda_temp_2, 0.0);
-  if (linalg_error != 0) dserror("Error in Update!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in Update!");
   linalg_error = global_M_->Multiply(false, *fluid_vel, *lambda_temp_2);
-  if (linalg_error != 0) dserror("Error in Multiply!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
   linalg_error = lambda_temp_1->Update(-1.0, *lambda_temp_2, 1.0);
-  if (linalg_error != 0) dserror("Error in Multiply!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
 
   // Scale Lambda with kappa^-1.
   Teuchos::RCP<Epetra_Vector> global_kappa_inv = InvertKappa();
@@ -596,7 +596,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobal
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->Complete();
   linalg_error = kappa_inv_mat->Multiply(false, *lambda_temp_1, *lambda);
-  if (linalg_error != 0) dserror("Error in Multiply!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
 
   return lambda;
 }

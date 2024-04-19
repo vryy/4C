@@ -34,7 +34,7 @@ PARTICLEINTERACTION::DEMContactNormalBase::DEMContactNormalBase(
 void PARTICLEINTERACTION::DEMContactNormalBase::Init()
 {
   if (not((c_ <= 0.0 and k_normal_ > 0.0) or (c_ > 0.0 and v_max_ > 0.0 and k_normal_ <= 0.0)))
-    dserror(
+    FOUR_C_THROW(
         "specify either the relative penetration along with the maximum velocity, or the normal "
         "stiffness, but neither both nor none of them!");
 }
@@ -93,7 +93,8 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::Init()
   DEMContactNormalLinearSpring::Init();
 
   // safety checks for contact parameters
-  if (e_ < 0.0) dserror("invalid input parameter COEFF_RESTITUTION for this kind of contact law!");
+  if (e_ < 0.0)
+    FOUR_C_THROW("invalid input parameter COEFF_RESTITUTION for this kind of contact law!");
 }
 
 void PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::Setup(const double& dens_max)
@@ -194,7 +195,8 @@ void PARTICLEINTERACTION::DEMContactNormalNonlinearDampBase::Init()
   DEMContactNormalNonlinearBase::Init();
 
   // safety checks for contact parameters
-  if (d_normal_ < 0.0) dserror("invalid input parameter NORMAL_DAMP for this kind of contact law!");
+  if (d_normal_ < 0.0)
+    FOUR_C_THROW("invalid input parameter NORMAL_DAMP for this kind of contact law!");
 }
 
 PARTICLEINTERACTION::DEMContactNormalLeeHerrmann::DEMContactNormalLeeHerrmann(

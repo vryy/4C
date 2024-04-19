@@ -225,7 +225,7 @@ namespace DRT
           const double y, const double visc, const double utau, const double normu)
       {
         // get dimensionless velocity
-        if (abs(utau) < 1.0E-14) dserror("utau is zero!");
+        if (abs(utau) < 1.0E-14) FOUR_C_THROW("utau is zero!");
         const double up = normu / utau;
 
         // constants
@@ -234,7 +234,7 @@ namespace DRT
 
         //      +
         // get y , a dimensionless boundary layer thickness
-        if (visc < 1.0E-14) dserror("visc is zero or negative!");
+        if (visc < 1.0E-14) FOUR_C_THROW("visc is zero or negative!");
         const double yp = y * utau / visc;
 
         return (yp - (up + exp(-chi * B) *

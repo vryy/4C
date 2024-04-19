@@ -534,13 +534,13 @@ void ElchFilter::WriteAllResults(PostField* field)
     {
       // check numbers
       if (*numdofpernodeset.begin() != 2 or *numdofpernodeset.rbegin() != 3)
-        dserror("Invalid numbers of dofs per node!");
+        FOUR_C_THROW("Invalid numbers of dofs per node!");
       break;
     }
 
     default:
     {
-      dserror("Invalid numbers of dofs per node!");
+      FOUR_C_THROW("Invalid numbers of dofs per node!");
       break;
     }
   }

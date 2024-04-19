@@ -307,7 +307,7 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
       {
         if (conductivity_ == 0.0)
         {
-          dserror(
+          FOUR_C_THROW(
               "In the case of FPS3I, a positive conductivity must be set in DESIGN SCATRA COUPLING "
               "SURF CONDITIONS");
         }

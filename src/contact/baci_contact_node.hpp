@@ -204,7 +204,7 @@ namespace CONTACT
     {
       typedef std::map<int, std::map<int, double>>::const_iterator CI;
       CI p = derivd_.find(k);
-      if (p == derivd_.end()) dserror("GetDerivD: No map entry existing for given index");
+      if (p == derivd_.end()) FOUR_C_THROW("GetDerivD: No map entry existing for given index");
       return derivd_[k];
     }
 
@@ -219,7 +219,7 @@ namespace CONTACT
     {
       typedef std::map<int, std::map<int, double>>::const_iterator CI;
       CI p = derivm_.find(k);
-      if (p == derivm_.end()) dserror("GetDerivM: No map entry existing for given index");
+      if (p == derivm_.end()) FOUR_C_THROW("GetDerivM: No map entry existing for given index");
       return derivm_[k];
     }
 
@@ -519,7 +519,7 @@ namespace CONTACT
       inline Deriv1stMap& GetDeriv1st_WGapSl_Complete()
       {
         if (d_wgap_sl_complete_.is_null())
-          dserror(
+          FOUR_C_THROW(
               "The complete 1-st order derivative of the weighted gap "
               "(slave) is not initialized! [nullptr pointer]");
         return *d_wgap_sl_complete_;
@@ -528,7 +528,7 @@ namespace CONTACT
       inline const Deriv1stMap& GetDeriv1st_WGapSl_Complete() const
       {
         if (d_wgap_sl_complete_.is_null())
-          dserror(
+          FOUR_C_THROW(
               "The complete 1-st order derivative of the weighted gap "
               "(slave) is not initialized! [nullptr pointer]");
         return *d_wgap_sl_complete_;
@@ -542,7 +542,7 @@ namespace CONTACT
       inline Deriv1stMap& GetDeriv1st_WGapMa_Complete()
       {
         if (d_wgap_ma_complete_.is_null())
-          dserror(
+          FOUR_C_THROW(
               "The complete 1-st order derivative of the weighted gap "
               "(master) is not initialized! [nullptr pointer]");
         return *d_wgap_ma_complete_;
@@ -551,7 +551,7 @@ namespace CONTACT
       inline const Deriv1stMap& GetDeriv1st_WGapMa_Complete() const
       {
         if (d_wgap_ma_complete_.is_null())
-          dserror(
+          FOUR_C_THROW(
               "The complete 1-st order derivative of the weighted gap "
               "(master) is not initialized! [nullptr pointer]");
         return *d_wgap_ma_complete_;
@@ -1045,7 +1045,7 @@ namespace CONTACT
      */
     virtual bool IsInitActive() const
     {
-      if (!IsSlave()) dserror("InitActive requested for Master node");
+      if (!IsSlave()) FOUR_C_THROW("InitActive requested for Master node");
       return initactive_;
     }
 
@@ -1060,7 +1060,7 @@ namespace CONTACT
      */
     virtual bool& SetInitActive()
     {
-      if (!IsSlave()) dserror("InitActive requested for Master node");
+      if (!IsSlave()) FOUR_C_THROW("InitActive requested for Master node");
       return initactive_;
     }
 
@@ -1089,12 +1089,12 @@ namespace CONTACT
      *  \author hiermeier \date 03/17 */
     inline CONTACT::AUG::NodeDataContainer& AugData()
     {
-      if (augdata_.is_null()) dserror("There are no augmented contact node data available!");
+      if (augdata_.is_null()) FOUR_C_THROW("There are no augmented contact node data available!");
       return *augdata_;
     };
     inline const CONTACT::AUG::NodeDataContainer& AugData() const
     {
-      if (augdata_.is_null()) dserror("There are no augmented contact node data available!");
+      if (augdata_.is_null()) FOUR_C_THROW("There are no augmented contact node data available!");
       return *augdata_;
     };
 

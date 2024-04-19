@@ -344,7 +344,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& eslaveresidual,
           CORE::LINALG::SerialDenseVector& emasterresidual)
       {
-        dserror("not yet implemented!");
+        FOUR_C_THROW("not yet implemented!");
       };
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
@@ -361,7 +361,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix)
       {
-        dserror("not yet implemented");
+        FOUR_C_THROW("not yet implemented");
       };
 
       //! extract nodal state variables associated with boundary element
@@ -534,7 +534,7 @@ namespace DRT
           const Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& scalars)
       {
-        dserror("Evaluation of coupling flux not implemented in base class.");
+        FOUR_C_THROW("Evaluation of coupling flux not implemented in base class.");
       }
 
       //! pointer to parameter list for time integration

@@ -22,7 +22,7 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const DRT::Eleme
   const DRT::Node* const* nodes = ele->Nodes();
   if (nodes == nullptr)
   {
-    dserror("element has no nodal pointers, so getting a position array doesn't make sense!");
+    FOUR_C_THROW("element has no nodal pointers, so getting a position array doesn't make sense!");
   }
   for (int inode = 0; inode < numnode; inode++)
   {
@@ -41,7 +41,7 @@ void CORE::GEO::InitialPositionArray(
   const DRT::Node* const* nodes = ele->Nodes();
   if (nodes == nullptr)
   {
-    dserror("element has no nodal pointers, so getting a position array doesn't make sense!");
+    FOUR_C_THROW("element has no nodal pointers, so getting a position array doesn't make sense!");
   }
   for (int inode = 0; inode < numnode; inode++)
   {

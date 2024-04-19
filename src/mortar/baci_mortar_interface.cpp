@@ -138,7 +138,7 @@ MORTAR::Interface::Interface(Teuchos::RCP<MORTAR::InterfaceDataContainer> interf
 {
   if (not interfaceData_->IsInit())
   {
-    dserror(
+    FOUR_C_THROW(
         "This constructor is only allowed for already initialized "
         "interface data containers!");
   }
@@ -215,7 +215,7 @@ MORTAR::Interface::Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData,
   searchuseauxpos_ = CORE::UTILS::IntegralValue<int>(imortar, "SEARCH_USE_AUX_POS");
   nurbs_ = imortar.get<bool>("NURBS");
 
-  if (Dim() != 2 && Dim() != 3) dserror("Mortar problem must be 2D or 3D.");
+  if (Dim() != 2 && Dim() != 3) FOUR_C_THROW("Mortar problem must be 2D or 3D.");
 
   procmap_.clear();
 
@@ -258,7 +258,7 @@ void MORTAR::Interface::CreateInterfaceDiscretization()
   idiscret_->SetWriter(Teuchos::rcp(
       new IO::DiscretizationWriter(idiscret_, GLOBAL::Problem::Instance()->OutputControlFile(),
           GLOBAL::Problem::Instance()->SpatialApproximationType())));
-  dsassert(not idiscret_->Writer().is_null(), "Setup of discretization writer failed.");
+  FOUR_C_ASSERT(not idiscret_->Writer().is_null(), "Setup of discretization writer failed.");
 }
 
 /*----------------------------------------------------------------------*
@@ -286,7 +286,7 @@ void MORTAR::Interface::SetShapeFunctionType()
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Invalid shape function type. Interface must either have dual or standard shape "
           "functions.");
       break;
@@ -520,7 +520,7 @@ void MORTAR::Interface::AddMortarElement(Teuchos::RCP<MORTAR::Element> mrtrele)
  *----------------------------------------------------------------------*/
 void MORTAR::Interface::FillCompleteNew(const bool isFinalParallelDistribution, const int maxdof)
 {
-  dserror("Not implemented for meshtying.");
+  FOUR_C_THROW("Not implemented for meshtying.");
 }
 
 /*----------------------------------------------------------------------*
@@ -657,7 +657,7 @@ void MORTAR::Interface::InitializeCrossPoints()
   {
     // only applicable for 2D problems up to now
     if (Dim() == 3)
-      dserror("Crosspoint / edge node modification not yet implemented for 3D problems.");
+      FOUR_C_THROW("Crosspoint / edge node modification not yet implemented for 3D problems.");
 
     // Detect relevant nodes on slave side
     const int numRowNodes = Discret().NodeRowMap()->NumMyElements();
@@ -790,7 +790,8 @@ void MORTAR::Interface::InitializeLagMultLin()
             // other cases
           default:
           {
-            dserror("Lin/Lin interpolation of LM only for line3/tri6/quad8/quad9 mortar elements");
+            FOUR_C_THROW(
+                "Lin/Lin interpolation of LM only for line3/tri6/quad8/quad9 mortar elements");
             break;
           }
         }  // switch(Shape)
@@ -861,7 +862,8 @@ void MORTAR::Interface::InitializeLagMultConst()
             // other cases
           default:
           {
-            dserror("Lin/Lin interpolation of LM only for line3/tri6/quad8/quad9 mortar elements");
+            FOUR_C_THROW(
+                "Lin/Lin interpolation of LM only for line3/tri6/quad8/quad9 mortar elements");
             break;
           }
         }  // switch(Shape)
@@ -883,7 +885,7 @@ void MORTAR::Interface::InitializeDataContainer()
   {
     int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %i", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
     auto* mnode = dynamic_cast<Node*>(node);
 
     //********************************************************
@@ -908,7 +910,7 @@ void MORTAR::Interface::InitializeDataContainer()
     {
       int gid = masternodes()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %i", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
       auto* mnode = dynamic_cast<Node*>(node);
 
       // ATM just implemented for ContactNode ... otherwise error!!!
@@ -924,7 +926,7 @@ void MORTAR::Interface::InitializeDataContainer()
   {
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("Cannot find ele with gid %i", gid);
+    if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     auto* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     // initialize container if not yet initialized before
@@ -938,7 +940,7 @@ void MORTAR::Interface::InitializeDataContainer()
     {
       int gid = MasterColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
-      if (!ele) dserror("Cannot find ele with gid %i", gid);
+      if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
       auto* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       // initialize container if not yet initialized before
@@ -979,7 +981,7 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::Interface::SetupBinningStrate
     int gid = SlaveColNodes()->GID(lid);
     DRT::Node* node = Discret().gNode(gid);
     if (!node)
-      dserror(
+      FOUR_C_THROW(
           "Cannot find node with gid %i in discretization '%s'.", gid, Discret().Name().c_str());
     auto* mtrnode = dynamic_cast<MORTAR::Node*>(node);
 
@@ -1009,7 +1011,7 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::Interface::SetupBinningStrate
     int gid = SlaveColElements()->GID(lid);
     DRT::Element* ele = Discret().gElement(gid);
     if (!ele)
-      dserror(
+      FOUR_C_THROW(
           "Cannot find element with gid %i in discretization '%s'.", gid, Discret().Name().c_str());
     auto* mtrele = dynamic_cast<MORTAR::Element*>(ele);
 
@@ -1065,7 +1067,7 @@ void MORTAR::Interface::Redistribute()
   // make sure we are supposed to be here
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
           "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_none)
-    dserror("You are not supposed to be here...");
+    FOUR_C_THROW("You are not supposed to be here...");
 
   // some local variables
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(Comm().Clone());
@@ -1209,14 +1211,14 @@ void MORTAR::Interface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& rownode
 void MORTAR::Interface::UpdateParallelLayoutAndDataStructures(const bool perform_rebalancing,
     const bool enforce_ghosting_update, const int maxdof, const double meanVelocity)
 {
-  dserror("Not implemented for meshtying.");
+  FOUR_C_THROW("Not implemented for meshtying.");
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MORTAR::Interface::ExtendInterfaceGhostingSafely(const double meanVelocity)
 {
-  dserror("Not implemented for meshtying.");
+  FOUR_C_THROW("Not implemented for meshtying.");
 }
 
 /*----------------------------------------------------------------------*
@@ -1330,7 +1332,7 @@ void MORTAR::Interface::ExtendInterfaceGhosting(
     {
       int gid = noderowmap->GID(i);
       DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       auto* mrtrnode = dynamic_cast<Node*>(node);
       if (!mrtrnode->IsSlave()) sdata.push_back(gid);
     }
@@ -1345,7 +1347,7 @@ void MORTAR::Interface::ExtendInterfaceGhosting(
     {
       int gid = nodecolmap->GID(i);
       DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       auto* mrtrnode = dynamic_cast<Node*>(node);
       if (mrtrnode->IsSlave()) rdata.push_back(gid);
     }
@@ -1363,7 +1365,7 @@ void MORTAR::Interface::ExtendInterfaceGhosting(
     {
       int gid = elerowmap->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
-      if (!ele) dserror("Cannot find element with gid %", gid);
+      if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
       auto* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
       if (!mrtrele->IsSlave()) sdata.push_back(gid);
     }
@@ -1378,7 +1380,7 @@ void MORTAR::Interface::ExtendInterfaceGhosting(
     {
       int gid = elecolmap->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
-      if (!ele) dserror("Cannot find element with gid %", gid);
+      if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
       auto* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
       if (mrtrele->IsSlave()) rdata.push_back(gid);
     }
@@ -1517,7 +1519,7 @@ void MORTAR::Interface::ExtendInterfaceGhosting(
   //*****INVALID CASES*****
   else
   {
-    dserror("Invalid redundancy type.");
+    FOUR_C_THROW("Invalid redundancy type.");
   }
 }
 
@@ -1565,7 +1567,7 @@ void MORTAR::Interface::CreateSearchTree()
       }
       default:
       {
-        dserror("Unknown strategy to deal with interface ghosting.");
+        FOUR_C_THROW("Unknown strategy to deal with interface ghosting.");
         break;
       }
     }
@@ -1603,7 +1605,7 @@ void MORTAR::Interface::UpdateMasterSlaveDofMaps()
   {
     int gid = Discret().NodeColMap()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
     bool isslave = mrtrnode->IsSlave();
     const int numdof = mrtrnode->NumDof();
@@ -1759,7 +1761,7 @@ void MORTAR::Interface::RestrictSlaveSets()
     {
       int gid = snodecolmap_->GID(i);
       DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       auto* mrtrnode = dynamic_cast<Node*>(node);
       int istied = (int)mrtrnode->IsTiedSlave();
 
@@ -1791,7 +1793,7 @@ void MORTAR::Interface::RestrictSlaveSets()
     {
       int gid = snodecolmap_->GID(i);
       DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       auto* mrtrnode = dynamic_cast<Node*>(node);
       const bool istied = mrtrnode->IsTiedSlave();
       const int numdof = mrtrnode->NumDof();
@@ -1874,8 +1876,8 @@ void MORTAR::Interface::StoreUnredistributedMaps()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> MORTAR::Interface::RedistributeLagMultSets() const
 {
-  if (plmdofmap_.is_null()) dserror("The plmdofmap_ is not yet initialized!");
-  if (psdofrowmap_.is_null()) dserror("The psdofrowmap_ is not yet initialized!");
+  if (plmdofmap_.is_null()) FOUR_C_THROW("The plmdofmap_ is not yet initialized!");
+  if (psdofrowmap_.is_null()) FOUR_C_THROW("The psdofrowmap_ is not yet initialized!");
 
   // new lm dofs
   std::vector<int> lmdof(sdofrowmap_->NumMyElements());
@@ -1949,7 +1951,7 @@ void MORTAR::Interface::Initialize()
   {
     int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* monode = dynamic_cast<MORTAR::Node*>(node);
 
     // reset nodal normal
@@ -1967,7 +1969,7 @@ void MORTAR::Interface::Initialize()
   {
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("Cannot find ele with gid %i", gid);
+    if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     auto* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->MoData().SearchElements().resize(0);
@@ -2078,7 +2080,7 @@ void MORTAR::Interface::SetState(const enum StateType& statetype, const Epetra_V
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "The given state type is unsupported! (type = %s)", StateType2String(statetype).c_str());
       break;
     }
@@ -2097,7 +2099,7 @@ void MORTAR::Interface::SetElementAreas()
   {
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("Cannot find ele with gid %i", gid);
+    if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     auto* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->MoData().Area() = mele->ComputeArea();
@@ -2115,15 +2117,16 @@ void MORTAR::Interface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCel
   const double t_start = Teuchos::Time::wallTime();
 
   // check
-  if (Dim() == 2) dserror("Geometry evaluation for mortar interface only for 3D problems!");
+  if (Dim() == 2) FOUR_C_THROW("Geometry evaluation for mortar interface only for 3D problems!");
 
   auto algo = CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
   if (algo == INPAR::MORTAR::algorithm_nts)
-    dserror("Geometry evaluation only for mortar problems!");
+    FOUR_C_THROW("Geometry evaluation only for mortar problems!");
 
   // interface needs to be complete
-  if (!Filled() && Comm().MyPID() == 0) dserror("FillComplete() not called on interface %", id_);
+  if (!Filled() && Comm().MyPID() == 0)
+    FOUR_C_THROW("FillComplete() not called on interface %", id_);
 
   // clear vector
   intcells.clear();
@@ -2136,7 +2139,7 @@ void MORTAR::Interface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCel
   else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
     EvaluateSearchBinarytree();
   else
-    dserror("Invalid search algorithm");
+    FOUR_C_THROW("Invalid search algorithm");
 
   // create normals
   EvaluateNodalNormals();
@@ -2152,7 +2155,7 @@ void MORTAR::Interface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCel
   {
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
+    if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     auto* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
     // skip zero-sized nurbs elements (slave)
@@ -2164,7 +2167,7 @@ void MORTAR::Interface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCel
     {
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("Cannot find master element with gid %", gid2);
+      if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       auto* melement = dynamic_cast<MORTAR::Element*>(ele2);
 
       // skip zero-sized nurbs elements (master)
@@ -2175,7 +2178,7 @@ void MORTAR::Interface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCel
       //********************************************************************
       if (selement->IsQuad())
       {
-        dserror("Geometry evaluation only implemented for first order elements!");
+        FOUR_C_THROW("Geometry evaluation only implemented for first order elements!");
       }
       // noquad!
       else
@@ -2214,7 +2217,7 @@ void MORTAR::Interface::Evaluate(
   TEUCHOS_FUNC_TIME_MONITOR("MORTAR::Interface::Evaluate");
 
   // interface needs to be complete
-  if (!Filled()) dserror("FillComplete() not called on interface %", id_);
+  if (!Filled()) FOUR_C_THROW("FillComplete() not called on interface %", id_);
 
   //******************************************
   // Start basic evaluation part of interface
@@ -2332,7 +2335,7 @@ void MORTAR::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
     //*********************************
     case INPAR::MORTAR::algorithm_ntl:
     {
-      dserror("not yet implemented!");
+      FOUR_C_THROW("not yet implemented!");
       break;
     }
     //*********************************
@@ -2340,7 +2343,7 @@ void MORTAR::Interface::EvaluateCoupling(const Epetra_Map& selecolmap,
     //*********************************
     default:
     {
-      dserror("Unknown discretization type for constraints!");
+      FOUR_C_THROW("Unknown discretization type for constraints!");
       break;
     }
   }
@@ -2360,7 +2363,7 @@ void MORTAR::Interface::EvaluateSTS(
   {
     const int gid1 = selecolmap.GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("Cannot find slave element with gid %d", gid1);
+    if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %d", gid1);
 
     auto* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
@@ -2376,7 +2379,7 @@ void MORTAR::Interface::EvaluateSTS(
     {
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("Cannot find master element with gid %d", gid2);
+      if (!ele2) FOUR_C_THROW("Cannot find master element with gid %d", gid2);
       auto* melement = dynamic_cast<MORTAR::Element*>(ele2);
 
       // skip zero-sized nurbs elements (master)
@@ -2401,10 +2404,10 @@ void MORTAR::Interface::EvaluateNTS()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
 
-    if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
+    if (mrtrnode->Owner() != Comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
 
     // vector with possible contacting master eles
     std::vector<MORTAR::Element*> meles;
@@ -2426,7 +2429,7 @@ void MORTAR::Interface::EvaluateNTS()
  *----------------------------------------------------------------------*/
 void MORTAR::Interface::EvaluateLTS()
 {
-  dserror("Line -to-segment is not available for meshtying problems.");
+  FOUR_C_THROW("Line -to-segment is not available for meshtying problems.");
 }
 
 /*----------------------------------------------------------------------*
@@ -2434,7 +2437,7 @@ void MORTAR::Interface::EvaluateLTS()
  *----------------------------------------------------------------------*/
 void MORTAR::Interface::EvaluateLTL()
 {
-  dserror("Line-to-line is not available for meshtying problems.");
+  FOUR_C_THROW("Line-to-line is not available for meshtying problems.");
 }
 
 /*----------------------------------------------------------------------*
@@ -2442,7 +2445,7 @@ void MORTAR::Interface::EvaluateLTL()
  *----------------------------------------------------------------------*/
 void MORTAR::Interface::EvaluateSTL()
 {
-  dserror("Segment-to-line is not available for meshtying problems.");
+  FOUR_C_THROW("Segment-to-line is not available for meshtying problems.");
 }
 
 /*----------------------------------------------------------------------*
@@ -2457,7 +2460,7 @@ void MORTAR::Interface::EvaluateNodalNormals() const
   {
     int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // build averaged normal at each slave node
@@ -2478,7 +2481,7 @@ void MORTAR::Interface::PreEvaluate(const int& step, const int& iter)
   else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
     EvaluateSearchBinarytree();
   else
-    dserror("Invalid search algorithm");
+    FOUR_C_THROW("Invalid search algorithm");
 
     // TODO: maybe we can remove this debug functionality
 #ifdef MORTARGMSHCELLS
@@ -2534,7 +2537,7 @@ void MORTAR::Interface::PostEvaluate(const int step, const int iter)
   else if (step < 10000)
     newfilename << 0;
   else if (step > 99999)
-    dserror("Gmsh output implemented for a maximum of 99.999 time steps");
+    FOUR_C_THROW("Gmsh output implemented for a maximum of 99.999 time steps");
   newfilename << step;
 
   // second index = Newton iteration index
@@ -2542,7 +2545,7 @@ void MORTAR::Interface::PostEvaluate(const int step, const int iter)
   if (iter < 10)
     newfilename << 0;
   else if (iter > 99)
-    dserror("Gmsh output implemented for a maximum of 99 iterations");
+    FOUR_C_THROW("Gmsh output implemented for a maximum of 99 iterations");
   newfilename << iter << "_p" << proc << ".pos";
 
   // rename file
@@ -2578,7 +2581,7 @@ void MORTAR::Interface::FindMEles(Node& mrtrnode, std::vector<MORTAR::Element*>&
     {
       int gid2 = adjcele->MoData().SearchElements()[k];
       DRT::Element* mele = idiscret_->gElement(gid2);
-      if (!mele) dserror("Cannot find master element with gid %", gid2);
+      if (!mele) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       auto* melement = dynamic_cast<MORTAR::Element*>(mele);
 
       // skip zero-sized nurbs elements (master)
@@ -2622,7 +2625,7 @@ void MORTAR::Interface::FindMNodes(
     for (int k = 0; k < mele->NumNode(); ++k)
     {
       DRT::Node* node = mele->Nodes()[k];
-      if (!node) dserror("Cannot find master node");
+      if (!node) FOUR_C_THROW("Cannot find master node");
       auto* mnode = dynamic_cast<Node*>(node);
 
       // check uniqueness
@@ -2650,7 +2653,7 @@ void MORTAR::Interface::EvaluateNodalNormals(std::map<int, std::vector<double>>&
   {
     int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // build averaged normal at each slave node
@@ -2679,7 +2682,7 @@ void MORTAR::Interface::ExportNodalNormals() const
   {
     int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // fill nodal matrix
@@ -2704,7 +2707,7 @@ void MORTAR::Interface::ExportNodalNormals() const
     if (snoderowmapbound_->MyGID(gid)) continue;
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // extract info
@@ -2761,7 +2764,7 @@ void MORTAR::Interface::EvaluateSearchBruteForce(const double& eps)
     }
     default:
     {
-      dserror("Unknown strategy to deal with interface ghosting.");
+      FOUR_C_THROW("Unknown strategy to deal with interface ghosting.");
       break;
     }
   }
@@ -2770,7 +2773,7 @@ void MORTAR::Interface::EvaluateSearchBruteForce(const double& eps)
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     DRT::Element* element = idiscret_->gElement(selecolmap_->GID(i));
-    if (!element) dserror("Cannot find element with gid %\n", selecolmap_->GID(i));
+    if (!element) FOUR_C_THROW("Cannot find element with gid %\n", selecolmap_->GID(i));
     auto* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     if (mrtrelement->MinEdgeSize() < lmin) lmin = mrtrelement->MinEdgeSize();
   }
@@ -2779,7 +2782,7 @@ void MORTAR::Interface::EvaluateSearchBruteForce(const double& eps)
   for (int i = 0; i < melefullmap->NumMyElements(); ++i)
   {
     DRT::Element* element = idiscret_->gElement(melefullmap->GID(i));
-    if (!element) dserror("Cannot find element with gid %\n", melefullmap->GID(i));
+    if (!element) FOUR_C_THROW("Cannot find element with gid %\n", melefullmap->GID(i));
     auto* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     if (mrtrelement->MinEdgeSize() < lmin) lmin = mrtrelement->MinEdgeSize();
   }
@@ -2845,7 +2848,7 @@ void MORTAR::Interface::EvaluateSearchBruteForce(const double& eps)
     dopnormals(8, 2) = 1;
   }
   else
-    dserror("Problem dimension must be either 2D or 3D.");
+    FOUR_C_THROW("Problem dimension must be either 2D or 3D.");
 
   // decide whether auxiliary positions are used when computing dops
   const bool useauxpos = SearchUseAuxPos();
@@ -2866,7 +2869,7 @@ void MORTAR::Interface::EvaluateSearchBruteForce(const double& eps)
     // initialize slabs with first node
     int sgid = selecolmap_->GID(i);
     DRT::Element* element = idiscret_->gElement(sgid);
-    if (!element) dserror("Cannot find element with gid %\n", sgid);
+    if (!element) FOUR_C_THROW("Cannot find element with gid %\n", sgid);
     DRT::Node** node = element->Nodes();
     auto* mrtrnode = dynamic_cast<Node*>(node[0]);
     const double* posnode = mrtrnode->xspatial();
@@ -2948,7 +2951,7 @@ void MORTAR::Interface::EvaluateSearchBruteForce(const double& eps)
       // initialize slabs with first node
       int mgid = melefullmap->GID(j);
       DRT::Element* element = idiscret_->gElement(mgid);
-      if (!element) dserror("Cannot find element with gid %\n", mgid);
+      if (!element) FOUR_C_THROW("Cannot find element with gid %\n", mgid);
       DRT::Node** node = element->Nodes();
       auto* mrtrnode = dynamic_cast<Node*>(node[0]);
       const double* posnode = mrtrnode->xspatial();
@@ -3079,7 +3082,7 @@ bool MORTAR::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTAR
     }  // quadratic
   }    // 3D
   else
-    dserror("Dimension for Mortar coupling must be either 2D or 3D.");
+    FOUR_C_THROW("Dimension for Mortar coupling must be either 2D or 3D.");
   // *********************************************************************
 
   PostMortarCoupling(sele, mele, mparams_ptr);
@@ -3337,7 +3340,7 @@ bool MORTAR::Interface::SplitIntElements(
 
   // ********************************************************* invalid ***
   else
-    dserror("SplitIntElements called for unknown element shape!");
+    FOUR_C_THROW("SplitIntElements called for unknown element shape!");
 
   // *********************************************************************
 
@@ -3354,7 +3357,7 @@ void MORTAR::Interface::AssembleLM(Epetra_Vector& zglobal)
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
     int dim = mrtrnode->NumDof();
@@ -3392,10 +3395,10 @@ void MORTAR::Interface::AssembleD(CORE::LINALG::SparseMatrix& dglobal)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
-    if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
+    if (mrtrnode->Owner() != Comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
 
     /**************************************************** D-matrix ******/
     if ((mrtrnode->MoData().GetD()).size() > 0)
@@ -3410,9 +3413,9 @@ void MORTAR::Interface::AssembleD(CORE::LINALG::SparseMatrix& dglobal)
         double val = colcurr->second;
 
         DRT::Node* knode = Discret().gNode(colcurr->first);
-        if (!knode) dserror("node not found");
+        if (!knode) FOUR_C_THROW("node not found");
         auto* kcnode = dynamic_cast<Node*>(knode);
-        if (!kcnode) dserror("node not found");
+        if (!kcnode) FOUR_C_THROW("node not found");
 
         for (int j = 0; j < rowsize; ++j)
         {
@@ -3432,7 +3435,7 @@ void MORTAR::Interface::AssembleD(CORE::LINALG::SparseMatrix& dglobal)
             else
             {
               // check for diagonality
-              if (row != col && abs(val) > 1.0e-12) dserror("D-Matrix is not diagonal!");
+              if (row != col && abs(val) > 1.0e-12) FOUR_C_THROW("D-Matrix is not diagonal!");
 
               // create an explicitly diagonal d matrix
               if (row == col) dglobal.Assemble(val, row, col);
@@ -3465,10 +3468,10 @@ void MORTAR::Interface::AssembleM(CORE::LINALG::SparseMatrix& mglobal)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
-    if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
+    if (mrtrnode->Owner() != Comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
 
     /**************************************************** M-matrix ******/
     if ((mrtrnode->MoData().GetM()).size() > 0)
@@ -3481,9 +3484,9 @@ void MORTAR::Interface::AssembleM(CORE::LINALG::SparseMatrix& mglobal)
       for (colcurr = mmap.begin(); colcurr != mmap.end(); ++colcurr)
       {
         DRT::Node* knode = Discret().gNode(colcurr->first);
-        if (!knode) dserror("node not found");
+        if (!knode) FOUR_C_THROW("node not found");
         auto* kcnode = dynamic_cast<Node*>(knode);
-        if (!kcnode) dserror("node not found");
+        if (!kcnode) FOUR_C_THROW("node not found");
 
         double val = colcurr->second;
 
@@ -3516,9 +3519,9 @@ void MORTAR::Interface::AssembleM(CORE::LINALG::SparseMatrix& mglobal)
       for (colcurr = mmap.begin(); colcurr != mmap.end(); ++colcurr)
       {
         DRT::Node* knode = Discret().gNode(colcurr->first);
-        if (!knode) dserror("node not found");
+        if (!knode) FOUR_C_THROW("node not found");
         auto* kcnode = dynamic_cast<Node*>(knode);
-        if (!kcnode) dserror("node not found");
+        if (!kcnode) FOUR_C_THROW("node not found");
 
         for (int j = 0; j < rowsize; ++j)
         {
@@ -3568,10 +3571,10 @@ void MORTAR::Interface::AssembleNormals(CORE::LINALG::SparseMatrix& nglobal)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
-    if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
+    if (mrtrnode->Owner() != Comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
 
     // nodal normal
     double* nodalnormal = mrtrnode->MoData().n();
@@ -3590,7 +3593,7 @@ void MORTAR::Interface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
 {
   // check for dual shape functions and quadratic slave elements
   if (shapefcn_ == INPAR::MORTAR::shape_standard || !quadslave_)
-    dserror("AssembleTrafo -> you should not be here...");
+    FOUR_C_THROW("AssembleTrafo -> you should not be here...");
 
   // check whether locally linear LM interpolation is used
   const bool lagmultlin = (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(
@@ -3607,10 +3610,10 @@ void MORTAR::Interface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
-    if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
+    if (mrtrnode->Owner() != Comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
 
     // find out whether this is a corner node (no trafo), an edge
     // node (trafo of displacement DOFs) or a center node (only for
@@ -3746,7 +3749,7 @@ void MORTAR::Interface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
         // other cases
       default:
       {
-        dserror("Trafo matrix only for line3/tri6/quad8/quad9 contact elements");
+        FOUR_C_THROW("Trafo matrix only for line3/tri6/quad8/quad9 contact elements");
         break;
       }
     }  // switch(Shape)
@@ -3800,10 +3803,10 @@ void MORTAR::Interface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
         int gindex2 = mrtrele->NodeIds()[index2];
         // std::cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << std::endl;
         DRT::Node* adjnode1 = idiscret_->gNode(gindex1);
-        if (!adjnode1) dserror("Cannot find node with gid %", gindex1);
+        if (!adjnode1) FOUR_C_THROW("Cannot find node with gid %", gindex1);
         auto* adjmrtrnode1 = dynamic_cast<Node*>(adjnode1);
         DRT::Node* adjnode2 = idiscret_->gNode(gindex2);
-        if (!adjnode2) dserror("Cannot find node with gid %", gindex2);
+        if (!adjnode2) FOUR_C_THROW("Cannot find node with gid %", gindex2);
         auto* adjmrtrnode2 = dynamic_cast<Node*>(adjnode2);
 
         // add transformation matrix block
@@ -3829,7 +3832,7 @@ void MORTAR::Interface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
     //********************************************************************
     else
     {
-      dserror("Undefined node type (corner, edge, center)");
+      FOUR_C_THROW("Undefined node type (corner, edge, center)");
     }
   }
 
@@ -3847,11 +3850,11 @@ void MORTAR::Interface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
     {
       int gid = mnoderowmap_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       auto* mrtrnode = dynamic_cast<Node*>(node);
 
       if (mrtrnode->Owner() != Comm().MyPID())
-        dserror("AssembleTrafo: Node ownership inconsistency!");
+        FOUR_C_THROW("AssembleTrafo: Node ownership inconsistency!");
 
       // find out whether this is a "real" master node (no trafo), a former
       // slave edge node (trafo of displacement DOFs) or a former slave
@@ -3928,7 +3931,7 @@ void MORTAR::Interface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
           // other cases
           default:
           {
-            dserror("Trafo matrix only for line3/tri6/quad8/quad9 contact elements");
+            FOUR_C_THROW("Trafo matrix only for line3/tri6/quad8/quad9 contact elements");
             break;
           }
         }  // switch(Shape)
@@ -3985,10 +3988,10 @@ void MORTAR::Interface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
           int gindex2 = mrtrele->NodeIds()[index2];
           // std::cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << std::endl;
           DRT::Node* adjnode1 = idiscret_->gNode(gindex1);
-          if (!adjnode1) dserror("Cannot find node with gid %", gindex1);
+          if (!adjnode1) FOUR_C_THROW("Cannot find node with gid %", gindex1);
           auto* adjmrtrnode1 = dynamic_cast<Node*>(adjnode1);
           DRT::Node* adjnode2 = idiscret_->gNode(gindex2);
-          if (!adjnode2) dserror("Cannot find node with gid %", gindex2);
+          if (!adjnode2) FOUR_C_THROW("Cannot find node with gid %", gindex2);
           auto* adjmrtrnode2 = dynamic_cast<Node*>(adjnode2);
 
           // add transformation matrix block
@@ -4031,16 +4034,16 @@ void MORTAR::Interface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
           // std::cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << std::endl;
           // std::cout << "-> adjacent corner nodes: " << gindex3 << " " << gindex4 << std::endl;
           DRT::Node* adjnode1 = idiscret_->gNode(gindex1);
-          if (!adjnode1) dserror("Cannot find node with gid %", gindex1);
+          if (!adjnode1) FOUR_C_THROW("Cannot find node with gid %", gindex1);
           auto* adjmrtrnode1 = dynamic_cast<Node*>(adjnode1);
           DRT::Node* adjnode2 = idiscret_->gNode(gindex2);
-          if (!adjnode2) dserror("Cannot find node with gid %", gindex2);
+          if (!adjnode2) FOUR_C_THROW("Cannot find node with gid %", gindex2);
           auto* adjmrtrnode2 = dynamic_cast<Node*>(adjnode2);
           DRT::Node* adjnode3 = idiscret_->gNode(gindex3);
-          if (!adjnode3) dserror("Cannot find node with gid %", gindex3);
+          if (!adjnode3) FOUR_C_THROW("Cannot find node with gid %", gindex3);
           auto* adjmrtrnode3 = dynamic_cast<Node*>(adjnode3);
           DRT::Node* adjnode4 = idiscret_->gNode(gindex4);
-          if (!adjnode4) dserror("Cannot find node with gid %", gindex4);
+          if (!adjnode4) FOUR_C_THROW("Cannot find node with gid %", gindex4);
           auto* adjmrtrnode4 = dynamic_cast<Node*>(adjnode4);
 
           // add transformation matrix block
@@ -4067,7 +4070,7 @@ void MORTAR::Interface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
       // CASE 4: UNDEFINED NODES
       //********************************************************************
       else
-        dserror("Undefined node type (corner, edge, center)");
+        FOUR_C_THROW("Undefined node type (corner, edge, center)");
     }
   }  // end of assembly for locally linear LM interpolation
 }
@@ -4088,7 +4091,7 @@ void MORTAR::Interface::DetectTiedSlaveNodes(int& founduntied)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // perform detection
@@ -4119,7 +4122,7 @@ void MORTAR::Interface::DetectTiedSlaveNodes(int& founduntied)
     // found inconsistency
     else
     {
-      dserror("Inconsistency in tied/untied node detection");
+      FOUR_C_THROW("Inconsistency in tied/untied node detection");
     }
   }
 
@@ -4138,7 +4141,7 @@ void MORTAR::Interface::DetectTiedSlaveNodes(int& founduntied)
   {
     int gid = snodecolmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // check if this node is untied
@@ -4376,7 +4379,7 @@ bool MORTAR::Interface::CheckOutputList(
   {
     if (not outParams.isParameter(requiredEntry))
     {
-      dserror("Parameter list is missing the required entry '%s'.", (requiredEntry).c_str());
+      FOUR_C_THROW("Parameter list is missing the required entry '%s'.", (requiredEntry).c_str());
       return false;
     }
   }

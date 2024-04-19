@@ -24,8 +24,9 @@ MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> 
       poissonratio_(*matdata->Get<double>("NUE")),
       density_(*matdata->Get<double>("DENS"))
 {
-  if (youngs_ <= 0.) dserror("Young's modulus must be greater zero");
-  if (poissonratio_ >= 0.5 || poissonratio_ < -1.) dserror("Poisson's ratio must be in [-1;0.5)");
+  if (youngs_ <= 0.) FOUR_C_THROW("Young's modulus must be greater zero");
+  if (poissonratio_ >= 0.5 || poissonratio_ < -1.)
+    FOUR_C_THROW("Poisson's ratio must be in [-1;0.5)");
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::StVenantKirchhoff::CreateMaterial()
@@ -98,12 +99,13 @@ void MAT::StVenantKirchhoff::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::StVenantKirchhoff*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -211,12 +213,12 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3
     const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
     const int gp, const int eleGID)
 {
-#ifdef BACI_DEBUG
-  if (!stress) dserror("No stress vector supplied");
-  if (!cmat) dserror("No material tangent matrix supplied");
-  if (!glstrain_m) dserror("No GL strains supplied");
-  if (!glstrain_new) dserror("No GL strains supplied");
-  if (!glstrain_old) dserror("No GL strains supplied");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (!stress) FOUR_C_THROW("No stress vector supplied");
+  if (!cmat) FOUR_C_THROW("No material tangent matrix supplied");
+  if (!glstrain_m) FOUR_C_THROW("No GL strains supplied");
+  if (!glstrain_new) FOUR_C_THROW("No GL strains supplied");
+  if (!glstrain_old) FOUR_C_THROW("No GL strains supplied");
 #endif
 
   // strain energy function

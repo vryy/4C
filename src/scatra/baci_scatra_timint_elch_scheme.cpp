@@ -198,7 +198,7 @@ void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step, Teuchos::RCP<IO::I
                     << ")" << std::endl;
       }
     }
-    if (!read_pot) dserror("Reading of electrode potential for restart not successful.");
+    if (!read_pot) FOUR_C_THROW("Reading of electrode potential for restart not successful.");
   }
 }
 
@@ -479,7 +479,7 @@ void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step, Teuchos::RCP<IO::
                     << ")" << std::endl;
       }
     }
-    if (!read_pot) dserror("Reading of electrode potential for restart not successful.");
+    if (!read_pot) FOUR_C_THROW("Reading of electrode potential for restart not successful.");
   }
 }
 
@@ -549,14 +549,14 @@ void SCATRA::ScaTraTimIntElchBDF2::ComputeTimeDerivPot0(const bool init)
       // correctly!! The code have to be checked in detail, if somebody want to use it!!
       if (dlcap != 0.0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Double layer charging and galvanostatic mode are not implemented for BDF2! You have "
             "to use one-step-theta time integration scheme");
       }
 
       if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") == true)
       {
-        dserror(
+        FOUR_C_THROW(
             "Double layer charging and galvanostatic mode are not implemented for BDF2! You have "
             "to use one-step-theta time integration scheme");
       }
@@ -770,7 +770,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(
                     << ")" << std::endl;
       }
     }
-    if (!read_pot) dserror("Reading of electrode potential for restart not successful.");
+    if (!read_pot) FOUR_C_THROW("Reading of electrode potential for restart not successful.");
   }
 }
 
@@ -838,7 +838,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
       // restructuring on element level: Derivation is based on a history vector!!
       if (dlcap != 0.0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Double layer charging and galvanostatic mode are not implemented for generalized "
             "alpha time-integration scheme! You have to use one-step-theta time integration "
             "scheme");
@@ -1001,7 +1001,7 @@ void SCATRA::ScaTraTimIntElchStationary::ReadRestart(
                     << ")" << std::endl;
       }
     }
-    if (!read_pot) dserror("Reading of electrode potential for restart not successful.");
+    if (!read_pot) FOUR_C_THROW("Reading of electrode potential for restart not successful.");
   }
 }
 
@@ -1029,14 +1029,14 @@ void SCATRA::ScaTraTimIntElchStationary::ComputeTimeDerivPot0(const bool init)
     {
       if (dlcap != 0.0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Double layer charging and galvanostatic mode are not implemented for stationary time "
             "integration scheme! You have to use one-step-theta time integration scheme!");
       }
 
       if (CORE::UTILS::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") == true)
       {
-        dserror(
+        FOUR_C_THROW(
             "Double layer charging and galvanostatic mode are not implemented for stationary time "
             "integration scheme! You have to use one-step-theta time integration scheme!");
       }
@@ -1131,7 +1131,7 @@ void SCATRA::ScaTraTimIntElchSCLOST::WriteRestart() const
 void SCATRA::ScaTraTimIntElchSCLOST::ReadRestart(
     const int step, Teuchos::RCP<IO::InputControl> input)
 {
-  dserror("Restart is not implemented for coupled space-charge layers.");
+  FOUR_C_THROW("Restart is not implemented for coupled space-charge layers.");
 }
 
 

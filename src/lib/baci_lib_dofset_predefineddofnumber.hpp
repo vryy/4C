@@ -128,7 +128,8 @@ namespace DRT
         numdofperelementelewise_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
         CORE::LINALG::Export(numdofperelementelewise_rowmap, *numdofperelementelewise_);
       }
-      if (numdofperfacefacewise_ != Teuchos::null) dserror("Redistribution not yet implemented!");
+      if (numdofperfacefacewise_ != Teuchos::null)
+        FOUR_C_THROW("Redistribution not yet implemented!");
 
       // call base class routine
       return DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
@@ -160,7 +161,7 @@ namespace DRT
         return numdofperface_;
       else
       {
-        dserror("Not yet implemented!");
+        FOUR_C_THROW("Not yet implemented!");
         return -1;
       }
     }

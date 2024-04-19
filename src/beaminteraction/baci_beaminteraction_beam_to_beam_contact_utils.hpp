@@ -212,16 +212,16 @@ namespace BEAMINTERACTION
     if (leftbound)
     {
       if (fabs(1 + interval_id - unrounded_id) < segmenttol)
-        dserror("Such small segmented integration intervals are not possible so far!");
+        FOUR_C_THROW("Such small segmented integration intervals are not possible so far!");
     }
     // or for the right bound of the integration interval
     else
     {
       if (fabs(interval_id - unrounded_id) < segmenttol)
-        dserror("Such small segmented integration intervals are not possible so far!");
+        FOUR_C_THROW("Such small segmented integration intervals are not possible so far!");
     }
 
-    if (interval_id < 0) dserror("Interval-ID can't be negative!");
+    if (interval_id < 0) FOUR_C_THROW("Interval-ID can't be negative!");
 
     return interval_id;
   }
@@ -243,7 +243,7 @@ namespace BEAMINTERACTION
     unrounded_id = (point + 1.0) / 2.0 * numberofsegments;
     segment_id = floor(unrounded_id);
 
-    if (segment_id < 0) dserror("Segment-ID can't be negative!");
+    if (segment_id < 0) FOUR_C_THROW("Segment-ID can't be negative!");
 
     return segment_id;
   }

@@ -230,7 +230,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
           M_index += 11;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "EAS Membrane locking: Only 0, 7, 9, 11 EAS modes are implemented. Given: "
               "%d",
               locking_types.membrane);
@@ -267,7 +267,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
           M_index += 11;
           break;
         default:
-          dserror("EAS bending part: Only 0, 9, 11 EAS modes are implemented. Given: %d",
+          FOUR_C_THROW("EAS bending part: Only 0, 9, 11 EAS modes are implemented. Given: %d",
               locking_types.bending);
       }
       // locking due to thickness changes E_{33} linear
@@ -325,7 +325,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
           M_index += 9;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "EAS thickness locking: Only 0, 1, 3, 4, 5, 8, 9 EAS modes are implemented. Given: "
               "%d",
               locking_types.thickness);
@@ -357,7 +357,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
           M_index += 6;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "EAS transverse shear strain locking: Only 0, 2, 4, 6 EAS modes are implemented. "
               "Given: %d",
               locking_types.transverse_shear_strain_const);
@@ -389,7 +389,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
           M_index += 6;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "EAS transverse shear strain locking: Only 0, 2, 4, 6 EAS modes are implemented. "
               "Given: %d",
               locking_types.transverse_shear_strain_lin);
@@ -444,7 +444,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
           M_index += 7;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "EAS Membrane locking: Only 0, 1, 2, 3, 4, 5, 7 EAS modes are implemented. Given: %d",
               locking_types.membrane);
       }
@@ -488,7 +488,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
           M_index += 7;
           break;
         default:
-          dserror("EAS bending part: Only 0, 4, 5, 7, 8 EAS modes are implemented. Given: %d",
+          FOUR_C_THROW("EAS bending part: Only 0, 4, 5, 7, 8 EAS modes are implemented. Given: %d",
               locking_types.bending);
       }
       // locking due to thickness changes E_{33} linear
@@ -546,7 +546,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
           M_index += 9;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "EAS thickness locking: Only 0, 3, 4, 6, 8, 9 EAS modes are implemented. Given: %d",
               locking_types.thickness);
       }
@@ -568,7 +568,7 @@ namespace DRT::ELEMENTS::SHELL::EAS
           M_index += 4;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "EAS transverse shear strain locking: Only 0, 2, 4 EAS modes are implemented. Given: "
               "%d",
               locking_types.transverse_shear_strain_const);
@@ -591,16 +591,16 @@ namespace DRT::ELEMENTS::SHELL::EAS
           M_index += 4;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "EAS transverse shear strain locking: Only 0, 2, 4 EAS modes are implemented. Given: "
               "%d",
               locking_types.transverse_shear_strain_lin);
       }
     }  // else if (iel==4)
     else
-      dserror("EAS only implemented for 4, 8 and 9 node elements");
+      FOUR_C_THROW("EAS only implemented for 4, 8 and 9 node elements");
 
-    dsassert(M_index == locking_types.total,
+    FOUR_C_ASSERT(M_index == locking_types.total,
         "Wrong total number of EAS parameters. Something went wrong.");
 
     return M;

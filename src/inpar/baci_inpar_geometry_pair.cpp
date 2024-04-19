@@ -109,7 +109,7 @@ CORE::FE::GaussRule1D INPAR::GEOMETRYPAIR::IntToGaussRule1D(const int n_gauss_po
       return CORE::FE::GaussRule1D::line_50point;
     default:
     {
-      dserror("No Gauss rule defined for %d points", n_gauss_points);
+      FOUR_C_THROW("No Gauss rule defined for %d points", n_gauss_points);
       return CORE::FE::GaussRule1D::undefined;
     }
   }

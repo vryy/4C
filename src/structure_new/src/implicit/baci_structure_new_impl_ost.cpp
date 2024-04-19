@@ -57,7 +57,7 @@ void STR::IMPLICIT::OneStepTheta::Setup()
   if (GlobalState().GetMyRank() == 0)
   {
     if ((theta_ <= 0.0) or (theta_ > 1.0))
-      dserror("theta out of range (0.0,1.0]");
+      FOUR_C_THROW("theta out of range (0.0,1.0]");
     else
       std::cout << "   theta = " << theta_ << std::endl;
   }
@@ -307,7 +307,7 @@ void STR::IMPLICIT::OneStepTheta::ReadRestart(IO::DiscretizationReader& ioreader
 double STR::IMPLICIT::OneStepTheta::CalcRefNormForce(
     const enum ::NOX::Abstract::Vector::NormType& type) const
 {
-  dserror("Not yet implemented! (see the Statics integration for an example)");
+  FOUR_C_THROW("Not yet implemented! (see the Statics integration for an example)");
   return -1.0;
 }
 

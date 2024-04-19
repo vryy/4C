@@ -72,7 +72,7 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3Surface::Shape() const
     case 9:
       return CORE::FE::CellType::quad9;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
   }
 }
 
@@ -80,7 +80,7 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3Surface::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Vele3Surface::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("this Vele3Surface element does not support communication");
+  FOUR_C_THROW("this Vele3Surface element does not support communication");
   return;
 }
 
@@ -89,7 +89,7 @@ void DRT::ELEMENTS::Vele3Surface::Pack(CORE::COMM::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Vele3Surface::Unpack(const std::vector<char>& data)
 {
-  dserror("this Vele3Surface element does not support communication");
+  FOUR_C_THROW("this Vele3Surface element does not support communication");
   return;
 }
 
@@ -146,7 +146,7 @@ CORE::FE::GaussRule2D DRT::ELEMENTS::Vele3Surface::getOptimalGaussrule(
       rule = CORE::FE::GaussRule2D::tri_6point;
       break;
     default:
-      dserror("unknown number of nodes for gaussrule initialization");
+      FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
   }
   return rule;
 }

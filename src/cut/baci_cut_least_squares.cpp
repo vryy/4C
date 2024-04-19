@@ -32,7 +32,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_squar
   int err2 = solve_for_GPweights.factor();
   int err = solve_for_GPweights.solve();
   if ((err != 0) && (err2 != 0))
-    dserror(
+    FOUR_C_THROW(
         "Computation of Gauss weights failed, Ill"
         "conditioned matrix in least square");
 

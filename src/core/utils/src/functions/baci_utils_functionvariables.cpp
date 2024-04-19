@@ -66,7 +66,7 @@ double CORE::UTILS::ParsedFunctionVariable::TimeDerivativeValue(const double t, 
   }
   else
   {
-    dserror("Higher than second derivative is not implemented!");
+    FOUR_C_THROW("Higher than second derivative is not implemented!");
     return 0.0;
   }
 }
@@ -113,7 +113,7 @@ ScalarT CORE::UTILS::LinearInterpolationVariable::Value(const ScalarT& t)
   unsigned int index = 0;
   if (t < times_[0] - 1.0e-14)
   {
-    dserror("t_equivalent is smaller than the starting time");
+    FOUR_C_THROW("t_equivalent is smaller than the starting time");
     return 0.0;
   }
   else if (t <= times_[0] + 1.0e-14)
@@ -129,7 +129,7 @@ ScalarT CORE::UTILS::LinearInterpolationVariable::Value(const ScalarT& t)
 
       if (index == times_.size())
       {
-        dserror("t_equivalent is bigger than the ending time");
+        FOUR_C_THROW("t_equivalent is bigger than the ending time");
         return 0.0;
       }
     }
@@ -177,7 +177,7 @@ double CORE::UTILS::LinearInterpolationVariable::TimeDerivativeValue(
   }
   else
   {
-    dserror("Higher than second derivative is not implemented!");
+    FOUR_C_THROW("Higher than second derivative is not implemented!");
     return 0.0;
   }
 }
@@ -240,7 +240,7 @@ double CORE::UTILS::MultiFunctionVariable::Value(const double t)
   unsigned int index = 0;
   if (t_equivalent < times_[0] - 1.0e-14)
   {
-    dserror("t_equivalent is smaller than the starting time");
+    FOUR_C_THROW("t_equivalent is smaller than the starting time");
     return 0.0;
   }
   else
@@ -251,7 +251,7 @@ double CORE::UTILS::MultiFunctionVariable::Value(const double t)
       t_temp = times_[index];
       if (index == times_.size())
       {
-        dserror("t_equivalent is bigger than the ending time");
+        FOUR_C_THROW("t_equivalent is bigger than the ending time");
         return 0.0;
       }
     }
@@ -288,7 +288,7 @@ double CORE::UTILS::MultiFunctionVariable::TimeDerivativeValue(const double t, c
   unsigned int index = 0;
   if (t_equivalent < times_[0])
   {
-    dserror("t_equivalent is smaller than the starting time");
+    FOUR_C_THROW("t_equivalent is smaller than the starting time");
     return 0.0;
   }
   else
@@ -299,7 +299,7 @@ double CORE::UTILS::MultiFunctionVariable::TimeDerivativeValue(const double t, c
       t_temp = times_[index];
       if (index == times_.size())
       {
-        dserror("t_equivalent is bigger than the ending time");
+        FOUR_C_THROW("t_equivalent is bigger than the ending time");
         return 0.0;
       }
     }
@@ -336,7 +336,7 @@ double CORE::UTILS::MultiFunctionVariable::TimeDerivativeValue(const double t, c
   }
   else
   {
-    dserror("Higher than second derivative is not implemented!");
+    FOUR_C_THROW("Higher than second derivative is not implemented!");
     return 0.0;
   }
 }
@@ -466,7 +466,7 @@ double CORE::UTILS::FourierInterpolationVariable::TimeDerivativeValue(
   }
   else
   {
-    dserror("Higher than second derivative is not implemented!");
+    FOUR_C_THROW("Higher than second derivative is not implemented!");
     return 0.0;
   }
 }
@@ -499,7 +499,7 @@ CORE::UTILS::PiecewiseVariable::PiecewiseVariable(
     : FunctionVariable(name), pieces_(std::move(pieces))
 {
   if (pieces_.empty())
-    dserror("A PiecewiseVariable must have at least one FunctionVariable piece.");
+    FOUR_C_THROW("A PiecewiseVariable must have at least one FunctionVariable piece.");
 }
 
 
@@ -530,7 +530,7 @@ CORE::UTILS::FunctionVariable& CORE::UTILS::PiecewiseVariable::FindPieceForTime(
       std::find_if(pieces_.begin(), pieces_.end(), [t](auto& var) { return var->ContainTime(t); });
 
   if (active_piece == pieces_.end())
-    dserror("Piece-wise variable <%s> is not defined at time %f.", Name().c_str(), t);
+    FOUR_C_THROW("Piece-wise variable <%s> is not defined at time %f.", Name().c_str(), t);
 
   return **active_piece;
 }
@@ -587,7 +587,8 @@ std::vector<double> CORE::UTILS::INTERNAL::ExtractTimeVector(const INPUT::LineDe
       });
 
   // check if the times are in ascending order
-  if (!std::is_sorted(times.begin(), times.end())) dserror("the TIMES must be in ascending order");
+  if (!std::is_sorted(times.begin(), times.end()))
+    FOUR_C_THROW("the TIMES must be in ascending order");
 
   return times;
 }

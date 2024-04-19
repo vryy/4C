@@ -42,7 +42,7 @@ bool DRT::ELEMENTS::SoHex8::ReadElement(
     kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
-    dserror("Reading SO_HEX8 element failed");
+    FOUR_C_THROW("Reading SO_HEX8 element failed");
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
@@ -71,7 +71,7 @@ bool DRT::ELEMENTS::SoHex8::ReadElement(
     neas_ = 0;
   }
   else
-    dserror("Reading of SO_HEX8 EAS technology failed");
+    FOUR_C_THROW("Reading of SO_HEX8 EAS technology failed");
 
   return true;
 }

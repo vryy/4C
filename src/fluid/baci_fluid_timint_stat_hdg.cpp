@@ -48,7 +48,7 @@ FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<DRT::Discretiza
 void FLD::TimIntStationaryHDG::Init()
 {
   DRT::DiscretizationHDG* hdgdis = dynamic_cast<DRT::DiscretizationHDG*>(discret_.get());
-  if (hdgdis == nullptr) dserror("Did not receive an HDG discretization");
+  if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   int elementndof = hdgdis->NumMyRowElements() > 0
                         ? dynamic_cast<DRT::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))
@@ -68,7 +68,7 @@ void FLD::TimIntStationaryHDG::Init()
   for (int j = 0; j < hdgdis->NumMyRowElements(); ++j)
   {
     std::vector<int> dof = hdgdis->Dof(0, hdgdis->lRowElement(j));
-    dsassert(dof.size() >= 1, "Internal error: could not find HDG pressure dof");
+    FOUR_C_ASSERT(dof.size() >= 1, "Internal error: could not find HDG pressure dof");
     for (unsigned int i = 0; i < dof.size(); ++i) conddofset.insert(dof[i]);
   }
   for (int i = 0; i < hdgdis->NumMyRowFaces(); ++i)
@@ -212,7 +212,8 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
     if (ele->Owner() == discret_->Comm().MyPID())
     {
       std::vector<int> localDofs = discret_->Dof(1, ele);
-      dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.numRows()), "Internal error");
+      FOUR_C_ASSERT(
+          localDofs.size() == static_cast<std::size_t>(elevec2.numRows()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);
       intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.values(), localDofs.data());

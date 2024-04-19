@@ -181,7 +181,7 @@ Teuchos::RCP<SSI::ContactStrategyBase> SSI::BuildContactStrategy(
 
     default:
     {
-      dserror("unknown matrix type of ScaTra field");
+      FOUR_C_THROW("unknown matrix type of ScaTra field");
       break;
     }
   }

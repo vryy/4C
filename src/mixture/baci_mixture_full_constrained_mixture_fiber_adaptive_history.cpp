@@ -89,11 +89,11 @@ void MIXTURE::TimestepAdaptivityInfo::EmplaceBack(
   }
   else
   {
-    dsassert(list_.size() == 0 || std::min_element(list_.begin(), list_.end(),
-                                      [](const TimestepAdaptivityInfoItem& item1,
-                                          const TimestepAdaptivityInfoItem& item2) {
-                                        return item1.level_ < item2.level_;
-                                      })->level_ > level,
+    FOUR_C_ASSERT(list_.size() == 0 || std::min_element(list_.begin(), list_.end(),
+                                           [](const TimestepAdaptivityInfoItem& item1,
+                                               const TimestepAdaptivityInfoItem& item2) {
+                                             return item1.level_ < item2.level_;
+                                           })->level_ > level,
         "The timestep adaptivity info list contains an item with a smaller level than you want "
         "to add "
         "at the end.");
@@ -116,7 +116,7 @@ void MIXTURE::TimestepAdaptivityInfo::SplitLevel(
     if (list_[i].level_ == level)
     {
       int remaining_length = list_[i].simpson_intervals_ - new_num_simpson_intervals * 2;
-      dsassert(
+      FOUR_C_ASSERT(
           remaining_length >= 0, "The remaining length is smaller than 0. This is not allowed");
       if (i > 0 && list_[i - 1].level_ == level + 1)
       {
@@ -144,7 +144,7 @@ void MIXTURE::TimestepAdaptivityInfo::SplitLevel(
       return;
     }
   }
-  dserror("Could not find refinement level %d in the list", level);
+  FOUR_C_THROW("Could not find refinement level %d in the list", level);
 }
 
 unsigned int MIXTURE::TimestepAdaptivityInfo::MaxLevel()
@@ -184,7 +184,7 @@ unsigned int MIXTURE::TimestepAdaptivityInfo::GetNumberOfSimpsonIntervals(
   // level not in the list, so it is empty
   if (level > 0) return 0;
 
-  dserror(
+  FOUR_C_THROW(
       "Cou can only call this item for a level within 0 < x <= MaxLevel(). You called it with "
       "%d",
       level);

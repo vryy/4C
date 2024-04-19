@@ -222,7 +222,7 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discre
           INPAR::MORTAR::shape_dual and
       CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(input, "LM_SHAPEFCN") !=
           INPAR::MORTAR::shape_petrovgalerkin)
-    if (myrank_ == 0) dserror("Mortar coupling adapter only works for dual shape functions");
+    if (myrank_ == 0) FOUR_C_THROW("Mortar coupling adapter only works for dual shape functions");
 
   // as two half pass approach is not implemented for this approach set false
   input.set<bool>("Two_half_pass", false);
@@ -255,8 +255,8 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(Teuchos::RCP<DRT::Discretizat
   //      (slavedis->NumDof(slavedis->lRowNode(0))!=dof and slavewithale==false and
   //      slidingale==false))
   //  {
-  //    dserror("The size of the coupling vector coupleddof and dof defined in the discretization
-  //    does not fit!! \n"
+  //    FOUR_C_THROW("The size of the coupling vector coupleddof and dof defined in the
+  //    discretization does not fit!! \n"
   //            "dof defined in the discretization: %i \n"
   //            "length of coupleddof: %i",masterdis->NumDof(masterdis->lRowNode(0)), dof);
   //  }
@@ -481,7 +481,7 @@ void ADAPTER::CouplingNonLinMortar::InitMatrices()
 {
   // safety check
   if (slavedofrowmap_ == Teuchos::null or slavenoderowmap_ == Teuchos::null)
-    dserror("ERROR: Maps not initialized!");
+    FOUR_C_THROW("ERROR: Maps not initialized!");
 
   // init as standard sparse matrix --> local assembly
   D_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
@@ -606,7 +606,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   // number of coupling conditions
   const int n_coup_conds = (int)coup_conds.size();
   if (!n_coup_conds)
-    dserror("No section DESIGN SURF ROBIN SPRING DASHPOT COUPLING CONDITIONS found.");
+    FOUR_C_THROW("No section DESIGN SURF ROBIN SPRING DASHPOT COUPLING CONDITIONS found.");
 
   // slave surface = spring dashpot condition
   conds_slave.push_back(&(*spring));
@@ -619,7 +619,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
     if (*coup_conds[i]->Get<int>("coupling id") == (coupling_id + 1))
       conds_master.push_back(coup_conds[i]);
   }
-  if (!conds_master.size()) dserror("Coupling ID not found.");
+  if (!conds_master.size()) FOUR_C_THROW("Coupling ID not found.");
 
   DRT::UTILS::FindConditionObjects(*slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
   DRT::UTILS::FindConditionObjects(
@@ -640,7 +640,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
     case CORE::FE::ShapeFunctionType::nurbs:
     {
       // ***
-      dserror("nurbs for fsi mortar not supported!");
+      FOUR_C_THROW("nurbs for fsi mortar not supported!");
       input.set<bool>("NURBS", true);
       break;
     }
@@ -796,7 +796,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   {
     int gid = interface_->SlaveColElements()->GID(j);
     DRT::Element* ele = interface_->Discret().gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find ele with gid %", gid);
+    if (!ele) FOUR_C_THROW("ERROR: Cannot find ele with gid %", gid);
     CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
     Teuchos::RCP<CONTACT::Integrator> integrator =
@@ -825,7 +825,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   if (parredist)
   {
     if (pslavedofrowmap_ == Teuchos::null)
-      dserror("ERROR: Dof maps based on initial parallel distribution are wrong!");
+      FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
     D_ = MORTAR::MatrixRowColTransform(D_, pslavedofrowmap_, pslavedofrowmap_);
@@ -904,7 +904,7 @@ void ADAPTER::CouplingNonLinMortar::MatrixRowColTransform()
   {
     if (pslavedofrowmap_ == Teuchos::null or pmasterdofrowmap_ == Teuchos::null or
         pslavenoderowmap_ == Teuchos::null or psmdofrowmap_ == Teuchos::null)
-      dserror("ERROR: Dof maps based on initial parallel distribution are wrong!");
+      FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     if (DLin_ != Teuchos::null)
       DLin_ = MORTAR::MatrixRowColTransform(DLin_, pslavedofrowmap_, psmdofrowmap_);
@@ -1041,7 +1041,7 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
   // check
   if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(
           Interface()->InterfaceParams(), "LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
-    dserror("ERROR: Creation of P operator only for dual shape functions!");
+    FOUR_C_THROW("ERROR: Creation of P operator only for dual shape functions!");
 
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
@@ -1067,11 +1067,11 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  if (err > 0) FOUR_C_THROW("ERROR: Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = Dinv_->ReplaceDiagonalValues(*diag);
-  if (err > 0) dserror("ERROR: ReplaceDiagonalValues failed!");
+  if (err > 0) FOUR_C_THROW("ERROR: ReplaceDiagonalValues failed!");
 
   // complete inverse D matrix
   Dinv_->Complete();

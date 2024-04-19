@@ -39,7 +39,8 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
 
 
   if (numcondlines < 1)
-    dserror("this function should just be called if there is a least one impedance condition.");
+    FOUR_C_THROW(
+        "this function should just be called if there is a least one impedance condition.");
 
   // -------------------------------------------------------------------
   // get time period length of first condition, this should always be
@@ -57,7 +58,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
 
     double thisperiod = *impedancecond[i]->Get<double>("TIMEPERIOD");
     if (thisperiod != period)
-      dserror("all periods of impedance conditions in one problem have to be the same!!!");
+      FOUR_C_THROW("all periods of impedance conditions in one problem have to be the same!!!");
 
     // -------------------------------------------------------------------
     // allocate the impedance bc class members for every case
@@ -71,7 +72,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
     // -----------------------------------------------------------------
     bool inserted = impmap_.insert(std::make_pair(condid, impedancebc)).second;
     if (!inserted)
-      dserror(
+      FOUR_C_THROW(
           "There are more than one impedance condition lines with the same ID. This can not yet be "
           "handled.");
   }  // end loop over condition lines from input
@@ -235,7 +236,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(
   // some safety check
   if (not(treetype_ == "windkessel" or treetype_ == "resistive" or
           treetype_ == "pressure_by_funct"))
-    dserror("TYPE %s not supported!", treetype_.c_str());
+    FOUR_C_THROW("TYPE %s not supported!", treetype_.c_str());
 
   if (myrank_ == 0)
   {
@@ -362,7 +363,7 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
     pressure = 0.0;
     Q_np_fac = 0.0;
 
-    dserror("Treetype %s not supported!", treetype_.c_str());
+    FOUR_C_THROW("Treetype %s not supported!", treetype_.c_str());
   }
 
   // save pressure value

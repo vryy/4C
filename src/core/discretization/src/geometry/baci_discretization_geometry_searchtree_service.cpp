@@ -123,7 +123,7 @@ CORE::LINALG::Matrix<3, 2> CORE::GEO::getXAABBofPositions(
 {
   CORE::LINALG::Matrix<3, 2> XAABB(true);
 
-  if (currentpositions.size() == 0) dserror("map with current positions is emtpy");
+  if (currentpositions.size() == 0) FOUR_C_THROW("map with current positions is emtpy");
 
   // initialize XAABB as rectangle around the first node
   const CORE::LINALG::Matrix<3, 1> initcurrentpos = currentpositions.begin()->second;
@@ -350,7 +350,7 @@ void CORE::GEO::nearest2DObjectInNode(const Teuchos::RCP<DRT::Discretization> di
     }
 
   if (nearestObject.getObjectType() == CORE::GEO::NOTYPE_OBJECT)
-    dserror("no nearest object obtained");
+    FOUR_C_THROW("no nearest object obtained");
 
   // save projection point
   minDistCoords = nearestObject.getPhysCoord();
@@ -434,7 +434,7 @@ int CORE::GEO::nearest3DObjectInNode(const Teuchos::RCP<DRT::Discretization> dis
     }
 
   if (nearestObject.getObjectType() == CORE::GEO::NOTYPE_OBJECT)
-    dserror("no nearest object obtained");
+    FOUR_C_THROW("no nearest object obtained");
 
   // save projection point
   minDistCoords = nearestObject.getPhysCoord();
@@ -499,7 +499,7 @@ CORE::GEO::ObjectType CORE::GEO::nearest3DObjectOnElement(DRT::Element* surfacee
   }
 
   if (nearestObject.getObjectType() == CORE::GEO::NOTYPE_OBJECT)
-    dserror("no nearest object obtained");
+    FOUR_C_THROW("no nearest object obtained");
 
   // save projection point
   minDistCoords = nearestObject.getPhysCoord();
@@ -708,7 +708,7 @@ void CORE::GEO::checkRoughGeoType(const DRT::Element* element,
   else if (order == 2)
     eleGeoType = CORE::GEO::HIGHERORDER;
   else
-    dserror("order of element is not correct");
+    FOUR_C_THROW("order of element is not correct");
 
   // TODO check if a higher order element is linear
   // by checking if the higher order node is on the line
@@ -729,7 +729,7 @@ void CORE::GEO::checkRoughGeoType(const Teuchos::RCP<DRT::Element> element,
   else if (order == 2)
     eleGeoType = CORE::GEO::HIGHERORDER;
   else
-    dserror("order of element is not correct");
+    FOUR_C_THROW("order of element is not correct");
 
   // TODO check if a higher order element is linear
   // by checking if the higher order node is on the line

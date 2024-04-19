@@ -38,10 +38,10 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
     std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>>& systemmatrices,
     std::vector<Teuchos::RCP<Epetra_Vector>>& systemvectors, const Epetra_Map* col_ele_map)
 {
-  dsassert(systemmatrices.size() <= 2,
+  FOUR_C_ASSERT(systemmatrices.size() <= 2,
       "Currently a maximum number of two "
       "system-matrices is supported!");
-  dsassert(systemvectors.size() <= 3,
+  FOUR_C_ASSERT(systemvectors.size() <= 3,
       "Currently a maximum number of three "
       "system-vectors is supported!");
 
@@ -60,8 +60,8 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::UTILS::Evaluate");
 
-  if (!discret.Filled()) dserror("FillComplete() was not called");
-  if (!discret.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!discret.Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!discret.HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   int row = strategy.FirstDofSet();
   int col = strategy.SecondDofSet();
@@ -120,7 +120,8 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
       int err = actele->Evaluate(eparams, discret, la, strategy.Elematrix1(), strategy.Elematrix2(),
           strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
       if (err)
-        dserror("Proc %d: Element %d returned err=%d", discret.Comm().MyPID(), actele->Id(), err);
+        FOUR_C_THROW(
+            "Proc %d: Element %d returned err=%d", discret.Comm().MyPID(), actele->Id(), err);
     }
 
     {

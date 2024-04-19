@@ -588,7 +588,7 @@ namespace BEAMINTERACTION
     {
       const DRT::ELEMENTS::Beam3Base* ele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element1);
 
-      if (ele == nullptr) dserror("Dynamic cast to Beam3Base failed");
+      if (ele == nullptr) FOUR_C_THROW("Dynamic cast to Beam3Base failed");
 
       return ele->GetJacobiFacAtXi(xi);
     }

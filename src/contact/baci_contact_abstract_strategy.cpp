@@ -306,8 +306,8 @@ bool CONTACT::AbstractStrategy::IsRebalancingNecessary(const bool first_time_ste
 void CONTACT::AbstractStrategy::ComputeAndResetParallelBalanceIndicators(
     double& time_average, double& elements_average)
 {
-  dsassert(unbalanceEvaluationTime_.size() > 0, "Vector should have length > 0.");
-  dsassert(unbalanceNumSlaveElements_.size() > 0, "Vector should have length > 0.");
+  FOUR_C_ASSERT(unbalanceEvaluationTime_.size() > 0, "Vector should have length > 0.");
+  FOUR_C_ASSERT(unbalanceNumSlaveElements_.size() > 0, "Vector should have length > 0.");
 
   // compute average balance factors of last time step
   for (const auto& time : unbalanceEvaluationTime_) time_average += time;
@@ -368,7 +368,7 @@ bool CONTACT::AbstractStrategy::IsUpdateOfGhostingNecessary(
     }
     default:
     {
-      dserror("Unknown strategy to extend ghosting if necessary.");
+      FOUR_C_THROW("Unknown strategy to extend ghosting if necessary.");
     }
   }
 
@@ -573,7 +573,7 @@ void CONTACT::AbstractStrategy::Setup(bool redistributed, bool init)
     // build Lagrange multiplier dof map
     if (IsSelfContact())
     {
-      if (redistributed) dserror("SELF-CONTACT: Parallel redistribution is not supported!");
+      if (redistributed) FOUR_C_THROW("SELF-CONTACT: Parallel redistribution is not supported!");
 
       Interface& inter = *Interfaces()[i];
       Teuchos::RCP<const Epetra_Map> refdofrowmap = Teuchos::null;
@@ -884,7 +884,7 @@ Teuchos::RCP<Epetra_Map> CONTACT::AbstractStrategy::CreateDeterministicLMDofRowM
     }
 
     if (interface_slid == -1)
-      dserror(
+      FOUR_C_THROW(
           "Couldn't find the global slave dof id #%d in the local interface "
           "maps on proc #%d!",
           sgid, Comm().MyPID());
@@ -892,7 +892,7 @@ Teuchos::RCP<Epetra_Map> CONTACT::AbstractStrategy::CreateDeterministicLMDofRowM
     // get the corresponding Lagrange Multiplier GID
     const int interface_lmgid = Interfaces()[interface_id]->LagMultDofs()->GID(interface_slid);
     if (interface_lmgid == -1)
-      dserror(
+      FOUR_C_THROW(
           "Couldn't find the corresponding Lagrange multiplier GID! "
           "Note that the UpdateLagMultSets() must be called on each interface "
           "beforehand.");
@@ -1049,7 +1049,7 @@ void CONTACT::AbstractStrategy::SetState(
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Unsupported state type! (state type = %s)", MORTAR::StateType2String(statetype).c_str());
       break;
     }
@@ -1102,7 +1102,7 @@ void CONTACT::AbstractStrategy::UpdateGlobalSelfContactState()
       {
         const int new_lid = gsdofrowmap_->LID(oldgids[i]);
         if (new_lid == -1)
-          dserror(
+          FOUR_C_THROW(
               "Self contact: The Lagrange multiplier increment vector "
               "could not be transferred consistently.");
         else
@@ -1121,7 +1121,7 @@ void CONTACT::AbstractStrategy::UpdateGlobalSelfContactState()
       {
         const int new_lid = gsdofrowmap_->LID(oldgids[i]);
         if (new_lid == -1)
-          dserror(
+          FOUR_C_THROW(
               "Self contact: The Lagrange multiplier vector "
               "could not be transferred consistently.");
         else
@@ -1152,7 +1152,7 @@ void CONTACT::AbstractStrategy::CalcMeanVelocityForBinning(const Epetra_Vector& 
 
     int err = interfaceVelocity->MeanValue(&meanVelocity);
     if (err)
-      dserror("Calculation of mean velocity for interface %s failed.",
+      FOUR_C_THROW("Calculation of mean velocity for interface %s failed.",
           interface->Discret().Name().c_str());
     meanVelocity = abs(meanVelocity);
 
@@ -1411,7 +1411,7 @@ void CONTACT::AbstractStrategy::InitMortar()
   else if (constr_direction_ == INPAR::CONTACT::constr_ntt)
     g_ = CORE::LINALG::CreateVector(SlRowNodes(), true);
   else
-    dserror("unknown contact constraint direction");
+    FOUR_C_THROW("unknown contact constraint direction");
 
   // in the case of frictional dual quad 3D, also the modified D matrices are setup
   if (friction_ && Dualquadslavetrafo())
@@ -1523,7 +1523,7 @@ void CONTACT::AbstractStrategy::EvaluateReferenceState()
 
     // error if no nodes are initialized to active
     if (gactivenodes_->NumGlobalElements() == 0)
-      dserror("No active nodes: Choose bigger value for INITCONTACTGAPVALUE!");
+      FOUR_C_THROW("No active nodes: Choose bigger value for INITCONTACTGAPVALUE!");
   }
 
   // (2) FRICTIONAL CONTACT CASE
@@ -1686,7 +1686,7 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quant
         break;
       }
       default:
-        dserror("StoreNodalQuantities: Unknown state std::string variable!");
+        FOUR_C_THROW("StoreNodalQuantities: Unknown state std::string variable!");
         break;
     }  // switch
 
@@ -1716,13 +1716,13 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quant
     {
       int gid = snodemap->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       // be aware of problem dimension
       const int dim = Dim();
       const int numdof = cnode->NumDof();
-      if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
+      if (dim != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
 
       // find indices for DOFs of current node in Epetra_Vector
       // and extract this node's quantity from vectorinterface
@@ -1731,7 +1731,7 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quant
       for (int dof = 0; dof < dim; ++dof)
       {
         locindex[dof] = (vectorinterface->Map()).LID(cnode->Dofs()[dof]);
-        if (locindex[dof] < 0) dserror("StoreNodalQuantites: Did not find dof in map");
+        if (locindex[dof] < 0) FOUR_C_THROW("StoreNodalQuantites: Did not find dof in map");
 
         switch (type)
         {
@@ -1753,9 +1753,9 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quant
           case MORTAR::StrategyBase::lmupdate:
           {
 #ifndef CONTACTPSEUDO2D
-            // throw a dserror if node is Active and DBC
+            // throw a FOUR_C_THROW if node is Active and DBC
             if (cnode->IsDbc() && cnode->Active())
-              dserror("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+              FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
 #endif  // #ifndef CONTACTPSEUDO2D
 
             // store updated LM into node
@@ -1769,14 +1769,14 @@ void CONTACT::AbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quant
           }
           case MORTAR::StrategyBase::slipold:
           {
-            if (!friction_) dserror("Slip just for friction problems!");
+            if (!friction_) FOUR_C_THROW("Slip just for friction problems!");
 
             FriNode* fnode = dynamic_cast<FriNode*>(cnode);
             fnode->FriData().SlipOld() = fnode->FriData().Slip();
             break;
           }
           default:
-            dserror("StoreNodalQuantities: Unknown state std::string variable!");
+            FOUR_C_THROW("StoreNodalQuantities: Unknown state std::string variable!");
             break;
         }  // switch
       }
@@ -1803,13 +1803,13 @@ void CONTACT::AbstractStrategy::ComputeContactStresses()
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       // be aware of problem dimension
       int dim = Dim();
       const int numdof = cnode->NumDof();
-      if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
+      if (dim != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
 
       double nn[3];
       double nt1[3];
@@ -1866,7 +1866,7 @@ void CONTACT::AbstractStrategy::StoreDirichletStatus(
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       // check if this node's dofs are in dbcmap
@@ -1885,7 +1885,8 @@ void CONTACT::AbstractStrategy::StoreDirichletStatus(
                     << " " << cnode->X()[2] << std::endl;
           std::cout << "dbcdofs: " << cnode->DbcDofs()[0] << cnode->DbcDofs()[1]
                     << cnode->DbcDofs()[2] << std::endl;
-          dserror("Inconsistency in structure Dirichlet conditions and Mortar symmetry conditions");
+          FOUR_C_THROW(
+              "Inconsistency in structure Dirichlet conditions and Mortar symmetry conditions");
         }
       }
     }
@@ -1924,7 +1925,7 @@ void CONTACT::AbstractStrategy::StoreDM(const std::string& state)
   // unknown conversion
   else
   {
-    dserror("StoreDM: Unknown conversion requested!");
+    FOUR_C_THROW("StoreDM: Unknown conversion requested!");
   }
 
   return;
@@ -2024,7 +2025,7 @@ void CONTACT::AbstractStrategy::DoWriteRestart(
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
       int dof = (activetoggle->Map()).LID(gid);
 
@@ -2123,7 +2124,7 @@ void CONTACT::AbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
       if ((*activetoggle)[dof] == 1)
       {
         DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cnode = dynamic_cast<Node*>(node);
 
         // set value active / inactive in cnode
@@ -2287,7 +2288,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       std::vector<double> nodeforce(3);
@@ -2297,7 +2298,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < Dim(); ++d)
       {
         int dofid = (fcslavetemp->Map()).LID(cnode->Dofs()[d]);
-        if (dofid < 0) dserror("ContactForces: Did not find slave dof in map");
+        if (dofid < 0) FOUR_C_THROW("ContactForces: Did not find slave dof in map");
         nodeforce[d] = (*fcslavetemp)[dofid];
         gfcs[d] += nodeforce[d];
         position[d] = cnode->xspatial()[d];
@@ -2328,7 +2329,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
     {
       int gid = Interfaces()[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       std::vector<double> nodeforce(3);
@@ -2338,7 +2339,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < Dim(); ++d)
       {
         int dofid = (fcmastertemp->Map()).LID(cnode->Dofs()[d]);
-        if (dofid < 0) dserror("ContactForces: Did not find master dof in map");
+        if (dofid < 0) FOUR_C_THROW("ContactForces: Did not find master dof in map");
         nodeforce[d] = -(*fcmastertemp)[dofid];
         gfcm[d] += nodeforce[d];
         position[d] = cnode->xspatial()[d];
@@ -2383,7 +2384,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       std::vector<double> lm(3);
@@ -2394,7 +2395,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < Dim(); ++d)
       {
         int dofid = (fcslavetemp->Map()).LID(cnode->Dofs()[d]);
-        if (dofid < 0) dserror("ContactForces: Did not find slave dof in map");
+        if (dofid < 0) FOUR_C_THROW("ContactForces: Did not find slave dof in map");
         nodegaps[d] = (*gapslavefinal)[dofid];
         nodegapm[d] = (*gapmasterfinal)[dofid];
         lm[d] = cnode->MoData().lm()[d];
@@ -2453,7 +2454,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
         fclose(MyFile);
       }
       else
-        dserror("File for writing meshtying forces could not be opened.");
+        FOUR_C_THROW("File for writing meshtying forces could not be opened.");
     }
   }
 
@@ -2556,7 +2557,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
       // gid of current node
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
       //--------------------------------------------------------------------
       // FRICTIONLESS CASE
@@ -2636,7 +2637,8 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
         double tz = sqrt(txiz * txiz + tetaz * tetaz);
 
         // check for dimensions
-        if (Dim() == 2 && abs(jumpteta) > 0.0001) dserror("Error: Jumpteta should be zero for 2D");
+        if (Dim() == 2 && abs(jumpteta) > 0.0001)
+          FOUR_C_THROW("Error: Jumpteta should be zero for 2D");
 
         // store node id
         lnid.push_back(gid);
@@ -2721,7 +2723,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
 
         // invalid status **************************************************
         else
-          dserror("Invalid node status %i for frictionless case", gsta[k]);
+          FOUR_C_THROW("Invalid node status %i for frictionless case", gsta[k]);
       }
     }
 
@@ -2772,7 +2774,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
 
         // invalid status **************************************************
         else
-          dserror("Invalid node status %i for frictional case", gsta[k]);
+          FOUR_C_THROW("Invalid node status %i for frictional case", gsta[k]);
       }
 
 #ifdef CONTACTEXPORT
@@ -2803,7 +2805,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
         fclose(MyFile);
       }
       else
-        dserror("File for Output could not be opened.");
+        FOUR_C_THROW("File for Output could not be opened.");
 #endif
     }
   }
@@ -2840,7 +2842,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
       // increase active counters
       Node* cnode = dynamic_cast<Node*>(node);
@@ -3002,9 +3004,9 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     // -------------------------------------------------------------------
     case MORTAR::eval_reset:
     {
-      if (not eval_vec) dserror("Missing evaluation vectors!");
+      if (not eval_vec) FOUR_C_THROW("Missing evaluation vectors!");
       if (eval_vec->size() != 2)
-        dserror(
+        FOUR_C_THROW(
             "The \"MORTAR::eval_reset\" action expects \n"
             "exactly 2 evaluation vector pointers! But you \n"
             "passed %i vector pointers!",
@@ -3020,23 +3022,23 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     // -------------------------------------------------------------------
     case MORTAR::eval_run_post_compute_x:
     {
-      if (not eval_vec) dserror("Missing evaluation vectors!");
+      if (not eval_vec) FOUR_C_THROW("Missing evaluation vectors!");
 
       if (eval_vec->size() != 3)
-        dserror(
+        FOUR_C_THROW(
             "The \"MORTAR::eval_recover\" action expects \n"
             "exactly 3 evaluation vector pointers! But you \n"
             "passed %i vector pointers!",
             eval_vec->size());
 
       const Teuchos::RCP<const Epetra_Vector>& xold_ptr = (*eval_vec)[0];
-      if (xold_ptr.is_null() or !xold_ptr.is_valid_ptr()) dserror("xold_ptr is undefined!");
+      if (xold_ptr.is_null() or !xold_ptr.is_valid_ptr()) FOUR_C_THROW("xold_ptr is undefined!");
 
       const Teuchos::RCP<const Epetra_Vector>& dir_ptr = (*eval_vec)[1];
-      if (dir_ptr.is_null() or !dir_ptr.is_valid_ptr()) dserror("dir_ptr is undefined!");
+      if (dir_ptr.is_null() or !dir_ptr.is_valid_ptr()) FOUR_C_THROW("dir_ptr is undefined!");
 
       const Teuchos::RCP<const Epetra_Vector>& xnew_ptr = (*eval_vec)[2];
-      if (xnew_ptr.is_null() or !xnew_ptr.is_valid_ptr()) dserror("xnew_ptr is undefined!");
+      if (xnew_ptr.is_null() or !xnew_ptr.is_valid_ptr()) FOUR_C_THROW("xnew_ptr is undefined!");
 
       RunPostComputeX(cparams, *xold_ptr, *dir_ptr, *xnew_ptr);
 
@@ -3044,28 +3046,28 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     }
     case MORTAR::eval_run_pre_compute_x:
     {
-      if (not eval_vec) dserror("Missing constant evaluation vectors!");
-      if (not eval_vec_mutable) dserror("Missing mutable evaluation vectors!");
+      if (not eval_vec) FOUR_C_THROW("Missing constant evaluation vectors!");
+      if (not eval_vec_mutable) FOUR_C_THROW("Missing mutable evaluation vectors!");
 
       if (eval_vec->size() != 1)
-        dserror(
+        FOUR_C_THROW(
             "The \"MORTAR::eval_augment_direction\" action expects \n"
             "exactly 1 constant evaluation vector pointer! But you \n"
             "passed %i vector pointers!",
             eval_vec->size());
 
       if (eval_vec_mutable->size() != 1)
-        dserror(
+        FOUR_C_THROW(
             "The \"MORTAR::eval_augment_direction\" action expects \n"
             "exactly 1 mutable evaluation vector pointer! But you \n"
             "passed %i vector pointers!",
             eval_vec->size());
 
       const Teuchos::RCP<const Epetra_Vector>& xold_ptr = eval_vec->front();
-      if (xold_ptr.is_null()) dserror("Missing xold vector!");
+      if (xold_ptr.is_null()) FOUR_C_THROW("Missing xold vector!");
 
       const Teuchos::RCP<Epetra_Vector>& dir_mutable_ptr = eval_vec_mutable->front();
-      if (dir_mutable_ptr.is_null()) dserror("Missing dir_mutable vector!");
+      if (dir_mutable_ptr.is_null()) FOUR_C_THROW("Missing dir_mutable vector!");
 
       RunPreComputeX(cparams, *xold_ptr, *dir_mutable_ptr);
 
@@ -3110,9 +3112,9 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     }
     case MORTAR::remove_condensed_contributions_from_str_rhs:
     {
-      if (not eval_vec_mutable) dserror("The mutable evaluation vector is expected!");
+      if (not eval_vec_mutable) FOUR_C_THROW("The mutable evaluation vector is expected!");
       if (eval_vec_mutable->size() < 1)
-        dserror(
+        FOUR_C_THROW(
             "The eval_vec_mutable is supposed to have at least a length"
             " of 1!");
 
@@ -3123,9 +3125,9 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     }
     case MORTAR::eval_run_pre_solve:
     {
-      if (not eval_vec) dserror("The read-only evaluation vector is expected!");
+      if (not eval_vec) FOUR_C_THROW("The read-only evaluation vector is expected!");
       if (eval_vec->size() < 1)
-        dserror(
+        FOUR_C_THROW(
             "The eval_vec is supposed to have at least a length"
             " of 1!");
 
@@ -3139,7 +3141,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
     // -------------------------------------------------------------------
     default:
     {
-      dserror("Unsupported action type: %i | %s", act, ActionType2String(act).c_str());
+      FOUR_C_THROW("Unsupported action type: %i | %s", act, ActionType2String(act).c_str());
       break;
     }
   }
@@ -3153,7 +3155,7 @@ void CONTACT::AbstractStrategy::Evaluate(CONTACT::ParamsInterface& cparams,
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
 {
-  dserror(
+  FOUR_C_THROW(
       "Not yet implemented! See the CONTACT::AUG::Strategy for an "
       "example.");
 }
@@ -3162,7 +3164,7 @@ void CONTACT::AbstractStrategy::EvalForce(CONTACT::ParamsInterface& cparams)
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams)
 {
-  dserror(
+  FOUR_C_THROW(
       "Not yet implemented! See the CONTACT::AUG::Strategy for an "
       "example.");
 }
@@ -3171,7 +3173,7 @@ void CONTACT::AbstractStrategy::EvalForceStiff(CONTACT::ParamsInterface& cparams
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::EvalStaticConstraintRHS(CONTACT::ParamsInterface& cparams)
 {
-  dserror(
+  FOUR_C_THROW(
       "Not yet implemented! See the CONTACT::AUG::Strategy for an "
       "example.");
 }
@@ -3204,7 +3206,7 @@ void CONTACT::AbstractStrategy::RunPostEvaluate(CONTACT::ParamsInterface& cparam
 void CONTACT::AbstractStrategy::RunPostComputeX(const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
-  dserror(
+  FOUR_C_THROW(
       "Not yet implemented! See the CONTACT::AUG::Strategy for an "
       "example.");
 }
@@ -3248,7 +3250,7 @@ void CONTACT::AbstractStrategy::RunPostApplyJacobianInverse(const CONTACT::Param
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::EvalWeightedGapGradientError(CONTACT::ParamsInterface& cparams)
 {
-  dserror(
+  FOUR_C_THROW(
       "Not yet implemented! See the CONTACT::AUG::Strategy for an "
       "example.");
 }
@@ -3258,7 +3260,7 @@ void CONTACT::AbstractStrategy::EvalWeightedGapGradientError(CONTACT::ParamsInte
 void CONTACT::AbstractStrategy::ResetLagrangeMultipliers(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew)
 {
-  dserror(
+  FOUR_C_THROW(
       "Not yet implemented! See the CONTACT::AUG::Strategy for an "
       "example.");
 }
@@ -3304,7 +3306,7 @@ void CONTACT::AbstractStrategy::FillMapsForPreconditioner(
    * the old version can be deleted, as soon as the contact uses the new
    * structure framework. */
 
-  if (maps.size() != 4) dserror("The vector size has to be 4!");
+  if (maps.size() != 4) FOUR_C_THROW("The vector size has to be 4!");
   /* check if parallel redistribution is used
    * if parallel redistribution is activated, then use (original) maps
    * before redistribution otherwise we use just the standard master/slave
@@ -3336,7 +3338,7 @@ void CONTACT::AbstractStrategy::FillMapsForPreconditioner(
 bool CONTACT::AbstractStrategy::computePreconditioner(
     const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams)
 {
-  dserror("Not implemented!");
+  FOUR_C_THROW("Not implemented!");
   return false;
 }
 
@@ -3367,7 +3369,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AbstractStrategy::GetLagrMultN(const 
 double CONTACT::AbstractStrategy::GetPotentialValue(
     const enum NOX::NLN::MeritFunction::MeritFctName mrt_type) const
 {
-  dserror("The currently active strategy \"%s\" does not support this method!",
+  FOUR_C_THROW("The currently active strategy \"%s\" does not support this method!",
       INPAR::CONTACT::SolvingStrategy2String(Type()).c_str());
   exit(EXIT_FAILURE);
 }
@@ -3379,7 +3381,7 @@ double CONTACT::AbstractStrategy::GetLinearizedPotentialValueTerms(const Epetra_
     const enum NOX::NLN::MeritFunction::LinOrder linorder,
     const enum NOX::NLN::MeritFunction::LinType lintype) const
 {
-  dserror("The currently active strategy \"%s\" does not support this method!",
+  FOUR_C_THROW("The currently active strategy \"%s\" does not support this method!",
       INPAR::CONTACT::SolvingStrategy2String(Type()).c_str());
   exit(EXIT_FAILURE);
 }

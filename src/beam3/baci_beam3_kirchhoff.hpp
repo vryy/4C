@@ -67,7 +67,7 @@ typedef Sacado::Fad::DFad<double> FAD;
 // BEAM3K_COLLOCATION_POINTS -> standard choice!
 
 #if defined(REFERENCE_NODE) && (REFERENCE_NODE != 2)
-dserror(
+FOUR_C_THROW(
     "Beam3k REFERENCE_NODE: Only the value 2 is covered by tests and has therefore been "
     "cultivated in subsequent modifications to the code; carefully check correctness of code "
     "before using other values than 2!");
@@ -92,7 +92,7 @@ dserror(
 // used to interpolate the triad field.
 
 #if defined(BEAM3K_COLLOCATION_POINTS) && (BEAM3K_COLLOCATION_POINTS != 3)
-dserror(
+FOUR_C_THROW(
     "BEAM3K_COLLOCATION_POINTS: Only the value 3 is covered by tests and has therefore been "
     "cultivated in subsequent modifications to the code; carefully check correctness of code "
     "before using other values than 3!");
@@ -242,8 +242,8 @@ namespace DRT
           CORE::LINALG::Matrix<3, 1>& Tref_i, const int& i) const override
       {
         if (not((unsigned)i < Tref().size()))
-          dserror("asked for tangent at node index %d, but only %d centerline nodes existing", i,
-              Tref().size());
+          FOUR_C_THROW("asked for tangent at node index %d, but only %d centerline nodes existing",
+              i, Tref().size());
         Tref_i = Tref()[i];
       }
 
@@ -628,7 +628,7 @@ namespace DRT
           std::vector<unsigned int>& centerlinedofindices) const override
       {
         if (rotvec_)
-          dserror(
+          FOUR_C_THROW(
               "The logic of this implementation does not apply for Beam3k with rotation vector "
               "Dofs! "
               "Be careful and find a solution to convert force/stiffness contributions to tangent "

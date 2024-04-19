@@ -46,7 +46,8 @@ namespace IO
       std::string read_string;
       in >> read_string;
       if (read_string != expected)
-        dserror("%sCould not read expected string '%s'.", user_scope_.c_str(), expected.c_str());
+        FOUR_C_THROW(
+            "%sCould not read expected string '%s'.", user_scope_.c_str(), expected.c_str());
     }
 
     //! Read a single value of given type.
@@ -56,7 +57,7 @@ namespace IO
       T read_object;
       in >> read_object;
       if (in.fail())
-        dserror("%sCould not read expected value of type '%s'.", user_scope_.c_str(),
+        FOUR_C_THROW("%sCould not read expected value of type '%s'.", user_scope_.c_str(),
             CORE::UTILS::TryDemangle(typeid(T).name()).c_str());
       return read_object;
     }

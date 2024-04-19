@@ -48,7 +48,7 @@ void STR::TimIntPrestress::Setup()
     case INPAR::STR::PreStress::mulf:
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "Your prestressing algorithm is not implemented in the old structural time integration "
           "framework. Possibly you have to use the new structural time integration framework.");
   }

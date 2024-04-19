@@ -86,7 +86,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::DirectDivergence::VCIntegrat
       err_msg << "x-component normal is zero on all the facets? It should not be. Volume of the "
                  "bounding box around facets is "
               << totalVolume;
-      dserror(err_msg.str());
+      FOUR_C_THROW(err_msg.str());
     }
   }
 
@@ -556,7 +556,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
         break;
       }
       default:
-        dserror("unsupported element type");
+        FOUR_C_THROW("unsupported element type");
     }
   }
 
@@ -583,7 +583,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
         break;
       }
       default:
-        dserror("unsupported parent Quad element type");
+        FOUR_C_THROW("unsupported parent Quad element type");
     }
   }
 #else
@@ -606,7 +606,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
 
     mesh_.DebugDump(elem1_, __FILE__, __LINE__);
     std::cout << "volume: " << TotalInteg << std::endl;
-    dserror("negative volume predicted by the DirectDivergence integration rule;");
+    FOUR_C_THROW("negative volume predicted by the DirectDivergence integration rule;");
   }
 
   volcell_->SetVolume(volGlobal);
@@ -622,7 +622,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
                  "reference plane and if the first component "
                  "is close to zero, then the volume is infinity. Check "
                  "CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReferencePlane() \n";
-    dserror("Volume is not a number.");
+    FOUR_C_THROW("Volume is not a number.");
   }
 }
 

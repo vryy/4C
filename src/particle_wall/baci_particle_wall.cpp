@@ -172,9 +172,9 @@ void PARTICLEWALL::WallHandlerBase::CheckWallNodesLocatedInBoundingBox() const
         // local id of nodal dof in current spatial direction
         const int lid = walldiscretization_->DofRowMap()->LID(lm[dim]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         // safety check
-        if (lid < 0) dserror("dof gid=%d not in dof row map!", lm[dim]);
+        if (lid < 0) FOUR_C_THROW("dof gid=%d not in dof row map!", lm[dim]);
 #endif
 
         currpos(dim) += walldatastate_->GetDispRow()->operator[](lid);
@@ -184,7 +184,7 @@ void PARTICLEWALL::WallHandlerBase::CheckWallNodesLocatedInBoundingBox() const
     // safety check
     for (int dim = 0; dim < 3; ++dim)
       if (currpos(dim) < boundingbox(dim, 0) or boundingbox(dim, 1) < currpos(dim))
-        dserror("node gid=%d resides outside of bounding box!", node->Id());
+        FOUR_C_THROW("node gid=%d resides outside of bounding box!", node->Id());
   }
 }
 
@@ -193,14 +193,14 @@ void PARTICLEWALL::WallHandlerBase::GetMaxWallPositionIncrement(
 {
   if (walldatastate_->GetDispRow() != Teuchos::null)
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // safety checks
     if (walldatastate_->GetDispRowLastTransfer() == Teuchos::null)
-      dserror("vector of wall displacements after last transfer not set!");
+      FOUR_C_THROW("vector of wall displacements after last transfer not set!");
 
     if (not walldatastate_->GetDispRow()->Map().SameAs(
             walldatastate_->GetDispRowLastTransfer()->Map()))
-      dserror("maps are not equal as expected!");
+      FOUR_C_THROW("maps are not equal as expected!");
 #endif
 
     // maximum position increment since last particle transfer
@@ -220,7 +220,7 @@ void PARTICLEWALL::WallHandlerBase::GetMaxWallPositionIncrement(
 
     // bin size safety check
     if (maxpositionincrement > particleengineinterface_->MinBinSize())
-      dserror("a wall node traveled more than one bin on this processor!");
+      FOUR_C_THROW("a wall node traveled more than one bin on this processor!");
 
     // get maximum position increment on all processors
     walldiscretization_->Comm().MaxAll(&maxpositionincrement, &allprocmaxpositionincrement, 1);
@@ -234,7 +234,7 @@ void PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles()
 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles");
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   walldatastate_->CheckForCorrectMaps();
 #endif
 
@@ -269,12 +269,12 @@ void PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors(
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors");
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   walldatastate_->CheckForCorrectMaps();
 #endif
 
   // safety check
-  if ((not validwallelements_)) dserror("invalid relation of bins to column wall elements!");
+  if ((not validwallelements_)) FOUR_C_THROW("invalid relation of bins to column wall elements!");
 
   // clear potential neighboring column wall elements
   potentialwallneighbors_.clear();
@@ -369,7 +369,7 @@ const PARTICLEENGINE::PotentialWallNeighbors&
 PARTICLEWALL::WallHandlerBase::GetPotentialWallNeighbors() const
 {
   // safety check
-  if (not validwallneighbors_) dserror("invalid wall neighbors!");
+  if (not validwallneighbors_) FOUR_C_THROW("invalid wall neighbors!");
 
   return potentialwallneighbors_;
 }
@@ -377,19 +377,19 @@ PARTICLEWALL::WallHandlerBase::GetPotentialWallNeighbors() const
 void PARTICLEWALL::WallHandlerBase::DetermineColWallEleNodalPos(
     DRT::Element* ele, std::map<int, CORE::LINALG::Matrix<3, 1>>& colelenodalpos) const
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (walldiscretization_->ElementColMap()->LID(ele->Id()) < 0)
-    dserror("element gid=%d not in element column map!", ele->Id());
+    FOUR_C_THROW("element gid=%d not in element column map!", ele->Id());
 #endif
 
   // get pointer to nodes of current column wall element
   DRT::Node** nodes = ele->Nodes();
   const int numnodes = ele->NumNode();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   for (int i = 0; i < numnodes; ++i)
     if (walldiscretization_->NodeColMap()->LID(nodes[i]->Id()) < 0)
-      dserror(
+      FOUR_C_THROW(
           "node gid=%d of column element gid=%d not in node column map", nodes[i]->Id(), ele->Id());
 #endif
 
@@ -403,10 +403,10 @@ void PARTICLEWALL::WallHandlerBase::DetermineColWallEleNodalPos(
     std::vector<int> lmstride;
     ele->LocationVector(*walldiscretization_, lm_wall, lmowner, lmstride);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     for (int i = 0; i < numnodes * 3; ++i)
       if (walldiscretization_->DofColMap()->LID(lm_wall[i]) < 0)
-        dserror("dof gid=%d not in dof column map!", lm_wall[i]);
+        FOUR_C_THROW("dof gid=%d not in dof column map!", lm_wall[i]);
 #endif
 
     CORE::FE::ExtractMyValues(*walldatastate_->GetDispCol(), nodal_disp, lm_wall);
@@ -727,7 +727,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     }
 
     // no wall elements added
-    if (eleids.empty()) dserror("no wall elements added, check periodic boundary conditions!");
+    if (eleids.empty()) FOUR_C_THROW("no wall elements added, check periodic boundary conditions!");
   }
 
   // node row map of wall elements

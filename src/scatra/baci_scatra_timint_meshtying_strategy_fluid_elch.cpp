@@ -34,7 +34,7 @@ void SCATRA::MeshtyingStrategyFluidElch::InitMeshtying()
   if (CORE::UTILS::IntegralValue<INPAR::FLUID::MeshTying>(*(scatratimint_->ScatraParameterList()),
           "MESHTYING") == INPAR::FLUID::condensed_bmat_merged and
       ElchTimInt()->EquPot() == INPAR::ELCH::equpot_enc)
-    dserror(
+    FOUR_C_THROW(
         "In the context of meshtying, the ion-transport system including the electroneutrality "
         "condition cannot be solved in a block matrix!");
 
@@ -47,7 +47,8 @@ void SCATRA::MeshtyingStrategyFluidElch::InitMeshtying()
 void SCATRA::MeshtyingStrategyFluidElch::SetupMeshtying()
 {
   // safety check
-  if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
+  if (scatratimint_->NumScal() < 1)
+    FOUR_C_THROW("Number of transported scalars not correctly set!");
 
   // define coupling
   // standard case: all dofs (transported scalars and electric potential) are coupled

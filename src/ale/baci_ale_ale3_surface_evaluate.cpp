@@ -33,7 +33,7 @@ DRT::ELEMENTS::Ale3SurfaceImplInterface* DRT::ELEMENTS::Ale3SurfaceImplInterface
           CORE::UTILS::SingletonAction::create);
     }
     default:
-      dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
+      FOUR_C_THROW("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
       break;
   }
   return nullptr;
@@ -84,7 +84,7 @@ int DRT::ELEMENTS::Ale3Surface::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     default:
-      dserror("Unknown type of action '%i' for Ale3Surface", act);
+      FOUR_C_THROW("Unknown type of action '%i' for Ale3Surface", act);
       break;
   }  // end of switch(act)
 

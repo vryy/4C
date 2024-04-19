@@ -68,7 +68,7 @@ void CONTACT::NitscheStrategyPoro::SetParentState(
   if (statename == MORTAR::state_fvelocity || statename == MORTAR::state_fpressure)
   {
     Teuchos::RCP<DRT::Discretization> dis = GLOBAL::Problem::Instance()->GetDis("porofluid");
-    if (dis == Teuchos::null) dserror("didn't get my discretization");
+    if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
 
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(), true));
     CORE::LINALG::Export(vec, *global);
@@ -136,7 +136,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyPoro::SetupRhsBlockVec(
 Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyPoro::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bp) const
 {
-  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
   switch (bp)
   {
@@ -179,7 +179,7 @@ void CONTACT::NitscheStrategyPoro::CompleteMatrixBlockPtr(
                   *GLOBAL::Problem::Instance()->GetDis("porofluid")->DofRowMap(),  // col map
                   *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // row map
                   true, Add))
-        dserror("GlobalAssemble(...) failed");
+        FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::porofluid_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
@@ -187,11 +187,11 @@ void CONTACT::NitscheStrategyPoro::CompleteMatrixBlockPtr(
                   *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
                   *GLOBAL::Problem::Instance()->GetDis("porofluid")->DofRowMap(),  // row map
                   true, Add))
-        dserror("GlobalAssemble(...) failed");
+        FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::porofluid_porofluid:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add))
-        dserror("GlobalAssemble(...) failed");
+        FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     default:
       CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
@@ -202,7 +202,7 @@ void CONTACT::NitscheStrategyPoro::CompleteMatrixBlockPtr(
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyPoro::GetMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bp) const
 {
-  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
   switch (bp)
   {

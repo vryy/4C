@@ -40,7 +40,8 @@ namespace RTD
   {
     if (row.size() != tablewidth_)
     {
-      dserror("Trying to add %i row elements into a table with %i rows", row.size(), tablewidth_);
+      FOUR_C_THROW(
+          "Trying to add %i row elements into a table with %i rows", row.size(), tablewidth_);
     }
     tablerows_.push_back(row);
   }
@@ -50,7 +51,7 @@ namespace RTD
   {
     if (widths.size() != tablewidth_)
     {
-      dserror(
+      FOUR_C_THROW(
           "Number of given cell widths (%i) "
           "does not correspond to the number of rows (%i)",
           widths.size(), tablewidth_);
@@ -145,7 +146,7 @@ namespace RTD
     stream << line << "\n";
     if (level > headerchar.size())
     {
-      dserror("Header level for ReadTheDocs output must be [0,3], but is %i", level);
+      FOUR_C_THROW("Header level for ReadTheDocs output must be [0,3], but is %i", level);
     }
     stream << std::string(headerlength, headerchar[level]);
     stream << "\n\n";
@@ -161,7 +162,7 @@ namespace RTD
       mathendpos = paragraph.find("\f$", mathstartpos + 1);
       if (mathendpos == paragraph.npos)
       {
-        dserror(
+        FOUR_C_THROW(
             "Math tags in a ReadTheDocs paragraph must occur pairwise. "
             "Error found in: \n" +
             paragraph);
@@ -502,7 +503,7 @@ namespace RTD
         conditioncode.push_back("DVOL  0");
         break;
       default:
-        dserror("geometry type unspecified");
+        FOUR_C_THROW("geometry type unspecified");
         break;
     }
     // Collecting information for the final code line (conditioncodeline)

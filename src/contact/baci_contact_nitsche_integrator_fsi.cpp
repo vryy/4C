@@ -26,12 +26,12 @@ CONTACT::IntegratorNitscheFsi::IntegratorNitscheFsi(
     : IntegratorNitsche(params, eletype, comm), ele_contact_state_(-2)
 {
   if (fabs(theta_) > 1e-12)
-    dserror("No Adjoint Consistency term for Nitsche Contact FSI implemented!");
+    FOUR_C_THROW("No Adjoint Consistency term for Nitsche Contact FSI implemented!");
 
   if (imortar_.isParameter("XFluidContactComm"))
     xf_c_comm_ = imortar_.get<Teuchos::RCP<XFEM::XFluidContactComm>>("XFluidContactComm");
   else
-    dserror("Couldn't find XFluidContactComm!");
+    FOUR_C_THROW("Couldn't find XFluidContactComm!");
 }
 
 /*----------------------------------------------------------------------*
@@ -41,7 +41,7 @@ void CONTACT::IntegratorNitscheFsi::IntegrateDerivEle3D(MORTAR::Element& sele,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   auto* csele = dynamic_cast<CONTACT::Element*>(&sele);
-  if (!csele) dserror("Could cast to Contact Element!");
+  if (!csele) FOUR_C_THROW("Could cast to Contact Element!");
 
   // do quick orientation check
   CORE::LINALG::Matrix<3, 1> sn, mn;
@@ -107,7 +107,7 @@ void CONTACT::IntegratorNitscheFsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
 
   const CORE::LINALG::Matrix<dim, 1> normal(gpn, true);
 
-  if (dim != Dim()) dserror("dimension inconsistency");
+  if (dim != Dim()) FOUR_C_THROW("dimension inconsistency");
 
 
   double pen = ppn_;
@@ -264,7 +264,7 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
     const CORE::LINALG::Matrix<3, 1>& dir)
 {
   if (cele->ParentElement()->Shape() != CORE::FE::CellType::hex8)
-    dserror("This Element shape is not implemented for CONTACT::UTILS::CauchyStressatXi");
+    FOUR_C_THROW("This Element shape is not implemented for CONTACT::UTILS::CauchyStressatXi");
 
   CORE::LINALG::Matrix<3, 1> pxsi(true);
   CORE::LINALG::Matrix<3, 3> trafo;

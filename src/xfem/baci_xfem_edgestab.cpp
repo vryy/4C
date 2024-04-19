@@ -92,7 +92,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
   Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret);
   if (xdiscret == Teuchos::null)
-    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
+    FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
 
   // get the parent fluid elements
@@ -137,7 +137,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
     num_edgestab++;
 
     if (matptr_m->MaterialType() == INPAR::MAT::m_matlist)
-      dserror("The edgebased algo can not handle matlist at the moment, for this entry!");
+      FOUR_C_THROW("The edgebased algo can not handle matlist at the moment, for this entry!");
 
     face_type = INPAR::XFEM::face_type_std;
 
@@ -176,7 +176,8 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
       std::vector<CORE::GEO::CUT::Facet*> facets;
       side->Facets(facets);
 
-      if (facets.size() == 0) dserror("there is no facet between two elements with elementhandle!");
+      if (facets.size() == 0)
+        FOUR_C_THROW("there is no facet between two elements with elementhandle!");
 
       // each facet should have 2 volumecells
       for (std::vector<CORE::GEO::CUT::Facet*>::const_iterator f = facets.begin();
@@ -220,7 +221,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
                 nds_slave = vc1->NodalDofSet();
               }
               else
-                dserror("no element (ele1 and ele2) is the parent element!!! WHY?");
+                FOUR_C_THROW("no element (ele1 and ele2) is the parent element!!! WHY?");
             }
             else if ((*f)->Position() == CORE::GEO::CUT::Point::inside && all_dofs)
             {
@@ -256,7 +257,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
                   }
                 }
                 else
-                  dserror("Number of Nodes different between Master and Slave Element!");
+                  FOUR_C_THROW("Number of Nodes different between Master and Slave Element!");
               }
             }
 
@@ -289,16 +290,16 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
           }
           else if (vcs.size() == 1)
           {
-            dserror("just one vcs reasonable?! face %d", faceele->Id());
+            FOUR_C_THROW("just one vcs reasonable?! face %d", faceele->Id());
           }
         }  // facet outside or (inside and include_inner)
         else if ((*f)->Position() == CORE::GEO::CUT::Point::undecided)
         {
-          dserror("the position of this facet is undecided, how to stabilize???");
+          FOUR_C_THROW("the position of this facet is undecided, how to stabilize???");
         }
         else if ((*f)->Position() == CORE::GEO::CUT::Point::oncutsurface)
         {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
           std::cout << "the position of this facet of face " << faceele->Id()
                     << " is oncutsurface, we do not stabilize it!!! " << std::endl;
 #endif
@@ -328,7 +329,8 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
       std::vector<CORE::GEO::CUT::Facet*> facets;
 
       side->Facets(facets);  // all facets of this quadratic element side
-      if (facets.size() == 0) dserror("there is no facet between two elements with elementhandle!");
+      if (facets.size() == 0)
+        FOUR_C_THROW("there is no facet between two elements with elementhandle!");
       // each facet should have 2 volumecells
       std::vector<std::vector<int>> all_used_nds_master;
       std::vector<std::vector<int>> all_used_nds_slave;
@@ -370,7 +372,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
               }
               else
               {
-                dserror("no element (ele1 and ele2) is the parent element!!! WHY?");
+                FOUR_C_THROW("no element (ele1 and ele2) is the parent element!!! WHY?");
               }
             }
             bool new_nds_master = true;
@@ -428,16 +430,16 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
           }
           else if (vcs.size() == 1)
           {
-            dserror("just one vcs reasonable?! face %d", faceele->Id());
+            FOUR_C_THROW("just one vcs reasonable?! face %d", faceele->Id());
           }
         }  // facet outside or (inside and include_inner)
         else if ((*f)->Position() == CORE::GEO::CUT::Point::undecided)
         {
-          dserror("the position of this facet is undecided, how to stabilize???");
+          FOUR_C_THROW("the position of this facet is undecided, how to stabilize???");
         }
         else if ((*f)->Position() == CORE::GEO::CUT::Point::oncutsurface)
         {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
           std::cout << "the position of this facet of face " << faceele->Id()
                     << " is oncutsurface, we do not stabilize it!!! " << std::endl;
 #endif
@@ -455,7 +457,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
       }  // loop facets
     }
     else
-      dserror("not supported for this elements");
+      FOUR_C_THROW("not supported for this elements");
   }  // end second case: element handles for both parent elements
   //------------------------------------------------------------------------------
   // third case: element handle only for master element or for slave element available
@@ -485,7 +487,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
           p_master->Shape() == CORE::FE::CellType::wedge6 or
           p_master->Shape() == CORE::FE::CellType::pyramid5)
       {
-        if (facets.size() != 1) dserror("there has to be 1 facet equal to the side");
+        if (facets.size() != 1) FOUR_C_THROW("there has to be 1 facet equal to the side");
       }
 
       // get the unique single facet
@@ -496,7 +498,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
         CORE::GEO::CUT::plain_volumecell_set vcs = f->Cells();
 
         if (vcs.size() != 1)
-          dserror("there has to be 1 volumecell equal to the side");
+          FOUR_C_THROW("there has to be 1 volumecell equal to the side");
         else
         {
           //------------------------ create nodal dof sets
@@ -527,7 +529,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
               nds_slave = vc->NodalDofSet();
             }
             else
-              dserror("no element (ele1 and ele2) is the parent element!!! WHY?");
+              FOUR_C_THROW("no element (ele1 and ele2) is the parent element!!! WHY?");
           }
           //------------------------
 
@@ -677,7 +679,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabStd(
   Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret);
   if (xdiscret == Teuchos::null)
-    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
+    FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
 
   // get the parent fluid elements
@@ -730,7 +732,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabBoundaryGP(
   Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret);
   if (xdiscret == Teuchos::null)
-    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
+    FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
 
   // get the parent fluid elements

@@ -200,7 +200,7 @@ namespace DRT
       */
       int NumDofPerNode(const DRT::Node& node) const override
       {
-        if (numdofpernode_ < 1) dserror("NumDofPerNode is < 1");
+        if (numdofpernode_ < 1) FOUR_C_THROW("NumDofPerNode is < 1");
         return numdofpernode_;
       }
 
@@ -334,7 +334,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented");
+        FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
@@ -464,7 +464,7 @@ namespace DRT
       {
         DRT::Element* parent = DRT::FaceElement::ParentElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(parent) != nullptr,
             "Master element is no PoroFluidMultiPhase element");
         return static_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(parent);
       }

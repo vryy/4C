@@ -265,7 +265,7 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
 
     if (!have_values.at(ni))
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (targetdis_->Comm().MyPID() == 0)
         IO::cout << "WARNING: Found no parent for node: " << node_id << IO::endl;
 #endif
@@ -307,7 +307,7 @@ void XFEM::MeshProjector::ProjectInFullTargetDiscretization(
   Teuchos::RCP<const DRT::DiscretizationXFEM> xdiscret =
       Teuchos::rcp_dynamic_cast<const DRT::DiscretizationXFEM>(targetdis_);
   if (xdiscret != Teuchos::null)
-    dserror(
+    FOUR_C_THROW(
         "Value projection for between different mesh deformation states does not support "
         "DiscretizationXFEM.");
   std::map<int, std::set<int>> projection_nodeToDof;
@@ -440,7 +440,7 @@ void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
                 CheckPositionAndProject<CORE::FE::CellType::hex27>(pele, node_xyz, interpolatedvec);
             break;
           default:
-            dserror(
+            FOUR_C_THROW(
                 "Unsupported element shape %s!", CORE::FE::CellTypeToString(pele->Shape()).c_str());
             break;
         }
@@ -536,14 +536,14 @@ void XFEM::MeshProjector::ReceiveBlock(
   // receive from predecessor
   exporter.ReceiveAny(frompid, tag, rblock, length);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // IO::cout << "----receiving " << rblock.size() <<  " bytes: to proc " << myrank << " from proc "
   // << frompid << IO::endl;
 #endif
 
   if (tag != (myrank + numproc - 1) % numproc)
   {
-    dserror("received wrong message (ReceiveAny)");
+    FOUR_C_THROW("received wrong message (ReceiveAny)");
   }
 
   exporter.Wait(request);
@@ -566,7 +566,7 @@ void XFEM::MeshProjector::SendBlock(
   int frompid = myrank;
   int topid = (myrank + 1) % numproc;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // IO::cout << "----sending " << sblock.size() <<  " bytes: from proc " << myrank << " to proc "
   // << topid << IO::endl;
 #endif

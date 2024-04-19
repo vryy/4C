@@ -82,7 +82,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
           CORE::LINALG::SerialDenseVector& elevec3) override
       {
-        dserror("Not implemented!");
+        FOUR_C_THROW("Not implemented!");
         return -1;
       }
 

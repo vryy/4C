@@ -35,14 +35,14 @@ bool DRT::ELEMENTS::SoSh8p8::ReadElement(
   linedef->ExtractString("KINEM", buffer);
   if (buffer == "linear")
   {
-    dserror("Only nonlinear kinematics for SO_SH8P8 implemented!");
+    FOUR_C_THROW("Only nonlinear kinematics for SO_SH8P8 implemented!");
   }
   else if (buffer == "nonlinear")
   {
     kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
-    dserror("Reading SO_SH8P8 element failed unknown KINEM Type");
+    FOUR_C_THROW("Reading SO_SH8P8 element failed unknown KINEM Type");
 
   // we expect kintype to be total lagrangian
   kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
@@ -52,7 +52,7 @@ bool DRT::ELEMENTS::SoSh8p8::ReadElement(
 
   // Validate that materials doesn't use extended update call.
   if (SolidMaterial()->UsesExtendedUpdate())
-    dserror("This element currently does not support the extended update call.");
+    FOUR_C_THROW("This element currently does not support the extended update call.");
 
 
   // read EAS technology flag
@@ -79,7 +79,7 @@ bool DRT::ELEMENTS::SoSh8p8::ReadElement(
     neas_ = 0;
   }
   else
-    dserror("Reading of SO_SH8P8 EAS type failed");
+    FOUR_C_THROW("Reading of SO_SH8P8 EAS type failed");
 
   if (eastype_ != soh8_easnone)
   {
@@ -116,7 +116,7 @@ bool DRT::ELEMENTS::SoSh8p8::ReadElement(
     nodes_rearranged_ = true;
   }
   else
-    dserror("Reading of SO_SH8P8 thickness direction failed");
+    FOUR_C_THROW("Reading of SO_SH8P8 thickness direction failed");
 
   linedef->ExtractString("STAB", buffer);
   if (buffer == "Aff")
@@ -130,7 +130,7 @@ bool DRT::ELEMENTS::SoSh8p8::ReadElement(
   else if (buffer == "PureDisp")
     stab_ = stab_puredisp;
   else
-    dserror("Reading of SO_SH8P8 stabilisation failed");
+    FOUR_C_THROW("Reading of SO_SH8P8 stabilisation failed");
 
   linedef->ExtractString("ANS", buffer);
   if (buffer == "Later")
@@ -140,7 +140,7 @@ bool DRT::ELEMENTS::SoSh8p8::ReadElement(
   else if (buffer == "None")
     ans_ = ans_none;
   else
-    dserror("Reading of SO_SH8P8 ANS type failed");
+    FOUR_C_THROW("Reading of SO_SH8P8 ANS type failed");
 
   // Linearization
   linedef->ExtractString("LIN", buffer);
@@ -151,7 +151,7 @@ bool DRT::ELEMENTS::SoSh8p8::ReadElement(
   else if (buffer == "Sixth")
     lin_ = lin_sixth;
   else
-    dserror("Reading of SO_SH8P8 LIN type failed");
+    FOUR_C_THROW("Reading of SO_SH8P8 LIN type failed");
 
   // Isochoric way
   linedef->ExtractString("ISO", buffer);
@@ -160,7 +160,7 @@ bool DRT::ELEMENTS::SoSh8p8::ReadElement(
   else if (buffer == "Enf")
     iso_ = iso_enforced;
   else
-    dserror("Reading of SO_SH8P8 ISO type failed");
+    FOUR_C_THROW("Reading of SO_SH8P8 ISO type failed");
 
   return true;
 }

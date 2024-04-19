@@ -46,7 +46,7 @@ namespace CONTACT
     {
       if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
           INPAR::CONTACT::friction_none)
-        dserror("NitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
+        FOUR_C_THROW("NitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
     }
 
     //! Shared data constructor
@@ -62,7 +62,7 @@ namespace CONTACT
     {
       if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
           INPAR::CONTACT::friction_none)
-        dserror("NitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
+        FOUR_C_THROW("NitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
     }
     //! Evaluate and apply RHS and Stiffness Matrix for Contact
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,

@@ -179,12 +179,12 @@ void EHL::Base::SetupDiscretizations(const Epetra_Comm& comm, const std::string 
       Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(
           ndofpernode_lubrication, ndofperelement_lubrication, 0, true));
   if (structdis->AddDofSet(dofsetaux_lubrication) != 1)
-    dserror("unexpected dof sets in structure field");
+    FOUR_C_THROW("unexpected dof sets in structure field");
 
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux_struct = Teuchos::rcp(
       new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
   if (lubricationdis->AddDofSet(dofsetaux_struct) != 1)
-    dserror("unexpected dof sets in lubrication field");
+    FOUR_C_THROW("unexpected dof sets in lubrication field");
 
   // call AssignDegreesOfFreedom also for auxiliary dofsets
   // note: the order of FillComplete() calls determines the gid numbering!
@@ -297,7 +297,7 @@ void EHL::Base::AddPressureForce(
   Teuchos::RCP<Epetra_Vector> p_full =
       Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->DofRowMap(1)));
   if (lubrimaptransform_->Apply(*lubrication_->LubricationField()->Prenp(), *p_full))
-    dserror("apply failed");
+    FOUR_C_THROW("apply failed");
   Teuchos::RCP<Epetra_Vector> p_exp =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   p_exp = ada_strDisp_to_lubDisp_->SlaveToMaster(p_full);
@@ -310,14 +310,14 @@ void EHL::Base::AddPressureForce(
 
   // f_slave = D^T*t
   int err = mortard->Multiply(true, *stritraction, *slaveiforce);
-  if (err != 0) dserror("error while calculating slave side interface force");
-  if (stritraction_D_->Update(1., *stritraction, 1.)) dserror("Update failed");
+  if (err != 0) FOUR_C_THROW("error while calculating slave side interface force");
+  if (stritraction_D_->Update(1., *stritraction, 1.)) FOUR_C_THROW("Update failed");
 
   // f_master = -M^T*t
   err = mortarm->Multiply(true, *stritraction, *masteriforce);
-  if (err != 0) dserror("error while calculating master side interface force");
+  if (err != 0) FOUR_C_THROW("error while calculating master side interface force");
   masteriforce->Scale(-1.0);
-  if (stritraction_M_->Update(-1., *stritraction, 1.)) dserror("update failed");
+  if (stritraction_M_->Update(-1., *stritraction, 1.)) FOUR_C_THROW("update failed");
 }
 
 void EHL::Base::AddPoiseuilleForce(
@@ -333,7 +333,7 @@ void EHL::Base::AddPoiseuilleForce(
   Teuchos::RCP<Epetra_Vector> nodal_gap =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   if (slavemaptransform_->Multiply(false, *mortaradapter_->Nodal_Gap(), *nodal_gap))
-    dserror("multiply failed");
+    FOUR_C_THROW("multiply failed");
 
   CORE::LINALG::SparseMatrix m(*mortaradapter_->SurfGradMatrix());
 
@@ -351,18 +351,18 @@ void EHL::Base::AddPoiseuilleForce(
 
   // f_slave = D^T*t
   if (mortaradapter_->GetMortarMatrixD()->Multiply(true, *poiseuille_force, *slave_psl))
-    dserror("Multiply failed");
-  if (stritraction_D_->Update(1., *poiseuille_force, 1.)) dserror("Update failed");
+    FOUR_C_THROW("Multiply failed");
+  if (stritraction_D_->Update(1., *poiseuille_force, 1.)) FOUR_C_THROW("Update failed");
 
   // f_master = +M^T*t // attention: no minus sign here: poiseuille points in same direction on
   // slave and master side
   if (mortaradapter_->GetMortarMatrixM()->Multiply(true, *poiseuille_force, *master_psl))
-    dserror("Multiply failed");
-  if (stritraction_M_->Update(1., *poiseuille_force, 1.)) dserror("update failed");
+    FOUR_C_THROW("Multiply failed");
+  if (stritraction_M_->Update(1., *poiseuille_force, 1.)) FOUR_C_THROW("update failed");
 
   // add the contribution
-  if (slaveiforce->Update(1., *slave_psl, 1.)) dserror("Update failed");
-  if (masteriforce->Update(1., *master_psl, 1.)) dserror("Update failed");
+  if (slaveiforce->Update(1., *slave_psl, 1.)) FOUR_C_THROW("Update failed");
+  if (masteriforce->Update(1., *master_psl, 1.)) FOUR_C_THROW("Update failed");
 }
 
 
@@ -374,10 +374,10 @@ void EHL::Base::AddCouetteForce(
   Teuchos::RCP<Epetra_Vector> height =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   if (slavemaptransform_->Multiply(false, *mortaradapter_->Nodal_Gap(), *height))
-    dserror("multiply failed");
+    FOUR_C_THROW("multiply failed");
   Teuchos::RCP<Epetra_Vector> h_inv =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
-  if (h_inv->Reciprocal(*height)) dserror("Reciprocal failed");
+  if (h_inv->Reciprocal(*height)) FOUR_C_THROW("Reciprocal failed");
   Teuchos::RCP<Epetra_Vector> hinv_relV =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   hinv_relV->Multiply(1., *h_inv, *relVel, 0.);
@@ -388,12 +388,12 @@ void EHL::Base::AddCouetteForce(
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
   {
     DRT::Node* lnode = lub_dis.lRowNode(i);
-    if (!lnode) dserror("node not found");
+    if (!lnode) FOUR_C_THROW("node not found");
     const double p = lubrication_->LubricationField()->Prenp()->operator[](
         lubrication_->LubricationField()->Prenp()->Map().LID(lub_dis.Dof(0, lnode, 0)));
 
     Teuchos::RCP<MAT::Material> mat = lnode->Elements()[0]->Material(0);
-    if (mat.is_null()) dserror("null pointer");
+    if (mat.is_null()) FOUR_C_THROW("null pointer");
     Teuchos::RCP<MAT::LubricationMat> lmat =
         Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(mat, true);
     const double visc = lmat->ComputeViscosity(p);
@@ -411,17 +411,17 @@ void EHL::Base::AddCouetteForce(
       Teuchos::rcp(new Epetra_Vector(mortaradapter_->GetMortarMatrixM()->DomainMap()));
   // f_slave = D^T*t
   if (mortaradapter_->GetMortarMatrixD()->Multiply(true, *couette_force, *slave_cou))
-    dserror("Multiply failed");
-  if (stritraction_D_->Update(1., *couette_force, 1.)) dserror("Update failed");
+    FOUR_C_THROW("Multiply failed");
+  if (stritraction_D_->Update(1., *couette_force, 1.)) FOUR_C_THROW("Update failed");
 
   // f_master = -M^T*t
   if (mortaradapter_->GetMortarMatrixM()->Multiply(true, *couette_force, *master_cou))
-    dserror("Multiply failed");
-  if (stritraction_M_->Update(-1., *couette_force, 1.)) dserror("update failed");
+    FOUR_C_THROW("Multiply failed");
+  if (stritraction_M_->Update(-1., *couette_force, 1.)) FOUR_C_THROW("update failed");
 
   // add the contribution
-  if (slaveiforce->Update(1., *slave_cou, 1.)) dserror("Update failed");
-  if (masteriforce->Update(-1., *master_cou, 1.)) dserror("Update failed");
+  if (slaveiforce->Update(1., *slave_cou, 1.)) FOUR_C_THROW("Update failed");
+  if (masteriforce->Update(-1., *master_cou, 1.)) FOUR_C_THROW("Update failed");
 }
 
 /*----------------------------------------------------------------------*
@@ -456,7 +456,7 @@ void EHL::Base::SetHeightField()
   // get the weighted gap and store it in slave dof map (for each node, the scalar value is stored
   // in the 0th dof)
   int err = slavemaptransform_->Multiply(false, *mortaradapter_->Nodal_Gap(), *discretegap);
-  if (err != 0) dserror("error while transforming map of weighted gap");
+  if (err != 0) FOUR_C_THROW("error while transforming map of weighted gap");
 
   // store discrete gap in lubrication disp dof map (its the film height)
   Teuchos::RCP<Epetra_Vector> height = ada_strDisp_to_lubDisp_->MasterToSlave(discretegap);
@@ -481,7 +481,7 @@ void EHL::Base::SetHeightDot()
   // get the weighted heightdot and store it in slave dof map (for each node, the scalar value is
   // stored in the 0th dof)
   int err = slavemaptransform_->Multiply(false, *heightdot, *discretegap);
-  if (err != 0) dserror("error while transforming map of weighted gap");
+  if (err != 0) FOUR_C_THROW("error while transforming map of weighted gap");
   // store discrete heightDot in lubrication disp dof map (its the film height time derivative)
   Teuchos::RCP<Epetra_Vector> heightdotSet = ada_strDisp_to_lubDisp_->MasterToSlave(discretegap);
 
@@ -522,9 +522,9 @@ void EHL::Base::SetupUnprojectableDBC()
   {
     DRT::Node* node = mortaradapter_->Interface()->Discret().gNode(
         mortaradapter_->Interface()->SlaveRowNodes()->GID(i));
-    if (!node) dserror("gnode returned nullptr");
+    if (!node) FOUR_C_THROW("gnode returned nullptr");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-    if (!cnode) dserror("dynamic cast failed");
+    if (!cnode) FOUR_C_THROW("dynamic cast failed");
     if (cnode->Data().Getg() > 1.e11)
     {
       for (int e = 0; e < cnode->NumElement(); ++e)
@@ -533,7 +533,7 @@ void EHL::Base::SetupUnprojectableDBC()
         for (int nn = 0; nn < ele->NumNode(); ++nn)
         {
           CONTACT::Node* cnn = dynamic_cast<CONTACT::Node*>(ele->Nodes()[nn]);
-          if (!cnn) dserror("cast failed");
+          if (!cnn) FOUR_C_THROW("cast failed");
           for (int j = 0; j < 3; ++j)
           {
             const int row = cnn->Dofs()[j];
@@ -544,7 +544,8 @@ void EHL::Base::SetupUnprojectableDBC()
       }
     }
   }
-  if (inf_gap_toggle->GlobalAssemble(Epetra_Max, false) != 0) dserror("global_assemble failed");
+  if (inf_gap_toggle->GlobalAssemble(Epetra_Max, false) != 0)
+    FOUR_C_THROW("global_assemble failed");
   for (int i = 0; i < inf_gap_toggle->Map().NumMyElements(); ++i)
     if (inf_gap_toggle->operator()(0)->operator[](i) > 0.5)
       inf_gap_toggle->operator()(0)->operator[](i) = 1.;
@@ -589,8 +590,8 @@ void EHL::Base::SetupFieldCoupling(
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
   Teuchos::RCP<DRT::Discretization> lubricationdis = problem->GetDis(lubrication_disname);
 
-  if (structdis.is_null()) dserror("structure dis does not exist");
-  if (lubricationdis.is_null()) dserror("lubrication dis does not exist");
+  if (structdis.is_null()) FOUR_C_THROW("structure dis does not exist");
+  if (lubricationdis.is_null()) FOUR_C_THROW("lubrication dis does not exist");
 
   const int ndim = GLOBAL::Problem::Instance()->NDim();
 
@@ -614,7 +615,7 @@ void EHL::Base::SetupFieldCoupling(
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
           mortaradapter_->Interface()->InterfaceParams(), "STRATEGY") !=
       INPAR::CONTACT::solution_ehl)
-    dserror("you need to set ---CONTACT DYNAMIC: STRATEGY   Ehl");
+    FOUR_C_THROW("you need to set ---CONTACT DYNAMIC: STRATEGY   Ehl");
 
   Teuchos::RCP<Epetra_Vector> idisp = CORE::LINALG::CreateVector(
       *(structdis->DofRowMap()), true);  // Structure displacement at the lubricated interface
@@ -778,7 +779,7 @@ void EHL::Base::Output(bool forced_writerestart)
     // get the weighted gap and store it in slave dof map (for each node, the scalar value is stored
     // in the 0th dof)
     int err = slavemaptransform_->Multiply(false, *mortaradapter_->Nodal_Gap(), *discretegap);
-    if (err != 0) dserror("error while transforming map of weighted gap");
+    if (err != 0) FOUR_C_THROW("error while transforming map of weighted gap");
 
     // store discrete gap in lubrication disp dof map (its the film height)
     Teuchos::RCP<Epetra_Vector> height = ada_strDisp_to_lubDisp_->MasterToSlave(discretegap);
@@ -802,12 +803,12 @@ void EHL::Base::Output(bool forced_writerestart)
          i < lubrication_->LubricationField()->Discretization()->NodeRowMap()->NumMyElements(); ++i)
     {
       DRT::Node* lnode = lubrication_->LubricationField()->Discretization()->lRowNode(i);
-      if (!lnode) dserror("node not found");
+      if (!lnode) FOUR_C_THROW("node not found");
       const double p = lubrication_->LubricationField()->Prenp()->operator[](
           lubrication_->LubricationField()->Prenp()->Map().LID(
               lubrication_->LubricationField()->Discretization()->Dof(0, lnode, 0)));
       Teuchos::RCP<MAT::Material> mat = lnode->Elements()[0]->Material(0);
-      if (mat.is_null()) dserror("null pointer");
+      if (mat.is_null()) FOUR_C_THROW("null pointer");
       Teuchos::RCP<MAT::LubricationMat> lmat =
           Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(mat, true);
       const double visc = lmat->ComputeViscosity(p);

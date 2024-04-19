@@ -116,14 +116,14 @@ namespace CORE::GEO
         if (allow_connect_std_and_ghost_sets)
         {
           if (position_ != nds->Position())
-            dserror(
+            FOUR_C_THROW(
                 "NodalDofSet you want to combine to a CompositeNodalDofSet do not have the same "
                 "position! Invalid!");
         }
         else  // require same type of dofsets: std/ghost
         {
           if (is_std_dofset_ != nds->Is_Standard_DofSet() or position_ != nds->Position())
-            dserror(
+            FOUR_C_THROW(
                 "NodalDofSet you want to combine to a CompositeNodalDofSet do not have the same "
                 "properties! Invalid!");
         }

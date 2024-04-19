@@ -173,7 +173,7 @@ namespace MIXTURE
       /// Growth evolution equation
       const LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<T> growth_evolution_;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       bool state_is_set_ = false;
 #endif
     };

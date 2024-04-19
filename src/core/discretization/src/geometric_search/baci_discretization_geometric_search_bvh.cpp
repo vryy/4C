@@ -33,7 +33,7 @@ namespace CORE::GEOMETRICSEARCH
       const IO::Verbositylevel verbosity)
   {
 #ifndef BACI_WITH_ARBORX
-    dserror(
+    FOUR_C_THROW(
         "CORE::GEOMETRICSEARCH::CollisionSearch can only be used with ArborX."
         "To use it, enable ArborX during the configure process.");
     return {};

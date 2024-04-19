@@ -47,29 +47,30 @@ POROELASTSCATRA::PoroScatraBase::PoroScatraBase(
         CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
     if (timealgo != INPAR::SCATRA::timeint_one_step_theta and
         timealgo != INPAR::SCATRA::timeint_stationary)
-      dserror(
+      FOUR_C_THROW(
           "scalar transport in porous media is limited in functionality (only one-step-theta "
           "scheme or stationary case possible)");
 
     //    INPAR::SCATRA::ConvForm convform
     //    = CORE::UTILS::IntegralValue<INPAR::SCATRA::ConvForm>(scatradyn,"CONVFORM");
     //    if ( convform != INPAR::SCATRA::convform_convective )
-    //      dserror("The balance of mass is included in the formulation for scalar transport in
+    //      FOUR_C_THROW("The balance of mass is included in the formulation for scalar transport in
     //      porous media. "
     //          "Set 'CONVFORM' to 'convective' in the SCALAR TRANSPORT DYNAMIC section! ");
 
     INPAR::SCATRA::VelocityField velfield =
         CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
     if (velfield != INPAR::SCATRA::velocity_Navier_Stokes)
-      dserror(
+      FOUR_C_THROW(
           "scalar transport is coupled with the porous medium. Set 'VELOCITYFIELD' to "
           "'Navier_Stokes' in the SCALAR TRANSPORT DYNAMIC section! ");
 
     //    bool skipinitder
     //    = CORE::UTILS::IntegralValue<int>(scatradyn,"SKIPINITDER");
     //    if ( not skipinitder )
-    //      dserror("Calculation of initial time derivative not yet supported for scalar transport
-    //      in porous media. Set 'SKIPINITDER' to 'yes' in the SCALAR TRANSPORT DYNAMIC section! ");
+    //      FOUR_C_THROW("Calculation of initial time derivative not yet supported for scalar
+    //      transport in porous media. Set 'SKIPINITDER' to 'yes' in the SCALAR TRANSPORT DYNAMIC
+    //      section! ");
   }
 
   // the problem is two way coupled, thus each discretization must know the other discretization
@@ -270,7 +271,7 @@ void POROELASTSCATRA::PoroScatraBase::ReplaceDofSets(Teuchos::RCP<DRT::Discretiz
   }
   else
   {
-    dserror("restart for non-matching poro-scatra not yet tested. Feel free to try");
+    FOUR_C_THROW("restart for non-matching poro-scatra not yet tested. Feel free to try");
   }
 }
 

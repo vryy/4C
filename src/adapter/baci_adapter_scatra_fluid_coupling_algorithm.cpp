@@ -102,7 +102,8 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
     case INPAR::SCATRA::timeint_stationary:
     {
       if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_stationary)
-        if (Comm().MyPID() == 0) dserror("Fluid and scatra time integration schemes do not match!");
+        if (Comm().MyPID() == 0)
+          FOUR_C_THROW("Fluid and scatra time integration schemes do not match!");
       break;
     }
     case INPAR::SCATRA::timeint_one_step_theta:
@@ -132,7 +133,7 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
     }
     default:
     {
-      dserror("Time integration scheme for scalar transport not recognized!");
+      FOUR_C_THROW("Time integration scheme for scalar transport not recognized!");
       break;
     }
   }
@@ -155,7 +156,7 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Setup()
   // safety check:
   if (volcoupl_fluidscatra_ == Teuchos::null and
       fieldcoupling_ == INPAR::SCATRA::coupling_volmortar)
-    dserror("Something went terrible wrong. Sorry about this!");
+    FOUR_C_THROW("Something went terrible wrong. Sorry about this!");
 
   SetIsSetup(true);
   return;
@@ -195,7 +196,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ScaTraFluidCouplingAlgorithm::FluidTo
       return volcoupl_fluidscatra_->ApplyVectorMapping21(fluidvector);
       break;
     default:
-      dserror("unknown field coupling type");
+      FOUR_C_THROW("unknown field coupling type");
       return Teuchos::null;
       break;
   }
@@ -215,7 +216,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ScaTraFluidCouplingAlgorithm::ScatraT
       return volcoupl_fluidscatra_->ApplyVectorMapping12(scatravector);
       break;
     default:
-      dserror("unknown field coupling type");
+      FOUR_C_THROW("unknown field coupling type");
       return Teuchos::null;
       break;
   }

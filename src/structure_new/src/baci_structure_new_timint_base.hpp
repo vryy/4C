@@ -278,14 +278,14 @@ namespace STR
       /// FixMe get constraint manager defined in the structure
       Teuchos::RCP<CONSTRAINTS::ConstrManager> GetConstraintManager() override
       {
-        dserror("Not yet implemented!");
+        FOUR_C_THROW("Not yet implemented!");
         return Teuchos::null;
       }
 
       /// FixMe get contact/meshtying manager
       Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() override
       {
-        dserror("Not yet implemented!");
+        FOUR_C_THROW("Not yet implemented!");
         return Teuchos::null;
       }
 
@@ -299,14 +299,14 @@ namespace STR
       /// FixMe Different behavior for the implicit and explicit case!!!
       void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) override
       {
-        dserror("Not yet implemented!");
+        FOUR_C_THROW("Not yet implemented!");
       }
 
       /// Add residual increment to pressures stored in Cardiovascular0D manager (derived)
       /// FixMe Different behavior for the implicit and explicit case!!!
       void UpdateIterIncrCardiovascular0D(Teuchos::RCP<Epetra_Vector> presincr) override
       {
-        dserror("Not yet implemented!");
+        FOUR_C_THROW("Not yet implemented!");
       }
       /// @}
 
@@ -481,14 +481,14 @@ namespace STR
       /// FixMe set/apply material displacements to structure field (structure with ale)
       void SetDispMatNp(Teuchos::RCP<Epetra_Vector> dispmatnp) override
       {
-        dserror("Not supported at the moment!");
+        FOUR_C_THROW("Not supported at the moment!");
       }
 
       /// FixMe write access to material displacements (strutcure with ale) at \f$t^{n+1}\f$
       Teuchos::RCP<Epetra_Vector> WriteAccessDispMatNp() override
       {
         CheckInitSetup();
-        dserror("Not yet supported!");
+        FOUR_C_THROW("Not yet supported!");
         return Teuchos::null;
       }
       ///@}
@@ -525,7 +525,7 @@ namespace STR
       /// There is already one.
       bool HaveMicroMat() override
       {
-        dserror("Not yet considered!");
+        FOUR_C_THROW("Not yet considered!");
         return false;
       }
 
@@ -564,7 +564,7 @@ namespace STR
       /// FixMe set structure displacement vector due to biofilm growth
       void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override
       {
-        dserror("Currently unsupported!");
+        FOUR_C_THROW("Currently unsupported!");
       }
       /// @}
 
@@ -736,11 +736,11 @@ namespace STR
       /// Check if Init() and Setup() have been called, yet.
       inline void CheckInitSetup() const
       {
-        dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+        FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
       }
 
       /// Check if Init() has been called
-      inline void CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
+      inline void CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
 
       /// Get the global state
       BaseDataGlobalState& DataGlobalState()
@@ -896,7 +896,7 @@ namespace STR
       {
         if (!state_is_insync_with_noxgroup_)
         {
-          dserror(
+          FOUR_C_THROW(
               " state has been requested but the manipulated state has\n"
               "not been communicated to NOX.\n"
               "Manipulations made in the state vector will have no effect.\n"

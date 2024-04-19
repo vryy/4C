@@ -28,7 +28,7 @@ CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(DRT::Discretization& dis
       Searchele_AllProc_(iparams.get<bool>("Searchele_AllProc"))
 {
   // safety check
-  if (!Two_half_pass_) dserror("Only implemented for the two half pass approach so far!");
+  if (!Two_half_pass_) FOUR_C_THROW("Only implemented for the two half pass approach so far!");
 
   return;
 }
@@ -77,9 +77,9 @@ void CONTACT::UnbiasedSelfBinaryTree::CalculateProcSpecificDualGraph(
 
     // get current elements and its nodes
     DRT::Element* element = Discret().gElement(gid);
-    if (!element) dserror("Cannot find element with gid %\n", gid);
+    if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
     DRT::Node** nodes = element->Nodes();
-    if (!nodes) dserror("Null pointer!");
+    if (!nodes) FOUR_C_THROW("Null pointer!");
 
     // skip further steps, if element is not owned by processor p
     if (element->Owner() != p) continue;
@@ -106,12 +106,12 @@ void CONTACT::UnbiasedSelfBinaryTree::CalculateProcSpecificDualGraph(
     for (int j = 0; j < numnode; ++j)
     {
       DRT::Node* node = nodes[j];
-      if (!node) dserror("Null pointer!");
+      if (!node) FOUR_C_THROW("Null pointer!");
 
       // adjacent elements of current node
       int numE = node->NumElement();
       DRT::Element** adjElements = node->Elements();
-      if (!adjElements) dserror("Null pointer!");
+      if (!adjElements) FOUR_C_THROW("Null pointer!");
 
       // loop over all adjacent elements of current node
       for (int k = 0; k < numE; ++k)
@@ -154,13 +154,13 @@ void CONTACT::UnbiasedSelfBinaryTree::DefineSearchElements()
     DRT::Element* element = Discret().gElement(eleID);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
     if (celement->IsSlave() != true)
-      dserror("Element: this should not happen!");
+      FOUR_C_THROW("Element: this should not happen!");
     else
       for (int i = 0; i < element->NumNode(); ++i)
       {
         DRT::Node* node = element->Nodes()[i];
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-        if (cnode->IsSlave() != true) dserror("Node: this should not happen!");
+        if (cnode->IsSlave() != true) FOUR_C_THROW("Node: this should not happen!");
       }
 
     // get the ID of elements in contact with current one
@@ -295,7 +295,7 @@ void CONTACT::UnbiasedSelfBinaryTree::InitializeTreeBottomUp(
   }
 
   // complete the tree starting from its roots (top-down)
-  if (Roots().size() == 0) dserror("No root tree node found!");
+  if (Roots().size() == 0) FOUR_C_THROW("No root tree node found!");
 
   // SAFETY CHECK: check whether all leaf nodes were assigned a root node
   std::vector<int> list = Roots()[0]->Elelist();
@@ -305,7 +305,7 @@ void CONTACT::UnbiasedSelfBinaryTree::InitializeTreeBottomUp(
     for (unsigned j = 0; j < listi.size(); ++j) list.push_back(listi[j]);
   }
   if (list.size() != Leafsmap().size())
-    dserror(
+    FOUR_C_THROW(
         "Not all leaf nodes got assigned to a root node! This is not acceptable, but might appear "
         "for the unbiased self contact tree as only surface elements (nodes) are contracted (and "
         "thereby assigned to a root node in this algorithm), if they are owned by the same "
@@ -381,7 +381,7 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
     }
     break;
     default:
-      dserror("RoughCheckRefConfig called for unknown element type");
+      FOUR_C_THROW("RoughCheckRefConfig called for unknown element type");
       break;
   }
   // get center of master element
@@ -411,7 +411,7 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
     }
     break;
     default:
-      dserror("RoughCheckRefConfig called for unknown element type");
+      FOUR_C_THROW("RoughCheckRefConfig called for unknown element type");
       break;
   }
 
@@ -439,8 +439,8 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
 void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
 {
   // check is root node available
-  if (Roots().size() == 0) dserror("No root node for search!");
-  if (Roots()[0] == Teuchos::null) dserror("No root node for search!");
+  if (Roots().size() == 0) FOUR_C_THROW("No root node for search!");
+  if (Roots()[0] == Teuchos::null) FOUR_C_THROW("No root node for search!");
 
   // reset contact pairs from last iteration
   SetContactPairs().clear();

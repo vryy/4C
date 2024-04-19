@@ -75,7 +75,7 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
   if (meshtying)
   {
     if (structure_->Discretization()->Comm().NumProc() > 1)
-      dserror(
+      FOUR_C_THROW(
           "Currently fluid mesh tying can only be used for serial computations, since offproc "
           "assembly is not supported. Once the coupling matrices are computed by the fluid element "
           "owner, this will change.");
@@ -222,7 +222,7 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
 
 
     if (ele_ptrs[0]->Owner() != structure_->Discretization()->Comm().MyPID())
-      dserror(
+      FOUR_C_THROW(
           "For now we can only create the pair on the beam owner, but beam element owner is %i "
           "and "
           "we are on proc %i \n",

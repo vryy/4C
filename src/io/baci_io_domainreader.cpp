@@ -135,18 +135,18 @@ namespace IO
               else if (tmp == "structured")
                 inputData.autopartition_ = false;
               else
-                dserror(
+                FOUR_C_THROW(
                     "Invalid argument for PARTITION in DOMAIN reader. Valid options are \"auto\" "
                     "and \"structured\".");
             }
             else
-              dserror("Unknown Key in DOMAIN section");
+              FOUR_C_THROW("Unknown Key in DOMAIN section");
           }
         }
       }
       else
       {
-        dserror("No DOMAIN specified but box geometry selected!");
+        FOUR_C_THROW("No DOMAIN specified but box geometry selected!");
       }
     }
 
@@ -224,7 +224,7 @@ namespace IO
                << IO::flush;
 
     int err = dis_->FillComplete(false, false, false);
-    if (err) dserror("dis_->FillComplete() returned %d", err);
+    if (err) FOUR_C_THROW("dis_->FillComplete() returned %d", err);
 
     if (!myrank && !reader_.MyOutputFlag())
       IO::cout << time.totalElapsedTime(true) << " secs" << IO::endl;

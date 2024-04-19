@@ -44,7 +44,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::PreEvaluate(Teuchos::ParameterList& para
         std::vector<double> myscalar(la[2].lm_.size());
         CORE::FE::ExtractMyValues(*scalarnp, myscalar, la[2].lm_);
 
-        if (NumMaterial() < 3) dserror("no third material defined for Wall poro element!");
+        if (NumMaterial() < 3) FOUR_C_THROW("no third material defined for Wall poro element!");
         Teuchos::RCP<MAT::Material> scatramat = Material(2);
 
         int numscal = 1;
@@ -57,7 +57,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::PreEvaluate(Teuchos::ParameterList& para
 
         Teuchos::RCP<std::vector<double>> scalar =
             Teuchos::rcp(new std::vector<double>(numscal, 0.0));
-        if ((int)myscalar.size() != numscal * numnod_) dserror("sizes do not match!");
+        if ((int)myscalar.size() != numscal * numnod_) FOUR_C_THROW("sizes do not match!");
 
         for (int i = 0; i < numnod_; i++)
           for (int j = 0; j < numscal; j++) scalar->at(j) += myscalar[numscal * i + j] / numnod_;
@@ -77,7 +77,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  if (not init_) dserror("internal element data not initialized!");
+  if (not init_) FOUR_C_THROW("internal element data not initialized!");
 
   this->SetParamsInterfacePtr(params);
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -91,7 +91,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::Evaluate(Teuchos::ParameterList& params,
     // get the required action
     std::string action = params.get<std::string>("action", "none");
     if (action == "none")
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
     else if (action == "struct_poro_calc_fluidcoupling")
       act = ELEMENTS::struct_poro_calc_fluidcoupling;
     else if (action == "struct_poro_calc_scatracoupling")
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::MyEvaluate(Teuchos::ParameterList& params
     // get the required action
     std::string action = params.get<std::string>("action", "none");
     if (action == "none")
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_internalforce")
       act = ELEMENTS::struct_calc_internalforce;
     else if (action == "calc_struct_nlnstiff")
@@ -397,7 +397,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::MyEvaluate(Teuchos::ParameterList& params
           CouplingPoroelastPressureBased(lm, mydisp, myephi, elemat1_epetra, params);
         }
         else
-          dserror("cannot find global states displacement or solidpressure");
+          FOUR_C_THROW("cannot find global states displacement or solidpressure");
       }
     }
     break;
@@ -474,7 +474,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::MyEvaluate(Teuchos::ParameterList& params
       Teuchos::RCP<std::vector<char>> couplstressdata =
           params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
 
-      if (couplstressdata == Teuchos::null) dserror("Cannot get 'couplstress' data");
+      if (couplstressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'couplstress' data");
 
       CORE::LINALG::SerialDenseMatrix couplstress(numgpt_, Wall1::numstr_);
 
@@ -495,7 +495,7 @@ int DRT::ELEMENTS::Wall1Poro<distype>::MyEvaluate(Teuchos::ParameterList& params
       else if (la.Size() > 2)
       {
         if (discretization.HasState(1, "porofluid"))
-          dserror("coupl stress poroelast not yet implemented for pressure-based variant");
+          FOUR_C_THROW("coupl stress poroelast not yet implemented for pressure-based variant");
       }
 
       // pack the data for postprocessing
@@ -1751,7 +1751,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::CouplingStressPoroelast(
   // get structure material
   Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
   if (structmat->MaterialType() != INPAR::MAT::m_structporo)
-    dserror("invalid structure material for poroelasticity");
+    FOUR_C_THROW("invalid structure material for poroelasticity");
 
   for (int gp = 0; gp < numgpt_; ++gp)
   {
@@ -1774,13 +1774,13 @@ void DRT::ELEMENTS::Wall1Poro<distype>::CouplingStressPoroelast(
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = couplstress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
         // push forward of material stress to the spatial configuration
         CORE::LINALG::Matrix<numdim_, numdim_> cauchycouplstress;
@@ -1796,7 +1796,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::CouplingStressPoroelast(
         break;
 
       default:
-        dserror("requested stress type not available");
+        FOUR_C_THROW("requested stress type not available");
         break;
     }
   }
@@ -1810,7 +1810,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::InitElement()
   for (int i = 0; i < numnod_; ++i)
   {
     Node** nodes = Nodes();
-    if (!nodes) dserror("Nodes() returned null pointer");
+    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     for (int j = 0; j < numdim_; ++j) xrefe(i, j) = Nodes()[i]->X()[j];
   }
   invJ_.resize(numgpt_);
@@ -1834,7 +1834,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::InitElement()
 
       invJ_[gp].Multiply(deriv, xrefe);
       detJ_[gp] = invJ_[gp].Invert();
-      if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
+      if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
     }
   }
 
@@ -1884,7 +1884,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::ComputeJacobianDeterminantVolumeChangeAn
       for (int j = 0; j < numnod_; ++j) dvolchange_dus(numdim_ * j + i) = N_XYZ(i, j);
   }
   else
-    dserror("invalid kinematic type!");
+    FOUR_C_THROW("invalid kinematic type!");
 }
 
 template <CORE::FE::CellType distype>
@@ -1916,7 +1916,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::ComputeJacobianDeterminantVolumeChange(d
     for (int i = 0; i < numdim_; ++i) volchange += dispgrad(i, i);
   }
   else
-    dserror("invalid kinematic type!");
+    FOUR_C_THROW("invalid kinematic type!");
 }
 
 template <CORE::FE::CellType distype>
@@ -1956,7 +1956,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::ComputeDefGradient(
     for (int i = 0; i < numdim_; i++) defgrd(i, i) = 1.0;
   }
   else
-    dserror("invalid kinematic type!");
+    FOUR_C_THROW("invalid kinematic type!");
 }
 
 template <CORE::FE::CellType distype>
@@ -2018,13 +2018,13 @@ void DRT::ELEMENTS::Wall1Poro<distype>::ComputeShapeFunctionsAndDerivatives(cons
     for (int i = 0; i < numnod_; ++i)
     {
       Node** nodes = Nodes();
-      if (!nodes) dserror("Nodes() returned null pointer");
+      if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
       xrefe(i, 0) = Nodes()[i]->X()[0];
       xrefe(i, 1) = Nodes()[i]->X()[1];
     }
     invJ_[gp].Multiply(deriv, xrefe);
     detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
+    if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
   }
 
   /* get the inverse of the Jacobian matrix which looks like:
@@ -2218,7 +2218,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::ComputeSolPressureDeriv(const std::vecto
     inverse.setMatrix(Teuchos::rcpFromRef(pressderiv));
     int err = inverse.invert();
     if (err != 0)
-      dserror("Inversion of matrix for pressure derivative failed with error code %d.", err);
+      FOUR_C_THROW("Inversion of matrix for pressure derivative failed with error code %d.", err);
   }
 
   // calculate derivatives of saturation w.r.t. pressure
@@ -2385,7 +2385,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::ExtractValuesFromGlobalVector(
   // put on higher level
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(dofset, state);
-  if (matrix_state == Teuchos::null) dserror("Cannot get state vector %s", state.c_str());
+  if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   const int numdofpernode = discretization.NumDof(dofset, Nodes()[0]);
 

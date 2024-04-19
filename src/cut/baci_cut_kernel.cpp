@@ -45,11 +45,12 @@ unsigned CORE::GEO::CUT::KERNEL::FindNextCornerPoint(const std::vector<Point*>& 
   b1.Update(1, x2, -1, x1, 0);
 
   double norm = b1.Norm2();
-  if (norm < std::numeric_limits<double>::min()) dserror("same point in facet not supported");
+  if (norm < std::numeric_limits<double>::min()) FOUR_C_THROW("same point in facet not supported");
 
   b1.Scale(1. / norm);
 
-  if (b1.Norm2() < std::numeric_limits<double>::min()) dserror("same point in facet not supported");
+  if (b1.Norm2() < std::numeric_limits<double>::min())
+    FOUR_C_THROW("same point in facet not supported");
 
   i = j;
   for (unsigned k = 2; k < pointsize; ++k)
@@ -61,7 +62,8 @@ unsigned CORE::GEO::CUT::KERNEL::FindNextCornerPoint(const std::vector<Point*>& 
     b2.Update(1, x3, -1, x1, 0);
 
     norm = b2.Norm2();
-    if (norm < std::numeric_limits<double>::min()) dserror("same point in facet not supported");
+    if (norm < std::numeric_limits<double>::min())
+      FOUR_C_THROW("same point in facet not supported");
 
     b2.Scale(1. / norm);
 
@@ -172,7 +174,7 @@ std::vector<int> CORE::GEO::CUT::KERNEL::CheckConvexity(const std::vector<Point*
     if (ptlist.size() < 4)
     {
       std::cout << "ptlist.size(): " << ptlist.size() << "\n";
-      dserror("The number of points < 4. Is it called for appropriate facet?");
+      FOUR_C_THROW("The number of points < 4. Is it called for appropriate facet?");
     }
   }
 
@@ -199,7 +201,7 @@ std::vector<int> CORE::GEO::CUT::KERNEL::CheckConvexity(const std::vector<Point*
           ptx->Coordinates(coox);
           IO::cout << coox[0] << "\t" << coox[1] << "\t" << coox[2] << "\n";
         }
-        dserror("Inline checking for facets not done before calling this");
+        FOUR_C_THROW("Inline checking for facets not done before calling this");
       }
     }
   }
@@ -223,7 +225,7 @@ std::vector<int> CORE::GEO::CUT::KERNEL::CheckConvexity(const std::vector<Point*
     ind2 = 1;
   }
   else
-    dserror("unspecified projection type");
+    FOUR_C_THROW("unspecified projection type");
 
   CORE::LINALG::Matrix<3, 1> x1, x2, x3, xtemp;
   std::vector<int> leftind, rightind;
@@ -376,7 +378,7 @@ points of the polygon
   }
 
   if( eqndone == false )
-    dserror("equation not computed");
+    FOUR_C_THROW("equation not computed");
 
   return eqn_plane;
 }*/
@@ -391,7 +393,7 @@ points of the polygon
 std::vector<double> CORE::GEO::CUT::KERNEL::EqnPlane(Point*& pt1, Point*& pt2, Point*& pt3)
 {
   bool collinear = IsOnLine(pt1, pt2, pt3);
-  if (collinear) dserror(" 3 points lie on a line. Eqn of plane cannot be computed");
+  if (collinear) FOUR_C_THROW(" 3 points lie on a line. Eqn of plane cannot be computed");
 
   std::vector<double> eqn_plane(4);
   double x1[3], x2[3], x3[3];
@@ -473,7 +475,7 @@ barycentric coordinates as it is faster
 bool CORE::GEO::CUT::KERNEL::PtInsideTriangle(
     std::vector<Point*> tri, Point* check, bool DeleteInlinePts)
 {
-  if (tri.size() != 3) dserror("expecting a triangle");
+  if (tri.size() != 3) FOUR_C_THROW("expecting a triangle");
 
   CORE::LINALG::Matrix<3, 1> t1, t2, t3, pt, v0(0.0), v1(0.0), v2(0.0);
   tri[0]->Coordinates(t1.A());
@@ -502,7 +504,7 @@ bool CORE::GEO::CUT::KERNEL::PtInsideTriangle(
       std::cout << "triangle: "
                 << "t1 " << t1 << "t2 " << t2 << "t3 " << t3 << std::endl;
       std::cout << "point " << pt << std::endl;
-      dserror("the triangle is actually on a line. Verify tolerances in cut_tolerance.H\n");
+      FOUR_C_THROW("the triangle is actually on a line. Verify tolerances in cut_tolerance.H\n");
     }
     else
     {
@@ -532,7 +534,7 @@ bool CORE::GEO::CUT::KERNEL::PtInsideTriangle(
 *-------------------------------------------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::KERNEL::PtInsideQuad(std::vector<Point*> quad, Point* check)
 {
-  if (quad.size() != 4) dserror("expecting a Quad");
+  if (quad.size() != 4) FOUR_C_THROW("expecting a Quad");
 
   std::vector<int> concavePts;
   CORE::GEO::CUT::FacetShape str1;
@@ -550,7 +552,7 @@ bool CORE::GEO::CUT::KERNEL::PtInsideQuad(std::vector<Point*> quad, Point* check
       pt->Coordinates(x);
       IO::cout << x[0] << "\t" << x[1] << "\t" << x[2] << "\n";
     }
-    dserror("Quad has more than 1 concave pt --> Selfcut");
+    FOUR_C_THROW("Quad has more than 1 concave pt --> Selfcut");
   }
 
   int indStart = 0;
@@ -581,7 +583,7 @@ bool CORE::GEO::CUT::KERNEL::PtInsideQuad(std::vector<Point*> quad, Point* check
 bool CORE::GEO::CUT::KERNEL::IsClockwiseOrderedPolygon(
     std::vector<Point*> polyPoints, std::string& projPlane)
 {
-  if (polyPoints.size() < 3) dserror("polygon with less than 3 corner points");
+  if (polyPoints.size() < 3) FOUR_C_THROW("polygon with less than 3 corner points");
 
   std::vector<double> eqn;
 
@@ -738,7 +740,7 @@ std::vector<CORE::GEO::CUT::Point*> CORE::GEO::CUT::KERNEL::Get3NoncollinearPts(
     preparedPoints.push_back(pt3);
     return preparedPoints;
   }
-  dserror("case with inline points: all points collinear");
+  FOUR_C_THROW("case with inline points: all points collinear");
   return preparedPoints;
 }
 
@@ -749,7 +751,7 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::KERNEL::getAreaTri" );
 
-  if (poly.size() != 3) dserror("expecting a triangle");
+  if (poly.size() != 3) FOUR_C_THROW("expecting a triangle");
 
   double p0[3] = {0.0, 0.0, 0.0}, p1[3] = {0.0, 0.0, 0.0}, p2[3] = {0.0, 0.0, 0.0};
   poly[0]->Coordinates(p0);
@@ -792,7 +794,7 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1
     normalvec->Scale(1.0 / doubleareacrossprod);  // Scale to unit normal
   }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   CORE::LINALG::Matrix<3, 1> v12;
   v12.Update(1, p1, -1, p2, 0);
 
@@ -833,7 +835,7 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1
       std::cout << "p2_1=mpf('" << std::setprecision(32) << p2(1, 0) << "')" << std::endl;
       std::cout << "p2_2=mpf('" << std::setprecision(32) << p2(2, 0) << "')" << std::endl;
 
-      dserror(
+      FOUR_C_THROW(
           "The area is not the same for the different cross product implementations. Something "
           "might be wrong with this TRI.");
     }
@@ -850,7 +852,7 @@ double CORE::GEO::CUT::KERNEL::getAreaConvexQuad(std::vector<Point*>& poly)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::KERNEL::getAreaConvexQuad" );
 
-  if (poly.size() != 4) dserror("expecting a quad");
+  if (poly.size() != 4) FOUR_C_THROW("expecting a quad");
 
   std::vector<Point*> tri1, tri2;
   tri1.push_back(poly[0]);

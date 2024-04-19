@@ -97,7 +97,7 @@ CORE::FE::CellType DRT::ELEMENTS::Wall1Line::Shape() const
       break;
     }
     default:
-      dserror("DRT::ELEMENTS::Wall1Line::Wall1Line: Unknown parent shape!");
+      FOUR_C_THROW("DRT::ELEMENTS::Wall1Line::Wall1Line: Unknown parent shape!");
   }
 
   return distype_line;
@@ -109,7 +109,7 @@ CORE::FE::CellType DRT::ELEMENTS::Wall1Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1Line::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("this Wall1Line element does not support communication");
+  FOUR_C_THROW("this Wall1Line element does not support communication");
 
   return;
 }
@@ -120,7 +120,7 @@ void DRT::ELEMENTS::Wall1Line::Pack(CORE::COMM::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1Line::Unpack(const std::vector<char>& data)
 {
-  dserror("this line element does not support communication");
+  FOUR_C_THROW("this line element does not support communication");
   return;
 }
 

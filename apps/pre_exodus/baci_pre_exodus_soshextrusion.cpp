@@ -186,7 +186,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     if (seedid == -1)
       normcheck = false;
     else if (unsigned(seedid) > ele_conn.size())
-      dserror("SeedID out of range!");
+      FOUR_C_THROW("SeedID out of range!");
     else
       startele = seedid;
 
@@ -313,7 +313,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         else if (newelenodes.size() == 6)
           ss.at(1) = 5;  // wedgecase: top face id
         else
-          dserror("wrong number of elenodes!");
+          FOUR_C_THROW("wrong number of elenodes!");
         newsideset.insert(std::pair<int, std::vector<int>>(newele, ss));
       }
 
@@ -385,7 +385,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
                                                    // alternatively use normal at firstedgenode
               EXODUS::PlotEleNbrs(actelenodes, actneighbors, ele_conn, basemesh, secedgenode,
                   normal, node_conn, node_normals);
-              dserror("Mesh problem!");
+              FOUR_C_THROW("Mesh problem!");
             }
             else
             {
@@ -594,7 +594,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
               else if (newelenodes.size() == 6)
                 ss.at(1) = 5;  // wedgecase: top face id
               else
-                dserror("wrong number of elenodes!");
+                FOUR_C_THROW("wrong number of elenodes!");
               newsideset.insert(std::pair<int, std::vector<int>>(newele, ss));
             }
 
@@ -644,7 +644,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
          //      ElementBlock::Shape newshape = ElementBlock::dis_none;
          //      if (numnodes == 6) newshape = ElementBlock::wedge6;
          //      else if (numnodes == 8) newshape = ElementBlock::hex8;
-         //      else dserror("Number of basenodes for extrusion not supported");
+         //      else FOUR_C_THROW("Number of basenodes for extrusion not supported");
          //      blockname << highestblock;
          //      Teuchos::RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new
          //      ElementBlock(newshape,newconn,blockname.str()));
@@ -758,7 +758,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             }
           }
           else
-            dserror("Number of basenodes for extrusion not supported");
+            FOUR_C_THROW("Number of basenodes for extrusion not supported");
         }
 
 
@@ -813,7 +813,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         break;
       }
       default:
-        dserror("unrecognized extrude type");
+        FOUR_C_THROW("unrecognized extrude type");
     }
 
     /* Create new "extruded" NodeSet of existing NodeSet,
@@ -1619,7 +1619,7 @@ void EXODUS::CheckNormDir(std::vector<double>& checkn, const std::vector<double>
 
 std::vector<double> EXODUS::MeanVec(const std::vector<std::vector<double>> baseVecs)
 {
-  if (baseVecs.size() == 0) dserror("baseVecs empty -> div by 0");
+  if (baseVecs.size() == 0) FOUR_C_THROW("baseVecs empty -> div by 0");
   std::vector<double> mean;
   std::vector<std::vector<double>>::const_iterator i_vec;
   // vector<double>::const_iterator i;
@@ -1814,7 +1814,7 @@ void EXODUS::PlotStartEleGmsh(const int eleid, const std::vector<int> elenodes,
                     << std::endl;
   }
   else
-    dserror("numnodes not supported");
+    FOUR_C_THROW("numnodes not supported");
   gmshfilecontent << "};" << std::endl;
   gmshfilecontent << "View \" Normal \" {" << std::endl;
   gmshfilecontent << "VP(" << basemesh.GetNode(nodeid)[0] << "," << basemesh.GetNode(nodeid)[1]

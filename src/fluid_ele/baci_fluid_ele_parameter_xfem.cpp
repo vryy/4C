@@ -64,7 +64,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistency(int myrank)
                << IO::endl;
   }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   switch (intterms_prev_state_)
   {
     case INPAR::XFEM::PreviousState_only_consistency:
@@ -84,7 +84,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistency(int myrank)
       break;
     }
     default:
-      dserror("Treatment of interface terms for new OST not specified.");
+      FOUR_C_THROW("Treatment of interface terms for new OST not specified.");
       break;
   }
 #endif
@@ -101,7 +101,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistencyForAveraging
                              averaging_strategy == INPAR::XFEM::Embedded_Sided);
 
   if (visc_stab_trace_estimate_ == INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue && !isEmbNitsche)
-    dserror(
+    FOUR_C_THROW(
         "Solution of eigenvalue problem to estimate parameter from trace inequality is only "
         "reasonable for embedded-sided Nitsche coupling.");
 
@@ -113,12 +113,12 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistencyForAveraging
     {
       if (ViscStabHK() == INPAR::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf or
           ViscStabHK() == INPAR::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf)
-        dserror(
+        FOUR_C_THROW(
             "chosen characteristic element length definition ViscStabHK is not supported for "
             "embedded-sided Nitsche method");
 
       if (ViscStabHK() == INPAR::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf)
-        dserror(
+        FOUR_C_THROW(
             "chosen characteristic element length definition "
             "ViscStab_hk_ele_vol_div_by_max_ele_surf is supported for embedded-sided Nitsche "
             "method,"
@@ -130,12 +130,12 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistencyForAveraging
 
   // Consistency Check for EVP and Xfluid-sided Nitsche
   if (!isEmbNitsche and ViscStabTracEstimate() == INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
-    dserror(
+    FOUR_C_THROW(
         "estimating trace inequality scaling via solving eigenvalue problems not supported for "
         "xfluid-sided Nitsche!");
 
   if (!isEmbNitsche and ViscStabHK() == INPAR::XFEM::ViscStab_hk_ele_vol_div_by_ele_surf)
-    dserror(
+    FOUR_C_THROW(
         "chosen characteristic element length definition ViscStabHK is not supported for "
         "xfluid-sided Nitsche method as the element surface cannot be specified for cut elements");
 

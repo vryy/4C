@@ -526,14 +526,14 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CORE::LINALG::BlockSparseMatri
 {
   if (std::lower_bound(row_block_ids.begin(), row_block_ids.end(), static_cast<unsigned>(Rows())) !=
       row_block_ids.end())
-    dserror("The partial row block ids exceed the maximal possible id!");
+    FOUR_C_THROW("The partial row block ids exceed the maximal possible id!");
 
   if (std::lower_bound(col_block_ids.begin(), col_block_ids.end(), static_cast<unsigned>(Cols())) !=
       col_block_ids.end())
-    dserror("The partial column block ids exceed the maximal possible id!");
+    FOUR_C_THROW("The partial column block ids exceed the maximal possible id!");
 
   if (row_block_ids.size() == 0 or col_block_ids.size() == 0)
-    dserror("The provided row/col block id vector has a length of zero!");
+    FOUR_C_THROW("The provided row/col block id vector has a length of zero!");
 
   // extract domain extractors
   MultiMapExtractor p_domain_extractor;
@@ -613,7 +613,7 @@ inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(int eid, int myra
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
 
-  dsassert(
+  FOUR_C_ASSERT(
       static_cast<int>(scratch_lcols_.size()) == mat_.Rows(), "Unexpected number of block rows");
 
   for (int rblock = 0; rblock < mat_.Rows(); ++rblock)
@@ -662,8 +662,8 @@ inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(double val, int r
 inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(
     double val, int lrow, int rgid, int rblock, int lcol, int cgid, int cblock)
 {
-#ifdef BACI_DEBUG
-  if (rblock == -1) dserror("no block entry found for row gid=%d", rgid);
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (rblock == -1) FOUR_C_THROW("no block entry found for row gid=%d", rgid);
 #endif
 
   if (cblock > -1)

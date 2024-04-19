@@ -24,7 +24,7 @@ std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReference
 {
   if (elem1_->Shape() != CORE::FE::CellType::hex8)
   {
-    dserror("Currently can handle only hexagonal family, not %d\n", elem1_->Shape());
+    FOUR_C_THROW("Currently can handle only hexagonal family, not %d\n", elem1_->Shape());
   }
 
   std::vector<double> RefPlaneEqn(4, 0.0);
@@ -112,7 +112,7 @@ std::vector<double> CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReference
                 << tol << std::endl;
     }
   }
-  dserror("Proper reference plane not found");
+  FOUR_C_THROW("Proper reference plane not found");
 
   return RefPlaneEqn;
 }
@@ -300,7 +300,7 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef(
           ptside.push_back((*itn)->point());
       }
       else
-        dserror("Side with another number of nodes than 3 or 4?");
+        FOUR_C_THROW("Side with another number of nodes than 3 or 4?");
 
       std::vector<double> RefPlaneTemp = KERNEL::EqnPlaneOfPolygon(ptside);
       scaleEquationOfPlane(RefPlaneTemp);

@@ -174,7 +174,7 @@ int CONTACT::AUG::NodeDataContainer::ApproximateMEntries(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::NodeDataContainer::Setup()
 {
-  if (mentries_ == -1) dserror("mentries_ must be initialized!");
+  if (mentries_ == -1) FOUR_C_THROW("mentries_ must be initialized!");
 
   //  const int linsize = parentNode_.GetLinsize();
   const int dentries = parentNode_.GetNumDentries();
@@ -400,7 +400,7 @@ CONTACT::Node::Node(const CONTACT::Node& old)
       cTSIdata_(Teuchos::null)
 {
   // not yet used and thus not necessarily consistent
-  dserror("Node copy-ctor not yet implemented");
+  FOUR_C_THROW("Node copy-ctor not yet implemented");
 
   return;
 }
@@ -555,7 +555,7 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
     cTSIdata_ = Teuchos::null;
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -565,8 +565,8 @@ void CONTACT::Node::Unpack(const std::vector<char>& data)
 void CONTACT::Node::AddgValue(double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddgValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("AddgValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) FOUR_C_THROW("AddgValue: function called for master node %i", Id());
+  if (IsOnBound() == true) FOUR_C_THROW("AddgValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
   if (Data().Getg() == 1.0e12) Data().Getg() = 0.0;
@@ -584,8 +584,8 @@ void CONTACT::Node::AddgValue(double& val)
 void CONTACT::Node::AddWGapValue(const double val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddWGapValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("AddWGapValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) FOUR_C_THROW("AddWGapValue: function called for master node %i", Id());
+  if (IsOnBound() == true) FOUR_C_THROW("AddWGapValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
   if (AugData().GetWGap() == 1.0e12) AugData().GetWGap() = 0;
@@ -631,8 +631,8 @@ void CONTACT::Node::AddltsGapValue(double& val)
 void CONTACT::Node::AddltlGapValue(double* val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("function called for master node %i", Id());
-  if (!IsOnEdge()) dserror("function call for non edge node! %i", Id());
+  if (IsSlave() == false) FOUR_C_THROW("function called for master node %i", Id());
+  if (!IsOnEdge()) FOUR_C_THROW("function call for non edge node! %i", Id());
 
   // initialize if called for the first time
   if (Data().Getgltl()[0] == 1.0e12 or Data().Getgltl()[1] == 1.0e12 or
@@ -657,8 +657,8 @@ void CONTACT::Node::AddltlGapValue(double* val)
 void CONTACT::Node::AddltlJumpValue(double* val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("function called for master node %i", Id());
-  if (!IsOnEdge()) dserror("function call for non edge node! %i", Id());
+  if (IsSlave() == false) FOUR_C_THROW("function called for master node %i", Id());
+  if (!IsOnEdge()) FOUR_C_THROW("function call for non edge node! %i", Id());
 
   // initialize if called for the first time
   if (Data().Getjumpltl()[0] == 1.0e12 or Data().Getjumpltl()[1] == 1.0e12 or
@@ -684,8 +684,9 @@ void CONTACT::Node::AddltlJumpValue(double* val)
 void CONTACT::Node::AddKappaValue(double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddKappaValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("AddKappaValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) FOUR_C_THROW("AddKappaValue: function called for master node %i", Id());
+  if (IsOnBound() == true)
+    FOUR_C_THROW("AddKappaValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
   if (AugData().GetKappa() == 1.0e12) AugData().GetKappa() = 0.0;
@@ -702,15 +703,15 @@ void CONTACT::Node::AddKappaValue(double& val)
 void CONTACT::Node::AddDerivZValue(int& row, const int& col, double val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddZValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("AddZValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) FOUR_C_THROW("AddZValue: function called for master node %i", Id());
+  if (IsOnBound() == true) FOUR_C_THROW("AddZValue: function called for boundary node %i", Id());
 
   // check if this has been called before
   if ((int)Data().GetDerivZ().size() == 0) Data().GetDerivZ().resize(NumDof());
 
   // check row index input
   if ((int)Data().GetDerivZ().size() <= row)
-    dserror("AddDerivZValue: tried to access invalid row index!");
+    FOUR_C_THROW("AddDerivZValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
   std::map<int, double>& zmap = Data().GetDerivZ()[row];
@@ -937,7 +938,7 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
       }  // end edge loop
     }
     else
-      dserror("only quad4!");
+      FOUR_C_THROW("only quad4!");
   }  // end surfele loop
 
 
@@ -955,7 +956,7 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
 
   if (dummy.size() > 2) std::cout << "WARNING: multiple edge definitions possible!" << std::endl;
 
-  if (dummy.size() < 1) dserror("ERROR!");
+  if (dummy.size() < 1) FOUR_C_THROW("ERROR!");
 
   //**************************************************
   //      CALC ADJACENT TANGENTS
@@ -968,7 +969,7 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
   else if (lineElementsS[dummy[0]]->Nodes()[1]->Id() != Id())
     n1 = dynamic_cast<Node*>(lineElementsS[dummy[0]]->Nodes()[1]);
   else
-    dserror("ERROR");
+    FOUR_C_THROW("ERROR");
 
   if (dummy.size() < 2)
   {
@@ -982,7 +983,7 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
     else if (lineElementsS[dummy[1]]->Nodes()[1]->Id() != Id())
       n2 = dynamic_cast<Node*>(lineElementsS[dummy[0]]->Nodes()[1]);
     else
-      dserror("ERROR");
+      FOUR_C_THROW("ERROR");
   }
 
 
@@ -992,7 +993,7 @@ void CONTACT::Node::BuildAveragedEdgeTangent()
   tmp1[1] = n1->xspatial()[1] - n2->xspatial()[1];
   tmp1[2] = n1->xspatial()[2] - n2->xspatial()[2];
   const double length = sqrt(tmp1[0] * tmp1[0] + tmp1[1] * tmp1[1] + tmp1[2] * tmp1[2]);
-  if (length < 1e-12) dserror("ERROR");
+  if (length < 1e-12) FOUR_C_THROW("ERROR");
   MoData().EdgeTangent()[0] = tmp1[0] / length;
   MoData().EdgeTangent()[1] = tmp1[1] / length;
   MoData().EdgeTangent()[2] = tmp1[2] / length;
@@ -1116,7 +1117,7 @@ void CONTACT::Node::BuildAveragedNormal()
   if (length < 1e-12)
   {
     std::cout << "normal zero: node slave= " << IsSlave() << "  length= " << length << std::endl;
-    dserror("Nodal normal length 0, node ID %i", Id());
+    FOUR_C_THROW("Nodal normal length 0, node ID %i", Id());
   }
   else
   {
@@ -1176,7 +1177,7 @@ void CONTACT::Node::BuildAveragedNormal()
     if (ltxi < 1e-12)
     {
       std::cout << "tangent 1 zero: node slave= " << IsSlave() << "  length= " << ltxi << std::endl;
-      dserror("Nodal tangent length 0, node ID %i", Id());
+      FOUR_C_THROW("Nodal tangent length 0, node ID %i", Id());
     }
     else
     {
@@ -1193,7 +1194,7 @@ void CONTACT::Node::BuildAveragedNormal()
 #endif
   }
   else
-    dserror("Contact problems must be either 2D or 3D");
+    FOUR_C_THROW("Contact problems must be either 2D or 3D");
 
   // build linearization of averaged nodal normal and tangents
   DerivAveragedNormal(elens, length, ltxi);
@@ -1478,8 +1479,9 @@ void CONTACT::Node::DerivAveragedNormal(
 void CONTACT::Node::AddNcoupValue(double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddNcoupValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("AddNcoupValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) FOUR_C_THROW("AddNcoupValue: function called for master node %i", Id());
+  if (IsOnBound() == true)
+    FOUR_C_THROW("AddNcoupValue: function called for boundary node %i", Id());
 
   // add given value to ncoup
   PoroData().GetnCoup() += val;

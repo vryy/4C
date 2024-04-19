@@ -47,7 +47,7 @@ namespace IO
     template <typename scalar_type>
     std::string ScalarTypeToString()
     {
-      dserror("The scalar type in ScalarTypeToString is unknown");
+      FOUR_C_THROW("The scalar type in ScalarTypeToString is unknown");
     }
     template <>
     inline std::string ScalarTypeToString<int>()
@@ -356,7 +356,8 @@ namespace IO
     std::vector<T>& RegisterFieldData(const std::string& data_name, const unsigned int n_dim = 1)
     {
       if (field_data_.find(data_name) != field_data_.end())
-        dserror("The field data vector with the name \"%s\" you want to register already exists.",
+        FOUR_C_THROW(
+            "The field data vector with the name \"%s\" you want to register already exists.",
             data_name.c_str());
 
       std::vector<T> new_vector;
@@ -414,7 +415,7 @@ namespace IO
         const auto& vector = std::get<std::vector<T>>(field_data_[data_name]);
         if (vector.size() != result.size())
         {
-          dserror(
+          FOUR_C_THROW(
               "The field array \"%s\" is registered with %d components, you are trying to set it "
               "to %d components, this is not supported.",
               data_name, vector.size(), result.size());
@@ -612,7 +613,7 @@ namespace IO
     {
       if (data.find(data_name) == data.end())
       {
-        dserror("The requested %s field \"%s\" does not exist", GetDataType(data).c_str(),
+        FOUR_C_THROW("The requested %s field \"%s\" does not exist", GetDataType(data).c_str(),
             data_name.c_str());
       }
       else
@@ -647,7 +648,7 @@ namespace IO
         else
           allocated_type = "UNKNOWN";
 
-        dserror("Requested %s field \"%s\" with type %s, but the allocated type is %s",
+        FOUR_C_THROW("Requested %s field \"%s\" with type %s, but the allocated type is %s",
             GetDataType(data).c_str(), data_name.c_str(), requested_type.c_str(),
             allocated_type.c_str());
       }
@@ -703,12 +704,12 @@ namespace IO
     {
       if (data.find(data_name) != data.end())
       {
-        dserror("The %s vector with the name \"%s\" you want to add already exists.",
+        FOUR_C_THROW("The %s vector with the name \"%s\" you want to add already exists.",
             GetDataType(data).c_str(), data_name.c_str());
       }
       if (n_dim == 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "You are trying to set the %s vector with the name \"%s\" and n_dim==0, this is not "
             "possible.",
             GetDataType(data).c_str(), data_name.c_str());
@@ -747,7 +748,7 @@ namespace IO
         const unsigned int data_n_dim = GetDataDimension(GetDataMapItem(data, data_name));
         if (data_n_dim != n_dim)
         {
-          dserror("Dimensions do not match");
+          FOUR_C_THROW("Dimensions do not match");
         }
       }
 

@@ -25,17 +25,17 @@ DRT::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
 
 void DRT::ResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  dserror("no element test available");
+  FOUR_C_THROW("no element test available");
 }
 
 void DRT::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  dserror("no node test available");
+  FOUR_C_THROW("no node test available");
 }
 
 void DRT::ResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  dserror("no special case test available");
+  FOUR_C_THROW("no special case test available");
 }
 
 void DRT::ResultTest::TestSpecial(
@@ -75,7 +75,7 @@ int DRT::ResultTest::CompareValues(double actresult, std::string type, INPUT::Li
   double tolerance;
   res.ExtractDouble("TOLERANCE", tolerance);
   // safety check
-  if (tolerance <= 0.) dserror("Tolerance for result test must be strictly positive!");
+  if (tolerance <= 0.) FOUR_C_THROW("Tolerance for result test must be strictly positive!");
   // name is an optional input argument!
   std::string name = "";
   if (res.HaveNamed("NAME")) res.ExtractString("NAME", name);
@@ -180,7 +180,7 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 
   if (numerr > 0)
   {
-    dserror("Result check failed with %d errors out of %d tests", numerr, size);
+    FOUR_C_THROW("Result check failed with %d errors out of %d tests", numerr, size);
   }
 
   /* test_count == -1 means we had a special test routine. It's thus
@@ -194,10 +194,10 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 
     /* It's indeed possible to count more tests than expected if you
      * happen to test values of a boundary element. We don't want this
-     * dserror to go off in that case. */
+     * FOUR_C_THROW to go off in that case. */
     if (count < size)
     {
-      dserror("expected %d tests but performed %d", size, count);
+      FOUR_C_THROW("expected %d tests but performed %d", size, count);
     }
   }
 

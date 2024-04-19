@@ -25,7 +25,7 @@ CONTACT::IntegratorNitscheSsi::IntegratorNitscheSsi(
       scatraparamstimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")),
       scatraparamsboundary_(DRT::ELEMENTS::ScaTraEleParameterBoundary::Instance("scatra"))
 {
-  if (std::abs(theta_) > 1.0e-16) dserror("SSI Contact just implemented Adjoint free ...");
+  if (std::abs(theta_) > 1.0e-16) FOUR_C_THROW("SSI Contact just implemented Adjoint free ...");
 }
 
 /*----------------------------------------------------------------------*
@@ -58,7 +58,7 @@ void CONTACT::IntegratorNitscheSsi::IntegrateGP_2D(MORTAR::Element& sele, MORTAR
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi)
 {
-  dserror("2D is not implemented!");
+  FOUR_C_THROW("2D is not implemented!");
 }
 
 /*----------------------------------------------------------------------*
@@ -87,7 +87,7 @@ void CONTACT::IntegratorNitscheSsi::GPTSForces(MORTAR::Element& slave_ele,
       return;
   }
 
-  dsassert(dim == Dim(), "dimension inconsistency");
+  FOUR_C_ASSERT(dim == Dim(), "dimension inconsistency");
 
   // calculate normals and derivatives
   const CORE::LINALG::Matrix<dim, 1> normal(gp_normal, true);
@@ -228,7 +228,7 @@ void CONTACT::IntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::Element& mortar_el
       }
       default:
       {
-        dserror("SSI Nitsche contact not implemented for used (bulk) elements");
+        FOUR_C_THROW("SSI Nitsche contact not implemented for used (bulk) elements");
         break;
       }
     }
@@ -352,7 +352,7 @@ void CONTACT::IntegratorNitscheSsi::IntegrateSSIInterfaceCondition(MORTAR::Eleme
 {
   // do only integrate if there is something to integrate!
   if (slave_ele.MoData().ParentScalarDof().empty()) return;
-  if (master_ele.MoData().ParentScalarDof().empty()) dserror("This is not allowed!");
+  if (master_ele.MoData().ParentScalarDof().empty()) FOUR_C_THROW("This is not allowed!");
 
   // prepare the slave and master side gauss point concentrations and derivatives w.r.t. the
   // concentration and the displacement
@@ -429,7 +429,7 @@ void CONTACT::IntegratorNitscheSsi::IntegrateSSIInterfaceCondition(MORTAR::Eleme
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Integration can not be performed as kinetic model of scatra-scatra interface condition "
           "is not recognized: %i",
           kinetic_model);

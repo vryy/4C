@@ -76,7 +76,7 @@ void ELEMAG::ElemagTimeInt::Init()
   Teuchos::RCP<const Epetra_Map> dofrowmap = Teuchos::rcp(discret_->DofRowMap(), false);
 
   // check time-step length
-  if (dtp_ <= 0.0) dserror("Zero or negative time-step length!");
+  if (dtp_ <= 0.0) FOUR_C_THROW("Zero or negative time-step length!");
 
   // Nodevectors for the output
   electric = Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
@@ -266,7 +266,7 @@ void ELEMAG::ElemagTimeInt::ElementsInit()
 void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField init, int startfuncno)
 {
 // time measurement: SetInitialField just in the debug phase
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::SetInitialField");
 #endif
 
@@ -329,7 +329,7 @@ void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField in
       break;
     }  // case INPAR::ELEMAG::initfield_field_by_function
     default:
-      dserror("Option for initial field not implemented: %d", init);
+      FOUR_C_THROW("Option for initial field not implemented: %d", init);
       break;
   }  // switch(init)
 
@@ -409,7 +409,7 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
         int dof = scatradis->Dof(0, scatranodes[i], 0);
         int lid = phicol->Map().LID(dof);
         if (lid < 0)
-          dserror("given dof is not stored on proc %d although map is colmap", myrank_);
+          FOUR_C_THROW("given dof is not stored on proc %d although map is colmap", myrank_);
         else
           (*nodevals_phi)[i] = (*(phicol.get()))[lid];
       }
@@ -1043,7 +1043,7 @@ void ELEMAG::ElemagTimeInt::ReadRestart(int step)
   }
   catch (...)
   {
-    dserror(
+    FOUR_C_THROW(
         "Impossible to find restart data. Check if the restart step is an existing restart point.");
   }
   discret_->SetState(1, "intVar", intVar);
@@ -1065,7 +1065,7 @@ void ELEMAG::ElemagTimeInt::ReadRestart(int step)
     //}
     // eleparams.set<INPAR::ELEMAG::DynamicType>(
     //    "dynamic type", INPAR::ELEMAG::DynamicType::elemag_bdf1);
-    dserror(
+    FOUR_C_THROW(
         "Impossible to find the additional vector of unknown necessary for the BDF2 integration. "
         "Consider fixing the code or restart a simulation that used BDF2 since the beginning.");
   }

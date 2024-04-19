@@ -139,7 +139,7 @@ void MAT::StructPoroReactionECM::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::StructPoroReactionECM*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -166,7 +166,7 @@ void MAT::StructPoroReactionECM::Reaction(const double porosity, const double J,
   // concentration C1
   double c1 = scalars->at(params_->dofIDReacScalar_);
 
-  if (dt < 0.0) dserror("time step not available");
+  if (dt < 0.0) FOUR_C_THROW("time step not available");
 
   refporosity_ = 1.0 - J * c1 / params_->densCollagen_;
   refporositydot_ = (refporosity_ - refporosity_old_) / dt;
@@ -202,7 +202,7 @@ bool MAT::StructPoroReactionECM::VisData(
   if (StructPoroReaction::VisData(name, data, numgp, eleID)) return true;
   if (name == "chemical_potential")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     for (std::vector<double>::size_type i = 0; i < chempot_.size(); i++)
       data[0] += chempot_[i] / chempot_.size();
     return true;
@@ -221,9 +221,9 @@ void MAT::StructPoroReactionECM::ChemPotential(
     double& pot,                                 ///< (o) chemical potential
     const int gp)
 {
-  dsassert(gp < (int)chempot_.size(),
+  FOUR_C_ASSERT(gp < (int)chempot_.size(),
       "invalid gauss point number for calculation of chemical potential!");
-  dsassert(gp < (int)chempot_init_.size(),
+  FOUR_C_ASSERT(gp < (int)chempot_init_.size(),
       "invalid gauss point number for calculation of chemical potential!");
 
   // dummy parameter list

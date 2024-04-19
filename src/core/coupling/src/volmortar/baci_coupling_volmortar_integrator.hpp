@@ -252,7 +252,7 @@ namespace CORE::VOLMORTAR
       }
     }
     else
-      dserror("Wrong element type!");
+      FOUR_C_THROW("Wrong element type!");
 
     // check GP projection (MASTER)
     if (distypeM == CORE::FE::CellType::hex8 || distypeM == CORE::FE::CellType::hex20 ||
@@ -296,7 +296,7 @@ namespace CORE::VOLMORTAR
       }
     }
     else
-      dserror("Wrong element type!");
+      FOUR_C_THROW("Wrong element type!");
 
     return true;
   };
@@ -352,7 +352,7 @@ namespace CORE::VOLMORTAR
     }
     else
     {
-      dserror("ERROR: Wrong element type!");
+      FOUR_C_THROW("ERROR: Wrong element type!");
     }
 
     return true;

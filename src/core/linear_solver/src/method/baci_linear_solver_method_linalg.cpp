@@ -58,12 +58,12 @@ int CORE::LINALG::Solver::getNumIters() const { return solver_->getNumIters(); }
 void CORE::LINALG::Solver::AdaptTolerance(
     const double desirednlnres, const double currentnlnres, const double better)
 {
-  if (!Params().isSublist("Belos Parameters")) dserror("Adaptive tolerance only for Belos.");
+  if (!Params().isSublist("Belos Parameters")) FOUR_C_THROW("Adaptive tolerance only for Belos.");
 
   Teuchos::ParameterList& solver_params = Params().sublist("Belos Parameters");
 
   if (!solver_params.isParameter("Convergence Tolerance"))
-    dserror("No iterative solver tolerance in ParameterList");
+    FOUR_C_THROW("No iterative solver tolerance in ParameterList");
 
   const bool do_output = solver_params.get<int>("Output Frequency", 1) and !Comm().MyPID();
 
@@ -72,7 +72,7 @@ void CORE::LINALG::Solver::AdaptTolerance(
 
   if (conv_test_strategy != Belos::convertScaleTypeToString(Belos::ScaleType::NormOfInitRes))
   {
-    dserror(
+    FOUR_C_THROW(
         "You are using an adaptive tolerance for the linear solver. Therefore, the iterative "
         "solver needs to work with a relative residual norm. This can be achieved by setting "
         "'AZCONV' to 'AZ_r0' in the input file.");
@@ -119,7 +119,7 @@ void CORE::LINALG::Solver::AdaptTolerance(
 void CORE::LINALG::Solver::SetTolerance(const double tolerance)
 {
   if (!Params().isSublist("Belos Parameters"))
-    dserror("Set tolerance of linear solver only for Belos solver.");
+    FOUR_C_THROW("Set tolerance of linear solver only for Belos solver.");
 
   Teuchos::ParameterList& solver_params = Params().sublist("Belos Parameters");
 
@@ -156,7 +156,7 @@ void CORE::LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1)   Setup");
 
-  dsassert(!(params.lin_tol_better > -1.0 and params.tolerance > 0.0),
+  FOUR_C_ASSERT(!(params.lin_tol_better > -1.0 and params.tolerance > 0.0),
       "Do not set tolerance and adaptive tolerance to the linear solver.");
 
   if (params.lin_tol_better > -1.0)
@@ -194,7 +194,7 @@ void CORE::LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
           new CORE::LINEAR_SOLVER::DirectSolver<Epetra_Operator, Epetra_MultiVector>(solvertype));
     }
     else
-      dserror("Unknown type of solver");
+      FOUR_C_THROW("Unknown type of solver");
   }
 
   solver_->Setup(matrix, x, b, refactor, params.reset, params.projector);
@@ -270,7 +270,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
       mllist.set("aggregation: block scaling", false);
       break;
     default:
-      dserror("Unknown type of ml preconditioner");
+      FOUR_C_THROW("Unknown type of ml preconditioner");
       break;
   }
 
@@ -324,7 +324,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
       mllist.set("aggregation: type", "MIS");
       break;
     default:
-      dserror("Unknown type of coarsening for ML");
+      FOUR_C_THROW("Unknown type of coarsening for ML");
       break;
   }
 
@@ -340,7 +340,8 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
   }
 
   if ((int)mlsmotimessteps.size() < mlmaxlevel)
-    dserror("Not enough smoothing steps ML_SMOTIMES=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
+    FOUR_C_THROW(
+        "Not enough smoothing steps ML_SMOTIMES=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
         mlsmotimessteps.size(), mlmaxlevel);
 
   for (int i = 0; i < mlmaxlevel - 1; ++i)
@@ -460,7 +461,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
       }
       break;
       default:
-        dserror("Unknown type of smoother for ML: tuple %d", type);
+        FOUR_C_THROW("Unknown type of smoother for ML: tuple %d", type);
         break;
     }  // switch (type)
   }    // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
@@ -566,7 +567,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
     }
     break;
     default:
-      dserror("Unknown type of coarse solver for ML");
+      FOUR_C_THROW("Unknown type of coarse solver for ML");
       break;
   }  // switch (azvar->mlsmotype_coarse)
   // default values for nullspace
@@ -656,7 +657,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
       break;
     default:
     {
-      dserror("Flag '%s'! \nUnknown solver for Belos.",
+      FOUR_C_THROW("Flag '%s'! \nUnknown solver for Belos.",
           Teuchos::getIntegralValue<INPAR::SOLVER::IterativeSolverType>(inparams, "AZSOLVE"));
       break;
     }
@@ -705,7 +706,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
       beloslist.set("Preconditioner Type", "CheapSIMPLE");
       break;
     default:
-      dserror("Unknown preconditioner for Belos");
+      FOUR_C_THROW("Unknown preconditioner for Belos");
       break;
   }
 
@@ -722,7 +723,8 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
       beloslist.set("scaling", "infnorm");
       break;
     default:
-      dserror("No valid scaling method selected. Choose between \"none\", \"sym\" or \"infnorm\".");
+      FOUR_C_THROW(
+          "No valid scaling method selected. Choose between \"none\", \"sym\" or \"infnorm\".");
   }
 
   // set parameters for Ifpack if used
@@ -835,7 +837,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateSolverParameters(
     case INPAR::SOLVER::SolverType::undefined:
       std::cout << "undefined solver! Set " << inparams.name() << "  in your dat file!"
                 << std::endl;
-      dserror("fix your dat file");
+      FOUR_C_THROW("fix your dat file");
       break;
     case INPAR::SOLVER::SolverType::umfpack:
       outparams.set("solver", "umfpack");
@@ -847,7 +849,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateSolverParameters(
       outparams = CORE::LINALG::Solver::TranslateBACIToBelos(inparams);
       break;
     default:
-      dserror("Unsupported type of solver");
+      FOUR_C_THROW("Unsupported type of solver");
       break;
   }
 

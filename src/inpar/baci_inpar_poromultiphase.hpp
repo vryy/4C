@@ -86,7 +86,7 @@ namespace INPAR
           return "Inf";
           break;
         default:
-          dserror("Cannot make std::string to vector norm %d", norm);
+          FOUR_C_THROW("Cannot make std::string to vector norm %d", norm);
           return "";
       }
     }

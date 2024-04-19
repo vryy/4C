@@ -126,7 +126,7 @@ namespace MAT
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (kinem != INPAR::STR::KinemType::nonlinearTotLag)
-        dserror("element and material kinematics are not compatible");
+        FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
@@ -232,7 +232,7 @@ namespace MAT
     /// Return density
     double Density() const override
     {
-      dserror("growth material needs gauss point data for density!");
+      FOUR_C_THROW("growth material needs gauss point data for density!");
       return -1.0;
     }
 

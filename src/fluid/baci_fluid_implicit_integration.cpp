@@ -138,7 +138,7 @@ void FLD::FluidImplicitTimeInt::Init()
       (params_->sublist("TIMEADAPTIVITY")), "ADAPTIVE_TIME_STEP_ESTIMATOR");
   cfl_ = params_->sublist("TIMEADAPTIVITY").get<double>("CFL_NUMBER", -1.0);
   if (cfl_estimator_ == INPAR::FLUID::cfl_number && cfl_ < 0.0)
-    dserror("specify cfl number for adaptive time step via cfl");
+    FOUR_C_THROW("specify cfl number for adaptive time step via cfl");
 
   // number of steps for starting algorithm, only for GenAlpha so far
   numstasteps_ = params_->get<int>("number of start steps");
@@ -193,7 +193,7 @@ void FLD::FluidImplicitTimeInt::Init()
   // if the pressure map is empty, the user obviously specified a wrong
   // number of space dimensions in the input file
   if (velpressplitter_->CondMap()->NumGlobalElements() < 1)
-    dserror("Pressure map empty. Wrong DIM value in input file?");
+    FOUR_C_THROW("Pressure map empty. Wrong DIM value in input file?");
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -297,7 +297,7 @@ void FLD::FluidImplicitTimeInt::Init()
   {
     SetupMeshtying();
     if (off_proc_assembly_)
-      dserror("Off processor assembly currently not available for this matrix type");
+      FOUR_C_THROW("Off processor assembly currently not available for this matrix type");
   }
   else
   {
@@ -307,7 +307,7 @@ void FLD::FluidImplicitTimeInt::Init()
     blocksysmat->SetNumdim(numdim_);
     sysmat_ = blocksysmat;
     if (off_proc_assembly_)
-      dserror("Off processor assembly currently not available for this matrix type");
+      FOUR_C_THROW("Off processor assembly currently not available for this matrix type");
   }
 
   // the vector containing body and surface forces
@@ -352,7 +352,7 @@ void FLD::FluidImplicitTimeInt::Init()
     // TangVel predictor
     if (predictor_ == "TangVel")
     {
-      dserror(
+      FOUR_C_THROW(
           "No problem types involving TangVel predictors are supported for use with locsys "
           "conditions!");
     }
@@ -360,7 +360,8 @@ void FLD::FluidImplicitTimeInt::Init()
     // Meshtying
     if (msht_ != INPAR::FLUID::no_meshtying)
     {
-      dserror("No problem types involving meshtying are supported for use with locsys conditions!");
+      FOUR_C_THROW(
+          "No problem types involving meshtying are supported for use with locsys conditions!");
     }
 
     // Additionally, locsys doesn't work yet with AVM3 and LinearRelaxationSolve. Those
@@ -419,7 +420,7 @@ void FLD::FluidImplicitTimeInt::InitNonlinearBC()
       fdpcondname = "SurfaceFlowDepPressure";
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "Line and surface flow-dependent pressure boundary conditions simultaneously "
           "prescribed!");
     }
@@ -458,7 +459,7 @@ void FLD::FluidImplicitTimeInt::InitNonlinearBC()
         params_->sublist("TURBULENCE MODEL"), "FSSUGRVISC");
     if (fssgv_ != INPAR::FLUID::no_fssgv)
     {
-      dserror(
+      FOUR_C_THROW(
           "The functionality of impedance BC together with AVM3 is not known. Take a look into "
           "function AVM3Preparation()");
     }
@@ -645,7 +646,7 @@ void FLD::FluidImplicitTimeInt::SetupLocsysDirichletBC(double time)
       if (discret_->Name() == "ale")
       {
         if (numdim_ == 2)
-          dserror("Locsys: Node Normal for type 'ale', only 3D case is implemented.");
+          FOUR_C_THROW("Locsys: Node Normal for type 'ale', only 3D case is implemented.");
         else
           nodeNormalParams.set<int>("action", DRT::ELEMENTS::Ale3::ba_calc_ale_node_normal);
       }
@@ -1139,12 +1140,12 @@ void FLD::FluidImplicitTimeInt::EvaluateMatAndRHS(Teuchos::ParameterList& elepar
   if (off_proc_assembly_)
   {
     if (shapederivatives_ != Teuchos::null)
-      dserror("The shape derivative cannot be assembled off-proc currently");
+      FOUR_C_THROW("The shape derivative cannot be assembled off-proc currently");
     const Epetra_Map* dofcolmap = discret_->DofColMap();
     Teuchos::RCP<Epetra_Vector> residual_col = CORE::LINALG::CreateVector(*dofcolmap, true);
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat =
         Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
-    if (sysmat == Teuchos::null) dserror("expected Sparse Matrix");
+    if (sysmat == Teuchos::null) FOUR_C_THROW("expected Sparse Matrix");
     //------------------------------------------------------------
     DRT::AssembleStrategy strategy(
         0, 0, sysmat, Teuchos::null, residual_col, Teuchos::null, Teuchos::null);
@@ -1165,7 +1166,7 @@ void FLD::FluidImplicitTimeInt::EvaluateMatAndRHS(Teuchos::ParameterList& elepar
       DRT::Element* actele = discret_->lRowElement(i);
       // Teuchos::RCP<MAT::Material> mat = actele->Material();
       Teuchos::RCP<MAT::Material> mat = actele->Material();
-      if (mat->MaterialType() == INPAR::MAT::m_matlist) dserror("No matlists allowed here!!");
+      if (mat->MaterialType() == INPAR::MAT::m_matlist) FOUR_C_THROW("No matlists allowed here!!");
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(*discret_, la, false);
       // get dimension of element matrices and vectors
@@ -1177,7 +1178,7 @@ void FLD::FluidImplicitTimeInt::EvaluateMatAndRHS(Teuchos::ParameterList& elepar
             strategy.Elevector3());
 
         if (err)
-          dserror(
+          FOUR_C_THROW(
               "Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), actele->Id(), err);
       }
       std::vector<int> myowner(la[0].lmowner_.size(), strategy.Systemvector1()->Comm().MyPID());
@@ -1201,7 +1202,7 @@ void FLD::FluidImplicitTimeInt::EvaluateMatAndRHS(Teuchos::ParameterList& elepar
 
     Epetra_Export exporter(residual_col->Map(), tmp->Map());
     int err = tmp->Export(*residual_col, exporter, Add);
-    if (err) dserror("Export using exporter returned err=%d", err);
+    if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
     residual_->Update(1.0, *tmp, 1.0);
   }
   else
@@ -1353,7 +1354,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       fdpcondname = "SurfaceFlowDepPressure";
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "Line and surface flow-dependent pressure boundary conditions simultaneously "
           "prescribed!");
     }
@@ -1381,7 +1382,8 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       if (fdpcondid_from_container)
       {
         if ((*fdpcondid_from_container) != fdpcondid)
-          dserror("Flow-dependent pressure condition %s has non-matching ID", fdpcondname.c_str());
+          FOUR_C_THROW(
+              "Flow-dependent pressure condition %s has non-matching ID", fdpcondname.c_str());
       }
       else
         fdpcond[fdpcondid]->Add("ConditionID", fdpcondid);
@@ -1712,7 +1714,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     // name accordingly. Both types simultaneously is not supported
     if ((slipsuppline.size() != 0) && (slipsuppsurf.size() != 0))
     {
-      dserror(
+      FOUR_C_THROW(
           "Line and surface slip supplemental curved boundary conditions simultaneously "
           "prescribed!");
     }
@@ -1735,7 +1737,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       if (sscbcondid_from_container)
       {
         if (sscbcondid_from_container != sscbcondid)
-          dserror("Slip Supplemental Curved Boundary condition %s has non-matching ID",
+          FOUR_C_THROW("Slip Supplemental Curved Boundary condition %s has non-matching ID",
               sscbcondname.c_str());
       }
       else
@@ -1802,7 +1804,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     // decide on whether it is a line or a surface condition and set condition
     // name accordingly. Both types simultaneously is not supported
     if ((navierslipline.size() != 0) && (navierslipsurf.size() != 0))
-      dserror("Line and surface Navier slip boundary conditions simultaneously prescribed!");
+      FOUR_C_THROW("Line and surface Navier slip boundary conditions simultaneously prescribed!");
 
     std::string nscondname;
     if (navierslipline.size() != 0)
@@ -1822,7 +1824,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       if (nscondid_from_container)
       {
         if (nscondid_from_container != nscondid)
-          dserror("Navier slip boundary condition %s has non-matching ID", nscondname.c_str());
+          FOUR_C_THROW("Navier slip boundary condition %s has non-matching ID", nscondname.c_str());
       }
       else
         nscond[nscondid]->Add("ConditionID", nscondid);
@@ -1908,7 +1910,7 @@ void FLD::FluidImplicitTimeInt::EvaluateFluidEdgeBased(
     sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *rmap, 256, false));
   }
   else
-    dserror("sysmat is nullptr!");
+    FOUR_C_THROW("sysmat is nullptr!");
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(
       new CORE::LINALG::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),
@@ -1922,7 +1924,7 @@ void FLD::FluidImplicitTimeInt::EvaluateFluidEdgeBased(
 
     {
       DRT::ELEMENTS::FluidIntFace* ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
-      if (ele == nullptr) dserror("expect FluidIntFace element");
+      if (ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
 
       // get the parent fluid elements
       DRT::Element* p_master = ele->ParentMasterElement();
@@ -1954,13 +1956,13 @@ void FLD::FluidImplicitTimeInt::EvaluateFluidEdgeBased(
       // Set master ele to the Material for evaluation.
       Teuchos::RCP<MAT::Material> material = p_master->Material();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // Set master ele to the Material for slave.
       Teuchos::RCP<MAT::Material> material_s = p_slave->Material();
 
       // Test whether the materials for the parent and slave element are the same.
       if (material->MaterialType() != material_s->MaterialType())
-        dserror(" not the same material for master and slave parent element");
+        FOUR_C_THROW(" not the same material for master and slave parent element");
 #endif
 
       // call the egde-based assemble and evaluate routine
@@ -1986,7 +1988,7 @@ void FLD::FluidImplicitTimeInt::EvaluateFluidEdgeBased(
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> block_sysmat =
         Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(systemmatrix1, false);
     if (block_sysmat == Teuchos::null)
-      dserror("Expected fluid system matrix as BlockSparseMatrix. Failed to cast to it.");
+      FOUR_C_THROW("Expected fluid system matrix as BlockSparseMatrix. Failed to cast to it.");
     Teuchos::RCP<CORE::LINALG::SparseMatrix> f00, f01, f10, f11;
     Teuchos::RCP<Epetra_Map> domainmap_00 =
         Teuchos::rcp(new Epetra_Map(block_sysmat->DomainMap(0)));
@@ -2008,7 +2010,7 @@ void FLD::FluidImplicitTimeInt::EvaluateFluidEdgeBased(
   Epetra_Vector res_tmp(systemvector1->Map(), false);
   Epetra_Export exporter(residual_col->Map(), res_tmp.Map());
   int err2 = res_tmp.Export(*residual_col, exporter, Add);
-  if (err2) dserror("Export using exporter returned err=%d", err2);
+  if (err2) FOUR_C_THROW("Export using exporter returned err=%d", err2);
   systemvector1->Update(1.0, res_tmp, 1.0);
 
   return;
@@ -2105,7 +2107,7 @@ void FLD::FluidImplicitTimeInt::InitKrylovSpaceProjection()
     projector_ = Teuchos::null;
   }
   else
-    dserror("Received more than one KrylovSpaceCondition for fluid field");
+    FOUR_C_THROW("Received more than one KrylovSpaceCondition for fluid field");
 }
 
 /*--------------------------------------------------------------------------*
@@ -2116,7 +2118,7 @@ void FLD::FluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition* kspco
   // confirm that mode flags are number of nodal dofs
   const int nummodes = *kspcond->Get<int>("NUMMODES");
   if (nummodes != (numdim_ + 1))
-    dserror("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
+    FOUR_C_THROW("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
 
   // get vector of mode flags as given in dat-file
   const auto* modeflags = kspcond->Get<std::vector<int>>("ONOFF");
@@ -2126,10 +2128,11 @@ void FLD::FluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition* kspco
   {
     if (((*modeflags)[rr]) != 0)
     {
-      dserror("Expecting only an undetermined pressure. Check dat-file!");
+      FOUR_C_THROW("Expecting only an undetermined pressure. Check dat-file!");
     }
   }
-  if (((*modeflags)[numdim_]) != 1) dserror("Expecting an undetermined pressure. Check dat-file!");
+  if (((*modeflags)[numdim_]) != 1)
+    FOUR_C_THROW("Expecting an undetermined pressure. Check dat-file!");
   std::vector<int> activemodeids(1, numdim_);
 
   // allocate kspsplitter_
@@ -2224,7 +2227,7 @@ void FLD::FluidImplicitTimeInt::UpdateKrylovSpaceProjection()
   }
   else
   {
-    dserror("unknown definition of weight vector w for restriction of Krylov space");
+    FOUR_C_THROW("unknown definition of weight vector w for restriction of Krylov space");
   }
 
   // construct c by setting all pressure values to 1.0 and export to c
@@ -2239,7 +2242,7 @@ void FLD::FluidImplicitTimeInt::UpdateKrylovSpaceProjection()
   {
     Teuchos::RCP<Epetra_Vector> c0_update;
     if (*weighttype != "integration")
-      dserror("Fluidmeshtying supports only an integration - like Krylov projector");
+      FOUR_C_THROW("Fluidmeshtying supports only an integration - like Krylov projector");
     c0_update = meshtying_->AdaptKrylovProjector(c0);
     if (msht_ == INPAR::FLUID::condensed_bmat || msht_ == INPAR::FLUID::condensed_bmat_merged)
     {
@@ -2269,7 +2272,7 @@ void FLD::FluidImplicitTimeInt::CheckMatrixNullspace()
     Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
     projector_->FillComplete();
     int nsdim = c->NumVectors();
-    if (nsdim != 1) dserror("Only one mode, namely the constant pressure mode, expected.");
+    if (nsdim != 1) FOUR_C_THROW("Only one mode, namely the constant pressure mode, expected.");
 
     Epetra_Vector result(c->Map(), false);
 
@@ -2295,7 +2298,7 @@ void FLD::FluidImplicitTimeInt::CheckMatrixNullspace()
       std::cout << "   for xfem, yet). In this case sysmat_ could be     " << std::endl;
       std::cout << "   correct. -> adapt nullspace vector                " << std::endl;
       std::cout << "#####################################################" << std::endl;
-      dserror("Nullspace check for sysmat_ failed, Ac returned %12.5e", norm);
+      FOUR_C_THROW("Nullspace check for sysmat_ failed, Ac returned %12.5e", norm);
     }
   }
 }
@@ -2391,11 +2394,11 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int itnum, int itmax, const dou
   // check for any INF's and NaN's
   if (std::isnan(vresnorm_) or std::isnan(incvelnorm_L2_) or std::isnan(velnorm_L2_) or
       std::isnan(presnorm_) or std::isnan(incprenorm_L2_) or std::isnan(prenorm_L2_))
-    dserror("At least one of the calculated vector norms is NaN.");
+    FOUR_C_THROW("At least one of the calculated vector norms is NaN.");
 
   if (std::isinf(vresnorm_) or std::isinf(incvelnorm_L2_) or std::isinf(velnorm_L2_) or
       std::isinf(presnorm_) or std::isinf(incprenorm_L2_) or std::isinf(prenorm_L2_))
-    dserror("At least one of the calculated vector norms is INF.");
+    FOUR_C_THROW("At least one of the calculated vector norms is INF.");
 
   // care for the case that nothing really happens in velocity
   // or pressure field
@@ -2472,7 +2475,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
   }
   else
   {
-    dserror("AleUpdate: So far, only FREESURFCoupling and ALEUPDATECoupling are supported.");
+    FOUR_C_THROW("AleUpdate: So far, only FREESURFCoupling and ALEUPDATECoupling are supported.");
   }
 
   // Sort Ale update conditons, such that line conditions overwrite surface
@@ -2741,7 +2744,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
         }
         else
         {
-          dserror("Spatial dimension needs to be 2 or 3!");
+          FOUR_C_THROW("Spatial dimension needs to be 2 or 3!");
         }
       }
 
@@ -2782,7 +2785,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
       {
         // Only implemented for 3D
         if (numdim_ != 3)
-          dserror("AleUpdate: meantangentialvelocity(scaled) only implemented for 3D.");
+          FOUR_C_THROW("AleUpdate: meantangentialvelocity(scaled) only implemented for 3D.");
 
         // Determine the mean tangent velocity of the current condition's nodes
         double localSumVelnpDotNodeTangent = 0.0;
@@ -2885,7 +2888,8 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
       else if (coupling == "sphereHeightFunction")
       {
         // Only implemented for 3D
-        if (numdim_ != 3) dserror("AleUpdate: sphericalHeightFunction only implemented for 3D.");
+        if (numdim_ != 3)
+          FOUR_C_THROW("AleUpdate: sphericalHeightFunction only implemented for 3D.");
 
         // Loop through all nodes and determine grid velocity
         for (int gIdNode : gIdNodes)
@@ -2996,7 +3000,7 @@ void FLD::FluidImplicitTimeInt::GetDofsVectorLocalIndicesforNode(
 
   // Get local id for this node
   int nodeLid = (discret_->NodeRowMap())->LID(nodeGid);
-  if (nodeLid == -1) dserror("No LID for node!");
+  if (nodeLid == -1) FOUR_C_THROW("No LID for node!");
 
   // Get vector of global ids for this node's degrees of freedom
   std::vector<int> dofsGid;
@@ -3011,7 +3015,7 @@ void FLD::FluidImplicitTimeInt::GetDofsVectorLocalIndicesforNode(
   {
     int dofGid = dofsGid[i];
     if (!vec->Map().MyGID(dofGid))
-      dserror("Sparse vector does not have global row  %d or vectors don't match", dofGid);
+      FOUR_C_THROW("Sparse vector does not have global row  %d or vectors don't match", dofGid);
     (*dofsLocalInd)[i] = vec->Map().LID(dofGid);
   }
 }
@@ -3296,7 +3300,7 @@ void FLD::FluidImplicitTimeInt::CalcIntermediateSolution()
 
     if (activate)
     {
-      if (forcing_interface_ == Teuchos::null) dserror("Forcing expected!");
+      if (forcing_interface_ == Teuchos::null) FOUR_C_THROW("Forcing expected!");
 
       if (myrank_ == 0)
       {
@@ -3651,7 +3655,7 @@ void FLD::FluidImplicitTimeInt::Output()
 #ifdef PRINTALEDEFORMEDNODECOORDS
 
   if (discret_->Comm().NumProc() != 1)
-    dserror(
+    FOUR_C_THROW(
         "The flag PRINTALEDEFORMEDNODECOORDS has been switched on, and only works for 1 processor");
 
   std::cout << "ALE DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << std::endl;
@@ -3915,7 +3919,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
     external_loads_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
     reader.ReadVector(external_loads_, "fexternal");
     if (have_fexternal != external_loads_->GlobalLength())
-      dserror("reading of external loads failed");
+      FOUR_C_THROW("reading of external loads failed");
   }
 
   // read the previously written elements including the history data
@@ -3928,11 +3932,11 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   // in case of multiphysics problems & periodic boundary conditions
   // it is better to check the consistency of the maps here:
   if (not(discret_->DofRowMap())->SameAs(velnp_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(discret_->DofRowMap())->SameAs(veln_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(discret_->DofRowMap())->SameAs(accn_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
 }
 
 
@@ -4022,11 +4026,12 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // AVM3 can't be used with locsys conditions cause it hasn't been implemented yet
   if (locsysman_ != Teuchos::null)
   {
-    dserror("AVM3 can't be used with locsys conditions cause it hasn't been implemented yet!");
+    FOUR_C_THROW("AVM3 can't be used with locsys conditions cause it hasn't been implemented yet!");
   }
 
   if (msht_ == INPAR::FLUID::condensed_bmat || msht_ == INPAR::FLUID::condensed_bmat_merged)
-    dserror("Scale separation via aggregation is currently not implemented for block matrices");
+    FOUR_C_THROW(
+        "Scale separation via aggregation is currently not implemented for block matrices");
 
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
@@ -4173,7 +4178,7 @@ void FLD::FluidImplicitTimeInt::AVM3GetScaleSeparationMatrix()
 
   // get nullspace parameters
   double* nullspace = mlparams.get("null space: vectors", (double*)nullptr);
-  if (!nullspace) dserror("No nullspace supplied in parameter list");
+  if (!nullspace) FOUR_C_THROW("No nullspace supplied in parameter list");
   int nsdim = mlparams.get("null space: dimension", 1);
 
   // modify nullspace to ensure that DBC are fully taken into account
@@ -4203,9 +4208,9 @@ void FLD::FluidImplicitTimeInt::AVM3GetScaleSeparationMatrix()
 
   // complete scale-separation matrix and check maps
   Sep_->Complete(Sep_->DomainMap(), Sep_->RangeMap());
-  if (!Sep_->RowMap().SameAs(SystemMatrix()->RowMap())) dserror("rowmap not equal");
-  if (!Sep_->RangeMap().SameAs(SystemMatrix()->RangeMap())) dserror("rangemap not equal");
-  if (!Sep_->DomainMap().SameAs(SystemMatrix()->DomainMap())) dserror("domainmap not equal");
+  if (!Sep_->RowMap().SameAs(SystemMatrix()->RowMap())) FOUR_C_THROW("rowmap not equal");
+  if (!Sep_->RangeMap().SameAs(SystemMatrix()->RangeMap())) FOUR_C_THROW("rangemap not equal");
+  if (!Sep_->DomainMap().SameAs(SystemMatrix()->DomainMap())) FOUR_C_THROW("domainmap not equal");
 }
 
 /*----------------------------------------------------------------------*
@@ -4347,7 +4352,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
         if (err != 0)
         {
-          dserror("dof not on proc");
+          FOUR_C_THROW("dof not on proc");
         }
       }
       // meshtying: this is necessary for the disturbed field. the interface does not work
@@ -4375,7 +4380,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     std::vector<double> xy0_right(numdim_);
 
     // check whether present flow is indeed two-dimensional
-    if (numdim_ != 2) dserror("Counter-rotating vortices are a two-dimensional flow!");
+    if (numdim_ != 2) FOUR_C_THROW("Counter-rotating vortices are a two-dimensional flow!");
 
     // set laminar burning velocity, vortex strength C (scaled by laminar
     // burning velocity and (squared) vortex radius R
@@ -4479,7 +4484,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       }
     }  // end loop nodes lnodeid
 
-    if (err != 0) dserror("dof not on proc");
+    if (err != 0) FOUR_C_THROW("dof not on proc");
   }
   // special initial function: Beltrami flow (3-D)
   else if (initfield == INPAR::FLUID::initfield_beltrami_flow)
@@ -4496,7 +4501,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     std::vector<double> xyz(numdim_);
 
     // check whether present flow is indeed three-dimensional
-    if (numdim_ != 3) dserror("Beltrami flow is a three-dimensional flow!");
+    if (numdim_ != 3) FOUR_C_THROW("Beltrami flow is a three-dimensional flow!");
 
     // set constants for analytical solution
     const double a = M_PI / 4.0;
@@ -4527,7 +4532,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
       // compute initial pressure
       int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
-      if (id == -1) dserror("Newtonian fluid material could not be found");
+      if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
       const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const auto* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
       double dens = actmat->density_;
@@ -4571,7 +4576,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       err += velnm_->ReplaceMyValues(1, &p, &lid);
     }  // end loop nodes lnodeid
 
-    if (err != 0) dserror("dof not on proc");
+    if (err != 0) FOUR_C_THROW("dof not on proc");
   }
 
   else if (initfield == INPAR::FLUID::initfield_hit_comte_bellot_corrsin or
@@ -4593,7 +4598,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Only initial fields such as a zero field, initial fields by (un-)disturbed functions, "
         "three special initial fields (counter-rotating vortices, Beltrami flow) "
         "as well as initial fields for homegeneous isotropic turbulence are available up to now!");
@@ -4639,7 +4644,7 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(Teuchos::RCP<const Epetra_Ve
       const int numscatradof = scatradis->NumDof(dofset, lscatranode);
       const int globalscatradofid = scatradis->Dof(dofset, lscatranode, numscatradof - 1);
       const int localscatradofid = scalaraf->Map().LID(globalscatradofid);
-      if (localscatradofid < 0) dserror("localdofid not found in map for given globaldofid");
+      if (localscatradofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
       // get the processor's local fluid node
       DRT::Node* lnode = discret_->lRowNode(lnodeid);
@@ -4647,16 +4652,16 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(Teuchos::RCP<const Epetra_Ve
       const int numdof = discret_->NumDof(0, lnode);
       const int globaldofid = discret_->Dof(0, lnode, numdof - 1);
       const int localdofid = scaam_->Map().LID(globaldofid);
-      if (localdofid < 0) dserror("localdofid not found in map for given globaldofid");
+      if (localdofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
       // now copy the values
       value = (*scalaraf)[localscatradofid];
       err = scaaf_->ReplaceMyValue(localdofid, 0, value);
-      if (err != 0) dserror("error while inserting value into scaaf_");
+      if (err != 0) FOUR_C_THROW("error while inserting value into scaaf_");
 
       value = (*scalaram)[localscatradofid];
       err = scaam_->ReplaceMyValue(localdofid, 0, value);
-      if (err != 0) dserror("error while inserting value into scaam_");
+      if (err != 0) FOUR_C_THROW("error while inserting value into scaam_");
 
       if (scalardtam != Teuchos::null)
       {
@@ -4667,7 +4672,7 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(Teuchos::RCP<const Epetra_Ve
         value = 0.0;  // for safety reasons: set zeros in accam_
       }
       err = accam_->ReplaceMyValue(localdofid, 0, value);
-      if (err != 0) dserror("error while inserting value into accam_");
+      if (err != 0) FOUR_C_THROW("error while inserting value into accam_");
     }
   }
   else
@@ -4675,7 +4680,7 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(Teuchos::RCP<const Epetra_Ve
     // given vectors are already in dofrowmap layout of fluid and values can
     // be copied directly
     if (not scalaraf->Map().SameAs(scaaf_->Map()) or not scalaram->Map().SameAs(scaam_->Map()))
-      dserror("fluid dofrowmap layout expected");
+      FOUR_C_THROW("fluid dofrowmap layout expected");
 
     // loop all nodes on the processor
     for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
@@ -4686,16 +4691,16 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(Teuchos::RCP<const Epetra_Ve
       const int numdof = discret_->NumDof(0, lnode);
       const int globaldofid = discret_->Dof(0, lnode, numdof - 1);
       const int localdofid = scaam_->Map().LID(globaldofid);
-      if (localdofid < 0) dserror("localdofid not found in map for given globaldofid");
+      if (localdofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
       // now copy the values
       value = (*scalaraf)[localdofid];
       err = scaaf_->ReplaceMyValue(localdofid, 0, value);
-      if (err != 0) dserror("error while inserting value into scaaf_");
+      if (err != 0) FOUR_C_THROW("error while inserting value into scaaf_");
 
       value = (*scalaram)[localdofid];
       err = scaam_->ReplaceMyValue(localdofid, 0, value);
-      if (err != 0) dserror("error while inserting value into scaam_");
+      if (err != 0) FOUR_C_THROW("error while inserting value into scaam_");
 
       if (scalardtam != Teuchos::null)
       {
@@ -4706,7 +4711,7 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(Teuchos::RCP<const Epetra_Ve
         value = 0.0;  // for safety reasons: set zeros in accam_
       }
       err = accam_->ReplaceMyValue(localdofid, 0, value);
-      if (err != 0) dserror("error while inserting value into accam_");
+      if (err != 0) FOUR_C_THROW("error while inserting value into accam_");
     }
   }
 
@@ -4750,7 +4755,7 @@ void FLD::FluidImplicitTimeInt::SetScalarFields(Teuchos::RCP<const Epetra_Vector
       globalscatradofid = scatradis->Dof(0, lscatranode, whichscalar);
     }
     const int localscatradofid = scalarnp->Map().LID(globalscatradofid);
-    if (localscatradofid < 0) dserror("localdofid not found in map for given globaldofid");
+    if (localscatradofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
     // get the processor's local fluid node
     DRT::Node* lnode = discret_->lRowNode(lnodeid);
@@ -4759,11 +4764,11 @@ void FLD::FluidImplicitTimeInt::SetScalarFields(Teuchos::RCP<const Epetra_Vector
     // get global and processor's local pressure dof id (using the map!)
     const int globaldofid = nodedofs[numdim_];
     const int localdofid = scaam_->Map().LID(globaldofid);
-    if (localdofid < 0) dserror("localdofid not found in map for given globaldofid");
+    if (localdofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
     value = (*scalarnp)[localscatradofid];
     err = scaaf_->ReplaceMyValue(localdofid, 0, value);
-    if (err != 0) dserror("error while inserting value into scaaf_");
+    if (err != 0) FOUR_C_THROW("error while inserting value into scaaf_");
 
     //--------------------------------------------------------------------------
     // Filling the trueresidual vector with scatraresidual at pre-dofs
@@ -4946,7 +4951,7 @@ Teuchos::RCP<std::vector<double>> FLD::FluidImplicitTimeInt::EvaluateErrorCompar
     }
     break;
     default:
-      dserror("Cannot calculate error. Unknown type of analytical test problem");
+      FOUR_C_THROW("Cannot calculate error. Unknown type of analytical test problem");
       break;
   }
   return Teuchos::null;
@@ -5173,7 +5178,7 @@ void FLD::FluidImplicitTimeInt::ComputeFlowRates() const
     if ((int)flowratecond.size() == 0) return;
   }
   else
-    dserror("flow rate computation is not implemented for the 1D case");
+    FOUR_C_THROW("flow rate computation is not implemented for the 1D case");
 
   if (alefluid_)
   {
@@ -5257,7 +5262,7 @@ void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int>> conde
     {
       if (off_proc_assembly_)
       {
-        dserror(
+        FOUR_C_THROW(
             "Off proc assembly does not work with Block Matrices currently. Use structure split if "
             "you do an FSI.");
       }
@@ -5297,7 +5302,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
   // LinearRelaxationSolve can't be used with locsys conditions cause it hasn't been implemented yet
   if (locsysman_ != Teuchos::null)
   {
-    dserror(
+    FOUR_C_THROW(
         "LinearRelaxationSolve can't be used with locsys conditions cause it hasn't been "
         "implemented yet!");
   }
@@ -5429,7 +5434,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
   // and now we need the reaction forces
 
   if (dirichletlines_->Apply(*incvel_, *trueresidual_) != 0)
-    dserror("dirichletlines_->Apply() failed");
+    FOUR_C_THROW("dirichletlines_->Apply() failed");
 
   if (meshmatrix_ != Teuchos::null)
   {
@@ -5471,7 +5476,7 @@ void FLD::FluidImplicitTimeInt::RemoveDirichCond(const Teuchos::RCP<const Epetra
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
 {
-  if (dbcmaps_ == Teuchos::null) dserror("Dirichlet map has not been allocated");
+  if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones =
       CORE::LINALG::CreateVector(*(dbcmaps_->CondMap()), false);
   dirichones->PutScalar(1.0);
@@ -5485,7 +5490,7 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet()
 {
-  if (dbcmaps_ == Teuchos::null) dserror("Dirichlet map has not been allocated");
+  if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichzeros =
       CORE::LINALG::CreateVector(*(dbcmaps_->CondMap()), true);
   Teuchos::RCP<Epetra_Vector> invtoggle =
@@ -5617,7 +5622,7 @@ void FLD::FluidImplicitTimeInt::SetGeneralTurbulenceParameters()
       (physmodel == "Smagorinsky" or physmodel == "Dynamic_Smagorinsky" or
           physmodel == "Smagorinsky_with_van_Driest_damping"))
   {
-    dserror(
+    FOUR_C_THROW(
         "No combination of classical all-scale subgrid-viscosity turbulence model and fine-scale "
         "subgrid-viscosity approach currently possible!");
   }
@@ -5653,7 +5658,7 @@ void FLD::FluidImplicitTimeInt::SetGeneralTurbulenceParameters()
         Boxf_ = Teuchos::rcp(new FLD::Boxfilter(discret_, *params_));
 
         if (fssgv_ != INPAR::FLUID::no_fssgv)
-          dserror("No fine-scale subgrid viscosity for this scale separation operator!");
+          FOUR_C_THROW("No fine-scale subgrid viscosity for this scale separation operator!");
       }
       else if (scale_sep == "algebraic_multigrid_operator")
       {
@@ -5661,7 +5666,7 @@ void FLD::FluidImplicitTimeInt::SetGeneralTurbulenceParameters()
       }
       else
       {
-        dserror("Unknown filter type!");
+        FOUR_C_THROW("Unknown filter type!");
       }
 
       // fine-scale scalar at time n+alpha_F/n+1 and n+alpha_M/n
@@ -5678,16 +5683,16 @@ void FLD::FluidImplicitTimeInt::SetGeneralTurbulenceParameters()
       Vrem_ = Teuchos::rcp(new FLD::Vreman(discret_, *params_));
     }
     else if (physmodel == "no_model")
-      dserror("Turbulence model for LES expected!");
+      FOUR_C_THROW("Turbulence model for LES expected!");
     else
-      dserror("Undefined turbulence model!");
+      FOUR_C_THROW("Undefined turbulence model!");
 
     PrintTurbulenceModel();
   }
   else
   {
     if (turbmodel_ != INPAR::FLUID::no_model)
-      dserror("Set TURBULENCE APPROACH to CLASSICAL LES to activate turbulence model!");
+      FOUR_C_THROW("Set TURBULENCE APPROACH to CLASSICAL LES to activate turbulence model!");
   }
 
   // -------------------------------------------------------------------
@@ -5800,7 +5805,7 @@ void FLD::FluidImplicitTimeInt::PrintStabilizationDetails() const
       {
         if (stabparams->get<std::string>("TRANSIENT") == "yes_transient")
         {
-          dserror(
+          FOUR_C_THROW(
               "The quasistatic version of the residual-based stabilization currently does not "
               "support the incorporation of the transient term.");
         }
@@ -5887,7 +5892,7 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
     {
       if (special_flow_ != "channel_flow_of_height_2" || homdir != "xz")
       {
-        dserror(
+        FOUR_C_THROW(
             "The van Driest damping is only implemented for a channel flow with wall \nnormal "
             "direction y");
       }
@@ -6007,7 +6012,7 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
       }
       default:
       {
-        dserror("Unknown filter type!");
+        FOUR_C_THROW("Unknown filter type!");
         break;
       }
     }
@@ -6024,7 +6029,7 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
         EvaluationVel(), scaaf_, ReturnThermpressaf(), dirichtoggle);
   }
   else
-    dserror("Unknown turbulence model!");
+    FOUR_C_THROW("Unknown turbulence model!");
 }
 
 
@@ -6092,7 +6097,7 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
 
       // call the element evaluate method to integrate functions
       int err = ele->Evaluate(myparams, *discret_, lm, emat1, emat2, evec1, evec2, evec2);
-      if (err) dserror("Proc %d: Element %d returned err=%d", myrank_, ele->Id(), err);
+      if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", myrank_, ele->Id(), err);
 
       // get contributions of this element and add it up
       local_sumCai += myparams.get<double>("Cai_int");
@@ -6139,7 +6144,7 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
 
       // call the element evaluate method to integrate functions
       int err = ele->Evaluate(myparams, *discret_, lm, emat1, emat2, evec1, evec2, evec2);
-      if (err) dserror("Proc %d: Element %d returned err=%d", myrank_, ele->Id(), err);
+      if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", myrank_, ele->Id(), err);
     }
   }
 }
@@ -6240,16 +6245,16 @@ void FLD::FluidImplicitTimeInt::Reset(bool completeReset, int numsteps, int iter
       output_->OverwriteResultFile();
     else if (numsteps == 0)  // save all steps
     {
-      if (iter < 0) dserror("iteration number <0");
+      if (iter < 0) FOUR_C_THROW("iteration number <0");
       output_->NewResultFile(iter);
     }
     else if (numsteps > 1)  // save numstep steps
     {
-      if (iter < 0) dserror("iteration number <0");
+      if (iter < 0) FOUR_C_THROW("iteration number <0");
       output_->NewResultFile(iter % numsteps);
     }
     else
-      dserror("cannot save output for a negative number of steps");
+      FOUR_C_THROW("cannot save output for a negative number of steps");
 
     output_->WriteMesh(0, 0.0);
   }
@@ -6427,7 +6432,8 @@ void FLD::FluidImplicitTimeInt::SetupMeshtying()
 
   if (predictor_ != "steady_state")
   {
-    if (myrank_ == 0) dserror("The meshtying framework does only support a steady-state predictor");
+    if (myrank_ == 0)
+      FOUR_C_THROW("The meshtying framework does only support a steady-state predictor");
   }
 
   // meshtying_->OutputSetUp();
@@ -6691,7 +6697,7 @@ void FLD::FluidImplicitTimeInt::ExplicitPredictor()
     velpressplitter_->InsertOtherVector(unm, velnp_);
   }
   else
-    dserror("Unknown fluid predictor %s", predictor_.c_str());
+    FOUR_C_THROW("Unknown fluid predictor %s", predictor_.c_str());
 
   if (discret_->Comm().MyPID() == 0)
   {
@@ -6716,7 +6722,7 @@ void FLD::FluidImplicitTimeInt::AddContributionToExternalLoads(
 
   int err = external_loads_->Update(1.0, *contributing_vector, 1.0);
 
-  if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
+  if (err != 0) FOUR_C_THROW(" Epetra_Vector update threw error code %i ", err);
 }
 
 /*----------------------------------------------------------------------------*
@@ -6737,7 +6743,7 @@ void FLD::FluidImplicitTimeInt::SetCouplingContributions(
     {
       if (Teuchos::rcp_dynamic_cast<const CORE::LINALG::SparseMatrix>(contributing_matrix, false) ==
           Teuchos::null)
-        dserror(
+        FOUR_C_THROW(
             "In the none-meshtying case you need to hand in a CORE::LINALG::SparseMatrx for the "
             "behavior "
             "to be defined!");
@@ -6770,11 +6776,11 @@ void FLD::FluidImplicitTimeInt::AssembleCouplingContributions()
     Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
     int err = couplingcontributions_->Multiply(false, *velnp_, *tmp);
 
-    if (err != 0) dserror(" Linalg Sparse Matrix Multiply threw error code %i ", err);
+    if (err != 0) FOUR_C_THROW(" Linalg Sparse Matrix Multiply threw error code %i ", err);
 
     err = residual_->Update(-1.0 / ResidualScaling(), *tmp, 1.0);
 
-    if (err != 0) dserror(" Epetra_Vector update threw error code %i ", err);
+    if (err != 0) FOUR_C_THROW(" Epetra_Vector update threw error code %i ", err);
   }
 }
 /*----------------------------------------------------------------------*
@@ -6801,7 +6807,7 @@ void FLD::FluidImplicitTimeInt::InitForcing()
     else if (special_flow_ == "periodic_hill")
       forcing_interface_ = Teuchos::rcp(new FLD::PeriodicHillForcing(*this));
     else
-      dserror("forcing interface doesn't know this flow");
+      FOUR_C_THROW("forcing interface doesn't know this flow");
   }
 }
 

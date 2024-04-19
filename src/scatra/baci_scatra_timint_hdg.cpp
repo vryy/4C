@@ -61,7 +61,7 @@ SCATRA::TimIntHDG::TimIntHDG(const Teuchos::RCP<DRT::Discretization> &actdis,
 void SCATRA::TimIntHDG::Setup()
 {
   hdgdis_ = dynamic_cast<DRT::DiscretizationHDG *>(discret_.get());
-  if (hdgdis_ == nullptr) dserror("Did not receive an HDG discretization");
+  if (hdgdis_ == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // vector to store the dofs per element
   const Teuchos::RCP<Epetra_IntVector> eledofs =
@@ -79,7 +79,7 @@ void SCATRA::TimIntHDG::Setup()
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
       Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   if (discret_->AddDofSet(dofsetaux) != 2)
-    dserror("Scatra discretization has illegal number of dofsets!");
+    FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
   discret_->FillComplete();
 
   // HDG vectors passed to the element
@@ -103,7 +103,7 @@ void SCATRA::TimIntHDG::Setup()
   {
     case INPAR::SCATRA::timeint_bdf2:
     {
-      dserror("At the moment only one step theta implemented");
+      FOUR_C_THROW("At the moment only one step theta implemented");
       alphaM_ = 1.5;
       alphaF_ = 1.0;
       gamma_ = 1.0;
@@ -121,7 +121,7 @@ void SCATRA::TimIntHDG::Setup()
       break;
     }
     default:
-      dserror("At the moment only one step theta implemented");
+      FOUR_C_THROW("At the moment only one step theta implemented");
   }
 
   timealgoset_ = timealgo_;
@@ -544,7 +544,7 @@ void SCATRA::TimIntHDG::SetInitialField(
         if (ele->Owner() == discret_->Comm().MyPID())
         {
           std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
-          dsassert(
+          FOUR_C_ASSERT(
               localDofs.size() == static_cast<std::size_t>(updateVec2.numRows()), "Internal error");
           for (unsigned int i = 0; i < localDofs.size(); ++i)
             localDofs[i] = intdofrowmap->LID(localDofs[i]);
@@ -579,7 +579,7 @@ void SCATRA::TimIntHDG::SetInitialField(
     }
 
     default:
-      dserror("Option for initial field not implemented: %d", init);
+      FOUR_C_THROW("Option for initial field not implemented: %d", init);
       break;
   }  // switch(init)
 
@@ -663,7 +663,8 @@ void SCATRA::TimIntHDG::UpdateInteriorVariables(Teuchos::RCP<Epetra_Vector> upda
     ele->Evaluate(eleparams, *discret_, la, dummyMat, dummyMat, updateVec, dummyVec, dummyVec);
 
     std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
-    dsassert(localDofs.size() == static_cast<std::size_t>(updateVec.numRows()), "Internal error");
+    FOUR_C_ASSERT(
+        localDofs.size() == static_cast<std::size_t>(updateVec.numRows()), "Internal error");
     for (unsigned int i = 0; i < localDofs.size(); ++i)
     {
       localDofs[i] = intdofrowmap->LID(localDofs[i]);
@@ -776,7 +777,8 @@ void SCATRA::TimIntHDG::FDCheck()
       // impose perturbation and update interior variables
       if (phinp_->Map().MyGID(colgid))
         if (phinp_->SumIntoGlobalValue(colgid, 0, eps))
-          dserror("Perturbation could not be imposed on state vector for finite difference check!");
+          FOUR_C_THROW(
+              "Perturbation could not be imposed on state vector for finite difference check!");
       UpdateInteriorVariables(intphitemp);
 
       discret_->ClearState(true);
@@ -816,7 +818,7 @@ void SCATRA::TimIntHDG::FDCheck()
       {
         // get global index of current matrix row
         const int rowgid = sysmatcopy->RowMap().GID(rowlid);
-        if (rowgid < 0) dserror("Invalid global ID of matrix row!");
+        if (rowgid < 0) FOUR_C_THROW("Invalid global ID of matrix row!");
 
         // get current entry in original system matrix
         double entry(0.);
@@ -858,7 +860,7 @@ void SCATRA::TimIntHDG::FDCheck()
       std::cout << "RELATIVE: " << maxrelerr << std::endl;
     }
   }
-  dserror("FD check END");
+  FOUR_C_THROW("FD check END");
 }
 
 /*----------------------------------------------------------------------------------*
@@ -873,16 +875,17 @@ void SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
     {
       Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors = ComputeError();
       if (errors == Teuchos::null)
-        dserror("It was not possible to compute error. Check the error function number.");
+        FOUR_C_THROW("It was not possible to compute error. Check the error function number.");
 
       if (std::abs((*errors)[1]) > 1e-14)
         (*relerrors_)[0] = std::sqrt((*errors)[0]) / std::sqrt((*errors)[1]);
       else
-        dserror("Can't compute scalar's relative L2 error due to numerical roundoff sensitivity!");
+        FOUR_C_THROW(
+            "Can't compute scalar's relative L2 error due to numerical roundoff sensitivity!");
       if (std::abs((*errors)[3]) > 1e-14)
         (*relerrors_)[1] = std::sqrt((*errors)[2]) / std::sqrt((*errors)[3]);
       else
-        dserror(
+        FOUR_C_THROW(
             "Can't compute grandient's relative L2 error due to numerical roundoff sensitivity!");
 
       if (myrank_ == 0)
@@ -925,7 +928,7 @@ void SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
 
     default:
     {
-      dserror("Cannot calculate error. Unknown type of analytical test problem!");
+      FOUR_C_THROW("Cannot calculate error. Unknown type of analytical test problem!");
       break;
     }
   }
@@ -1031,7 +1034,7 @@ void SCATRA::TimIntHDG::CalcMatInitial()
     int err = ele->Evaluate(eleparams, *discret_, la, strategy.Elematrix1(), strategy.Elematrix2(),
         strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
     if (err)
-      dserror("Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), ele->Id(), err);
+      FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), ele->Id(), err);
 
     int eid = ele->Id();
     strategy.AssembleMatrix1(eid, la[0].lm_, la[0].lm_, la[0].lmowner_, la[0].stride_);
@@ -1066,7 +1069,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
 
   // cast and check if hdg discretization is provided
   DRT::DiscretizationHDG *hdgdis = dynamic_cast<DRT::DiscretizationHDG *>(discret_.get());
-  if (hdgdis == nullptr) dserror("Did not receive an HDG discretization");
+  if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // vector to store the dofs per single element
   const Teuchos::RCP<Epetra_IntVector> eledofs =
@@ -1121,7 +1124,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
       double error = eleparams.get<double>("error");
       double errorlog = 0;
 
-      if (error < 0) dserror("Error is negative!");
+      if (error < 0) FOUR_C_THROW("Error is negative!");
 
       if (error > 0)
         errorlog = log(error / padapterrortol_);
@@ -1332,7 +1335,7 @@ void SCATRA::TimIntHDG::AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
     if (ele->Owner() == discret_->Comm().MyPID())
     {
       std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
-      dsassert(
+      FOUR_C_ASSERT(
           localDofs.size() == static_cast<std::size_t>(intphi_ele.numRows()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);

@@ -191,7 +191,7 @@ void CORE::LINALG::SparseMatrixBase::AddOther(CORE::LINALG::SparseMatrixBase& B,
 void CORE::LINALG::SparseMatrixBase::AddOther(CORE::LINALG::BlockSparseMatrixBase& B,
     const bool transposeA, const double scalarA, const double scalarB) const
 {
-  dserror("BlockSparseMatrix and SparseMatrix cannot be added");
+  FOUR_C_THROW("BlockSparseMatrix and SparseMatrix cannot be added");
 }
 
 /*----------------------------------------------------------------------*
@@ -199,7 +199,7 @@ void CORE::LINALG::SparseMatrixBase::AddOther(CORE::LINALG::BlockSparseMatrixBas
 bool CORE::LINALG::SparseMatrixBase::IsDbcApplied(
     const Epetra_Map& dbcmap, bool diagonalblock, const CORE::LINALG::SparseMatrix* trafo) const
 {
-  if (not Filled()) dserror("The matrix must be filled!");
+  if (not Filled()) FOUR_C_THROW("The matrix must be filled!");
 
   const int numdbcrows = dbcmap.NumMyElements();
   const int* dbcrows = dbcmap.MyGlobalElements();
@@ -228,11 +228,11 @@ bool CORE::LINALG::SparseMatrixBase::IsDbcApplied(
     // handle a diagonal block
     if (diagonalblock)
     {
-      if (NumEntries == 0) dserror("Row %d is empty and part of a diagonal block!", row);
+      if (NumEntries == 0) FOUR_C_THROW("Row %d is empty and part of a diagonal block!", row);
 
       if (trafo)
       {
-        if (not trafo->Filled()) dserror("The trafo matrix must be filled!");
+        if (not trafo->Filled()) FOUR_C_THROW("The trafo matrix must be filled!");
 
         int tNumEntries = 0;
         double* tValues = nullptr;
@@ -252,7 +252,7 @@ bool CORE::LINALG::SparseMatrixBase::IsDbcApplied(
             if (Indices[k] == tIndices[j]) break;
 
           if (k == NumEntries)
-            dserror("Couldn't find column index %d in row %d.", tIndices[j], row);
+            FOUR_C_THROW("Couldn't find column index %d in row %d.", tIndices[j], row);
 
           if (std::abs(Values[k] - tValues[j]) > std::numeric_limits<double>::epsilon())
           {

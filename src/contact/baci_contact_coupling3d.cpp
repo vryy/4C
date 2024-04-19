@@ -65,7 +65,7 @@ bool CONTACT::Coupling3d::AuxiliaryPlane()
     loccenter[1] = 0.0;
   }
   else
-    dserror("AuxiliaryPlane called for unknown element type");
+    FOUR_C_THROW("AuxiliaryPlane called for unknown element type");
 
   // compute element center via shape fct. interpolation
   SlaveIntElement().LocalToGlobal(loccenter, Auxc(), 0);
@@ -120,11 +120,11 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     // is integrated that contributes to this slave node)
     int nnodes = SlaveIntElement().NumNode();
     DRT::Node** mynodes = SlaveIntElement().Nodes();
-    if (!mynodes) dserror("Null pointer!");
+    if (!mynodes) FOUR_C_THROW("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
       MORTAR::Node* mycnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
-      if (!mycnode) dserror("Null pointer!");
+      if (!mycnode) FOUR_C_THROW("Null pointer!");
       mycnode->HasSegment() = true;
     }
 
@@ -158,7 +158,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
       if (ShapeFcn() == INPAR::MORTAR::shape_standard && lmtype == INPAR::MORTAR::lagmult_quad &&
           (SlaveElement().Shape() == CORE::FE::CellType::quad8 ||
               SlaveElement().Shape() == CORE::FE::CellType::tri6))
-        dserror(
+        FOUR_C_THROW(
             "Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for "
             "quad9");
 
@@ -179,7 +179,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
       // check for dual shape functions
       if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
           ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-        dserror(
+        FOUR_C_THROW(
             "Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic "
             "contact");
 
@@ -197,7 +197,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     // *******************************************************************
     else if (Quad() && lmtype == INPAR::MORTAR::lagmult_undefined)
     {
-      dserror(
+      FOUR_C_THROW(
           "Lagrange multiplier interpolation for quadratic elements undefined\n"
           "If you are using 2nd order mortar elements, you need to specify LM_QUAD in MORTAR "
           "COUPLING section");
@@ -207,7 +207,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     // other cases
     // *******************************************************************
     else
-      dserror("IntegrateCells: Invalid case for 3D mortar contact LM interpolation");
+      FOUR_C_THROW("IntegrateCells: Invalid case for 3D mortar contact LM interpolation");
     // *******************************************************************
   }  // cell loop
 
@@ -267,8 +267,8 @@ bool CONTACT::Coupling3d::VertexLinearization(
         ++k;
       }
 
-      // dserror if not found
-      if (k == nsrows) dserror("Slave Id not found!");
+      // FOUR_C_THROW if not found
+      if (k == nsrows) FOUR_C_THROW("Slave Id not found!");
 
       // get the correct slave node linearization
       currlin = linsnodes[k];
@@ -286,8 +286,8 @@ bool CONTACT::Coupling3d::VertexLinearization(
         ++k;
       }
 
-      // dserror if not found
-      if (k == nmrows) dserror("Master Id not found!");
+      // FOUR_C_THROW if not found
+      if (k == nmrows) FOUR_C_THROW("Master Id not found!");
 
       // get the correct master node linearization
       currlin = linmnodes[k];
@@ -303,7 +303,7 @@ bool CONTACT::Coupling3d::VertexLinearization(
         if (SlaveVertices()[j].Nodeids()[0] == currv.Nodeids()[1]) sindex2 = j;
       }
       if (sindex1 < 0 || sindex2 < 0 || sindex1 == sindex2)
-        dserror("Lineclip linearization: (S) Something went wrong!");
+        FOUR_C_THROW("Lineclip linearization: (S) Something went wrong!");
 
       MORTAR::Vertex* sv1 = &SlaveVertices()[sindex1];
       MORTAR::Vertex* sv2 = &SlaveVertices()[sindex2];
@@ -317,7 +317,7 @@ bool CONTACT::Coupling3d::VertexLinearization(
         if (MasterVertices()[j].Nodeids()[0] == currv.Nodeids()[3]) mindex2 = j;
       }
       if (mindex1 < 0 || mindex2 < 0 || mindex1 == mindex2)
-        dserror("Lineclip linearization: (M) Something went wrong!");
+        FOUR_C_THROW("Lineclip linearization: (M) Something went wrong!");
 
       MORTAR::Vertex* mv1 = &MasterVertices()[mindex1];
       MORTAR::Vertex* mv2 = &MasterVertices()[mindex2];
@@ -327,7 +327,7 @@ bool CONTACT::Coupling3d::VertexLinearization(
     }
 
     else
-      dserror("VertexLinearization: Invalid Vertex Type!");
+      FOUR_C_THROW("VertexLinearization: Invalid Vertex Type!");
   }
 
   return true;
@@ -357,7 +357,7 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(
     scxi[1] = 0.0;
   }
   else
-    dserror("SlaveVertexLinearization called for unknown element type");
+    FOUR_C_THROW("SlaveVertexLinearization called for unknown element type");
 
   // evlauate shape functions + derivatives at scxi
   const int nrow = SlaveIntElement().NumNode();
@@ -372,7 +372,7 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(
   for (int i = 0; i < nrow; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
-    if (!smrtrnodes[i]) dserror("SlaveVertexLinearization: Null pointer!");
+    if (!smrtrnodes[i]) FOUR_C_THROW("SlaveVertexLinearization: Null pointer!");
   }
 
   // linearization of the IntEle spatial coords
@@ -410,7 +410,7 @@ bool CONTACT::Coupling3d::SlaveVertexLinearization(
   for (int i = 0; i < SlaveIntElement().NumNode(); ++i)
   {
     MORTAR::Node* mrtrsnode = dynamic_cast<MORTAR::Node*>(SlaveIntElement().Nodes()[i]);
-    if (!mrtrsnode) dserror("cast to mortar node failed");
+    if (!mrtrsnode) FOUR_C_THROW("cast to mortar node failed");
 
     // (1) slave node coordinates part
     for (_CI p = nodelin[i][0].begin(); p != nodelin[i][0].end(); ++p)
@@ -496,7 +496,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
     scxi[1] = 0.0;
   }
   else
-    dserror("MasterVertexLinearization called for unknown element type");
+    FOUR_C_THROW("MasterVertexLinearization called for unknown element type");
 
   // evlauate shape functions + derivatives at scxi
   int nrow = SlaveIntElement().NumNode();
@@ -511,7 +511,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
   for (int i = 0; i < nrow; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
-    if (!smrtrnodes[i]) dserror("MasterVertexLinearization: Null pointer!");
+    if (!smrtrnodes[i]) FOUR_C_THROW("MasterVertexLinearization: Null pointer!");
   }
 
   // linearization of the SlaveIntEle spatial coords
@@ -558,7 +558,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
     for (int in = 0; in < MasterIntElement().NumNode(); ++in)
     {
       MORTAR::Node* mrtrmnode = dynamic_cast<MORTAR::Node*>(MasterIntElement().Nodes()[in]);
-      if (mrtrmnode == nullptr) dserror("dynamic cast to mortar node went wrong");
+      if (mrtrmnode == nullptr) FOUR_C_THROW("dynamic cast to mortar node went wrong");
 
       for (int dim = 0; dim < 3; ++dim) mnodelin[in][dim][mrtrmnode->Dofs()[dim]] += 1.;
     }
@@ -571,7 +571,7 @@ bool CONTACT::Coupling3d::MasterVertexLinearization(
   for (int i = 0; i < MasterIntElement().NumNode(); ++i)
   {
     MORTAR::Node* mrtrmnode = dynamic_cast<MORTAR::Node*>(MasterIntElement().Nodes()[i]);
-    if (!mrtrmnode) dserror("cast to mortar node failed");
+    if (!mrtrmnode) FOUR_C_THROW("cast to mortar node failed");
 
     // (1) slave node coordinates part
     for (_CI p = mnodelin[i][0].begin(); p != mnodelin[i][0].end(); ++p)
@@ -731,8 +731,8 @@ bool CONTACT::Coupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
     ++k;
   }
 
-  // dserror if not found
-  if (k == nsrows) dserror("Slave Id1 not found!");
+  // FOUR_C_THROW if not found
+  if (k == nsrows) FOUR_C_THROW("Slave Id1 not found!");
 
   // get the correct slave node linearization
   std::vector<CORE::GEN::Pairedvector<int, double>>& slavelin0 = linsnodes[k];
@@ -744,8 +744,8 @@ bool CONTACT::Coupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
     ++k;
   }
 
-  // dserror if not found
-  if (k == nsrows) dserror("Slave Id2 not found!");
+  // FOUR_C_THROW if not found
+  if (k == nsrows) FOUR_C_THROW("Slave Id2 not found!");
 
   // get the correct slave node linearization
   std::vector<CORE::GEN::Pairedvector<int, double>>& slavelin1 = linsnodes[k];
@@ -762,8 +762,8 @@ bool CONTACT::Coupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
     ++k;
   }
 
-  // dserror if not found
-  if (k == nmrows) dserror("Master Id1 not found!");
+  // FOUR_C_THROW if not found
+  if (k == nmrows) FOUR_C_THROW("Master Id1 not found!");
 
   // get the correct master node linearization
   std::vector<CORE::GEN::Pairedvector<int, double>>& masterlin0 = linmnodes[k];
@@ -775,8 +775,8 @@ bool CONTACT::Coupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
     ++k;
   }
 
-  // dserror if not found
-  if (k == nmrows) dserror("Master Id2 not found!");
+  // FOUR_C_THROW if not found
+  if (k == nmrows) FOUR_C_THROW("Master Id2 not found!");
 
   // get the correct master node linearization
   std::vector<CORE::GEN::Pairedvector<int, double>>& masterlin1 = linmnodes[k];
@@ -1048,7 +1048,7 @@ CONTACT::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim, 
       mintele_(mintele)
 {
   //  3D quadratic coupling only for quadratic ansatz type
-  if (!Quad()) dserror("Coupling3dQuad called for non-quadratic ansatz!");
+  if (!Quad()) FOUR_C_THROW("Coupling3dQuad called for non-quadratic ansatz!");
 
   return;
 }
@@ -1215,7 +1215,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "You should not be here! This coupling manager is not able to perform mortar coupling "
           "for high-order elements.");
     }
@@ -1225,7 +1225,7 @@ void CONTACT::Coupling3dManager::IntegrateCoupling(
   //**********************************************************************
   else
   {
-    dserror("Invalid type of numerical integration!");
+    FOUR_C_THROW("Invalid type of numerical integration!");
   }
 
   // free memory of dual shape function coefficient matrix
@@ -1263,7 +1263,7 @@ bool CONTACT::Coupling3dManager::EvaluateCoupling(
   // Error
   //*********************************
   else
-    dserror("chose contact algorithm not supported!");
+    FOUR_C_THROW("chose contact algorithm not supported!");
 
   // interpolate temperatures in TSI case
   if (imortar_.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
@@ -1354,7 +1354,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
         LagMultQuad() == INPAR::MORTAR::lagmult_quad &&
         (SlaveElement().Shape() == CORE::FE::CellType::quad8 ||
             SlaveElement().Shape() == CORE::FE::CellType::tri6))
-      dserror(
+      FOUR_C_THROW(
           "Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for "
           "quad9");
 
@@ -1427,7 +1427,7 @@ void CONTACT::Coupling3dQuadManager::IntegrateCoupling(
   //**********************************************************************
   else
   {
-    dserror("Invalid type of numerical integration");
+    FOUR_C_THROW("Invalid type of numerical integration");
   }
 
   // free memory of consistent dual shape function coefficient matrix
@@ -1463,7 +1463,7 @@ bool CONTACT::Coupling3dQuadManager::EvaluateCoupling(
   // Error
   //*********************************
   else
-    dserror("chosen contact algorithm not supported!");
+    FOUR_C_THROW("chosen contact algorithm not supported!");
 
   return true;
 }
@@ -1488,10 +1488,10 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
   // Consistent modification not yet checked for constant LM interpolation
   if (Quad() == true && LagMultQuad() == INPAR::MORTAR::lagmult_const &&
       consistent != INPAR::MORTAR::consistent_none)
-    dserror("Consistent dual shape functions not yet checked for constant LM interpolation!");
+    FOUR_C_THROW("Consistent dual shape functions not yet checked for constant LM interpolation!");
 
   if (consistent == INPAR::MORTAR::consistent_all && IntType() != INPAR::MORTAR::inttype_segments)
-    dserror(
+    FOUR_C_THROW(
         "Consistent dual shape functions on all elements only for segment-based "
         "integration");
 
@@ -1523,7 +1523,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
     bool proj_test = false;
 
     DRT::Node** mynodes_test = SlaveElement().Nodes();
-    if (!mynodes_test) dserror("HasProjStatus: Null pointer!");
+    if (!mynodes_test) FOUR_C_THROW("HasProjStatus: Null pointer!");
 
     if (dt_s == CORE::FE::CellType::quad4 || dt_s == CORE::FE::CellType::quad8 ||
         dt_s == CORE::FE::CellType::nurbs9)
@@ -1595,7 +1595,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
           }
           else
           {
-            dserror("Non valid element type for master discretization!");
+            FOUR_C_THROW("Non valid element type for master discretization!");
           }
         }
         if (proj_test == false) boundary_ele = true;
@@ -1661,7 +1661,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
           }
           else
           {
-            dserror("Non valid element type for master discretization!");
+            FOUR_C_THROW("Non valid element type for master discretization!");
           }
         }
         if (proj_test == false) boundary_ele = true;
@@ -1669,7 +1669,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
     }
 
     else
-      dserror(
+      FOUR_C_THROW(
           "Calculation of consistent dual shape functions called for non-valid slave element "
           "shape!");
 
@@ -1680,7 +1680,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
   const int max_nnodes = 9;
   const int nnodes = SlaveElement().NumNode();
   if (nnodes > max_nnodes)
-    dserror(
+    FOUR_C_THROW(
         "this function is not implemented to handle elements with that many nodes. Just adjust "
         "max_nnodes above");
   const int ndof = 3;
@@ -1740,7 +1740,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
       // tri3 we can perform the jacobian calculation ( and its deriv) outside
       // the Gauss point loop
       if (currcell->Shape() != CORE::FE::CellType::tri3)
-        dserror("only tri3 integration cells at the moment. See comment in the code");
+        FOUR_C_THROW("only tri3 integration cells at the moment. See comment in the code");
 
       detg = currcell->Jacobian();
       // directional derivative of cell Jacobian
@@ -1771,7 +1771,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
         {
           MORTAR::IntElement* ie =
               dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
-          if (ie == nullptr) dserror("nullptr pointer");
+          if (ie == nullptr) FOUR_C_THROW("nullptr pointer");
           MORTAR::Projector::Impl(SlaveElement())
               ->ProjectGaussPointAuxn3D(
                   globgp, Coupling()[m]->Auxn(), SlaveElement(), psxi, psprojalpha);
@@ -1820,7 +1820,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
         {
           MORTAR::IntElement* ie =
               dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
-          if (ie == nullptr) dserror("wtf");
+          if (ie == nullptr) FOUR_C_THROW("wtf");
           integrator.DerivXiGP3DAuxPlane(SlaveElement(), psxi, currcell->Auxn(), dpsxigp,
               psprojalpha, currcell->GetDerivAuxn(), lingp);
           // ie->MapToParent(dsxigp,dpsxigp); // old way of doing it via affine map... wrong (popp
@@ -1925,7 +1925,7 @@ void CONTACT::Coupling3dManager::ConsistDualShape()
         for (int k = 0; k < 4; ++k) meinv(j, k) = melin(j, k);
     }
     else
-      dserror("incorrect element shape for linear interpolation of quadratic element!");
+      FOUR_C_THROW("incorrect element shape for linear interpolation of quadratic element!");
 
     // get solution matrix with dual parameters
     CORE::LINALG::multiply(ae, de, meinv);

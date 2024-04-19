@@ -395,14 +395,14 @@ namespace GEOMETRYPAIR
     {
       const auto* discretization = GLOBAL::Problem::Instance()->GetDis("structure").get();
       if (dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(discretization) == nullptr)
-        dserror(
+        FOUR_C_THROW(
             "Evaluation of the shape function data for nurbs requires a valid nurbs "
             "discretization "
             "pointer");
 
       auto face_element = dynamic_cast<const DRT::FaceElement*>(element);
       if (face_element == nullptr)
-        dserror(
+        FOUR_C_THROW(
             "GEOMETRYPAIR::SetShapeFunctionData<t_nurbs9, scalar_type>::Get needs a face element "
             "pointer.");
 
@@ -413,7 +413,7 @@ namespace GEOMETRYPAIR
           my_parent_knots, shape_function_data.myknots_, shape_function_data.weights_,
           shape_function_data.surface_normal_factor_);
       if (zero_size)
-        dserror("GetKnotVectorAndWeightsForNurbsBoundary has to return a non zero size.");
+        FOUR_C_THROW("GetKnotVectorAndWeightsForNurbsBoundary has to return a non zero size.");
     }
   };
 
@@ -427,13 +427,13 @@ namespace GEOMETRYPAIR
     {
       const auto* discretization = GLOBAL::Problem::Instance()->GetDis("structure").get();
       if (dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(discretization) == nullptr)
-        dserror(
+        FOUR_C_THROW(
             "Evaluation of the shape function data for nurbs requires a valid nurbs "
             "discretization pointer");
 
       const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
           *discretization, element, shape_function_data.myknots_, shape_function_data.weights_);
-      if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+      if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
     }
   };
 

@@ -147,7 +147,7 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
 void STR::TIMINT::BaseDataIO::Setup()
 {
   // safety check
-  dsassert(IsInit(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
 
   if (outputeveryiter_) writer_every_iter_ = Teuchos::rcp(new IO::EveryIterationWriter());
 
@@ -158,7 +158,7 @@ void STR::TIMINT::BaseDataIO::Setup()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataIO::CheckInitSetup() const
 {
-  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -208,7 +208,7 @@ void STR::TIMINT::BaseDataIO::SetupEnergyOutputFile()
  *----------------------------------------------------------------------------*/
 bool STR::TIMINT::BaseDataIO::WriteResultsForThisStep(const int step) const
 {
-  if (step < 0) dserror("The variable step is not allowed to be negative.");
+  if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return IsWriteResultsEnabled() and
          DetermineWriteOutput(step, GetWriteTimestepOffset(), GetWriteResultsEveryNStep());
 }
@@ -222,7 +222,7 @@ bool STR::TIMINT::BaseDataIO::IsWriteResultsEnabled() const
  *----------------------------------------------------------------------------*/
 bool STR::TIMINT::BaseDataIO::WriteRuntimeVtkResultsForThisStep(const int step) const
 {
-  if (step < 0) dserror("The variable step is not allowed to be negative.");
+  if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return (IsRuntimeOutputEnabled() &&
           DetermineWriteOutput(step, GetRuntimeOutputParams()->OutputStepOffset(),
               GetRuntimeOutputParams()->OutputIntervalInSteps()));
@@ -237,7 +237,7 @@ bool STR::TIMINT::BaseDataIO::IsRuntimeOutputEnabled() const
  *----------------------------------------------------------------------------*/
 bool STR::TIMINT::BaseDataIO::WriteRuntimeVtpResultsForThisStep(const int step) const
 {
-  if (step < 0) dserror("The variable step is not allowed to be negative.");
+  if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return (GetRuntimeVtpOutputParams() != Teuchos::null &&
           DetermineWriteOutput(step, GetRuntimeOutputParams()->OutputStepOffset(),
               GetRuntimeOutputParams()->OutputIntervalInSteps()));

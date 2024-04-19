@@ -41,7 +41,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   // check input parameters for scatra and thermo fields
   if (CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(
           *fieldparameters_, "VELOCITYFIELD") != INPAR::SCATRA::velocity_zero)
-    dserror("Scatra-thermo interaction with convection not yet implemented!");
+    FOUR_C_THROW("Scatra-thermo interaction with convection not yet implemented!");
 
   // initialize scatra time integrator
   scatra_ = Teuchos::rcp(
@@ -64,13 +64,13 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
 
   // check maps from scatra and thermo discretizations
   if (scatra_->ScaTraField()->Discretization()->DofRowMap()->NumGlobalElements() == 0)
-    dserror("Scatra discretization does not have any degrees of freedom!");
+    FOUR_C_THROW("Scatra discretization does not have any degrees of freedom!");
   if (thermo_->ScaTraField()->Discretization()->DofRowMap()->NumGlobalElements() == 0)
-    dserror("Thermo discretization does not have any degrees of freedom!");
+    FOUR_C_THROW("Thermo discretization does not have any degrees of freedom!");
 
   // additional safety check
   if (thermo_->ScaTraField()->NumScal() != 1)
-    dserror("Thermo field must involve exactly one transported scalar!");
+    FOUR_C_THROW("Thermo field must involve exactly one transported scalar!");
 
   // perform initializations associated with scatra-scatra interface mesh tying
   if (scatra_->ScaTraField()->S2IMeshtying())
@@ -78,7 +78,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
     // safety check
     if (!thermo_->ScaTraField()->S2IMeshtying())
     {
-      dserror(
+      FOUR_C_THROW(
           "Can't evaluate scatra-scatra interface mesh tying in scatra field, but not in thermo "
           "field!");
     }
@@ -98,7 +98,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
         // safety check
         if (strategythermo_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
         {
-          dserror(
+          FOUR_C_THROW(
               "Must have matching nodes at scatra-scatra coupling interfaces in both the scatra "
               "and the thermo fields!");
         }
@@ -110,7 +110,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
       {
         // safety check
         if (strategythermo_->CouplingType() != INPAR::S2I::coupling_mortar_condensed_bubnov)
-          dserror("Invalid type of scatra-scatra interface coupling for thermo field!");
+          FOUR_C_THROW("Invalid type of scatra-scatra interface coupling for thermo field!");
 
         // extract scatra-scatra interface mesh tying conditions
         std::vector<DRT::Condition*> conditions;
@@ -124,7 +124,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
           {
             // extract ID of current condition
             const int condid = *condition->Get<int>("ConditionID");
-            if (condid < 0) dserror("Invalid condition ID!");
+            if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
             // extract mortar discretizations associated with current condition
             DRT::Discretization& scatradis = strategyscatra_->MortarDiscretization(condid);
@@ -141,7 +141,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
 
       default:
       {
-        dserror("Invalid type of scatra-scatra interface coupling!");
+        FOUR_C_THROW("Invalid type of scatra-scatra interface coupling!");
       }
     }
   }
@@ -156,14 +156,14 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
   if (!fieldparameters_->isParameter("INITIALFIELD") or
       !fieldparameters_->isParameter("INITFUNCNO"))
   {
-    dserror(
+    FOUR_C_THROW(
         "Initial field parameters not properly set in input file section SCALAR TRANSPORT "
         "DYNAMIC!");
   }
   if (!stiparameters_->isParameter("THERMO_INITIALFIELD") or
       !stiparameters_->isParameter("THERMO_INITFUNCNO"))
   {
-    dserror(
+    FOUR_C_THROW(
         "Initial field parameters not properly set in input file section SCALAR TRANSPORT "
         "DYNAMIC!");
   }
@@ -190,7 +190,7 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
     }
     else if (fieldparameters_->sublist("S2I COUPLING").get<std::string>("COUPLINGTYPE") !=
              "MatchingNodes")
-      dserror("Invalid type of scatra-scatra interface coupling!");
+      FOUR_C_THROW("Invalid type of scatra-scatra interface coupling!");
 
     // make sure that interface side underlying Lagrange multiplier definition is slave side
     fieldparameters_->sublist("S2I COUPLING").set<std::string>("LMSIDE", "slave");
@@ -330,7 +330,7 @@ void STI::Algorithm::TransferScatraToThermo(const Teuchos::RCP<const Epetra_Vect
           {
             // extract ID of current condition
             const int condid = *condition->Get<int>("ConditionID");
-            if (condid < 0) dserror("Invalid condition ID!");
+            if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
             // extract mortar discretization associated with current condition
             DRT::Discretization& thermodis = strategythermo_->MortarDiscretization(condid);
@@ -348,7 +348,7 @@ void STI::Algorithm::TransferScatraToThermo(const Teuchos::RCP<const Epetra_Vect
 
       default:
       {
-        dserror("You must be kidding me...");
+        FOUR_C_THROW("You must be kidding me...");
       }
     }
   }
@@ -377,7 +377,7 @@ void STI::Algorithm::TransferThermoToScatra(const Teuchos::RCP<const Epetra_Vect
       {
         // extract ID of current condition
         const int condid = *condition->Get<int>("ConditionID");
-        if (condid < 0) dserror("Invalid condition ID!");
+        if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
         // extract mortar discretization associated with current condition
         DRT::Discretization& scatradis = strategyscatra_->MortarDiscretization(condid);

@@ -130,7 +130,8 @@ void MAT::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
     }
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 }
@@ -195,7 +196,7 @@ void MAT::ConstraintMixtureHistory::SetStretches(int gp, CORE::LINALG::Matrix<4,
     collagenstretch4_->at(gp) = stretches(3);
   }
   else
-    dserror("gp out of range in SetStretches");
+    FOUR_C_THROW("gp out of range in SetStretches");
 }
 
 /*----------------------------------------------------------------------*
@@ -211,7 +212,7 @@ void MAT::ConstraintMixtureHistory::GetStretches(int gp, CORE::LINALG::Matrix<4,
     (*stretches)(3) = collagenstretch4_->at(gp);
   }
   else
-    dserror("gp out of range in GetStretches");
+    FOUR_C_THROW("gp out of range in GetStretches");
 }
 
 /*----------------------------------------------------------------------*
@@ -227,7 +228,7 @@ void MAT::ConstraintMixtureHistory::SetMass(int gp, CORE::LINALG::Matrix<4, 1> m
     massprod4_->at(gp) = massprod(3);
   }
   else
-    dserror("gp out of range in SetMass");
+    FOUR_C_THROW("gp out of range in SetMass");
 }
 
 /*----------------------------------------------------------------------*
@@ -254,10 +255,10 @@ void MAT::ConstraintMixtureHistory::SetMass(int gp, double massprod, int idfiber
       massprod4_->at(gp) = massprod;
     }
     else
-      dserror("no valid fiber id: %d", idfiber);
+      FOUR_C_THROW("no valid fiber id: %d", idfiber);
   }
   else
-    dserror("gp out of range in SetMass");
+    FOUR_C_THROW("gp out of range in SetMass");
 }
 
 /*----------------------------------------------------------------------*
@@ -273,7 +274,7 @@ void MAT::ConstraintMixtureHistory::GetMass(int gp, CORE::LINALG::Matrix<4, 1>* 
     (*massprod)(3) = massprod4_->at(gp);
   }
   else
-    dserror("gp out of range in GetMass");
+    FOUR_C_THROW("gp out of range in GetMass");
 }
 
 /*----------------------------------------------------------------------*
@@ -300,10 +301,10 @@ void MAT::ConstraintMixtureHistory::SetVarDegrad(int gp, int idfiber, double var
       vardegrad4_->at(gp) = vardegrad;
     }
     else
-      dserror("no valid fiber id: %d", idfiber);
+      FOUR_C_THROW("no valid fiber id: %d", idfiber);
   }
   else
-    dserror("gp out of range in SetVarDegrad");
+    FOUR_C_THROW("gp out of range in SetVarDegrad");
 }
 
 /*----------------------------------------------------------------------*
@@ -330,10 +331,10 @@ void MAT::ConstraintMixtureHistory::GetVarDegrad(int gp, int idfiber, double* va
       *vardegrad = vardegrad4_->at(gp);
     }
     else
-      dserror("no valid fiber id: %d", idfiber);
+      FOUR_C_THROW("no valid fiber id: %d", idfiber);
   }
   else
-    dserror("gp out of range in GetVarDegrad");
+    FOUR_C_THROW("gp out of range in GetVarDegrad");
 }
 
 FOUR_C_NAMESPACE_CLOSE

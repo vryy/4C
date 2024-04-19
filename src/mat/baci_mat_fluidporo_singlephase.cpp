@@ -30,10 +30,10 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
 
   // for the sake of safety
   if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // create density law
   densitylaw_ = MAT::PAR::PoroDensityLaw::CreateDensityLaw(*matdata->Get<int>("DENSITYLAWID"));
@@ -74,7 +74,7 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
       break;
     }
     default:
-      dserror("invalid pressure-saturation law for material %d", curmat->Type());
+      FOUR_C_THROW("invalid pressure-saturation law for material %d", curmat->Type());
       break;
   }
 }
@@ -169,11 +169,12 @@ void MAT::FluidPoroSinglePhase::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroSinglePhase*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -275,35 +276,35 @@ MAT::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Teuchos::RCP<MAT::PAR::
 
   // for the sake of safety
   if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // safety checks
-  if (numscal_ < 0) dserror("NUMSCAL smaller than zero not possible");
+  if (numscal_ < 0) FOUR_C_THROW("NUMSCAL smaller than zero not possible");
 
   if (scalardependentflux_ && numscal_ == 0)
-    dserror("AddScalarDependentFlux has been set to YES, but NUMSCAL is equal to zero");
+    FOUR_C_THROW("AddScalarDependentFlux has been set to YES, but NUMSCAL is equal to zero");
 
   if (scalardependentflux_ && scalardiffs_.size() == 0)
-    dserror(
+    FOUR_C_THROW(
         "AddScalarDependentFlux has been set to YES, but length of SCALARDIFFS is equal to zero");
 
   if (scalardependentflux_ && omega_half_.size() == 0)
-    dserror(
+    FOUR_C_THROW(
         "AddScalarDependentFlux has been set to YES, but length of OMEGA_HALF is equal to zero");
 
   if (!scalardependentflux_ && numscal_ > 0)
-    dserror("AddScalarDependentFlux has been set to NO, but NUMSCAL is greater than zero");
+    FOUR_C_THROW("AddScalarDependentFlux has been set to NO, but NUMSCAL is greater than zero");
 
   if (!scalardependentflux_ && scalardiffs_.size() > 0)
-    dserror(
+    FOUR_C_THROW(
         "AddScalarDependentFlux has been set to NO, but length of SCALARDIFFS is greater than "
         "zero");
 
   if (!scalardependentflux_ && omega_half_.size() > 0)
-    dserror(
+    FOUR_C_THROW(
         "AddScalarDependentFlux has been set to NO, but length of OMEGA_HALF is greater than zero");
 }
 
@@ -393,11 +394,12 @@ void MAT::FluidPoroSingleVolFrac::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroSingleVolFrac*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -424,10 +426,10 @@ MAT::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
 
   // for the sake of safety
   if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // create viscosity law
   viscositylaw_ =
@@ -520,11 +522,12 @@ void MAT::FluidPoroVolFracPressure::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroVolFracPressure*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*

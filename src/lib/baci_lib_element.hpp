@@ -393,7 +393,7 @@ might become invalid after a redistribution of the discretization.
       return std::vector<Teuchos::RCP<DRT::Element>>(0);
     }
 
-    // virtual const Element*const* Lines() const { dserror("unexpected base method called.");
+    // virtual const Element*const* Lines() const { FOUR_C_THROW("unexpected base method called.");
     // return nullptr; }
 
     /*!
@@ -520,7 +520,7 @@ might become invalid after a redistribution of the discretization.
     */
     virtual int NumDofPerNode(const DRT::Node& node) const
     {
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       return -1;
     }
 
@@ -582,7 +582,7 @@ might become invalid after a redistribution of the discretization.
     */
     virtual int NumDofPerElement() const
     {
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       return -1;
     }
 
@@ -605,7 +605,7 @@ might become invalid after a redistribution of the discretization.
     */
     virtual Teuchos::RCP<MAT::Material> Material(int nummat = 0) const
     {
-      dsassert(nummat < (int)mat_.size(), "invalid material number");
+      FOUR_C_ASSERT(nummat < (int)mat_.size(), "invalid material number");
       return mat_[nummat];
     }
 
@@ -675,13 +675,13 @@ might become invalid after a redistribution of the discretization.
     {
       if (name == "Owner")
       {
-        if ((int)data.size() < 1) dserror("Size mismatch");
+        if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
         data[0] = Owner();
         return true;
       }
       if (name == "EleGId")
       {
-        if ((int)data.size() < 1) dserror("Size mismatch");
+        if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
         data[0] = Id();
         return true;
       }
@@ -1197,7 +1197,7 @@ might become invalid after a redistribution of the discretization.
     */
     virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr()
     {
-      dserror(
+      FOUR_C_THROW(
           "This is a dummy function. Please implement the function in the derived classes, if "
           "necessary.");
       return Teuchos::null;
@@ -1251,7 +1251,7 @@ might become invalid after a redistribution of the discretization.
     */
     Element()
     {
-      dserror(
+      FOUR_C_THROW(
           "Default constructor of DRT::Element must not be called. Due to virtual"
           "inheritance from DRT::Element it can be necessary to call the non-default constructor "
           "explicitly.");
@@ -1380,7 +1380,7 @@ might become invalid after a redistribution of the discretization.
      */
     int FaceParentNumber() const
     {
-      dsassert(lface_master_ != -1,
+      FOUR_C_ASSERT(lface_master_ != -1,
           "Face information has not been filled or this is not a face element");
       return lface_master_;
     }
@@ -1390,7 +1390,7 @@ might become invalid after a redistribution of the discretization.
      */
     int FaceMasterNumber() const
     {
-      dsassert(lface_master_ != -1,
+      FOUR_C_ASSERT(lface_master_ != -1,
           "Face information has not been filled or this is not a face element");
       return lface_master_;
     }
@@ -1400,7 +1400,7 @@ might become invalid after a redistribution of the discretization.
      */
     int FaceSlaveNumber() const
     {
-      dsassert(lface_slave_ != -1,
+      FOUR_C_ASSERT(lface_slave_ != -1,
           "Face information has not been filled or this is not a face element with slave parent");
       return lface_slave_;
     }

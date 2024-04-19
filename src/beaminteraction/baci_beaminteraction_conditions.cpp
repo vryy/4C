@@ -110,7 +110,7 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
         else if (condition_2 == Teuchos::null)
           condition_2 = condition;
         else
-          dserror("There can not be three different beam-to-beam coupling conditions.");
+          FOUR_C_THROW("There can not be three different beam-to-beam coupling conditions.");
       }
 
       for (const auto& map_item : coupling_id_map)
@@ -124,14 +124,14 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
               new BEAMINTERACTION::BeamToBeamContactCondition(condition_1, condition_2)));
         }
         else
-          dserror("Could not find both conditions (%s) for the COUPLING_ID %d",
+          FOUR_C_THROW("Could not find both conditions (%s) for the COUPLING_ID %d",
               condition_name.c_str(), map_item.first);
       }
 
       // Check that all conditions were added, i.e. that there are no double definitions of
       // COUPLING_ID.
       if (2 * interaction_vector.size() != condition_lines.size())
-        dserror("There are multiple definitions of the same COUPLING_ID for %s",
+        FOUR_C_THROW("There are multiple definitions of the same COUPLING_ID for %s",
             condition_name.c_str());
     }
     else if (interaction_type == INPAR::BEAMINTERACTION::BeamInteractionConditions::
@@ -157,7 +157,7 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
 
       // There has to be an equal number of sections for lines and surfaces / volumes.
       if (condition_line.size() != condition_other.size())
-        dserror("There are %d %s sections and %d %s sections. The numbers have to match!",
+        FOUR_C_THROW("There are %d %s sections and %d %s sections. The numbers have to match!",
             condition_line.size(), condition_names[0].c_str(), condition_other.size(),
             condition_names[1].c_str());
 
@@ -191,18 +191,18 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
                 Teuchos::rcp(new BEAMINTERACTION::BeamToSolidConditionSurface(map_item.second.first,
                     map_item.second.second, params_ptr->BeamToSolidSurfaceContactParams(), false));
           else
-            dserror("Got unexpected interaction type.");
+            FOUR_C_THROW("Got unexpected interaction type.");
           interaction_vector.push_back(new_condition);
         }
         else
-          dserror("Could not find both conditions (%s, %s) for the COUPLING_ID %d",
+          FOUR_C_THROW("Could not find both conditions (%s, %s) for the COUPLING_ID %d",
               condition_names[0].c_str(), condition_names[1].c_str(), map_item.first);
       }
 
       // Check that all conditions were added, i.e. that there are no double definitions of
       // COUPLING_ID.
       if (interaction_vector.size() != condition_line.size())
-        dserror("There are multiple definitions of the same COUPLING_ID for %s and %s",
+        FOUR_C_THROW("There are multiple definitions of the same COUPLING_ID for %s and %s",
             condition_names[0].c_str(), condition_names[1].c_str());
     }
     else if (interaction_type ==
@@ -227,7 +227,7 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
       }
     }
     else
-      dserror("Got unexpected interaction type.");
+      FOUR_C_THROW("Got unexpected interaction type.");
   }
 }
 
@@ -355,7 +355,7 @@ void BEAMINTERACTION::ConditionToElementIds(
 
   // Check if all elements were found.
   if (condition->Geometry().size() != element_ids.size())
-    dserror("Could not find the IDs of all elements!");
+    FOUR_C_THROW("Could not find the IDs of all elements!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -185,7 +185,7 @@ void test_bacigenerated_26182()
   CORE::GEO::CUT::Side* cutside;
   CORE::GEO::CUT::plain_side_set sides;
   sh->CollectSides(sides);
-  if (sides.size() != 1) dserror("More than one side!");
+  if (sides.size() != 1) FOUR_C_THROW("More than one side!");
 
   cutside = sides[0];
 
@@ -203,7 +203,7 @@ void test_bacigenerated_26182()
     if (CORE::GEO::CUT::KERNEL::IsOnLine(
             maincycletriangle[0], maincycletriangle[1], maincycletriangle[2]))
     {
-      dserror("maincycletriangle is on lines!");
+      FOUR_C_THROW("maincycletriangle is on lines!");
     }
   }
 

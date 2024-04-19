@@ -65,7 +65,8 @@ void CORE::GEO::CUT::Parallel::CommunicateNodePositions()
     if (counter > numproc_ + 10)
     {
       break;
-      dserror("number of rounds for exchanging data in CommunicateNodePositions > numproc_+10");
+      FOUR_C_THROW(
+          "number of rounds for exchanging data in CommunicateNodePositions > numproc_+10");
     }
 
     // check if there are undecided node positions on this proc
@@ -101,7 +102,7 @@ void CORE::GEO::CUT::Parallel::CommunicateNodePositions()
     }
   }  // end while loop
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (myrank_ == 0)
   {
     std::cout << "number of round Robin loops to check finished procs:\t" << counter << std::endl;
@@ -308,7 +309,7 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
         }
         else if ((pos != Point::undecided) and (my_pos != Point::undecided) and (pos != my_pos))
         {  // only an additional check for not unique node positions
-          dserror(
+          FOUR_C_THROW(
               "current position on myproc and received position for node %d are set, but not equal",
               nid);
         }
@@ -348,7 +349,7 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
         }
         else if ((pos != Point::undecided) and (my_pos != Point::undecided) and (pos != my_pos))
         {  // only an additional check for not unique node positions
-          dserror(
+          FOUR_C_THROW(
               "current position on myproc and received position for shadow node are set, but not "
               "equal");
         }
@@ -388,7 +389,7 @@ void CORE::GEO::CUT::Parallel::distributeMyReceivedNodePositionData()
       setPositionForNode(n, received_pos);
     }
     else
-      dserror(
+      FOUR_C_THROW(
           " this node should be available on its original proc that asked other procs for "
           "nodepositions");
   }
@@ -413,7 +414,7 @@ void CORE::GEO::CUT::Parallel::distributeMyReceivedNodePositionData()
       setPositionForNode(n, received_pos);
     }
     else
-      dserror(
+      FOUR_C_THROW(
           " this shadow node should be available on its original proc that asked other procs for "
           "nodepositions");
   }
@@ -602,7 +603,7 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
       if (include_inner == false)
       {
         if ((*vc_data)->inside_cell_ == true)
-          dserror(
+          FOUR_C_THROW(
               "why did you communicate volumecells with inside position in element %d, where "
               "include_inner is set to false",
               (*vc_data)->peid_);
@@ -658,7 +659,8 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
         ++step;
       }
 
-      if (my_vc == nullptr) dserror("no corresponding volumecell for vc in element %d found", peid);
+      if (my_vc == nullptr)
+        FOUR_C_THROW("no corresponding volumecell for vc in element %d found", peid);
 
 
       for (std::map<int, int>::iterator node_dofsetnumber_it = node_dofsetnumber_map.begin();
@@ -713,12 +715,12 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
                 std::cout << "Is the element cut = " << my_vc->ParentElement()->IsCut() << "\n";
                 std::cout << "VC_DATA is inside: Is the element cut = " << (*vc_data)->inside_cell_
                           << "\n";
-                dserror("the nds-vector of volume cell in element %d on proc %d has size %d",
+                FOUR_C_THROW("the nds-vector of volume cell in element %d on proc %d has size %d",
                     my_vc->ParentElement()->Id(), myrank_, (int)(nds.size()));
               }
               if (index >= (int)(nds.size()))
               {
-                dserror(
+                FOUR_C_THROW(
                     " index %d exceeds the nds vector of my vc with size %d in element %d on proc "
                     "%d",
                     index, nds.size(), my_vc->ParentElement()->Id(), myrank_);
@@ -727,10 +729,10 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
               new_dofset_number = nds[index];
 
               if (new_dofset_number == -1)
-                dserror("the new dofset number for node %d is not valid", nid);
+                FOUR_C_THROW("the new dofset number for node %d is not valid", nid);
             }
             else
-              dserror("Volumecell Pointer is nullptr");
+              FOUR_C_THROW("Volumecell Pointer is nullptr");
 
 
 
@@ -740,7 +742,7 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
               node_dofsetnumber_it->second = new_dofset_number;
             }
             else
-              dserror(
+              FOUR_C_THROW(
                   "dofset for this node for this volumecell already set by another proc, this "
                   "should be done just by the row-node proc");
 
@@ -811,7 +813,7 @@ void CORE::GEO::CUT::Parallel::distributeDofSetData()
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "there must be an elementhandle for element %d on my original proc %d", peid, myrank_);
     }
 
@@ -826,7 +828,7 @@ void CORE::GEO::CUT::Parallel::distributeDofSetData()
       // safety check if setting dofset for data was successful
       if (dofnumber_map->second == -1)
       {
-        dserror("dofset number for node %d for vc in element %d could not be determined",
+        FOUR_C_THROW("dofset number for node %d for vc in element %d could not be determined",
             dofnumber_map->first, (*data)->peid_);
       }
     }
@@ -850,7 +852,8 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::findVolumeCell(
 
   ElementHandle* pele = parentintersection_.GetElement(vc_data.peid_);
 
-  if (pele == nullptr) dserror("element with Id %i not found on proc %i", vc_data.peid_, myrank_);
+  if (pele == nullptr)
+    FOUR_C_THROW("element with Id %i not found on proc %i", vc_data.peid_, myrank_);
 
   plain_volumecell_set my_vcs;
 
@@ -1198,7 +1201,7 @@ void CORE::GEO::CUT::Parallel::sendData(
   lengthSend[0] = dataSend().size();
   int size_one = 1;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   std::cout << "--- sending " << lengthSend[0] << " bytes: from proc " << myrank_ << " to proc "
             << dest << std::endl;
 #endif
@@ -1229,7 +1232,7 @@ void CORE::GEO::CUT::Parallel::sendData(
   exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
   exporter.Wait(req_data);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   std::cout << "--- receiving " << lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc "
             << source << std::endl;
 #endif
@@ -1256,7 +1259,7 @@ int CORE::GEO::CUT::Parallel::getDofSetVecIndex(int nid, int eid)
 {
   DRT::Element* ele = discret_->gElement(eid);
 
-  if (ele == nullptr) dserror("element %d not available on proc %d", eid, myrank_);
+  if (ele == nullptr) FOUR_C_THROW("element %d not available on proc %d", eid, myrank_);
 
   int numnode = ele->NumNode();
 
@@ -1272,7 +1275,7 @@ int CORE::GEO::CUT::Parallel::getDofSetVecIndex(int nid, int eid)
 
   if (index > numnode)
   {
-    dserror("nid %d not found in nodes for element %d!", nid, eid);
+    FOUR_C_THROW("nid %d not found in nodes for element %d!", nid, eid);
     return -1;
   }
 

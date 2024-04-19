@@ -186,7 +186,7 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   kintype_ = static_cast<KinematicType>(ExtractInt(position, data));
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -227,7 +227,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(int nnode, IntegrationT
           break;
         }
         default:
-          dserror("unknown type of integration");
+          FOUR_C_THROW("unknown type of integration");
       }
       break;
     }
@@ -251,7 +251,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(int nnode, IntegrationT
           break;
         }
         default:
-          dserror("unknown type of integration");
+          FOUR_C_THROW("unknown type of integration");
       }
       break;
     }
@@ -270,7 +270,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(int nnode, IntegrationT
           break;
         }
         default:
-          dserror("unknown type of integration");
+          FOUR_C_THROW("unknown type of integration");
       }
       break;
     }
@@ -289,12 +289,12 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(int nnode, IntegrationT
           break;
         }
         default:
-          dserror("unknown type of integration");
+          FOUR_C_THROW("unknown type of integration");
       }
       break;
     }
     default:
-      dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+      FOUR_C_THROW("Only Line2, Line3, Line4 and Line5 Elements implemented.");
   }
 
   return gaussrule;
@@ -393,7 +393,7 @@ void DRT::ELEMENTS::Truss3::LocationVector(
                 dirich->Type() != DRT::Condition::LineDirichlet &&
                 dirich->Type() != DRT::Condition::SurfaceDirichlet &&
                 dirich->Type() != DRT::Condition::VolumeDirichlet)
-              dserror("condition with name Dirichlet is not of type Dirichlet");
+              FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
             flag = dirich->Get<std::vector<int>>("onoff");
           }
           for (unsigned j = 0; j < size; ++j)
@@ -427,7 +427,7 @@ void DRT::ELEMENTS::Truss3::LocationVector(
             dirich->Type() != DRT::Condition::LineDirichlet &&
             dirich->Type() != DRT::Condition::SurfaceDirichlet &&
             dirich->Type() != DRT::Condition::VolumeDirichlet)
-          dserror("condition with name Dirichlet is not of type Dirichlet");
+          FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
         flag = dirich->Get<std::vector<int>>("onoff");
       }
       for (unsigned j = 0; j < dofs.size(); ++j)
@@ -462,11 +462,11 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
 
     // if we get so far current element is a truss3 element and  we get a pointer at it
     auto* currele = dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i));
-    if (!currele) dserror("cast to Truss3* failed");
+    if (!currele) FOUR_C_THROW("cast to Truss3* failed");
 
     // getting element's nodal coordinates and treating them as reference configuration
     if (currele->Nodes()[0] == nullptr || currele->Nodes()[1] == nullptr)
-      dserror("Cannot get nodes in order to compute reference configuration'");
+      FOUR_C_THROW("Cannot get nodes in order to compute reference configuration'");
     else
     {
       for (int k = 0; k < 2; k++)  // element has two nodes

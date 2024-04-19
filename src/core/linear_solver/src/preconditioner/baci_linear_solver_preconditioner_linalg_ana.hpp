@@ -411,7 +411,7 @@ namespace CORE::LINALG
 
       double NormInf() const override
       {
-        dserror(
+        FOUR_C_THROW(
             "CORE::LINALG::ANA::OperatorProduct does not implement "
             "LightWeightOperatorBase::NormInf()");
         return -1.0;
@@ -467,7 +467,7 @@ namespace CORE::LINALG
           const LightWeightOperatorBase& left, const LightWeightOperatorBase& right, const int sign)
           : sign_(sign), usetransposed_(false), left_(left.Clone()), right_(right.Clone())
       {
-        if (sign != 1 && sign != -1) dserror("sign parameter has to be 1 or -1");
+        if (sign != 1 && sign != -1) FOUR_C_THROW("sign parameter has to be 1 or -1");
       }
 
       OperatorSum(const OperatorSum& old)
@@ -495,7 +495,7 @@ namespace CORE::LINALG
 
       int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {
-        dserror(
+        FOUR_C_THROW(
             "CORE::LINALG::ANA::OperatorSum does not implement "
             "LightWeightOperatorBase::ApplyInverse");
         return -1;
@@ -503,7 +503,7 @@ namespace CORE::LINALG
 
       double NormInf() const override
       {
-        dserror(
+        FOUR_C_THROW(
             "CORE::LINALG::ANA::OperatorSum does not implement LightWeightOperatorBase::NormInf()");
         return -1.0;
       }
@@ -619,7 +619,7 @@ namespace CORE::LINALG
 
       int SetUseTranspose(bool UseTranspose) override
       {
-        dserror("CORE::LINALG::ANA::OperatorInverse does not support transpose");
+        FOUR_C_THROW("CORE::LINALG::ANA::OperatorInverse does not support transpose");
         return -1;
       }
 
@@ -627,7 +627,7 @@ namespace CORE::LINALG
 
       int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {
-        dserror(
+        FOUR_C_THROW(
             "CORE::LINALG::ANA::OperatorInverse does not support inverse of inverse of underlying "
             "operator, use Apply instead");
         return -1;
@@ -635,7 +635,7 @@ namespace CORE::LINALG
 
       double NormInf() const override
       {
-        dserror(
+        FOUR_C_THROW(
             "CORE::LINALG::ANA::OperatorInverse does not support NormInf of inverse of operator");
         return -1.0;
       }

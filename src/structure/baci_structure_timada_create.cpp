@@ -68,7 +68,7 @@ Teuchos::RCP<STR::TimAda> STR::TimAdaCreate(
       break;
 
     default:
-      dserror("Auxiliary time integrator is not available.");
+      FOUR_C_THROW("Auxiliary time integrator is not available.");
       break;
   }
 

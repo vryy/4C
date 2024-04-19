@@ -109,7 +109,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::InitialGuess()
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
     if (CORE::UTILS::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
     {
-      dserror(
+      FOUR_C_THROW(
           "unknown interface force predictor '%s'", fsipart.get<std::string>("PREDICTOR").c_str());
     }
     return InterfaceForce();

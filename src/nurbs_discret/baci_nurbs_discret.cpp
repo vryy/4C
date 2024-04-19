@@ -48,7 +48,7 @@ void DRT::NURBS::NurbsDiscretization::SetKnotVector(Teuchos::RCP<DRT::NURBS::Kno
 {
   if (knots == Teuchos::null)
   {
-    dserror(
+    FOUR_C_THROW(
         "You're trying to set an invalid knotvector in the DRT::NURBS::NurbsDiscretization "
         "'%s'. The given know vector is a null vector and can't be set as such.",
         (this->Name()).c_str());
@@ -66,7 +66,7 @@ Teuchos::RCP<DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetKnotVec
 {
   if (knots_ == Teuchos::null)
   {
-    dserror(
+    FOUR_C_THROW(
         "You're trying to access the NURBS knot vector in the DRT::NURBS::NurbsDiscretization "
         "'%s'. The required knot vector is a null vector and can't be accessed as such.",
         (this->Name()).c_str());
@@ -83,7 +83,7 @@ Teuchos::RCP<const DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetK
 {
   if (knots_ == Teuchos::null)
   {
-    dserror(
+    FOUR_C_THROW(
         "You're trying to access the NURBS knot vector in the DRT::NURBS::NurbsDiscretization "
         "'%s'. The required knot vector is a null vector and can't be accessed as such.",
         (this->Name()).c_str());
@@ -130,7 +130,7 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::Discretization& discret, double t
   // create a new toggle vector with column layout
   const DRT::NURBS::NurbsDiscretization* discret_nurbs =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&discret);
-  if (not discret_nurbs) dserror("Dynamic cast failed!");
+  if (not discret_nurbs) FOUR_C_THROW("Dynamic cast failed!");
 
   // build dummy column toggle vector and auxiliary vectors
   DRT::UTILS::Dbc::DbcInfo info_col(*discret_nurbs->DofColMap());
@@ -212,7 +212,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
 
   // read information from condition
   const std::vector<int>* nodeids = cond.GetNodes();
-  if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+  if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
 
   const auto* funct = cond.Get<std::vector<int>>("funct");
   const auto* val = cond.Get<std::vector<double>>("val");
@@ -237,7 +237,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
     deg = 2;
     if (systemvectoraux == Teuchos::null) systemvectoraux = systemvectors[2];
   }
-  dsassert(systemvectoraux != Teuchos::null, "At least one vector must be unequal to null");
+  FOUR_C_ASSERT(systemvectoraux != Teuchos::null, "At least one vector must be unequal to null");
 
 
   // -------------------------------------------------------------------
@@ -276,8 +276,8 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
   // -------------------------------------------------------------------
   {
     // call elements and assemble
-    if (!discret.Filled()) dserror("FillComplete() was not called");
-    if (!discret.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+    if (!discret.Filled()) FOUR_C_THROW("FillComplete() was not called");
+    if (!discret.HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
     // see what we have for input
     bool assemblemat = massmatrix != Teuchos::null;
@@ -400,7 +400,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:
-            dserror("invalid element shape for least squares dirichlet evaluation: %s",
+            FOUR_C_THROW("invalid element shape for least squares dirichlet evaluation: %s",
                 CORE::FE::CellTypeToString(distype).c_str());
             break;
         }
@@ -432,7 +432,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:
-            dserror("invalid element shape for least squares dirichlet evaluation: %s",
+            FOUR_C_THROW("invalid element shape for least squares dirichlet evaluation: %s",
                 CORE::FE::CellTypeToString(distype).c_str());
             break;
         }
@@ -507,7 +507,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
     std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const
 {
   if (deg + 1 != elerhs.size())
-    dserror("given degree of time derivative does not match number or rhs vectors!");
+    FOUR_C_THROW("given degree of time derivative does not match number or rhs vectors!");
 
   static const int dim = CORE::FE::dim<distype>;
 
@@ -648,7 +648,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
     std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const
 {
   if (deg + 1 != elerhs.size())
-    dserror("given degree of time derivative does not match number or rhs vectors!");
+    FOUR_C_THROW("given degree of time derivative does not match number or rhs vectors!");
 
   static const int dim = CORE::FE::dim<distype>;
   const int ndbcdofs = (int)lm.size();
@@ -714,7 +714,8 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
     double det = xjm.Determinant();
 
     if (det < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", actele->Id(), det);
+      FOUR_C_THROW(
+          "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", actele->Id(), det);
 
     // compute integration factor
     double fac = intpoints.IP().qwgt[iquad] * det;

@@ -78,11 +78,11 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
     if (A00->LeftScale(*srowsum_) or A00->RightScale(*scolsum_) or
         mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("fluid scaling failed");
+      FOUR_C_THROW("fluid scaling failed");
 
     Teuchos::RCP<Epetra_Vector> sx = velpressplitter_.ExtractVector(b, 0);
 
-    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("fluid scaling failed");
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("fluid scaling failed");
 
     velpressplitter_.InsertVector(*sx, 0, b);
 
@@ -117,11 +117,11 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
         mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*prowsum_)  // or
         // mat.Matrix(0,1).EpetraMatrix()->RightScale(*pcolsum_)
     )
-      dserror("fluid scaling failed");
+      FOUR_C_THROW("fluid scaling failed");
 
     Teuchos::RCP<Epetra_Vector> px = velpressplitter_.ExtractVector(b, 1);
 
-    if (px->Multiply(1.0, *prowsum_, *px, 0.0)) dserror("fluid scaling failed");
+    if (px->Multiply(1.0, *prowsum_, *px, 0.0)) FOUR_C_THROW("fluid scaling failed");
 
     velpressplitter_.InsertVector(*px, 1, b);
 
@@ -132,7 +132,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
   {
     Teuchos::RCP<CORE::LINALG::SparseMatrix> smat =
         Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(matrix);
-    if (smat == Teuchos::null) dserror("Something went wrong.");
+    if (smat == Teuchos::null) FOUR_C_THROW("Something went wrong.");
 
     srowsum_ = Teuchos::rcp(new Epetra_Vector(smat->RowMap(), false));
     scolsum_ = Teuchos::rcp(new Epetra_Vector(smat->RowMap(), false));
@@ -147,8 +147,8 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
     px->PutScalar(1.0);
     velpressplitter_.InsertVector(*px, 1, *srowsum_);
 
-    if (smat->LeftScale(*srowsum_)) dserror("fluid scaling failed");
-    if (b.Multiply(1.0, *srowsum_, b, 0.0)) dserror("fluid scaling failed");
+    if (smat->LeftScale(*srowsum_)) FOUR_C_THROW("fluid scaling failed");
+    if (b.Multiply(1.0, *srowsum_, b, 0.0)) FOUR_C_THROW("fluid scaling failed");
 
     smat->EpetraMatrix()->InvColSums(*scolsum_);
     if (myrank_ == 0) std::cout << "do right scaling pressure" << std::endl;
@@ -158,7 +158,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
     ux->PutScalar(1.0);
     velpressplitter_.InsertVector(*ux, 0, *scolsum_);
 
-    if (smat->RightScale(*scolsum_)) dserror("fluid scaling failed");
+    if (smat->RightScale(*scolsum_)) FOUR_C_THROW("fluid scaling failed");
   }  // SparseMatrix
 
 
@@ -204,13 +204,13 @@ void FLD::UTILS::FluidInfNormScaling::UnscaleSolution(
 
     Teuchos::RCP<Epetra_Vector> sy = velpressplitter_.ExtractVector(x, 0);
 
-    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("fluid scaling failed");
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("fluid scaling failed");
 
     velpressplitter_.InsertVector(*sy, 0, x);
 
     Teuchos::RCP<Epetra_Vector> sx = velpressplitter_.ExtractVector(b, 0);
 
-    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("fluid scaling failed");
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("fluid scaling failed");
 
     velpressplitter_.InsertVector(*sx, 0, b);
 
@@ -220,17 +220,17 @@ void FLD::UTILS::FluidInfNormScaling::UnscaleSolution(
     if (A00->LeftScale(*srowsum_) or A00->RightScale(*scolsum_) or
         mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("fluid scaling failed");
+      FOUR_C_THROW("fluid scaling failed");
 
     // undo left scaling of continuity equation
     Teuchos::RCP<Epetra_CrsMatrix> A11 = mat.Matrix(1, 1).EpetraMatrix();
     prowsum_->Reciprocal(*prowsum_);
     if (A11->LeftScale(*prowsum_) or mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*prowsum_))
-      dserror("fluid scaling failed");
+      FOUR_C_THROW("fluid scaling failed");
   }
   else
   {
-    if (x.Multiply(1.0, *scolsum_, x, 0.0)) dserror("fluid unscaling failed");
+    if (x.Multiply(1.0, *scolsum_, x, 0.0)) FOUR_C_THROW("fluid unscaling failed");
 
     srowsum_->Reciprocal(*srowsum_);
     scolsum_->Reciprocal(*scolsum_);

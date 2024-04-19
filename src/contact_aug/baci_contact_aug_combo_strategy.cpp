@@ -111,7 +111,7 @@ void CONTACT::AUG::ComboStrategy::CreateStrategyLinearSolvers(
   int ls_id = p_combo.get<int>(lin_solver_id_str);
   ls_id = (ls_id == -1 ? params.get<int>("LINEAR_SOLVER") : ls_id);
   if (ls_id == -1)
-    dserror(
+    FOUR_C_THROW(
         "You must specify a reasonable LINEAR_SOLVER ID for the combo "
         "%s either as CONTACT DYNAMIC/LINEAR_SOLVER or as "
         "CONTACT DYNAMIC/AUGMENTED/COMBO/LINEAR_SOLVER_STRATEGY_%c. "
@@ -120,7 +120,7 @@ void CONTACT::AUG::ComboStrategy::CreateStrategyLinearSolvers(
         INPAR::CONTACT::SolvingStrategy2String(strategy.Type()).c_str(), lin_solver_id_str.back());
 
   if (not cparams_interface)
-    dserror("You have to provide a pointer to the CONTACT::ParamsInterface!");
+    FOUR_C_THROW("You have to provide a pointer to the CONTACT::ParamsInterface!");
 
   DRT::Discretization* str_discret = cparams_interface->Get<DRT::Discretization>();
 
@@ -202,7 +202,7 @@ void CONTACT::AUG::ComboStrategy::RunPostEvaluate(CONTACT::ParamsInterface& cpar
       break;
     }
     default:
-      dserror("Unexpected MORTAR::ActionType! ( actiontype = %s | %d )",
+      FOUR_C_THROW("Unexpected MORTAR::ActionType! ( actiontype = %s | %d )",
           MORTAR::ActionType2String(curr_eval).c_str(), curr_eval);
   }
 }
@@ -358,17 +358,17 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::ComboStrategy::ConstrRhs() { return Ge
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::Initialize() { dserror("Unnecessary in this Strategy."); }
+void CONTACT::AUG::ComboStrategy::Initialize() { FOUR_C_THROW("Unnecessary in this Strategy."); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::EvalConstrRHS() { dserror("Unnecessary in this Strategy."); }
+void CONTACT::AUG::ComboStrategy::EvalConstrRHS() { FOUR_C_THROW("Unnecessary in this Strategy."); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ComboStrategy::UpdateActiveSetSemiSmooth(const bool firstStepPredictor)
 {
-  dserror(
+  FOUR_C_THROW(
       "Unnecessary in this Strategy. Furthermore, this method is "
       "deprecated in the AUG::Strategy framework and has been replaced by "
       "CONTACT::AUG::UpdateActiveSetSemiSmooth( const CONTACT::ParamsInterface& ).");
@@ -685,7 +685,7 @@ void CONTACT::AUG::ComboStrategy::Output::initScreenOutput(bool print2screen)
  *----------------------------------------------------------------------------*/
 std::ostream& CONTACT::AUG::ComboStrategy::Output::oscreen() const
 {
-  if (not oscreen_) dserror("Call initScreenOutput first");
+  if (not oscreen_) FOUR_C_THROW("Call initScreenOutput first");
   return *oscreen_;
 }
 

@@ -128,7 +128,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
     // check the validity of the n-th component
     int compid = 0;
     ignore_errors_in([&]() { functcomp.ExtractInt("COMPONENT", compid); });
-    if (compid != n) dserror("expected COMPONENT %d but got COMPONENT %d", n, compid);
+    if (compid != n) FOUR_C_THROW("expected COMPONENT %d but got COMPONENT %d", n, compid);
 
     // read the expression of the n-th component of the i-th function
     functcomp.ExtractString("SYMBOLIC_FUNCTION_OF_TIME", functstring[n]);
@@ -180,7 +180,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
 
             if (description_vec.size() != 1)
             {
-              dserror(
+              FOUR_C_THROW(
                   "Only expect one DESCRIPTION for variable of type 'expression' but %d were "
                   "given.",
                   description_vec.size());
@@ -213,7 +213,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
             std::size_t numtimes = times.size();
             std::size_t numdescriptions = description_vec.size();
             if (numtimes != numdescriptions + 1)
-              dserror("the number of TIMES and the number of DESCRIPTIONs must be consistent");
+              FOUR_C_THROW("the number of TIMES and the number of DESCRIPTIONs must be consistent");
 
             return Teuchos::rcp(
                 new MultiFunctionVariable(varname, times, description_vec, periodicdata));
@@ -232,7 +232,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
           }
           else
           {
-            dserror("unknown variable type");
+            FOUR_C_THROW("unknown variable type");
             return Teuchos::null;
           }
         });
@@ -254,7 +254,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
       const bool names_of_all_pieces_equal = std::all_of(
           pieces.begin(), pieces.end(), [&name](auto& var) { return var->Name() == name; });
       if (not names_of_all_pieces_equal)
-        dserror("Variable %d has a piece-wise definition with inconsistent names.", id);
+        FOUR_C_THROW("Variable %d has a piece-wise definition with inconsistent names.", id);
 
       functvarvector.emplace_back(Teuchos::rcp(new PiecewiseVariable(name, pieces)));
     }

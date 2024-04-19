@@ -64,27 +64,27 @@ void PARTICLEWALL::WallDataState::CheckForCorrectMaps()
 {
   if (disp_row_ != Teuchos::null)
     if (not disp_row_->Map().SameAs(*walldiscretization_->DofRowMap()))
-      dserror("map of state 'disp_row_' corrupt!");
+      FOUR_C_THROW("map of state 'disp_row_' corrupt!");
 
   if (disp_col_ != Teuchos::null)
     if (not disp_col_->Map().SameAs(*walldiscretization_->DofColMap()))
-      dserror("map of state 'disp_col_' corrupt!");
+      FOUR_C_THROW("map of state 'disp_col_' corrupt!");
 
   if (disp_row_last_transfer_ != Teuchos::null)
     if (not disp_row_last_transfer_->Map().SameAs(*walldiscretization_->DofRowMap()))
-      dserror("map of state 'disp_row_last_transfer_' corrupt!");
+      FOUR_C_THROW("map of state 'disp_row_last_transfer_' corrupt!");
 
   if (vel_col_ != Teuchos::null)
     if (not vel_col_->Map().SameAs(*walldiscretization_->DofColMap()))
-      dserror("map of state 'vel_col_' corrupt!");
+      FOUR_C_THROW("map of state 'vel_col_' corrupt!");
 
   if (acc_col_ != Teuchos::null)
     if (not acc_col_->Map().SameAs(*walldiscretization_->DofColMap()))
-      dserror("map of state 'acc_col_' corrupt!");
+      FOUR_C_THROW("map of state 'acc_col_' corrupt!");
 
   if (force_col_ != Teuchos::null)
     if (not force_col_->Map().SameAs(*walldiscretization_->DofColMap()))
-      dserror("map of state 'force_col_' corrupt!");
+      FOUR_C_THROW("map of state 'force_col_' corrupt!");
 }
 
 void PARTICLEWALL::WallDataState::UpdateMapsOfStateVectors()

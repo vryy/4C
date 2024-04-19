@@ -100,7 +100,8 @@ void FS3I::BiofilmFSI::Init()
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale =
       Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(fsidyn, structaledis));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFsiWrapper>(ale->AleField());
-  if (ale_ == Teuchos::null) dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
+  if (ale_ == Teuchos::null)
+    FOUR_C_THROW("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
 
 
   //---------------------------------------------------------------------
@@ -115,7 +116,7 @@ void FS3I::BiofilmFSI::Init()
   const Teuchos::ParameterList& scatradyn =
       GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
   if (CORE::UTILS::IntegralValue<int>(scatradyn, "SKIPINITDER") == false)
-    dserror(
+    FOUR_C_THROW(
         "Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to "
         "false");
 
@@ -143,10 +144,10 @@ void FS3I::BiofilmFSI::Init()
   // safety checks
   if (volume_fieldcouplings_[0] == INPAR::FS3I::coupling_nonmatch or
       volume_fieldcouplings_[1] == INPAR::FS3I::coupling_nonmatch)
-    dserror("Mortar volume coupling is yet not implemented for biofilm-fs3i.");
+    FOUR_C_THROW("Mortar volume coupling is yet not implemented for biofilm-fs3i.");
   if (!problem->GetDis("scatra1")->GetCondition("ScaTraFluxCalc") or
       !problem->GetDis("scatra2")->GetCondition("ScaTraFluxCalc"))
-    dserror(
+    FOUR_C_THROW(
         "Fluid-scatra and solid-scatra discretizations must have boundary conditions for flux "
         "calculation at FSI interface!");
 
@@ -678,7 +679,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idisp
   for (int i = 0; i < condnodemap->NumMyElements(); ++i)
   {
     int nodegid = condnodemap->GID(i);
-    if (strudis->HaveGlobalNode(nodegid) == false) dserror("node not found on this proc");
+    if (strudis->HaveGlobalNode(nodegid) == false) FOUR_C_THROW("node not found on this proc");
     DRT::Node* actnode = strudis->gNode(nodegid);
     std::vector<int> globaldofs = strudis->Dof(0, actnode);
     const int numdim = (int)(globaldofs.size());
@@ -725,7 +726,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idisp
     }
 
     int error = struiveln_->ReplaceGlobalValues(numdim, Values.data(), globaldofs.data());
-    if (error > 0) dserror("Could not insert values into vector struiveln_: error %d", error);
+    if (error > 0) FOUR_C_THROW("Could not insert values into vector struiveln_: error %d", error);
   }
 
   struidispnp->Update(dt_bio, *struiveln_, 0.0);
@@ -752,7 +753,7 @@ void FS3I::BiofilmFSI::FluidAleSolve()
   fsi_->AleField()->CreateSystemMatrix(Teuchos::null);
   fsi_->AleField()->Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
   int error = fsi_->AleField()->Solve();
-  if (error == 1) dserror("Could not solve fluid ALE in biofilm FS3I!");
+  if (error == 1) FOUR_C_THROW("Could not solve fluid ALE in biofilm FS3I!");
   fsi_->AleField()->UpdateIter();
 
   // change nodes reference position of the fluid field
@@ -800,7 +801,7 @@ void FS3I::BiofilmFSI::StructAleSolve()
   ale_->CreateSystemMatrix(Teuchos::null);
   ale_->Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
   int error = ale_->Solve();
-  if (error == 1) dserror("Could not solve fluid ALE in biofilm FS3I!");
+  if (error == 1) FOUR_C_THROW("Could not solve fluid ALE in biofilm FS3I!");
   ale_->UpdateIter();
 
   // change nodes reference position of the structure field
@@ -898,14 +899,14 @@ void FS3I::BiofilmFSI::VecToScatravec(Teuchos::RCP<DRT::Discretization> scatradi
       // insert value into node-based vector
       err = scatravec->ReplaceMyValue(lnodeid, index, vecval);
 
-      if (err != 0) dserror("Error while inserting value into vector scatravec!");
+      if (err != 0) FOUR_C_THROW("Error while inserting value into vector scatravec!");
     }
 
     // for 1- and 2-D problems: set all unused vector components to zero
     for (int index = numdim; index < 3; ++index)
     {
       err = scatravec->ReplaceMyValue(lnodeid, index, 0.0);
-      if (err != 0) dserror("Error while inserting value into vector scatravec!");
+      if (err != 0) FOUR_C_THROW("Error while inserting value into vector scatravec!");
     }
   }
 

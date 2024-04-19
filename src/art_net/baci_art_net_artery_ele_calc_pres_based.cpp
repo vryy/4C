@@ -99,7 +99,7 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateService(Artery* ele,
       EvaluateFlow(ele, discretization, la, elevec1_epetra, mat);
       break;
     default:
-      dserror("Unkown type of action %d for Artery (PressureBased formulation)", action);
+      FOUR_C_THROW("Unkown type of action %d for Artery (PressureBased formulation)", action);
   }
 
   return 0;
@@ -114,7 +114,7 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::ScatraEvaluate(Artery* ele,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
 {
-  dserror(
+  FOUR_C_THROW(
       "not implemented by pressure-based formulation, should be done by cloned "
       "ScaTra-Discretization");
 
@@ -138,7 +138,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
 
   // get pressure
   Teuchos::RCP<const Epetra_Vector> pressnp = discretization.GetState(0, "pressurenp");
-  if (pressnp == Teuchos::null) dserror("could not get pressure inside artery element");
+  if (pressnp == Teuchos::null) FOUR_C_THROW("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
   CORE::LINALG::Matrix<my::iel_, 1> mypress(true);
@@ -148,7 +148,8 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
   const double L = CalculateEleLength(ele, discretization, la);
 
   // check here, if we really have an artery !!
-  if (material->MaterialType() != INPAR::MAT::m_cnst_art) dserror("Wrong material type for artery");
+  if (material->MaterialType() != INPAR::MAT::m_cnst_art)
+    FOUR_C_THROW("Wrong material type for artery");
 
   // cast the material to artery material material
   const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());
@@ -214,7 +215,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateFlow(Artery* ele,
 {
   // get pressure
   Teuchos::RCP<const Epetra_Vector> pressnp = discretization.GetState(0, "pressurenp");
-  if (pressnp == Teuchos::null) dserror("could not get pressure inside artery element");
+  if (pressnp == Teuchos::null) FOUR_C_THROW("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
   CORE::LINALG::Matrix<my::iel_, 1> mypress(true);
@@ -224,7 +225,8 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateFlow(Artery* ele,
   const double L = CalculateEleLength(ele, discretization, la);
 
   // check here, if we really have an artery !!
-  if (material->MaterialType() != INPAR::MAT::m_cnst_art) dserror("Wrong material type for artery");
+  if (material->MaterialType() != INPAR::MAT::m_cnst_art)
+    FOUR_C_THROW("Wrong material type for artery");
 
   // cast the material to artery material material
   const MAT::Cnst1dArt* actmat = static_cast<const MAT::Cnst1dArt*>(material.get());

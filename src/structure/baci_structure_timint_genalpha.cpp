@@ -50,22 +50,22 @@ void STR::TimIntGenAlpha::VerifyCoeff()
 {
   // beta
   if ((beta_ <= 0.0) or (beta_ > 0.5))
-    dserror("beta out of range (0.0,0.5]");
+    FOUR_C_THROW("beta out of range (0.0,0.5]");
   else
     std::cout << "   beta = " << beta_ << '\n';
   // gamma
   if ((gamma_ <= 0.0) or (gamma_ > 1.0))
-    dserror("gamma out of range (0.0,1.0]");
+    FOUR_C_THROW("gamma out of range (0.0,1.0]");
   else
     std::cout << "   gamma = " << gamma_ << '\n';
   // alpha_f
   if ((alphaf_ < 0.0) or (alphaf_ >= 1.0))
-    dserror("alpha_f out of range [0.0,1.0)");
+    FOUR_C_THROW("alpha_f out of range [0.0,1.0)");
   else
     std::cout << "   alpha_f = " << alphaf_ << '\n';
   // alpha_m
   if ((alpham_ < -1.0) or (alpham_ >= 1.0))
-    dserror("alpha_m out of range [-1.0,1.0)");
+    FOUR_C_THROW("alpha_m out of range [-1.0,1.0)");
   else
     std::cout << "   alpha_m = " << alpham_ << '\n';
 
@@ -79,7 +79,7 @@ void STR::TimIntGenAlpha::VerifyCoeff()
   // never explicitly at some generalized midpoint, such as t_{n+1-\alpha_f}. Thus, any
   // cumbersome extrapolation of history variables, etc. becomes obsolete.
   if (midavg_ != INPAR::STR::midavg_trlike)
-    dserror("mid-averaging of internal forces only implemented TR-like");
+    FOUR_C_THROW("mid-averaging of internal forces only implemented TR-like");
   else
     std::cout << "   midavg = " << INPAR::STR::MidAverageString(midavg_) << '\n';
 }
@@ -245,7 +245,7 @@ void STR::TimIntGenAlpha::Setup()
 
     if (HaveNonlinearMass() == INPAR::STR::ml_rotations and !SolelyBeam3Elements(discret_))
     {
-      dserror(
+      FOUR_C_THROW(
           "Multiplicative Gen-Alpha time integration scheme only implemented for beam elements so "
           "far!");
     }
@@ -361,7 +361,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   {
     if (pred_ != INPAR::STR::pred_constdis)
     {
-      dserror(
+      FOUR_C_THROW(
           "Only the predictor PredictConstDisConsistVelAcc() allowed for dynamic beam3r "
           "simulations!!!");
     }
@@ -553,7 +553,7 @@ void STR::TimIntGenAlpha::EvaluateForceResidual()
   }
   else
   {
-    dserror("Not implemented, yet.");
+    FOUR_C_THROW("Not implemented, yet.");
   }
 
   // total internal mid-forces F_{int;n+1-alpha_f} ----> TR-like
@@ -572,7 +572,7 @@ void STR::TimIntGenAlpha::EvaluateForceResidual()
   }
   else
   {
-    dserror("Not implemented, yet.");
+    FOUR_C_THROW("Not implemented, yet.");
   }
 
   // ************************** (4) DAMPING FORCES ****************************
@@ -604,7 +604,7 @@ void STR::TimIntGenAlpha::EvaluateForceResidual()
   else /* build residual vector and tangent matrix if a multiplicative Gen-Alpha
           scheme for rotations is applied */
   {
-    dserror("Not implemented, yet.");
+    FOUR_C_THROW("Not implemented, yet.");
   }
 
   // calculate RHS without local condensations (for NewtonLs)

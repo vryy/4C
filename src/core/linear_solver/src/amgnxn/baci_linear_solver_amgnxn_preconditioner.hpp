@@ -110,13 +110,13 @@ namespace CORE::LINEAR_SOLVER
 
     int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
     {
-      dserror("Function not implemented");
+      FOUR_C_THROW("Function not implemented");
       return -1;
     }
 
     double NormInf() const override
     {
-      dserror("Function not implemented");
+      FOUR_C_THROW("Function not implemented");
       return -1.0;
     }
 
@@ -130,7 +130,7 @@ namespace CORE::LINEAR_SOLVER
 
     bool HasNormInf() const override
     {
-      dserror("Function not implemented");
+      FOUR_C_THROW("Function not implemented");
       return false;
     }
 
@@ -181,13 +181,13 @@ namespace CORE::LINEAR_SOLVER
 
     int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
     {
-      dserror("Function not implemented");
+      FOUR_C_THROW("Function not implemented");
       return -1;
     }
 
     double NormInf() const override
     {
-      dserror("Function not implemented");
+      FOUR_C_THROW("Function not implemented");
       return -1.0;
     }
 
@@ -201,7 +201,7 @@ namespace CORE::LINEAR_SOLVER
 
     bool HasNormInf() const override
     {
-      dserror("Function not implemented");
+      FOUR_C_THROW("Function not implemented");
       return false;
     }
 
@@ -248,13 +248,13 @@ namespace CORE::LINEAR_SOLVER
 
     int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
     {
-      dserror("Function not implemented");
+      FOUR_C_THROW("Function not implemented");
       return -1;
     }
 
     double NormInf() const override
     {
-      dserror("Function not implemented");
+      FOUR_C_THROW("Function not implemented");
       return -1.0;
     }
 
@@ -268,7 +268,7 @@ namespace CORE::LINEAR_SOLVER
 
     bool HasNormInf() const override
     {
-      dserror("Function not implemented");
+      FOUR_C_THROW("Function not implemented");
       return false;
     }
 

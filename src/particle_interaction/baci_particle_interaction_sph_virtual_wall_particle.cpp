@@ -67,7 +67,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::Setup(
 
   // safety check
   if (not particlewallinterface_)
-    dserror("interface to particle wall handler required in virtual wall particle handler!");
+    FOUR_C_THROW("interface to particle wall handler required in virtual wall particle handler!");
 
   // update with actual fluid particle types
   const auto allfluidtypes = allfluidtypes_;
@@ -219,9 +219,9 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
     std::vector<PARTICLEENGINE::LocalIndexTuple> neighboringparticles;
     particleengineinterface_->GetParticlesWithinRadius(pos_j, rad_j[0], neighboringparticles);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (not(neighboringparticles.size() > 0))
-      dserror("expected at least one neighboring particle for wall contact point!");
+      FOUR_C_THROW("expected at least one neighboring particle for wall contact point!");
 #endif
 
     double sumk_Wjk = 0.0;
@@ -272,9 +272,9 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
       UTILS::VecAddScale(sumk_vel_k_Wjk, Wjk, vel_k);
     }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (sumk_Wjk < (1.0e-10 * rad_j[0]))
-      dserror("expected at least one neighboring particle for wall contact point!");
+      FOUR_C_THROW("expected at least one neighboring particle for wall contact point!");
 #endif
 
     const double inv_sumk_Wjk = 1.0 / sumk_Wjk;

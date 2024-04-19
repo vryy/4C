@@ -98,7 +98,7 @@ double DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateInternalEnergy(DRT::Elem
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
   if (disp == Teuchos::null || res == Teuchos::null)
-    dserror("Cannot get state vectors 'displacement' and/or residual");
+    FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
   CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
@@ -202,7 +202,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateStressesStrains(DRT::Eleme
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
   if (disp == Teuchos::null || res == Teuchos::null)
-    dserror("Cannot get state vectors 'displacement' and/or residual");
+    FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
   CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
@@ -305,7 +305,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::EvaluateNonlinearForceStiffnessMass
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
   if (disp == Teuchos::null || res == Teuchos::null)
-    dserror("Cannot get state vectors 'displacement' and/or residual");
+    FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
   CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
@@ -488,7 +488,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::Update(DRT::Element& ele,
     Teuchos::ParameterList& params)
 {
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' ");
+  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
   std::vector<double> displacement(dof_index_array.size());
   CORE::FE::ExtractMyValues(*disp, displacement, dof_index_array);
 
@@ -576,7 +576,7 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::VisData(
 {
   if (name == "thickness")
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (auto& thickness_data : cur_thickness_)
     {
       data[0] += thickness_data;

@@ -169,7 +169,7 @@ void SSI::SSIBase::Setup()
 
     if (structure_ == Teuchos::null)
     {
-      dserror(
+      FOUR_C_THROW(
           "No valid pointer to ADAPTER::SSIStructureWrapper !\n"
           "Either cast failed, or no valid wrapper was set using SetStructureWrapper(...) !");
     }
@@ -189,9 +189,9 @@ void SSI::SSIBase::Setup()
 
   // check maps from scalar transport and structure discretizations
   if (ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
-    dserror("Scalar transport discretization does not have any degrees of freedom!");
+    FOUR_C_THROW("Scalar transport discretization does not have any degrees of freedom!");
   if (structure_->DofRowMap()->NumGlobalElements() == 0)
-    dserror("Structure discretization does not have any degrees of freedom!");
+    FOUR_C_THROW("Structure discretization does not have any degrees of freedom!");
 
   // set up materials
   ssicoupling_->AssignMaterialPointers(
@@ -209,7 +209,7 @@ void SSI::SSIBase::Setup()
 
     // safety checks
     if (meshtying_strategy_s2i_ == Teuchos::null)
-      dserror("Invalid scatra-scatra interface coupling strategy!");
+      FOUR_C_THROW("Invalid scatra-scatra interface coupling strategy!");
   }
 
   // construct vector of zeroes
@@ -238,7 +238,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     if (fieldcoupling_ != INPAR::SSI::FieldCoupling::volume_match and
         fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match)
     {
-      dserror(
+      FOUR_C_THROW(
           "If 'FIELDCOUPLING' is NOT 'volume_matching' or 'volumeboundary_matching' in the SSI "
           "CONTROL section cloning of the scatra discretization from the structure discretization "
           "is not supported!");
@@ -327,7 +327,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
   {
     if (fieldcoupling_ == INPAR::SSI::FieldCoupling::volume_match)
     {
-      dserror(
+      FOUR_C_THROW(
           "Reading a TRANSPORT discretization from the .dat file for the input parameter "
           "'FIELDCOUPLING volume_matching' in the SSI CONTROL section is not supported! As this "
           "coupling relies on matching node (and sometimes element) IDs, the ScaTra discretization "
@@ -350,7 +350,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     {
       if (clonestrategy.GetImplType(structdis->lColElement(i)) != INPAR::SCATRA::impltype_undefined)
       {
-        dserror(
+        FOUR_C_THROW(
             "A TRANSPORT discretization is read from the .dat file, which is fine since the scatra "
             "discretization is not cloned from the structure discretization. But in the STRUCTURE "
             "ELEMENTS section of the .dat file an ImplType that is NOT 'Undefined' is prescribed "
@@ -386,7 +386,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
     if (havessicoupling and (fieldcoupling_ != INPAR::SSI::FieldCoupling::boundary_nonmatch and
                                 fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match))
     {
-      dserror(
+      FOUR_C_THROW(
           "SSICoupling condition only valid in combination with FIELDCOUPLING set to "
           "'boundary_nonmatching' or 'volumeboundary_matching' in SSI DYNAMIC section. ");
     }
@@ -398,7 +398,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
       if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::CouplingType>(
               volmortarparams, "COUPLINGTYPE") != INPAR::VOLMORTAR::couplingtype_coninter)
       {
-        dserror(
+        FOUR_C_THROW(
             "Volmortar coupling only tested for consistent interpolation, "
             "i.e. 'COUPLINGTYPE consint' in VOLMORTAR COUPLING section. Try other couplings "
             "at "
@@ -407,7 +407,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
       }
     }
     if (IsScaTraManifold() and fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match)
-      dserror("Solving manifolds only in combination with matching volumes and boundaries");
+      FOUR_C_THROW("Solving manifolds only in combination with matching volumes and boundaries");
   }
 
   // build SSI coupling class
@@ -429,7 +429,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
       redistribution_required = SSI::RedistributionType::match;
       break;
     default:
-      dserror("unknown type of field coupling for SSI!");
+      FOUR_C_THROW("unknown type of field coupling for SSI!");
   }
 
   // initialize coupling objects including dof sets
@@ -590,7 +590,7 @@ void SSI::SSIBase::CheckSSIFlags() const
   {
     if (!(SSIInterfaceContact() or SSIInterfaceMeshtying()))
     {
-      dserror(
+      FOUR_C_THROW(
           "You defined an 'S2IKinetics' condition in the input-file. However, neither an "
           "'SSIInterfaceContact' condition nor an 'SSIInterfaceMeshtying' condition defined. This "
           "is not reasonable!");
@@ -601,7 +601,7 @@ void SSI::SSIBase::CheckSSIFlags() const
       GLOBAL::Problem::Instance()->ContactDynamicParams(), "NITSCHE_PENALTY_ADAPTIVE"));
 
   if (SSIInterfaceContact() and is_nitsche_penalty_adaptive)
-    dserror("Adaptive nitsche penalty parameter currently not supported!");
+    FOUR_C_THROW("Adaptive nitsche penalty parameter currently not supported!");
 }
 
 /*----------------------------------------------------------------------*/
@@ -724,11 +724,11 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
       structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
           structure->StructureField(), true);
       if (structure_ == Teuchos::null)
-        dserror("cast from ADAPTER::Structure to ADAPTER::SSIStructureWrapper failed");
+        FOUR_C_THROW("cast from ADAPTER::Structure to ADAPTER::SSIStructureWrapper failed");
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "Unknown time integration requested!\n"
           "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!\n"
           "If you want to use yet unsupported elements or algorithms,\n"
@@ -804,15 +804,15 @@ void SSI::SSIBase::CheckAdaptiveTimeStepping(
   // safety check: adaptive time stepping in one of the sub problems
   if (!CORE::UTILS::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
   {
-    dserror(
+    FOUR_C_THROW(
         "Must provide adaptive time stepping algorithm in one of the sub problems. (Currently "
         "just ScaTra)");
   }
   if (CORE::UTILS::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
       INPAR::STR::timada_kind_none)
-    dserror("Adaptive time stepping in SSI currently just from ScaTra");
+    FOUR_C_THROW("Adaptive time stepping in SSI currently just from ScaTra");
   if (CORE::UTILS::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
-    dserror("Currently, only one step methods are allowed for adaptive time stepping");
+    FOUR_C_THROW("Currently, only one step methods are allowed for adaptive time stepping");
 }
 
 /*----------------------------------------------------------------------*/
@@ -842,7 +842,7 @@ bool SSI::SSIBase::CheckS2IKineticsConditionForPseudoContact(
       {
         if (*contact_condition->Get<int>("ConditionID") == s2i_kinetics_condition_id)
         {
-          dserror(
+          FOUR_C_THROW(
               "Pseudo contact formulation of s2i kinetics conditions does not make sense in "
               "combination with resolved contact formulation. Set the respective is_pseudo_contact "
               "flag to '0'");
@@ -857,7 +857,7 @@ bool SSI::SSIBase::CheckS2IKineticsConditionForPseudoContact(
 
   if (is_s2i_kinetic_with_pseudo_contact and !do_output_cauchy_stress)
   {
-    dserror(
+    FOUR_C_THROW(
         "Consideration fo pseudo contact with 'S2IKinetics' condition only possible when Cauchy "
         "stress output is written.");
   }

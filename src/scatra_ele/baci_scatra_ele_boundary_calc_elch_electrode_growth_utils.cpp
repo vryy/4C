@@ -22,7 +22,7 @@ double DRT::ELEMENTS::CalculateGrowthExchangeMassFluxDensity(const double kr, co
     const double c_el, const int kinetic_model,
     const DRT::Condition::ConditionType& s2i_condition_type)
 {
-  dsassert(s2i_condition_type == DRT::Condition::S2IKineticsGrowth,
+  FOUR_C_ASSERT(s2i_condition_type == DRT::Condition::S2IKineticsGrowth,
       "This method is called with the wrong condition type. Check the implementation!");
 
   switch (kinetic_model)
@@ -32,7 +32,7 @@ double DRT::ELEMENTS::CalculateGrowthExchangeMassFluxDensity(const double kr, co
       return kr * std::pow(c_el, alpha_a);
     }
     default:
-      dserror("Did not recognize kinetic model of S2IKineticsGrowth condition!");
+      FOUR_C_THROW("Did not recognize kinetic model of S2IKineticsGrowth condition!");
   }
 }
 
@@ -112,7 +112,7 @@ void DRT::ELEMENTS::CalculateS2IGrowthElchLinearizations(const double j0, const 
     }
     default:
     {
-      dserror("Regularization type %i not recognized!",
+      FOUR_C_THROW("Regularization type %i not recognized!",
           static_cast<int>(scatraeleparamsboundary->RegularizationType()));
     }
   }
@@ -172,7 +172,7 @@ double DRT::ELEMENTS::CalculateS2IElchGrowthLinearizations(const double j0, cons
     }
     default:
     {
-      dserror("Regularization type %i not recognized!",
+      FOUR_C_THROW("Regularization type %i not recognized!",
           static_cast<int>(scatraeleparamsboundary->RegularizationType()));
     }
   }
@@ -236,7 +236,7 @@ double DRT::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const doub
       if (std::abs(residual) < scatraparameterstd->IntLayerGrowthConvTol())
         break;
       else if (iternum == scatraparameterstd->IntLayerGrowthIteMax())
-        dserror(
+        FOUR_C_THROW(
             "Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
 
       // compute linearization of current Newton-Raphson residual w.r.t. Butler-Volmer current
@@ -282,7 +282,7 @@ double DRT::ELEMENTS::GetRegularizationFactor(const double thickness, const doub
     // get the S2I coupling growth regularization parameter
     const double regularizationparameter = scatraeleparamsboundary->RegularizationParameter();
     if (regularizationparameter < 0.0)
-      dserror("Regularization parameter for lithium stripping must not be negative!");
+      FOUR_C_THROW("Regularization parameter for lithium stripping must not be negative!");
 
     // evaluate dependent on the regularization type
     switch (regularizationtype)
@@ -327,7 +327,7 @@ double DRT::ELEMENTS::GetRegularizationFactor(const double thickness, const doub
       }
       // safety check
       default:
-        dserror("Invalid type of regularization: %i for lithium stripping!",
+        FOUR_C_THROW("Invalid type of regularization: %i for lithium stripping!",
             static_cast<int>(regularizationtype));
     }
   }
@@ -400,7 +400,7 @@ double DRT::ELEMENTS::GetRegularizationFactorDerivative(const double thickness, 
       // safety check
       default:
       {
-        dserror("Invalid type of regularization: %i for lithium stripping!",
+        FOUR_C_THROW("Invalid type of regularization: %i for lithium stripping!",
             static_cast<int>(regularizationtype));
       }
     }

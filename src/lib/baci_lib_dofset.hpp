@@ -177,7 +177,7 @@ namespace DRT
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
-      dsassert(nodaldofset == 0, "only one nodal dofset supported!");
+      FOUR_C_ASSERT(nodaldofset == 0, "only one nodal dofset supported!");
       dof = Dof(node);
     }
 
@@ -222,7 +222,7 @@ namespace DRT
       if (lid == -1) return;
       const int idx = (*idxcolnodes_)[lid];
       const int size = (*numdfcolnodes_)[lid];
-      dsassert(lm.size() >= (startindex + size), "vector<int> lm too small");
+      FOUR_C_ASSERT(lm.size() >= (startindex + size), "vector<int> lm too small");
       for (int i = 0; i < size; ++i)
       {
         if (pccdofhandling_)

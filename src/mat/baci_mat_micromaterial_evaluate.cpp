@@ -41,7 +41,7 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
-  if (eleGID == -1) dserror("no element ID provided in material");
+  if (eleGID == -1) FOUR_C_THROW("no element ID provided in material");
 
   CORE::LINALG::Matrix<3, 3>* defgrd_enh = const_cast<CORE::LINALG::Matrix<3, 3>*>(defgrd);
 

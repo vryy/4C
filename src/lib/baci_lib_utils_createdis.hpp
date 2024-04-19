@@ -81,11 +81,11 @@ namespace DRT
       )
       {
         if (cond.GetNodes() == nullptr or cond.GetNodes()->size() == 0)
-          dserror("The condition has no nodes!");
+          FOUR_C_THROW("The condition has no nodes!");
 
         // make sure connectivity is all set
         // we don't care, whether dofs exist or not
-        if (!sourcedis.Filled()) dserror("sourcedis is not filled");
+        if (!sourcedis.Filled()) FOUR_C_THROW("sourcedis is not filled");
 
         // get this condition's elements
         std::map<int, Teuchos::RCP<DRT::Element>> sourceelements;
@@ -112,7 +112,7 @@ namespace DRT
       {
         // make sure connectivity is all set
         // we don't care, whether dofs exist or not
-        if (!sourcedis.Filled()) dserror("sourcedis is not filled");
+        if (!sourcedis.Filled()) FOUR_C_THROW("sourcedis is not filled");
 
         // We need to test for all elements (including ghosted ones) to
         // catch all nodes
@@ -162,7 +162,7 @@ namespace DRT
           if (std::count_if(nids.begin(), nids.end(), DRT::UTILS::MyGID(sourcedis.NodeColMap())) !=
               (int)(nids.size()))
           {
-            dserror("element %d owned by proc %d has remote non-ghost nodes", sourceele->Id(),
+            FOUR_C_THROW("element %d owned by proc %d has remote non-ghost nodes", sourceele->Id(),
                 sourceele->Owner());
           }
 
@@ -292,17 +292,17 @@ namespace DRT
       void CreateCloneFieldMatMap(std::map<int, int>& matmap, const DRT::Discretization& sourcedis,
           const DRT::Discretization& targetdis) const
       {
-        if (matmap.size()) dserror("The input material map is supposed to be empty!");
+        if (matmap.size()) FOUR_C_THROW("The input material map is supposed to be empty!");
 
         std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap =
             GLOBAL::Problem::Instance()->CloningMaterialMap();
         if (clonefieldmatmap.size() < 1)
-          dserror("At least one material pairing required in --CLONING MATERIAL MAP.");
+          FOUR_C_THROW("At least one material pairing required in --CLONING MATERIAL MAP.");
 
         std::pair<std::string, std::string> key(sourcedis.Name(), targetdis.Name());
         matmap = clonefieldmatmap[key];
         if (matmap.size() < 1)
-          dserror("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP.",
+          FOUR_C_THROW("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP.",
               sourcedis.Name().c_str(), targetdis.Name().c_str());
 
         return;
@@ -327,7 +327,7 @@ namespace DRT
         // All cloned elements will receive the same material with the provided matid.
         std::map<int, int> matmap;
         int numelements = sourcedis->NumMyColElements();
-        if (numelements < 1) dserror("At least one processor has no element");
+        if (numelements < 1) FOUR_C_THROW("At least one processor has no element");
         for (int i = 0; i < numelements; ++i)
         {
           DRT::Element* sourceele = sourcedis->lColElement(i);
@@ -355,9 +355,9 @@ namespace DRT
               matmap  ///< map of material IDs (source element -> target element)
       )
       {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (!(sourcedis->HaveGlobalNode(sourcedis->NodeRowMap()->GID(0))))
-          dserror("Cloning not possible since node with GID %d is not stored on this proc!",
+          FOUR_C_THROW("Cloning not possible since node with GID %d is not stored on this proc!",
               sourcedis->NodeRowMap()->GID(0));
 #endif
         // try to cast sourcedis to NurbsDiscretisation
@@ -412,7 +412,7 @@ namespace DRT
         {
           // check the source condition
           if ((*cit)->GetNodes() == nullptr or (*cit)->GetNodes()->size() == 0)
-            dserror("The condition has no nodes!");
+            FOUR_C_THROW("The condition has no nodes!");
         }
 
         // get this condition vector's elements
@@ -574,7 +574,7 @@ namespace DRT
             if (std::count_if(nids.begin(), nids.end(), DRT::UTILS::MyGID(sourcenodecolmap)) !=
                 (int)(nids.size()))
             {
-              dserror("element %d owned by proc %d has remote non-ghost nodes", actele->Id(),
+              FOUR_C_THROW("element %d owned by proc %d has remote non-ghost nodes", actele->Id(),
                   actele->Owner());
             }
 
@@ -647,7 +647,7 @@ namespace DRT
             }
             else
             {
-              dserror("unknown type of nurbs element\n");
+              FOUR_C_THROW("unknown type of nurbs element\n");
             }
           }
 
@@ -686,7 +686,7 @@ namespace DRT
             for (mat_iter = matmap.begin(); mat_iter != matmap.end(); mat_iter++)
               std::cout << mat_iter->first << " -> " << mat_iter->second << std::endl;
 
-            dserror("no matching material ID (%d) in map", src_matid);
+            FOUR_C_THROW("no matching material ID (%d) in map", src_matid);
           }
           it++;
         }
@@ -718,13 +718,13 @@ namespace DRT
           std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator src_ele_citer =
               sourceelements.find(*it);
           if (src_ele_citer == sourceelements.end())
-            dserror(
+            FOUR_C_THROW(
                 "The source element %d could not be found in the source "
                 "condition element map!",
                 *it);
 
           DRT::Element* sourceele = src_ele_citer->second.get();
-          if (sourceele == nullptr) dserror("The sourceele pointer is nullptr!");
+          if (sourceele == nullptr) FOUR_C_THROW("The sourceele pointer is nullptr!");
 
           std::string approxtype = "Polynomial";
           if (isnurbsdis)
@@ -755,13 +755,14 @@ namespace DRT
             }
             else
             {
-              dserror("unknown type of nurbs element\n");
+              FOUR_C_THROW("unknown type of nurbs element\n");
             }
           }
 
           // get owner of source element
           const int sourceeleowner = sourceele->Owner();
-          if (myrank != sourceeleowner) dserror("roweleset_ should only contain my element gids!");
+          if (myrank != sourceeleowner)
+            FOUR_C_THROW("roweleset_ should only contain my element gids!");
 
           // create a new element of desired type with the same global element id and same owner as
           // source element
@@ -792,7 +793,7 @@ namespace DRT
               mat_ptr = src_face_element->ParentElement()->Material();
           }
           // It is no FaceElement or the material pointer of the parent element is nullptr.
-          if (mat_ptr.is_null()) dserror("The condition element has no material!");
+          if (mat_ptr.is_null()) FOUR_C_THROW("The condition element has no material!");
 
           int src_matid = mat_ptr->Parameter()->Id();
           std::map<int, int>::const_iterator mat_iter = matmap.find(src_matid);
@@ -811,7 +812,7 @@ namespace DRT
             for (mat_iter = matmap.begin(); mat_iter != matmap.end(); mat_iter++)
               std::cout << mat_iter->first << " -> " << mat_iter->second << std::endl;
 
-            dserror("no matching material ID (%d) in map", src_matid);
+            FOUR_C_THROW("no matching material ID (%d) in map", src_matid);
           }
           it++;
         }
@@ -861,9 +862,9 @@ namespace DRT
     {
       const DRT::Discretization* sourcedis_ptr =
           dynamic_cast<const DRT::Discretization*>(&sourcedis);
-      if (sourcedis_ptr == nullptr) dserror("Cast of the source discretization failed!");
+      if (sourcedis_ptr == nullptr) FOUR_C_THROW("Cast of the source discretization failed!");
       DRT::Discretization* targetdis_ptr = dynamic_cast<DRT::Discretization*>(&targetdis);
-      if (targetdis_ptr == nullptr) dserror("Cast of the target discretization failed!");
+      if (targetdis_ptr == nullptr) FOUR_C_THROW("Cast of the target discretization failed!");
 
       // access the communicator for time measurement
       const Epetra_Comm& comm = sourcedis_ptr->Comm();

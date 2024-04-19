@@ -49,7 +49,7 @@ template <typename enum_class>
 void CONTACT::AUG::TimeMonitor<enum_class>::stop(const enum_class id)
 {
   std::pair<double, double>& begin_time = timings_[static_cast<unsigned>(id)];
-  if (begin_time.first == -1.0) dserror("Call start() first!");
+  if (begin_time.first == -1.0) FOUR_C_THROW("Call start() first!");
 
   double& accumulated_time = begin_time.second;
   last_incr_ = Teuchos::Time::wallTime() - begin_time.first;

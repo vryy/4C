@@ -32,7 +32,8 @@ MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Teuchos::RCP<MAT::PAR::
   // check, whether the mass frac sums up to 1
   const double sum = std::accumulate(mass_fractions_.begin(), mass_fractions_.end(), 0.0);
 
-  if (std::abs(1.0 - sum) > 1e-8) dserror("Mass fractions don't sum up to 1, which is unphysical.");
+  if (std::abs(1.0 - sum) > 1e-8)
+    FOUR_C_THROW("Mass fractions don't sum up to 1, which is unphysical.");
 }
 
 std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::SimpleMixtureRule::CreateRule()

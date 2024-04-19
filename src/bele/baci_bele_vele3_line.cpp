@@ -69,7 +69,7 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3Line::Shape() const
     case 3:
       return CORE::FE::CellType::line3;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
   }
 }
 
@@ -80,7 +80,7 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Vele3Line::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("this Vele3Line element does not support communication");
+  FOUR_C_THROW("this Vele3Line element does not support communication");
 
   return;
 }
@@ -92,7 +92,7 @@ void DRT::ELEMENTS::Vele3Line::Pack(CORE::COMM::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Vele3Line::Unpack(const std::vector<char>& data)
 {
-  dserror("this Vele3Line element does not support communication");
+  FOUR_C_THROW("this Vele3Line element does not support communication");
   return;
 }
 

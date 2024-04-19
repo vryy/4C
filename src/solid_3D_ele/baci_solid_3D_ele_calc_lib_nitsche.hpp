@@ -256,7 +256,7 @@ namespace DRT::ELEMENTS
       template <typename T, std::enable_if_t<!CanEvaluateEvaluateCauchyNDir<T&, dim>, bool> = true>
       CauchyNDirAndLinearization<dim> operator()(T& other)
       {
-        dserror(
+        FOUR_C_THROW(
             "Your element evaluation %s does not allow to evaluate the Cauchy stress at a specific "
             "point in a specific direction in the dimension dim=%d.",
             CORE::UTILS::TryDemangle(typeid(T).name()).c_str(), dim);

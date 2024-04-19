@@ -97,7 +97,8 @@ void BINSTRATEGY::BinningStrategy::Init(
         domain_bounding_box_corner_positions_(row, col) = doublevalue;
       }
       else
-        dserror("specify six values for bounding box in three dimensional problem. Fix input file");
+        FOUR_C_THROW(
+            "specify six values for bounding box in three dimensional problem. Fix input file");
     }
   }
 
@@ -118,7 +119,7 @@ void BINSTRATEGY::BinningStrategy::Init(
       if (intval > 0) bin_per_dir_[idim] = intval;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "You need to specify three figures for BIN_PER_DIR in input file for three dimensional "
           "problem. ");
   }
@@ -131,7 +132,7 @@ void BINSTRATEGY::BinningStrategy::Init(
 
   // safety check
   if (feasiblebininput and bin_size_lower_bound_ > 0.0)
-    dserror("Choose either bin_size_lower_bound_ or binsperdir to specify binning domain.");
+    FOUR_C_THROW("Choose either bin_size_lower_bound_ or binsperdir to specify binning domain.");
 
   // init vectors for function calls
   if (disnp.size() == 0)
@@ -142,13 +143,13 @@ void BINSTRATEGY::BinningStrategy::Init(
 
   if (not feasibleboxinput)
   {
-    if (discret.size() == 0) dserror("We need a discretization at this point.");
+    if (discret.size() == 0) FOUR_C_THROW("We need a discretization at this point.");
     ComputeMinBinningDomainContainingAllElementsOfMultipleDiscrets(
         discret, disnp, domain_bounding_box_corner_positions_, bin_size_lower_bound_ < 0.0);
   }
   else if (bin_size_lower_bound_ < 0.0)
   {
-    if (discret.size() == 0) dserror("We need a discretization at this point.");
+    if (discret.size() == 0) FOUR_C_THROW("We need a discretization at this point.");
     bin_size_lower_bound_ =
         ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfAABBOfLargestEle(discret, disnp);
   }
@@ -169,7 +170,7 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
     const int* ijk_range, std::set<int>& binIds, bool checkexistence) const
 {
   if (checkexistence == true and bindis_ == Teuchos::null)
-    dserror("particle discretization is not set up correctly");
+    FOUR_C_THROW("particle discretization is not set up correctly");
 
   for (int i = ijk_range[0]; i <= ijk_range[1]; ++i)
   {
@@ -202,7 +203,7 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(
     const int* ijk_range, std::vector<int>& binIds, bool checkexistence) const
 {
   if (checkexistence == true and bindis_ == Teuchos::null)
-    dserror("particle discretization is not set up correctly");
+    FOUR_C_THROW("particle discretization is not set up correctly");
 
   for (int i = ijk_range[0]; i <= ijk_range[1]; ++i)
   {
@@ -299,8 +300,8 @@ void BINSTRATEGY::BinningStrategy::ConvertGidToijk(const int gid, int* ijk) cons
   // found ijk is outside of XAABB
   if (ijk[0] < 0 || ijk[1] < 0 || ijk[2] < 0 || ijk[0] >= bin_per_dir_[0] ||
       ijk[1] >= bin_per_dir_[1] || ijk[2] >= bin_per_dir_[2])
-    dserror("ijk (%d %d %d) for given gid: %d is outside of range (bin per dir: %d %d %d)", ijk[0],
-        ijk[1], ijk[2], gid, bin_per_dir_[0], bin_per_dir_[1], bin_per_dir_[2]);
+    FOUR_C_THROW("ijk (%d %d %d) for given gid: %d is outside of range (bin per dir: %d %d %d)",
+        ijk[0], ijk[1], ijk[2], gid, bin_per_dir_[0], bin_per_dir_[1], bin_per_dir_[2]);
 
   return;
 }
@@ -494,7 +495,7 @@ CORE::LINALG::Matrix<3, 1> BINSTRATEGY::BinningStrategy::GetBinCentroid(const in
   int ijk[3];
   ConvertGidToijk(binId, ijk);
   if (ijk[0] == -1)
-    dserror("given bin id is outside of bins; centroid of bin is does not make sense");
+    FOUR_C_THROW("given bin id is outside of bins; centroid of bin is does not make sense");
 
   CORE::LINALG::Matrix<3, 1> centroid;
   for (int dim = 0; dim < 3; ++dim)
@@ -546,7 +547,7 @@ void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "Enter three values to specify each direction as periodic or non periodic. Fix input "
           "file ...");
     }
@@ -675,7 +676,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   for (int i = 0; i < bindis_->NumMyColElements(); ++i)
   {
     DRT::Element* ele = bindis_->lColElement(i);
-    if (!ele) dserror("Cannot find element with lid %", i);
+    if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
 
     // get corner position as node positions
     const int numcorner = 8;
@@ -1157,7 +1158,7 @@ void BINSTRATEGY::BinningStrategy::DistributeRowNodesToBins(
     const int binid = ConvertijkToGid(ijk);
 
     if (binid == -1)
-      dserror(
+      FOUR_C_THROW(
           "Node %i in your discretization resides outside the binning \n"
           "domain, this does not work at this point.",
           node->Id());
@@ -1277,7 +1278,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
   // some safety checks to ensure efficiency
   {
     if (numbin < discret[0]->Comm().NumProc() && myrank_ == 0)
-      dserror(
+      FOUR_C_THROW(
           "ERROR:NumProc %i > NumBin %i. Too many processors to "
           "distribute your bins properly!!!",
           numbin, numbin < discret[0]->Comm().NumProc());
@@ -1310,7 +1311,8 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
 
       int err = bingraph->InsertGlobalIndices(binId, (int)neighbors.size(), neighbors.data());
       if (err < 0)
-        dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err, binId);
+        FOUR_C_THROW(
+            "Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err, binId);
     }
   }
   else
@@ -1353,7 +1355,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
       int lid = rowbins->LID(biniter->first);
       // safety check
       if (lid < 0)
-        dserror("Proc %d: Cannot find gid=%d in Epetra_Vector", discret[i]->Comm().MyPID(),
+        FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", discret[i]->Comm().MyPID(),
             biniter->first);
 
       // weighting
@@ -1373,14 +1375,15 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
     int err = bingraph->InsertGlobalIndices(
         rowbinid, static_cast<int>(neighbors.size()), neighbors.data());
     if (err < 0)
-      dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err, rowbinid);
+      FOUR_C_THROW(
+          "Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err, rowbinid);
   }
 
   // complete graph
   int err = bingraph->FillComplete();
-  if (err) dserror("graph->FillComplete() returned err=%d", err);
+  if (err) FOUR_C_THROW("graph->FillComplete() returned err=%d", err);
   err = bingraph->OptimizeStorage();
-  if (err) dserror("graph->OptimizeStorage() returned err=%d", err);
+  if (err) FOUR_C_THROW("graph->OptimizeStorage() returned err=%d", err);
 
   Teuchos::ParameterList paramlist;
   paramlist.set("PARTITIONING METHOD", "GRAPH");
@@ -1504,12 +1507,12 @@ void BINSTRATEGY::BinningStrategy::ExtendGhostingOfBinningDiscretization(
       -1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, bindis_->Comm()));
 
   if (bincolmap->NumGlobalElements() == 1 && bindis_->Comm().NumProc() > 1)
-    dserror("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");
+    FOUR_C_THROW("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");
 
   BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(
       bindis_, bincolmap, assigndegreesoffreedom, false, true);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether each proc has only particles that are within bins on this proc
   for (int k = 0; k < bindis_->NumMyColElements(); ++k)
   {
@@ -1524,7 +1527,8 @@ void BINSTRATEGY::BinningStrategy::ExtendGhostingOfBinningDiscretization(
 
       int gidofbin = ConvertijkToGid(ijk.data());
       if (gidofbin != binid)
-        dserror("after ghosting: particle which should be in bin no. %i is in %i", gidofbin, binid);
+        FOUR_C_THROW(
+            "after ghosting: particle which should be in bin no. %i is in %i", gidofbin, binid);
     }
   }
 #endif
@@ -1582,7 +1586,7 @@ void BINSTRATEGY::BinningStrategy::StandardDiscretizationGhosting(
   newnodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy, *newnoderowmap, 108, false));
   Epetra_Export exporter(initgraph->RowMap(), *newnoderowmap);
   int err = newnodegraph->Export(*initgraph, exporter, Add);
-  if (err < 0) dserror("Graph export returned err=%d", err);
+  if (err < 0) FOUR_C_THROW("Graph export returned err=%d", err);
   newnodegraph->FillComplete();
   newnodegraph->OptimizeStorage();
 
@@ -1612,7 +1616,7 @@ void BINSTRATEGY::BinningStrategy::StandardDiscretizationGhosting(
     CORE::LINALG::Export(*old, *disnp);
   }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // print distribution after standard ghosting
   // some output after standard ghosting
   if (myrank_ == 0) std::cout << "parallel distribution with standard ghosting" << std::endl;
@@ -1712,7 +1716,7 @@ void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsO
 
   // safety check
   if (discret[0]->NodeRowMap()->NumMyElements() == 0)
-    dserror(
+    FOUR_C_THROW(
         "At least one proc does not even own at least one element, this leads to problems."
         " Choose less procs or change parallel distribution");
 
@@ -1863,7 +1867,7 @@ void BINSTRATEGY::BinningStrategy::CreateBinsBasedOnBinSizeLowerBoundAndBinningD
 
   if (id_calc_bin_per_dir_[0] * id_calc_bin_per_dir_[1] * id_calc_bin_per_dir_[2] >
       std::numeric_limits<int>::max())
-    dserror(
+    FOUR_C_THROW(
         "number of bins is larger than an integer can hold! Reduce number of bins by increasing "
         "the bin_size_lower_bound_");
 

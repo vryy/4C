@@ -115,7 +115,7 @@ namespace DRT
           const double phinp        //!< scalar at time_(n+1)
           ) override
       {
-        dserror("not possible");
+        FOUR_C_THROW("not possible");
         return;
       }
 
@@ -184,10 +184,10 @@ namespace DRT
       void SetArteryMaterial(DRT::Element* ele)
       {
         // check if we actually have two materials
-        if (ele->NumMaterial() < 2) dserror("no second material available");
+        if (ele->NumMaterial() < 2) FOUR_C_THROW("no second material available");
         // check for artery material
         if (ele->Material(1)->MaterialType() != INPAR::MAT::MaterialType::m_cnst_art)
-          dserror("Secondary material is not of type m_cnst_art, but %d",
+          FOUR_C_THROW("Secondary material is not of type m_cnst_art, but %d",
               ele->Material(1)->MaterialType());
 
         // here we rely that the Artery material has been added as second material
@@ -208,7 +208,7 @@ namespace DRT
       //! return artery material
       Teuchos::RCP<MAT::Cnst1dArt> ArteryMat()
       {
-        if (!materialset_) dserror("Artery Material has not yet been set in Variablemanager");
+        if (!materialset_) FOUR_C_THROW("Artery Material has not yet been set in Variablemanager");
 
         return arterymat_;
       }

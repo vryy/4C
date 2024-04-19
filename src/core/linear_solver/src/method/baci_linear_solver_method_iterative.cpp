@@ -50,7 +50,7 @@ void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Setup(
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
 
-  if (!Params().isSublist("Belos Parameters")) dserror("Do not have belos parameter list");
+  if (!Params().isSublist("Belos Parameters")) FOUR_C_THROW("Do not have belos parameter list");
   Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
 
   const int reuse = belist.get("reuse", 0);
@@ -85,7 +85,7 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
 
   const bool set = problem->setProblem();
   if (set == false)
-    dserror("CORE::LINEAR_SOLVER::BelosSolver: Iterative solver failed to set up correctly.");
+    FOUR_C_THROW("CORE::LINEAR_SOLVER::BelosSolver: Iterative solver failed to set up correctly.");
 
   Teuchos::RCP<Belos::SolverManager<double, VectorType, MatrixType>> newSolver;
   std::string solverType = belist.get<std::string>("Solver Type");
@@ -99,7 +99,7 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
     newSolver = Teuchos::rcp(new Belos::BiCGStabSolMgr<double, VectorType, MatrixType>(
         problem, Teuchos::rcp(&belist, false)));
   else
-    dserror("CORE::LINEAR_SOLVER::BelosSolver: Unknown iterative solver solver type chosen.");
+    FOUR_C_THROW("CORE::LINEAR_SOLVER::BelosSolver: Unknown iterative solver solver type chosen.");
 
   Belos::ReturnType ret = newSolver->solve();
 
@@ -230,7 +230,7 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePrecondition
           Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner(Params()));
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "CORE::LINEAR_SOLVER::IterativeSolver::CreatePreconditioner: Unknown preconditioner for "
           "iterative solver chosen.");
 
@@ -248,7 +248,7 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePrecondition
       preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::SymDiagPreconditioner(preconditioner));
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "CORE::LINEAR_SOLVER::IterativeSolver::CreatePreconditioner: Unknown type of scaling "
           "found in parameter list.");
 
@@ -293,7 +293,7 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePrecondition
       preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::AmGnxnPreconditioner(Params()));
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "CORE::LINEAR_SOLVER::IterativeSolver::CreatePreconditioner: Unknown preconditioner for "
           "block iterative solver chosen.");
   }

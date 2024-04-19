@@ -90,9 +90,9 @@ namespace CORE::GEO
       bool LocalCoordinates(const T1& xyz, T2& rst)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rst.M()) < Dim())
-          dserror("The dimension of rst is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
         bool success = LocalCoordinates(xyz.A(), rst.A());
 
@@ -112,9 +112,9 @@ namespace CORE::GEO
       void GlobalCoordinates(const T1& rst, T2& xyz)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rst.M()) < Dim())
-          dserror("The dimension of rst is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
         GlobalCoordinates(rst.A(), xyz.A());
 
@@ -131,7 +131,7 @@ namespace CORE::GEO
       void ElementCenter(T& midpoint)
       {
         if (static_cast<unsigned>(midpoint.M()) != ProbDim())
-          dserror("The dimension of midpoint is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of midpoint is wrong! (probdim = %d)", ProbDim());
 
         return ElementCenter(midpoint.A());
       }
@@ -148,7 +148,7 @@ namespace CORE::GEO
       double Scalar(const std::vector<double>& ns, const T& rst)
       {
         if (static_cast<unsigned>(rst.M()) != Dim())
-          dserror("The dimension of rst is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
         return Scalar(ns, rst.A());
       }
 
@@ -193,7 +193,7 @@ namespace CORE::GEO
       double GetLevelSetValue(const T& xyz)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
         return GetLevelSetValue(xyz.A());
       }
@@ -204,7 +204,7 @@ namespace CORE::GEO
       double GetLevelSetValueAtLocalCoords(const T& rst)
       {
         if (static_cast<unsigned>(rst.M()) < Dim())
-          dserror("The dimension of rst is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
         return GetLevelSetValueAtLocalCoords(rst.A());
       }
@@ -233,7 +233,7 @@ namespace CORE::GEO
       std::vector<double> GetLevelSetGradient(const T& xyz)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
         return GetLevelSetGradient(xyz.A());
       }
@@ -241,7 +241,7 @@ namespace CORE::GEO
       std::vector<double> GetLevelSetGradientAtLocalCoords(const T& rst)
       {
         if (static_cast<unsigned>(rst.M()) < Dim())
-          dserror("The dimension of rst is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
         return GetLevelSetGradientAtLocalCoords(rst.A());
       }
@@ -249,7 +249,7 @@ namespace CORE::GEO
       std::vector<double> GetLevelSetGradientInLocalCoords(const T& xyz)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
         return GetLevelSetGradientInLocalCoords(xyz.A());
       }
@@ -257,7 +257,7 @@ namespace CORE::GEO
       std::vector<double> GetLevelSetGradientAtLocalCoordsInLocalCoords(const T& rst)
       {
         if (static_cast<unsigned>(rst.M()) < Dim())
-          dserror("The dimension of rst is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of rst is wrong! (probdim = %d)", ProbDim());
 
         return GetLevelSetGradientAtLocalCoordsInLocalCoords(rst.A());
       }
@@ -333,10 +333,10 @@ namespace CORE::GEO
       void Coordinates(T& xyze) const
       {
         if (static_cast<unsigned>(xyze.M()) != ProbDim())
-          dserror("xyze has the wrong number of rows! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("xyze has the wrong number of rows! (probdim = %d)", ProbDim());
 
         if (static_cast<unsigned>(xyze.N()) != NumNodes())
-          dserror("xyze has the wrong number of columns! (numNodes = %d)", NumNodes());
+          FOUR_C_THROW("xyze has the wrong number of columns! (numNodes = %d)", NumNodes());
 
         Coordinates(xyze.A());
       }
@@ -445,7 +445,7 @@ namespace CORE::GEO
               xyze, deriv, metrictensor, det, throw_error_if_negative_determinant);
         }
         else
-          dserror("The element dimension is larger than the problem dimension! (%d > %d)", dim,
+          FOUR_C_THROW("The element dimension is larger than the problem dimension! (%d > %d)", dim,
               probdim);
         double VarReturn = 0.0;
         if (transformType == "LocalToGlobal")
@@ -453,7 +453,7 @@ namespace CORE::GEO
         else if (transformType == "GlobalToLocal")
           VarReturn = scalar / det;
         else
-          dserror("Undefined transformation option");
+          FOUR_C_THROW("Undefined transformation option");
         return VarReturn;
       }
 
@@ -868,7 +868,7 @@ namespace CORE::GEO
         phi_deriv1.MultiplyNT(derxy, escaa);
 
         std::vector<double> normal_facet(phi_deriv1.A(), phi_deriv1.A() + probdim);
-        if (normal_facet.size() != probdim) dserror("Something went wrong!");
+        if (normal_facet.size() != probdim) FOUR_C_THROW("Something went wrong!");
 
         return normal_facet;
       }
@@ -909,7 +909,7 @@ namespace CORE::GEO
         phi_deriv1.MultiplyNT(deriv1, escaa);
 
         std::vector<double> normal_facet(phi_deriv1.A(), phi_deriv1.A() + dim);
-        if (normal_facet.size() != dim) dserror("Something went wrong! (dim=%d)", dim);
+        if (normal_facet.size() != dim) FOUR_C_THROW("Something went wrong! (dim=%d)", dim);
 
         return normal_facet;
       }
@@ -1005,7 +1005,7 @@ namespace CORE::GEO
         Element* e = nullptr;
         // sanity check
         if (probdim < CORE::FE::dim<elementtype>)
-          dserror("Problem dimension is smaller than the element dimension!");
+          FOUR_C_THROW("Problem dimension is smaller than the element dimension!");
 
         switch (probdim)
         {
@@ -1016,7 +1016,7 @@ namespace CORE::GEO
             e = new ConcreteElement<3, elementtype>(eid, sides, nodes, active);
             break;
           default:
-            dserror("Unsupported problem dimension! ( probdim = %d )", probdim);
+            FOUR_C_THROW("Unsupported problem dimension! ( probdim = %d )", probdim);
             break;
         }
         return e;

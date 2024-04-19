@@ -85,7 +85,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   factory.ReadAndCheckInput(cparams);
 
   // check for FillComplete of discretization
-  if (not Discret().Filled()) dserror("Discretization is not FillComplete.");
+  if (not Discret().Filled()) FOUR_C_THROW("Discretization is not FillComplete.");
 
   // ---------------------------------------------------------------------
   // build the meshtying interfaces
@@ -146,7 +146,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
     }
     else if (mesh_relocation_parameter == INPAR::MORTAR::relocation_timestep)
     {
-      dserror(
+      FOUR_C_THROW(
           "Meshtying with MESH_RELOCATION every_timestep not permitted. Change to MESH_RELOCATION "
           "initial or MESH_RELOCATION no.");
     }
@@ -167,7 +167,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const doubl
   {
     block_vec_ptr = Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
-    dsassert(!block_vec_ptr.is_null(), "force not available");
+    FOUR_C_ASSERT(!block_vec_ptr.is_null(), "force not available");
     CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
   else if (Strategy().IsCondensedSystem())
@@ -459,7 +459,7 @@ void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(
       const int lid = gvector.Map().LID(nodedofs[i]);
 
       if (lid < 0)
-        dserror("ERROR: Proc %d: Cannot find gid=%d in Epetra_Vector", gvector.Comm().MyPID(),
+        FOUR_C_THROW("ERROR: Proc %d: Cannot find gid=%d in Epetra_Vector", gvector.Comm().MyPID(),
             nodedofs[i]);
 
       nvector[i] += gvector[lid];

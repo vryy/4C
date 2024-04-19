@@ -55,10 +55,11 @@ void FLD::TimIntGenAlpha::Init()
   if (numstasteps_ > 0)
   {
     if (timealgo_ != INPAR::FLUID::timeint_afgenalpha)
-      dserror("no starting algorithm supported for schemes other than af-gen-alpha");
+      FOUR_C_THROW("no starting algorithm supported for schemes other than af-gen-alpha");
     else
       startalgo_ = true;
-    if (numstasteps_ > stepmax_) dserror("more steps for starting algorithm than steps overall");
+    if (numstasteps_ > stepmax_)
+      FOUR_C_THROW("more steps for starting algorithm than steps overall");
   }
 
   SetElementTimeParameter();
@@ -92,7 +93,7 @@ void FLD::TimIntGenAlpha::PrintTimeStepInfo()
             time_, maxtime_, dta_, gamma_, alphaF_, alphaM_, step_, stepmax_);
         break;
       default:
-        dserror("parameter out of range: IOP\n");
+        FOUR_C_THROW("parameter out of range: IOP\n");
         break;
     } /* end of switch(timealgo) */
   }
@@ -387,7 +388,7 @@ void FLD::TimIntGenAlpha::OutputofFilteredVel(
   if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
     Sep_->Multiply(false, *velaf_, *row_finescaleveltmp);
   else
-    dserror("Unknown separation type!");
+    FOUR_C_THROW("Unknown separation type!");
 
   // get filtered or coarse scale velocity
   outvec->Update(1.0, *velaf_, -1.0, *row_finescaleveltmp, 0.0);
@@ -484,7 +485,7 @@ double FLD::TimIntGenAlpha::MethodLinErrCoeffVel() const
   else if (MethodOrderOfAccuracy() == 2)
     fac = 1.0 / 6.0 - 0.5 * gamma_;
   else
-    dserror("Unknown Order of Accuracy for Gen-Alpha time integration.");
+    FOUR_C_THROW("Unknown Order of Accuracy for Gen-Alpha time integration.");
 
   return fac;
 }

@@ -264,7 +264,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
     }
     default:
     {
-      dserror("Got unexpected coupling type.");
+      FOUR_C_THROW("Got unexpected coupling type.");
       return r_beam;
     }
   }

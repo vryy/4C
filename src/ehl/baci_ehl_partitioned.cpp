@@ -40,7 +40,7 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
 
   if (CORE::UTILS::IntegralValue<int>(ehlparams, "DIFFTIMESTEPSIZE"))
   {
-    dserror("Different time stepping for two way coupling not implemented yet.");
+    FOUR_C_THROW("Different time stepping for two way coupling not implemented yet.");
   }
 
   // Get the parameters for the ConvergenceCheck
@@ -48,7 +48,7 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
   ittol_ = ehlparamspart.get<double>("CONVTOL");  // default: =1e-6
 
   // no dry contact in partitioned ehl
-  if (dry_contact_) dserror("no dry contact model in partitioned ehl");
+  if (dry_contact_) FOUR_C_THROW("no dry contact model in partitioned ehl");
 }
 
 /*----------------------------------------------------------------------*
@@ -284,7 +284,7 @@ bool EHL::Partitioned::ConvergenceCheck(int itnum)
       printf("\n");
       printf("\n");
     }
-    dserror("The partitioned EHL solver did not converge in ITEMAX steps!");
+    FOUR_C_THROW("The partitioned EHL solver did not converge in ITEMAX steps!");
   }
 
   return stopnonliniter;

@@ -129,7 +129,7 @@ namespace FSI
             bestsweeps_(6, 1),
             S_(7, Teuchos::null)
       {
-        if (nlevel - 1 > 6) dserror("Can only analyze V cycles upto 7 levels");
+        if (nlevel - 1 > 6) FOUR_C_THROW("Can only analyze V cycles upto 7 levels");
         return;
       }
 

@@ -85,13 +85,13 @@ class MonWriter
   virtual void WriteStrTableHead(
       std::ofstream& outfile, const std::string strname, const std::string strtype, const int dim)
   {
-    dserror("Not impl.");
+    FOUR_C_THROW("Not impl.");
   }
 
   virtual void WriteStrResults(std::ofstream& outfile, PostProblem& problem, PostResult& result,
       std::vector<int>& gdof, int dim, std::string strtype, std::string groupname, const int node)
   {
-    dserror("Not impl.");
+    FOUR_C_THROW("Not impl.");
   }
 
   void WriteMonThrFile(const std::string& filename, PostProblem& problem, std::string& infieldtype,
@@ -101,13 +101,13 @@ class MonWriter
   virtual void WriteThrTableHead(
       std::ofstream& outfile, const std::string thrname, const std::string thrtype, const int dim)
   {
-    dserror("Not impl.");
+    FOUR_C_THROW("Not impl.");
   }
 
   virtual void WriteThrResults(std::ofstream& outfile, PostProblem& problem, PostResult& result,
       std::vector<int>& gdof, int dim, std::string thrtype, std::string groupname, const int node)
   {
-    dserror("Not impl.");
+    FOUR_C_THROW("Not impl.");
   }
 
   const int myrank_;  //! local processor id

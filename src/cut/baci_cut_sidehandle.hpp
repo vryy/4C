@@ -73,7 +73,7 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<2, nen> xie;
 
         const std::vector<CORE::GEO::CUT::Point*>& cpoints = bc->Points();
-        if (cpoints.size() != nen) dserror("non-matching number of points");
+        if (cpoints.size() != nen) FOUR_C_THROW("non-matching number of points");
 
         for (unsigned i = 0; i < nen; ++i)
         {
@@ -108,38 +108,38 @@ namespace CORE::GEO
       /// Remove the SubSidePointer of given side from this Sidehandle
       virtual void RemoveSubSidePointer(const Side* side)
       {
-        dserror("RemoveSubSidePointer: Not available in base class!");
+        FOUR_C_THROW("RemoveSubSidePointer: Not available in base class!");
       }
 
       /// Add the SubSidePointer of given side to this Sidehandle
       virtual void AddSubSidePointer(Side* side)
       {
-        dserror("AddSubSidePointer: Not available in base class!");
+        FOUR_C_THROW("AddSubSidePointer: Not available in base class!");
       }
 
       /// Add the SubSide in to the unphysical list
       virtual void MarkSubSideunphysical(Side* side)
       {
-        dserror("SetSubSidePointertounphysical: Not available in base class!");
+        FOUR_C_THROW("SetSubSidePointertounphysical: Not available in base class!");
       }
 
       /// Is this side and unphysical subside
       virtual bool IsunphysicalSubSide(Side* side)
       {
-        dserror("IsunphysicalSubSide: Not available in base class!");
+        FOUR_C_THROW("IsunphysicalSubSide: Not available in base class!");
         return false;  // dummy
       }
 
       /// Does this sidehandle have unphysical subsides
       virtual bool HasunphysicalSubSide()
       {
-        dserror("HasunphysicalSubSide: Not available in base class!");
+        FOUR_C_THROW("HasunphysicalSubSide: Not available in base class!");
         return false;  // dummy
       }
 
       virtual const std::vector<Node*>& GetNodes() const
       {
-        dserror("GetNodes: Not available in base class!");
+        FOUR_C_THROW("GetNodes: Not available in base class!");
         static const std::vector<Node*> dummy;
         return dummy;  // dummy
       }
@@ -243,7 +243,7 @@ namespace CORE::GEO
         if (tmpssit != subsides_.end())
           subsides_.erase(tmpssit);
         else
-          dserror("RemoveSubSidePointer: Couldn't identify subside!");
+          FOUR_C_THROW("RemoveSubSidePointer: Couldn't identify subside!");
       }
 
       /// Add the SubSidePointer of given side to this Sidehandle
@@ -277,7 +277,7 @@ namespace CORE::GEO
           }
         }
         if (tmpssit == subsides_.end())
-          dserror(
+          FOUR_C_THROW(
               "MarkSubSideunphysical failed, your side is not a Subside of the "
               "QuadraticSideHandle!");
         else

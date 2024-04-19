@@ -45,7 +45,7 @@ namespace CORE::LINEAR_SOLVER
     /// return number of iterations performed by solver
     virtual int getNumIters() const
     {
-      dserror("Not implemented in base class!");
+      FOUR_C_THROW("Not implemented in base class!");
       return -1;
     };
   };

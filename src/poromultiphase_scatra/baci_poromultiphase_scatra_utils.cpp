@@ -71,7 +71,7 @@ POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
       break;
     }
     default:
-      dserror("Unknown time-integration scheme for multiphase poro fluid problem");
+      FOUR_C_THROW("Unknown time-integration scheme for multiphase poro fluid problem");
       break;
   }
 
@@ -121,7 +121,7 @@ POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
     }
     default:
     {
-      dserror("Wrong type of artery-coupling strategy");
+      FOUR_C_THROW("Wrong type of artery-coupling strategy");
       break;
     }
   }
@@ -171,14 +171,15 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
   Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
 
   // check if ScatraField has 2 discretizations, so that coupling is possible
-  if (scatradis->AddDofSet(structdofset) != 1) dserror("unexpected dof sets in scatra field");
-  if (scatradis->AddDofSet(fluiddofset) != 2) dserror("unexpected dof sets in scatra field");
+  if (scatradis->AddDofSet(structdofset) != 1) FOUR_C_THROW("unexpected dof sets in scatra field");
+  if (scatradis->AddDofSet(fluiddofset) != 2) FOUR_C_THROW("unexpected dof sets in scatra field");
   if (scatradis->AddDofSet(fluiddis->GetDofSetProxy(ndsporo_solidpressure)) != 3)
-    dserror("unexpected dof sets in scatra field");
-  if (structdis->AddDofSet(scatradofset) != 3) dserror("unexpected dof sets in structure field");
+    FOUR_C_THROW("unexpected dof sets in scatra field");
+  if (structdis->AddDofSet(scatradofset) != 3)
+    FOUR_C_THROW("unexpected dof sets in structure field");
 
   ndsporofluid_scatra = fluiddis->AddDofSet(scatradofset);
-  if (ndsporofluid_scatra != 3) dserror("unexpected dof sets in fluid field");
+  if (ndsporofluid_scatra != 3) FOUR_C_THROW("unexpected dof sets in fluid field");
 
   structdis->FillComplete(true, false, false);
   fluiddis->FillComplete(true, false, false);
@@ -189,7 +190,7 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
     Teuchos::RCP<DRT::Discretization> artdis = problem->GetDis("artery");
     Teuchos::RCP<DRT::Discretization> artscatradis = problem->GetDis("artery_scatra");
 
-    if (!artdis->Filled()) dserror("artery discretization should be filled at this point");
+    if (!artdis->Filled()) FOUR_C_THROW("artery discretization should be filled at this point");
 
     // fill artery scatra discretization by cloning artery discretization
     DRT::UTILS::CloneDiscretization<ART::ArteryScatraCloneStrategy>(artdis, artscatradis);
@@ -211,10 +212,11 @@ std::map<int, std::set<int>> POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAn
 
     // check if ScatraField has 2 discretizations, so that coupling is possible
     if (artscatradis->AddDofSet(arterydofset) != 2)
-      dserror("unexpected dof sets in artscatra field");
+      FOUR_C_THROW("unexpected dof sets in artscatra field");
 
     // check if ArteryField has 2 discretizations, so that coupling is possible
-    if (artdis->AddDofSet(artscatradofset) != 2) dserror("unexpected dof sets in artery field");
+    if (artdis->AddDofSet(artscatradofset) != 2)
+      FOUR_C_THROW("unexpected dof sets in artery field");
 
     artscatradis->FillComplete(true, false, false);
   }
@@ -294,7 +296,7 @@ double POROMULTIPHASESCATRA::UTILS::CalculateVectorNorm(
   }
   else
   {
-    dserror("Cannot handle vector norm");
+    FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
 }  // CalculateVectorNorm()

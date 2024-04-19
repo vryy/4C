@@ -47,7 +47,7 @@ void FLD::TimIntLoma::Init()
   // conservative formulation currently not supported in low-Mach-number case
   // when using generalized-alpha time-integration scheme
   if (convform_ == "conservative")
-    dserror(
+    FOUR_C_THROW(
         "conservative formulation currently not supported for low-Mach-number flow within "
         "generalized-alpha time-integration scheme");
 
@@ -59,7 +59,7 @@ void FLD::TimIntLoma::Init()
   // get gas constant
   int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
   if (id == -1)
-    dserror("Could not find sutherland material");
+    FOUR_C_THROW("Could not find sutherland material");
   else
   {
     const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
@@ -69,7 +69,7 @@ void FLD::TimIntLoma::Init()
   }
 
   // potential check here -> currently not executed
-  // if (gasconstant_ < 1e-15) dserror("received zero or negative gas constant");
+  // if (gasconstant_ < 1e-15) FOUR_C_THROW("received zero or negative gas constant");
 
   // set some Loma-specific parameters
   SetElementCustomParameter();
@@ -114,7 +114,7 @@ void FLD::TimIntLoma::SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> 
     const int numscatradof = scatradis->NumDof(0, lscatranode);
     const int globalscatradofid = scatradis->Dof(0, lscatranode, numscatradof - 1);
     const int localscatradofid = scalaraf->Map().LID(globalscatradofid);
-    if (localscatradofid < 0) dserror("localdofid not found in map for given globaldofid");
+    if (localscatradofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
     // get the processor's local fluid node
     DRT::Node* lnode = discret_->lRowNode(lnodeid);
@@ -124,16 +124,16 @@ void FLD::TimIntLoma::SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> 
     const int numdof = discret_->NumDof(0, lnode);
     const int globaldofid = discret_->Dof(0, lnode, numdof - 1);
     const int localdofid = scaam_->Map().LID(globaldofid);
-    if (localdofid < 0) dserror("localdofid not found in map for given globaldofid");
+    if (localdofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
 
     // now copy the values
     value = (*scalaraf)[localscatradofid];
     err = scaaf_->ReplaceMyValue(localdofid, 0, value);
-    if (err != 0) dserror("error while inserting value into scaaf_");
+    if (err != 0) FOUR_C_THROW("error while inserting value into scaaf_");
 
     value = (*scalaram)[localscatradofid];
     err = scaam_->ReplaceMyValue(localdofid, 0, value);
-    if (err != 0) dserror("error while inserting value into scaam_");
+    if (err != 0) FOUR_C_THROW("error while inserting value into scaam_");
 
     if (scalardtam != Teuchos::null)
     {
@@ -144,17 +144,17 @@ void FLD::TimIntLoma::SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> 
       value = 0.0;  // for safety reasons: set zeros in accam_
     }
     err = accam_->ReplaceMyValue(localdofid, 0, value);
-    if (err != 0) dserror("error while inserting value into accam_");
+    if (err != 0) FOUR_C_THROW("error while inserting value into accam_");
 
     if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     {
       if (fsscalaraf != Teuchos::null)
         value = (*fsscalaraf)[localscatradofid];
       else
-        dserror("Expected fine-scale scalar!");
+        FOUR_C_THROW("Expected fine-scale scalar!");
 
       err = fsscaaf_->ReplaceMyValue(localdofid, 0, value);
-      if (err != 0) dserror("error while inserting value into fsscaaf_");
+      if (err != 0) FOUR_C_THROW("error while inserting value into fsscaaf_");
     }
   }
 
@@ -230,7 +230,7 @@ void FLD::TimIntLoma::PrintTurbulenceModel()
         std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") << "\n";
       }
       else
-        dserror("Ci expected!");
+        FOUR_C_THROW("Ci expected!");
     }
     else
       std::cout << "Yoshizawa constant Ci not included";

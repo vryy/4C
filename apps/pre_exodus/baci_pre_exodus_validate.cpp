@@ -86,7 +86,7 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
 /*----------------------------------------------------------------------*/
 void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
 {
-  if (mymesh.GetNumDim() != 3) dserror("Element Validation only for 3 Dimensions");
+  if (mymesh.GetNumDim() != 3) FOUR_C_THROW("Element Validation only for 3 Dimensions");
 
   std::map<int, Teuchos::RCP<ElementBlock>> myebs = mymesh.GetElementBlocks();
   std::map<int, Teuchos::RCP<ElementBlock>>::iterator i_eb;
@@ -147,7 +147,7 @@ void EXODUS::ValidateElementJacobian(
     case CORE::FE::CellType::point1:
       return;
     default:
-      dserror("Unknown element type, validation failed!");
+      FOUR_C_THROW("Unknown element type, validation failed!");
       break;
   }
   const CORE::FE::IntegrationPoints3D intpoints(integrationrule_1point);
@@ -177,7 +177,8 @@ void EXODUS::ValidateElementJacobian(
         }
         // double check
         if (!PositiveEle(i_ele->first, i_ele->second, mymesh, deriv))
-          dserror("No proper rewinding for element id %d at gauss point %d", i_ele->first, igp);
+          FOUR_C_THROW(
+              "No proper rewinding for element id %d at gauss point %d", i_ele->first, igp);
         rewcount++;
       }
     }
@@ -232,7 +233,7 @@ int EXODUS::ValidateElementJacobian_fullgp(
     case CORE::FE::CellType::point1:
       return 0;
     default:
-      dserror("Unknown element type, validation failed!");
+      FOUR_C_THROW("Unknown element type, validation failed!");
       break;
   }
   const CORE::FE::IntegrationPoints3D intpoints(integrationrule);
@@ -287,7 +288,8 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
     CORE::LINALG::Matrix<3, 3> jac(xjm.values(), true);
     const double det = jac.Determinant();
 
-    if (abs(det) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %f", eleid, det);
+    if (abs(det) < 1E-16)
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %f", eleid, det);
 
     if (det < 0.0)
     {
@@ -359,7 +361,7 @@ int EXODUS::EleSaneSign(
       distype = CORE::FE::CellType::wedge6;
       break;
     default:
-      dserror("No Element Sanity Check for this distype");
+      FOUR_C_THROW("No Element Sanity Check for this distype");
       break;
   }
   // shape functions derivatives
@@ -388,7 +390,7 @@ int EXODUS::EleSaneSign(
     const double det = xjm(0, 0) * xjm(1, 1) * xjm(2, 2) + xjm(0, 1) * xjm(1, 2) * xjm(2, 0) +
                        xjm(0, 2) * xjm(1, 0) * xjm(2, 1) - xjm(0, 2) * xjm(1, 1) * xjm(2, 0) -
                        xjm(0, 0) * xjm(1, 2) * xjm(2, 1) - xjm(0, 1) * xjm(1, 0) * xjm(2, 2);
-    if (abs(det) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
+    if (abs(det) < 1E-16) FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     if (det < 0)
     {
       ++n_negdet;
@@ -490,7 +492,7 @@ std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const CORE::FE:
       break;
     }
     default:
-      dserror("no rewinding scheme for this type of element");
+      FOUR_C_THROW("no rewinding scheme for this type of element");
       break;
   }
   return new_nodeids;

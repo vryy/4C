@@ -54,8 +54,8 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
     Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
-  if (!actdisc_->Filled()) dserror("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!actdisc_->Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   params.set("action", "calc_struct_volconstrstiff");
 
@@ -249,7 +249,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
       for (int j = 0; j < numdof_per_cond; j++)
       {
         int err = sysvec1->SumIntoGlobalValues(1, &df_np[j], &gindex[j]);
-        if (err) dserror("SumIntoGlobalValues failed!");
+        if (err) FOUR_C_THROW("SumIntoGlobalValues failed!");
       }
     }
     // rhs part f_np
@@ -258,7 +258,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
       for (int j = 0; j < numdof_per_cond; j++)
       {
         int err = sysvec2->SumIntoGlobalValues(1, &f_np[j], &gindex[j]);
-        if (err) dserror("SumIntoGlobalValues failed!");
+        if (err) FOUR_C_THROW("SumIntoGlobalValues failed!");
       }
     }
 
@@ -270,7 +270,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
     CORE::LINALG::SerialDenseVector elevector3;
 
     std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
-    // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+    // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
@@ -294,7 +294,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
       // call the element specific evaluate method
       int err = curr->second->Evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-      if (err) dserror("error while evaluating elements");
+      if (err) FOUR_C_THROW("error while evaluating elements");
 
 
       // assembly
@@ -343,8 +343,8 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
 void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2)
 {
-  if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
   // get the current time
   // const double time = params.get("total time",-1.0);
 
@@ -376,7 +376,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
     int err2 = sysvec2->SumIntoGlobalValues(1, &p_arp_0, &gindex[1]);
     int err3 = sysvec2->SumIntoGlobalValues(1, &q_arp_0, &gindex[2]);
     int err4 = sysvec2->SumIntoGlobalValues(1, &p_ard_0, &gindex[3]);
-    if (err1 or err2 or err3 or err4) dserror("SumIntoGlobalValues failed!");
+    if (err1 or err2 or err3 or err4) FOUR_C_THROW("SumIntoGlobalValues failed!");
 
     params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 
@@ -407,7 +407,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
       // call the element specific evaluate method
       int err = curr->second->Evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-      if (err) dserror("error while evaluating elements");
+      if (err) FOUR_C_THROW("error while evaluating elements");
 
       // assembly
 

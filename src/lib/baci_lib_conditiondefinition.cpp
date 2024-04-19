@@ -84,7 +84,7 @@ void INPUT::ConditionDefinition::Read(const GLOBAL::Problem& problem, DatFileRea
             case DRT::Condition::Volume:
               return "DVOL";
             default:
-              dserror("Geometry type unspecified");
+              FOUR_C_THROW("Geometry type unspecified");
           }
         });
 
@@ -93,7 +93,7 @@ void INPUT::ConditionDefinition::Read(const GLOBAL::Problem& problem, DatFileRea
 
     if (condition_count != static_cast<int>(section.size() - 1))
     {
-      dserror("Got %d condition lines but expected %d in section '%s'", section.size() - 1,
+      FOUR_C_THROW("Got %d condition lines but expected %d in section '%s'", section.size() - 1,
           condition_count, sectionname_.c_str());
     }
   }
@@ -154,7 +154,7 @@ std::ostream& INPUT::ConditionDefinition::Print(
       name = "DVOL";
       break;
     default:
-      dserror("geometry type unspecified");
+      FOUR_C_THROW("geometry type unspecified");
       break;
   }
 

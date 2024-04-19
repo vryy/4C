@@ -421,12 +421,12 @@ void GetSurfaceRotationVectorCrossSectionDirector(const CORE::LINALG::Matrix<3, 
   CORE::LARGEROTATIONS::triadtoquaternion(surface_triad_current_with_offset, rot_quat);
   CORE::LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   CORE::LINALG::Matrix<3, 1, scalar_type_rot_vec> current_normal;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     current_normal(i_dim) = surface_basis_current(i_dim, 2);
   if (abs(surface_material_director_current.Dot(current_normal)) > 1e-10)
-    dserror("The current material director has to lie within the surface tangent plane.");
+    FOUR_C_THROW("The current material director has to lie within the surface tangent plane.");
 #endif
 }
 
@@ -454,7 +454,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
           xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid);
       break;
     default:
-      dserror("Please supply a suitable solid triad construction.");
+      FOUR_C_THROW("Please supply a suitable solid triad construction.");
       break;
   }
 }
@@ -1038,7 +1038,7 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar(
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9,
           mortar>(rotational_coupling);
     default:
-      dserror("Wrong element type for surface element.");
+      FOUR_C_THROW("Wrong element type for surface element.");
       return Teuchos::null;
   }
 }
@@ -1069,7 +1069,7 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume(
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9,
           mortar>(rotational_coupling);
     default:
-      dserror("Wrong element type for surface element.");
+      FOUR_C_THROW("Wrong element type for surface element.");
       return Teuchos::null;
   }
 }
@@ -1106,7 +1106,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
             surface_shape, rotational_coupling);
       }
       default:
-        dserror("Wrong mortar shape function.");
+        FOUR_C_THROW("Wrong mortar shape function.");
     }
   }
   else if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::extended_volume)
@@ -1123,11 +1123,11 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
         return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume<t_line4>(
             surface_shape, rotational_coupling);
       default:
-        dserror("Wrong mortar shape function.");
+        FOUR_C_THROW("Wrong mortar shape function.");
     }
   }
   else
-    dserror("Surface normal strategy not recognized.");
+    FOUR_C_THROW("Surface normal strategy not recognized.");
 
   return Teuchos::null;
 }

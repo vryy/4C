@@ -46,12 +46,12 @@ STR::ModelEvaluator::ModelEvaluator()
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::CheckInitSetup() const
 {
-  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
+void STR::ModelEvaluator::CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -662,7 +662,7 @@ STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(const enum INPAR::S
   // sanity check, if there is a model evaluator for the given model type
   STR::ModelEvaluator::Map::const_iterator me_iter = me_map_ptr_->find(mt);
   if (me_iter == me_map_ptr_->end())
-    dserror("There is no model evaluator for the model type %s",
+    FOUR_C_THROW("There is no model evaluator for the model type %s",
         INPAR::STR::ModelTypeString(mt).c_str());
 
   return *(me_iter->second);
@@ -677,7 +677,7 @@ const STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(
   // sanity check, if there is a model evaluator for the given model type
   STR::ModelEvaluator::Map::const_iterator me_iter = me_map_ptr_->find(mt);
   if (me_iter == me_map_ptr_->end())
-    dserror("There is no model evaluator for the model type %s",
+    FOUR_C_THROW("There is no model evaluator for the model type %s",
         INPAR::STR::ModelTypeString(mt).c_str());
 
   return *(me_iter->second);
@@ -830,7 +830,7 @@ Teuchos::RCP<STR::ModelEvaluator::Vector> STR::ModelEvaluator::TransformToVector
   // There must be a structural model evaluator at the first position
   // --------------------------------------------------------------------------
   if (model_map.begin()->first != INPAR::STR::model_structure)
-    dserror(
+    FOUR_C_THROW(
         "The first model evaluator in the model_map must be a "
         "structural model evaluator!");
 
@@ -882,7 +882,7 @@ void STR::ModelEvaluator::ExtractModelVector(STR::ModelEvaluator::Vector& partia
       ++cit;
     }
 
-    dsassert(cit != me_vec_ptr_->end(), "Couldn't find the model type in me_vec_ptr_.");
+    FOUR_C_ASSERT(cit != me_vec_ptr_->end(), "Couldn't find the model type in me_vec_ptr_.");
 
     partial_me_vec.push_back(*cit);
   }

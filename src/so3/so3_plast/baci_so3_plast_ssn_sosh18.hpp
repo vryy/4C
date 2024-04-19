@@ -197,7 +197,7 @@ namespace DRT
           const INPAR::STR::StrainType iostrain   ///< strain output option
           ) override
       {
-        dserror("don't want this");
+        FOUR_C_THROW("don't want this");
       }
     };
 

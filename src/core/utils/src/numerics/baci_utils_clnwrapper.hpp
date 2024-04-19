@@ -57,7 +57,7 @@ namespace CORE::CLN
     ClnWrapper(double a) : value_(CachedConvert(a, precision_)){};
     ClnWrapper(double& a)
     {
-      dserror("Constructor for not compile time double to cln::cl_F is not allowed");
+      FOUR_C_THROW("Constructor for not compile time double to cln::cl_F is not allowed");
     }
 
 
@@ -108,27 +108,27 @@ namespace CORE::CLN
     }
     inline ClnWrapper& operator=(double& other)
     {
-      dserror("Unexpected convertion between not-constant double and cln::cl_F");
+      FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");
       return *this;
     }
     inline ClnWrapper& operator+=(double& other)
     {
-      dserror("Unexpected convertion between not-constant double and cln::cl_F");
+      FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");
       return *this;
     }
     inline ClnWrapper& operator-=(double& other)
     {
-      dserror("Unexpected convertion between not-constant double and cln::cl_F");
+      FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");
       return *this;
     }
     inline ClnWrapper& operator/=(double& other)
     {
-      dserror("Unexpected convertion between not-constant double and cln::cl_F");
+      FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");
       return *this;
     }
     inline ClnWrapper& operator*=(double& other)
     {
-      dserror("Unexpected convertion between not-constant double and cln::cl_F");
+      FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");
       return *this;
     }
     inline ClnWrapper operator-() const { return (-value_); }
@@ -137,7 +137,7 @@ namespace CORE::CLN
 
     static void SetPrecision(int precision)
     {
-      if (precision <= 0) dserror("Invalid preciso of %d", precision);
+      if (precision <= 0) FOUR_C_THROW("Invalid preciso of %d", precision);
       precision_ = precision;
     }
 
@@ -190,7 +190,7 @@ namespace CORE::CLN
         cln::cl_F newval;
         if (a == 0.0)
         {
-          dserror("Should not happen at this point");
+          FOUR_C_THROW("Should not happen at this point");
         }
         else
         {
@@ -226,7 +226,7 @@ namespace CORE::CLN
   }                                                                                      \
   inline _ret_type operator _operator(const ClnWrapper& first, double& second)           \
   {                                                                                      \
-    dserror("Unexpected convertion between not-constant double and cln::cl_F");          \
+    FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");     \
     return first.Value() _operator ClnWrapper::CachedConvert(second, first.Value());     \
   }                                                                                      \
   inline _ret_type operator _operator(const ClnWrapper& first, double second)            \
@@ -239,7 +239,7 @@ namespace CORE::CLN
   }                                                                                      \
   inline _ret_type operator _operator(double& first, const ClnWrapper& second)           \
   {                                                                                      \
-    dserror("Unexpected convertion between not-constant double and cln::cl_F");          \
+    FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");     \
     return ClnWrapper::CachedConvert(first, second.Value()) _operator second.Value();    \
   }
 

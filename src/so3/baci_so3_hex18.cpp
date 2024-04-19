@@ -177,7 +177,7 @@ void DRT::ELEMENTS::SoHex18::Unpack(const std::vector<char>& data)
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -258,21 +258,21 @@ bool DRT::ELEMENTS::SoHex18::ReadElement(
   if (buffer == "linear")
   {
     // kintype_ = soh8_linear;
-    dserror("Only nonlinear kinematics for SO_SH8 implemented!");
+    FOUR_C_THROW("Only nonlinear kinematics for SO_SH8 implemented!");
   }
   else if (buffer == "nonlinear")
   {
     kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
-    dserror("Reading SO_HEX18 element failed KINEM unknown");
+    FOUR_C_THROW("Reading SO_HEX18 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
 
   // Validate that materials doesn't use extended update call.
   if (SolidMaterial()->UsesExtendedUpdate())
-    dserror("This element currently does not support the extended update call.");
+    FOUR_C_THROW("This element currently does not support the extended update call.");
 
   return true;
 }
@@ -316,7 +316,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_linstiff")
     act = SoHex18::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
@@ -344,7 +344,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_struct_predict")
     return 0;
   else
-    dserror("Unknown type of action for So_hex8: %s", action.c_str());
+    FOUR_C_THROW("Unknown type of action for So_hex8: %s", action.c_str());
 
   // what should the element do
   switch (act)
@@ -358,7 +358,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -380,7 +380,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -405,7 +405,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       // need current velocities and accelerations (for non constant mass matrix)
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
 
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -433,9 +433,9 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
             params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         Teuchos::RCP<std::vector<char>> straindata =
             params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-        if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+        if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
+        if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
         std::vector<double> mydisp(lm.size());
         CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
@@ -471,7 +471,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     case calc_struct_eleload:
-      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
       break;
 
     //==================================================================================
@@ -501,7 +501,7 @@ int DRT::ELEMENTS::SoHex18::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     default:
-      dserror("Unknown type of action for So_hex18");
+      FOUR_C_THROW("Unknown type of action for So_hex18");
       break;
   }
   return 0;
@@ -534,12 +534,13 @@ int DRT::ELEMENTS::SoHex18::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOH18)
-    dserror("Fewer functions or curves defined than the element has dofs.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   for (int checkdof = NUMDIM_SOH18; checkdof < int(onoff->size()); ++checkdof)
   {
     if ((*onoff)[checkdof] != 0)
-      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+      FOUR_C_THROW(
+          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS
@@ -578,9 +579,9 @@ int DRT::ELEMENTS::SoHex18::EvaluateNeumann(Teuchos::ParameterList& params,
     // compute determinant of Jacobian
     const double detJ = jac.Determinant();
     if (detJ == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     // material/reference co-ordinates of Gauss point
     if (havefunct)
@@ -627,7 +628,7 @@ int DRT::ELEMENTS::SoHex18::InitJacobianMapping()
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
     Node** nodes = Nodes();
-    if (!nodes) dserror("Nodes() returned null pointer");
+    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     xrefe(i, 0) = Nodes()[i]->X()[0];
     xrefe(i, 1) = Nodes()[i]->X()[1];
     xrefe(i, 2) = Nodes()[i]->X()[2];
@@ -847,7 +848,7 @@ int DRT::ELEMENTS::SoHex18Type::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex18*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex18* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
     if (actele->InitJacobianMapping() == 1) actele->FlipT();
   }
   dis.FillComplete(false, false, false);
@@ -856,8 +857,8 @@ int DRT::ELEMENTS::SoHex18Type::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex18*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex18* failed");
-    if (actele->InitJacobianMapping() == 1) dserror("why");
+    if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
+    if (actele->InitJacobianMapping() == 1) FOUR_C_THROW("why");
   }
   return 0;
 }
@@ -867,7 +868,7 @@ int DRT::ELEMENTS::SoHex18Type::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoHex18::FlipT()
 {
-  if (NodeIds() == nullptr) dserror("couldn't get node ids");
+  if (NodeIds() == nullptr) FOUR_C_THROW("couldn't get node ids");
   // reorder nodes
   int new_nodeids[NUMNOD_SOH18];
   new_nodeids[0] = NodeIds()[9];

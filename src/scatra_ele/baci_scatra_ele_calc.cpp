@@ -73,19 +73,19 @@ DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
       ele_(nullptr),
       scatravarmanager_(Teuchos::rcp(new ScaTraEleInternalVariableManager<nsd_, nen_>(numscal_)))
 {
-  dsassert(
+  FOUR_C_ASSERT(
       nsd_ >= nsd_ele_, "problem dimension has to be equal or larger than the element dimension!");
 
   // safety checks related with turbulence
   if (scatrapara_->ASSGD() and turbparams_->FSSGD())
   {
-    dserror(
+    FOUR_C_THROW(
         "No combination of all-scale and fine-scale subgrid-diffusivity approach currently "
         "possible!");
   }
   if (turbparams_->BD_Gp() and not scatrapara_->MatGP())
   {
-    dserror(
+    FOUR_C_THROW(
         "Evaluation of B and D at Gauss point should always be combined with material evaluation "
         "at Gauss point!");
   }
@@ -124,7 +124,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
   {
     const Teuchos::RCP<const MAT::MatList>& material_list =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
-    if (material_list->NumMat() < numscal_) dserror("Not enough materials in MatList.");
+    if (material_list->NumMat() < numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < numscal_; ++k)
     {
@@ -210,7 +210,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
 
   // get convective (velocity - mesh displacement) velocity at nodes
   auto convel = discretization.GetState(ndsvel, "convective velocity field");
-  if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
+  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -239,7 +239,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
   {
     // get velocity at nodes
     Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel, "velocity field");
-    if (vel == Teuchos::null) dserror("Cannot get state vector velocity");
+    if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector velocity");
 
     // extract local values of velocity field from global state vector
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*vel, evelnp_, lmvel);
@@ -251,7 +251,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
     const int ndsdisp = scatrapara_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -282,7 +282,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
     // get acceleration values at nodes
     const Teuchos::RCP<const Epetra_Vector> acc =
         discretization.GetState(ndsvel, "acceleration field");
-    if (acc == Teuchos::null) dserror("Cannot get state vector acceleration field");
+    if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vector acceleration field");
 
     // extract local values of acceleration field from global state vector
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*acc, eaccnp_, lmvel);
@@ -303,7 +303,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
   Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (hist == Teuchos::null || phinp == Teuchos::null)
-    dserror("Cannot get state vector 'hist' and/or 'phinp'");
+    FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
 
   // values of scatra field are always in first dofset
   const std::vector<int>& lm = la[0].lm_;
@@ -314,7 +314,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
-    if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
+    if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, ephin_, lm);
   }
 
@@ -345,7 +345,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractTurbulenceApproach(D
   {
     // do some checks first
     if (numscal_ != 1 or numdofpernode_ != 1)
-      dserror("For the time being, turbulence approaches only support one scalar field!");
+      FOUR_C_THROW("For the time being, turbulence approaches only support one scalar field!");
   }
 
   // set turbulent Prandt number to value given in parameterlist
@@ -374,7 +374,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractTurbulenceApproach(D
   {
     // get fine scale scalar field
     Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
-    if (gfsphinp == Teuchos::null) dserror("Cannot get state vector 'fsphinp'");
+    if (gfsphinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fsphinp'");
 
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*gfsphinp, fsphinp_, la[0].lm_);
 
@@ -388,7 +388,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractTurbulenceApproach(D
       const Teuchos::RCP<const Epetra_Vector> fsvelocity =
           discretization.GetState(ndsvel, "fine-scale velocity field");
       if (fsvelocity == Teuchos::null)
-        dserror("Cannot get fine-scale velocity field from scatra discretization!");
+        FOUR_C_THROW("Cannot get fine-scale velocity field from scatra discretization!");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -844,11 +844,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::BodyForce(const DRT::Elemen
       DRT::UTILS::FindElementConditions(ele, "LineNeumann", myneumcond);
       break;
     default:
-      dserror("Illegal number of spatial dimensions: %d", nsd_ele_);
+      FOUR_C_THROW("Illegal number of spatial dimensions: %d", nsd_ele_);
       break;
   }
 
-  if (myneumcond.size() > 1) dserror("More than one Neumann condition on one node!");
+  if (myneumcond.size() > 1) FOUR_C_THROW("More than one Neumann condition on one node!");
 
   if (myneumcond.size() == 1)
   {
@@ -956,7 +956,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtI
   const double det = EvalShapeFuncAndDerivsInParameterSpace();
 
   if (det < 1E-16)
-    dserror("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
+    FOUR_C_THROW("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
 
   // compute global spatial derivatives
   derxy_.Multiply(xij_, deriv_);
@@ -1071,7 +1071,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsInP
         xyze_, deriv_red, metrictensor, det, throw_error_if_negative_determinant, &normalvec);
 
     if (det < 1E-16)
-      dserror("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
+      FOUR_C_THROW("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
 
     // transform the derivatives and Jacobians to the higher dimensional coordinates(problem
     // dimension)
@@ -1142,7 +1142,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMaterialParams(const DRT
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
-    if (actmat->NumMat() < numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() < numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < numscal_; ++k)
     {
@@ -1168,7 +1168,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Materials(
     case INPAR::MAT::m_electrode:
     {
       // safety check
-      if (k != 0) dserror("Invalid species ID!");
+      if (k != 0) FOUR_C_THROW("Invalid species ID!");
 
       MatElectrode(material);
       break;
@@ -1188,7 +1188,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Materials(
 
     default:
     {
-      dserror("Material type %i is not supported!", material->MaterialType());
+      FOUR_C_THROW("Material type %i is not supported!", material->MaterialType());
       break;
     }
   }
@@ -1220,13 +1220,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
     // get corresponding fluid element (it has the same global ID as the scatra element)
     DRT::Element* fluidele = fluiddis->gElement(eid_);
     if (fluidele == nullptr)
-      dserror("Fluid element %i not on local processor", eid_);
+      FOUR_C_THROW("Fluid element %i not on local processor", eid_);
     else
     {
       // get fluid material
       Teuchos::RCP<MAT::Material> fluidmat = fluidele->Material();
       if (fluidmat->MaterialType() != INPAR::MAT::m_fluid)
-        dserror("Invalid fluid material for passive scalar transport in turbulent flow!");
+        FOUR_C_THROW("Invalid fluid material for passive scalar transport in turbulent flow!");
 
       const Teuchos::RCP<const MAT::NewtonianFluid>& actfluidmat =
           Teuchos::rcp_dynamic_cast<const MAT::NewtonianFluid>(fluidmat);
@@ -1238,7 +1238,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
       densam = actfluidmat->Density();
 
       if (densam != 1.0 or densnp != 1.0 or densn != 1.0)
-        dserror("Check your parameters! Read comment!");
+        FOUR_C_THROW("Check your parameters! Read comment!");
       // For all implementations, dens=1.0 is assumed, in particular for
       // multifractal_subgrid_scales. Hence, visc and diffus are kinematic quantities. Using
       // dens!=1.0 should basically work, but you should check it before application.
@@ -1255,7 +1255,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTraMultiScale(
 {
   // safety check
   if (numscal_ > 1)
-    dserror("Multi-scale scalar transport only implemented for one transported scalar!");
+    FOUR_C_THROW("Multi-scale scalar transport only implemented for one transported scalar!");
 
   // extract multi-scale scalar transport material
   const auto* matmultiscale = static_cast<const MAT::ScatraMultiScale*>(material.get());
@@ -1687,7 +1687,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatReact(
       }
 
       if (use2ndderiv_ and reamanager_->GetReaCoeff(k) != 0.0)
-        dserror("Second order reactive stabilization is not fully implemented!! ");
+        FOUR_C_THROW("Second order reactive stabilization is not fully implemented!! ");
     }
   }
 }
@@ -2004,7 +2004,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSMFS(
   const CORE::LINALG::Matrix<nsd_, 1>& gradphi = scatravarmanager_->GradPhi(k);
   const CORE::LINALG::Matrix<nsd_, 1>& convelint = scatravarmanager_->ConVel(k);
 
-  if (nsd_ < 3) dserror("Turbulence is 3D!");
+  if (nsd_ < 3) FOUR_C_THROW("Turbulence is 3D!");
   // fixed-point iteration only (i.e. beta=0.0 assumed), cf
   // turbulence part in Evaluate()
   {
@@ -2083,7 +2083,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSEMD(
   const int functno = scatrapara_->EMDSource();
   if (functno <= 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "For electromagnetic diffusion simulations a current density source function has to be "
         "given.");
   }

@@ -204,7 +204,7 @@ namespace DRT
         // access electrode material
         const Teuchos::RCP<const MAT::Electrode> matelectrode =
             Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->Material(1));
-        if (matelectrode == Teuchos::null) dserror("Invalid electrode material!");
+        if (matelectrode == Teuchos::null) FOUR_C_THROW("Invalid electrode material!");
 
         // no deformation available in this code part
         const double dummy_detF(1.0);

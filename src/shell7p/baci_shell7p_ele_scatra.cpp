@@ -170,11 +170,11 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Shell7pScatraType::ComputeNullSpa
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   auto* shell = dynamic_cast<DRT::ELEMENTS::Shell7pScatra*>(node.Elements()[0]);
-  if (!shell) dserror("Cannot cast to Shell");
+  if (!shell) FOUR_C_THROW("Cannot cast to Shell");
   int j;
   for (j = 0; j < shell->NumNode(); ++j)
     if (shell->Nodes()[j]->Id() == node.Id()) break;
-  if (j == shell->NumNode()) dserror("Can't find matching node..!");
+  if (j == shell->NumNode()) FOUR_C_THROW("Can't find matching node..!");
   double half_thickness = shell->GetThickness() / 2.0;
 
   // set director
@@ -286,7 +286,7 @@ void DRT::ELEMENTS::Shell7pScatra::Unpack(const std::vector<char>& data)
 
   TryUnpackInterface(shell_interface_, position, data);
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::Shell7pScatra::SolidMaterial(int nummat) const
@@ -365,7 +365,7 @@ bool DRT::ELEMENTS::Shell7pScatra::ReadElement(
 
   // set thickness in reference frame
   linedef->ExtractDouble("THICK", thickness_);
-  if (thickness_ <= 0) dserror("Shell element thickness needs to be > 0");
+  if (thickness_ <= 0) FOUR_C_THROW("Shell element thickness needs to be > 0");
   shell_data.thickness = thickness_;
 
   // extract number of EAS parameters for different locking types
@@ -418,7 +418,7 @@ bool DRT::ELEMENTS::Shell7pScatra::ReadElement(
   else if (impltype == "Std")
     impltype_ = INPAR::SCATRA::impltype_std;
   else
-    dserror("Invalid implementation type for Shell7pScatra elements!");
+    FOUR_C_THROW("Invalid implementation type for Shell7pScatra elements!");
 
   return true;
 }

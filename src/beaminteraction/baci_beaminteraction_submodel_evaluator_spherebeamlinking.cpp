@@ -122,10 +122,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Reset()
       Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
 
       // get elements
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (sphere != dynamic_cast<DRT::ELEMENTS::Rigidsphere const*>(
                         Discret().gElement(elepairptr->GetEleGid(0))))
-        dserror(" Rigid Sphere element has stored wrong linker. ");
+        FOUR_C_THROW(" Rigid Sphere element has stored wrong linker. ");
 #endif
 
       DRT::ELEMENTS::Beam3Base const* beamele = dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(
@@ -787,9 +787,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
     DRT::ELEMENTS::Beam3Base const* beamele =
         dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(neighbors[eiter]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (sphere == nullptr or beamele == nullptr)
-      dserror(" First element should be a sphere, second element a beam.");
+      FOUR_C_THROW(" First element should be a sphere, second element a beam.");
 #endif
 
     std::vector<double> beameledisp;
@@ -822,12 +822,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
         if (GLOBAL::Problem::Instance()->Random()->Uni() > plink) continue;
       }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // todo: do only in debug mode as soon tested enough
       // safety check
       if ((sphere->GetNumberOfBonds() + numnewbondsthisstep) >
           spherebeamlinking_params_ptr_->MaxNumLinkerPerType()[0])
-        dserror(" sphere has more bonds than allowed. Something went wrong.");
+        FOUR_C_THROW(" sphere has more bonds than allowed. Something went wrong.");
 #endif
 
       // criterion: does identical bond already exist?
@@ -987,7 +987,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UnbindSphereBeamBond
 
   // safety check
   if (spherebeamlinking_params_ptr_->DeltaTime() < 1.0e-8)
-    dserror("You are about to divide by (almost) zero");
+    FOUR_C_THROW("You are about to divide by (almost) zero");
 
   // check if unbinding needs to be checked this problem time step
   int random_number_sphere_beam_linking_step =
@@ -1143,12 +1143,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::UpdateLinkerLength()
 
       // some safety checks
       if (scalefac < 0.0)
-        dserror(
+        FOUR_C_THROW(
             "Contraction %f of a linker of more than its reference length %f in one time step "
             "does not make sense.",
             contraction_per_dt, elepairptr->GetReferenceLength());
       if (contraction_per_dt > elepairptr->GetCurrentLinkerLength())
-        dserror("Contraction of %f for a linker with current length %f does not make sense.",
+        FOUR_C_THROW("Contraction of %f for a linker with current length %f does not make sense.",
             contraction_per_dt, elepairptr->GetCurrentLinkerLength());
 
       // scale linker length / contract linker

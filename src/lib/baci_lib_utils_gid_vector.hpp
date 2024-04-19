@@ -111,7 +111,7 @@ namespace DRT::UTILS::DETAIL
     vec1 = BroadcastVector(my_gid_vec1, comm);
     vec2 = BroadcastVector(my_gid_vec2, comm);
 
-    dsassert(vec1.size() == vec2.size(), "Vectors must have the same length.");
+    FOUR_C_ASSERT(vec1.size() == vec2.size(), "Vectors must have the same length.");
 
     // reconstruct map-like object
     for (unsigned i = 0; i < vec1.size(); ++i)

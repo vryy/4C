@@ -342,7 +342,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distyp unknown\n");
+        FOUR_C_THROW("distyp unknown\n");
         break;
     } /* end switch(distype) */
     return;
@@ -992,7 +992,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distyp unknown\n");
+        FOUR_C_THROW("distyp unknown\n");
         break;
     } /* end switch(distype) */
     return;
@@ -1964,7 +1964,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distyp unknown\n");
+        FOUR_C_THROW("distyp unknown\n");
         break;
     } /* end switch(distype) */
     return;
@@ -2100,7 +2100,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     } /* end switch(distype) */
 
@@ -2295,7 +2295,7 @@ namespace CORE::FE
       }
       default:
         std::cout << CORE::FE::CellTypeToString(distype) << std::endl;
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     } /* end switch(distype) */
     return;
@@ -2534,7 +2534,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     } /* end switch(distype) */
 
@@ -2640,7 +2640,7 @@ namespace CORE::FE
          */
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     }
 
@@ -2746,7 +2746,7 @@ namespace CORE::FE
          */
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     }
 
@@ -2796,7 +2796,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     }
 
@@ -2828,7 +2828,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     }
 
@@ -2860,7 +2860,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     }
 
@@ -2892,7 +2892,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     }
 
@@ -2924,7 +2924,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     }
 
@@ -2961,7 +2961,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     }
     return;
@@ -2997,7 +2997,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     }
     return;
@@ -3032,7 +3032,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     }
     return;
@@ -3066,7 +3066,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("distype unknown\n");
+        FOUR_C_THROW("distype unknown\n");
         break;
     }
     return;
@@ -3097,7 +3097,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("dimension of the element is not correct");
+        FOUR_C_THROW("dimension of the element is not correct");
         break;
     }
     return;
@@ -3136,7 +3136,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("dimension of the element is not correct");
+        FOUR_C_THROW("dimension of the element is not correct");
         break;
     }
     return;
@@ -3166,7 +3166,7 @@ namespace CORE::FE
         break;
       }
       default:
-        dserror("dimension of the element is not correct");
+        FOUR_C_THROW("dimension of the element is not correct");
         break;
     }
     return;

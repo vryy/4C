@@ -148,7 +148,7 @@ namespace CORE::GEO
             return const_cast<void*>(it->second);
           }
           else
-            dserror("Invalid element with id %d", Id);
+            FOUR_C_THROW("Invalid element with id %d", Id);
           return nullptr;
         }
         // Split split trace into the closed loops

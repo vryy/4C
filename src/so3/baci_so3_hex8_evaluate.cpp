@@ -104,7 +104,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -134,7 +134,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -170,9 +170,9 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
       Teuchos::RCP<const Epetra_Vector> acc = discretization.GetState("acceleration");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
-      if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-      if (acc == Teuchos::null) dserror("Cannot get state vectors 'acceleration'");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
+      if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
+      if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'acceleration'");
 
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -246,7 +246,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
       // get displacements and extract values of this element
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -401,7 +401,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     {
       // get displacements and extract values of this element
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -432,7 +432,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (dispo == Teuchos::null || disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors '(old) displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors '(old) displacement' and/or residual");
       std::vector<double> mydispo(lm.size());
       CORE::FE::ExtractMyValues(*dispo, mydispo, lm);
       std::vector<double> mydisp(lm.size());
@@ -450,7 +450,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       // special case: geometric linear
       else  // kintype_ != INPAR::STR::KinemType::nonlinearTotLag)
       {
-        dserror("ERROR: Generalized EMM only makes sense in nonlinear realm");
+        FOUR_C_THROW("ERROR: Generalized EMM only makes sense in nonlinear realm");
       }
 
       break;
@@ -464,7 +464,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
 
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror(
+        FOUR_C_THROW(
             "Cannot get state vectors \"displacement\" "
             "and/or \"residual displacement\"");
 
@@ -512,10 +512,10 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
         ioplstrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
             params, "ioplstrain", INPAR::STR::strain_none);
       }
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-      if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-      if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
-      if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
+      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
+      if (plstraindata == Teuchos::null) FOUR_C_THROW("Cannot get 'plastic strain' data");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -562,7 +562,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     break;
     case ELEMENTS::struct_init_gauss_point_data_output:
     {
-      dsassert(IsParamsInterface(),
+      FOUR_C_ASSERT(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
 
       // Save number of Gauss of the element for gauss point data output
@@ -581,7 +581,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     break;
     case ELEMENTS::struct_gauss_point_data_output:
     {
-      dsassert(IsParamsInterface(),
+      FOUR_C_ASSERT(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
 
       // Collection and assembly of gauss point data
@@ -636,11 +636,11 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::none:
-              dserror(
+              FOUR_C_THROW(
                   "You specified a Gauss point data output type of none, so you should not end up "
                   "here.");
             default:
-              dserror("Unknown Gauss point data output type.");
+              FOUR_C_THROW("Unknown Gauss point data output type.");
           }
         }
       }
@@ -648,17 +648,17 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     break;
     //==================================================================================
     case ELEMENTS::struct_calc_eleload:
-      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
       break;
     //==================================================================================
     case ELEMENTS::struct_calc_fsiload:
-      dserror("Case not yet implemented");
+      FOUR_C_THROW("Case not yet implemented");
       break;
     //==================================================================================
     case ELEMENTS::struct_calc_update_istep:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       Update_element(mydisp, params, Material());
@@ -685,7 +685,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     {
       int timestep = params.get<int>("timestep", -1);
 
-      if (timestep == -1) dserror("Provide timestep number to be stored");
+      if (timestep == -1) FOUR_C_THROW("Provide timestep number to be stored");
 
       // EAS
       if (eastype_ != soh8_easnone) soh8_easupdate();
@@ -699,7 +699,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     {
       int timestep = params.get<int>("timestep", -1);
 
-      if (timestep == -1) dserror("Provide timestep number of the timestep to be recovered");
+      if (timestep == -1) FOUR_C_THROW("Provide timestep number of the timestep to be recovered");
 
       // EAS
       if (eastype_ != soh8_easnone) soh8_easrestore();
@@ -721,7 +721,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this processor
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
@@ -870,7 +870,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
           glstrain.Multiply(bop, nodaldisp);
         }
         else
-          dserror("unknown kinematic type for energy calculation");
+          FOUR_C_THROW("unknown kinematic type for energy calculation");
 
         // EAS technology: "enhance the strains"  ----------------------------- EAS
         if (eastype_ != soh8_easnone)
@@ -904,7 +904,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
             case DRT::ELEMENTS::SoHex8::soh8_easnone:
               break;
             default:
-              dserror("Don't know what to do with EAS type %d", eastype_);
+              FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
               break;
           }
         }  // ------------------------------------------------------------------ EAS
@@ -919,7 +919,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
           }
           else
           {
-            dserror("Negative deformation gradient!");
+            FOUR_C_THROW("Negative deformation gradient!");
           }
         }
 
@@ -938,7 +938,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       else  // old structural time integration
       {
         // check length of elevec1
-        if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
+        if (elevec1_epetra.length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
         elevec1_epetra(0) = intenergy;
       }
@@ -957,9 +957,9 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velocity");
 
-#ifdef BACI_DEBUG
-      if (dispnp == Teuchos::null) dserror("Cannot get state displacement vector");
-      if (velnp == Teuchos::null) dserror("Cannot get state velocity vector");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
+      if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state velocity vector");
 #endif
 
       std::vector<double> mydispnp(lm.size());
@@ -1099,7 +1099,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     {
       time_ = params.get<double>("total time");
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get displacement state");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -1134,7 +1134,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
           break;
         }
         default:
-          dserror(
+          FOUR_C_THROW(
               "You should either not be here, or the prestressing method you are using is not "
               "implemented for HEX8 elements!");
       }
@@ -1157,22 +1157,22 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
             params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
         Teuchos::RCP<std::vector<char>> plstraindata =
             params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-        if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
-        if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
+        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+        if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
+        if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
+        if (plstraindata == Teuchos::null) FOUR_C_THROW("Cannot get 'plastic strain' data");
         const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
             gpstressmap = params.get<
                 Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstressmap", Teuchos::null);
         if (gpstressmap == Teuchos::null)
-          dserror("no gp stress map available for writing gpstresses");
+          FOUR_C_THROW("no gp stress map available for writing gpstresses");
         const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
             gpstrainmap = params.get<
                 Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstrainmap", Teuchos::null);
         if (gpstrainmap == Teuchos::null)
-          dserror("no gp strain map available for writing gpstrains");
+          FOUR_C_THROW("no gp strain map available for writing gpstrains");
         std::vector<double> mydisp(lm.size());
         CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
@@ -1270,7 +1270,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_create_backup:
     {
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-      if (res.is_null()) dserror("Cannot get state vector \"residual displacement\"");
+      if (res.is_null()) FOUR_C_THROW("Cannot get state vector \"residual displacement\"");
 
       // extract the part for this element
       std::vector<double> myres(lm.size());
@@ -1290,7 +1290,8 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     default:
-      dserror("Unknown type of action for So_hex8: %s", ELEMENTS::ActionType2String(act).c_str());
+      FOUR_C_THROW(
+          "Unknown type of action for So_hex8: %s", ELEMENTS::ActionType2String(act).c_str());
       break;
   }
   return 0;
@@ -1321,12 +1322,13 @@ int DRT::ELEMENTS::SoHex8::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOH8)
-    dserror("Fewer functions or curves defined than the element has dofs.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   for (int checkdof = NUMDIM_SOH8; checkdof < int(onoff->size()); ++checkdof)
   {
     if ((*onoff)[checkdof] != 0)
-      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+      FOUR_C_THROW(
+          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS
@@ -1359,9 +1361,9 @@ int DRT::ELEMENTS::SoHex8::EvaluateNeumann(Teuchos::ParameterList& params,
     // compute determinant of Jacobian
     const double detJ = jac.Determinant();
     if (detJ == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     // material/reference co-ordinates of Gauss point
     if (havefunct)
@@ -1411,7 +1413,7 @@ const double* DRT::ELEMENTS::SoHex8::soh8_get_coordinate_of_gausspoints(const un
   if (not init)
   {
     if (gp_rule_.NumPoints() != NUMGPT_SOH8)
-      dserror(
+      FOUR_C_THROW(
           "Inconsistent number of GPs: "
           "%d != %d",
           gp_rule_.NumPoints(), NUMGPT_SOH8);
@@ -1435,7 +1437,7 @@ void DRT::ELEMENTS::SoHex8::InitJacobianMapping()
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
     Node** nodes = Nodes();
-    if (!nodes) dserror("Nodes() returned null pointer");
+    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     xrefe(i, 0) = Nodes()[i]->X()[0];
     xrefe(i, 1) = Nodes()[i]->X()[1];
     xrefe(i, 2) = Nodes()[i]->X()[2];
@@ -1447,7 +1449,7 @@ void DRT::ELEMENTS::SoHex8::InitJacobianMapping()
     // invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
     invJ_[gp].Multiply(derivs[gp], xrefe);
     detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
+    if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
     if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
     {
@@ -1470,7 +1472,7 @@ int DRT::ELEMENTS::SoHex8::InitJacobianMapping(std::vector<double>& dispmat)
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
     Node** nodes = Nodes();
-    if (!nodes) dserror("Nodes() returned null pointer");
+    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
     xmat(i, 0) = Nodes()[i]->X()[0] + dispmat[i * NODDOF_SOH8 + 0];
     xmat(i, 1) = Nodes()[i]->X()[1] + dispmat[i * NODDOF_SOH8 + 1];
@@ -1495,7 +1497,7 @@ int DRT::ELEMENTS::SoHex8::InitJacobianMapping(std::vector<double>& dispmat)
         return 1;
       }
       else
-        dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
+        FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
     }
   }
 
@@ -1528,7 +1530,7 @@ void DRT::ELEMENTS::SoHex8::soh8_computeEASInc(
   auto* oldKaainv = &easdata_.invKaa;
   auto* oldKda = &easdata_.Kda;
   auto* oldfeas = &easdata_.feas;
-  if (!oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history data");
+  if (!oldKaainv || !oldKda || !oldfeas) FOUR_C_THROW("Missing EAS history data");
 
   // we need the (residual) displacement at the previous step
   CORE::LINALG::SerialDenseVector res_d_eas(NUMDOF_SOH8);
@@ -1564,7 +1566,7 @@ void DRT::ELEMENTS::SoHex8::soh8_recover(
     alpha = &easdata_.alpha;
     // get the old eas increment
     eas_inc = &easdata_.eas_inc;
-    if (!alpha || !eas_inc) dserror("Missing EAS history data (eas_inc and/or alpha)");
+    if (!alpha || !eas_inc) FOUR_C_THROW("Missing EAS history data (eas_inc and/or alpha)");
   }
 
   /* if it is a default step, we have to recover the condensed
@@ -1591,7 +1593,7 @@ void DRT::ELEMENTS::SoHex8::soh8_recover(
   else
   {
     // The first step has to be a default step!
-    if (old_step_length_ < 0.0) dserror("The old step length was not defined!");
+    if (old_step_length_ < 0.0) FOUR_C_THROW("The old step length was not defined!");
     /* if this is no full step, we have to adjust the length of the
      * enhanced assumed strain incremental step. */
     if (iseas)
@@ -1659,7 +1661,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
 
   // check for prestressing
   if (PRESTRESS::IsAny(pstype_) && eastype_ != soh8_easnone)
-    dserror("No way you can do mulf or id prestressing with EAS turned on!");
+    FOUR_C_THROW("No way you can do mulf or id prestressing with EAS turned on!");
 
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // reference coord. of element
@@ -1725,7 +1727,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
     eas_inc = &easdata_.eas_inc;
 
     if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
-      dserror("Missing EAS history-data");
+      FOUR_C_THROW("Missing EAS history-data");
 
     // ============================== DEPRECATED ==============================
     // FixMe deprecated implementation
@@ -1779,7 +1781,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
           case DRT::ELEMENTS::SoHex8::soh8_easnone:
             break;
           default:
-            dserror("Don't know what to do with EAS type %d", eastype_);
+            FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
             break;
         }
       }
@@ -1884,7 +1886,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
           return;
         }
         else
-          dserror("negative deformation gradient determinant");
+          FOUR_C_THROW("negative deformation gradient determinant");
       }  // if (det_defgrd<0.0)
     }
 
@@ -1990,7 +1992,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
         case DRT::ELEMENTS::SoHex8::soh8_easnone:
           break;
         default:
-          dserror("Don't know what to do with EAS type %d", eastype_);
+          FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
           break;
       }
 
@@ -2012,7 +2014,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
@@ -2021,13 +2023,13 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
       {
         if (eastype_ != soh8_easnone)
         {
-          dserror(
+          FOUR_C_THROW(
               "EA strains are computed with the 'normal' deformation gradient from GL strains, and "
               "not with the deformation gradient that is consistent with EAS!\n"
               "Use the new solid elements instead!");
         }
 
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
         CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> gl;
         gl(0, 0) = glstrain(0);
@@ -2059,7 +2061,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
       break;
       case INPAR::STR::strain_log:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
         /// the Eularian logarithmic strain is defined as the natural logarithm of the left stretch
         /// tensor [1,2]: \f[
@@ -2143,7 +2145,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
             // the solution to this problem is to evaluate the cauchygreen tensor with tempCG
             // computed with every combination of eigenvector orientations -- up to nine comparisons
             if (diffCG(i, j) > 1e-10)
-              dserror(
+              FOUR_C_THROW(
                   "eigenvector orientation error with the diffCG giving problems: %10.5e \n BUILD "
                   "SOLUTION TO FIX IT",
                   diffCG(i, j));
@@ -2161,7 +2163,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested strain type not available");
+        FOUR_C_THROW("requested strain type not available");
         break;
     }
 
@@ -2207,7 +2209,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
     {
       case INPAR::STR::strain_gl:
       {
-        if (eleplstrain == nullptr) dserror("plastic strain data not available");
+        if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
             params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         for (int i = 0; i < 3; ++i) (*eleplstrain)(gp, i) = plglstrain(i);
@@ -2218,13 +2220,13 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
       {
         if (eastype_ != soh8_easnone)
         {
-          dserror(
+          FOUR_C_THROW(
               "EA strains are computed with the 'normal' deformation gradient from GL strains, and "
               "not with the deformation gradient that is consistent with EAS!\n"
               "Use the new solid elements instead!");
         }
 
-        if (eleplstrain == nullptr) dserror("plastic strain data not available");
+        if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
             params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         // rewriting Green-Lagrange strains in matrix format
@@ -2259,7 +2261,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested plastic strain type not available");
+        FOUR_C_THROW("requested plastic strain type not available");
         break;
     }
 
@@ -2268,7 +2270,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
@@ -2276,13 +2278,13 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
       {
         if (eastype_ != soh8_easnone)
         {
-          dserror(
+          FOUR_C_THROW(
               "Cauchy stresses are computed with the 'normal' deformation gradient from 2PK "
               "stresses and not with the deformation gradient that is consistent with EAS!\n"
               "Use the new solid elements instead!");
         }
 
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchystress(false);
         PK2toCauchy(&stress, &defgrd, &cauchystress);
 
@@ -2297,7 +2299,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not available");
+        FOUR_C_THROW("requested stress type not available");
         break;
     }
 
@@ -2396,7 +2398,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
           case DRT::ELEMENTS::SoHex8::soh8_easnone:
             break;
           default:
-            dserror("Don't know what to do with EAS type %d", eastype_);
+            FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
             break;
         }
       }  // ---------------------------------------------------------------- EAS
@@ -2563,7 +2565,7 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
         case DRT::ELEMENTS::SoHex8::soh8_easnone:
           break;
         default:
-          dserror("Don't know what to do with EAS type %d", eastype_);
+          FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
           break;
       }
 
@@ -2608,7 +2610,7 @@ void DRT::ELEMENTS::SoHex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // loc
 
   // check for prestressing or EAS
   if (PRESTRESS::IsAny(pstype_) || eastype_ != soh8_easnone)
-    dserror("GEMM for Sohex8 not (yet) compatible with EAS / prestressing!");
+    FOUR_C_THROW("GEMM for Sohex8 not (yet) compatible with EAS / prestressing!");
 
   // GEMM coefficients
   const double gemmalphaf = params.get<double>("alpha f");
@@ -2682,14 +2684,14 @@ void DRT::ELEMENTS::SoHex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // loc
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
         CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> gl;
         gl(0, 0) = glstrain(0);
@@ -2722,7 +2724,7 @@ void DRT::ELEMENTS::SoHex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // loc
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested strain type not available");
+        FOUR_C_THROW("requested strain type not available");
         break;
     }
 
@@ -2818,13 +2820,13 @@ void DRT::ELEMENTS::SoHex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // loc
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF = defgrd.Determinant();
 
         CORE::LINALG::Matrix<3, 3> pkstress;
@@ -2854,7 +2856,7 @@ void DRT::ELEMENTS::SoHex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // loc
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not available");
+        FOUR_C_THROW("requested stress type not available");
         break;
     }
 
@@ -3011,7 +3013,7 @@ void DRT::ELEMENTS::SoHex8::soh8_create_eas_backup_state(const std::vector<doubl
   // --- create EAS state backup ----------------------------------------------
   {
     const auto* alpha = &easdata_.alpha;
-    if (not alpha) dserror("Can't access the current enhanced strain state.");
+    if (not alpha) FOUR_C_THROW("Can't access the current enhanced strain state.");
 
     auto* alpha_backup_ptr = &easdata_.alpha_backup;
     if (alpha_backup_ptr)
@@ -3047,12 +3049,12 @@ void DRT::ELEMENTS::SoHex8::soh8_recover_from_eas_backup_state()
   {
     const auto* alpha_backup = &easdata_.alpha_backup;
     if (not alpha_backup)
-      dserror(
+      FOUR_C_THROW(
           "Can't access the enhanced strain backup state. Did you "
           "create a backup? See soh8_create_eas_backup_state().");
 
     alpha = &easdata_.alpha;
-    if (not alpha) dserror("Can't access the enhanced strain state.");
+    if (not alpha) FOUR_C_THROW("Can't access the enhanced strain state.");
 
     *alpha = *alpha_backup;
   }
@@ -3061,12 +3063,12 @@ void DRT::ELEMENTS::SoHex8::soh8_recover_from_eas_backup_state()
   {
     const auto* eas_inc_backup = &easdata_.eas_inc_backup;
     if (not eas_inc_backup)
-      dserror(
+      FOUR_C_THROW(
           "Can't access the enhanced strain increment backup. Did you "
           "create a backup? See soh8_create_eas_backup_state().");
 
     eas_inc = &easdata_.eas_inc;
-    if (not eas_inc) dserror("Can't access the enhanced strain increment.");
+    if (not eas_inc) FOUR_C_THROW("Can't access the enhanced strain increment.");
 
     *eas_inc = *eas_inc_backup;
   }
@@ -3087,7 +3089,7 @@ int DRT::ELEMENTS::SoHex8Type::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoHex8*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex8* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex8* failed");
     actele->InitJacobianMapping();
   }
   return 0;
@@ -3458,7 +3460,7 @@ void DRT::ELEMENTS::SoHex8::EvaluateFiniteDifferenceMaterialTangent(
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone)
     {
-      dserror("be careful ! fdcheck has not been tested with EAS, yet! ");
+      FOUR_C_THROW("be careful ! fdcheck has not been tested with EAS, yet! ");
       M.shape(MAT::NUM_STRESS_3D, neas_);
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
@@ -3487,7 +3489,7 @@ void DRT::ELEMENTS::SoHex8::EvaluateFiniteDifferenceMaterialTangent(
         case DRT::ELEMENTS::SoHex8::soh8_easnone:
           break;
         default:
-          dserror("Don't know what to do with EAS type %d", eastype_);
+          FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
           break;
       }
 
@@ -3593,7 +3595,7 @@ void DRT::ELEMENTS::SoHex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::
     double* d_cauchyndir_dc)
 {
   if (temp || d_cauchyndir_dT || d2_cauchyndir_dd_dT)
-    dserror("Thermo-elastic Nitsche contact not yet implemented in so hex8");
+    FOUR_C_THROW("Thermo-elastic Nitsche contact not yet implemented in so hex8");
 
   cauchy_n_dir = 0.0;
 

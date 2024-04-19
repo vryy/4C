@@ -218,7 +218,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_vel_)(i)))[nid];
           int err = ((*velocity)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -235,7 +235,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_dens_vel_)(i)))[nid];
           int err = ((*densvelocity)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -250,7 +250,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_dens_vel_temp_)(i)))[nid];
           int err = ((*densvelocity)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -265,7 +265,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_dens_rateofstrain_temp_)(i)))[nid];
           int err = ((*densvelocity)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -283,7 +283,7 @@ namespace FLD
             const int ij = 3 * i + j;
             double val = (*((*col_filtered_reynoldsstress_)(ij)))[nid];
             int err = ((*reystr)(ij))->ReplaceMyValues(1, &val, &nid);
-            if (err != 0) dserror("dof not on proc");
+            if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
       }
@@ -302,7 +302,7 @@ namespace FLD
             const int ij = 3 * i + j;
             double val = (*((*col_filtered_modeled_subgrid_stress_)(ij)))[nid];
             int err = ((*mosubstr)(ij))->ReplaceMyValues(1, &val, &nid);
-            if (err != 0) dserror("dof not on proc");
+            if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
       }
@@ -323,7 +323,7 @@ namespace FLD
             const int ij = 3 * i + j;
             double val = (*((*col_filtered_strainrate_)(ij)))[nid];
             int err = ((*strainr)(ij))->ReplaceMyValues(1, &val, &nid);
-            if (err != 0) dserror("dof not on proc");
+            if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
       }
@@ -342,7 +342,7 @@ namespace FLD
             const int ij = 3 * i + j;
             double val = (*((*col_filtered_alphaij_)(ij)))[nid];
             int err = ((*alphij)(ij))->ReplaceMyValues(1, &val, &nid);
-            if (err != 0) dserror("dof not on proc");
+            if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
       }
@@ -360,7 +360,7 @@ namespace FLD
             const int ij = 3 * i + j;
             double val = (*((*col_filtered_alphaijsc_)(ij)))[nid];
             int err = ((*alphijsc)(ij))->ReplaceMyValues(1, &val, &nid);
-            if (err != 0) dserror("dof not on proc");
+            if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
       }
@@ -377,7 +377,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_expression_)(i)))[nid];
           int err = ((*expr)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -393,7 +393,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_dens_)(i)))[nid];
           int err = ((*dens)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -408,7 +408,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_temp_)(i)))[nid];
           int err = ((*dens)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -423,7 +423,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_dens_temp_)(i)))[nid];
           int err = ((*dens)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -439,7 +439,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_dens_strainrate_)(i)))[nid];
           int err = ((*densstrainr)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -454,7 +454,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_alpha2_)(i)))[nid];
           int err = ((*alph2)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -471,7 +471,7 @@ namespace FLD
         {
           double val = (*((*col_fs_vel_)(i)))[nid];
           int err = ((*velocity)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -566,7 +566,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_phi_)(i)))[nid];
           int err = ((*phi)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -581,7 +581,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_phi2_)(i)))[nid];
           int err = ((*phi2)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
@@ -596,7 +596,7 @@ namespace FLD
         {
           double val = (*((*col_filtered_phiexpression_)(i)))[nid];
           int err = ((*phiexpression)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;

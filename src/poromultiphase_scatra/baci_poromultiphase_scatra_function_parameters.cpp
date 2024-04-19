@@ -43,14 +43,14 @@ namespace
                            ", it should have exactly\n" + std::to_string(NumberOfParameters) +
                            " funct_params (in this order): " + list_of_parameters;
 
-      dserror(message.c_str());
+      FOUR_C_THROW(message.c_str());
     }
 
     for (std::size_t i = 0; i < funct_params.size(); ++i)
     {
       auto const message = "Parameter number " + std::to_string(i + 1) + " for " + function_name +
                            " has to be " + param_map[i];
-      if (funct_params[i].first != param_map[i]) dserror(message.c_str());
+      if (funct_params[i].first != param_map[i]) FOUR_C_THROW(message.c_str());
     }
   }
 }  // namespace

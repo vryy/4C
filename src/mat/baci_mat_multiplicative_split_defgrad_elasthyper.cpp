@@ -35,12 +35,13 @@ MAT::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastH
 {
   // check if sizes fit
   if (nummat_elast_ != static_cast<int>(matids_elast_->size()))
-    dserror("number of elastic materials %d does not fit to size of elastic material ID vector %d",
+    FOUR_C_THROW(
+        "number of elastic materials %d does not fit to size of elastic material ID vector %d",
         nummat_elast_, matids_elast_->size());
 
   if (numfac_inel_ != static_cast<int>(inel_defgradfacids_->size()))
   {
-    dserror(
+    FOUR_C_THROW(
         "number of inelastic deformation gradient factors %d does not fit to size of inelastic "
         "deformation gradient ID vector %d",
         numfac_inel_, inel_defgradfacids_->size());
@@ -87,7 +88,7 @@ MAT::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
   for (int matid_elastic : *(params_->matids_elast_))
   {
     auto elastic_summand = MAT::ELASTIC::Summand::Factory(matid_elastic);
-    if (elastic_summand == Teuchos::null) dserror("Failed to allocate");
+    if (elastic_summand == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsumel_.push_back(elastic_summand);
     elastic_summand->RegisterAnisotropyExtensions(*anisotropy_);
   }
@@ -143,7 +144,7 @@ void MAT::MultiplicativeSplitDefgradElastHyper::Unpack(const std::vector<char>& 
       if (mat->Type() == MaterialType())
         params_ = dynamic_cast<MAT::PAR::MultiplicativeSplitDefgradElastHyper*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -156,7 +157,7 @@ void MAT::MultiplicativeSplitDefgradElastHyper::Unpack(const std::vector<char>& 
     for (const auto& matid_elastic : *(params_->matids_elast_))
     {
       auto elastic_summand = MAT::ELASTIC::Summand::Factory(matid_elastic);
-      if (elastic_summand == Teuchos::null) dserror("Failed to allocate");
+      if (elastic_summand == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsumel_.push_back(elastic_summand);
     }
     // loop map of associated potential summands
@@ -251,7 +252,7 @@ void MAT::MultiplicativeSplitDefgradElastHyper::Evaluate(
     else if (differentiationtype == static_cast<int>(STR::DifferentiationType::temp))
       source = PAR::InelasticSource::temperature;
     else
-      dserror("unknown scalaratype");
+      FOUR_C_THROW("unknown scalaratype");
 
     EvaluateODStiffMat(source, defgrad, dSdiFin, *stress);
   }
@@ -463,7 +464,7 @@ void MAT::MultiplicativeSplitDefgradElastHyper::EvaluateLinearizationOD(
     facdefgradin[0].second->EvaluateInelasticDefGradDerivative(defgrd.Determinant(), d_Fin_dx);
   }
   else
-    dserror("NOT YET IMPLEMENTED");
+    FOUR_C_THROW("NOT YET IMPLEMENTED");
 
   d_F_dx->MultiplyNN(1.0, d_F_dFin, d_Fin_dx, 0.0);
 }
@@ -711,7 +712,7 @@ void MAT::MultiplicativeSplitDefgradElastHyper::EvaluateAdditionalCmat(
     }
   }
   else
-    dserror("You should not be here");
+    FOUR_C_THROW("You should not be here");
 }
 
 /*--------------------------------------------------------------------*
@@ -815,7 +816,7 @@ void MAT::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::Inelasti
     }
   }
   else
-    dserror("You should not be here");
+    FOUR_C_THROW("You should not be here");
 }
 
 /*--------------------------------------------------------------------*
@@ -847,7 +848,7 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgradEla
   for (int inelastic_matnum : *(params->inel_defgradfacids_))
   {
     auto inelastic_factor = MAT::InelasticDefgradFactors::Factory(inelastic_matnum);
-    if (inelastic_factor == Teuchos::null) dserror("Failed to allocate!");
+    if (inelastic_factor == Teuchos::null) FOUR_C_THROW("Failed to allocate!");
     std::pair<PAR::InelasticSource, Teuchos::RCP<MAT::InelasticDefgradFactors>> temppair(
         inelastic_factor->GetInelasticSource(), inelastic_factor);
     facdefgradin_.push_back(temppair);
@@ -872,7 +873,7 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgradEla
           (materialtype != INPAR::MAT::mfi_poly_intercal_frac_aniso) and
           (materialtype != INPAR::MAT::mfi_poly_intercal_frac_iso))
       {
-        dserror(
+        FOUR_C_THROW(
             "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section, you need "
             "to use one of the materials derived from 'MAT::InelasticDefgradFactors'!"
             " If you want to use a different material, feel free to implement it! ;-)");

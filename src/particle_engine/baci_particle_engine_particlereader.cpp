@@ -123,9 +123,9 @@ void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
             // read in particle type and position
             linestream >> typelabel >> type >> poslabel >> pos[0] >> pos[1] >> pos[2];
 
-            if (typelabel != "TYPE") dserror("expected particle type label 'TYPE'!");
+            if (typelabel != "TYPE") FOUR_C_THROW("expected particle type label 'TYPE'!");
 
-            if (poslabel != "POS") dserror("expected particle position label 'POS'!");
+            if (poslabel != "POS") FOUR_C_THROW("expected particle position label 'POS'!");
 
             // get enum of particle type
             particletype = PARTICLEENGINE::EnumFromTypeName(type);
@@ -159,10 +159,11 @@ void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
                   linestream >> state[0];
                 }
                 else
-                  dserror("optional particle state with label '%s' unknown!", statelabel.c_str());
+                  FOUR_C_THROW(
+                      "optional particle state with label '%s' unknown!", statelabel.c_str());
 
                 if (not linestream)
-                  dserror("expecting values of state '%s' if label '%s' is set!",
+                  FOUR_C_THROW("expecting values of state '%s' if label '%s' is set!",
                       PARTICLEENGINE::EnumToStateName(particlestate).c_str(), statelabel.c_str());
 
                 // allocate memory to hold optional particle state

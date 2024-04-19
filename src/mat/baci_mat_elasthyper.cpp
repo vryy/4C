@@ -36,7 +36,7 @@ MAT::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())
-    dserror("number of materials %d does not fit to size of material vector %d", nummat_,
+    FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
         matids_->size());
 
   // output, that polyconvexity is checked
@@ -86,7 +86,7 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-    if (sum == Teuchos::null) dserror("Failed to allocate");
+    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
     sum->RegisterAnisotropyExtensions(anisotropy_);
   }
@@ -147,7 +147,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = dynamic_cast<MAT::PAR::ElastHyper*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -165,7 +165,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     {
       const int summand_matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(summand_matid);
-      if (sum == Teuchos::null) dserror("Failed to allocate");
+      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
 
@@ -180,7 +180,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     // -> position check cannot be done in this case
     if (position != data.size())
     {
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
     }
   }
 }
@@ -191,7 +191,7 @@ int MAT::ElastHyper::MatID(const unsigned index) const
 {
   if ((int)index >= params_->nummat_)
   {
-    dserror("Index too large");
+    FOUR_C_THROW("Index too large");
   }
 
   return params_->matids_->at(index);
@@ -213,7 +213,7 @@ double MAT::ElastHyper::ShearMod() const
   }
   if (!haveshearmod)
   {
-    dserror("Cannot provide shear modulus equivalent");
+    FOUR_C_THROW("Cannot provide shear modulus equivalent");
   }
   return shearmod;
 }
@@ -262,7 +262,7 @@ void MAT::ElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
 
   if (summandProperties_.viscoGeneral)
   {
-    dserror(
+    FOUR_C_THROW(
         "Never use viscoelastic-materials in Elasthyper-Toolbox. Use Viscoelasthyper-Toolbox "
         "instead.");
   }
@@ -352,12 +352,12 @@ void MAT::ElastHyper::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* 
     const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
     const int gp, const int eleGID)
 {
-#ifdef BACI_DEBUG
-  if (stress == nullptr) dserror("No stress vector supplied");
-  if (cmat == nullptr) dserror("No material tangent matrix supplied");
-  if (glstrain_m == nullptr) dserror("No GL strains supplied");
-  if (glstrain_new == nullptr) dserror("No GL strains supplied");
-  if (glstrain_old == nullptr) dserror("No GL strains supplied");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (stress == nullptr) FOUR_C_THROW("No stress vector supplied");
+  if (cmat == nullptr) FOUR_C_THROW("No material tangent matrix supplied");
+  if (glstrain_m == nullptr) FOUR_C_THROW("No GL strains supplied");
+  if (glstrain_new == nullptr) FOUR_C_THROW("No GL strains supplied");
+  if (glstrain_old == nullptr) FOUR_C_THROW("No GL strains supplied");
 #endif
 
   // standard material evaluate call at midpoint t_{n+1/2}
@@ -491,7 +491,7 @@ void MAT::ElastHyper::EvaluateCauchyDerivs(const CORE::LINALG::Matrix<3, 1>& pri
       i->AddThirdDerivativesPrincipalIso(dddPIII, prinv, gp, eleGID);
     }
     if (summandProperties_.isomod || summandProperties_.anisomod || summandProperties_.anisoprinc)
-      dserror("not implemented for this form of strain energy function");
+      FOUR_C_THROW("not implemented for this form of strain energy function");
   }
 }
 
@@ -959,7 +959,7 @@ bool MAT::ElastHyper::VisData(
       fiber = s.str();
       if (name == fiber)
       {
-        if ((int)data.size() != 3) dserror("size mismatch");
+        if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
         data[0] = fibervecs.at(i)(0);
         data[1] = fibervecs.at(i)(1);
         data[2] = fibervecs.at(i)(2);

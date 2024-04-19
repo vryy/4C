@@ -171,7 +171,7 @@ void DRT::ELEMENTS::SoSh18Plast::Unpack(const std::vector<char>& data)
   SyncEAS();
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -263,7 +263,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
 
   // do the evaluation of tsi terms
   const bool eval_tsi = (!temp.empty());
-  if (tsi_) dserror("no TSI for sosh18Plast (yet)");
+  if (tsi_) FOUR_C_THROW("no TSI for sosh18Plast (yet)");
   const double gp_temp = -1.e12;
 
   // update element geometry
@@ -293,7 +293,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   double dt = StrParamsInterface().GetDeltaTime();
   if (eval_tsi && (stiffmatrix != nullptr || force != nullptr))
     if (theta == 0 || dt == 0)
-      dserror("time integration parameters not provided in element for TSI problem");
+      FOUR_C_THROW("time integration parameters not provided in element for TSI problem");
 
 
   // EAS stuff
@@ -434,7 +434,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
       {
         case INPAR::STR::strain_gl:
         {
-          if (elestrain == nullptr) dserror("strain data not available");
+          if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
           for (int i = 0; i < 3; ++i)
           {
             (*elestrain)(gp, i) = glstrain(i);
@@ -459,7 +459,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
         case INPAR::STR::strain_none:
           break;
         default:
-          dserror("requested strain option not available");
+          FOUR_C_THROW("requested strain option not available");
           break;
       }
     }
@@ -473,7 +473,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == nullptr) dserror("stress data not available");
+          if (elestress == nullptr) FOUR_C_THROW("stress data not available");
           for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
           {
             (*elestress)(gp, i) = pk2(i);
@@ -482,7 +482,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
         break;
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == nullptr) dserror("stress data not available");
+          if (elestress == nullptr) FOUR_C_THROW("stress data not available");
           CORE::LINALG::Matrix<3, 3> pkstress;
           pkstress(0, 0) = pk2(0);
           pkstress(0, 1) = pk2(3);
@@ -510,7 +510,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
         case INPAR::STR::stress_none:
           break;
         default:
-          dserror("requested stress option not available");
+          FOUR_C_THROW("requested stress option not available");
           break;
       }
     }
@@ -603,7 +603,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
     solve_for_KaaInv.SetMatrix(SoSh18::KaaInv_);
     int err2 = solve_for_KaaInv.Factor();
     int err = solve_for_KaaInv.Invert();
-    if ((err != 0) || (err2 != 0)) dserror("Inversion of Kaa failed");
+    if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of Kaa failed");
 
     CORE::LINALG::Matrix<NUMDOF_SOH18, num_eas> KdaKaa;
     CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_, num_eas, num_eas>(

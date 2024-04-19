@@ -49,7 +49,7 @@ namespace CORE::FE
   {
     // safety check
     if (local[0].N() != 1 or local.size() * (unsigned)local[0].M() != lm.size())
-      dserror("Received matrix vector of wrong size!");
+      FOUR_C_THROW("Received matrix vector of wrong size!");
 
     // loop over all nodes of current element
     for (unsigned inode = 0; inode < local[0].M(); ++inode)
@@ -62,7 +62,7 @@ namespace CORE::FE
 
         // safety check
         if (lid < 0)
-          dserror("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(),
+          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(),
               lm[inode * local.size() + idof]);
 
         // store current dof in local matrix vector consisting of ndof matrices of size nnode x 1,
@@ -78,7 +78,7 @@ namespace CORE::FE
   {
     // safety check
     if ((unsigned)(local.numRows() * local.numCols()) != lm.size())
-      dserror("Received matrix of wrong size!");
+      FOUR_C_THROW("Received matrix of wrong size!");
 
     // loop over all columns of cal matrix
     for (unsigned icol = 0; icol < local.numCols(); ++icol)
@@ -92,7 +92,8 @@ namespace CORE::FE
 
         // safety check
         if (lid < 0)
-          dserror("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), lm[index]);
+          FOUR_C_THROW(
+              "Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), lm[index]);
 
         // store current dof in local matrix, which is filled column-wise with the dofs listed in
         // the lm vector
@@ -144,12 +145,13 @@ namespace CORE::FE
       const int nsd                                       ///< number of space dimensions
   )
   {
-    if (global == Teuchos::null) dserror("received a TEUCHOS::null pointer");
+    if (global == Teuchos::null) FOUR_C_THROW("received a TEUCHOS::null pointer");
     if (nsd > global->NumVectors())
-      dserror("Requested %d of %d available columns", nsd, global->NumVectors());
+      FOUR_C_THROW("Requested %d of %d available columns", nsd, global->NumVectors());
     const int iel = ele->NumNode();  // number of nodes
-    if (((int)localmatrix.numCols()) != iel) dserror("local matrix has wrong number of columns");
-    if (((int)localmatrix.numRows()) != nsd) dserror("local matrix has wrong number of rows");
+    if (((int)localmatrix.numCols()) != iel)
+      FOUR_C_THROW("local matrix has wrong number of columns");
+    if (((int)localmatrix.numRows()) != nsd) FOUR_C_THROW("local matrix has wrong number of rows");
 
     for (int i = 0; i < nsd; i++)
     {
@@ -161,7 +163,7 @@ namespace CORE::FE
         const int nodegid = (ele->Nodes()[j])->Id();
         const int lid = global->Map().LID(nodegid);
         if (lid < 0)
-          dserror(
+          FOUR_C_THROW(
               "Proc %d: Cannot find gid=%d in Epetra_Vector", (*global).Comm().MyPID(), nodegid);
         localmatrix(i, j) = globalcolumn[lid];
       }
@@ -180,8 +182,8 @@ namespace CORE::FE
   {
     const int numnode = ele->NumNode();
     const int numcol = global.NumVectors();
-    if (((int)local.N()) != 1) dserror("local matrix must have one column");
-    if (((int)local.M()) != numnode * numcol) dserror("local matrix has wrong number of rows");
+    if (((int)local.N()) != 1) FOUR_C_THROW("local matrix must have one column");
+    if (((int)local.M()) != numnode * numcol) FOUR_C_THROW("local matrix has wrong number of rows");
 
     // loop over element nodes
     for (int i = 0; i < numnode; ++i)
@@ -189,7 +191,8 @@ namespace CORE::FE
       const int nodegid = (ele->Nodes()[i])->Id();
       const int lid = global.Map().LID(nodegid);
       if (lid < 0)
-        dserror("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), nodegid);
+        FOUR_C_THROW(
+            "Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), nodegid);
 
       // loop over multi vector columns (numcol=1 for Epetra_Vector)
       for (int col = 0; col < numcol; col++)

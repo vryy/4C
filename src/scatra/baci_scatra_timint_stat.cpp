@@ -52,7 +52,7 @@ void SCATRA::TimIntStationary::Init()
   // fine-scale vector
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     fsphinp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  if (turbmodel_ != INPAR::FLUID::no_model) dserror("Turbulence is not stationary problem!");
+  if (turbmodel_ != INPAR::FLUID::no_model) FOUR_C_THROW("Turbulence is not stationary problem!");
 
   // -------------------------------------------------------------------
   // set element parameters
@@ -69,7 +69,7 @@ void SCATRA::TimIntStationary::Init()
 
   // safety check
   if (static_cast<bool>(CORE::UTILS::IntegralValue<int>(*params_, "NATURAL_CONVECTION")))
-    dserror("Natural convection for stationary time integration scheme is not implemented!");
+    FOUR_C_THROW("Natural convection for stationary time integration scheme is not implemented!");
 }
 
 

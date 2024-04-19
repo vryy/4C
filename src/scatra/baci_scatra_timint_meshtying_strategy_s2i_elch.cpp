@@ -147,7 +147,7 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying()
 {
   // safety check
   if (CORE::UTILS::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "BLOCKPRECOND"))
-    dserror("Block preconditioning doesn't work for scatra-scatra interface coupling yet!");
+    FOUR_C_THROW("Block preconditioning doesn't work for scatra-scatra interface coupling yet!");
 
   // call base class routine
   SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying();
@@ -173,7 +173,7 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
     const std::vector<int>* const nodeids_master = cond_master->GetNodes();
 
     if (nodeids_slave->size() != 1 or nodeids_master->size() != 1)
-      dserror("only one node per condition allowed");
+      FOUR_C_THROW("only one node per condition allowed");
 
     const int nodeid_slave = (*nodeids_slave)[0];
     const int nodeid_master = (*nodeids_master)[0];
@@ -217,13 +217,13 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
         auto matelectrode =
             Teuchos::rcp_dynamic_cast<const MAT::Electrode>(slave_node->Elements()[0]->Material());
         if (matelectrode == Teuchos::null)
-          dserror("Invalid electrode material for multi-scale coupling!");
+          FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 
         // access input parameters associated with current condition
         const int nume = *cond_slave->Get<int>("e-");
         if (nume != 1)
         {
-          dserror(
+          FOUR_C_THROW(
               "Invalid number of electrons involved in charge transfer at "
               "electrode-electrolyte interface!");
         }
@@ -231,13 +231,13 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
             cond_slave->Get<std::vector<int>>("stoichiometries");
         if (stoichiometries == nullptr)
         {
-          dserror(
+          FOUR_C_THROW(
               "Cannot access vector of stoichiometric coefficients for multi-scale "
               "coupling!");
         }
         if (stoichiometries->size() != 1)
-          dserror("Number of stoichiometric coefficients does not match number of scalars!");
-        if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
+          FOUR_C_THROW("Number of stoichiometric coefficients does not match number of scalars!");
+        if ((*stoichiometries)[0] != -1) FOUR_C_THROW("Invalid stoichiometric coefficient!");
         const double faraday =
             GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>("FARADAY_CONSTANT");
         const double gasconstant =
@@ -248,12 +248,13 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
         const double alphaa = *cond_slave->Get<double>("alpha_a");
         const double alphac = *cond_slave->Get<double>("alpha_c");
         const double kr = *cond_slave->Get<double>("k_r");
-        if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
+        if (kr < 0.0) FOUR_C_THROW("Charge transfer constant k_r is negative!");
 
         // extract saturation value of intercalated lithium concentration from electrode material
         const double cmax = matelectrode->CMax();
         if (cmax < 1.0e-12)
-          dserror("Saturation value c_max of intercalated lithium concentration is too small!");
+          FOUR_C_THROW(
+              "Saturation value c_max of intercalated lithium concentration is too small!");
 
         // compute domain integration factor
         constexpr double four_pi = 4.0 * M_PI;
@@ -265,7 +266,8 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
             DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFac() * fac;
         const double timefacrhsfac =
             DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFacRhs() * fac;
-        if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
+        if (timefacfac < 0.0 or timefacrhsfac < 0.0)
+          FOUR_C_THROW("Integration factor is negative!");
         // no deformation available
         const double dummy_detF(1.0);
 
@@ -343,7 +345,7 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
 
       default:
       {
-        dserror("Kinetic model for s2i coupling not yet implemented!");
+        FOUR_C_THROW("Kinetic model for s2i coupling not yet implemented!");
       }
     }
   }
@@ -428,14 +430,15 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
                         0, node, 0));  // Do not remove the first zero, i.e., the first function
                                        // argument, otherwise an error is thrown in debug mode!
                 if (doflid_scatra < 0)
-                  dserror("Couldn't extract local ID of scalar transport degree of freedom!");
+                  FOUR_C_THROW("Couldn't extract local ID of scalar transport degree of freedom!");
 
                 // extract local ID of scatra-scatra interface layer thickness variable associated
                 // with current node
                 const int doflid_growth = scatratimint_->Discretization()->DofRowMap(2)->LID(
                     scatratimint_->Discretization()->Dof(2, node, 0));
                 if (doflid_growth < 0)
-                  dserror("Couldn't extract local ID of scatra-scatra interface layer thickness!");
+                  FOUR_C_THROW(
+                      "Couldn't extract local ID of scatra-scatra interface layer thickness!");
 
                 // extract slave-side electric potential associated with current node
                 const double slavepot = (*scatratimint_->Phiafnp())[doflid_scatra + 1];
@@ -483,7 +486,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
                     break;
                   else if (iternum == intlayergrowth_itemax_)
                   {
-                    dserror(
+                    FOUR_C_THROW(
                         "Local Newton-Raphson iteration for scatra-scatra interface layer growth "
                         "did not converge!");
                   }
@@ -512,7 +515,8 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
 
         default:
         {
-          dserror("Kinetic model for scatra-scatra interface layer growth is not yet implemented!");
+          FOUR_C_THROW(
+              "Kinetic model for scatra-scatra interface layer growth is not yet implemented!");
           break;
         }
       }  // kinetic models
@@ -581,20 +585,21 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
 {
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
-    dserror("Invalid number of degrees of freedom per node!");
+    FOUR_C_THROW("Invalid number of degrees of freedom per node!");
   if (DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
       INPAR::ELCH::equpot_divi)
-    dserror("Invalid closing equation for electric potential!");
+    FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // extract condition from parameter list
   DRT::Condition* condition = params.get<DRT::Condition*>("condition");
-  if (condition == nullptr) dserror("Cannot access scatra-scatra interface coupling condition!");
+  if (condition == nullptr)
+    FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access material of slave element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(slaveelement.Material());
   if (matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
   this->ExtractNodeValues(idiscret, la_slave, la_master);
@@ -622,7 +627,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * fac;
     const double timefacrhsfac =
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * fac;
-    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
@@ -647,10 +652,10 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
 {
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
-    dserror("Invalid number of degrees of freedom per node!");
+    FOUR_C_THROW("Invalid number of degrees of freedom per node!");
   if (DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
       INPAR::ELCH::equpot_divi)
-    dserror("Invalid closing equation for electric potential!");
+    FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // access material of slave element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
@@ -658,7 +663,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
           ->ParentElement()
           ->Material());
   if (matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // evaluate shape functions at position of slave-side node
   my::EvalShapeFuncAtSlaveNode(slavenode, slaveelement, masterelement);
@@ -674,7 +679,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * lumpedarea;
   const double timefacrhsfac =
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * lumpedarea;
-  if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+  if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
   // no deformation available
   const double dummy_detF(1.0);
@@ -813,14 +818,15 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
 {
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
-    dserror("Invalid number of degrees of freedom per node!");
+    FOUR_C_THROW("Invalid number of degrees of freedom per node!");
   if (DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
       INPAR::ELCH::equpot_divi)
-    dserror("Invalid closing equation for electric potential!");
+    FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // extract condition from parameter list
   DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
-  if (s2icondition == nullptr) dserror("Cannot access scatra-scatra interface coupling condition!");
+  if (s2icondition == nullptr)
+    FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access material of slave element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
@@ -828,7 +834,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
           ->ParentElement()
           ->Material());
   if (matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
   ExtractNodeValues(idiscret, la_slave, la_master);
@@ -852,7 +858,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
     // evaluate overall integration factor
     const double timefac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac();
     const double timefacfac = timefac * fac;
-    if (timefacfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     const double timefacwgt = timefac * intpoints.IP().qwgt[gpid];
 
@@ -898,7 +904,7 @@ double SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::GetFRT() const
   const double temperature = my::funct_slave_.Dot(etempnp_slave_);
 
   // safety check
-  if (temperature <= 0.) dserror("Temperature is non-positive!");
+  if (temperature <= 0.) FOUR_C_THROW("Temperature is non-positive!");
 
   const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
   const double gasconstant =
@@ -1031,11 +1037,12 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
 {
   // safety check
   if (my::numdofpernode_slave_ != 1 or my::numdofpernode_master_ != 1)
-    dserror("Invalid number of degrees of freedom per node!");
+    FOUR_C_THROW("Invalid number of degrees of freedom per node!");
 
   // extract condition from parameter list
   DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
-  if (s2icondition == nullptr) dserror("Cannot access scatra-scatra interface coupling condition!");
+  if (s2icondition == nullptr)
+    FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access primary and secondary materials of slave element
   const Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(
@@ -1048,7 +1055,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
               ->ParentElement()
               ->Material(1));
   if (matsoret == Teuchos::null or matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
   ExtractNodeValues(idiscret, la_slave, la_master);
@@ -1073,7 +1080,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFac() * fac;
     const double timefacrhsfac =
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFacRhs() * fac;
-    if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     // no deformation available
     const double dummy_detF(1.0);
@@ -1107,11 +1114,12 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
 {
   // safety check
   if (my::numdofpernode_slave_ != 1 or my::numdofpernode_master_ != 1)
-    dserror("Invalid number of degrees of freedom per node!");
+    FOUR_C_THROW("Invalid number of degrees of freedom per node!");
 
   // extract condition from parameter list
   DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
-  if (s2icondition == nullptr) dserror("Cannot access scatra-scatra interface coupling condition!");
+  if (s2icondition == nullptr)
+    FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access primary and secondary materials of parent element
   Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(
@@ -1123,7 +1131,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
           ->ParentElement()
           ->Material(1));
   if (matsoret == Teuchos::null or matelectrode == Teuchos::null)
-    dserror("Invalid electrode or soret material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode or soret material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
   ExtractNodeValues(idiscret, la_slave, la_master);
@@ -1146,7 +1154,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
     // overall integration factors
     const double timefacfac =
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFac() * fac;
-    if (timefacfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     // no deformation available
     const double dummy_detF(1.0);
@@ -1202,7 +1210,7 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
   for (const auto& s2imeshtying_condition : s2imeshtying_conditions)
   {
     if (*s2imeshtying_condition->Get<int>("S2IKineticsID") != -1)
-      dserror("No kinetics condition is allowed for the coupled space-charge layer problem.");
+      FOUR_C_THROW("No kinetics condition is allowed for the coupled space-charge layer problem.");
 
     switch (*s2imeshtying_condition->Get<int>("interface side"))
     {
@@ -1220,7 +1228,7 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
       }
       default:
       {
-        dserror("interface side must bee slave or master");
+        FOUR_C_THROW("interface side must bee slave or master");
         break;
       }
     }

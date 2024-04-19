@@ -21,12 +21,12 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::EvaluateForceStiff(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> me_stiff_ptr, Teuchos::RCP<Epetra_Vector> me_force_ptr)
 {
   if (me_stiff_ptr == Teuchos::null && me_force_ptr == Teuchos::null)
-    dserror("Both stiffness and force point are null");
+    FOUR_C_THROW("Both stiffness and force point are null");
 
   if (me_stiff_ptr != Teuchos::null)
   {
     if (!(Q_Ld_->Filled() && Q_dd_->Filled() && Q_dL_->Filled()))
-      dserror("Call EvaluateCouplingTerms() first.");
+      FOUR_C_THROW("Call EvaluateCouplingTerms() first.");
 
     // evaluate the stiffness contribution of this sme:
     auto sme_stiff_ptr = CORE::LINALG::Multiply(*Q_dL_, false, *Q_Ld_, false, false);

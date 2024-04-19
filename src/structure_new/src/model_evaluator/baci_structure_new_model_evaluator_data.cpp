@@ -54,7 +54,7 @@ namespace
     // make sure that you do not think you received something if
     // you didn't
     if (not receiveddata.empty() or not receivedsize.empty())
-      dserror("Received data objects are not empty!");
+      FOUR_C_THROW("Received data objects are not empty!");
 
     // receive from predecessor
     frompid = (myrank + numprocs - 1) % numprocs;
@@ -63,7 +63,7 @@ namespace
     int length = 0;
     exporter.ReceiveAny(frompid, tag, receivedsize, length);
     if (length != static_cast<int>(mysize.size()) or tag != frompid)
-      dserror(
+      FOUR_C_THROW(
           "Size information got mixed up!\n"
           "Received length = %d, Expected length = %d \n"
           "Received tag    = %d, Expected tag    = %d",
@@ -74,7 +74,7 @@ namespace
     // receive the gids
     exporter.ReceiveAny(frompid, tag, receiveddata, length);
     if (length != receivedsize[0] or tag != frompid * 10)
-      dserror(
+      FOUR_C_THROW(
           "Data information got mixed up! \n"
           "Received length = %d, Expected length = %d \n"
           "Received tag    = %d, Expected tag    = %d",
@@ -96,7 +96,7 @@ namespace
     }
     // sanity check
     if (index > receiveddata.size())
-      dserror(
+      FOUR_C_THROW(
           "Something is messed up in the received data block! Expected "
           "size = %d <--> received size = %d",
           receiveddata.size(), index);
@@ -311,13 +311,13 @@ void STR::MODELEVALUATOR::Data::FillNormTypeMaps()
          * during the summation. */
         double atol = NOX::NLN::AUX::GetNormWRMSClassVariable(ostatus, *qiter, "ATOL");
         if (atol < 0.0)
-          dserror("The absolute wrms tolerance of the quantity %s is missing.",
+          FOUR_C_THROW("The absolute wrms tolerance of the quantity %s is missing.",
               NOX::NLN::StatusTest::QuantityType2String(*qiter).c_str());
         else
           atol_wrms_[*qiter] = atol;
         double rtol = NOX::NLN::AUX::GetNormWRMSClassVariable(ostatus, *qiter, "RTOL");
         if (rtol < 0.0)
-          dserror("The relative wrms tolerance of the quantity %s is missing.",
+          FOUR_C_THROW("The relative wrms tolerance of the quantity %s is missing.",
               NOX::NLN::StatusTest::QuantityType2String(*qiter).c_str());
         else
           rtol_wrms_[*qiter] = rtol;
@@ -534,7 +534,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::StressDataPtr()
  *----------------------------------------------------------------------------*/
 const Epetra_Vector& STR::MODELEVALUATOR::Data::CurrentElementVolumeData() const
 {
-  dsassert(!elevolumes_ptr_.is_null(), "Undefined reference to element volume data!");
+  FOUR_C_ASSERT(!elevolumes_ptr_.is_null(), "Undefined reference to element volume data!");
   return *elevolumes_ptr_;
 }
 
@@ -542,7 +542,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Data::CurrentElementVolumeData() const
  *----------------------------------------------------------------------------*/
 const std::vector<char>& STR::MODELEVALUATOR::Data::StressData() const
 {
-  dsassert(!stressdata_ptr_.is_null(), "Undefined reference to the stress data!");
+  FOUR_C_ASSERT(!stressdata_ptr_.is_null(), "Undefined reference to the stress data!");
   return *stressdata_ptr_;
 }
 
@@ -558,7 +558,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::StrainDataPtr()
  *----------------------------------------------------------------------------*/
 const std::vector<char>& STR::MODELEVALUATOR::Data::StrainData() const
 {
-  dsassert(!straindata_ptr_.is_null(), "Undefined reference to the strain data!");
+  FOUR_C_ASSERT(!straindata_ptr_.is_null(), "Undefined reference to the strain data!");
   return *straindata_ptr_;
 }
 
@@ -574,7 +574,8 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::PlasticStrainDataPtr
  *----------------------------------------------------------------------------*/
 const std::vector<char>& STR::MODELEVALUATOR::Data::PlasticStrainData() const
 {
-  dsassert(!plastic_straindata_ptr_.is_null(), "Undefined reference to the plastic strain data!");
+  FOUR_C_ASSERT(
+      !plastic_straindata_ptr_.is_null(), "Undefined reference to the plastic strain data!");
   return *plastic_straindata_ptr_;
 }
 
@@ -590,7 +591,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::CouplingStressDataPt
  *----------------------------------------------------------------------------*/
 const std::vector<char>& STR::MODELEVALUATOR::Data::CouplingStressData() const
 {
-  dsassert(!couplstressdata_ptr_.is_null(), "Undefined reference to the stress data!");
+  FOUR_C_ASSERT(!couplstressdata_ptr_.is_null(), "Undefined reference to the stress data!");
   return *couplstressdata_ptr_;
 }
 
@@ -606,7 +607,8 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::OptQuantityDataPtr()
  *----------------------------------------------------------------------------*/
 const std::vector<char>& STR::MODELEVALUATOR::Data::OptQuantityData() const
 {
-  dsassert(!optquantitydata_ptr_.is_null(), "Undefined reference to the optional quantity data!");
+  FOUR_C_ASSERT(
+      !optquantitydata_ptr_.is_null(), "Undefined reference to the optional quantity data!");
   return *optquantitydata_ptr_;
 }
 
@@ -670,7 +672,8 @@ double STR::MODELEVALUATOR::Data::GetEnergyData(enum STR::EnergyType type) const
 {
   auto check = GetEnergyData().find(type);
   if (check == GetEnergyData().cend())
-    dserror("Couldn't find the energy contribution: \"%s\".", STR::EnergyType2String(type).c_str());
+    FOUR_C_THROW(
+        "Couldn't find the energy contribution: \"%s\".", STR::EnergyType2String(type).c_str());
 
   return check->second;
 }
@@ -746,7 +749,7 @@ int STR::MODELEVALUATOR::Data::GetNlnIter() const
     if (not nox_nln_ptr.is_null()) isnox = true;
   }
   if (not isnox)
-    dserror(
+    FOUR_C_THROW(
         "The GetNlnIter() routine supports only the NOX::NLN "
         "framework at the moment.");
 

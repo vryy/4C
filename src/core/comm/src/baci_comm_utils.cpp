@@ -149,7 +149,7 @@ namespace CORE::COMM
           gsum += grouplayout[color];
         } while (gsum <= myrank);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         std::cout << "Nested parallelism layout: Global rank: " << myrank
                   << " is in group: " << color << std::endl;
 #endif
@@ -384,7 +384,7 @@ namespace CORE::COMM
       // first: receive length of name
       int tag = 1336;
       MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
-      if (lengthRecv == 0) dserror("Length of name received from second run is zero.");
+      if (lengthRecv == 0) FOUR_C_THROW("Length of name received from second run is zero.");
 
       // second: receive name
       tag = 2672;
@@ -394,8 +394,9 @@ namespace CORE::COMM
 
       // do comparison of names
       if (std::strcmp(name, receivename.data()))
-        dserror("comparison of different vectors: communicators 0 (%s) and communicators 1 (%s)",
-            name, receivename.data());
+        FOUR_C_THROW(
+            "comparison of different vectors: communicators 0 (%s) and communicators 1 (%s)", name,
+            receivename.data());
 
       // compare data
       lengthRecv = 0;
@@ -405,7 +406,7 @@ namespace CORE::COMM
       MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
       // also enable comparison of empty vectors
       if (lengthRecv == 0 && fullvec->MyLength() != lengthRecv)
-        dserror("Length of data received from second run is incorrect.");
+        FOUR_C_THROW("Length of data received from second run is incorrect.");
 
       // second: receive data
       tag = 2674;
@@ -416,7 +417,8 @@ namespace CORE::COMM
       // start comparison
       int mylength = fullvec->MyLength() * vec->NumVectors();
       if (mylength != lengthRecv)
-        dserror("length of received data (%i) does not match own data (%i)", lengthRecv, mylength);
+        FOUR_C_THROW(
+            "length of received data (%i) does not match own data (%i)", lengthRecv, mylength);
 
       for (int i = 0; i < mylength; ++i)
       {
@@ -468,7 +470,7 @@ namespace CORE::COMM
     {
       std::stringstream diff;
       diff << std::scientific << std::setprecision(16) << maxdiff;
-      dserror("vectors %s do not match, maximum difference between entries is: %s", name,
+      FOUR_C_THROW("vectors %s do not match, maximum difference between entries is: %s", name,
           diff.str().c_str());
     }
 
@@ -527,7 +529,7 @@ namespace CORE::COMM
         double* Values;
         int* Indices;
         int err = serialCrsMatrix->ExtractMyRowView(i, NumEntries, Values, Indices);
-        if (err != 0) dserror("ExtractMyRowView error: %d", err);
+        if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
 
         for (int j = 0; j < NumEntries; ++j)
         {
@@ -551,7 +553,7 @@ namespace CORE::COMM
       // first: receive length of name
       int tag = 1336;
       MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
-      if (lengthRecv == 0) dserror("Length of name received from second run is zero.");
+      if (lengthRecv == 0) FOUR_C_THROW("Length of name received from second run is zero.");
 
       // second: receive name
       tag = 2672;
@@ -561,8 +563,9 @@ namespace CORE::COMM
 
       // do comparison of names
       if (std::strcmp(name, receivename.data()))
-        dserror("comparison of different vectors: communicators 0 (%s) and communicators 1 (%s)",
-            name, receivename.data());
+        FOUR_C_THROW(
+            "comparison of different vectors: communicators 0 (%s) and communicators 1 (%s)", name,
+            receivename.data());
 
       // compare data: indices
       lengthRecv = 0;
@@ -572,7 +575,7 @@ namespace CORE::COMM
       MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
       // also enable comparison of empty matrices
       if (lengthRecv == 0 && (int)data_indices.size() != lengthRecv)
-        dserror("Length of data received from second run is incorrect.");
+        FOUR_C_THROW("Length of data received from second run is incorrect.");
 
       // second: receive data
       tag = 2674;
@@ -583,14 +586,15 @@ namespace CORE::COMM
       // start comparison
       int mylength = data_indices.size();
       if (mylength != lengthRecv)
-        dserror("length of received data (%i) does not match own data (%i)", lengthRecv, mylength);
+        FOUR_C_THROW(
+            "length of received data (%i) does not match own data (%i)", lengthRecv, mylength);
 
       for (int i = 0; i < mylength; ++i)
       {
         if (data_indices[i] != receivebuf_indices[i])
         {
           bool iscolindex = data_indices[i] % 2;
-          dserror(
+          FOUR_C_THROW(
               "%s index of matrix %s does not match: communicators 0 (%i) and communicators 1 (%i)",
               iscolindex == 0 ? "row" : "col", name, data_indices[i], receivebuf_indices[i]);
         }
@@ -606,7 +610,7 @@ namespace CORE::COMM
       MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
       // also enable comparison of empty matrices
       if (lengthRecv == 0 && (int)data_values.size() != lengthRecv)
-        dserror("Length of data received from second run is incorrect.");
+        FOUR_C_THROW("Length of data received from second run is incorrect.");
 
       // second: receive data
       tag = 2676;
@@ -617,7 +621,8 @@ namespace CORE::COMM
       // start comparison
       mylength = data_values.size();
       if (mylength != lengthRecv)
-        dserror("length of received data (%i) does not match own data (%i)", lengthRecv, mylength);
+        FOUR_C_THROW(
+            "length of received data (%i) does not match own data (%i)", lengthRecv, mylength);
 
       for (int i = 0; i < mylength; ++i)
       {
@@ -678,8 +683,8 @@ namespace CORE::COMM
     {
       std::stringstream diff;
       diff << std::scientific << std::setprecision(16) << maxdiff;
-      dserror("matrices %s do not match, maximum difference between entries is: %s in row", name,
-          diff.str().c_str());
+      FOUR_C_THROW("matrices %s do not match, maximum difference between entries is: %s in row",
+          name, diff.str().c_str());
     }
 
     return true;

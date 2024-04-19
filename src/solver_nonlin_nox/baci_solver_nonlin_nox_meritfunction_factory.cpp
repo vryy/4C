@@ -68,7 +68,7 @@ NOX::NLN::MeritFunction::Factory::BuildUnconstrainedMeritFunction(
         << mftype
         << "\" is not a valid UNCONSTRAINTED merit function name.  Please "
            "fix your parameter list!";
-    dserror(msg.str().c_str());
+    FOUR_C_THROW(msg.str().c_str());
   }
 
   return mrtFctPtr;
@@ -99,7 +99,7 @@ NOX::NLN::MeritFunction::Factory::BuildConstrainedMeritFunction(
         << mftype
         << "\" is not a valid CONSTRAINT merit function name.  Please "
            "fix your parameter list!";
-    dserror(msg.str().c_str());
+    FOUR_C_THROW(msg.str().c_str());
   }
 
   return mrtFctPtr;

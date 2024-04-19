@@ -47,7 +47,7 @@ int SSI::UTILS::CheckTimeStepping(double dt1, double dt2)
     if (std::abs(t1 - workdt2) < 10E-10)
       break;
     else if (t1 > workdt2)
-      dserror("Chosen time steps %f and %f are not a multiplicative of each other", dt1, dt2);
+      FOUR_C_THROW("Chosen time steps %f and %f are not a multiplicative of each other", dt1, dt2);
   }
   return i;
 }
@@ -97,7 +97,7 @@ void SSI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
   {
     if (updatetime <= 0.0 and restarttime <= 0.0)
     {
-      dserror(
+      FOUR_C_THROW(
           "If time controlled output and restart is desired, both parameters RESTARTEVRYTIME and "
           "RESULTSEVRYTIME has to be set");
     }
@@ -187,7 +187,7 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
       break;
     }
     default:
-      dserror("Initial field type on manifold not supported.");
+      FOUR_C_THROW("Initial field type on manifold not supported.");
       break;
   }
 
@@ -266,7 +266,7 @@ void SSI::UTILS::SSIMatrices::InitializeMainDiagMatrices(
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -318,7 +318,7 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -338,7 +338,7 @@ void SSI::UTILS::SSIMatrices::CompleteScaTraManifoldScaTraMatrix()
       ScaTraManifoldScaTraMatrix()()->Complete();
       break;
     default:
-      dserror("Not supported CORE::LINALG::MatrixType!");
+      FOUR_C_THROW("Not supported CORE::LINALG::MatrixType!");
       break;
   }
 }
@@ -357,7 +357,7 @@ void SSI::UTILS::SSIMatrices::CompleteScaTraManifoldStructureMatrix()
       ScaTraManifoldStructureMatrix()->Complete();
       break;
     default:
-      dserror("Not supported CORE::LINALG::MatrixType!");
+      FOUR_C_THROW("Not supported CORE::LINALG::MatrixType!");
       break;
   }
 }
@@ -376,7 +376,7 @@ void SSI::UTILS::SSIMatrices::CompleteScaTraScaTraManifoldMatrix()
       ScaTraScaTraManifoldMatrix()->Complete();
       break;
     default:
-      dserror("Not supported CORE::LINALG::MatrixType!");
+      FOUR_C_THROW("Not supported CORE::LINALG::MatrixType!");
       break;
   }
 }
@@ -395,7 +395,7 @@ void SSI::UTILS::SSIMatrices::CompleteScaTraStructureMatrix()
       ScaTraStructureMatrix()->Complete();
       break;
     default:
-      dserror("Not supported CORE::LINALG::MatrixType!");
+      FOUR_C_THROW("Not supported CORE::LINALG::MatrixType!");
       break;
   }
 }
@@ -414,7 +414,7 @@ void SSI::UTILS::SSIMatrices::CompleteStructureScaTraMatrix()
       StructureScaTraMatrix()->Complete();
       break;
     default:
-      dserror("Not supported CORE::LINALG::MatrixType!");
+      FOUR_C_THROW("Not supported CORE::LINALG::MatrixType!");
       break;
   }
 }
@@ -489,7 +489,7 @@ void SSI::UTILS::SSIMatrices::InitializeSystemMatrix(
 
     default:
     {
-      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      FOUR_C_THROW("Type of global system matrix for scalar-structure interaction not recognized!");
       break;
     }
   }
@@ -615,7 +615,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
         }
         default:
         {
-          dserror("Invalid matrix type associated with scalar transport field!");
+          FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
           break;
         }
       }
@@ -635,7 +635,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
 
     default:
     {
-      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      FOUR_C_THROW("Type of global system matrix for scalar-structure interaction not recognized!");
       break;
     }
   }
@@ -647,7 +647,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
  *--------------------------------------------------------------------------------------*/
 std::vector<int> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem subproblem) const
 {
-  dsassert(
+  FOUR_C_ASSERT(
       ssi_matrixtype_ != CORE::LINALG::MatrixType::sparse, "Sparse matrices have just one block");
 
   std::vector<int> block_position;
@@ -687,7 +687,7 @@ std::vector<int> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem subproblem) c
     }
     default:
     {
-      dserror("Unknown type of subproblem");
+      FOUR_C_THROW("Unknown type of subproblem");
       break;
     }
   }
@@ -720,7 +720,7 @@ int SSI::UTILS::SSIMaps::GetProblemPosition(Subproblem subproblem)
     }
     default:
     {
-      dserror("Unknown type of sub problem");
+      FOUR_C_THROW("Unknown type of sub problem");
       break;
     }
   }
@@ -830,7 +830,7 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
 
     if (S2IKineticsID != contactconditionID)
     {
-      dserror(
+      FOUR_C_THROW(
           "For the 'SSIInterfaceContact' condition we have to demand, that the 'S2ICouplingID' and "
           "the 'ContactConditionID' have the same value as the contact strategy factory relies on "
           "this to set the scatra interface parameters correctly.");
@@ -853,10 +853,11 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     }
 
     if (InterfaceContactConditions.empty())
-      dserror("Did not find 'Contact' condition as defined in 'SSIInterfaceContact' condition!");
+      FOUR_C_THROW(
+          "Did not find 'Contact' condition as defined in 'SSIInterfaceContact' condition!");
 
     if (InterfaceS2IConditions.empty())
-      dserror(
+      FOUR_C_THROW(
           "Did not find 'S2ICoupling' condition as defined in 'SSIInterfaceContact' condition!");
 
     // now get the nodes
@@ -877,7 +878,7 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
 
       if (!foundit)
       {
-        dserror(
+        FOUR_C_THROW(
             "The following conditions are defined on a non-consistent set of nodes!\n"
             "The Conditions defined from 'SSIInterfaceContact' condition with the condition-ID: "
             "%i:\n"
@@ -1209,7 +1210,7 @@ void SSI::UTILS::SSIMeshTying::GroupMatchingNodes(
         grouped_matching_nodes.erase(std::next(grouped_matching_nodes.begin(), index1));
       }
       else
-        dserror("This should not be the case");
+        FOUR_C_THROW("This should not be the case");
     }
   }
 }
@@ -1285,14 +1286,14 @@ void SSI::UTILS::SSIMeshTying::DefineMasterSlavePairing(Teuchos::RCP<DRT::Discre
         if (dbc_node == node)
         {
           if (found_dbc_node and check_over_constrained)
-            dserror("Mesh tying and DBCs are over constrained.");
+            FOUR_C_THROW("Mesh tying and DBCs are over constrained.");
           else
           {
             found_dbc_node = true;
             new_master_gid = dbc_node;
             break;
           }
-#ifndef BACI_DEBUG
+#ifndef FOUR_C_ENABLE_ASSERTIONS
           break;  // in release version, we can break here and subsequently skip the safety check
 #endif
         }
@@ -1312,11 +1313,11 @@ void SSI::UTILS::SSIMeshTying::DefineMasterSlavePairing(Teuchos::RCP<DRT::Discre
   master_gids = DRT::UTILS::BroadcastVector(my_master_gids, comm_);
   slave_master_pair = DRT::UTILS::BroadcastMap(my_slave_master_pair, comm_);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check if everything worked fine
   std::set<int> unique_master_gids;
   for (const int& master_gid : master_gids) unique_master_gids.insert(master_gid);
-  if (unique_master_gids.size() != master_gids.size()) dserror("Master gids not unique");
+  if (unique_master_gids.size() != master_gids.size()) FOUR_C_THROW("Master gids not unique");
 #endif
 }
 
@@ -1373,7 +1374,7 @@ void SSI::UTILS::SSIMeshTying::CheckSlaveSideHasDirichletConditions(
   {
     maps[1] = meshtying->SlaveMasterCoupling()->SlaveDofMap();
     if (CORE::LINALG::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
-      dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
+      FOUR_C_THROW("Must not apply Dirichlet conditions to slave-side structural displacements!");
   }
 }
 

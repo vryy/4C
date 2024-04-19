@@ -126,7 +126,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
 
       if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
       {
-        dserror("stabilization for chemotactic problems is not jet implemented!");
+        FOUR_C_THROW("stabilization for chemotactic problems is not jet implemented!");
       }  // end stabilization
 
     }  // pair[i] == -1
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcRHSChemo(
 
       if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
       {
-        dserror("stabilization for chemotactic problems is not jet implemented!");
+        FOUR_C_THROW("stabilization for chemotactic problems is not jet implemented!");
       }  // end stabilization
 
     }  // pair[i] == -1
@@ -227,7 +227,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
-    if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
@@ -241,7 +241,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
   {
     const Teuchos::RCP<const MAT::MatListChemotaxis>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatListChemotaxis>(material);
-    if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     GetChemotaxisCoefficients(
         actmat);  // read all chemotaxis input from material and copy it into local variables
@@ -285,7 +285,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetChemotaxisCoefficie
   const Teuchos::RCP<const MAT::MatListChemotaxis>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::MatListChemotaxis>(material);
 
-  if (actmat == Teuchos::null) dserror("cast to MatListChemotaxis failed");
+  if (actmat == Teuchos::null) FOUR_C_THROW("cast to MatListChemotaxis failed");
 
   // We always have to reinitialize these vectors since our elements are singleton
   numcondchemo_ = actmat->NumPair();

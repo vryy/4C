@@ -34,7 +34,8 @@ void CORE::REBALANCE::RebalanceDiscretizationsByBinning(
     bool revertextendedghosting)
 {
   // safety check
-  if (vector_of_discretizations.size() == 0) dserror("No discretizations provided for binning !");
+  if (vector_of_discretizations.size() == 0)
+    FOUR_C_THROW("No discretizations provided for binning !");
 
   // get communicator
   const Epetra_Comm& comm = vector_of_discretizations[0]->Comm();
@@ -50,7 +51,7 @@ void CORE::REBALANCE::RebalanceDiscretizationsByBinning(
                             << IO::endl;
       for (const auto& curr_dis : vector_of_discretizations)
       {
-        if (!curr_dis->Filled()) dserror("FillComplete(false,false,false) was not called");
+        if (!curr_dis->Filled()) FOUR_C_THROW("FillComplete(false,false,false) was not called");
         IO::cout(IO::verbose) << "| Rebalance discretization " << std::setw(11) << curr_dis->Name()
                               << IO::endl;
       }
@@ -147,7 +148,7 @@ void CORE::REBALANCE::GhostDiscretizationOnAllProcs(
   distobeghosted->ExportColumnElements(*newelecolmap);
 
   // Safety checks in DEBUG
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   int nummycolnodes = newnodecolmap->NumMyElements();
   std::vector<int> sizelist(com->NumProc());
   com->GatherAll(&nummycolnodes, sizelist.data(), 1);
@@ -155,7 +156,7 @@ void CORE::REBALANCE::GhostDiscretizationOnAllProcs(
   for (int k = 1; k < com->NumProc(); ++k)
   {
     if (sizelist[k - 1] != nummycolnodes)
-      dserror(
+      FOUR_C_THROW(
           "Since whole dis. is ghosted every processor should have the same number of colnodes.\n"
           "This is not the case."
           "Fix this!");
@@ -299,7 +300,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingDiscretizations(
     ////////////////////////////////////////
     int err = dis_to_rebalance.FillComplete(false, false, false);
 
-    if (err) dserror("FillComplete() returned err=%d", err);
+    if (err) FOUR_C_THROW("FillComplete() returned err=%d", err);
 
     // print to screen
     CORE::REBALANCE::UTILS::PrintParallelDistribution(dis_to_rebalance);
@@ -577,7 +578,7 @@ void CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
     ////////////////////////////////////////
     int err = dis_to_rebalance.FillComplete(false, false, false);
 
-    if (err) dserror("FillComplete() returned err=%d", err);
+    if (err) FOUR_C_THROW("FillComplete() returned err=%d", err);
 
     // print to screen
     CORE::REBALANCE::UTILS::PrintParallelDistribution(dis_to_rebalance);
@@ -596,7 +597,7 @@ Teuchos::RCP<const Epetra_Vector> CORE::REBALANCE::GetColVersionOfRowVector(
   // maybe this routine can be used in SetState or become a member function of the discretization
   // class
 
-  if (!dis->HaveDofs()) dserror("FillComplete() was not called");
+  if (!dis->HaveDofs()) FOUR_C_THROW("FillComplete() was not called");
   const Epetra_Map* colmap = dis->DofColMap(nds);
   const Epetra_BlockMap& vecmap = state->Map();
 
@@ -792,7 +793,7 @@ void CORE::REBALANCE::RebalanceInAccordanceWithReference(
   target.PutValue(-1);
 
   const int err = target.Import(source, importer, Insert);
-  if (err) dserror("Import failed with error %d!", err);
+  if (err) FOUR_C_THROW("Import failed with error %d!", err);
 
   std::vector<int> my_red_gids;
   {

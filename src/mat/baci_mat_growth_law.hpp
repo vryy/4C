@@ -346,7 +346,7 @@ namespace MAT
     //! add parameter to parameter list
     void AddParamsToParameterList(Teuchos::ParameterList& params, const double& theta)
     {
-      dserror(
+      FOUR_C_THROW(
           "You should not get here, "
           "function is only intended for GrowthLawIso so far, feel free to implement it for others "
           "if you need to");

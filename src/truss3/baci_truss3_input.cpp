@@ -34,7 +34,7 @@ bool DRT::ELEMENTS::Truss3::ReadElement(
   else if (buffer == "engstr")  // geometrically non-linear approach with engineering strains
     kintype_ = KinematicType::tr3_engstrain;
   else
-    dserror("Reading of Truss3 element failed because of unknown kinematic type!");
+    FOUR_C_THROW("Reading of Truss3 element failed because of unknown kinematic type!");
 
   return true;
 }

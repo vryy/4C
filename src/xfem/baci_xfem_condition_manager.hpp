@@ -331,7 +331,7 @@ namespace XFEM
         return mesh_coupl_[mc_idx]->GetAveragingStrategy();
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "there is no valid mesh-/levelset-coupling condition object for side: %i", coup_sid);
 
       return INPAR::XFEM::invalid;
@@ -343,18 +343,18 @@ namespace XFEM
       // safety checks
       if (coup_sid < 0)
       {
-        //      dserror("invalid negative coupling side id %i", coup_sid);
+        //      FOUR_C_THROW("invalid negative coupling side id %i", coup_sid);
         return -1;
       }
       if (levelset_gid_ >= 0 and coup_sid > levelset_gid_)
       {
-        //      dserror("invalid coupling side id %i", coup_sid);
+        //      FOUR_C_THROW("invalid coupling side id %i", coup_sid);
         return -1;
       }
 
       if (IsLevelSetCoupling(coup_sid))
       {
-        //      dserror("level-set side does not have a cutter discretization. Why do you call
+        //      FOUR_C_THROW("level-set side does not have a cutter discretization. Why do you call
         //      this?");
         return -1;
       }
@@ -363,7 +363,7 @@ namespace XFEM
       const int num_mesh_coupl = mesh_coupl_.size();
       if (num_mesh_coupl == 0)
       {
-        //      dserror("no mesh coupling objects available?!");
+        //      FOUR_C_THROW("no mesh coupling objects available?!");
         return -1;
       }
 
@@ -375,7 +375,7 @@ namespace XFEM
         }
       }
 
-      dserror("no valid mesh coupling index found!");
+      FOUR_C_THROW("no valid mesh coupling index found!");
       return -1;
     }
 
@@ -481,7 +481,8 @@ namespace XFEM
         const int coup_sid  ///< global side element id w.r.t cutter discretization
     )
     {
-      if (!IsMeshCoupling(coup_sid)) dserror("No cond. element available for non-mesh coupling!");
+      if (!IsMeshCoupling(coup_sid))
+        FOUR_C_THROW("No cond. element available for non-mesh coupling!");
 
       // get the mesh coupling object index
       const int mc_idx = GetMeshCouplingIndex(coup_sid);
@@ -491,7 +492,7 @@ namespace XFEM
       Teuchos::RCP<MeshCouplingFluidFluid> mc_xff =
           Teuchos::rcp_dynamic_cast<MeshCouplingFluidFluid>(mesh_coupl_[mc_idx]);
       if (mc_xff == Teuchos::null)
-        dserror("Can't access cond dis elements for a given side id in non-xff cases!");
+        FOUR_C_THROW("Can't access cond dis elements for a given side id in non-xff cases!");
       const int cutterdis_sid = GetCutterDisEleId(coup_sid, mc_idx);
       return mc_xff->GetCondElement(cutterdis_sid);
     }
@@ -540,7 +541,7 @@ namespace XFEM
         return mesh_coupl_[mc_idx]->GetCouplingCondition(cutterdis_sid);
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "there is no valid mesh-/levelset-coupling condition object for side: %i", coup_sid);
 
       return EleCoupCond(INPAR::XFEM::CouplingCond_NONE, nullptr);
@@ -589,7 +590,7 @@ namespace XFEM
           break;
         }
         default:
-          dserror("coupling condition type not known %i", cond_type);
+          FOUR_C_THROW("coupling condition type not known %i", cond_type);
           break;
       }
 
@@ -708,13 +709,13 @@ namespace XFEM
     /// Check if Init() and Setup() have been called, yet.
     inline void CheckInitSetup() const
     {
-      if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+      if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
     /// Check if Init() has been called
     inline void CheckInit() const
     {
-      if (not IsInit()) dserror("Call Init() first!");
+      if (not IsInit()) FOUR_C_THROW("Call Init() first!");
     }
 
    private:

@@ -91,7 +91,7 @@ namespace DRT::ELEMENTS
             deformation_gradient,
         MulfHistoryData<celltype>& history_data)
     {
-      dserror(
+      FOUR_C_THROW(
           "The full linearization is not yet implemented for the displacement based formulation "
           "with MULF prestressing.");
     }
@@ -202,7 +202,7 @@ namespace DRT::ELEMENTS
       template <typename T, std::enable_if_t<!IsPrestressUpdateable<T&>, bool> = true>
       void operator()(T& other)
       {
-        dserror(
+        FOUR_C_THROW(
             "Your element evaluation %s does not allow to update prestress. You may need to add "
             "MULF to your element line definitions.",
             CORE::UTILS::TryDemangle(typeid(T).name()).c_str());

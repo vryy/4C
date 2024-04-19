@@ -62,7 +62,7 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<DRT::Discretization> const& discre
         myrank, p->first, (p->second).data(), (int)(p->second).size(), 1234, request[tag]);
     ++tag;
   }
-  if (tag != length) dserror("Number of messages is mixed up");
+  if (tag != length) FOUR_C_THROW("Number of messages is mixed up");
 
   // -----------------------------------------------------------------------
   // receive
@@ -79,7 +79,8 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<DRT::Discretization> const& discre
     int tag = -1;
     int from = -1;
     exporter.ReceiveAny(from, tag, rdata, length);
-    if (tag != 1234) dserror("Received on proc %i data with wrong tag from proc %i", myrank, from);
+    if (tag != 1234)
+      FOUR_C_THROW("Received on proc %i data with wrong tag from proc %i", myrank, from);
 
     // ---- unpack ----
     {
@@ -92,7 +93,7 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<DRT::Discretization> const& discre
         recvdata.push_back(pair);
       }
       if (index != rdata.size())
-        dserror("Mismatch in size of data %d <-> %d", static_cast<int>(rdata.size()), index);
+        FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(rdata.size()), index);
     }
   }
 

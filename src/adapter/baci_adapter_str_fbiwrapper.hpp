@@ -58,7 +58,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce) override;
 
     /// switch structure field to block matrix in fsi simulations
-    void UseBlockMatrix() override { dserror("Not yet implemented\n"); };
+    void UseBlockMatrix() override { FOUR_C_THROW("Not yet implemented\n"); };
 
     /// extract interface displacements at \f$t_{n}\f$
     Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn() override;

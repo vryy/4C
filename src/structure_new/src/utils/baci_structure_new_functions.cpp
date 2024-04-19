@@ -25,10 +25,10 @@ namespace
   {
     Teuchos::RCP<MAT::PAR::Material> mat = GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
     if (mat->Type() != INPAR::MAT::m_stvenant)
-      dserror("Material %d is not a St.Venant-Kirchhoff structure material", mat_id);
+      FOUR_C_THROW("Material %d is not a St.Venant-Kirchhoff structure material", mat_id);
     MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params);
-    if (!fparams) dserror("Material does not cast to St.Venant-Kirchhoff structure material");
+    if (!fparams) FOUR_C_THROW("Material does not cast to St.Venant-Kirchhoff structure material");
     return *fparams;
   }
 
@@ -49,7 +49,7 @@ namespace
       function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
 
       if (mat_id_struc <= 0)
-        dserror(
+        FOUR_C_THROW(
             "Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE");
 
       // get materials
@@ -66,7 +66,7 @@ namespace
 
       if (mat_id_struc <= 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Please give a (reasonable) 'MAT_STRUC' in "
             "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE");
       }
@@ -188,7 +188,7 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;
@@ -276,7 +276,7 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Eva
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   return res;

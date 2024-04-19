@@ -44,17 +44,17 @@ SCATRA::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<DRT::Discretizatio
 {
   if (matrixtype_elch_scl_ != CORE::LINALG::MatrixType::sparse and
       matrixtype_elch_scl_ != CORE::LINALG::MatrixType::block_field)
-    dserror("Only sparse and block field matrices supported in SCL computations");
+    FOUR_C_THROW("Only sparse and block field matrices supported in SCL computations");
 
   if (CORE::UTILS::IntegralValue<int>(*elchparams_, "INITPOTCALC"))
   {
-    dserror(
+    FOUR_C_THROW(
         "Must disable INITPOTCALC for a coupled SCL problem. Use INITPOTCALC in the SCL section "
         "instead.");
   }
   if (!CORE::UTILS::IntegralValue<bool>(*params_, "SKIPINITDER"))
   {
-    dserror(
+    FOUR_C_THROW(
         "Must enable SKIPINITDER. Currently, Neumann BCs are not supported in the SCL formulation "
         "and thus, the calculation of the initial time derivative is meaningless.");
   }
@@ -87,7 +87,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
       initial_field_type = "field_by_condition";
       break;
     default:
-      dserror("input type not supported");
+      FOUR_C_THROW("input type not supported");
       break;
   }
   sdyn_micro->set("INITIALFIELD", initial_field_type);
@@ -100,7 +100,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
 
   auto dofset_vel = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(3, 0, 0, true));
   if (micro_timint_->ScaTraField()->Discretization()->AddDofSet(dofset_vel) != 1)
-    dserror("unexpected number of dofsets in the scatra micro discretization");
+    FOUR_C_THROW("unexpected number of dofsets in the scatra micro discretization");
   MicroScaTraField()->SetNumberOfDofSetVelocity(1);
 
   MicroScaTraField()->Discretization()->FillComplete();
@@ -126,7 +126,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
       block_map_vec_scl = {DofRowMap(), MicroScaTraField()->DofRowMap()};
       break;
     default:
-      dserror("Matrix type not supported.");
+      FOUR_C_THROW("Matrix type not supported.");
       break;
   }
   full_block_map_elch_scl_ =
@@ -160,7 +160,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
       break;
     }
     default:
-      dserror("Matrix type not supported.");
+      FOUR_C_THROW("Matrix type not supported.");
       break;
   }
 
@@ -201,7 +201,7 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
       break;
     }
     default:
-      dserror("not supported");
+      FOUR_C_THROW("not supported");
       break;
   }
 }
@@ -213,7 +213,7 @@ void SCATRA::ScaTraTimIntElchSCL::PrepareTimeStep()
   if (elchparams_->sublist("SCL").get<int>("ADAPT_TIME_STEP") == Step() + 1)
   {
     const double new_dt = elchparams_->sublist("SCL").get<double>("ADAPTED_TIME_STEP_SIZE");
-    if (new_dt <= 0) dserror("new time step size for SCL must be positive.");
+    if (new_dt <= 0) FOUR_C_THROW("new time step size for SCL must be positive.");
 
     SetDt(new_dt);
     SetTimeStep(Time(), Step());
@@ -368,7 +368,7 @@ void SCATRA::ScaTraTimIntElchSCL::CreateMeshtyingStrategy()
 void SCATRA::ScaTraTimIntElchSCL::ReadRestartProblemSpecific(
     int step, IO::DiscretizationReader& reader)
 {
-  dserror("Restart is not implemented for Elch with SCL.");
+  FOUR_C_THROW("Restart is not implemented for Elch with SCL.");
 }
 
 /*----------------------------------------------------------------------------------------*
@@ -502,11 +502,11 @@ bool SCATRA::ScaTraTimIntElchSCL::BreakNewtonLoopAndPrintConvergence()
   if (std::isnan(residual_L2) or std::isnan(micro_residual_L2) or std::isnan(macro_residual_L2) or
       std::isnan(increment_L2) or std::isnan(micro_increment_L2) or
       std::isnan(macro_increment_L2) or std::isnan(micro_state_L2) or std::isnan(macro_state_L2))
-    dserror("Calculated vector norm is not a number!");
+    FOUR_C_THROW("Calculated vector norm is not a number!");
   if (std::isinf(residual_L2) or std::isinf(micro_residual_L2) or std::isinf(macro_residual_L2) or
       std::isinf(increment_L2) or std::isinf(micro_increment_L2) or
       std::isinf(macro_increment_L2) or std::isinf(micro_state_L2) or std::isinf(macro_state_L2))
-    dserror("Calculated vector norm is infinity!");
+    FOUR_C_THROW("Calculated vector norm is infinity!");
 
   micro_state_L2 = micro_state_L2 < 1.0e-10 ? 1.0 : micro_state_L2;
   macro_state_L2 = macro_state_L2 < 1.0e-10 ? 1.0 : micro_state_L2;
@@ -616,7 +616,7 @@ void SCATRA::ScaTraTimIntElchSCL::SetupCoupling()
           my_macro_master_node_gids.emplace_back(coupling_node_gid);
           break;
         default:
-          dserror("must be master or slave side");
+          FOUR_C_THROW("must be master or slave side");
           break;
       }
     }
@@ -677,10 +677,10 @@ void SCATRA::ScaTraTimIntElchSCL::SetupCoupling()
   std::vector<DRT::Condition*> micro_coupling_conditions;
   microdis->GetCondition("Dirichlet", micro_coupling_conditions);
 
-  if (micro_coupling_conditions.size() != 2) dserror("only 2 DBCs allowed on micro dis");
+  if (micro_coupling_conditions.size() != 2) FOUR_C_THROW("only 2 DBCs allowed on micro dis");
   if (micro_coupling_conditions[0]->GetNodes()->size() !=
       micro_coupling_conditions[1]->GetNodes()->size())
-    dserror("Number of nodes in micro DBCs are not equal");
+    FOUR_C_THROW("Number of nodes in micro DBCs are not equal");
 
   // get all micro coupling nodes
   std::vector<int> my_micro_node_gids;
@@ -991,7 +991,7 @@ void SCATRA::ScaTraTimIntElchSCL::AssembleAndApplyMeshTying()
       break;
     }
     default:
-      dserror("not supported");
+      FOUR_C_THROW("not supported");
       break;
   }
 
@@ -1007,15 +1007,15 @@ void SCATRA::ScaTraTimIntElchSCL::AssembleAndApplyMeshTying()
   {
     // extract global ID of current slave-side row
     const int dofgid_slave = slavemaps->GID(doflid_slave);
-    if (dofgid_slave < 0) dserror("Local ID not found!");
+    if (dofgid_slave < 0) FOUR_C_THROW("Local ID not found!");
 
     // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column indices
     if (micromatrix.Filled())
     {
       const int rowlid_slave = micromatrix.RowMap().LID(dofgid_slave);
-      if (rowlid_slave < 0) dserror("Global ID not found!");
+      if (rowlid_slave < 0) FOUR_C_THROW("Global ID not found!");
       if (micromatrix.EpetraMatrix()->ReplaceMyValues(rowlid_slave, 1, &one, &rowlid_slave))
-        dserror("ReplaceMyValues failed!");
+        FOUR_C_THROW("ReplaceMyValues failed!");
     }
 
     // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and column
@@ -1094,11 +1094,11 @@ void SCATRA::ScaTraTimIntElchSCL::CalcInitialPotentialField()
       ->PreCalcInitialPotentialField();
 
   // safety checks
-  dsassert(step_ == 0, "Step counter is not zero!");
+  FOUR_C_ASSERT(step_ == 0, "Step counter is not zero!");
 
   if (equpot_ != INPAR::ELCH::equpot_divi)
   {
-    dserror(
+    FOUR_C_THROW(
         "Initial potential field cannot be computed for chosen closing equation for electric "
         "potential!");
   }
@@ -1167,8 +1167,8 @@ void SCATRA::ScaTraTimIntElchSCL::CalcInitialPotentialField()
     increment_elch_scl_->Norm2(&inc_L2);
 
     // safety checks
-    if (std::isnan(inc_L2) or std::isnan(res_L2)) dserror("calculated vector norm is NaN.");
-    if (std::isinf(inc_L2) or std::isinf(res_L2)) dserror("calculated vector norm is INF.");
+    if (std::isnan(inc_L2) or std::isnan(res_L2)) FOUR_C_THROW("calculated vector norm is NaN.");
+    if (std::isinf(inc_L2) or std::isinf(res_L2)) FOUR_C_THROW("calculated vector norm is INF.");
 
     // care for the case that nothing really happens
     if (state_L2 < 1.0e-5) state_L2 = 1.0;

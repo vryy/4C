@@ -29,10 +29,10 @@ MAT::PAR::FluidPoroViscosityLaw* MAT::PAR::FluidPoroViscosityLaw::CreateViscosit
 
   // for the sake of safety
   if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
@@ -56,7 +56,7 @@ MAT::PAR::FluidPoroViscosityLaw* MAT::PAR::FluidPoroViscosityLaw::CreateViscosit
       break;
     }
     default:
-      dserror("invalid material for viscosity law %d", curmat->Type());
+      FOUR_C_THROW("invalid material for viscosity law %d", curmat->Type());
       break;
   }
 
@@ -80,9 +80,9 @@ MAT::PAR::FluidPoroViscosityLawCellAdherence::FluidPoroViscosityLawCellAdherence
       psi_(*matdata->Get<double>("PSI"))
 
 {
-  if (visc0_ <= 0.0) dserror("VISC_0 cannot be smaller or equal to zero!");
-  if (xi_ <= 0.0) dserror("XI cannot be smaller or equal to zero!");
-  if (psi_ <= 0.0) dserror("PSI cannot be smaller or equal to zero!");
+  if (visc0_ <= 0.0) FOUR_C_THROW("VISC_0 cannot be smaller or equal to zero!");
+  if (xi_ <= 0.0) FOUR_C_THROW("XI cannot be smaller or equal to zero!");
+  if (psi_ <= 0.0) FOUR_C_THROW("PSI cannot be smaller or equal to zero!");
 
   return;
 }

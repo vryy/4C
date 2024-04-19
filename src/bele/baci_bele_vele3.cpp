@@ -57,7 +57,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Vele3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented for element type vele3!");
+  FOUR_C_THROW("method ComputeNullSpace not implemented for element type vele3!");
   return nullspace;
 }
 
@@ -125,7 +125,7 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3::Shape() const
     case 27:
       return CORE::FE::CellType::hex27;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
   }
 }
 
@@ -160,7 +160,8 @@ void DRT::ELEMENTS::Vele3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 }
@@ -217,7 +218,7 @@ CORE::FE::GaussRule3D DRT::ELEMENTS::Vele3::getOptimalGaussrule(
       rule = CORE::FE::GaussRule3D::tet_10point;
       break;
     default:
-      dserror("unknown number of nodes for gaussrule initialization");
+      FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
   }
   return rule;
 }

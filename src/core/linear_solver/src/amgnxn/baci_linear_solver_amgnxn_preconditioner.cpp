@@ -60,7 +60,8 @@ void CORE::LINEAR_SOLVER::AmGnxnPreconditioner::Setup(
   CORE::LINALG::BlockSparseMatrixBase* A_bl =
       dynamic_cast<CORE::LINALG::BlockSparseMatrixBase*>(matrix);
   if (A_bl == nullptr)
-    dserror("The AMGnxn preconditioner works only for BlockSparseMatrixBase or derived classes");
+    FOUR_C_THROW(
+        "The AMGnxn preconditioner works only for BlockSparseMatrixBase or derived classes");
 
   // Do all the setup
   Setup(Teuchos::rcp(A_bl, false));
@@ -91,7 +92,7 @@ void CORE::LINEAR_SOLVER::AmGnxnPreconditioner::Setup(
   // Determine number of blocks
   int NumBlocks = A_->Rows();
   if (A_->Rows() != A_->Cols())
-    dserror("The AMGnxn preconditioner works only for block square matrices");
+    FOUR_C_THROW("The AMGnxn preconditioner works only for block square matrices");
 
   // Pick-up the input parameters
   AmGnxnInterface myInterface(params_, NumBlocks);
@@ -116,7 +117,7 @@ void CORE::LINEAR_SOLVER::AmGnxnPreconditioner::Setup(
         A_, myInterface.GetPreconditionerParams(), myInterface.GetSmoothersParams()));
   }
   else
-    dserror("Unknown preconditioner type: %s", myInterface.GetPreconditionerType().c_str());
+    FOUR_C_THROW("Unknown preconditioner type: %s", myInterface.GetPreconditionerType().c_str());
 
   double elaptime = timer.totalElapsedTime(true);
   if (myInterface.GetPreconditionerParams().get<std::string>("verbosity", "off") == "on" and
@@ -182,7 +183,7 @@ CORE::LINEAR_SOLVER::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& pa
   //
   //</ParameterList>
 
-  if (!params.isSublist("AMGnxn Parameters")) dserror("AMGnxn Parameters not found!");
+  if (!params.isSublist("AMGnxn Parameters")) FOUR_C_THROW("AMGnxn Parameters not found!");
   Teuchos::ParameterList& amglist = params.sublist("AMGnxn Parameters");
 
 
@@ -194,7 +195,7 @@ CORE::LINEAR_SOLVER::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& pa
   {
     // Parse the whole file
     std::string amgnxn_xml = amglist.get<std::string>("AMGNXN_XML_FILE", "none");
-    if (amgnxn_xml == "none") dserror("The input parameter AMGNXN_XML_FILE is empty.");
+    if (amgnxn_xml == "none") FOUR_C_THROW("The input parameter AMGNXN_XML_FILE is empty.");
     if (not(amgnxn_xml == "none"))
     {
       Teuchos::updateParametersFromXmlFile(
@@ -212,19 +213,20 @@ CORE::LINEAR_SOLVER::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& pa
     }
   }
   else
-    dserror("\"%s\" is an invalid value for \"AMGNXN_TYPE\". Fix your .dat", amgnxn_type.c_str());
+    FOUR_C_THROW(
+        "\"%s\" is an invalid value for \"AMGNXN_TYPE\". Fix your .dat", amgnxn_type.c_str());
 
 
 
   // Find preconditioner type and parameters
   std::string myprec = smoo_params_.get<std::string>("Preconditioner", "none");
-  if (myprec == "none") dserror("Not found \"Preconditioner\" parameter in your xml file.");
+  if (myprec == "none") FOUR_C_THROW("Not found \"Preconditioner\" parameter in your xml file.");
   if (!smoo_params_.isSublist(myprec))
-    dserror("Not found your preconditioner list in your xml file.");
+    FOUR_C_THROW("Not found your preconditioner list in your xml file.");
   Teuchos::ParameterList& myprec_list = smoo_params_.sublist(myprec);
   prec_type_ = myprec_list.get<std::string>("type", "none");
   if (!myprec_list.isSublist("parameters"))
-    dserror("Not found the parameters list for your preconditioner. Fix your xml file.");
+    FOUR_C_THROW("Not found the parameters list for your preconditioner. Fix your xml file.");
   prec_params_ = myprec_list.sublist("parameters");
 
   // Find null spaces and relatives
@@ -236,10 +238,10 @@ CORE::LINEAR_SOLVER::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& pa
   for (int block = 0; block < NumBlocks; block++)
   {
     if (!params.isSublist(Inverse_str + ConvertInt(block + 1)))
-      dserror("Not found inverse list for block %d", block + 1);
+      FOUR_C_THROW("Not found inverse list for block %d", block + 1);
     Teuchos::ParameterList& inverse_list = params.sublist(Inverse_str + ConvertInt(block + 1));
 
-    if (!inverse_list.isSublist("MueLu Parameters")) dserror("MueLu Parameters not found");
+    if (!inverse_list.isSublist("MueLu Parameters")) FOUR_C_THROW("MueLu Parameters not found");
     Teuchos::ParameterList& mllist = inverse_list.sublist("MueLu Parameters");
 
     xml_files_[block] = mllist.get<std::string>("xml file", "none");
@@ -248,7 +250,7 @@ CORE::LINEAR_SOLVER::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& pa
 
     Teuchos::RCP<Epetra_MultiVector> nullspace =
         mllist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
-    if (nullspace == Teuchos::null) dserror("Nullspace vector is null!");
+    if (nullspace == Teuchos::null) FOUR_C_THROW("Nullspace vector is null!");
 
     Teuchos::RCP<std::vector<double>> ns =
         Teuchos::rcp(new std::vector<double>(nullspace->MyLength() * nullspace->NumVectors()));
@@ -258,8 +260,8 @@ CORE::LINEAR_SOLVER::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& pa
 
     // Some checks
     if (num_pdes_[block] < 1 or null_spaces_dim_[block] < 1)
-      dserror("Error: PDE equations or null space dimension wrong.");
-    if (null_spaces_data_[block] == Teuchos::null) dserror("Error: null space data is empty");
+      FOUR_C_THROW("Error: PDE equations or null space dimension wrong.");
+    if (null_spaces_data_[block] == Teuchos::null) FOUR_C_THROW("Error: null space data is empty");
   }
 }
 
@@ -858,13 +860,13 @@ int CORE::LINEAR_SOLVER::AmGnxnOperator::ApplyInverse(
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGnxn_Operator::ApplyInverse");
   if (!is_setup_flag_)
-    dserror("ApplyInverse cannot be called without a previous set up of the preconditioner");
+    FOUR_C_THROW("ApplyInverse cannot be called without a previous set up of the preconditioner");
 
   const CORE::LINALG::MultiMapExtractor& range_ex = A_->RangeExtractor();
   const CORE::LINALG::MultiMapExtractor& domain_ex = A_->DomainExtractor();
 
   int NumBlocks = A_->Rows();
-  if (NumBlocks != A_->Cols()) dserror("The block matrix has to be square");
+  if (NumBlocks != A_->Cols()) FOUR_C_THROW("The block matrix has to be square");
 
   AMGNXN::BlockedVector Xbl(NumBlocks);
   AMGNXN::BlockedVector Ybl(NumBlocks);
@@ -884,7 +886,7 @@ int CORE::LINEAR_SOLVER::AmGnxnOperator::ApplyInverse(
     Ybl.SetVector(Yi, i);
   }
 
-  if (V_ == Teuchos::null) dserror("Null pointer. We cannot call the vcycle");
+  if (V_ == Teuchos::null) FOUR_C_THROW("Null pointer. We cannot call the vcycle");
 
   V_->Solve(Xbl, Ybl, true);
 
@@ -903,7 +905,7 @@ void CORE::LINEAR_SOLVER::AmGnxnOperator::Setup()
 
 
   int NumBlocks = A_->Rows();
-  if (NumBlocks != A_->Cols()) dserror("We spect a square matrix here");
+  if (NumBlocks != A_->Cols()) FOUR_C_THROW("We spect a square matrix here");
 
   // Extract the blockedMatrix
   Teuchos::RCP<AMGNXN::BlockedMatrix> Abl =
@@ -976,14 +978,14 @@ int CORE::LINEAR_SOLVER::BlockSmootherOperator::ApplyInverse(
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::BlockSmoother_Operator::ApplyInverse");
 
   if (!is_setup_flag_)
-    dserror("ApplyInverse cannot be called without a previous set up of the preconditioner");
+    FOUR_C_THROW("ApplyInverse cannot be called without a previous set up of the preconditioner");
 
 
   const CORE::LINALG::MultiMapExtractor& range_ex = A_->RangeExtractor();
   const CORE::LINALG::MultiMapExtractor& domain_ex = A_->DomainExtractor();
 
   int NumBlocks = A_->Rows();
-  if (NumBlocks != A_->Cols()) dserror("The block matrix has to be square");
+  if (NumBlocks != A_->Cols()) FOUR_C_THROW("The block matrix has to be square");
 
   AMGNXN::BlockedVector Xbl(NumBlocks);
   AMGNXN::BlockedVector Ybl(NumBlocks);
@@ -1001,7 +1003,7 @@ int CORE::LINEAR_SOLVER::BlockSmootherOperator::ApplyInverse(
   }
 
 
-  if (S_ == Teuchos::null) dserror("Null pointer. We cannot call the smoother");
+  if (S_ == Teuchos::null) FOUR_C_THROW("Null pointer. We cannot call the smoother");
 
   S_->Solve(Xbl, Ybl, true);
 
@@ -1071,7 +1073,7 @@ void CORE::LINEAR_SOLVER::BlockSmootherOperator::Setup()
   Sbase_ = mySmootherCreator.Create();
   S_ = Teuchos::rcp_dynamic_cast<AMGNXN::BlockedSmoother>(Sbase_);
   if (S_ == Teuchos::null)
-    dserror("We expect a blocked smoother. Fix the xml file defining the smoother");
+    FOUR_C_THROW("We expect a blocked smoother. Fix the xml file defining the smoother");
 
   //// Print maps
   // for(int i=0;i<NumBlocks;i++)
@@ -1167,16 +1169,16 @@ void CORE::LINEAR_SOLVER::MergedOperator::Setup()
   Teuchos::RCP<Epetra_Operator> Aop =
       Teuchos::rcp_dynamic_cast<Epetra_Operator>(Asp_->EpetraMatrix());
   Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Aop);
-  if (crsA == Teuchos::null) dserror("Houston, something went wrong in merging the matrix");
+  if (crsA == Teuchos::null) FOUR_C_THROW("Houston, something went wrong in merging the matrix");
 
 
   // Read parameter called "smoother" in amgnxn_params
   std::string mysmoother = amgnxn_params_.get<std::string>("smoother", "none");
-  if (mysmoother == "none") dserror("You have to set a parameter called smoother");
+  if (mysmoother == "none") FOUR_C_THROW("You have to set a parameter called smoother");
 
   // Read the parameters inside "smoothers_params"
   if (not smoothers_params_.isSublist(mysmoother))
-    dserror("Not found a sublist with name %s", mysmoother.c_str());
+    FOUR_C_THROW("Not found a sublist with name %s", mysmoother.c_str());
   Teuchos::ParameterList myparams = smoothers_params_.sublist(mysmoother);
 
   // Some output
@@ -1217,9 +1219,9 @@ int CORE::LINEAR_SOLVER::MergedOperator::ApplyInverse(
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::Merged_Operator::ApplyInverse");
 
   if (!is_setup_flag_)
-    dserror("ApplyInverse cannot be called without a previous set up of the preconditioner");
+    FOUR_C_THROW("ApplyInverse cannot be called without a previous set up of the preconditioner");
 
-  if (S_ == Teuchos::null) dserror("Null pointer. We cannot call the smoother");
+  if (S_ == Teuchos::null) FOUR_C_THROW("Null pointer. We cannot call the smoother");
 
   Epetra_MultiVector Ybis(Y.Map(), Y.NumVectors(), false);
   S_->Apply(X, Ybis, true);

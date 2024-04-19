@@ -47,7 +47,7 @@ void SCATRA::ScaTraTimIntLoma::Init()
 {
   // safety check
   if (CORE::UTILS::IntegralValue<int>(*lomaparams_, "SGS_MATERIAL_UPDATE"))
-    dserror(
+    FOUR_C_THROW(
         "Material update using subgrid-scale temperature currently not supported for loMa "
         "problems. Read remark in file 'scatra_ele_calc_loma.H'!");
 
@@ -105,7 +105,7 @@ void SCATRA::ScaTraTimIntLoma::SetInitialThermPressure()
       thermpressn_ = 0.0;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "Neiter Sutherland material nor temperature-dependent water found for initial setting of "
           "thermodynamic pressure!");
   }
@@ -137,7 +137,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
   // check for temperature-dependent water, which is allowed to be used in TFSI
   int id = problem_->Materials()->FirstIdByType(INPAR::MAT::m_tempdepwater);
   if (id != -1)
-    dserror(
+    FOUR_C_THROW(
         "Temperature-dependent water found for initial computation of derivative of thermodynamic "
         "pressure -> Set 'CONSTHERMPRES' to 'YES' in FS3I input section!");
 
@@ -232,7 +232,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
   // check for temperature-dependent water, which is allowed to be used in TFSI
   int id = problem_->Materials()->FirstIdByType(INPAR::MAT::m_tempdepwater);
   if (id != -1)
-    dserror(
+    FOUR_C_THROW(
         "Temperature-dependent water found for initial computation of mass -> Set 'CONSTHERMPRES' "
         "to 'YES' in FS3I input section!");
 

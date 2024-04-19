@@ -165,7 +165,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     oldKda = &easdata_.Kda;
     oldKad = &easdata_.Kad;
     if ((not alpha) or (not oldKaainv) or (not oldKda) or (not oldKad) or (not oldfeas))
-      dserror("Missing EAS history-data");
+      FOUR_C_THROW("Missing EAS history-data");
 
     // we need the (residual) displacement at the previous step
     CORE::LINALG::SerialDenseVector res_d(edof);
@@ -279,14 +279,14 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     if (material->MaterialType() == INPAR::MAT::m_stvenant)
       w1_call_matgeononl(Evm, Smm, C, Wall1::numstr_, material, params, ip);
     else
-      dserror("It must be St.Venant-Kirchhoff material.");
+      FOUR_C_THROW("It must be St.Venant-Kirchhoff material.");
 
     // return Gauss point strains (only in case of stress/strain output)
     switch (iostrain)
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == nullptr) dserror("no strain data available");
+        if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
         for (int i = 0; i < Wall1::numstr_; ++i) (*elestrain)(ip, i) = Ev(i);
       }
       break;
@@ -294,7 +294,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
         break;
       case INPAR::STR::strain_ea:
       default:
-        dserror("requested strain type not supported");
+        FOUR_C_THROW("requested strain type not supported");
         break;
     }
 
@@ -303,7 +303,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("no stress data available");
+        if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         (*elestress)(ip, 0) = Smm(0, 0);  // 2nd Piola-Kirchhoff stress S_{11}
         (*elestress)(ip, 1) = Smm(1, 1);  // 2nd Piola-Kirchhoff stress S_{22}
         (*elestress)(ip, 2) = Smm(0, 2);  // 2nd Piola-Kirchhoff stress S_{12}
@@ -311,7 +311,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("no stress data available");
+        if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         if (iseas_)
           StressCauchy(ip, Fm(0, 0), Fm(1, 1), Fm(1, 1), Fm(1, 2), Smm, elestress);
         else
@@ -321,7 +321,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not supported");
+        FOUR_C_THROW("requested stress type not supported");
         break;
     }
 

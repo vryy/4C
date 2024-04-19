@@ -38,12 +38,13 @@ namespace
     auto it = mass_fractions_map.find(ele_id_key);
     if (it == mass_fractions_map.end())
     {
-      dserror("Element id %d not found in the mass fraction map supplied by csv file.", ele_id_key);
+      FOUR_C_THROW(
+          "Element id %d not found in the mass fraction map supplied by csv file.", ele_id_key);
     }
 
     if (it->second.size() != num_constituents)
     {
-      dserror(
+      FOUR_C_THROW(
           "Number of mass fractions for element id %d does not match the number of constituents "
           "%d.",
           ele_id_key, num_constituents);
@@ -53,7 +54,7 @@ namespace
     // check, whether the mass frac sums up to 1
     const double sum = std::accumulate(massfracs.begin(), massfracs.end(), 0.0);
     if (std::abs(1.0 - sum) > 1e-8)
-      dserror(
+      FOUR_C_THROW(
           "Mass fractions for element id %d don't sum up to 1, which is unphysical.", ele_id_key);
 
     return massfracs;

@@ -146,7 +146,7 @@ void MAT::ViscoAnisotropic::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ViscoAnisotropic*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -156,7 +156,7 @@ void MAT::ViscoAnisotropic::Unpack(const std::vector<char>& data)
   {  // no history data to unpack
     isinit_ = false;
     if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
     return;
   }
   // unpack fiber internal variables
@@ -200,7 +200,8 @@ void MAT::ViscoAnisotropic::Unpack(const std::vector<char>& data)
   }
 
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 }
@@ -219,7 +220,7 @@ void MAT::ViscoAnisotropic::Setup(int numgp, INPUT::LineDefinition* linedef)
   ca1_ = Teuchos::rcp(new std::vector<std::vector<double>>(numgp));
   ca2_ = Teuchos::rcp(new std::vector<std::vector<double>>(numgp));
 
-  if ((params_->gamma_ < 0) || (params_->gamma_ > 90)) dserror("Fiber angle not in [0,90]");
+  if ((params_->gamma_ < 0) || (params_->gamma_ > 90)) FOUR_C_THROW("Fiber angle not in [0,90]");
   const double gamma = (params_->gamma_ * M_PI) / 180.;  // convert
 
   // read local (cylindrical) cosy-directions at current element
@@ -270,7 +271,7 @@ void MAT::ViscoAnisotropic::Setup(int numgp, INPUT::LineDefinition* linedef)
   // some input checking of viscous parameters for convenience
   if ((params_->beta_[0] < 0) || (params_->beta_[1] < 0) || (params_->relax_[0] <= 0) ||
       (params_->relax_[1] <= 0))
-    dserror("Check visocus parameters! Found beta < 0 or relax <= 0!");
+    FOUR_C_THROW("Check visocus parameters! Found beta < 0 or relax <= 0!");
 
   // initialize hist variables
   histstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
@@ -311,7 +312,7 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const std::vector<double> thi
     ca2_ = Teuchos::rcp(new std::vector<std::vector<double>>(numgp));
 
     if (abs(params_->gamma_) >= 1.0E-6)
-      dserror("Fibers can only be aligned in thickness direction for gamma = 0.0!");
+      FOUR_C_THROW("Fibers can only be aligned in thickness direction for gamma = 0.0!");
     const double gamma = (params_->gamma_ * M_PI) / 180.;  // convert
 
     // Fibers are related to the element thickness direction
@@ -725,14 +726,14 @@ bool MAT::ViscoAnisotropic::VisData(
   std::vector<double> a2 = Geta2()->at(0);  // get a2 of first gp
   if (name == "Fiber1")
   {
-    if ((int)data.size() != 3) dserror("size mismatch");
+    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
     data[0] = a1[0];
     data[1] = a1[1];
     data[2] = a1[2];
   }
   else if (name == "Fiber2")
   {
-    if ((int)data.size() != 3) dserror("size mismatch");
+    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
     data[0] = a2[0];
     data[1] = a2[1];
     data[2] = a2[2];

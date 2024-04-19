@@ -81,7 +81,7 @@ void PARTICLEINTERACTION::ParticleInteractionBase::
 
   // bin size safety check
   if (allprocmaxinteractiondistance > particleengineinterface_->MinBinSize())
-    dserror("the particle interaction distance is larger than the minimal bin size (%f > %f)!",
+    FOUR_C_THROW("the particle interaction distance is larger than the minimal bin size (%f > %f)!",
         allprocmaxinteractiondistance, particleengineinterface_->MinBinSize());
 
   // periodic length safety check
@@ -97,7 +97,8 @@ void PARTICLEINTERACTION::ParticleInteractionBase::
       // check periodic length in current spatial direction
       if ((2.0 * allprocmaxinteractiondistance) >
           particleengineinterface_->LengthOfBinningDomainInASpatialDirection(dim))
-        dserror("particles are not allowed to interact directly and across the periodic boundary!");
+        FOUR_C_THROW(
+            "particles are not allowed to interact directly and across the periodic boundary!");
     }
   }
 }

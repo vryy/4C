@@ -80,7 +80,7 @@ namespace BEAMINTERACTION
           Teuchos::RCP<Epetra_FEVector> fe_sysvec,
           Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
       {
-        dserror("Not implemented!");
+        FOUR_C_THROW("Not implemented!");
       }
 
       virtual double GetEnergy(const Teuchos::RCP<const Epetra_Vector>& disp) const { return 0.0; }

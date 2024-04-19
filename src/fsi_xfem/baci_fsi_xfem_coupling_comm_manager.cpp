@@ -105,7 +105,7 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
     case CouplingCommManager::partial_to_partial:
     {
       if (vecB == Teuchos::null)
-        dserror("Coupling_Comm_Manager::InsertVector: vecB is Teuchos::null!");
+        FOUR_C_THROW("Coupling_Comm_Manager::InsertVector: vecB is Teuchos::null!");
       if (idxA < idxB)  // this Coupling Object is directly stored
       {
         if (!add)
@@ -156,7 +156,7 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
       break;
     }
     default:
-      dserror("Coupling_Comm_Manager::InsertVector: Transfer Type not implemented!");
+      FOUR_C_THROW("Coupling_Comm_Manager::InsertVector: Transfer Type not implemented!");
   }
   return;
 }
@@ -197,7 +197,7 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
       break;
     }
     default:
-      dserror("Coupling_Comm_Manager::InsertMatrix: Matrix Transfer Type not implemented!");
+      FOUR_C_THROW("Coupling_Comm_Manager::InsertMatrix: Matrix Transfer Type not implemented!");
   }
   return true;
 }
@@ -247,7 +247,7 @@ void XFEM::CouplingCommManager::SetupFullMapExtractors(
     std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
 {
   if (dis.size() < 2)
-    dserror(
+    FOUR_C_THROW(
         "SetupFullMapExtractors: Just extract from discretization to coupled map! (e.g. Fluid vel "
         "<==> Fluid vel&pres)");
 
@@ -298,11 +298,11 @@ void XFEM::CouplingCommManager::SetupCouplings(
       std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator alphadis =
           dis.find((*mmealpha).first);
       if (alphadis == dis.end())
-        dserror("Couldn't find discretization for key %d", (*mmealpha).first);
+        FOUR_C_THROW("Couldn't find discretization for key %d", (*mmealpha).first);
       std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator betadis =
           dis.find((*mmebeta).first);
       if (betadis == dis.end())
-        dserror("Couldn't find discretization for key %d", (*mmebeta).first);
+        FOUR_C_THROW("Couldn't find discretization for key %d", (*mmebeta).first);
 
       coup_[key]->SetupConditionCoupling(*(*alphadis).second, (*mmealpha).second->Map(1),
           *(*betadis).second, (*mmebeta).second->Map(1), cond_name_, enddim_ - startdim_, true);
@@ -330,9 +330,9 @@ void XFEM::CouplingCommManager::SetupFullCouplings(
       coup_[key] = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 
       std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator alphadis = dis.find(idx_a);
-      if (alphadis == dis.end()) dserror("Couldn't find discretization for key %d", idx_a);
+      if (alphadis == dis.end()) FOUR_C_THROW("Couldn't find discretization for key %d", idx_a);
       std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator betadis = dis.find(idx_b);
-      if (betadis == dis.end()) dserror("Couldn't find discretization for key %d", idx_b);
+      if (betadis == dis.end()) FOUR_C_THROW("Couldn't find discretization for key %d", idx_b);
 
       coup_[key]->SetupCoupling(*(*alphadis).second, *(*betadis).second,
           *(*alphadis).second->NodeRowMap(), *(*betadis).second->NodeRowMap(), enddim_ - startdim_,
@@ -377,7 +377,7 @@ Teuchos::RCP<CORE::ADAPTER::CouplingConverter> XFEM::CouplingCommManager::GetCou
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Coupling_Comm_Manager::GetCouplingConverter: Coupling Converter from %d to %d makes not "
         "really sense, does it?",
         idxA, idxB);
@@ -401,13 +401,13 @@ Teuchos::RCP<CORE::ADAPTER::Coupling> XFEM::CouplingCommManager::GetCoupling(int
     }
     else
     {
-      dserror("Coupling_Comm_Manager::GetCoupling: Couldn't find Coupling for key (%d,%d)",
+      FOUR_C_THROW("Coupling_Comm_Manager::GetCoupling: Couldn't find Coupling for key (%d,%d)",
           key.first, key.second);
     }
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Coupling_Comm_Manager::GetCoupling: Just Coupling Objects for idxA < idxB are stored!");
   }
   return Teuchos::null;
@@ -445,7 +445,7 @@ Teuchos::RCP<CORE::LINALG::MultiMapExtractor> XFEM::CouplingCommManager::GetMapE
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Coupling_Comm_Manager::GetMapExtractor: Couldn't find Map Extractor for key (%d)", idx);
   }
   return Teuchos::null;  // to guarantee that the complier feels comfortable in his skin...

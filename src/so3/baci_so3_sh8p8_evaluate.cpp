@@ -63,7 +63,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   const std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_linstiff")
     act = SoHex8::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
@@ -105,7 +105,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
   else
   {
     std::cout << action << std::endl;
-    dserror("Unknown type of action for So_hex8");
+    FOUR_C_THROW("Unknown type of action for So_hex8");
   }
   // what should the element do
   switch (act)
@@ -147,7 +147,8 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (disp == Teuchos::null)
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mystat(lm.size());
       CORE::FE::ExtractMyValues(*disp, mystat, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydisp;
@@ -155,7 +156,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
       ExtractDispAndPres(mystat, mydisp, mypres);
       // residual displacements
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-      if (res == Teuchos::null) dserror("Didn't get \"residual displacement\"");
+      if (res == Teuchos::null) FOUR_C_THROW("Didn't get \"residual displacement\"");
       std::vector<double> mystati(lm.size());
       CORE::FE::ExtractMyValues(*res, mystati, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydispi;
@@ -195,7 +196,8 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (disp == Teuchos::null)
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mystat(lm.size());
       CORE::FE::ExtractMyValues(*disp, mystat, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydisp;
@@ -203,7 +205,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
       ExtractDispAndPres(mystat, mydisp, mypres);
       // residual displacements
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-      if (res == Teuchos::null) dserror("Didn't get \"residual displacement\"");
+      if (res == Teuchos::null) FOUR_C_THROW("Didn't get \"residual displacement\"");
       std::vector<double> mystati(lm.size());
       CORE::FE::ExtractMyValues(*res, mystati, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydispi;
@@ -226,7 +228,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
 
     // linear stiffness and consistent mass matrix
     case calc_struct_linstiffmass:
-      dserror("Case 'calc_struct_linstiffmass' not yet implemented");
+      FOUR_C_THROW("Case 'calc_struct_linstiffmass' not yet implemented");
       break;
 
     // nonlinear stiffness, internal force vector, and consistent/lumped mass matrix
@@ -235,7 +237,8 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (disp == Teuchos::null)
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mystat(lm.size());
       CORE::FE::ExtractMyValues(*disp, mystat, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydisp;
@@ -243,7 +246,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
       ExtractDispAndPres(mystat, mydisp, mypres);
       // residual displacements
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-      if (res == Teuchos::null) dserror("Didn't get \"residual displacement\"");
+      if (res == Teuchos::null) FOUR_C_THROW("Didn't get \"residual displacement\"");
       std::vector<double> mystati(lm.size());
       CORE::FE::ExtractMyValues(*res, mystati, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydispi;
@@ -289,11 +292,11 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
       Teuchos::RCP<std::vector<char>> straindata =
           params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-      if (stressdata == Teuchos::null) dserror("Cannot get stress 'data'");
-      if (straindata == Teuchos::null) dserror("Cannot get strain 'data'");
+      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
+      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get strain 'data'");
       // current displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mystat(lm.size());
       CORE::FE::ExtractMyValues(*disp, mystat, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydisp;
@@ -301,7 +304,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
       ExtractDispAndPres(mystat, mydisp, mypres);
       // residual displacements
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-      if (res == Teuchos::null) dserror("Didn't get \"residual displacement\"");
+      if (res == Teuchos::null) FOUR_C_THROW("Didn't get \"residual displacement\"");
       std::vector<double> mystati(lm.size());
       CORE::FE::ExtractMyValues(*res, mystati, lm);
       CORE::LINALG::Matrix<NUMDISP_, 1> mydispi;
@@ -334,11 +337,11 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_eleload:
-      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
       break;
 
     case calc_struct_fsiload:
-      dserror("Case not yet implemented");
+      FOUR_C_THROW("Case not yet implemented");
       break;
 
     case calc_struct_update_istep:
@@ -368,7 +371,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
         }
         else
         {
-          dserror("Not impl.");
+          FOUR_C_THROW("Not impl.");
         }
 
         // reset EAS internal force
@@ -406,7 +409,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
         }
         else
         {
-          dserror("Not impl.");
+          FOUR_C_THROW("Not impl.");
         }
 
         // reset EAS internal force
@@ -430,7 +433,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     // done in the elements that know the number of EAS parameters
     case multi_eas_init:
     {
-      dserror("Meaningful?");
+      FOUR_C_THROW("Meaningful?");
       if (eastype_ != soh8_easnone)
       {
         soh8_eas_init_multi(params);
@@ -444,7 +447,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     // set accordingly
     case multi_eas_set:
     {
-      dserror("Meaningful?");
+      FOUR_C_THROW("Meaningful?");
       if (eastype_ != soh8_easnone)
       {
         soh8_set_eas_multi(params);
@@ -465,7 +468,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     {
       const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
-        dserror("To scale or not to scale, that's the querry!");
+        FOUR_C_THROW("To scale or not to scale, that's the querry!");
       else
       {
         CalcSTCMatrix(
@@ -477,7 +480,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     {
       const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
-        dserror("To scale or not to scale, that's the query!");
+        FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
       {
         CalcSTCMatrix(elemat1, stc_scaling, params.get<int>("stc_layer"), lm, discretization, true);
@@ -486,7 +489,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     break;
     default:
     {
-      dserror("Unknown type of action for So_sh8p8");
+      FOUR_C_THROW("Unknown type of action for So_sh8p8");
       break;
     }
   }
@@ -614,7 +617,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
   }
   else
   {
-    dserror("EAS ain't easy");
+    FOUR_C_THROW("EAS ain't easy");
   }
 
   // evaluation of EAS variables (which are constant for the following):
@@ -754,9 +757,9 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
     // compute determinant of Jacobian by Sarrus' rule
     double detJ = jac.Determinant();
     if (fabs(detJ) <= 1e-10)
-      dserror("JACOBIAN DETERMINANT CLOSE TO ZERO");
+      FOUR_C_THROW("JACOBIAN DETERMINANT CLOSE TO ZERO");
     else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     // integration factor
     const double detJ_w = detJ * gpweights[gp];
@@ -773,9 +776,9 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
     // compute determinant of Jacobian by Sarrus' rule
     double detJ_cur = jac_cur.Determinant();
     if (detJ_cur == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ_cur < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     // set up B-Operator in local(parameter) element space including ANS
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDISP_> bop_loc;
@@ -866,7 +869,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
           }
           else
           {
-            dserror("You should not turn arb here.");
+            FOUR_C_THROW("You should not turn arb here.");
           }
         }
       }
@@ -1033,7 +1036,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
       }
       else
       {
-        dserror("Your should not turn up here.");
+        FOUR_C_THROW("Your should not turn up here.");
       }
     }
     // end of ANS modification of strains
@@ -1063,7 +1066,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
     }
     else
     {
-      dserror("EAS ain't easy.");
+      FOUR_C_THROW("EAS ain't easy.");
     }  // end of EAS modification of strains
 
     // recover deformation gradient incoperating assumed GL strain
@@ -1118,7 +1121,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
     else if ((stab_ == stab_affine) or (stab_ == stab_spatialaffine) or (stab_ == stab_puredisp))
       prshfct.Update(shapefcts[gp]);
     else
-      dserror("Cannot handle requested stabilisation type %d", stab_);
+      FOUR_C_THROW("Cannot handle requested stabilisation type %d", stab_);
 
     // update of internal force vector
     if (force != nullptr)
@@ -1253,7 +1256,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
             }
             else
             {
-              dserror("You should not turn up here.");
+              FOUR_C_THROW("You should not turn up here.");
             }
           }
 
@@ -1359,11 +1362,11 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
               rcgDbyrgtstrDsolver.SetMatrix(rcgDbyrgtstrD);               // LHS
               rcgDbyrgtstrDsolver.SetVectors(rgtstrDbydisp, rcgDbydisp);  // SOL, RHS
               const int err = rcgDbyrgtstrDsolver.Solve();
-              if (err != 0) dserror("Failed to solve, error=%d", err);
+              if (err != 0) FOUR_C_THROW("Failed to solve, error=%d", err);
               if (lin_ >= lin_one)
               {
                 const int err = rcgDbyrgtstrDsolver.Invert();
-                if (err != 0) dserror("Failed to invert, error=%d", err);
+                if (err != 0) FOUR_C_THROW("Failed to invert, error=%d", err);
               }
             }
 
@@ -1393,11 +1396,11 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
               rcgbyrgtstrsolver.SetMatrix(rcgbyrgtstr);         // LHS
               rcgbyrgtstrsolver.SetVectors(rgtstrbydisp, bop);  // SOL, RHS
               const int err = rcgbyrgtstrsolver.Solve();
-              if (err != 0) dserror("Failed to solve, error=%d", err);
+              if (err != 0) FOUR_C_THROW("Failed to solve, error=%d", err);
               if (lin_ > lin_half)
               {
                 const int err = rcgbyrgtstrsolver.Invert();
-                if (err != 0) dserror("Failed to invert, error=%d", err);
+                if (err != 0) FOUR_C_THROW("Failed to invert, error=%d", err);
               }
             }
             rgtstrbydisp.Scale(2.0);
@@ -1483,7 +1486,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
             }
             else
             {
-              dserror("EAS ain't easy.");
+              FOUR_C_THROW("EAS ain't easy.");
             }  // if (eastype_ == ... )
 
             // ext(p)ensive computation to achieve full tangent
@@ -1955,7 +1958,7 @@ void DRT::ELEMENTS::SoSh8p8::ForceStiffMass(const std::vector<int>& lm,  // loca
   }
   else
   {
-    dserror("EAS ain't easy.");
+    FOUR_C_THROW("EAS ain't easy.");
   }
 
   // fake pure-disp based approach (ANS might be active)
@@ -1987,7 +1990,7 @@ void DRT::ELEMENTS::SoSh8p8::Stress(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRES
   {
     case INPAR::STR::stress_2pk:  // 2nd Piola-Kirchhoff stress
     {
-      if (elestress == nullptr) dserror("stress data not available");
+      if (elestress == nullptr) FOUR_C_THROW("stress data not available");
       // determine stress
       if (stab_ == stab_puredisp)
       {
@@ -2012,7 +2015,7 @@ void DRT::ELEMENTS::SoSh8p8::Stress(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRES
     break;
     case INPAR::STR::stress_cauchy:  // true/Cauchy stress
     {
-      if (elestress == nullptr) dserror("stress data not available");
+      if (elestress == nullptr) FOUR_C_THROW("stress data not available");
       // push forward
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> defgraddefgradT;
       Matrix2TensorToLeftRightProductMatrix6x6Voigt(defgraddefgradT, defgrd, true,
@@ -2038,7 +2041,7 @@ void DRT::ELEMENTS::SoSh8p8::Stress(CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRES
       break;
     default:
     {
-      dserror("requested stress option not available");
+      FOUR_C_THROW("requested stress option not available");
       break;
     }
   }
@@ -2063,7 +2066,7 @@ void DRT::ELEMENTS::SoSh8p8::Strain(
   {
     case INPAR::STR::strain_gl:  // Green-Lagrange strain
     {
-      if (elestrain == nullptr) dserror("strain data not available");
+      if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
       // store
       for (int i = 0; i < NUMDIM_; ++i) (*elestrain)(gp, i) = glstrain(i);
       for (int i = NUMDIM_; i < MAT::NUM_STRESS_3D; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
@@ -2071,7 +2074,7 @@ void DRT::ELEMENTS::SoSh8p8::Strain(
     break;
     case INPAR::STR::strain_ea:  // Euler-Almansi strain
     {
-      if (elestrain == nullptr) dserror("strain data not available");
+      if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
       // create push forward 6x6 matrix
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> invdefgradTdefgrad;
       Matrix2TensorToLeftRightProductMatrix6x6Voigt(invdefgradTdefgrad, invdefgrd, false,
@@ -2088,7 +2091,7 @@ void DRT::ELEMENTS::SoSh8p8::Strain(
       break;
     default:
     {
-      dserror("requested strain option not available");
+      FOUR_C_THROW("requested strain option not available");
       break;
     }
   }
@@ -2281,7 +2284,7 @@ double DRT::ELEMENTS::SoSh8p8::ShearMod() const
       break;
     }
     default:
-      dserror("Cannot ask material for shear modulus");
+      FOUR_C_THROW("Cannot ask material for shear modulus");
       break;
   }  // switch (mat->MaterialType())
 
@@ -2344,7 +2347,7 @@ void DRT::ELEMENTS::SoSh8p8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_
     {
       // only valid for first round
       if (condnum0 != 1)
-        dserror("STC error: non-initial layer is not connected to a smaller id");
+        FOUR_C_THROW("STC error: non-initial layer is not connected to a smaller id");
       else
       {
         for (int i = 0; i < NUMNOD_; i++)
@@ -2504,7 +2507,7 @@ void DRT::ELEMENTS::SoSh8p8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_
     }
   }
   else
-    dserror("Chosen STC_SCALING not supported!");
+    FOUR_C_THROW("Chosen STC_SCALING not supported!");
 }
 
 
@@ -2530,7 +2533,7 @@ int DRT::ELEMENTS::SoSh8p8Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     // go on for So_sh8p elements
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8p8*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_sh8p8* failed");
+    if (!actele) FOUR_C_THROW("cast to So_sh8p8* failed");
 
     if (!actele->nodes_rearranged_)
     {
@@ -2582,7 +2585,7 @@ int DRT::ELEMENTS::SoSh8p8Type::Initialize(DRT::Discretization& dis)
               dynamic_cast<MAT::ViscoAnisotropic*>(actele->Material().get());
           visco->Setup(DRT::ELEMENTS::SoSh8p8::NUMGPT_, actele->thickvec_);
           if (actele->thickvec_.empty())
-            dserror("zero size thickness vector for element %d", actele->Id());
+            FOUR_C_THROW("zero size thickness vector for element %d", actele->Id());
         }
       }
 
@@ -2594,7 +2597,7 @@ int DRT::ELEMENTS::SoSh8p8Type::Initialize(DRT::Discretization& dis)
         case DRT::ELEMENTS::SoSh8::globy:
         case DRT::ELEMENTS::SoSh8::globz:
         {
-          dserror("This should have been replaced by auto(r|s|t)");
+          FOUR_C_THROW("This should have been replaced by auto(r|s|t)");
           break;
         }
         case DRT::ELEMENTS::SoSh8::autor:
@@ -2654,7 +2657,7 @@ int DRT::ELEMENTS::SoSh8p8Type::Initialize(DRT::Discretization& dis)
           break;
         default:
         {
-          dserror("no thickness direction for So_sh8p8");
+          FOUR_C_THROW("no thickness direction for So_sh8p8");
           break;
         }
       }
@@ -2679,7 +2682,7 @@ int DRT::ELEMENTS::SoSh8p8Type::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8p8*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_sh8p8* failed");
+    if (!actele) FOUR_C_THROW("cast to So_sh8p8* failed");
     actele->InitJacobianMapping();  // this sets #invJ_ in So_hex8
   }
 

@@ -56,9 +56,10 @@ void Cardiovascular0DResultTest::TestSpecial(INPUT::LineDefinition& res, int& ne
   bool havegid = false;
 
   if (havecardio_4elementwindkessel_)
-    dserror("Testing not implemented for 4ElementWindkessel model!");
+    FOUR_C_THROW("Testing not implemented for 4ElementWindkessel model!");
 
-  if (havecardio_arterialproxdist_) dserror("Testing not implemented for ArterialProxDist model!");
+  if (havecardio_arterialproxdist_)
+    FOUR_C_THROW("Testing not implemented for ArterialProxDist model!");
 
   if (havecardio_syspulcirculation_)
   {
@@ -177,7 +178,7 @@ void Cardiovascular0DResultTest::TestSpecial(INPUT::LineDefinition& res, int& ne
 
     // catch quantity strings, which are not handled by cardiovascular 0D result test
     if (unknownquantity)
-      dserror("Quantity '%s' not supported in cardiovascular 0D testing", quantity.c_str());
+      FOUR_C_THROW("Quantity '%s' not supported in cardiovascular 0D testing", quantity.c_str());
 
     if (havegid)
     {
@@ -433,7 +434,7 @@ void Cardiovascular0DResultTest::TestSpecial(INPUT::LineDefinition& res, int& ne
 
     // catch quantity strings, which are not handled by cardiovascular 0D result test
     if (unknownquantity)
-      dserror("Quantity '%s' not supported in cardiovascular 0D testing", quantity.c_str());
+      FOUR_C_THROW("Quantity '%s' not supported in cardiovascular 0D testing", quantity.c_str());
 
     if (havegid)
     {

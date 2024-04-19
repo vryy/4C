@@ -516,7 +516,7 @@ void NOX::NLN::StatusTest::Factory::throwError(
   std::ostringstream msg;
   msg << "ERROR - NOX::NLN::StatusTest::Factory::" << functionName << " - " << errorMsg
       << std::endl;
-  dserror(msg.str());
+  FOUR_C_THROW(msg.str());
 }
 
 /*----------------------------------------------------------------------------*

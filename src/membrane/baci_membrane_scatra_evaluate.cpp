@@ -28,7 +28,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::PreEvaluate(Teuchos::ParameterList&
     const int numscal = discretization.NumDof(1, Nodes()[0]);
 
     if (la[1].Size() != Membrane<distype>::numnod_ * numscal)
-      dserror("location vector length does not match!");
+      FOUR_C_THROW("location vector length does not match!");
 
     // name of scalarfield
     std::string scalarfield = "scalarfield";
@@ -38,7 +38,8 @@ void DRT::ELEMENTS::MembraneScatra<distype>::PreEvaluate(Teuchos::ParameterList&
       // get the scalar state
       Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.GetState(1, scalarfield);
 
-      if (scalarnp == Teuchos::null) dserror("can not get state vector %s", scalarfield.c_str());
+      if (scalarnp == Teuchos::null)
+        FOUR_C_THROW("can not get state vector %s", scalarfield.c_str());
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> myscalar =

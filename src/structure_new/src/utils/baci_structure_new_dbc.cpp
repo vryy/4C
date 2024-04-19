@@ -110,25 +110,25 @@ void STR::Dbc::Setup()
       prepostlinsystem_map[NOX::NLN::LinSystem::prepost_dbc] = prepostdbc_ptr;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "There is no \"[NOX]->[Direction]->[Newton]->[Linear Solver] "
           "sub-sub-sublist!");
   }
   else
-    dserror("There is no \"[NOX]->[Direction]->[Newton]\" sub-sublist!");
+    FOUR_C_THROW("There is no \"[NOX]->[Direction]->[Newton]\" sub-sublist!");
 
   issetup_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
+void STR::Dbc::CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::Dbc::CheckInitSetup() const
 {
-  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -450,7 +450,7 @@ Teuchos::RCP<const Epetra_Vector> STR::Dbc::GetZerosPtr() const
  *----------------------------------------------------------------------------*/
 Epetra_Vector& STR::Dbc::Freact() const
 {
-  dsassert(freact_ptr_, "nullptr");
+  FOUR_C_ASSERT(freact_ptr_, "nullptr");
 
   return *freact_ptr_;
 }

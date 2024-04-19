@@ -72,7 +72,7 @@ namespace XFEM
     CORE::GEO::CutWizard& CutWizard()
     {
       CheckInit();
-      if (wizard_.is_null()) dserror("The CutWizard was not initialized! (Teuchos::null)");
+      if (wizard_.is_null()) FOUR_C_THROW("The CutWizard was not initialized! (Teuchos::null)");
       return *wizard_;
     }
 
@@ -81,7 +81,7 @@ namespace XFEM
     {
       CheckInit();
       if (condition_manager_.is_null())
-        dserror("The condition_manager was not initialized! (Teuchos::null)");
+        FOUR_C_THROW("The condition_manager was not initialized! (Teuchos::null)");
       return *condition_manager_;
     }
 
@@ -89,7 +89,7 @@ namespace XFEM
     XFEM::XFEMDofSet& XDofSet()
     {
       CheckInit();
-      if (xdofset_.is_null()) dserror("The xDoF set was not initialized! (Teuchos::null)");
+      if (xdofset_.is_null()) FOUR_C_THROW("The xDoF set was not initialized! (Teuchos::null)");
       return *xdofset_;
     }
 
@@ -106,7 +106,7 @@ namespace XFEM
     /// Returns the xFEM field discretizaton
     DRT::Discretization& XFieldDiscret()
     {
-      if (xfield_discret_ptr_.is_null()) dserror("xfield_discret_ptr_ is nullptr!");
+      if (xfield_discret_ptr_.is_null()) FOUR_C_THROW("xfield_discret_ptr_ is nullptr!");
 
       return *xfield_discret_ptr_;
     }
@@ -117,7 +117,7 @@ namespace XFEM
     /// Returns the standard field discretizaton
     DRT::Discretization& FieldDiscret()
     {
-      if (field_discret_ptr_.is_null()) dserror("field_discret_ptr_ is nullptr!");
+      if (field_discret_ptr_.is_null()) FOUR_C_THROW("field_discret_ptr_ is nullptr!");
 
       return *field_discret_ptr_;
     }
@@ -132,13 +132,13 @@ namespace XFEM
     //! check the initialization indicator
     inline void CheckInit() const
     {
-      if (not isinit_) dserror("Call XFEM::XFieldState::Init() first!");
+      if (not isinit_) FOUR_C_THROW("Call XFEM::XFieldState::Init() first!");
     }
 
     //! check the initialization and setup indicators
     inline void CheckInitSetup() const
     {
-      if (not issetup_ or not isinit_) dserror("Call Init() and Setup() first!");
+      if (not issetup_ or not isinit_) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
    protected:

@@ -82,7 +82,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
     case CORE::COMM::NestedParallelismType::every_group_read_dat_file:
     {
       if (inoutargs > 4)
-        dserror(
+        FOUR_C_THROW(
             "You specified too many arguments (%d). A maximum of four args is allowed", inoutargs);
 
       infilename << inout[0];
@@ -104,14 +104,14 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
     break;
     case CORE::COMM::NestedParallelismType::separate_dat_files:
       if (inoutargs % ngroups != 0)
-        dserror("Each group needs the same number of arguments for input/output.");
+        FOUR_C_THROW("Each group needs the same number of arguments for input/output.");
       inoutargs /= ngroups;
       infilename << inout[group * inoutargs];
       outfilekenner << inout[group * inoutargs + 1];
       restartgroup = group;
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "-nptype is not correct. Only everyGroupReadDatFile and separateDatFiles "
           "are available");
       break;
@@ -146,7 +146,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
       else
       {
         r = atoi(option.c_str());
-        if (r < 0) dserror("Restart number must be a positive value");
+        if (r < 0) FOUR_C_THROW("Restart number must be a positive value");
       }
       // tell the global problem about the restart step given in the command line
       problem->SetRestartStep(r);
@@ -183,7 +183,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
         }
         break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "-nptype is not correct. Only everyGroupReadDatFile and "
               "separateDatFiles are available");
           break;
@@ -196,7 +196,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   // throw error in case restartfrom is given but no restart step is specified
   if (restartfromIsGiven && !restartIsGiven)
   {
-    dserror("You need to specify a restart step when using restartfrom.");
+    FOUR_C_THROW("You need to specify a restart step when using restartfrom.");
   }
 
   /// set IO file names and kenners

@@ -46,7 +46,7 @@ namespace LIBB64
     char* compressed_data = new char[compressed_data_length];
     int err = compress2((Bytef*)compressed_data, &compressed_data_length, (const Bytef*)data.data(),
         data.size() * sizeof(T), Z_BEST_COMPRESSION);
-    if (err != Z_OK) dserror("zlib compression failed");
+    if (err != Z_OK) FOUR_C_THROW("zlib compression failed");
 
     // now encode the compression header
     const uint32_t compression_header[4] = {1, /* number of blocks */
@@ -264,13 +264,13 @@ class VtkWriterBase
     std::size_t start = line.find(name + "=\"");
     if (start == std::string::npos)
     {
-      dserror("Could not find parameter %s in line %s", name.c_str(), line.c_str());
+      FOUR_C_THROW("Could not find parameter %s in line %s", name.c_str(), line.c_str());
     }
     start += name.length() + 2;
     std::size_t end = line.find('"', start + 1);
     if (end == std::string::npos)
     {
-      dserror("Syntax error in line %s", line.c_str());
+      FOUR_C_THROW("Syntax error in line %s", line.c_str());
     }
     return line.substr(start, end - start);
   }
@@ -350,7 +350,7 @@ class VtkWriterBase
 template <typename T>
 std::string ScalarTypeToVtkType()
 {
-  dserror("The scalar type has to be specialized in vtk_writer_base.hpp");
+  FOUR_C_THROW("The scalar type has to be specialized in vtk_writer_base.hpp");
 }
 template <>
 inline std::string ScalarTypeToVtkType<int>()

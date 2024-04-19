@@ -158,7 +158,7 @@ void MAT::Anisotropy::SetGaussPointFibers(
   // Check whether the size of the first vector is the number of Gauss points
   if (fibers.size() != numgp_)
   {
-    dserror("The Gauss point fibers don't have the expected size of %d (%d given).", numgp_,
+    FOUR_C_THROW("The Gauss point fibers don't have the expected size of %d (%d given).", numgp_,
         fibers.size());
   }
 
@@ -173,7 +173,7 @@ void MAT::Anisotropy::SetGaussPointFibers(
     }
     else if (num_fibs != gpfibers.size())
     {
-      dserror(
+      FOUR_C_THROW(
           "The size of the Gauss point do not match! At every Gauss point, the same amount of "
           "fibers are necessary. Error occured at Gauss point %d. Expected %d fibers, but got %d.",
           i, num_fibs, gpfibers.size());
@@ -189,11 +189,11 @@ const CORE::LINALG::Matrix<3, 1>& MAT::Anisotropy::GetElementFiber(unsigned int 
 {
   if (!element_fibers_initialized_)
   {
-    dserror("The element fibers are not yet initialized.");
+    FOUR_C_THROW("The element fibers are not yet initialized.");
   }
   if (i >= elementFibers_.size())
   {
-    dserror(
+    FOUR_C_THROW(
         "You requested fiber %d, but only %d fibers are available", i + 1, elementFibers_.size());
   }
   return elementFibers_[i];
@@ -203,7 +203,7 @@ const std::vector<CORE::LINALG::Matrix<3, 1>>& MAT::Anisotropy::GetElementFibers
 {
   if (!element_fibers_initialized_)
   {
-    dserror("The element fibers are not yet initialized.");
+    FOUR_C_THROW("The element fibers are not yet initialized.");
   }
   return elementFibers_;
 }
@@ -212,7 +212,7 @@ const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& MAT::Anisotropy::Get
 {
   if (!gp_fibers_initialized_)
   {
-    dserror("The Gauss point fibers are not yet initialized.");
+    FOUR_C_THROW("The Gauss point fibers are not yet initialized.");
   }
   return gpFibers_;
 }
@@ -221,18 +221,18 @@ const CORE::LINALG::Matrix<3, 1>& MAT::Anisotropy::GetGPFiber(unsigned int gp, u
 {
   if (!gp_fibers_initialized_)
   {
-    dserror("The GP fibers are not yet initialized.");
+    FOUR_C_THROW("The GP fibers are not yet initialized.");
   }
 
   if (gp >= gpFibers_.size())
   {
-    dserror("The number of GP is too large. %d instead of maximum allowed %d", gp + 1,
+    FOUR_C_THROW("The number of GP is too large. %d instead of maximum allowed %d", gp + 1,
         gpFibers_.size());
   }
 
   if (i >= gpFibers_[gp].size())
   {
-    dserror(
+    FOUR_C_THROW(
         "You requested fiber %d, but only %d fibers are available", i + 1, elementFibers_.size());
   }
   return gpFibers_[gp][i];

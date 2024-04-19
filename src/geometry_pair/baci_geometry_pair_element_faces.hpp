@@ -287,7 +287,7 @@ namespace GEOMETRYPAIR
       }
       else if (n_dof_other_element_ != n_dof_other_element)
       {
-        dserror(
+        FOUR_C_THROW(
             "FaceElementTemplate only allows other elements with the same number of DOFs. You "
             "already have an other element with %d DOFs and now want to set another one with %d "
             "DOFs",

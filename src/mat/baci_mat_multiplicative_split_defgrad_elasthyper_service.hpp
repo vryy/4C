@@ -47,7 +47,8 @@ namespace MAT
   {
     if (summandProperties.anisomod or summandProperties.anisoprinc)
     {
-      dserror("An additional inelastic part is not yet implemented for anisotropic materials.");
+      FOUR_C_THROW(
+          "An additional inelastic part is not yet implemented for anisotropic materials.");
     }
 
     S_stress.Clear();

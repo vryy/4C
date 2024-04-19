@@ -132,7 +132,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
       SolverSetup(solver, strparams);
       break;
     default:
-      dserror("Unknown integration strategy!");
+      FOUR_C_THROW("Unknown integration strategy!");
       break;
   }
 
@@ -181,7 +181,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
         numCardiovascular0DID_ = 82;
         break;
       default:
-        dserror("Undefined respiratory_model!");
+        FOUR_C_THROW("Undefined respiratory_model!");
         break;
     }
   }
@@ -239,7 +239,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
     const double ts_size = strparams.get("time_step_size", 1.0);
 
     if ((theta_ <= 0.0) or (theta_ > 1.0))
-      dserror("theta for 0D cardiovascular model time integration out of range (0.0,1.0] !");
+      FOUR_C_THROW("theta for 0D cardiovascular model time integration out of range (0.0,1.0] !");
 
     // Initialize vectors
     actdisc_->ClearState();
@@ -572,12 +572,12 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
   std::vector<DRT::Condition*> cardvasc0dstructcoupcond;
   std::vector<int> tmp;
   Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
-  if (structdis == Teuchos::null) dserror("No structure discretization available!");
+  if (structdis == Teuchos::null) FOUR_C_THROW("No structure discretization available!");
 
   // get all coupling conditions on structure
   structdis->GetCondition("SurfaceNeumannCardiovascular0D", cardvasc0dstructcoupcond);
   unsigned int numcoupcond = cardvasc0dstructcoupcond.size();
-  if (numcoupcond == 0) dserror("No coupling conditions found!");
+  if (numcoupcond == 0) FOUR_C_THROW("No coupling conditions found!");
 
   // fill the i-sorted wk coupling conditions vector with the id-sorted values of the wk pressure
   // vector, at the respective coupling_id
@@ -1119,7 +1119,7 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<CORE::LINALG::SparseMatri
     }
     break;
     default:
-      dserror("Unknown 0D cardiovascular-structural solution technique!");
+      FOUR_C_THROW("Unknown 0D cardiovascular-structural solution technique!");
   }
 
   linsolveerror_ = 0;

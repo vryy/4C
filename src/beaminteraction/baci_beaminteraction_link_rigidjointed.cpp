@@ -82,7 +82,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
     std::cout << "\ninitbspottriad2 =";
     inittriad[1].Print(std::cout);
 
-    dserror(
+    FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed between element %i and %i failed because the two "
         "given binding "
         "spot positions are almost identical!",
@@ -135,7 +135,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
     std::cout << "\nsecond_base_vecor_linkerele = ";
     second_base_vecor_linkerele.Print(std::cout);
 
-    dserror(
+    FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed failed because the second base vector of the"
         "linker element's triad has almost length zero!");
   }
@@ -169,7 +169,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
     std::cout << "\nthird_base_vecor_linkerele = ";
     third_base_vecor_linkerele.Print(std::cout);
 
-    dserror(
+    FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed failed because the third base vector of the"
         "linker element's triad is no unit vector!");
   }
@@ -251,7 +251,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Unpack(const std::vector<char>& data
   ExtractfromPack(position, data, Lambdarel2_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }

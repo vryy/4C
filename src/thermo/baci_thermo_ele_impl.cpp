@@ -90,7 +90,7 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT
       return TemperImpl<CORE::FE::CellType::nurbs27>::Instance();
     }
     default:
-      dserror("Element shape %s (%d nodes) not activated. Just do it.",
+      FOUR_C_THROW("Element shape %s (%d nodes) not activated. Just do it.",
           CORE::FE::CellTypeToString(ele->Shape()).c_str(), ele->NumNode());
       break;
   }
@@ -150,14 +150,14 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   const auto action = CORE::UTILS::GetAsEnum<THR::Action>(params, "action");
 
   // check length
-  if (la[0].Size() != nen_ * numdofpernode_) dserror("Location vector length does not match!");
+  if (la[0].Size() != nen_ * numdofpernode_) FOUR_C_THROW("Location vector length does not match!");
 
   // disassemble temperature
   if (discretization.HasState(0, "temperature"))
   {
     std::vector<double> mytempnp((la[0].lm_).size());
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(0, "temperature");
-    if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+    if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
     CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
     // build the element temperature
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> etempn(mytempnp.data(), true);  // view only!
@@ -168,7 +168,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   {
     std::vector<double> mytempn((la[0].lm_).size());
     Teuchos::RCP<const Epetra_Vector> tempn = discretization.GetState(0, "last temperature");
-    if (tempn == Teuchos::null) dserror("Cannot get state vector 'tempn'");
+    if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
     CORE::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
     // build the element temperature
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempn.data(), true);  // view only!
@@ -260,13 +260,13 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
         case INPAR::THR::dyna_genalpha:
         case INPAR::THR::dyna_statics:
         {
-          dserror("Lumped capacity matrix has not yet been tested");
+          FOUR_C_THROW("Lumped capacity matrix has not yet been tested");
           break;
         }
         case INPAR::THR::dyna_undefined:
         default:
         {
-          dserror("Undefined time integration scheme for thermal problem!");
+          FOUR_C_THROW("Undefined time integration scheme for thermal problem!");
           break;
         }
       }
@@ -377,7 +377,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
         if (discretization.HasState(0, "mid-temprate"))
         {
           Teuchos::RCP<const Epetra_Vector> ratem = discretization.GetState(0, "mid-temprate");
-          if (ratem == Teuchos::null) dserror("Cannot get mid-temprate state vector for fcap");
+          if (ratem == Teuchos::null) FOUR_C_THROW("Cannot get mid-temprate state vector for fcap");
           std::vector<double> myratem((la[0].lm_).size());
           // fill the vector myratem with the global values of ratem
           CORE::FE::ExtractMyValues(*ratem, myratem, la[0].lm_);
@@ -392,7 +392,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
       case INPAR::THR::dyna_undefined:
       default:
       {
-        dserror("Don't know what to do...");
+        FOUR_C_THROW("Don't know what to do...");
         break;
       }
     }  // end of switch(timint)
@@ -512,7 +512,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
 
     // catch unknown heatflux types
     if (not processed)
-      dserror("unknown type of heatflux/temperature gradient output on element level");
+      FOUR_C_THROW("unknown type of heatflux/temperature gradient output on element level");
 
   }  // action == THR::postproc_thermo_heatflux
 
@@ -534,7 +534,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
         Teuchos::rcp_dynamic_cast<MAT::TRAIT::Thermo>(material, true);
 
     CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-    if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+    if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
   }
 
   //==================================================================================
@@ -552,7 +552,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   else if (action == THR::calc_thermo_energy)
   {
     // check length of elevec1
-    if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
+    if (elevec1_epetra.length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
     // get node coordinates
     CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
@@ -565,7 +565,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
 
     // integrations points and weights
     CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-    if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+    if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
     // --------------------------------------- loop over Gauss Points
     for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -610,7 +610,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   //============================================================================
   else
   {
-    dserror("Unknown type of action for Temperature Implementation: %s",
+    FOUR_C_THROW("Unknown type of action for Temperature Implementation: %s",
         THR::ActionToString(action).c_str());
   }
 
@@ -631,7 +631,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
   PrepareNurbsEval(ele, discretization);
 
   // check length
-  if (lm.size() != nen_ * numdofpernode_) dserror("Location vector length does not match!");
+  if (lm.size() != nen_ * numdofpernode_) FOUR_C_THROW("Location vector length does not match!");
   // set views
   CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efext(elevec1_epetra, true);  // view only!
   // disassemble temperature
@@ -639,7 +639,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
   {
     std::vector<double> mytempnp(lm.size());
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
-    if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+    if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
     CORE::FE::ExtractMyValues(*tempnp, mytempnp, lm);
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempnp.data(), true);  // view only!
     etempn_.Update(etemp);                                                        // copy
@@ -660,7 +660,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
   }
   else
   {
-    dserror("Unknown type of action for Temperature Implementation: %s",
+    FOUR_C_THROW("Unknown type of action for Temperature Implementation: %s",
         THR::ActionToString(action).c_str());
   }
 
@@ -780,7 +780,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateFext(
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -821,7 +821,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -974,7 +974,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1199,7 +1199,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
     case INPAR::THR::dyna_undefined:
     default:
     {
-      dserror("Add correct temporal coefficent here!");
+      FOUR_C_THROW("Add correct temporal coefficent here!");
       break;
     }
   }  // end of switch(timint)
@@ -1208,7 +1208,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1330,7 +1330,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1643,7 +1643,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     case INPAR::THR::dyna_undefined:
     default:
     {
-      dserror("Add correct temporal coefficent here!");
+      FOUR_C_THROW("Add correct temporal coefficent here!");
       break;
     }
   }  // end of switch(timint)
@@ -1671,7 +1671,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
       break;
     }
     default:
-      dserror("unknown structural time integrator type");
+      FOUR_C_THROW("unknown structural time integrator type");
   }
 
   // ------------------------------------------------ initialise material
@@ -1700,7 +1700,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1999,7 +1999,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
 
   if (structmat->MaterialType() != INPAR::MAT::m_thermopllinelast)
   {
-    dserror("So far dissipation only for ThermoPlasticLinElast material!");
+    FOUR_C_THROW("So far dissipation only for ThermoPlasticLinElast material!");
   }
   Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
       Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(structmat, true);
@@ -2013,7 +2013,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -2094,7 +2094,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
   if (structmat->MaterialType() != INPAR::MAT::m_thermopllinelast)
   {
-    dserror("So far dissipation only available for ThermoPlasticLinElast material!");
+    FOUR_C_THROW("So far dissipation only available for ThermoPlasticLinElast material!");
   }
   Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
       Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(structmat, true);
@@ -2135,7 +2135,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
     case INPAR::THR::dyna_undefined:
     default:
     {
-      dserror("Add correct temporal coefficent here!");
+      FOUR_C_THROW("Add correct temporal coefficent here!");
       break;
     }
   }  // end of switch(timint)
@@ -2144,7 +2144,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -2270,7 +2270,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
 
   if (structmat->MaterialType() != INPAR::MAT::m_thermoplhyperelast)
   {
-    dserror("So far dissipation only for ThermoPlasticHyperElast material!");
+    FOUR_C_THROW("So far dissipation only for ThermoPlasticHyperElast material!");
   }
   Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
       Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(structmat, true);
@@ -2284,7 +2284,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // initialise the deformation gradient w.r.t. material configuration
   CORE::LINALG::Matrix<nsd_, nsd_> defgrd(false);
@@ -2414,7 +2414,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
     case INPAR::THR::dyna_undefined:
     default:
     {
-      dserror("Add correct temporal coefficent here!");
+      FOUR_C_THROW("Add correct temporal coefficent here!");
       break;
     }
   }  // end of switch(timint)
@@ -2422,7 +2422,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
   // ----------------------------------------- integration loop for one element
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -2473,7 +2473,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearHeatfluxTempgrad(DRT::Element* el
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -2528,7 +2528,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
 
   // ----------------------------------- integration loop for one element
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // --------------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -2562,14 +2562,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
     {
       case INPAR::THR::tempgrad_initial:
       {
-        if (etempgrad == nullptr) dserror("tempgrad data not available");
+        if (etempgrad == nullptr) FOUR_C_THROW("tempgrad data not available");
         // etempgrad = Grad T
         for (int idim = 0; idim < nsd_; ++idim) (*etempgrad)(iquad, idim) = gradtemp_(idim);
         break;
       }
       case INPAR::THR::tempgrad_current:
       {
-        if (etempgrad == nullptr) dserror("tempgrad data not available");
+        if (etempgrad == nullptr) FOUR_C_THROW("tempgrad data not available");
         // etempgrad = grad T = Grad T . F^{-1} =  F^{-T} . Grad T
         // (8x3)        (3x1)   (3x1)    (3x3)     (3x3)    (3x1)
         // spatial temperature gradient
@@ -2584,7 +2584,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
         break;
       }
       default:
-        dserror("requested tempgrad type not available");
+        FOUR_C_THROW("requested tempgrad type not available");
         break;
     }  // iotempgrad
 
@@ -2592,7 +2592,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
     {
       case INPAR::THR::heatflux_initial:
       {
-        if (eheatflux == nullptr) dserror("heat flux data not available");
+        if (eheatflux == nullptr) FOUR_C_THROW("heat flux data not available");
         CORE::LINALG::Matrix<nsd_, 1> initialheatflux(false);
         // eheatflux := Q = -k_0 . Cinv . Grad T
         initialheatflux.Multiply(Cinv, heatflux_);
@@ -2601,7 +2601,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
       }
       case INPAR::THR::heatflux_current:
       {
-        if (eheatflux == nullptr) dserror("heat flux data not available");
+        if (eheatflux == nullptr) FOUR_C_THROW("heat flux data not available");
         // eheatflux := q = - k_0 . 1/(detF) . F^{-T} . Grad T
         // (8x3)     (3x1)            (3x3)  (3x1)
         const double detF = defgrd.Determinant();
@@ -2616,7 +2616,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
         break;
       }
       default:
-        dserror("requested heat flux type not available");
+        FOUR_C_THROW("requested heat flux type not available");
         break;
     }  // ioheatflux
   }
@@ -2631,13 +2631,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtractDispVel(const DRT::Discretizatio
   {
     // get the displacements
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
-    if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+    if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
     // extract the displacements
     CORE::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
 
     // get the velocities
     Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(1, "velocity");
-    if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+    if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
     // extract the displacements
     CORE::FE::ExtractMyValues(*vel, myvel, la[1].lm_);
   }
@@ -2682,11 +2682,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
       DRT::UTILS::FindElementConditions(ele, "LineNeumann", myneumcond);
       break;
     default:
-      dserror("Illegal number of space dimensions: %d", nsd_);
+      FOUR_C_THROW("Illegal number of space dimensions: %d", nsd_);
       break;
   }
 
-  if (myneumcond.size() > 1) dserror("more than one VolumeNeumann cond on one node");
+  if (myneumcond.size() > 1) FOUR_C_THROW("more than one VolumeNeumann cond on one node");
 
   if (myneumcond.size() == 1)
   {
@@ -2709,7 +2709,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
 
     // integrations points and weights
     CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-    if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+    if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
     radiation_.Clear();
 
@@ -2720,9 +2720,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     // compute determinant of Jacobian
     const double detJ = jac.Determinant();
     if (detJ == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     const auto* funct = myneumcond[0]->Get<std::vector<int>>("funct");
     const bool havefunct =
@@ -2742,7 +2742,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     }
 
     // function evaluation
-    dsassert(funct->size() == 1, "Need exactly one function.");
+    FOUR_C_ASSERT(funct->size() == 1, "Need exactly one function.");
     const int functnum = (funct) ? (*funct)[0] : -1;
     const double functfac = (functnum > 0)
                                 ? GLOBAL::Problem::Instance()
@@ -2836,7 +2836,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   const double det = xij_.Invert(xjm_);
 
   if (det < 1e-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
+    FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
 
   // set integration factor: fac = Gauss weight * det(J)
   fac_ = intpoints.IP().qwgt[iquad] * det;
@@ -2879,7 +2879,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
                        // get nurbs specific infos
   // cast to nurbs discretization
   auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-  if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+  if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   // zero-sized element
   if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_, ele->Id())) return;
@@ -2933,15 +2933,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
   if (not((distype == CORE::FE::CellType::hex8) or (distype == CORE::FE::CellType::hex27) or
           (distype == CORE::FE::CellType::tet4) or (distype == CORE::FE::CellType::quad4) or
           (distype == CORE::FE::CellType::line2)))
-    dserror("Sorry, not implemented for element shape");
+    FOUR_C_THROW("Sorry, not implemented for element shape");
 
   // another check
   if (nen_ * numdofpernode_ != nquad_)
-    dserror("Works only if number of gauss points and nodes match");
+    FOUR_C_THROW("Works only if number of gauss points and nodes match");
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // build matrix of shape functions at Gauss points
   CORE::LINALG::Matrix<nquad_, nquad_> shpfctatgps;
@@ -3113,7 +3113,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
     const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv)
 {
   if (nsd_ != 3)
-    dserror("TSI only implemented for fully three dimensions!");
+    FOUR_C_THROW("TSI only implemented for fully three dimensions!");
   else
   {
     // ----------------------------------------- build F^{-1} as vector 9x1
@@ -3207,7 +3207,7 @@ Teuchos::RCP<MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMaterial(
   if (ele->NumMaterial() > 1)
     structmat = ele->Material(1);
   else
-    dserror("no second material defined for element %i", ele->Id());
+    FOUR_C_THROW("no second material defined for element %i", ele->Id());
 
   return structmat;
 }
@@ -3234,7 +3234,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
   //  if (intpoints.IP().nquad != nquad_)
-  //    dserror("Trouble with number of Gauss points");
+  //    FOUR_C_THROW("Trouble with number of Gauss points");
 
   const auto calcerr = CORE::UTILS::GetAsEnum<INPAR::THR::CalcError>(params, "calculate error");
   const int errorfunctno = params.get<int>("error function number");
@@ -3295,7 +3295,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
       }
       break;
       default:
-        dserror("analytical solution is not defined");
+        FOUR_C_THROW("analytical solution is not defined");
         break;
     }
 
@@ -3417,7 +3417,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCouplNlnFintCondCapa(
     std::cout << "****************** finite difference check done ***************\n\n" << std::endl;
   }
   else
-    dserror("FDCheck of thermal tangent failed!");
+    FOUR_C_THROW("FDCheck of thermal tangent failed!");
 }
 
 
@@ -3605,7 +3605,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
     std::cout << "****************** finite difference check done ***************\n\n" << std::endl;
   }
   else
-    dserror("FDCheck of thermal capacity tangent failed!");
+    FOUR_C_THROW("FDCheck of thermal capacity tangent failed!");
 }
 
 

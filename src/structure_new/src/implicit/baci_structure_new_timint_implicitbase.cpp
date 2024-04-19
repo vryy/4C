@@ -72,7 +72,7 @@ void STR::TIMINT::ImplicitBase::UseBlockMatrix(
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {
-  dserror("Currently disabled!");
+  FOUR_C_THROW("Currently disabled!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -83,7 +83,7 @@ INPAR::STR::StcScale STR::TIMINT::ImplicitBase::GetSTCAlgo() { return DataSDyn()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::GetSTCMat()
 {
-  dserror("Not yet implemented!");
+  FOUR_C_THROW("Not yet implemented!");
   /* See the scaling object in the NOX::NLN::Epetra::LinearSystem class.
    * The STC matrix has to be implemented as a scaling object or as a
    * preconditioner. Both are part of the linear system. */
@@ -96,7 +96,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::GetSTCMat()
 Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::InitialGuess()
 {
   CheckInitSetup();
-  dserror("Not yet implemented!");
+  FOUR_C_THROW("Not yet implemented!");
   return Teuchos::null;
 }
 

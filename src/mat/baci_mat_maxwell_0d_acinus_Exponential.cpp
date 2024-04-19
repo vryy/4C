@@ -123,11 +123,12 @@ void MAT::Maxwell0dAcinusExponential::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Maxwell0dAcinusExponential*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 
@@ -174,7 +175,7 @@ void MAT::Maxwell0dAcinusExponential::Evaluate(CORE::LINALG::SerialDenseVector& 
   // Safety check for NumOfAcini
   if (NumOfAcini < 1.0)
   {
-    dserror("Acinus condition at node (%d) has zero acini");
+    FOUR_C_THROW("Acinus condition at node (%d) has zero acini");
   }
 
   // Calculate volume and flow difference per acinuar duct

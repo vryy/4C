@@ -56,8 +56,8 @@ void POROELAST::MonolithicFluidSplit::SetupSystem()
     vecSpaces.push_back(FluidField()->Interface()->OtherMap());
 #endif
 
-    if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No structure equation. Panic.");
-    if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
+    if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
+    if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
 
     // full Poroelasticity-map
     fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
@@ -96,7 +96,7 @@ void POROELAST::MonolithicFluidSplit::SetupRHS(bool firstcall)
 
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockf = FluidField()->BlockSystemMatrix();
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_sf = StructFluidCouplingBlockMatrix();
-    if (k_sf == Teuchos::null) dserror("expect coupling block matrix");
+    if (k_sf == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
     CORE::LINALG::SparseMatrix& fig = blockf->Matrix(0, 1);
     CORE::LINALG::SparseMatrix& fgg = blockf->Matrix(1, 1);
@@ -159,9 +159,9 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicFluidSplit::SetupSystemMatrix");
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> s = StructureField()->SystemMatrix();
-  if (s == Teuchos::null) dserror("expect structure matrix");
+  if (s == Teuchos::null) FOUR_C_THROW("expect structure matrix");
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> f = FluidField()->BlockSystemMatrix();
-  if (f == Teuchos::null) dserror("expect fluid block matrix");
+  if (f == Teuchos::null) FOUR_C_THROW("expect fluid block matrix");
 
   mat.Matrix(0, 1).Zero();
   mat.Matrix(1, 0).Zero();
@@ -181,7 +181,7 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
 
   // create empty matrix
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_sf = StructFluidCouplingBlockMatrix();
-  if (k_sf == Teuchos::null) dserror("expect coupling block matrix");
+  if (k_sf == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
   // call the element and calculate the matrix block
   ApplyStrCouplMatrix(k_sf);
@@ -192,7 +192,7 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
 
   // create empty matrix
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_fs = FluidStructCouplingBlockMatrix();
-  if (k_fs == Teuchos::null) dserror("expect coupling block matrix");
+  if (k_fs == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
   // call the element and calculate the matrix block
   ApplyFluidCouplMatrix(k_fs);

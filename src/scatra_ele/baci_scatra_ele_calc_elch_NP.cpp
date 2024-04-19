@@ -166,7 +166,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
     }
     default:
     {
-      dserror("Closing equation for electric potential not recognized!");
+      FOUR_C_THROW("Closing equation for electric potential not recognized!");
       break;
     }
   }
@@ -257,7 +257,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
     }
     default:
     {
-      dserror("Closing equation for electric potential not recognized!");
+      FOUR_C_THROW("Closing equation for electric potential not recognized!");
       break;
     }
   }  // end switch(myelch::elchparams_->EquPot())
@@ -300,7 +300,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhsOutsideScalarLoop
     }
     default:
     {
-      dserror("Closing equation for electric potential not recognized!");
+      FOUR_C_THROW("Closing equation for electric potential not recognized!");
       break;
     }
   }  // end switch(myelch::elchparams_->EquPot())
@@ -329,7 +329,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhsOutsideScalarLoop
     }
     default:
     {
-      dserror("Closing equation for electric potential not recognized!");
+      FOUR_C_THROW("Closing equation for electric potential not recognized!");
       break;
     }
   }  // end switch(myelch::elchparams_->EquPot())
@@ -1012,7 +1012,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetMaterialParams(
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
-    if (actmat->NumMat() < my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() < my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
@@ -1023,7 +1023,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetMaterialParams(
     }
   }
   else
-    dserror("Invalid material type!");
+    FOUR_C_THROW("Invalid material type!");
 
   return;
 }  // ScaTraEleCalc::GetMaterialParams
@@ -1046,7 +1046,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Materials(
   if (material->MaterialType() == INPAR::MAT::m_ion)
     myelch::utils_->MatIon(material, k, myelch::elchparams_->EquPot(), myelch::DiffManager());
   else
-    dserror("Material type is not supported");
+    FOUR_C_THROW("Material type is not supported");
 
   return;
 }

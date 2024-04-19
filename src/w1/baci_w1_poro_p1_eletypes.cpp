@@ -89,7 +89,7 @@ int DRT::ELEMENTS::WallQuad4PoroP1Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad4>* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad4>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to Wall1_PoroP1* failed");
+    if (!actele) FOUR_C_THROW("cast to Wall1_PoroP1* failed");
     actele->InitElement();
   }
   return 0;
@@ -167,7 +167,7 @@ int DRT::ELEMENTS::WallQuad9PoroP1Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad9>* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad9>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to Wall1_PoroP1* failed");
+    if (!actele) FOUR_C_THROW("cast to Wall1_PoroP1* failed");
     actele->InitElement();
   }
   return 0;
@@ -246,7 +246,7 @@ int DRT::ELEMENTS::WallTri3PoroP1Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::tri3>* actele =
         dynamic_cast<DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::tri3>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to Wall1_PoroP1* failed");
+    if (!actele) FOUR_C_THROW("cast to Wall1_PoroP1* failed");
     actele->InitElement();
   }
   return 0;

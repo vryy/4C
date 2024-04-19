@@ -42,7 +42,7 @@ ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
       params_(params)
 {
   // make sure
-  if (fluid_ == Teuchos::null) dserror("Failed to create the underlying fluid adapter");
+  if (fluid_ == Teuchos::null) FOUR_C_THROW("Failed to create the underlying fluid adapter");
   return;
 }
 
@@ -55,7 +55,7 @@ void ADAPTER::XFluidFSI::Init()
 
   // cast fluid to fluidimplicit
   xfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid_);
-  if (xfluid_ == Teuchos::null) dserror("Failed to cast ADAPTER::Fluid to FLD::XFluid.");
+  if (xfluid_ == Teuchos::null) FOUR_C_THROW("Failed to cast ADAPTER::Fluid to FLD::XFluid.");
 
   // NOTE: currently we are using the XFluidFSI adapter also for pure ALE-fluid problems with
   // level-set boundary in this case no mesh coupling object is available and no interface objects
@@ -155,7 +155,7 @@ void ADAPTER::XFluidFSI::ApplyStructMeshDisplacement(
 void ADAPTER::XFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master)
 {
   // check nds_master
-  if (nds_master != 0) dserror("nds_master is supposed to be 0 here");
+  if (nds_master != 0) FOUR_C_THROW("nds_master is supposed to be 0 here");
 
   meshmap_->Setup(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), mm,
       CORE::LINALG::SplitMap(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), *mm));
@@ -187,11 +187,11 @@ void ADAPTER::XFluidFSI::DisplacementToVelocity(
   const Teuchos::RCP<const Epetra_Vector> veln =
       structinterface_->ExtractFSICondVector(mesh_coupling_fsi_->IVeln());
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check, whether maps are the same
   if (!fcx->Map().PointSameAs(veln->Map()))
   {
-    dserror("Maps do not match, but they have to.");
+    FOUR_C_THROW("Maps do not match, but they have to.");
   }
 #endif
 
@@ -241,7 +241,7 @@ void ADAPTER::XFluidFSI::GmshOutput(const std::string& name,  ///< name for outp
 {
   // TODO (kruse): find a substitute!
   // xfluid_->GmshOutput(name, step, count, vel, acc);
-  dserror("Gmsh output for XFSI during Newton currently not available.");
+  FOUR_C_THROW("Gmsh output for XFSI during Newton currently not available.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

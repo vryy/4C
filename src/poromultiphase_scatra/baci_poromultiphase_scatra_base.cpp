@@ -78,7 +78,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
           INPAR::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
       solschemescatraporo ==
           INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_monolithic)
-    dserror(
+    FOUR_C_THROW(
         "Your requested coupling is not available: possible couplings are:\n"
         "(STRUCTURE <--> FLUID) <--> SCATRA: partitioned -- partitioned_nested\n"
         "                                    monolithic  -- partitioned_nested\n"
@@ -90,7 +90,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
           INPAR::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
       solschemescatraporo == INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::
                                  solscheme_twoway_partitioned_sequential)
-    dserror(
+    FOUR_C_THROW(
         "Your requested coupling is not available: possible couplings are:\n"
         "(STRUCTURE <--> FLUID) <--> SCATRA: partitioned -- partitioned_nested\n"
         "                                    monolithic  -- partitioned_nested\n"
@@ -105,7 +105,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
           INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
       fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
   {
-    dserror(
+    FOUR_C_THROW(
         "Monolithic porofluidmultiphase-scatra coupling does not work with L2-projection!\n"
         "Set FLUX_PROJ_METHOD to none if you want to use monolithic coupling or use partitioned "
         "approach instead.");
@@ -139,7 +139,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
     // get mesh tying strategy
     scatramsht_ = Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyArtery>(
         scatra_->ScaTraField()->Strategy());
-    if (scatramsht_ == Teuchos::null) dserror("cast to Meshtying strategy failed!");
+    if (scatramsht_ == Teuchos::null) FOUR_C_THROW("cast to Meshtying strategy failed!");
 
     scatramsht_->SetArteryTimeIntegrator(PoroField()->FluidField()->ArtNetTimInt());
     scatramsht_->SetNearbyElePairs(nearbyelepairs);
@@ -287,7 +287,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
   // safety check
   Teuchos::RCP<SCATRA::ScaTraTimIntPoroMulti> poroscatra =
       Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntPoroMulti>(scatra_->ScaTraField());
-  if (poroscatra == Teuchos::null) dserror("cast to ScaTraTimIntPoroMulti failed!");
+  if (poroscatra == Teuchos::null) FOUR_C_THROW("cast to ScaTraTimIntPoroMulti failed!");
 
   // set displacements
   poroscatra->ApplyMeshMovement(poromulti_->StructDispnp());
@@ -334,7 +334,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
     // check the material
     if (material2.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
         material2.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-      dserror("only poro multiphase and poro multiphase reactions material valid");
+      FOUR_C_THROW("only poro multiphase and poro multiphase reactions material valid");
 
     // cast fluid material
     const MAT::FluidPoroMultiPhase& multiphasemat =
@@ -355,7 +355,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
 
     if (not(scatramat.MaterialType() == INPAR::MAT::m_matlist or
             scatramat.MaterialType() == INPAR::MAT::m_matlist_reactions))
-      dserror("wrong type of ScaTra-Material");
+      FOUR_C_THROW("wrong type of ScaTra-Material");
 
     const int numscatramat = scatramat.NumMat();
 
@@ -398,7 +398,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
             }
           }
           else
-            dserror("only MAT_scatra_multiporo_(fluid,volfrac,solid,temperature) valid here");
+            FOUR_C_THROW("only MAT_scatra_multiporo_(fluid,volfrac,solid,temperature) valid here");
         }
       }
     }
@@ -457,11 +457,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::HandleDivergence() const
     }
     case INPAR::POROMULTIPHASESCATRA::divcont_stop:
     {
-      dserror("POROMULTIPHASESCATRA nonlinear solver not converged in ITEMAX steps!");
+      FOUR_C_THROW("POROMULTIPHASESCATRA nonlinear solver not converged in ITEMAX steps!");
       break;
     }
     default:
-      dserror("unknown divercont action!");
+      FOUR_C_THROW("unknown divercont action!");
       break;
   }
 }

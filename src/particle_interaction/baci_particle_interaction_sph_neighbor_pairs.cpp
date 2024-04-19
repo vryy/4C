@@ -67,11 +67,11 @@ void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantParticlePairIndicesForDis
     const std::set<PARTICLEENGINE::TypeEnum>& types_a,
     const std::set<PARTICLEENGINE::TypeEnum>& types_b, std::vector<int>& relindices) const
 {
-#ifdef BACI_DEBUG
-  if (relindices.size() != 0) dserror("vector of relevant particle pair indices not cleared!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (relindices.size() != 0) FOUR_C_THROW("vector of relevant particle pair indices not cleared!");
 
   for (const auto& type_i : types_a)
-    if (types_b.count(type_i)) dserror("no disjoint combination of particle types!");
+    if (types_b.count(type_i)) FOUR_C_THROW("no disjoint combination of particle types!");
 #endif
 
   for (const auto& type_i : types_a)
@@ -87,8 +87,8 @@ void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantParticlePairIndicesForDis
 void PARTICLEINTERACTION::SPHNeighborPairs::GetRelevantParticlePairIndicesForEqualCombination(
     const std::set<PARTICLEENGINE::TypeEnum>& types_a, std::vector<int>& relindices) const
 {
-#ifdef BACI_DEBUG
-  if (relindices.size() != 0) dserror("vector of relevant particle pair indices not cleared!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (relindices.size() != 0) FOUR_C_THROW("vector of relevant particle pair indices not cleared!");
 #endif
 
   for (const auto& type_i : types_a)
@@ -170,9 +170,9 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticlePairs()
     // absolute distance between particles
     const double absdist = UTILS::VecNormTwo(r_ji);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]) or absdist < (1.0e-10 * rad_j[0]))
-      dserror("absolute distance %f between particles close to zero!", absdist);
+      FOUR_C_THROW("absolute distance %f between particles close to zero!", absdist);
 #endif
 
     // neighboring particles within interaction distance
@@ -295,9 +295,9 @@ void PARTICLEINTERACTION::SPHNeighborPairs::EvaluateParticleWallPairs()
     // absolute distance between particle and wall contact point
     const double absdist = UTILS::VecNormTwo(r_ji);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]))
-      dserror("absolute distance %f between particle and wall close to zero!", absdist);
+      FOUR_C_THROW("absolute distance %f between particle and wall close to zero!", absdist);
 #endif
 
     // neighboring particle and wall element within interaction distance

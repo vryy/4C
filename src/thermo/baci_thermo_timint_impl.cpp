@@ -168,7 +168,7 @@ void THR::TimIntImpl::Predict()
   }
   else
   {
-    dserror("Trouble in determining predictor %i", pred_);
+    FOUR_C_THROW("Trouble in determining predictor %i", pred_);
   }
 
   // apply Dirichlet BCs
@@ -381,12 +381,13 @@ bool THR::TimIntImpl::Converged()
   // verify: #normcharforce_ has been delivered strictly larger than zero
   if (normcharforce_ <= 0.0)
   {
-    dserror("Characteristic force norm %g must be strictly larger than 0", normcharforce_);
+    FOUR_C_THROW("Characteristic force norm %g must be strictly larger than 0", normcharforce_);
   }
   // verify: #normchartemp_ has been delivered strictly larger than zero
   if (normchartemp_ <= 0.0)
   {
-    dserror("Characteristic temperature norm %g must be strictly larger than 0", normchartemp_);
+    FOUR_C_THROW(
+        "Characteristic temperature norm %g must be strictly larger than 0", normchartemp_);
   }
 
   // check for single norms
@@ -407,7 +408,7 @@ bool THR::TimIntImpl::Converged()
           ((normfres_ < tolfres_) or (normfres_ < std::max(normcharforce_ * tolfres_, 1e-15)));
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }
 
@@ -425,7 +426,7 @@ bool THR::TimIntImpl::Converged()
           ((normtempi_ < toltempi_) or (normtempi_ < std::max(normchartemp_ * toltempi_, 1e-15)));
       break;
     default:
-      dserror("Cannot check for convergence of residual temperatures!");
+      FOUR_C_THROW("Cannot check for convergence of residual temperatures!");
       break;
   }
 
@@ -436,7 +437,7 @@ bool THR::TimIntImpl::Converged()
   else if (combtempifres_ == INPAR::THR::bop_or)
     conv = convtemp or convfres;
   else
-    dserror("Something went terribly wrong with binary operator!");
+    FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
   // return things
   return conv;
@@ -454,7 +455,7 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::Solve()
       return NewtonFull();
     // catch problems
     default:
-      dserror("Solution technique \"%s\" is not implemented",
+      FOUR_C_THROW("Solution technique \"%s\" is not implemented",
           INPAR::THR::NonlinSolTechString(itertype_).c_str());
       return INPAR::THR::conv_nonlin_fail;  // compiler happiness
   }
@@ -473,7 +474,7 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
   // check whether we have a sanely filled tangent matrix
   if (not tang_->Filled())
   {
-    dserror("Effective tangent matrix must be filled here");
+    FOUR_C_THROW("Effective tangent matrix must be filled here");
   }
 
   // initialise equilibrium loop
@@ -572,7 +573,7 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFullErrorCheck()
     // write restart output of last converged step before stopping
     Output(true);
 
-    dserror("Newton unconverged in %d iterations", iter_);
+    FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
     return INPAR::THR::conv_nonlin_fail;
   }
   else if ((iter_ >= itermax_) and (divcontype_ == INPAR::THR::divcont_continue))
@@ -590,7 +591,7 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFullErrorCheck()
            divcontype_ == INPAR::THR::divcont_repeat_simulation)
   {
     if (myrank_ == 0)
-      dserror(
+      FOUR_C_THROW(
           "Fatal failure in NewtonFullErrorCheck()! divcont_repeat_step and "
           "divcont_repeat_simulation not implemented for THR");
     return INPAR::THR::conv_nonlin_fail;
@@ -806,7 +807,7 @@ void THR::TimIntImpl::PrintPredictor()
     // default
     else
     {
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
     }
     // print it, now
     fflush(stdout);
@@ -859,7 +860,7 @@ void THR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(18) << "mix-res-norm";
       break;
     default:
-      dserror("Unknown type of convergence check for residual forces.");
+      FOUR_C_THROW("Unknown type of convergence check for residual forces.");
       break;
   }
 
@@ -875,7 +876,7 @@ void THR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(18) << "mix-temp-norm";
       break;
     default:
-      dserror("Unknown type of convergence check for residual temperatures.");
+      FOUR_C_THROW("Unknown type of convergence check for residual temperatures.");
       break;
   }
 
@@ -923,7 +924,7 @@ void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
           << std::min(normfres_, normfres_ / normcharforce_);
       break;
     default:
-      dserror("Unknown type of convergence check for residual forces.");
+      FOUR_C_THROW("Unknown type of convergence check for residual forces.");
       break;
   }
 
@@ -940,7 +941,7 @@ void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
           << std::min(normtempi_, normtempi_ / normchartemp_);
       break;
     default:
-      dserror("Unknown type of convergence check for residual temperatures.");
+      FOUR_C_THROW("Unknown type of convergence check for residual temperatures.");
       break;
   }
 
@@ -1200,7 +1201,7 @@ void THR::TimIntImpl::FDCheck()
     std::cout << "****************** finite difference check done ***************\n\n" << std::endl;
   }
   else
-    dserror("FDCheck of thermal tangent failed!");
+    FOUR_C_THROW("FDCheck of thermal tangent failed!");
 
   return;
 

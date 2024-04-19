@@ -62,7 +62,7 @@ STR::MODELEVALUATOR::Structure::Structure()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::Setup()
 {
-  dsassert(IsInit(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
 
   // get the global state content
   {
@@ -78,7 +78,7 @@ void STR::MODELEVALUATOR::Structure::Setup()
   stiff_ptc_ptr_ =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
-  dsassert(stiff_ptr_ != nullptr, "Dynamic cast to CORE::LINALG::SparseMatrix failed!");
+  FOUR_C_ASSERT(stiff_ptr_ != nullptr, "Dynamic cast to CORE::LINALG::SparseMatrix failed!");
 
   // get the structural dynamic content
   {
@@ -581,7 +581,7 @@ Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Structure::GetInertialForce()
       // do nothing
       break;
     default:
-      dserror("Unknown mass linearization type!");
+      FOUR_C_THROW("Unknown mass linearization type!");
       exit(EXIT_FAILURE);
   }
 
@@ -805,9 +805,9 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeStructure(
           break;
         }
         case INPAR::STR::GaussPointDataOutputType::none:
-          dserror("Gauss point data output type is none");
+          FOUR_C_THROW("Gauss point data output type is none");
         default:
-          dserror("Gauss point data output type is not implemented yet");
+          FOUR_C_THROW("Gauss point data output type is not implemented yet");
       }
     }
   }
@@ -1139,13 +1139,13 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(Teuchos::ParameterList& p,
 {
   if (p.numParams() > 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
   }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>(
           "interface"))
-    dserror("The given parameter has the wrong type!");
+    FOUR_C_THROW("The given parameter has the wrong type!");
 
   // FixMe as soon as possible: write data to the parameter list.
   // this is about to go, once the old time integration is deleted
@@ -1175,13 +1175,13 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternalSpecifiedElements(Teuchos::
 {
   if (p.numParams() > 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
   }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>(
           "interface"))
-    dserror("The given parameter has the wrong type!");
+    FOUR_C_THROW("The given parameter has the wrong type!");
 
   // write data to the parameter list.
   // this is about to go, once the old time integration is deleted
@@ -1210,13 +1210,13 @@ void STR::MODELEVALUATOR::Structure::EvaluateNeumann(Teuchos::ParameterList& p,
 {
   if (p.numParams() > 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
   }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>(
           "interface"))
-    dserror("The given parameter has the wrong type!");
+    FOUR_C_THROW("The given parameter has the wrong type!");
   Discret().EvaluateNeumann(p, eval_vec, eval_mat);
   Discret().ClearState();
 }
@@ -1574,7 +1574,7 @@ void STR::MODELEVALUATOR::Structure::DetermineOptionalQuantity()
       break;
     }
     default:
-      dserror("Type of optional quantity not implemented yet!");
+      FOUR_C_THROW("Type of optional quantity not implemented yet!");
   }
 
   // set all parameters in the evaluation data container
@@ -1784,7 +1784,7 @@ void STR::MODELEVALUATOR::Structure::PostOutput()
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp()
 {
   CheckInit();
-  dsassert(!GState().GetFintNp().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetFintNp().is_null(), "nullptr!");
 
   return *GState().GetFintNp();
 }
@@ -1794,7 +1794,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp() const
 {
   CheckInit();
-  dsassert(!GState().GetFintNp().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetFintNp().is_null(), "nullptr!");
 
   return *GState().GetFintNp();
 }
@@ -1804,7 +1804,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp() const
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintN() const
 {
   CheckInit();
-  if (GState().GetFintN().is_null()) dserror("NULL pointer!");
+  if (GState().GetFintN().is_null()) FOUR_C_THROW("NULL pointer!");
 
   return *GState().GetFintN();
 }
@@ -1814,7 +1814,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintN() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp()
 {
   CheckInit();
-  dsassert(!GState().GetFextNp().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetFextNp().is_null(), "nullptr!");
 
   return *GState().GetFextNp();
 }
@@ -1824,7 +1824,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp() const
 {
   CheckInit();
-  dsassert(!GState().GetFextNp().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetFextNp().is_null(), "nullptr!");
 
   return *GState().GetFextNp();
 }
@@ -1834,7 +1834,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp() const
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextN() const
 {
   CheckInit();
-  if (GState().GetFextN().is_null()) dserror("NULL pointer!");
+  if (GState().GetFextN().is_null()) FOUR_C_THROW("NULL pointer!");
 
   return *GState().GetFextN();
 }
@@ -1844,7 +1844,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextN() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp()
 {
   CheckInit();
-  dsassert(!GState().GetFinertialNp().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetFinertialNp().is_null(), "nullptr!");
 
   return *GState().GetFinertialNp();
 }
@@ -1854,7 +1854,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp() const
 {
   CheckInit();
-  dsassert(!GState().GetFinertialNp().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetFinertialNp().is_null(), "nullptr!");
 
   return *GState().GetFinertialNp();
 }
@@ -1864,7 +1864,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp()
 {
   CheckInit();
-  dsassert(!GState().GetFviscoNp().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetFviscoNp().is_null(), "nullptr!");
 
   return *GState().GetFviscoNp();
 }
@@ -1874,7 +1874,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp() const
 {
   CheckInit();
-  dsassert(!GState().GetFviscoNp().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetFviscoNp().is_null(), "nullptr!");
 
   return *GState().GetFviscoNp();
 }
@@ -1884,7 +1884,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp()
 {
   CheckInit();
-  dsassert(!GState().GetDisNp().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetDisNp().is_null(), "nullptr!");
 
   return *GState().GetDisNp();
 }
@@ -1894,7 +1894,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp() const
 {
   CheckInit();
-  dsassert(!GState().GetDisNp().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetDisNp().is_null(), "nullptr!");
 
   return *GState().GetDisNp();
 }
@@ -1904,7 +1904,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp() const
 CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
 {
   CheckInit();
-  dsassert(stiff_ptr_, "nullptr!");
+  FOUR_C_ASSERT(stiff_ptr_, "nullptr!");
 
   return *stiff_ptr_;
 }
@@ -1914,7 +1914,7 @@ CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
 CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::StiffPTC() const
 {
   CheckInit();
-  dsassert(stiff_ptc_ptr_ != Teuchos::null, "nullptr!");
+  FOUR_C_ASSERT(stiff_ptc_ptr_ != Teuchos::null, "nullptr!");
 
   return *stiff_ptc_ptr_;
 }
@@ -1924,7 +1924,7 @@ CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::StiffPTC() const
 CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
 {
   CheckInit();
-  dsassert(!GState().GetMassMatrix().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetMassMatrix().is_null(), "nullptr!");
 
   return *GState().GetMassMatrix();
 }
@@ -1934,7 +1934,7 @@ CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
 const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
 {
   CheckInit();
-  dsassert(!GState().GetMassMatrix().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetMassMatrix().is_null(), "nullptr!");
 
   return *GState().GetMassMatrix();
 }
@@ -1944,7 +1944,7 @@ const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
 CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
 {
   CheckInit();
-  dsassert(!GState().GetDampMatrix().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetDampMatrix().is_null(), "nullptr!");
 
   return *GState().GetDampMatrix();
 }
@@ -1954,7 +1954,7 @@ CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
 const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp() const
 {
   CheckInit();
-  dsassert(!GState().GetDampMatrix().is_null(), "nullptr!");
+  FOUR_C_ASSERT(!GState().GetDampMatrix().is_null(), "nullptr!");
 
   return *GState().GetDampMatrix();
 }
@@ -1964,7 +1964,7 @@ const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp() const
 void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
     Teuchos::RCP<STR::MODELEVALUATOR::Data> interface_ptr, Teuchos::ParameterList& params)
 {
-  dsassert(interface_ptr != Teuchos::null, "ParamsInterface pointer not set");
+  FOUR_C_ASSERT(interface_ptr != Teuchos::null, "ParamsInterface pointer not set");
 
   params.set<double>("delta time", interface_ptr->GetDeltaTime());
   params.set<double>("total time", interface_ptr->GetTotalTime());

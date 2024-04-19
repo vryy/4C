@@ -73,7 +73,7 @@ void CONTACT::PoroMtLagrangeStrategy::EvaluateMeshtyingPoroOffDiag(
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-      dserror("Condensation only for dual LM");
+      FOUR_C_THROW("Condensation only for dual LM");
 
     // h.Willmann actual method
 
@@ -108,7 +108,8 @@ void CONTACT::PoroMtLagrangeStrategy::EvaluateMeshtyingPoroOffDiag(
 
     if (ParRedist())  // asdf
     {
-      dserror("no parallel redistribution of poro meshtying implemented - feel free to implement");
+      FOUR_C_THROW(
+          "no parallel redistribution of poro meshtying implemented - feel free to implement");
     }
 
     // first split into slave/master block row + remaining part
@@ -163,7 +164,7 @@ void CONTACT::PoroMtLagrangeStrategy::EvaluateMeshtyingPoroOffDiag(
   }
   else
   {
-    dserror("Trying to use not condensed PoroMeshtying --- Feel Free to implement!");
+    FOUR_C_THROW("Trying to use not condensed PoroMeshtying --- Feel Free to implement!");
   }
   return;
 }

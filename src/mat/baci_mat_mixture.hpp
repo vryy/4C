@@ -134,7 +134,7 @@ namespace MAT
     {
       if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
       {
-        dserror(
+        FOUR_C_THROW(
             "element and material kinematics are not compatible. Use Nonlinear total lagrangian"
             "kinematics (KINEM nonlinear) in your element definition.");
       }

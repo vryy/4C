@@ -98,7 +98,7 @@ bool CORE::GEO::CUT::Side::FindCutLines(Mesh& mesh, Element* element, Side& othe
     {
       if (not l->IsCut(element))
       {
-        dserror(
+        FOUR_C_THROW(
             "Line (%d, %d) is cut by both sides but not by the element, check this "
             "situation as it is not expected!",
             l->BeginPoint()->Id(), l->EndPoint()->Id());
@@ -134,7 +134,7 @@ bool CORE::GEO::CUT::Side::FindCutLines(Mesh& mesh, Element* element, Side& othe
       if (IsTouched(other, cuts[0]))
         return false;
       else
-        dserror("Single point between two sides is not a touching point!");
+        FOUR_C_THROW("Single point between two sides is not a touching point!");
     }
       // ------------------------------------------------------------------------
       // The normal case. A straight cut.
@@ -153,7 +153,7 @@ bool CORE::GEO::CUT::Side::FindCutLines(Mesh& mesh, Element* element, Side& othe
     }
   }
 
-  dserror("How did you get here?");
+  FOUR_C_THROW("How did you get here?");
   exit(EXIT_FAILURE);
 }
 
@@ -274,7 +274,7 @@ bool CORE::GEO::CUT::Side::IsTouched(Side& other, Point* p)
       p->DumpConnectivityInfo();
       CORE::GEO::CUT::OUTPUT::GmshWriteSection(file, "Edge", p->CutEdges());
       file.close();
-      dserror(
+      FOUR_C_THROW(
           "Touching point between two sides does not lie on edge. This case should be analyzed");
     }
   }
@@ -304,7 +304,7 @@ bool CORE::GEO::CUT::Side::IsTouchedAt(Side* other, Point* p)
       // this is touching point then
       return true;
     default:
-      dserror("This case should be investigated");
+      FOUR_C_THROW("This case should be investigated");
       return false;
   }
 }
@@ -413,7 +413,7 @@ bool CORE::GEO::CUT::Side::FindParallelIntersection(
           if ((not(*c_it)->NodalPoint(e->Nodes())) and (not(*c_it)->NodalPoint(side.Nodes())))
           {
             CORE::GEO::CUT::OUTPUT::DebugDump_ThreePointsOnEdge(this, &side, e, c[0], cut);
-            dserror(
+            FOUR_C_THROW(
                 "Uknown case of three intersection point lying on side's edge in side-side "
                 "intersection, this case should be reported");
           }
@@ -541,14 +541,15 @@ bool CORE::GEO::CUT::Side::FindAmbiguousCutLines(
 
             Point* p1 = *it;
             Point* p2 = *next;
-            if (p1 == p2) dserror("Trying to create line between two points, which are the same!");
+            if (p1 == p2)
+              FOUR_C_THROW("Trying to create line between two points, which are the same!");
             mesh.NewLine(p1, p2, this, &side, element);
           }
 
           // connect last to first to close the cycle
           if (cut.front() == cut.back())
           {
-            dserror("Trying to create line between two points, which are the same!");
+            FOUR_C_THROW("Trying to create line between two points, which are the same!");
           }
           else
             mesh.NewLine(cut.front(), cut.back(), this, &side, element);
@@ -566,12 +567,12 @@ bool CORE::GEO::CUT::Side::FindAmbiguousCutLines(
                 file, (*it), (*it)->Id(), std::string("CutPoint"), false, nullptr);
           }
           file.close();
-          dserror("This case is not handled yet, generate GMSH output and look into it!");
+          FOUR_C_THROW("This case is not handled yet, generate GMSH output and look into it!");
         }
       }
       CORE::GEO::CUT::OUTPUT::DebugDump_MultipleCutPointsSpecial(
           this, &side, cut, collected_points, new_lines);
-      dserror("This case should be reported probably");
+      FOUR_C_THROW("This case should be reported probably");
     }
   }
   // should not reach here
@@ -750,7 +751,7 @@ bool CORE::GEO::CUT::Side::CreateParallelCutSurface(Mesh& mesh, Element* element
                 std::vector<Point*> common_points;
                 // safety check that we have only nodal point in between
                 (*e_next)->CommonNodalPoints(*e_it, common_points);
-                if (common_points.size() != 1) dserror("This should not be possible!");
+                if (common_points.size() != 1) FOUR_C_THROW("This should not be possible!");
 
                 Point* nodal = common_points[0];
 
@@ -760,7 +761,8 @@ bool CORE::GEO::CUT::Side::CreateParallelCutSurface(Mesh& mesh, Element* element
                 // something different shoudl be done...
                 if ((n_cuts_between > 0) and
                     (!((n_cuts_between == 1) and (cut_points_for_lines[next_cut] == nodal))))
-                  dserror("There is cut point that is close to cut_point that touches both edges");
+                  FOUR_C_THROW(
+                      "There is cut point that is close to cut_point that touches both edges");
 
                 else
                 {
@@ -810,7 +812,7 @@ bool CORE::GEO::CUT::Side::CreateParallelCutSurface(Mesh& mesh, Element* element
           }
         }
         if (not erased)
-          dserror("Found duplicate cut_point on different edge, but nothing got erased!");
+          FOUR_C_THROW("Found duplicate cut_point on different edge, but nothing got erased!");
       }
       else
         ++it;
@@ -860,7 +862,7 @@ bool CORE::GEO::CUT::Side::CreateParallelCutSurface(Mesh& mesh, Element* element
       Point* p1 = *it;
       Point* p2 = *next;
       if (p1 == p2)
-        dserror("Trying to create line between two points, which are the same! Point id is %d",
+        FOUR_C_THROW("Trying to create line between two points, which are the same! Point id is %d",
             p1->Id());
       mesh.NewLine(p1, p2, this, &other, element);
     }
@@ -886,7 +888,7 @@ bool CORE::GEO::CUT::Side::CreateParallelCutSurface(Mesh& mesh, Element* element
       CORE::GEO::CUT::OUTPUT::GmshSideDump(file, &other, std::string("OtherSide"));
       CORE::GEO::CUT::OUTPUT::GmshSideDump(file, this, std::string("ThisSide"));
       file.close();
-      dserror("Trying to create line between two points, which are the same!");
+      FOUR_C_THROW("Trying to create line between two points, which are the same!");
     }
     mesh.NewLine(cut_points_for_lines[0], cut_points_for_lines.back(), this, &other, element);
     return true;
@@ -921,14 +923,14 @@ void CORE::GEO::CUT::Side::SimplifyMixedParallelCutSurface(Mesh& mesh, Element* 
         auto p_delete_it = std::find_if(common_points.begin(), common_points.end(),
             [](Point* p) { return (p->CutNode() == nullptr && p->GetMergedPoints().size() == 0); });
 
-        if (p_delete_it == common_points.end()) dserror("Cannot decide which point to merge");
+        if (p_delete_it == common_points.end()) FOUR_C_THROW("Cannot decide which point to merge");
         Point* p_delete = *p_delete_it;
         // pick up the next point in the list of common points
         Point* p_keep = common_points[(std::distance(common_points.begin(), p_delete_it) + 1) %
                                       common_points.size()];
 
         if (CORE::GEO::CUT::DistanceBetweenPoints(p_delete, p_keep) > 10.0 * MERGING_TOLERANCE)
-          dserror("Trying to merge points, that are too far");
+          FOUR_C_THROW("Trying to merge points, that are too far");
 
         std::cout << "WARNING: Perfoming simplification of the parallel surface geometry by "
                      "merging point "
@@ -950,7 +952,7 @@ void CORE::GEO::CUT::Side::SimplifyMixedParallelCutSurface(Mesh& mesh, Element* 
         // side)
         if (std::set<Point*>(common_points.begin(), common_points.end()) != new_surface)
         {
-          dserror(
+          FOUR_C_THROW(
               "There are more than 2 common points in the parallel cut surfaces. Dont know how to "
               "simplify!");
         }
@@ -990,7 +992,7 @@ void CORE::GEO::CUT::Side::MakeOwnedSideFacets(
     const Cycle& points = *i;
 
     Facet* f = mesh.NewFacet(points(), this, IsCutSide());
-    if (f == nullptr) dserror("failed to create owned facet");
+    if (f == nullptr) FOUR_C_THROW("failed to create owned facet");
     facets_.push_back(f);
   }
 
@@ -1014,7 +1016,7 @@ void CORE::GEO::CUT::Side::MakeOwnedSideFacets(
       }
       if (facetid == facets_.size())
       {
-        dserror("failed to find the facet of the hole");
+        FOUR_C_THROW("failed to find the facet of the hole");
       }
     }
 
@@ -1064,7 +1066,7 @@ void CORE::GEO::CUT::Side::MakeInternalFacets(
   // ignore cycles with points outside the current element
   if ((not points.IsValid() and element->Dim() == 3) or not points.IsCut(element))
   {
-    // dserror("Shouldn't reach this case!");
+    // FOUR_C_THROW("Shouldn't reach this case!");
     return;
   }
 
@@ -1197,7 +1199,7 @@ void CORE::GEO::CUT::Side::MakeInternalFacets(
 
         std::cout << std::endl;
 
-        dserror(
+        FOUR_C_THROW(
             "The point cycle was found on the side, but the facet was not found "
             "on the side. This shouldn't happen, since the facet has to be owned by the side "
             "in this case! Properly there is some hanging node in your cut mesh. Take a closer "
@@ -1208,7 +1210,7 @@ void CORE::GEO::CUT::Side::MakeInternalFacets(
       Facet* f = mesh.NewFacet(points(), this, true);
       facets.insert(f);
       facets_.push_back(f);
-      //    dserror("must have matching facet on side");
+      //    FOUR_C_THROW("must have matching facet on side");
     }
   }
   // if comon side is null, meaning cut_side does not lie on the element_side
@@ -1339,7 +1341,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Side::CommonElement(Side* other)
     case 1:
       return *intersection.begin();
     default:
-      dserror("sides with more than one element in common");
+      FOUR_C_THROW("sides with more than one element in common");
   }
 }
 
@@ -1363,7 +1365,7 @@ void CORE::GEO::CUT::Side::Print()
 unsigned CORE::GEO::CUT::Side::UncutFacetNumberPerSide() const
 {
   if (elements_.size() < 1)
-    dserror(
+    FOUR_C_THROW(
         "We need at least one registered element to be able to tell the "
         "default facet number of this side.");
 
@@ -1382,7 +1384,7 @@ unsigned CORE::GEO::CUT::Side::UncutFacetNumberPerSide() const
     case 1:
       return 2;
     default:
-      dserror("Unsupported parent element dimension! (ele->Dim() = %d )", ele_dim);
+      FOUR_C_THROW("Unsupported parent element dimension! (ele->Dim() = %d )", ele_dim);
       exit(EXIT_FAILURE);
   }
   // can never be reached
@@ -1427,7 +1429,7 @@ void CORE::GEO::CUT::Side::GetSelfCutPosition(Point::PointPosition position)
 {
   if (selfcutposition_ != position)
   {
-    if (position == Point::oncutsurface) dserror("if (position == Point::oncutsurface)");
+    if (position == Point::oncutsurface) FOUR_C_THROW("if (position == Point::oncutsurface)");
 
     if (Id() < 0)  // Propagate Selfcutposition only on Cutsides :)
       return;
@@ -1454,7 +1456,7 @@ void CORE::GEO::CUT::Side::ChangeSelfCutPosition(Point::PointPosition position)
 {
   if (selfcutposition_ != position)
   {
-    if (position == Point::oncutsurface) dserror("if (position == Point::oncutsurface)");
+    if (position == Point::oncutsurface) FOUR_C_THROW("if (position == Point::oncutsurface)");
     selfcutposition_ = position;
 
     for (std::vector<Edge*>::iterator i = edges_.begin(); i != edges_.end(); ++i)
@@ -1716,7 +1718,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
       std::cout << "side orthogonal ? " << std::endl;
       other->Print();
 
-      dserror("IsCloserSide along the ray-tracing line failed! ");
+      FOUR_C_THROW("IsCloserSide along the ray-tracing line failed! ");
 
       return false;
     }
@@ -1735,7 +1737,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
                    "ray-tracing line lies in undefined region"
                 << std::endl;
 
-      dserror("IsCloserSide along the ray-tracing line failed! ");
+      FOUR_C_THROW("IsCloserSide along the ray-tracing line failed! ");
     }
 
     return false;
@@ -1751,12 +1753,12 @@ template <unsigned probdim, CORE::FE::CellType sidetype, unsigned numNodesSide, 
 bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::WithinSide(
     const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rs, double& dist)
 {
-  dserror("Do we use this function?");
+  FOUR_C_THROW("Do we use this function?");
   Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<probdim, sidetype>(*this, xyz);
   bool success = pos->IsGivenPointWithinElement();
   if (not success)
   {
-    dserror("ComputeDistance w.r.t side not successful");
+    FOUR_C_THROW("ComputeDistance w.r.t side not successful");
     rs = 0;
     dist = 9999;  // set large value
     return false;
@@ -1796,7 +1798,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::LocalCo
      * i.e. line element in 3-D. */
     case probdim - 2:
     {
-      dserror(
+      FOUR_C_THROW(
           "Unsupported dim / probdim combination. I think this can't happen "
           "for side elements. If I'm wrong, just ask me. -- hiermeier");
       exit(EXIT_FAILURE);
@@ -1878,7 +1880,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::CreateSide(CORE::FE::CellType
       break;
     default:
     {
-      dserror("Unsupported side type! ( %d | %s )", sidetype,
+      FOUR_C_THROW("Unsupported side type! ( %d | %s )", sidetype,
           CORE::FE::CellTypeToString(sidetype).c_str());
       break;
     }
@@ -1902,7 +1904,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::CreateLevelSetSide(const int& sid)
       lvs_side_ptr = new LevelSetSide<3>(sid);
       break;
     default:
-      dserror("Unsupported problem dimension! (probdim=%d)", probdim);
+      FOUR_C_THROW("Unsupported problem dimension! (probdim=%d)", probdim);
       break;
   }
   return lvs_side_ptr;

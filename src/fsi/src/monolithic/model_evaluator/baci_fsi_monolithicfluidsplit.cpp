@@ -75,7 +75,7 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(
     //      // do only nodes that I have in my discretization
     //      if (!FluidField()->Discretization()->NodeColMap()->MyGID(gid)) continue;
     //      DRT::Node* node = FluidField()->Discretization()->gNode(gid);
-    //      if (!node) dserror("Cannot find node with gid %",gid);
+    //      if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
     //
     //      std::vector<int> nodedofs = FluidField()->Discretization()->Dof(node);
     //
@@ -145,7 +145,7 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(
                 "------------+"
              << std::endl;
 
-    dserror(errormsg.str());
+    FOUR_C_THROW(errormsg.str());
   }
   // ---------------------------------------------------------------------------
 
@@ -169,43 +169,43 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(
   fggprev_ = Teuchos::null;
   fggcur_ = Teuchos::null;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether allocation was successful
   if (fggtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fggtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fggtransform_' failed.");
   }
   if (fgitransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fgitransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fgitransform_' failed.");
   }
   if (figtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'figtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'figtransform_' failed.");
   }
   if (aigtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'aigtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'aigtransform_' failed.");
   }
   if (fmiitransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fmiitransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fmiitransform_' failed.");
   }
   if (fmgitransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fmgitransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fmgitransform_' failed.");
   }
   if (fmggtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fmggtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fmggtransform_' failed.");
   }
   if (lambda_ == Teuchos::null)
   {
-    dserror("Allocation of 'lambda_' failed.");
+    FOUR_C_THROW("Allocation of 'lambda_' failed.");
   }
   if (lambdaold_ == Teuchos::null)
   {
-    dserror("Allocation of 'lambdaold_' failed.");
+    FOUR_C_THROW("Allocation of 'lambdaold_' failed.");
   }
 #endif
 
@@ -270,7 +270,7 @@ void FSI::MonolithicFluidSplit::CreateCombinedDofRowMap()
   vecSpaces.push_back(AleField()->Interface()->OtherMap());
 
   if (vecSpaces[1]->NumGlobalElements() == 0)
-    dserror("No inner fluid equations. Splitting not possible. Panic.");
+    FOUR_C_THROW("No inner fluid equations. Splitting not possible. Panic.");
 
   SetDofRowMaps(vecSpaces);
 
@@ -302,7 +302,7 @@ void FSI::MonolithicFluidSplit::SetupDBCMapExtractor()
   dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
   if (dbcmaps_ == Teuchos::null)
   {
-    dserror("Creation of FSI Dirichlet map extractor failed.");
+    FOUR_C_THROW("Creation of FSI Dirichlet map extractor failed.");
   }
   // ---------------------------------------------------------------------------
 
@@ -409,14 +409,14 @@ void FSI::MonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
   // get ale matrix
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocka = AleField()->BlockSystemMatrix();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (blockf == Teuchos::null)
   {
-    dserror("Expected Teuchos::rcp to fluid block matrix.");
+    FOUR_C_THROW("Expected Teuchos::rcp to fluid block matrix.");
   }
   if (blocka == Teuchos::null)
   {
-    dserror("Expected Teuchos::rcp to ale block matrix.");
+    FOUR_C_THROW("Expected Teuchos::rcp to ale block matrix.");
   }
 #endif
 
@@ -605,19 +605,19 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseMatri
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> f = FluidField()->BlockSystemMatrix();
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether allocation was successful
   if (s == Teuchos::null)
   {
-    dserror("expect structure block matrix");
+    FOUR_C_THROW("expect structure block matrix");
   }
   if (f == Teuchos::null)
   {
-    dserror("expect fluid block matrix");
+    FOUR_C_THROW("expect fluid block matrix");
   }
   if (a == Teuchos::null)
   {
-    dserror("expect ale block matrix");
+    FOUR_C_THROW("expect ale block matrix");
   }
 #endif
 
@@ -843,7 +843,7 @@ void FSI::MonolithicFluidSplit::ScaleSystem(
         mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     // do scaling of ale rows
     A = mat.Matrix(2, 2).EpetraMatrix();
@@ -856,14 +856,14 @@ void FSI::MonolithicFluidSplit::ScaleSystem(
         mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
 
     // do scaling of structure and ale rhs vectors
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -884,8 +884,8 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
     Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 2);
 
-    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("structure scaling failed");
-    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     // get info about STC feature and unscale solution if necessary
     INPAR::STR::StcScale stcalgo = StructureField()->GetSTCAlgo();
@@ -900,8 +900,8 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     if (stcalgo != INPAR::STR::stc_none)
     {
@@ -919,7 +919,7 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(
         mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(2, 2).EpetraMatrix();
     arowsum_->Reciprocal(*arowsum_);
@@ -929,7 +929,7 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(
         mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
   }
 
   // very simple hack just to see the linear solution
@@ -1182,10 +1182,10 @@ void FSI::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Ve
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::ExtractFieldVectors");
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (ddgpred_ == Teuchos::null)
   {
-    dserror("Vector 'ddgpred_' has not been initialized properly.");
+    FOUR_C_THROW("Vector 'ddgpred_' has not been initialized properly.");
   }
 #endif
 

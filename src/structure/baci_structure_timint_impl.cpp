@@ -144,44 +144,46 @@ void STR::TimIntImpl::Init(const Teuchos::ParameterList& timeparams,
   STR::TimInt::Init(timeparams, sdynparams, xparams, actdis, solver);
 
   if (itermax_ < 0)
-    dserror("MAXITER has to be greater than or equal to zero. Fix your input file.");
+    FOUR_C_THROW("MAXITER has to be greater than or equal to zero. Fix your input file.");
 
   if (itermin_ < 0)
-    dserror("MINITER has to be greater than or equal to zero. Fix your input file.");
+    FOUR_C_THROW("MINITER has to be greater than or equal to zero. Fix your input file.");
 
-  if (toldisi_ <= 0) dserror("TOLDISP has to be greater than zero. Fix your input file.");
+  if (toldisi_ <= 0) FOUR_C_THROW("TOLDISP has to be greater than zero. Fix your input file.");
 
-  if (tolfres_ <= 0) dserror("TOLRES has to be greater than zero. Fix your input file.");
+  if (tolfres_ <= 0) FOUR_C_THROW("TOLRES has to be greater than zero. Fix your input file.");
 
   if (itermin_ > itermax_)
-    dserror("ITERMIN has to be smaller than or equal to ITERMAX. Fix your input file.");
+    FOUR_C_THROW("ITERMIN has to be smaller than or equal to ITERMAX. Fix your input file.");
 
-  if (tolpfres_ <= 0) dserror("TOLINCO has to be greater than zero. Fix your input file.");
+  if (tolpfres_ <= 0) FOUR_C_THROW("TOLINCO has to be greater than zero. Fix your input file.");
 
-  if (tolpres_ <= 0) dserror("TOLPRE has to be greater than zero. Fix your input file.");
+  if (tolpres_ <= 0) FOUR_C_THROW("TOLPRE has to be greater than zero. Fix your input file.");
 
-  if (uzawaparam_ <= 0) dserror("UZAWAPARAM has to be greater than zero. Fix your input file.");
+  if (uzawaparam_ <= 0)
+    FOUR_C_THROW("UZAWAPARAM has to be greater than zero. Fix your input file.");
 
   if (uzawaitermax_ < 0)
-    dserror("UZAWAMAXITER has to be greater than or equal to zero. Fix your input file.");
+    FOUR_C_THROW("UZAWAMAXITER has to be greater than or equal to zero. Fix your input file.");
 
-  if (tolcon_ <= 0) dserror("TOLCONSTR has to be greater than zero. Fix your input file.");
+  if (tolcon_ <= 0) FOUR_C_THROW("TOLCONSTR has to be greater than zero. Fix your input file.");
 
-  if (tolcardvasc0d_ <= 0) dserror("TOL_0D_RES has to be greater than zero. Fix your input file.");
+  if (tolcardvasc0d_ <= 0)
+    FOUR_C_THROW("TOL_0D_RES has to be greater than zero. Fix your input file.");
 
   if (tolcardvasc0ddofincr_ <= 0)
-    dserror("TOL_0D_DOFINCR has to be greater than zero. Fix your input file.");
+    FOUR_C_THROW("TOL_0D_DOFINCR has to be greater than zero. Fix your input file.");
 
   if ((alpha_ls_ <= 0) or (alpha_ls_ >= 1))
-    dserror("Valid interval for ALPHA_LS is (0,1). Fix your input file.");
+    FOUR_C_THROW("Valid interval for ALPHA_LS is (0,1). Fix your input file.");
 
   if ((sigma_ls_ <= 0) or (sigma_ls_ >= 1))
-    dserror("Valid interval for SIGMA_LS is (0,1). Fix your input file.");
+    FOUR_C_THROW("Valid interval for SIGMA_LS is (0,1). Fix your input file.");
 
   if (ls_maxiter_ < 0)
-    dserror("LSMAXITER has to be greater than or equal to zero. Fix your input file.");
+    FOUR_C_THROW("LSMAXITER has to be greater than or equal to zero. Fix your input file.");
 
-  if (ptcdt_ <= 0) dserror("PTCDT has to be greater than zero. Fix your input file.");
+  if (ptcdt_ <= 0) FOUR_C_THROW("PTCDT has to be greater than zero. Fix your input file.");
 
   // setup NOX parameter lists
   if (itertype_ == INPAR::STR::soltech_noxnewtonlinesearch)
@@ -207,20 +209,21 @@ void STR::TimIntImpl::Setup()
   {
     if ((itertype_ != INPAR::STR::soltech_newtonuzawalin) and
         (itertype_ != INPAR::STR::soltech_newtonuzawanonlin))
-      dserror("Chosen solution technique %s does not work constrained.",
+      FOUR_C_THROW("Chosen solution technique %s does not work constrained.",
           INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
   else if (cardvasc0dman_->HaveCardiovascular0D())
   {
     if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
       if (myrank_ == 0)
-        dserror("Chosen solution technique %s does not work with Cardiovascular0D bc.",
+        FOUR_C_THROW("Chosen solution technique %s does not work with Cardiovascular0D bc.",
             INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
   else if ((itertype_ == INPAR::STR::soltech_newtonuzawalin) or
            (itertype_ == INPAR::STR::soltech_newtonuzawanonlin))
   {
-    dserror("Chosen solution technique %s does only work constrained or with Cardiovascular0D bc.",
+    FOUR_C_THROW(
+        "Chosen solution technique %s does only work constrained or with Cardiovascular0D bc.",
         INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
 
@@ -288,7 +291,7 @@ void STR::TimIntImpl::Setup()
     projector_ = Teuchos::null;
   }
   else
-    dserror("Received more than one KrylovSpaceCondition for solid field");
+    FOUR_C_THROW("Received more than one KrylovSpaceCondition for solid field");
 
   // prepare line search
   if (itertype_ == INPAR::STR::soltech_newtonls) PrepareLineSearch();
@@ -395,7 +398,7 @@ void STR::TimIntImpl::Predict()
   }
   else
   {
-    dserror("Trouble in determining predictor %i", pred_);
+    FOUR_C_THROW("Trouble in determining predictor %i", pred_);
   }
 
   // zerofy pressure DOFs and time-derivatives
@@ -564,7 +567,7 @@ void STR::TimIntImpl::PrepareLineSearch()
         (actele->ElementType() == DRT::ELEMENTS::SoShw6Type::Instance()))
       haveCondensationLocal = 1;
     if (actele->ElementType() == DRT::ELEMENTS::SoSh8p8Type::Instance())
-      dserror(
+      FOUR_C_THROW(
           "no line search for this element implemented.\n"
           "Feel free to implement similar to hex8 with EAS");
   }
@@ -693,7 +696,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
                   INPAR::CONTACT::system_condensed_lagmult));
 
   if (bPressure && bContactSP)
-    dserror(
+    FOUR_C_THROW(
         "We only support either contact/meshtying in saddlepoint formulation or structure with "
         "pressure DOFs");
   if (bPressure == false && bContactSP == false)
@@ -794,7 +797,7 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
   const std::string* weighttype = projector_->WeightType();
 
   // only pointvalues are permissible for now - feel free to extend to integration!
-  if (*weighttype == "integration") dserror("option integration not implemented");
+  if (*weighttype == "integration") FOUR_C_THROW("option integration not implemented");
 
   // get Teuchos::RCP to kernel vector of projector
   // since we are in 'pointvalue' mode, weights are changed implicitly
@@ -806,7 +809,7 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
 
   Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::rcp(new Epetra_Map(*discret_->DofRowMap()));
   Teuchos::RCP<Epetra_MultiVector> nullspace = DRT::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
-  if (nullspace == Teuchos::null) dserror("nullspace not successfully computed");
+  if (nullspace == Teuchos::null) FOUR_C_THROW("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_
   for (size_t i = 0; i < Teuchos::as<size_t>(modeids.size()); i++)
@@ -998,7 +1001,8 @@ void STR::TimIntImpl::ApplyForceStiffSpringDashpot(Teuchos::RCP<CORE::LINALG::Sp
   if (springman_->HaveSpringDashpot())
   {
     auto stiff_sparse = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff);
-    if (stiff_sparse == Teuchos::null) dserror("Cannot cast stiffness matrix to sparse matrix!");
+    if (stiff_sparse == Teuchos::null)
+      FOUR_C_THROW("Cannot cast stiffness matrix to sparse matrix!");
     springman_->StiffnessAndInternalForces(stiff_sparse, fint, disn, veln, psprdash);
   }
 
@@ -1164,12 +1168,13 @@ bool STR::TimIntImpl::Converged()
   // verify: #normcharforce_ has been delivered strictly larger than zero
   if (normcharforce_ <= 0.0)
   {
-    dserror("Characteristic force norm %g must be strictly larger than 0", normcharforce_);
+    FOUR_C_THROW("Characteristic force norm %g must be strictly larger than 0", normcharforce_);
   }
   // verify: #normchardis_ has been delivered strictly larger than zero
   if (normchardis_ <= 0.0)
   {
-    dserror("Characteristic displacement norm %g must be strictly larger than 0", normchardis_);
+    FOUR_C_THROW(
+        "Characteristic displacement norm %g must be strictly larger than 0", normchardis_);
   }
 
 
@@ -1193,7 +1198,7 @@ bool STR::TimIntImpl::Converged()
       convdis = ((normdisi_ < toldisi_) or (normdisi_ < std::max(normchardis_ * toldisi_, 1e-15)));
       break;
     default:
-      dserror("Cannot check for convergence of residual displacements!");
+      FOUR_C_THROW("Cannot check for convergence of residual displacements!");
       break;
   }
 
@@ -1214,7 +1219,7 @@ bool STR::TimIntImpl::Converged()
           ((normfres_ < tolfres_) or (normfres_ < std::max(tolfres_ * normcharforce_, 1e-15)));
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }
 
@@ -1272,7 +1277,7 @@ bool STR::TimIntImpl::Converged()
           convDispLagrIncr = normlagr_ < tollagr_;
           break;*/
         default:
-          dserror("Unknown norm type for Lagrange multiplier increment.");
+          FOUR_C_THROW("Unknown norm type for Lagrange multiplier increment.");
           break;
       }
 
@@ -1282,7 +1287,7 @@ bool STR::TimIntImpl::Converged()
       else if (combdisilagr_ == INPAR::STR::bop_or)
         convdis = convdis or convDispLagrIncr;
       else
-        dserror("Something went terribly wrong with binary operator!");
+        FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
       bool convResfContConstr = false;
 
@@ -1296,7 +1301,7 @@ bool STR::TimIntImpl::Converged()
           convResfContConstr = normcontconstr_ < tolcontconstr_;
           break;*/
         default:
-          dserror("You should not turn up here.");
+          FOUR_C_THROW("You should not turn up here.");
           break;
       }
 
@@ -1306,7 +1311,7 @@ bool STR::TimIntImpl::Converged()
       else if (combfrescontconstr_ == INPAR::STR::bop_or)
         convfres = convfres or convResfContConstr;
       else
-        dserror("Something went terribly wrong with binary operator!");
+        FOUR_C_THROW("Something went terribly wrong with binary operator!");
     }
 
   }  // end HaveMeshtyingContact()
@@ -1324,7 +1329,7 @@ bool STR::TimIntImpl::Converged()
         convpre = normpres_ < tolpres_;
         break;
       default:
-        dserror(
+        FOUR_C_THROW(
             "Cannot check for convergence of residual pressures! Only for absolute residuals "
             "implemeted so far!");
         break;
@@ -1337,7 +1342,7 @@ bool STR::TimIntImpl::Converged()
         convfpre = normpfres_ < tolpfres_;
         break;
       default:
-        dserror("Cannot check for convergence of incompressible force residuals!");
+        FOUR_C_THROW("Cannot check for convergence of incompressible force residuals!");
         break;
     }
 
@@ -1348,14 +1353,14 @@ bool STR::TimIntImpl::Converged()
     else if (combdispre_ == INPAR::STR::bop_or)
       convdis = convdis or convpre;
     else
-      dserror("Something went terribly wrong with binary operator!");
+      FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
     if (combfrespfres_ == INPAR::STR::bop_and)
       convfres = convfres and convfpre;
     else if (combfrespfres_ == INPAR::STR::bop_or)
       convfres = convfres or convfpre;
     else
-      dserror("Something went terribly wrong with binary operator!");
+      FOUR_C_THROW("Something went terribly wrong with binary operator!");
   }
 
   // combine displacement-like and force-like residuals
@@ -1365,7 +1370,7 @@ bool STR::TimIntImpl::Converged()
   else if (combdisifres_ == INPAR::STR::bop_or)
     conv = convdis or convfres;
   else
-    dserror("Something went terribly wrong with binary operator!");
+    FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
 
   // return things
@@ -1428,7 +1433,7 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
         break;
       // catch problems
       default:
-        dserror("Solution technique \"%s\" is not implemented.",
+        FOUR_C_THROW("Solution technique \"%s\" is not implemented.",
             INPAR::STR::NonlinSolTechString(itertype_).c_str());
         break;
     }
@@ -1462,7 +1467,7 @@ int STR::TimIntImpl::NewtonFull()
   // check whether we have a sanely filled stiffness matrix
   if (not stiff_->Filled())
   {
-    dserror("Effective stiffness matrix must be filled here");
+    FOUR_C_THROW("Effective stiffness matrix must be filled here");
   }
 
   if (outputeveryiter_)
@@ -1613,7 +1618,7 @@ int STR::TimIntImpl::NewtonFull()
                                            INPAR::CONTACT::solution_augmented)));
 
     if (bPressure && bContactSP)
-      dserror(
+      FOUR_C_THROW(
           "We only support either contact/meshtying in saddlepoint formulation or structure with "
           "pressure DOFs");
     if (bPressure == false && bContactSP == false)
@@ -1763,7 +1768,7 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror, int eleerror)
       // write restart output of last converged step before stopping
       Output(true);
 
-      dserror("Newton unconverged in %d iterations", iter_);
+      FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
       return 1;
     }
     else if ((iter_ >= itermax_) and (divcontype_ == INPAR::STR::divcont_continue))
@@ -1785,7 +1790,7 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror, int eleerror)
       return 1;
     }
   }
-  dserror("Fatal error in NonLinSolveErrorCheck, case not implemented ");
+  FOUR_C_THROW("Fatal error in NonLinSolveErrorCheck, case not implemented ");
   return 0;
 }
 
@@ -1846,7 +1851,7 @@ int STR::TimIntImpl::NewtonLS()
   bool eval_error = false;  // an error occurred in the structure evaluation
 
   // check whether we have a sanely filled stiffness matrix
-  if (not stiff_->Filled()) dserror("Effective stiffness matrix must be filled here");
+  if (not stiff_->Filled()) FOUR_C_THROW("Effective stiffness matrix must be filled here");
 
   if (outputeveryiter_)
   {
@@ -1906,7 +1911,7 @@ int STR::TimIntImpl::NewtonLS()
              (iter_ > 1))
       fscontrol = 0;
     else
-      dserror(
+      FOUR_C_THROW(
           "The behavior of the chosen predictor is not yet tested in the line search framework.");
 
     /**************************************************************
@@ -2336,11 +2341,11 @@ bool STR::TimIntImpl::LsConverged(double* mf_value, double step_red)
 int STR::TimIntImpl::UzawaNonLinearNewtonFull()
 {
   // now or never, break it
-  dserror(
+  FOUR_C_THROW(
       "Sorry dude, non-linear Uzawa with full Newton-Raphson"
       " iteration is available in source, but it has not been"
       " tested in silico and should not be used overcredulously."
-      " Feel free to remove this dserror but be careful and check"
+      " Feel free to remove this FOUR_C_THROW but be careful and check"
       " if things run as expected.");
 
   // do Newton-Raphson iteration, which contains here effects of
@@ -2473,7 +2478,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     // check whether we have a sanely filled stiffness matrix
     if (not stiff_->Filled())
     {
-      dserror("Effective stiffness matrix must be filled here");
+      FOUR_C_THROW("Effective stiffness matrix must be filled here");
     }
 
     // initialise equilibrium loop
@@ -2641,7 +2646,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     // check whether we have a sanely filled stiffness matrix
     if (not stiff_->Filled())
     {
-      dserror("Effective stiffness matrix must be filled here");
+      FOUR_C_THROW("Effective stiffness matrix must be filled here");
     }
 
     // initialise equilibrium loop
@@ -2890,7 +2895,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror)
       // write restart output of last converged step before stopping
       Output(true);
 
-      dserror("Newton unconverged in %d iterations", iter_);
+      FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
       return 1;
     }
     else if ((iter_ >= itermax_) and (divcontype_ == INPAR::STR::divcont_continue))
@@ -2914,7 +2919,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror)
       return 1;
     }
   }
-  dserror("Fatal error in UzawaLinearNewtonFullErrorCheck, case not implemented ");
+  FOUR_C_THROW("Fatal error in UzawaLinearNewtonFullErrorCheck, case not implemented ");
   return 0;
 }
 
@@ -2935,7 +2940,8 @@ int STR::TimIntImpl::CmtNonlinearSolve()
       CORE::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
 
   // iteration type
-  if (itertype_ != INPAR::STR::soltech_newtonfull) dserror("Unknown type of equilibrium iteration");
+  if (itertype_ != INPAR::STR::soltech_newtonfull)
+    FOUR_C_THROW("Unknown type of equilibrium iteration");
 
   //********************************************************************
   // Solving Strategy using Lagrangian Multipliers
@@ -3059,7 +3065,8 @@ int STR::TimIntImpl::CmtNonlinearSolve()
     {
       // increase iteration index
       ++uzawaiter;
-      if (uzawaiter > maxuzawaiter) dserror("Uzawa unconverged in %d iterations", maxuzawaiter);
+      if (uzawaiter > maxuzawaiter)
+        FOUR_C_THROW("Uzawa unconverged in %d iterations", maxuzawaiter);
       if (!myrank_) std::cout << "Starting Uzawa step No. " << uzawaiter << std::endl;
 
       // for second, third,... Uzawa step: out-of-balance force
@@ -3246,7 +3253,8 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
       beamcman_->BeamContactParameters(), "BEAMS_STRATEGY");
 
   // unknown types of nonlinear iteration schemes
-  if (itertype_ != INPAR::STR::soltech_newtonfull) dserror("Unknown type of equilibrium iteration");
+  if (itertype_ != INPAR::STR::soltech_newtonfull)
+    FOUR_C_THROW("Unknown type of equilibrium iteration");
 
   //**********************************************************************
   // solving strategy using regularization with penalty method
@@ -3280,7 +3288,7 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
   //**********************************************************************
   else
   {
-    dserror("ERROR: Chosen strategy not yet available for beam contact");
+    FOUR_C_THROW("ERROR: Chosen strategy not yet available for beam contact");
   }
 
   return 0;
@@ -3298,7 +3306,7 @@ int STR::TimIntImpl::PTC()
   // check whether we have a sanely filled stiffness matrix
   if (not stiff_->Filled())
   {
-    dserror("Effective stiffness matrix must be filled here");
+    FOUR_C_THROW("Effective stiffness matrix must be filled here");
   }
 
   if (outputeveryiter_)
@@ -3453,7 +3461,7 @@ int STR::TimIntImpl::PTC()
                                INPAR::CONTACT::system_condensed));
 
     if (bPressure && bContactSP)
-      dserror(
+      FOUR_C_THROW(
           "We only support either contact/meshtying in saddlepoint formulation or structure with "
           "pressure DOFs");
     if (bPressure == false && bContactSP == false)
@@ -3607,7 +3615,7 @@ void STR::TimIntImpl::PrintPredictor()
     // default
     else
     {
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
     }
   }
 
@@ -3653,7 +3661,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(16) << "mix-res-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -3665,7 +3673,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
         oss << std::setw(16) << "abs-inco-norm";
         break;
       default:
-        dserror("You should not turn up here.");
+        FOUR_C_THROW("You should not turn up here.");
         break;
     }
   }
@@ -3683,7 +3691,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(16) << "mix-dis-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -3695,7 +3703,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
         oss << std::setw(16) << "abs-pre-norm";
         break;
       default:
-        dserror("You should not turn up here.");
+        FOUR_C_THROW("You should not turn up here.");
         break;
     }
   }
@@ -3728,7 +3736,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
           oss << std::setw(20) << "abs-contconstr-norm";
           break;
         default:
-          dserror("You should not turn up here.");
+          FOUR_C_THROW("You should not turn up here.");
           break;
       }
 
@@ -3753,7 +3761,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
           break;
         }
         default:
-          dserror("You should not turn up here.");
+          FOUR_C_THROW("You should not turn up here.");
           break;
       }
     }
@@ -3834,7 +3842,7 @@ void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
           << std::min(normfres_, normfres_ / normcharforce_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -3846,7 +3854,7 @@ void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
         oss << std::setw(16) << std::setprecision(5) << std::scientific << normpfres_;
         break;
       default:
-        dserror("You should not turn up here.");
+        FOUR_C_THROW("You should not turn up here.");
         break;
     }
   }
@@ -3866,7 +3874,7 @@ void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
           << std::min(normdisi_, normdisi_ / normchardis_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -3878,7 +3886,7 @@ void STR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
         oss << std::setw(16) << std::scientific << normpres_;
         break;
       default:
-        dserror("You should not turn up here.");
+        FOUR_C_THROW("You should not turn up here.");
         break;
     }
   }
@@ -4016,7 +4024,7 @@ void STR::TimIntImpl::ExportContactQuantities()
     fclose(MyFile);
   }
   else
-    dserror("ERROR: File could not be opened.");
+    FOUR_C_THROW("ERROR: File could not be opened.");
 
 
   // write required time
@@ -4037,7 +4045,7 @@ void STR::TimIntImpl::ExportContactQuantities()
     fclose(MyFile2);
   }
   else
-    dserror("ERROR: File could not be opened.");
+    FOUR_C_THROW("ERROR: File could not be opened.");
 
   return;
 }
@@ -4306,7 +4314,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 
   stcmat_->Complete();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (iter_ == 1 && step_ == 0)
   {
     std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
@@ -4332,7 +4340,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
     discret_->Evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     tmpstcmat->Complete();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (iter_ == 1 && step_ == 0)
     {
       std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
@@ -4383,7 +4391,8 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
 
   // iteration type
   if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
-    dserror("Unknown type of equilibrium iteration! Choose newtonlinuzawa instead of fullnewton!");
+    FOUR_C_THROW(
+        "Unknown type of equilibrium iteration! Choose newtonlinuzawa instead of fullnewton!");
 
   //********************************************************************
   // Solving Strategy using Lagrangian Multipliers
@@ -4475,7 +4484,8 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
     {
       // increase iteration index
       ++uzawaiter;
-      if (uzawaiter > maxuzawaiter) dserror("Uzawa unconverged in %d iterations", maxuzawaiter);
+      if (uzawaiter > maxuzawaiter)
+        FOUR_C_THROW("Uzawa unconverged in %d iterations", maxuzawaiter);
       if (!myrank_) std::cout << "Starting Uzawa step No. " << uzawaiter << std::endl;
 
       // for second, third,... Uzawa step: out-of-balance force
@@ -4583,7 +4593,7 @@ int STR::TimIntImpl::CmtWindkConstrLinearSolve(const double k_ptc)
       (systype != INPAR::CONTACT::system_condensed &&
           systype != INPAR::CONTACT::system_condensed_lagmult))
   {
-    dserror(
+    FOUR_C_THROW(
         "Constraints / Cardiovascular0D bcs together with saddle point contact system does not "
         "work (yet)!");
   }

@@ -97,7 +97,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
 void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraManifoldStructureDomain(
     Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifoldstructureblock)
 {
-  dserror("not implemented");
+  FOUR_C_THROW("not implemented");
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -160,7 +160,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
     }
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -310,7 +310,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -563,7 +563,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -703,7 +703,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -751,7 +751,7 @@ void SSI::ScatraStructureOffDiagCouplingSSTI::EvaluateOffDiagBlockStructureScatr
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }

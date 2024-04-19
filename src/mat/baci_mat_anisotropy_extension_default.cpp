@@ -70,7 +70,7 @@ void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(const double newgamma
   if (init_mode_ == INIT_MODE_ELEMENT_EXTERNAL || init_mode_ == INIT_MODE_ELEMENT_FIBERS)
   {
     // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
-    if ((gamma_ < -90) || (gamma_ > 90)) dserror("Fiber angle not in [-90,90]");
+    if ((gamma_ < -90) || (gamma_ > 90)) FOUR_C_THROW("Fiber angle not in [-90,90]");
     // convert
     double gamma = (gamma_ * M_PI) / 180.;
 
@@ -96,7 +96,7 @@ void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(const double newgamma
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Setting the fiber vectors is only possible for external element fibers mode or using a "
         "coordinate system.");
   }
@@ -122,7 +122,7 @@ void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(const double newgamma
   }
   if (numfib >= 3)
   {
-    dserror(
+    FOUR_C_THROW(
         "This kind of initialization method is not implemented for materials that need more than 2 "
         "fibers.");
   }
@@ -139,7 +139,7 @@ void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(
 
   if (numfib >= 2)
   {
-    dserror("This method can only be called for materials with one fiber!");
+    FOUR_C_THROW("This method can only be called for materials with one fiber!");
   }
 
   this->SetFibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
@@ -178,7 +178,7 @@ bool MAT::DefaultAnisotropyExtension<numfib>::DoElementFiberInitialization()
       }
       else
       {
-        dserror("Could not find element coordinate system or element fibers!");
+        FOUR_C_THROW("Could not find element coordinate system or element fibers!");
       }
 
       return true;
@@ -200,7 +200,7 @@ bool MAT::DefaultAnisotropyExtension<numfib>::DoGPFiberInitialization()
       // check, whether a coordinate system is given
       if (this->GetAnisotropy()->HasGPCylinderCoordinateSystem())
       {
-        dserror(
+        FOUR_C_THROW(
             "Gauss-point fibers defined via Gauss-point cylinder coordinate systems is not yet "
             "defined");
       }
@@ -224,7 +224,7 @@ bool MAT::DefaultAnisotropyExtension<numfib>::DoGPFiberInitialization()
       }
       else
       {
-        dserror("Could not find Gauss-point coordinate systems or Gauss-point fibers!");
+        FOUR_C_THROW("Could not find Gauss-point coordinate systems or Gauss-point fibers!");
       }
 
       return true;

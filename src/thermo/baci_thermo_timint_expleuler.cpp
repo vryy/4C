@@ -95,7 +95,7 @@ void THR::TimIntExplEuler::IntegrateStep()
 
   // obtain new temperature rates \f$R_{n+1}\f$
   {
-    dsassert(tang_->Filled(), "capacity matrix has to be completed");
+    FOUR_C_ASSERT(tang_->Filled(), "capacity matrix has to be completed");
     // get accelerations
     raten_->PutScalar(0.0);
   }

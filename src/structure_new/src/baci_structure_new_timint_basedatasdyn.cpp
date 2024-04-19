@@ -162,7 +162,7 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::Discretization> dis
     if (modeltypes_->find(INPAR::STR::model_partitioned_coupling) != modeltypes->end())
     {
       if (modeltypes_->find(INPAR::STR::model_monolithic_coupling) != modeltypes->end())
-        dserror("Cannot have both monolithic and partitioned coupling at the same time!");
+        FOUR_C_THROW("Cannot have both monolithic and partitioned coupling at the same time!");
       coupling_model_ptr_ =
           sdynparams.get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>("Partitioned Coupling Model");
     }
@@ -371,7 +371,7 @@ double STR::TIMINT::BaseDataSDyn::GetResTolerance(
       return tol_eas_res_;
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "There is no residual tolerance for the given quantity type! "
           "(quantity: %s)",
           NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
@@ -414,7 +414,7 @@ double STR::TIMINT::BaseDataSDyn::GetIncrTolerance(
       return tol_eas_incr_;
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "There is no increment tolerance for the given quantity type! "
           "(quantity: %s)",
           NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
@@ -457,7 +457,7 @@ enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetResToleranceType(
       return toltype_eas_res_;
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "There is no residual tolerance type for the given quantity type! "
           "(quantity: %s)",
           NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
@@ -500,7 +500,7 @@ enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetIncrToleranceType(
       return toltype_eas_incr_;
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "There is no increment tolerance type for the given quantity type! "
           "(quantity: %s)",
           NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
@@ -577,7 +577,7 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResComboType(
     return normcombo_fres_constr_res_;
   // no combination was found
   else
-    dserror(
+    FOUR_C_THROW(
         "There is no combination type for the given quantity types! "
         "(quantity_1: %s, quantity_2: %s)",
         NOX::NLN::StatusTest::QuantityType2String(qtype_1).c_str(),
@@ -653,7 +653,7 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetIncrComboType(
     return normcombo_disp_constr_incr_;
   // no combination was found
   else
-    dserror(
+    FOUR_C_THROW(
         "There is no combination type for the given quantity types! "
         "(quantity_1: %s, quantity_2: %s)",
         NOX::NLN::StatusTest::QuantityType2String(qtype_1).c_str(),
@@ -676,7 +676,7 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResIncrComboType(
     return normcombo_fres_disp_;
   // no combination was found
   else
-    dserror(
+    FOUR_C_THROW(
         "There is no res-incr-combination type for the given quantity types! "
         "(quantity_res: %s, quantity_incr: %s)",
         NOX::NLN::StatusTest::QuantityType2String(qtype_res).c_str(),

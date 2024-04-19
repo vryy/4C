@@ -70,7 +70,7 @@ int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     default:
-      dserror("Unkown type of action %d for Artery", action);
+      FOUR_C_THROW("Unkown type of action %d for Artery", action);
   }  // end of switch(act)
 
 
@@ -111,7 +111,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(const CORE::FE:
       rule = CORE::FE::GaussRule1D::line_3point;
       break;
     default:
-      dserror("unknown number of nodes for gaussrule initialization");
+      FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
   }
   return rule;
 }
@@ -130,7 +130,7 @@ bool DRT::ELEMENTS::Artery::isHigherOrderElement(const CORE::FE::CellType distyp
       hoel = false;
       break;
     default:
-      dserror("distype unknown!");
+      FOUR_C_THROW("distype unknown!");
   }
   return hoel;
 }

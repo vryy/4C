@@ -111,11 +111,12 @@ void MAT::AAAgasser::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::AAAgasser*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -127,7 +128,7 @@ void MAT::AAAgasser::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const int eleGID)
 {
   double normdist = params.get("iltthick meanvalue", -999.0);
-  if (normdist == -999.0) dserror("Aneurysm mean ilt distance not found");
+  if (normdist == -999.0) FOUR_C_THROW("Aneurysm mean ilt distance not found");
 
   // material parameters for isochoric part:
   // calculate element stiffness parameter, in dependence of 'normdist':
@@ -138,7 +139,7 @@ void MAT::AAAgasser::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     Cele =
         ((normdist - 1.0) / (-0.5)) * params_->Cmed_ + ((normdist - 0.5) / 0.5) * params_->Cablum_;
   else
-    dserror("Unable to calculate valid stiffness parameter in material AAAGasser");
+    FOUR_C_THROW("Unable to calculate valid stiffness parameter in material AAAGasser");
 
   // double Cele        = 1./3.*(params_->Clum_ + params_->Cmed_ + params_->) * normdist/normdist;
 
@@ -186,7 +187,7 @@ void MAT::AAAgasser::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   double detf = 0.0;
   if (iiinv < 0.0)
-    dserror("fatal failure in GASSER thrombus material (detf<0)");
+    FOUR_C_THROW("fatal failure in GASSER thrombus material (detf<0)");
   else
     detf = sqrt(iiinv);  // determinate of deformation gradient -> J
 
@@ -245,7 +246,7 @@ void MAT::AAAgasser::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     prestild = kappa * (2 * detf + (1 / detf) - 1) / 2;
   }
   else
-    dserror("Choose OSM, SuBa or SiTa for the volumetric part! See reference...!");
+    FOUR_C_THROW("Choose OSM, SuBa or SiTa for the volumetric part! See reference...!");
 
   stress->Update(pres * detf, invc, 1.0);
 

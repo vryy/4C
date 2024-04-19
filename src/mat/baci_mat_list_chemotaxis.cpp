@@ -32,11 +32,11 @@ MAT::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<MAT::PAR::Material> 
 {
   // check if sizes fit
   if (numpair_ != (int)pairids_->size())
-    dserror("number of materials %d does not fit to size of material vector %d", nummat_,
+    FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
         pairids_->size());
 
   if (numpair_ < 1)
-    dserror(
+    FOUR_C_THROW(
         "If you don't have chemotactic pairs, use MAT_matlist instead of MAT_matlist_chemotaxis!");
 
   if (not local_)
@@ -103,7 +103,7 @@ void MAT::MatListChemotaxis::SetupMatMap()
   {
     const int pairid = *m;
     Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(pairid);
-    if (mat == Teuchos::null) dserror("Failed to allocate this material");
+    if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
     MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<MAT::Material>>(pairid, mat));
   }
   return;
@@ -172,7 +172,7 @@ void MAT::MatListChemotaxis::Unpack(const std::vector<char>& data)
         paramschemo_ = dynamic_cast<MAT::PAR::MatListChemotaxis*>(mat);
       }
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -183,7 +183,8 @@ void MAT::MatListChemotaxis::Unpack(const std::vector<char>& data)
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 
@@ -196,7 +197,7 @@ int MAT::MatListChemotaxis::PairID(const unsigned index) const
     return paramschemo_->pairids_->at(index);
   else
   {
-    dserror("Index too large");
+    FOUR_C_THROW("Index too large");
     return -1;
   }
 }

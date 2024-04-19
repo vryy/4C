@@ -77,7 +77,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatConvAddCons(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
 {
-  dserror(
+  FOUR_C_THROW(
       "If you want to calculate the reference concentrations the CONVFORM must be 'convective'!");
 }
 

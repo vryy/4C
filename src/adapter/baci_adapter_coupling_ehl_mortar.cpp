@@ -38,19 +38,19 @@ ADAPTER::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
           GLOBAL::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
           "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
-    dserror(
+    FOUR_C_THROW(
         "EHL does not support parallel redistribution. Set \"PARALLEL_REDIST none\" in section "
         "\"MORTAR COUPLING\"");
 
   if (contact_regularization_)
     if (regularization_compliance_ <= 0. || regularization_thickness_ <= 0.)
-      dserror("need positive REGULARIZATION_THICKNESS and REGULARIZATION_STIFFNESS");
+      FOUR_C_THROW("need positive REGULARIZATION_THICKNESS and REGULARIZATION_STIFFNESS");
   if (contact_regularization_) regularization_compliance_ = 1. / regularization_compliance_;
   if (CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->ContactDynamicParams(),
           "REGULARIZED_NORMAL_CONTACT") == true &&
       CORE::UTILS::IntegralValue<bool>(
           GLOBAL::Problem::Instance()->ElastoHydroDynamicParams(), "DRY_CONTACT_MODEL") == false)
-    dserror("for dry contact model you need REGULARIZED_NORMAL_CONTACT and DRY_CONTACT_MODEL");
+    FOUR_C_THROW("for dry contact model you need REGULARIZED_NORMAL_CONTACT and DRY_CONTACT_MODEL");
 }
 
 /*----------------------------------------------------------------------*
@@ -89,14 +89,14 @@ void ADAPTER::CouplingEhlMortar::Setup(Teuchos::RCP<DRT::Discretization> masterd
     [[maybe_unused]] const int group1id = *ehl_conditions[i]->Get<int>("Interface ID");
     const auto fr = *ehl_conditions[i]->Get<double>("FrCoeffOrBound");
     if (fr != *ehl_conditions[0]->Get<double>("FrCoeffOrBound"))
-      dserror("inconsistency in friction coefficients");
+      FOUR_C_THROW("inconsistency in friction coefficients");
     fr_coeff = fr;
   }
 
   switch (ftype)
   {
     case INPAR::CONTACT::friction_tresca:
-      dserror("no tresca friction supported");
+      FOUR_C_THROW("no tresca friction supported");
       break;
     case INPAR::CONTACT::friction_none:
       break;
@@ -105,7 +105,7 @@ void ADAPTER::CouplingEhlMortar::Setup(Teuchos::RCP<DRT::Discretization> masterd
       interface_->InterfaceParams().set<double>("FRBOUND", -1.);
       break;
     default:
-      dserror("don't know what to do with this friction type");
+      FOUR_C_THROW("don't know what to do with this friction type");
       break;
   }
 }
@@ -236,7 +236,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
     }
   }
   else
-    dserror("stop");
+    FOUR_C_THROW("stop");
 
   // complete all those linearizations
   //                             colmap        rowmap
@@ -256,7 +256,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
     if (gact->GlobalLength())
     {
       CORE::LINALG::Export(*g_all, *gact);
-      if (gact->ReplaceMap(*interface_->ActiveNDofs())) dserror("replaceMap went wrong");
+      if (gact->ReplaceMap(*interface_->ActiveNDofs())) FOUR_C_THROW("replaceMap went wrong");
     }
   }
   CONTACT::UTILS::AddVector(*gact, *fcsa);
@@ -302,7 +302,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
     Epetra_Vector tmp(kss->RowMap());
     CORE::LINALG::Export(*fscn_, tmp);
     if (rs->Update(alphaf_, tmp, 1.) != 0)  // fscn already scaled with alphaf_ in update
-      dserror("update went wrong");
+      FOUR_C_THROW("update went wrong");
   }
 
 
@@ -352,7 +352,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -366,7 +366,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -387,7 +387,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -401,7 +401,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
 
   // this shoud be a split in rows, so that two blocks should have zero columns
   if (dummy1->DomainMap().NumGlobalElements() != 0 || dummy2->DomainMap().NumGlobalElements() != 0)
-    dserror("this split should only split rows, no columns expected for this matrix blocks");
+    FOUR_C_THROW("this split should only split rows, no columns expected for this matrix blocks");
 
   // reset
   dummy1 = Teuchos::null;
@@ -441,7 +441,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
   // invert D-matrix
   Epetra_Vector dDiag(*interface_->ActiveDofs());
   dInvA->ExtractDiagonalCopy(dDiag);
-  if (dDiag.Reciprocal(dDiag)) dserror("inversion of diagonal D matrix failed");
+  if (dDiag.Reciprocal(dDiag)) FOUR_C_THROW("inversion of diagonal D matrix failed");
   dInvA->ReplaceDiagonalValues(dDiag);
 
   dummy_map1 = dummy_map2 = Teuchos::null;
@@ -473,7 +473,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
   kst_a_ = kst_a;
   rs_a_ = rsa;
   // apply contact symmetry conditions
-  if (sdirichtoggle_.is_null()) dserror("you didn't call StoreDirichletStatus");
+  if (sdirichtoggle_.is_null()) FOUR_C_THROW("you didn't call StoreDirichletStatus");
   if (constr_direction_ == INPAR::CONTACT::constr_xyz)
   {
     double haveDBC = 0;
@@ -543,7 +543,7 @@ void ADAPTER::CouplingEhlMortar::CondenseContact(
   kst_new.Add(
       *CORE::LINALG::MLMultiply(*dInvMa, true, *kst_a, false, false, false, true), false, 1., 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*interface_->MasterRowDofs()));
-  if (dInvMa->Multiply(true, *rsa, *tmpv)) dserror("multiply failed");
+  if (dInvMa->Multiply(true, *rsa, *tmpv)) FOUR_C_THROW("multiply failed");
   CONTACT::UTILS::AddVector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
 
@@ -576,9 +576,9 @@ void ADAPTER::CouplingEhlMortar::EvaluateRelMov()
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
     DRT::Node* node = Interface()->Discret().lRowNode(i);
-    if (!node) dserror("node not found");
+    if (!node) FOUR_C_THROW("node not found");
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
-    if (!cnode) dserror("not a contact node");
+    if (!cnode) FOUR_C_THROW("not a contact node");
 
     cnode->FriData().GetDerivJump().resize(3);
     // write it to nodes
@@ -606,7 +606,7 @@ void ADAPTER::CouplingEhlMortar::RecoverCoupled(
     // do we have everything we need?
     if (rs_a_ == Teuchos::null || kss_a_ == Teuchos::null || kst_a_ == Teuchos::null ||
         dinvA_ == Teuchos::null)
-      dserror("some data for LM recovery is missing");
+      FOUR_C_THROW("some data for LM recovery is missing");
 
     Epetra_Vector lmc_a_new(*interface_->ActiveDofs(), false);
     Epetra_Vector tmp(*interface_->ActiveDofs(), false);
@@ -655,7 +655,7 @@ void ADAPTER::CouplingEhlMortar::StoreDirichletStatus(
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("ERROR: Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     // check if this node's dofs are in dbcmap
@@ -674,7 +674,8 @@ void ADAPTER::CouplingEhlMortar::StoreDirichletStatus(
                   << " " << cnode->X()[2] << std::endl;
         std::cout << "dbcdofs: " << cnode->DbcDofs()[0] << cnode->DbcDofs()[1]
                   << cnode->DbcDofs()[2] << std::endl;
-        dserror("Inconsistency in structure Dirichlet conditions and Mortar symmetry conditions");
+        FOUR_C_THROW(
+            "Inconsistency in structure Dirichlet conditions and Mortar symmetry conditions");
       }
     }
   }
@@ -693,9 +694,9 @@ bool ADAPTER::CouplingEhlMortar::AlreadyEvaluated(Teuchos::RCP<const Epetra_Vect
 {
   if (evaluated_state_.is_null()) return false;
   Teuchos::RCP<Epetra_Vector> diff = Teuchos::rcp(new Epetra_Vector(*disp));
-  if (diff->Update(-1., *evaluated_state_, 1.)) dserror("update failed");
+  if (diff->Update(-1., *evaluated_state_, 1.)) FOUR_C_THROW("update failed");
   double inf_diff = -1.;
-  if (diff->NormInf(&inf_diff)) dserror("NormInf failed");
+  if (diff->NormInf(&inf_diff)) FOUR_C_THROW("NormInf failed");
   if (inf_diff < 1.e-13) return true;
 
   return false;
@@ -740,9 +741,9 @@ void ADAPTER::CouplingEhlMortar::AssembleNormals()
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
-    if (!node) dserror("node not found");
+    if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-    if (!cnode) dserror("not a contact node");
+    if (!cnode) FOUR_C_THROW("not a contact node");
 
     for (int d = 0; d < interface_->Dim(); ++d)
       normals_->ReplaceGlobalValue(cnode->Dofs()[d], 0, cnode->MoData().n()[d]);
@@ -756,9 +757,9 @@ void ADAPTER::CouplingEhlMortar::AssembleNormalsDeriv()
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
-    if (!node) dserror("node not found");
+    if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-    if (!cnode) dserror("not a contact node");
+    if (!cnode) FOUR_C_THROW("not a contact node");
 
     for (int d = 0; d < Interface()->Dim(); ++d)
       for (auto p = cnode->Data().GetDerivN()[d].begin(); p != cnode->Data().GetDerivN()[d].end();
@@ -775,9 +776,9 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGap()
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
-    if (!node) dserror("node not found");
+    if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-    if (!cnode) dserror("not a contact node");
+    if (!cnode) FOUR_C_THROW("not a contact node");
     double real_gap = cnode->Data().Getg();
     switch (cnode->MoData().GetD().size())
     {
@@ -785,11 +786,11 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGap()
         break;
       case 1:
         if (cnode->MoData().GetD().begin()->first != cnode->Id())
-          dserror("something is wrong. Here should by my own Id");
+          FOUR_C_THROW("something is wrong. Here should by my own Id");
         real_gap /= cnode->MoData().GetD().at(cnode->Id());
         break;
       default:
-        dserror(
+        FOUR_C_THROW(
             "GetD should be of size 0 (unprojectable) or 1 (projectable). Are you not using "
             "duals?");
     }
@@ -809,12 +810,12 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGapDeriv()
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
-    if (!node) dserror("node not found");
+    if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-    if (!cnode) dserror("not a contact node");
+    if (!cnode) FOUR_C_THROW("not a contact node");
 
     if (cnode->Data().GetDerivD().size() != cnode->MoData().GetD().size())
-      dserror("size inconsistency");
+      FOUR_C_THROW("size inconsistency");
 
     const double w_gap = cnode->Data().Getg();
     double d = -1.;
@@ -824,11 +825,11 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGapDeriv()
         break;
       case 1:
         if (cnode->Data().GetDerivD().begin()->first != cnode->Id())
-          dserror("something is wrong. Here should by my own Id");
+          FOUR_C_THROW("something is wrong. Here should by my own Id");
         d = cnode->MoData().GetD().at(cnode->Id());
         break;
       default:
-        dserror(
+        FOUR_C_THROW(
             "GetDerivD should be of size 0 (unprojectable) or 1 (projectable). Are you not using "
             "duals?");
     }
@@ -842,7 +843,7 @@ void ADAPTER::CouplingEhlMortar::AssembleRealGapDeriv()
           deriv_nodal_gap_->Assemble(val, cnode->Dofs()[d], p->first);
       }
 
-    if (d == -1 && cnode->Data().GetDerivG().size() != 0) dserror("inconsistency");
+    if (d == -1 && cnode->Data().GetDerivG().size() != 0) FOUR_C_THROW("inconsistency");
 
     if (cnode->Data().GetDerivG().size())
       for (auto p = cnode->Data().GetDerivG().begin(); p != cnode->Data().GetDerivG().end(); ++p)
@@ -867,9 +868,9 @@ void ADAPTER::CouplingEhlMortar::AssembleInterfaceVelocities(const double dt)
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
-    if (!node) dserror("node not found");
+    if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-    if (!cnode) dserror("not a contact node");
+    if (!cnode) FOUR_C_THROW("not a contact node");
 
 
     double d_val = 0.;
@@ -879,11 +880,11 @@ void ADAPTER::CouplingEhlMortar::AssembleInterfaceVelocities(const double dt)
         break;
       case 1:
         if (cnode->MoData().GetD().begin()->first != cnode->Id())
-          dserror("something is wrong. Here should by my own Id");
+          FOUR_C_THROW("something is wrong. Here should by my own Id");
         d_val = cnode->MoData().GetD().at(cnode->Id());
         break;
       default:
-        dserror(
+        FOUR_C_THROW(
             "GetD should be of size 0 (unprojectable) or 1 (projectable). Are you not using "
             "duals?");
     }
@@ -953,9 +954,9 @@ void ADAPTER::CouplingEhlMortar::AssembleSurfGrad()
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
-    if (!node) dserror("ERROR: Cannot find node");
+    if (!node) FOUR_C_THROW("ERROR: Cannot find node");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-    if (!cnode) dserror("this is not a contact node");
+    if (!cnode) FOUR_C_THROW("this is not a contact node");
 
     double dval = 1.;
     switch (cnode->MoData().GetD().size())
@@ -965,11 +966,11 @@ void ADAPTER::CouplingEhlMortar::AssembleSurfGrad()
         break;  // large number so no tangential gradient
       case 1:
         if (cnode->MoData().GetD().begin()->first != cnode->Id())
-          dserror("something is wrong. Here should by my own Id");
+          FOUR_C_THROW("something is wrong. Here should by my own Id");
         dval = cnode->MoData().GetD().at(cnode->Id());
         break;
       default:
-        dserror(
+        FOUR_C_THROW(
             "GetD should be of size 0 (unprojectable) or 1 (projectable). Are you not using "
             "duals?");
     }
@@ -993,9 +994,9 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::AssembleSur
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
     DRT::Node* node = Interface()->Discret().gNode(interface_->SlaveRowNodes()->GID(i));
-    if (!node) dserror("ERROR: Cannot find node");
+    if (!node) FOUR_C_THROW("ERROR: Cannot find node");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-    if (!cnode) dserror("this is not a contact node");
+    if (!cnode) FOUR_C_THROW("this is not a contact node");
 
     double dval = 1.;
     switch (cnode->MoData().GetD().size())
@@ -1005,11 +1006,11 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::AssembleSur
         break;  // large number so no tangential gradient
       case 1:
         if (cnode->MoData().GetD().begin()->first != cnode->Id())
-          dserror("something is wrong. Here should by my own Id");
+          FOUR_C_THROW("something is wrong. Here should by my own Id");
         dval = cnode->MoData().GetD().at(cnode->Id());
         break;
       default:
-        dserror(
+        FOUR_C_THROW(
             "GetD should be of size 0 (unprojectable) or 1 (projectable). Are you not using "
             "duals?");
     }
@@ -1021,7 +1022,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::AssembleSur
       for (auto q = p->second.begin(); q != p->second.end(); ++q)
       {
         const int lid = x->Map().LID(q->first);
-        if (lid < 0) dserror("not my gid");
+        if (lid < 0) FOUR_C_THROW("not my gid");
         const double x_val = x->operator[](lid);
         for (int d = 0; d < Interface()->Dim(); ++d)
         {
@@ -1044,7 +1045,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::CouplingEhlMortar::AssembleSur
             const int row = cnode->Dofs()[d];
             const int x_gid = q->first;
             const int x_lid = x->Map().LID(x_gid);
-            if (x_lid < 0) dserror("not my gid");
+            if (x_lid < 0) FOUR_C_THROW("not my gid");
             double x_val = x->operator[](x_lid);
             const double val = -x_val * q->second(d) / (dval * dval) * p->second;
             SurfGradDeriv->Assemble(val, row, col);
@@ -1064,7 +1065,7 @@ void ADAPTER::CouplingEhlMortar::CreateForceVec(
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(interface_->Discret().lRowNode(i));
-    if (!cnode) dserror("cast failed");
+    if (!cnode) FOUR_C_THROW("cast failed");
     const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const CORE::LINALG::Matrix<3, 1> nor(cnode->MoData().n(), true);
     CORE::LINALG::Matrix<3, 3> nn;
@@ -1091,7 +1092,7 @@ void ADAPTER::CouplingEhlMortar::CreateActiveSlipToggle(Teuchos::RCP<Epetra_Vect
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(interface_->Discret().lRowNode(i));
-    if (!cnode) dserror("cast failed");
+    if (!cnode) FOUR_C_THROW("cast failed");
     if (cnode->Active())
       (*active)->operator[](i) = 1.;
     else
@@ -1146,7 +1147,7 @@ void ADAPTER::CouplingEhlMortar::ReadRestart(IO::DiscretizationReader& reader)
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(interface_->Discret().lRowNode(i));
-    if (!cnode) dserror("cast failed");
+    if (!cnode) FOUR_C_THROW("cast failed");
     cnode->Active() = active_toggle->operator[](i);
     cnode->FriData().Slip() = slip_toggle->operator[](i);
     cnode->Data().ActiveOld() = active_old_toggle->operator[](i);

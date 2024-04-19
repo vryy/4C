@@ -45,27 +45,27 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::Init()
   if (phasechangedefinition >> word)
     belowphase_ = PARTICLEENGINE::EnumFromTypeName(word);
   else
-    dserror("expecting particle type for phase below transition value!");
+    FOUR_C_THROW("expecting particle type for phase below transition value!");
 
   // get phase above transition value
   if (phasechangedefinition >> word)
     abovephase_ = PARTICLEENGINE::EnumFromTypeName(word);
   else
-    dserror("expecting particle type for phase above transition value!");
+    FOUR_C_THROW("expecting particle type for phase above transition value!");
 
   // safety check
   if (belowphase_ == abovephase_)
-    dserror("equal particle types for phase below and above transition value!");
+    FOUR_C_THROW("equal particle types for phase below and above transition value!");
 
   // get transition state of phase change
   if (phasechangedefinition >> word)
     transitionstate_ = PARTICLEENGINE::EnumFromStateName(word);
   else
-    dserror("expecting particle state of phase change!");
+    FOUR_C_THROW("expecting particle state of phase change!");
 
   // safety check
   if (PARTICLEENGINE::EnumToStateDim(transitionstate_) != 1)
-    dserror("expecting scalar particle state for phase change!");
+    FOUR_C_THROW("expecting scalar particle state for phase change!");
 
   // get transition value of phase change
   if (phasechangedefinition >> word)
@@ -76,16 +76,17 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::Init()
     }
     catch (...)
     {
-      dserror("invalid argument: expecting a double value for transition value of phase change!");
+      FOUR_C_THROW(
+          "invalid argument: expecting a double value for transition value of phase change!");
     };
   }
   else
-    dserror("expecting transition value of phase change!");
+    FOUR_C_THROW("expecting transition value of phase change!");
 
   // probe for optional hysteresis gap at transition value
   if (phasechangedefinition >> word)
   {
-    if (not(word == "hysteresis")) dserror("expecting optional keyword 'hysteresis'!");
+    if (not(word == "hysteresis")) FOUR_C_THROW("expecting optional keyword 'hysteresis'!");
 
     // get hysteresis gap at transition value
     if (phasechangedefinition >> word)
@@ -96,11 +97,11 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::Init()
       }
       catch (...)
       {
-        dserror("invalid argument: expecting a double value for hysteresis gap!");
+        FOUR_C_THROW("invalid argument: expecting a double value for hysteresis gap!");
       };
     }
     else
-      dserror("expecting hysteresis gap at transition value!");
+      FOUR_C_THROW("expecting hysteresis gap at transition value!");
   }
 }
 
@@ -124,7 +125,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::Setup(
   // safety check
   for (const auto& type_i : {belowphase_, abovephase_})
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
-      dserror("no particle container for particle type '%s' found!",
+      FOUR_C_THROW("no particle container for particle type '%s' found!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 }
 

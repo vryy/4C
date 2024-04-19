@@ -64,7 +64,7 @@ namespace CORE::LINALG
     lapack.GESVD(jobu, jobvt, rows, cols, tmp.A(), tmp.M(), s.data(), Q.A(), Q.M(), VT.A(), VT.M(),
         work.data(), lwork, &rwork, &info);
 
-    if (info) dserror("Lapack's dgesvd returned %d", info);
+    if (info) FOUR_C_THROW("Lapack's dgesvd returned %d", info);
 
     for (unsigned int i = 0; i < std::min(rows, cols); ++i)
     {

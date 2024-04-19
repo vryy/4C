@@ -71,7 +71,8 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
 
     // safety check
     for (unsigned int i = 0; i < maxnumlinkerpertype_.size(); ++i)
-      if (maxnumlinkerpertype_[i] < 0) dserror(" negative number of linker does not make sense.");
+      if (maxnumlinkerpertype_[i] < 0)
+        FOUR_C_THROW(" negative number of linker does not make sense.");
   }
 
   // material numbers for crosslinker types
@@ -86,18 +87,19 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
     for (unsigned int i = 0; i < matlinkerpertype_.size(); ++i)
     {
       // safety check
-      if (matlinkerpertype_[i] < 0) dserror(" negative material number does not make sense.");
+      if (matlinkerpertype_[i] < 0) FOUR_C_THROW(" negative material number does not make sense.");
 
       // store materials
       mat_.push_back(Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(
           MAT::Material::Factory(matlinkerpertype_[i])));
-      if (mat_.back() == Teuchos::null) dserror("Invalid material given for beam sphere link. \n");
+      if (mat_.back() == Teuchos::null)
+        FOUR_C_THROW("Invalid material given for beam sphere link. \n");
     }
   }
 
   // safety check
   if (maxnumlinkerpertype_.size() != matlinkerpertype_.size())
-    dserror("number of crosslinker types does not fit number of assigned materials");
+    FOUR_C_THROW("number of crosslinker types does not fit number of assigned materials");
 
   // store number of different linker types
   linkertypes_.clear();
@@ -126,7 +128,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
   }
 
   if (contractionrate_.size() != linkertypes_.size())
-    dserror("You need to specify a contractionrate for each linker type. Exciting ... ");
+    FOUR_C_THROW("You need to specify a contractionrate for each linker type. Exciting ... ");
 
   // distance between the two binding spots on each filament the same
   {
@@ -161,7 +163,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
 
   if (linkertypes_.size() != filamentbspotintervalglobal_.size() and
       linkertypes_.size() != filamentbspotintervallocal_.size())
-    dserror("You need to specify filament binding spots for all your linker types");
+    FOUR_C_THROW("You need to specify filament binding spots for all your linker types");
 
   // safety checks for feasibility of input
   if (filamentbspotintervalglobal_.size() == filamentbspotintervallocal_.size())
@@ -171,11 +173,11 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
       // safety feasibility checks
       if (iter.second <= 0.0 and not(filamentbspotintervallocal_.at(iter.first) > 0.0 and
                                      filamentbspotintervallocal_.at(iter.first) <= 1.0))
-        dserror(
+        FOUR_C_THROW(
             " Choose realistic value for FILAMENTBSPOTINTERVAL (i.e. distance between "
             "two binding spots on a filament) in input file. ");
       if (iter.second > 0.0 and filamentbspotintervallocal_.at(iter.first) > 0.0)
-        dserror(" You can only set either a global or a local filament binding spot interval");
+        FOUR_C_THROW(" You can only set either a global or a local filament binding spot interval");
     }
   }
 
@@ -194,13 +196,13 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
       if (PL >> word)
         pair.second = std::strtod(word.c_str(), &input);
       else
-        dserror("Filament binding spot range needs to be specified via two values");
+        FOUR_C_THROW("Filament binding spot range needs to be specified via two values");
 
       // store global range
       filamentbspotrangeglobal_[linkertypes_[count]] = pair;
 
       if (pair.first > 0.0 and pair.second > 0.0 and (pair.first > pair.second))
-        dserror(" lower bound > upper bound, fix FILAMENTBSPOTRANGEGLOBAL in input file ");
+        FOUR_C_THROW(" lower bound > upper bound, fix FILAMENTBSPOTRANGEGLOBAL in input file ");
 
       ++count;
     }
@@ -221,15 +223,15 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
       if (PL >> word)
         pair.second = std::strtod(word.c_str(), &input);
       else
-        dserror("Filament binding spot range needs to be specified via two values");
+        FOUR_C_THROW("Filament binding spot range needs to be specified via two values");
 
       // store local range
       filamentbspotrangelocal_[linkertypes_[count]] = pair;
 
       if (pair.first > 0.0 and pair.second > 0.0 and (pair.first > pair.second))
-        dserror(" lower bound > upper bound, fix FILAMENTBSPOTRANGEGLOCAL in input file ");
+        FOUR_C_THROW(" lower bound > upper bound, fix FILAMENTBSPOTRANGEGLOCAL in input file ");
       if (pair.first > 1.0 or pair.second > 1.0)
-        dserror("values > 1.0 do not make sense for local filament binding spot range");
+        FOUR_C_THROW("values > 1.0 do not make sense for local filament binding spot range");
 
       ++count;
     }
@@ -237,7 +239,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
 
   if (linkertypes_.size() != filamentbspotrangeglobal_.size() and
       linkertypes_.size() != filamentbspotrangelocal_.size())
-    dserror("You need to specify filament binding spots for all your linker types");
+    FOUR_C_THROW("You need to specify filament binding spots for all your linker types");
 
   // safety checks for feasibility of input
   if (filamentbspotrangeglobal_.size() == filamentbspotrangelocal_.size())
@@ -247,7 +249,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
       if (filamentbspotrangelocal_.at(iter.first).first > 0.0 and
           filamentbspotrangelocal_.at(iter.first).second > 0.0 and
           (iter.second.first > 0.0 or iter.second.second > 0.0))
-        dserror("either local or global binding spot range can be specified");
+        FOUR_C_THROW("either local or global binding spot range can be specified");
     }
   }
 

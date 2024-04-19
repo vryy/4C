@@ -59,7 +59,7 @@ int DRT::ELEMENTS::Lubrication::Evaluate(Teuchos::ParameterList& params,
       break;
     default:
     {
-      dserror("Unknown type of action '%i' for Lubrication", action);
+      FOUR_C_THROW("Unknown type of action '%i' for Lubrication", action);
       break;
     }
   }  // switch(action)

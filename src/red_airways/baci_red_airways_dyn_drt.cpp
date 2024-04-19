@@ -82,7 +82,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   // Check if the present solver has a valid solver number
   if (linsolvernumber == (-1))
   {
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC "
         "to a valid number!");
   }

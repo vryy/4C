@@ -41,7 +41,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
           if (CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
               INPAR::FSI::CoupVarPart::vel)
           {
-            dserror(
+            FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "
                 "interface velocities. Check your problem type!");
           }
@@ -49,7 +49,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
             return Teuchos::rcp(new FSI::DirichletNeumannSlideale(comm));
           break;
         default:
-          dserror("Your problem does not work with DirichletNeumann Slide ALE yet!!");
+          FOUR_C_THROW("Your problem does not work with DirichletNeumann Slide ALE yet!!");
           break;
       }
       break;
@@ -62,7 +62,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
           if (CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
               INPAR::FSI::CoupVarPart::vel)
           {
-            dserror(
+            FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "
                 "interface velocities. Check your problem type!");
           }
@@ -70,7 +70,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
             return Teuchos::rcp(new FSI::DirichletNeumannVolCoupl(comm));
           break;
         default:
-          dserror("Your problem does not work with DirichletNeumann Volume Coupling yet!!");
+          FOUR_C_THROW("Your problem does not work with DirichletNeumann Volume Coupling yet!!");
           break;
       }
       break;
@@ -84,7 +84,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
           if (CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
               INPAR::FSI::CoupVarPart::vel)
           {
-            dserror(
+            FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "
                 "interface velocities. Check your problem type!");
           }
@@ -95,7 +95,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
           if (CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
               INPAR::FSI::CoupVarPart::disp)
           {
-            dserror(
+            FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "
                 "interface displacements. Check your problem type!");
           }
@@ -103,7 +103,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
             return Teuchos::rcp(new FSI::DirichletNeumannVel(comm));
           break;
         default:
-          dserror("Your problem does not work with DirichletNeumann yet!!");
+          FOUR_C_THROW("Your problem does not work with DirichletNeumann yet!!");
           break;
       }
       break;

@@ -54,7 +54,7 @@ namespace CORE
     static constexpr T sqrt(const T& t) { return cln::sqrt(t.Value()); }
     static constexpr T pow(const T& base, const int exponent)
     {
-      dserror("Not implemented!");
+      FOUR_C_THROW("Not implemented!");
       return base;
     }
     static constexpr double GetDouble(T t) { return cln::double_approx(t.Value()); }

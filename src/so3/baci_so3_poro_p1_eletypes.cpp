@@ -85,7 +85,7 @@ int DRT::ELEMENTS::SoHex8PoroP1Type::Initialize(DRT::Discretization& dis)
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3PoroP1<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So3_Poro_P1* failed");
+    if (!actele) FOUR_C_THROW("cast to So3_Poro_P1* failed");
     actele->So3PoroP1<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>::InitElement();
   }
   return 0;
@@ -148,7 +148,7 @@ int DRT::ELEMENTS::SoTet4PoroP1Type::Initialize(DRT::Discretization& dis)
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet4_poro* failed");
+    if (!actele) FOUR_C_THROW("cast to So_tet4_poro* failed");
     actele->So3Poro<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>::InitElement();
   }
   return 0;

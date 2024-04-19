@@ -57,7 +57,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ConstraintElement3Type::ComputeNu
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented!");
+  FOUR_C_THROW("method ComputeNullSpace not implemented!");
   return nullspace;
 }
 
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::ConstraintElement3::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

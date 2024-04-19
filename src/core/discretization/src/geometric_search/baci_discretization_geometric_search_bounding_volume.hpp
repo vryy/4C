@@ -67,7 +67,7 @@ namespace CORE::GEOMETRICSEARCH
      */
     BoundingVolume()
     {
-      dserror(
+      FOUR_C_THROW(
           "The struct 'CORE::GEOMETRICSEARCH::BoundingVolume' can only be used with ArborX."
           "To use it, enable ArborX during the configure process.");
     }

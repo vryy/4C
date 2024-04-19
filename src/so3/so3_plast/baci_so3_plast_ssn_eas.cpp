@@ -43,7 +43,7 @@ void DRT::ELEMENTS::So3Plast<distype>::EasInit()
       neas_ = PlastEasTypeToNumEas<DRT::ELEMENTS::soh18p_eassosh18>::neas;
       break;
     default:
-      dserror("unknown EAS type");
+      FOUR_C_THROW("unknown EAS type");
   }
 
   if (eastype_ != soh8p_easnone)
@@ -135,7 +135,7 @@ void DRT::ELEMENTS::So3Plast<distype>::EasSetup()
   solve_for_inverseT0.SetMatrix(SetT0invT());
   int err2 = solve_for_inverseT0.Factor();
   int err = solve_for_inverseT0.Invert();
-  if ((err != 0) || (err2 != 0)) dserror("Inversion of T0inv (Jacobian0) failed");
+  if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of T0inv (Jacobian0) failed");
 
   // reset EAS matrices
   KaaInv_->shape(neas_, neas_);
@@ -333,7 +333,7 @@ void DRT::ELEMENTS::So3Plast<distype>::EasShape(const int gp)
     M_GP = &M_sosh8;  // return adress of static object to target of pointer
   }
   else
-    dserror("this EAS type not yet implemented");
+    FOUR_C_THROW("this EAS type not yet implemented");
 
   // transform EAS shape functions from parameter space to actual space
   SetM_eas().shape(numstr_, neas_);
@@ -358,7 +358,7 @@ void DRT::ELEMENTS::So3Plast<distype>::EasShape(const int gp)
     case soh8p_easnone:
       break;
     default:
-      dserror("Don't know what to do with EAS type %d", eastype_);
+      FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
       break;
   }
 }
@@ -395,7 +395,7 @@ void DRT::ELEMENTS::So3Plast<distype>::EasEnhanceStrains()
     case soh8p_easnone:
       break;
     default:
-      dserror("Don't know what to do with EAS type %d", eastype_);
+      FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
       break;
   }
 

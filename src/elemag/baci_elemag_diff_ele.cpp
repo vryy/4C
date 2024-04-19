@@ -82,7 +82,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ElemagDiffType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented right now!");
+  FOUR_C_THROW("method ComputeNullSpace not implemented right now!");
   return nullspace;
 }
 
@@ -308,7 +308,7 @@ void DRT::ELEMENTS::ElemagDiffBoundary::Unpack(const std::vector<char>& data)
   // distype_ = static_cast<CORE::FE::CellType>( ExtractInt(position,data) );
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -440,7 +440,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
-    dserror("wrong number of nodes for master element");
+    FOUR_C_THROW("wrong number of nodes for master element");
   }
 
   //-----------------------------------------------------------------------
@@ -449,7 +449,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
-    dserror("wrong number of nodes for slave element");
+    FOUR_C_THROW("wrong number of nodes for slave element");
   }
 
   //-----------------------------------------------------------------------
@@ -493,7 +493,8 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
     const int size = discretization.NumDof(dofset, node);
     const int offset = size * nds_master[k];
 
-    dsassert(dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
+    FOUR_C_ASSERT(
+        dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
 
     // insert a pair of node-Id and current length of master_lm ( to get the start offset for node's
     // dofs)
@@ -535,7 +536,8 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
       const int size = discretization.NumDof(dofset, node);
       const int offset = size * nds_slave[k];
 
-      dsassert(dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
+      FOUR_C_ASSERT(
+          dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
       for (int j = 0; j < size; ++j)
       {
         int actdof = dof[offset + j];
@@ -567,7 +569,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
       }
 
       if (offset % size != 0)
-        dserror("there was at least one node with not %d dofs per node", size);
+        FOUR_C_THROW("there was at least one node with not %d dofs per node", size);
       int patchnode_index = offset / size;
 
       lm_slaveNodeToPatch.push_back(patchnode_index);
@@ -602,7 +604,7 @@ void DRT::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
       }
     }
     else
-      dserror("face's nodes not contained in masternodes_offset map");
+      FOUR_C_THROW("face's nodes not contained in masternodes_offset map");
   }
 
   return;

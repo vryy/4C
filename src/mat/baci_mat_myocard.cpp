@@ -163,7 +163,7 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
         params_ = static_cast<MAT::PAR::Myocard*>(mat);
       }
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
 
       // Set number of Gauss points
@@ -185,7 +185,7 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
           }
 
         if (position != data.size())
-          dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+          FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
       }
     }
   }
@@ -228,7 +228,7 @@ void MAT::Myocard::UnpackMaterial(const std::vector<char>& data)
         params_ = static_cast<MAT::PAR::Myocard*>(mat);
       }
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
 
       // Set number of Gauss points
@@ -244,7 +244,7 @@ void MAT::Myocard::UnpackMaterial(const std::vector<char>& data)
         }
 
       if (position != data.size())
-        dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+        FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
     }
   }
 }
@@ -559,7 +559,7 @@ void MAT::Myocard::Initialize()
   else if (*(params_->model) == "SAN")
     myocard_mat_ = Teuchos::rcp(new MyocardSanGarny(params_->dt_deriv, *(params_->tissue)));
   else
-    dserror(
+    FOUR_C_THROW(
         "Myocard Material type is not supported! (for the moment only MV,FHN,INADA,TNNP and SAN)");
 
   nb_state_variables_ = myocard_mat_->GetNumberOfInternalStateVariables();

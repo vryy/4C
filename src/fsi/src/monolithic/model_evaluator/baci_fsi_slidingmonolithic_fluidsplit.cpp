@@ -79,7 +79,7 @@ FSI::SlidingMonolithicFluidSplit::SlidingMonolithicFluidSplit(
     //      // do only nodes that I have in my discretization
     //      if (!FluidField()->Discretization()->NodeColMap()->MyGID(gid)) continue;
     //      DRT::Node* node = FluidField()->Discretization()->gNode(gid);
-    //      if (!node) dserror("Cannot find node with gid %",gid);
+    //      if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
     //
     //      std::vector<int> nodedofs = FluidField()->Discretization()->Dof(node);
     //
@@ -148,7 +148,7 @@ FSI::SlidingMonolithicFluidSplit::SlidingMonolithicFluidSplit(
                 "------------+"
              << std::endl;
 
-    dserror(errormsg.str());
+    FOUR_C_THROW(errormsg.str());
   }
   // ---------------------------------------------------------------------------
 
@@ -184,30 +184,30 @@ FSI::SlidingMonolithicFluidSplit::SlidingMonolithicFluidSplit(
   fggprev_ = Teuchos::null;
   fggcur_ = Teuchos::null;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (coupsfm_ == Teuchos::null)
   {
-    dserror("Allocation of 'coupsfm_' failed.");
+    FOUR_C_THROW("Allocation of 'coupsfm_' failed.");
   }
   if (fscoupfa_ == Teuchos::null)
   {
-    dserror("Allocation of 'fscoupfa_' failed.");
+    FOUR_C_THROW("Allocation of 'fscoupfa_' failed.");
   }
   if (aigtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'aigtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'aigtransform_' failed.");
   }
   if (fmiitransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fmiitransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fmiitransform_' failed.");
   }
   if (lambda_ == Teuchos::null)
   {
-    dserror("Allocation of 'lambda_' failed.");
+    FOUR_C_THROW("Allocation of 'lambda_' failed.");
   }
   if (lambdaold_ == Teuchos::null)
   {
-    dserror("Allocation of 'lambdaold_' failed.");
+    FOUR_C_THROW("Allocation of 'lambdaold_' failed.");
   }
 #endif
 
@@ -330,7 +330,7 @@ void FSI::SlidingMonolithicFluidSplit::CreateCombinedDofRowMap()
   vecSpaces.push_back(FsiAleField()->FsiInterface()->OtherMap());
 
   if (vecSpaces[1]->NumGlobalElements() == 0)
-    dserror("No inner fluid equations. Splitting not possible.");
+    FOUR_C_THROW("No inner fluid equations. Splitting not possible.");
 
   SetDofRowMaps(vecSpaces);
 
@@ -361,7 +361,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupDBCMapExtractor()
 
   // Finally, create the global FSI Dirichlet map extractor
   dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
-  if (dbcmaps_ == Teuchos::null) dserror("Creation of FSI Dirichlet map extractor failed.");
+  if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Creation of FSI Dirichlet map extractor failed.");
 
   return;
 }
@@ -485,10 +485,10 @@ void FSI::SlidingMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
   const Teuchos::RCP<const CORE::LINALG::BlockSparseMatrixBase> blocka =
       AleField()->BlockSystemMatrix();
 
-#ifdef BACI_DEBUG
-  if (mortarp == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix P.");
-  if (blockf == Teuchos::null) dserror("Expected Teuchos::rcp to fluid block matrix.");
-  if (blocka == Teuchos::null) dserror("Expected Teuchos::rcp to ale block matrix.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (mortarp == Teuchos::null) FOUR_C_THROW("Expected Teuchos::rcp to mortar matrix P.");
+  if (blockf == Teuchos::null) FOUR_C_THROW("Expected Teuchos::rcp to fluid block matrix.");
+  if (blocka == Teuchos::null) FOUR_C_THROW("Expected Teuchos::rcp to ale block matrix.");
 #endif
 
   // extract fluid and ale submatrices
@@ -666,7 +666,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
     if (a == Teuchos::null)
     {
-      dserror("expect ale block matrix");
+      FOUR_C_THROW("expect ale block matrix");
     }
 
     rhs = Teuchos::rcp(new Epetra_Vector(a->Matrix(0, 1).RowMap()));
@@ -755,26 +755,29 @@ void FSI::SlidingMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpar
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> f = FluidField()->BlockSystemMatrix();
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether allocation was successful
-  if (mortarp == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix P.");
+  if (mortarp == Teuchos::null) FOUR_C_THROW("Expected Teuchos::rcp to mortar matrix P.");
   if (s == Teuchos::null)
   {
-    dserror("expect structure block matrix");
+    FOUR_C_THROW("expect structure block matrix");
   }
   if (f == Teuchos::null)
   {
-    dserror("expect fluid block matrix");
+    FOUR_C_THROW("expect fluid block matrix");
   }
   if (a == Teuchos::null)
   {
-    dserror("expect ale block matrix");
+    FOUR_C_THROW("expect ale block matrix");
   }
 
   // some checks whether maps for matrix-matrix-multiplication do really match
-  if (!f->Matrix(0, 1).DomainMap().PointSameAs(mortarp->RangeMap())) dserror("Maps do not match.");
-  if (!f->Matrix(1, 0).RangeMap().PointSameAs(mortarp->RangeMap())) dserror("Maps do not match.");
-  if (!f->Matrix(1, 1).DomainMap().PointSameAs(mortarp->RangeMap())) dserror("Maps do not match.");
+  if (!f->Matrix(0, 1).DomainMap().PointSameAs(mortarp->RangeMap()))
+    FOUR_C_THROW("Maps do not match.");
+  if (!f->Matrix(1, 0).RangeMap().PointSameAs(mortarp->RangeMap()))
+    FOUR_C_THROW("Maps do not match.");
+  if (!f->Matrix(1, 1).DomainMap().PointSameAs(mortarp->RangeMap()))
+    FOUR_C_THROW("Maps do not match.");
 #endif
 
   // extract submatrices
@@ -1013,7 +1016,7 @@ void FSI::SlidingMonolithicFluidSplit::ScaleSystem(
         mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     // do scaling of ale rows
     A = mat.Matrix(2, 2).EpetraMatrix();
@@ -1026,14 +1029,14 @@ void FSI::SlidingMonolithicFluidSplit::ScaleSystem(
         mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
 
     // do scaling of structure and ale rhs vectors
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -1054,8 +1057,8 @@ void FSI::SlidingMonolithicFluidSplit::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
     Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 2);
 
-    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("structure scaling failed");
-    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     // get info about STC feature and unscale solution if necessary
     INPAR::STR::StcScale stcalgo = StructureField()->GetSTCAlgo();
@@ -1070,8 +1073,8 @@ void FSI::SlidingMonolithicFluidSplit::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     // get info about STC feature
     if (stcalgo != INPAR::STR::stc_none)
@@ -1090,7 +1093,7 @@ void FSI::SlidingMonolithicFluidSplit::UnscaleSolution(
         mat.Matrix(0, 2).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(2, 2).EpetraMatrix();
     arowsum_->Reciprocal(*arowsum_);
@@ -1100,7 +1103,7 @@ void FSI::SlidingMonolithicFluidSplit::UnscaleSolution(
         mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
   }
 
   // very simple hack just to see the linear solution
@@ -1168,7 +1171,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::SlidingMonolithicFluidSplit::Crea
 
       break;
     default:
-      dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+      FOUR_C_THROW("unsupported linear block solver strategy: %d", linearsolverstrategy_);
       break;
   }
 
@@ -1380,8 +1383,9 @@ void FSI::SlidingMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Ep
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::ExtractFieldVectors");
 
-#ifdef BACI_DEBUG
-  if (ddgpred_ == Teuchos::null) dserror("Vector 'ddgpred_' has not been initialized properly.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (ddgpred_ == Teuchos::null)
+    FOUR_C_THROW("Vector 'ddgpred_' has not been initialized properly.");
 #endif
 
   // get the Mortar projection matrix P = D^{-1} * M
@@ -1622,9 +1626,9 @@ void FSI::SlidingMonolithicFluidSplit::RecoverLagrangeMultiplier()
   // get the inverted Mortar matrix D^{-1}
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortardinv = coupsfm_->GetMortarMatrixDinv();
 
-#ifdef BACI_DEBUG
-  if (mortarp == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix P.");
-  if (mortardinv == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix D^{-1}.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (mortarp == Teuchos::null) FOUR_C_THROW("Expected Teuchos::rcp to mortar matrix P.");
+  if (mortardinv == Teuchos::null) FOUR_C_THROW("Expected Teuchos::rcp to mortar matrix D^{-1}.");
 #endif
 
   // get fluid shape derivative matrix
@@ -1832,9 +1836,9 @@ void FSI::SlidingMonolithicFluidSplit::CheckKinematicConstraint()
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortard = coupsfm_->GetMortarMatrixD();
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortarm = coupsfm_->GetMortarMatrixM();
 
-#ifdef BACI_DEBUG
-  if (mortarm == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix M.");
-  if (mortard == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix D.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (mortarm == Teuchos::null) FOUR_C_THROW("Expected Teuchos::rcp to mortar matrix M.");
+  if (mortard == Teuchos::null) FOUR_C_THROW("Expected Teuchos::rcp to mortar matrix D.");
 #endif
 
   // get interface displacements and velocities
@@ -1892,9 +1896,9 @@ void FSI::SlidingMonolithicFluidSplit::CheckDynamicEquilibrium()
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortard = coupsfm_->GetMortarMatrixD();
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> mortarm = coupsfm_->GetMortarMatrixM();
 
-#ifdef BACI_DEBUG
-  if (mortarm == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix M.");
-  if (mortard == Teuchos::null) dserror("Expected Teuchos::rcp to mortar matrix D.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (mortarm == Teuchos::null) FOUR_C_THROW("Expected Teuchos::rcp to mortar matrix M.");
+  if (mortard == Teuchos::null) FOUR_C_THROW("Expected Teuchos::rcp to mortar matrix D.");
 #endif
 
   // auxiliary vectors

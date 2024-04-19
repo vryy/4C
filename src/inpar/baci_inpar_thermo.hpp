@@ -72,7 +72,7 @@ namespace INPAR
           return "ExplEuler";
           break;
         default:
-          dserror("Cannot make std::string for time integrator %d", name);
+          FOUR_C_THROW("Cannot make std::string for time integrator %d", name);
           return "";
       }
     }  // DynamicTypeString()
@@ -121,7 +121,7 @@ namespace INPAR
           return "TR-like";
           break;
         default:
-          dserror("Cannot make std::string for time integrator %d", name);
+          FOUR_C_THROW("Cannot make std::string for time integrator %d", name);
           return "";
       }  // end switch (name)
     }    // MidAverageString
@@ -152,7 +152,7 @@ namespace INPAR
           return "fullnewton";
           break;
         default:
-          dserror("Cannot make std::string for solution technique %d", name);
+          FOUR_C_THROW("Cannot make std::string for solution technique %d", name);
           return "";
       }
     }
@@ -200,7 +200,7 @@ namespace INPAR
           return "repeat_simulation";
           break;
         default:
-          dserror("Cannot make string for solution div cont technique %d", name);
+          FOUR_C_THROW("Cannot make string for solution div cont technique %d", name);
           return "";
       }
     }
@@ -237,7 +237,7 @@ namespace INPAR
           return "TangTemp";
           break;
         default:
-          dserror("Cannot make std::string for predictor %d", name);
+          FOUR_C_THROW("Cannot make std::string for predictor %d", name);
           return "";
       }
     }
@@ -287,7 +287,7 @@ namespace INPAR
           return "heatflux_initial";
           break;
         default:
-          dserror("Cannot make std::string for predictor %d", name);
+          FOUR_C_THROW("Cannot make std::string for predictor %d", name);
           return "";
       }
     }
@@ -317,7 +317,7 @@ namespace INPAR
           return "tempgrad_initial";
           break;
         default:
-          dserror("Cannot make std::string for predictor %d", name);
+          FOUR_C_THROW("Cannot make std::string for predictor %d", name);
           return "";
       }
     }
@@ -359,7 +359,7 @@ namespace INPAR
           return "Inf";
           break;
         default:
-          dserror("Cannot make std::string to vector norm %d", norm);
+          FOUR_C_THROW("Cannot make std::string to vector norm %d", norm);
           return "";
       }
     }

@@ -29,14 +29,15 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterL
     const int numscal = discretization.NumDof(1, Nodes()[0]);
 
     if (la[1].Size() != numnod_ * numscal)
-      dserror("So3_Scatra: PreEvaluate: Location vector length for concentrations does not match!");
+      FOUR_C_THROW(
+          "So3_Scatra: PreEvaluate: Location vector length for concentrations does not match!");
 
     if (discretization.HasState(1, "scalarfield"))  // if concentrations were set
     {
       if (not(distype == CORE::FE::CellType::hex8 or distype == CORE::FE::CellType::hex27 or
               distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10))
       {
-        dserror(
+        FOUR_C_THROW(
             "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
             "The following should work, but keep your eyes open (especially with the order of the "
             "Gauss points)");
@@ -52,7 +53,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterL
       Teuchos::RCP<const Epetra_Vector> concnp = discretization.GetState(1, "scalarfield");
 
       if (concnp == Teuchos::null)
-        dserror("calc_struct_nlnstiff: Cannot get state vector 'scalarfield' ");
+        FOUR_C_THROW("calc_struct_nlnstiff: Cannot get state vector 'scalarfield' ");
 
       // extract local values of the global vectors
       auto myconc = std::vector<double>(la[1].lm_.size(), 0.0);
@@ -116,7 +117,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterL
         if (not(distype == CORE::FE::CellType::hex8 or distype == CORE::FE::CellType::hex27 or
                 distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10))
         {
-          dserror(
+          FOUR_C_THROW(
               "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
               "The following should work, but keep your eyes open (especially with the order of "
               "the Gauss points");
@@ -130,7 +131,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterL
         Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(2, "tempfield");
 
         if (tempnp == Teuchos::null)
-          dserror("calc_struct_nlnstiff: Cannot get state vector 'tempfield' ");
+          FOUR_C_THROW("calc_struct_nlnstiff: Cannot get state vector 'tempfield' ");
 
         // extract local values of the global vectors
         auto mytemp = std::vector<double>(la[2].lm_.size(), 0.0);
@@ -193,7 +194,7 @@ int DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
 
   // get the required action and safety check
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_stiffscalar")
     act = So3Scatra::calc_struct_stiffscalar;
 
@@ -208,7 +209,7 @@ int DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
     case So3Scatra::calc_struct_stiffscalar:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
 
       // get my displacement vector
       std::vector<double> mydisp((la[0].lm_).size());
@@ -302,7 +303,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Locat
   const int differentiationtype =
       params.get<int>("differentiationtype", static_cast<int>(STR::DifferentiationType::none));
   if (differentiationtype == static_cast<int>(STR::DifferentiationType::none))
-    dserror("Cannot get differentation type");
+    FOUR_C_THROW("Cannot get differentation type");
 
   // get numscatradofspernode from parameter list in case of elch linearizations
   int numscatradofspernode(-1);
@@ -310,7 +311,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Locat
   {
     numscatradofspernode = params.get<int>("numscatradofspernode", -1);
     if (numscatradofspernode == -1)
-      dserror("Could not read 'numscatradofspernode' from parameter list!");
+      FOUR_C_THROW("Could not read 'numscatradofspernode' from parameter list!");
   }
 
   /* =========================================================================*/
@@ -385,7 +386,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Locat
         else if (differentiationtype == static_cast<int>(STR::DifferentiationType::temp))
           stiffmatrix_kdS(rowi, coli) += BdSdc_rowi * shapefunct(coli, 0);
         else
-          dserror("Unknown differentation type");
+          FOUR_C_THROW("Unknown differentation type");
       }
     }
   }  // gauss point loop
@@ -480,7 +481,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::InitElement()
   for (int i = 0; i < numnod_; ++i)
   {
     Node** nodes = Nodes();
-    if (!nodes) dserror("Nodes() returned null pointer");
+    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     xrefe(i, 0) = Nodes()[i]->X()[0];
     xrefe(i, 1) = Nodes()[i]->X()[1];
     xrefe(i, 2) = Nodes()[i]->X()[2];
@@ -510,7 +511,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::InitElement()
     detJ_[gp] = invJ_[gp].Invert();
 
     // make sure determinant of jacobian is positive
-    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
+    if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
   }
 }
 

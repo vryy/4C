@@ -53,14 +53,14 @@ void levelset_dyn(int restart)
   const INPAR::SCATRA::VelocityField veltype =
       CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
   if (veltype != INPAR::SCATRA::velocity_function)
-    dserror(
+    FOUR_C_THROW(
         "Other velocity fields than a field given by a function not yet supported for level-set "
         "problems");
 
   // get linear solver id from SCALAR TRANSPORT DYNAMIC
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for SCALAR_TRANSPORT problem. "
         "Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
@@ -73,14 +73,15 @@ void levelset_dyn(int restart)
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
       new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
   if (scatradis->AddDofSet(dofsetaux) != 1)
-    dserror("Scatra discretization has illegal number of dofsets!");
+    FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
   scatrabase->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
   // finalize discretization
   scatradis->FillComplete();
 
   // we directly use the elements from the scalar transport elements section
-  if (scatradis->NumGlobalNodes() == 0) dserror("No elements in the ---TRANSPORT ELEMENTS section");
+  if (scatradis->NumGlobalNodes() == 0)
+    FOUR_C_THROW("No elements in the ---TRANSPORT ELEMENTS section");
 
   // first we initialize the base algorithm
   // time integrator is initialized inside.

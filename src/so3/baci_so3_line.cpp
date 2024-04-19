@@ -48,7 +48,7 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, cons
       gaussrule_ = CORE::FE::GaussRule1D::line_3point;
       break;
     default:
-      dserror("shape type unknown!\n");
+      FOUR_C_THROW("shape type unknown!\n");
   }
   return;
 }
@@ -83,7 +83,7 @@ CORE::FE::CellType DRT::ELEMENTS::StructuralLine::Shape() const
     case 3:
       return CORE::FE::CellType::line3;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
   }
 }
 
@@ -92,7 +92,7 @@ CORE::FE::CellType DRT::ELEMENTS::StructuralLine::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructuralLine::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("StructuralLine element does not support communication");
+  FOUR_C_THROW("StructuralLine element does not support communication");
   return;
 }
 
@@ -101,7 +101,7 @@ void DRT::ELEMENTS::StructuralLine::Pack(CORE::COMM::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructuralLine::Unpack(const std::vector<char>& data)
 {
-  dserror("StructuralLine element does not support communication");
+  FOUR_C_THROW("StructuralLine element does not support communication");
   return;
 }
 

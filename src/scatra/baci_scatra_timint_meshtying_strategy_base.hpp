@@ -82,7 +82,7 @@ namespace SCATRA
     bool AbortNonlinIter(const ScaTraTimIntImpl& scatratimint, double& actresidual) const
     {
       if (convcheckstrategy_ == Teuchos::null)
-        dserror("Strategy for Newton-Raphson convergence check has not been instantiated!");
+        FOUR_C_THROW("Strategy for Newton-Raphson convergence check has not been instantiated!");
 
       return convcheckstrategy_->AbortNonlinIter(scatratimint, actresidual);
     }
@@ -96,7 +96,7 @@ namespace SCATRA
     bool AbortOuterIter(const ScaTraTimIntImpl& scatratimint) const
     {
       if (convcheckstrategy_ == Teuchos::null)
-        dserror("Strategy for outer convergence check has not been instantiated!");
+        FOUR_C_THROW("Strategy for outer convergence check has not been instantiated!");
 
       return convcheckstrategy_->AbortOuterIter(scatratimint);
     }
@@ -107,7 +107,7 @@ namespace SCATRA
 
     virtual void EquipExtendedSolverWithNullSpaceInfo() const
     {
-      dserror(
+      FOUR_C_THROW(
           "EquipExtendedSolverWithNullSpaceInfo() is not implemented in MeshtyingStrategyBase.");
     }
 
@@ -163,7 +163,7 @@ namespace SCATRA
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
     {
-      dserror("EvaluateCondition(...) is not implemented in MeshtyingStrategyBase.");
+      FOUR_C_THROW("EvaluateCondition(...) is not implemented in MeshtyingStrategyBase.");
     };
 
     //! compute meshtying residual terms and their linearizations
@@ -230,7 +230,7 @@ namespace SCATRA
     virtual void SetState(
         unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
     {
-      dserror(
+      FOUR_C_THROW(
           "SetState(...) is not implemented in MeshtyingStrategyBase.\n"
           "SetState(...) allows to set states on discretizations held within any\n"
           "specific MeshtyingStrategy. See e.g. HeterogeneousReactionStrategy for\n"

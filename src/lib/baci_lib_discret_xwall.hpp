@@ -62,16 +62,16 @@ namespace DRT
     void Dof(std::vector<int>& dof, const Node* node, unsigned nds, unsigned nodaldofset,
         const Element* element = nullptr) const override
     {
-      if (nds > 1) dserror("xwall discretization can only handle one dofset at the moment");
+      if (nds > 1) FOUR_C_THROW("xwall discretization can only handle one dofset at the moment");
 
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
 
       std::vector<int> totaldof;
       dofsets_[nds]->Dof(totaldof, node, nodaldofset);
 
       if (element == nullptr && element->Shape() == CORE::FE::CellType::hex8)
-        dserror("element required for location vector of hex8 element");
+        FOUR_C_THROW("element required for location vector of hex8 element");
 
       int size;
       if (element != nullptr)

@@ -227,7 +227,7 @@ namespace CORE::FE
           break;
         }
         default:
-          dserror("invalid number of surfaces, unable to determine intpoint in parent");
+          FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
     else if (distype == CORE::FE::CellType::nurbs9 && pdistype == CORE::FE::CellType::nurbs27)
@@ -392,7 +392,7 @@ namespace CORE::FE
           break;
         }
         default:
-          dserror("invalid number of surfaces, unable to determine intpoint in parent");
+          FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
     else if ((distype == CORE::FE::CellType::tri3 && pdistype == CORE::FE::CellType::tet4) or
@@ -461,12 +461,12 @@ namespace CORE::FE
           break;
         }
         default:
-          dserror("invalid number of surfaces, unable to determine intpoint in parent");
+          FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "only quad4/hex8, quad9/hex27, tri3/tet4 and nurbs9/nurbs27 mappings of surface "
           "gausspoint to parent element implemented up to now\n");
     }
@@ -691,7 +691,8 @@ namespace CORE::FE
       sqrtdetg = CORE::MathOperations<valueType>::sqrt(sqrtdetg);
     else if (throw_error)
     {
-      dserror("--- ERROR DETECTED ---\n The determinant of the matrix is equal zero or negative!");
+      FOUR_C_THROW(
+          "--- ERROR DETECTED ---\n The determinant of the matrix is equal zero or negative!");
     }
 
     // Calculate outward pointing normal vector
@@ -728,7 +729,7 @@ namespace CORE::FE
         }
       }
       else
-        dserror("There are only 2D and 1D boundary elements");
+        FOUR_C_THROW("There are only 2D and 1D boundary elements");
 
       // compute unit normal (outward pointing)
       if (unit_normal)
@@ -736,7 +737,7 @@ namespace CORE::FE
         const valueType norm2 = normalvec->Norm2();
         if (norm2 < 0.0)
         {
-          dserror("The L2-norm of the normal vector is smaller than 0.0!");
+          FOUR_C_THROW("The L2-norm of the normal vector is smaller than 0.0!");
         }
         normalvec->Scale(1.0 / norm2);
       }
@@ -935,7 +936,7 @@ namespace CORE::FE
           break;
         }
         default:
-          dserror("invalid number of lines, unable to determine intpoint in parent");
+          FOUR_C_THROW("invalid number of lines, unable to determine intpoint in parent");
       }
     }
     else if ((distype == CORE::FE::CellType::line2 && pdistype == CORE::FE::CellType::tri3) or
@@ -971,7 +972,7 @@ namespace CORE::FE
           break;
         }
         default:
-          dserror("invalid number of lines, unable to determine intpoint in parent");
+          FOUR_C_THROW("invalid number of lines, unable to determine intpoint in parent");
       }
     }
     else if (distype == CORE::FE::CellType::nurbs3 && pdistype == CORE::FE::CellType::nurbs9)
@@ -1062,12 +1063,12 @@ namespace CORE::FE
           break;
         }
         default:
-          dserror("invalid number of lines, unable to determine intpoint in parent");
+          FOUR_C_THROW("invalid number of lines, unable to determine intpoint in parent");
       }
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "only line2/quad4 and nurbs3/nurbs9 mappings of surface gausspoint to parent element "
           "implemented up to now\n");
     }
@@ -1237,7 +1238,7 @@ namespace CORE::FE
           break;
         }
         default:
-          dserror("invalid number of surfaces, unable to determine intpoint in parent");
+          FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
     else if ((distype == CORE::FE::CellType::tri3 && pdistype == CORE::FE::CellType::tet4) or
@@ -1286,7 +1287,7 @@ namespace CORE::FE
           break;
         }
         default:
-          dserror("invalid number of surfaces, unable to determine intpoint in parent");
+          FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
     else if ((distype == CORE::FE::CellType::quad4 && pdistype == CORE::FE::CellType::wedge6) or
@@ -1367,7 +1368,7 @@ namespace CORE::FE
           break;
         }
         default:
-          dserror(
+          FOUR_C_THROW(
               "invalid number of quad4 surface for wedge element, unable to determine intpoint "
               "in parent");
       }
@@ -1400,7 +1401,7 @@ namespace CORE::FE
           break;
         }
         default:
-          dserror(
+          FOUR_C_THROW(
               "invalid number of tri3 surface for wedge element, unable to determine intpoint in "
               "parent");
       }
@@ -1549,12 +1550,12 @@ namespace CORE::FE
           break;
         }
         default:
-          dserror("invalid number of surfaces, unable to determine intpoint in parent");
+          FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "only quad4/hex8 and nurbs9/nurbs27 mappings of surface gausspoint to parent element "
           "implemented up to now\n");
     }
@@ -1652,7 +1653,7 @@ namespace CORE::FE
     if (not((discretization.Name() == "fluid") or (discretization.Name() == "inflow") or
             (discretization.Name() == "ale") or (discretization.Name() == "structure")))
     {
-      dserror(
+      FOUR_C_THROW(
           "ElementNodeNormal: The mass-consistent-node-normal calculation can currently only be "
           "performed for discretization types 'fluid', 'inflow', 'ale' and 'structure'.");
     }
@@ -1668,7 +1669,7 @@ namespace CORE::FE
     // Add displacements to reference coordinates, if an ALE description is used
     if (isale)
     {
-      dsassert(edispnp.size() != 0, "paranoid");
+      FOUR_C_ASSERT(edispnp.size() != 0, "paranoid");
 
       for (int inode = 0; inode < bdrynen; ++inode)
       {

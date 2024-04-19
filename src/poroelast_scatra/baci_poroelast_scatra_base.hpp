@@ -55,23 +55,29 @@ namespace POROELASTSCATRA
     //! prepare time step for single fields
     virtual void PrepareTimeStep(bool printheader = true)
     {
-      dserror("not implemented in base class. override in subclass.");
+      FOUR_C_THROW("not implemented in base class. override in subclass.");
     };
 
     //! perform iteration loop between fields
-    virtual void Solve() { dserror("not implemented in base class. override in subclass."); };
+    virtual void Solve() { FOUR_C_THROW("not implemented in base class. override in subclass."); };
 
     //! prepare output
     virtual void PrepareOutput()
     {
-      dserror("not implemented in base class. override in subclass.");
+      FOUR_C_THROW("not implemented in base class. override in subclass.");
     };
 
     //! update time step
-    void Update() override { dserror("not implemented in base class. override in subclass."); };
+    void Update() override
+    {
+      FOUR_C_THROW("not implemented in base class. override in subclass.");
+    };
 
     //! write output print to screen
-    void Output() override { dserror("not implemented in base class. override in subclass."); };
+    void Output() override
+    {
+      FOUR_C_THROW("not implemented in base class. override in subclass.");
+    };
 
     //! read and set fields needed for restart
     void ReadRestart(int restart) override = 0;

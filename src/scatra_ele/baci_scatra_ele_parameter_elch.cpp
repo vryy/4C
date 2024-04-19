@@ -66,7 +66,7 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetParameters(Teuchos::ParameterList
   // type of closing equation for electric potential
   equpot_ = CORE::UTILS::GetAsEnum<INPAR::ELCH::EquPot>(parameters, "equpot");
   if (equpot_ == INPAR::ELCH::equpot_undefined)
-    dserror("Invalid type of closing equation for electric potential!");
+    FOUR_C_THROW("Invalid type of closing equation for electric potential!");
 
   // get parameters
   faraday_ = parameters.get<double>("faraday", -1.0);
@@ -75,10 +75,10 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetParameters(Teuchos::ParameterList
   temperature_ = parameters.get<double>("temperature", -1.0);
 
   // safety checks
-  if (frt_ <= 0.0) dserror("Factor F/RT is non-positive!");
-  if (faraday_ <= 0.0) dserror("Faraday constant is non-positive!");
-  if (gas_constant_ <= 0.0) dserror("(universal) gas constant is non-positive!");
-  if (temperature_ < 0.0) dserror("temperature is non-positive!");
+  if (frt_ <= 0.0) FOUR_C_THROW("Factor F/RT is non-positive!");
+  if (faraday_ <= 0.0) FOUR_C_THROW("Faraday constant is non-positive!");
+  if (gas_constant_ <= 0.0) FOUR_C_THROW("(universal) gas constant is non-positive!");
+  if (temperature_ < 0.0) FOUR_C_THROW("temperature is non-positive!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

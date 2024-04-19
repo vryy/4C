@@ -190,9 +190,9 @@ namespace PARTICLEINTERACTION
     template <class T>
     inline void UnitSurfaceTangents(const T* n, T* t1, T* t2)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (std::abs(1.0 - VecNormTwo(n)) > 1.0e-14)
-        dserror("given unit surface normal not normalized!");
+        FOUR_C_THROW("given unit surface normal not normalized!");
 #endif
 
       if ((std::abs(n[0]) <= std::abs(n[1])) and (std::abs(n[0]) <= std::abs(n[2])))
@@ -229,8 +229,8 @@ namespace PARTICLEINTERACTION
      */
     inline double LinTrans(const double x, const double x1, const double x2)
     {
-#ifdef BACI_DEBUG
-      if (not(std::abs(x2 - x1) > 1.0e-14)) dserror("danger of division by zero!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (not(std::abs(x2 - x1) > 1.0e-14)) FOUR_C_THROW("danger of division by zero!");
 #endif
 
       if (x < x1) return 0.0;

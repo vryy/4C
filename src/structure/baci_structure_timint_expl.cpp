@@ -72,7 +72,7 @@ void STR::TimIntExpl::Setup()
 
   // explicit time integrators cannot handle constraints
   if (conman_->HaveConstraint())
-    dserror("Currently, constraints cannot be done with explicit time integration.");
+    FOUR_C_THROW("Currently, constraints cannot be done with explicit time integration.");
 
   // explicit time integrators can only handle penalty contact / meshtying
   if (HaveContactMeshtying())
@@ -82,18 +82,18 @@ void STR::TimIntExpl::Setup()
             cmtbridge_->GetStrategy().Params(), "STRATEGY");
     if (soltype != INPAR::CONTACT::solution_penalty &&
         (soltype != INPAR::CONTACT::solution_multiscale))
-      dserror(
+      FOUR_C_THROW(
           "Currently, only penalty or multi-scale contact / meshtying can be done with explicit "
           "time integration schemes.");
   }
 
   // cannot handle rotated DOFs
   if (locsysman_ != Teuchos::null)
-    dserror("Explicit time integration schemes cannot handle local co-ordinate systems");
+    FOUR_C_THROW("Explicit time integration schemes cannot handle local co-ordinate systems");
 
   // explicit time integrators cannot handle nonlinear inertia forces
   if (HaveNonlinearMass())
-    dserror(
+    FOUR_C_THROW(
         "Explicit time integration schemes cannot handle nonlinear inertia forces (flag: MASSLIN)");
 
   return;

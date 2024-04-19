@@ -67,7 +67,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
   // check if this is an hdg element and init completepoly
   DRT::ELEMENTS::ElemagDiff* hdgele = static_cast<DRT::ELEMENTS::ElemagDiff*>(ele);
   usescompletepoly_ = hdgele->UsesCompletePolynomialSpace();
-  // else dserror("cannot cast element to elemag element");
+  // else FOUR_C_THROW("cannot cast element to elemag element");
 
   ELEMAG::Action action;
   if (params.get<bool>("hdg_action", false))
@@ -78,7 +78,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
         action = ELEMAG::Action::project_dirich_field;
         break;
       default:
-        dserror("HDG Action type not supported");
+        FOUR_C_THROW("HDG Action type not supported");
     }
   }
   else
@@ -125,7 +125,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     case ELEMAG::project_dirich_field:
     {
       // if (mat->MaterialType() != INPAR::MAT::m_electromagneticmat)
-      //  dserror("for physical type 'lossless' please supply MAT_Electromagnetic");
+      //  FOUR_C_THROW("for physical type 'lossless' please supply MAT_Electromagnetic");
       if (params.isParameter("faceconsider"))
       {
         // ElementInit(hdgele, params);
@@ -176,7 +176,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
         localSolver_->ComputeAbsorbingBC(
             discretization, hdgele, params, mat, face, elemat1, sumindex, elevec1);
       else
-        dserror("why would you set an absorbing LINE in THREE dimensions?");
+        FOUR_C_THROW("why would you set an absorbing LINE in THREE dimensions?");
 
       break;
     }
@@ -270,7 +270,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     default:
     {
       std::cout << "Action: " << action << std::endl;
-      dserror("unknown action supplied");
+      FOUR_C_THROW("unknown action supplied");
       break;
     }
   }  // switch(action)
@@ -513,7 +513,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
     // magnetic field. If there is only one component all the components will
     // be initialized to the same value.
     CORE::LINALG::SerialDenseVector intVal(nsd_);
-    dsassert(start_func != nullptr, "funct not set for initial value");
+    FOUR_C_ASSERT(start_func != nullptr, "funct not set for initial value");
     EvaluateAll(*start_func, time, xyz, intVal);
     // now fill the components in the one-sided mass matrix and the right hand side
     for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
@@ -620,7 +620,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricField
   {
     unsigned int scatra_ndofs = params.get<unsigned int>("ndofs");
     if (scatra_ndofs != shapes_.ndofs_)
-      dserror("Scatra ndofs does not match elemag ndofs. This is not yet implemented.");
+      FOUR_C_THROW("Scatra ndofs does not match elemag ndofs. This is not yet implemented.");
 
     // This is necessary as the scatra code computes the gradient of the scalar field multiplied by
     // the inverse of the conductivity. Therefore to obtain the actual value of the electric field
@@ -637,7 +637,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricField
     return 0;
   }
 
-  if ((*nodevals_phi).length() != nen_) dserror("node number not matching");
+  if ((*nodevals_phi).length() != nen_) FOUR_C_THROW("node number not matching");
 
   CORE::LINALG::SerialDenseMatrix localMat(shapes_.ndofs_, nsd_);
   for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
@@ -946,7 +946,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
         postproc_mat.stride(), postproc_rhs.values(), postproc_rhs.length(), test.values(),
         test.length(), &err);
     if (err != 0)
-      dserror("Least-square approximation for the Postprocessing failed with error %d", err);
+      FOUR_C_THROW("Least-square approximation for the Postprocessing failed with error %d", err);
 
     for (int i = 0; i < ele.eleinteriorElectricPost_.length(); ++i)
       ele.eleinteriorElectricPost_(i) = postproc_rhs(i);
@@ -967,7 +967,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
   postproc_shapes_.Evaluate(*ele);
 
   // reshape elevec2 as matrix
-  dsassert(elevec2.numRows() == 0 || unsigned(elevec2.numRows()) == nsd_ * shapes_.ndofs_,
+  FOUR_C_ASSERT(elevec2.numRows() == 0 || unsigned(elevec2.numRows()) == nsd_ * shapes_.ndofs_,
       "Wrong size in project vector 2");
 
   // get function
@@ -1000,7 +1000,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
       // magnetic field. If there is only one component all the components will
       // be initialized to the same value.
       CORE::LINALG::SerialDenseVector intVal(2 * nsd_);
-      dsassert(start_func != nullptr, "funct not set for initial value");
+      FOUR_C_ASSERT(start_func != nullptr, "funct not set for initial value");
       EvaluateAll(*start_func, time, xyz, intVal);
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
@@ -1297,7 +1297,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const i
   // If the number is not recognised throw an error
   if (not(numComp == v.numRows() || numComp == 2 * v.numRows() || numComp == v.numRows() / 2 ||
           numComp == 1))
-    dserror(
+    FOUR_C_THROW(
         "Supply ONE component for your function or NUMDIM, not anything else! With NUMDIM "
         "components the field will be initialized componentwise, if only one component is "
         "provided, every component of the field will be initialized with the same values.");
@@ -1329,7 +1329,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGrad
   // If the number is not recognised throw an error
   if (not(numComp == v.numRows() || numComp == 2 * v.numRows() || numComp == v.numRows() / 2 ||
           numComp == 1))
-    dserror(
+    FOUR_C_THROW(
         "Supply ONE component for your function or NUMDIM, not anything else! With NUMDIM "
         "components the field will be initialized componentwise, if only one component is "
         "provided, every component of the field will be initialized with the same values.");
@@ -1363,7 +1363,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTime
   // If the number is not recognised throw an error
   if (not(numComp == v.numRows() || numComp == 2 * v.numRows() || numComp == v.numRows() / 2 ||
           numComp == 1))
-    dserror(
+    FOUR_C_THROW(
         "Supply ONE component for your start function or NUMDIM, not anything else! With NUMDIM "
         "components the field will be initialized componentwise, if only one component is "
         "provided, every component of the field will be initialized with the same values.");
@@ -1396,7 +1396,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
   InitializeShapes(ele);
 
   // Check if the vector has the correct size
-  dsassert(elevec1.numRows() == (int)nen_ * (4 * nsd_), "Vector does not have correct size");
+  FOUR_C_ASSERT(elevec1.numRows() == (int)nen_ * (4 * nsd_), "Vector does not have correct size");
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
@@ -1786,7 +1786,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
     CORE::LINALG::SerialDenseMatrix& elemat, int indexstart,
     CORE::LINALG::SerialDenseVector& elevec1)
 {
-  dserror("ComputeAbsorbingBC() not yet implemented.");
+  FOUR_C_THROW("ComputeAbsorbingBC() not yet implemented.");
   /*
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::ComputeAbsorbingBC");
 
@@ -1824,7 +1824,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
       // magnetic field. If there is only one component all the components will
       // be initialized to the same value.
       CORE::LINALG::SerialDenseVector intVal(2 * nsd_);
-      dsassert(funct != nullptr, "funct not set for initial value");
+      FOUR_C_ASSERT(funct != nullptr, "funct not set for initial value");
       EvaluateAll((*funct)[0], time, xyz, intVal);
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
@@ -2046,7 +2046,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeInteriorMatr
   else if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
   {
     Emat.scale(25.0 / (12.0 * dt));  // BDF4
-    if (epsilon != 0) dserror("Not implemented.");
+    if (epsilon != 0) FOUR_C_THROW("Not implemented.");
   }
   else
   {
@@ -2062,7 +2062,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeInteriorMatr
     Teuchos::SerialDenseSolver<ordinalType, scalarType> invA;
     invA.setMatrix(Teuchos::rcpFromRef(invAmat));
     int err = invA.invert();
-    if (err != 0) dserror("Inversion for Amat failed with errorcode %d", err);
+    if (err != 0) FOUR_C_THROW("Inversion for Amat failed with errorcode %d", err);
   }
 
   for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
@@ -2165,7 +2165,8 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual(
     inverseinW.setMatrix(Teuchos::rcpFromRef(tempMat2));
     int err = inverseinW.invert();
     if (err != 0)
-      dserror("Inversion of temporary matrix for Schur complement failed with errorcode %d", err);
+      FOUR_C_THROW(
+          "Inversion of temporary matrix for Schur complement failed with errorcode %d", err);
   }
   // tempMat2 = ((E + G) - F A^{-1} B)^{-1}
 
@@ -2384,7 +2385,8 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::CondenseLocalPart(
     inverseinW.setMatrix(Teuchos::rcpFromRef(tempMat2));
     int err = inverseinW.invert();
     if (err != 0)
-      dserror("Inversion of temporary matrix for Schur complement failed with errorcode %d", err);
+      FOUR_C_THROW(
+          "Inversion of temporary matrix for Schur complement failed with errorcode %d", err);
   }
   // tempMat2 = [(E+G) - F A^{-1} B]^{-1}
 

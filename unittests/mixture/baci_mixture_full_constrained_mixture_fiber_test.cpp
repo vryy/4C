@@ -64,7 +64,7 @@ namespace
 
   TEST_F(FullConstrainedMixtureFiberTest, TestThrowsIfHistoryIsEmpty)
   {
-#ifndef BACI_DEBUG
+#ifndef FOUR_C_ENABLE_ASSERTIONS
     GTEST_SKIP() << "Skip debug assertion tests in release mode.";
 #endif
     MIXTURE::FullConstrainedMixtureFiber fiber = GenerateFiber<double>();

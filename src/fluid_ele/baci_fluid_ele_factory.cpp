@@ -97,7 +97,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(
     }
     // no 1D elements
     default:
-      dserror("Element shape %s not activated. Just do it.",
+      FOUR_C_THROW("Element shape %s not activated. Just do it.",
           CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
@@ -136,10 +136,10 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
       return DRT::ELEMENTS::FluidEleCalcXWall<CORE::FE::CellType::tet4,
           DRT::ELEMENTS::Fluid::xwall>::Instance();
     else
-      dserror("only hex8 and tet4 elements compiled for xwall");
+      FOUR_C_THROW("only hex8 and tet4 elements compiled for xwall");
   }
   else
-    dserror("Defined problem type does not exist!!");
+    FOUR_C_THROW("Defined problem type does not exist!!");
 
   return nullptr;
 }
@@ -151,7 +151,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
 DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
     CORE::FE::CellType distype, std::string problem)
 {
-  if (problem != "xfem") dserror("Call ProvideImplXFEM just for xfem problems!");
+  if (problem != "xfem") FOUR_C_THROW("Call ProvideImplXFEM just for xfem problems!");
 
   switch (distype)
   {
@@ -189,7 +189,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
       //      return DefineProblemTypeXFEM<CORE::FE::CellType::pyramid5>(problem);
       //    }
     default:
-      dserror("Element shape %s not activated for XFEM problems. Just do it.",
+      FOUR_C_THROW("Element shape %s not activated for XFEM problems. Just do it.",
           CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
@@ -207,7 +207,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
   if (problem == "xfem")
     return DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();
   else
-    dserror("Defined problem type does not exist!!");
+    FOUR_C_THROW("Defined problem type does not exist!!");
 
   return nullptr;
 }

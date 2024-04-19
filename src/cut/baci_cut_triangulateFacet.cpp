@@ -38,7 +38,7 @@ void CORE::GEO::CUT::TriangulateFacet::SplitFacet()
 
   if (numpts < 3)
   {
-    dserror("A facet must have atleast 3 corners");
+    FOUR_C_THROW("A facet must have atleast 3 corners");
   }
   else if (numpts == 3)  // form a Tri, and it is done
   {
@@ -82,7 +82,7 @@ void CORE::GEO::CUT::TriangulateFacet::SplitFacet()
 void CORE::GEO::CUT::TriangulateFacet::Split4nodeFacet(
     std::vector<Point*>& poly, bool callFromSplitAnyFacet)
 {
-  if (poly.size() != 4) dserror("This is not a 4 noded facet");
+  if (poly.size() != 4) FOUR_C_THROW("This is not a 4 noded facet");
 
   CORE::GEO::CUT::FacetShape geoType;
   std::vector<int> ptConcavity = KERNEL::CheckConvexity(poly, geoType);
@@ -141,7 +141,7 @@ void CORE::GEO::CUT::TriangulateFacet::Split4nodeFacet(
       p1->Coordinates(x1);
       std::cout << x1[0] << "\t" << x1[1] << "\t" << x1[2] << "\n";
     }
-    dserror(
+    FOUR_C_THROW(
         "a 4 noded facet cannot have more than 1 concave point:"
         "This means that the facet is selfcut");
   }
@@ -156,7 +156,7 @@ void CORE::GEO::CUT::TriangulateFacet::Split4nodeFacet(
 void CORE::GEO::CUT::TriangulateFacet::SplitConvex_1ptConcave_Facet(std::vector<int> ptConcavity)
 {
   if (ptConcavity.size() > 1)
-    dserror("should be called only when the facet has one or no concave points");
+    FOUR_C_THROW("should be called only when the facet has one or no concave points");
 
   int num = ptlist_.size();
 
@@ -209,7 +209,7 @@ void CORE::GEO::CUT::TriangulateFacet::SplitConvex_1ptConcave_Facet(std::vector<
     else if (newCell.size() == 4)  // check the resulting quad is convex, else split into 2 tri
       Split4nodeFacet(newCell, true);
     else
-      dserror("should have either 2 or 3 points");
+      FOUR_C_THROW("should have either 2 or 3 points");
 
     if (triDone) break;
   }
@@ -222,7 +222,7 @@ void CORE::GEO::CUT::TriangulateFacet::SplitConvex_1ptConcave_Facet(std::vector<
 void CORE::GEO::CUT::TriangulateFacet::SplitGeneralFacet(std::vector<int> ptConcavity)
 {
   if (ptConcavity.size() < 2)
-    dserror("Call TriangulateFacet::SplitConvex_1ptConcave_Facet in such cases");
+    FOUR_C_THROW("Call TriangulateFacet::SplitConvex_1ptConcave_Facet in such cases");
 
   if (ptlist_.size() == 3)  // directly form a Tri cell
   {
@@ -350,10 +350,10 @@ void CORE::GEO::CUT::TriangulateFacet::SplitGeneralFacet(std::vector<int> ptConc
       else
       {
         std::cout << "number of points in the cell = " << newCell.size() << "\n";
-        dserror("neither tri nor quad: Something went wrong in SplitAnyFacet");
+        FOUR_C_THROW("neither tri nor quad: Something went wrong in SplitAnyFacet");
       }
 
-      if (ncross == num) dserror("cannot form cell even after making one cycle");
+      if (ncross == num) FOUR_C_THROW("cannot form cell even after making one cycle");
     }
 
     KERNEL::DeleteInlinePts(ptlist_);
@@ -389,7 +389,7 @@ void CORE::GEO::CUT::TriangulateFacet::SplitGeneralFacet(std::vector<int> ptConc
         // if somethin goes wrong
         EarClipping(ptConcavity, true, true);
         return;
-        // dserror("Starting infinite loop!");
+        // FOUR_C_THROW("Starting infinite loop!");
       }
     }
   }
@@ -511,7 +511,7 @@ unsigned int CORE::GEO::CUT::TriangulateFacet::FindSecondBestEar(
 
   if (filtered_ears.empty())
   {
-    dserror("Could find suitable ear for triangulation");
+    FOUR_C_THROW("Could find suitable ear for triangulation");
   }
 
   // now out of the filtered ears we try to find the "thinnest"
@@ -678,7 +678,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
       break;
     }
 
-    if (ptlist_.size() < 3) dserror("ear clipping produced 2 vertices polygon");
+    if (ptlist_.size() < 3) FOUR_C_THROW("ear clipping produced 2 vertices polygon");
 
     if (DeleteInlinePts)
     {
@@ -761,7 +761,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
           // if last ear was convex, which it should be
           if (std::find(ptConcavity.begin(), ptConcavity.end(), last_added_ear_head) !=
               ptConcavity.end())
-            dserror("Unknown case!");
+            FOUR_C_THROW("Unknown case!");
 
           const unsigned int split_start = last_added_ear_head;
 
@@ -771,9 +771,9 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
         else
         {
           if (convex.size() == 0)
-            dserror("Not sure how to split a triangle with all points on one line");
+            FOUR_C_THROW("Not sure how to split a triangle with all points on one line");
           else
-            dserror("Unknown case!");
+            FOUR_C_THROW("Unknown case!");
         }
       }
 
@@ -790,7 +790,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
       std::cout << "dx = " << fabs(bb->maxx() - bb->minx()) << "\n";
       std::cout << "dy = " << fabs(bb->maxy() - bb->miny()) << "\n";
       std::cout << "dz = " << fabs(bb->maxz() - bb->minz()) << "\n";
-      dserror("Ear clipping: no progress in the triangulation");
+      FOUR_C_THROW("Ear clipping: no progress in the triangulation");
     }
   }
 }

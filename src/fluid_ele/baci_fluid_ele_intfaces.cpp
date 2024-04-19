@@ -92,7 +92,7 @@ CORE::FE::CellType DRT::ELEMENTS::FluidIntFace::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidIntFace::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("this FluidIntFace element does not support communication");
+  FOUR_C_THROW("this FluidIntFace element does not support communication");
   return;
 }
 
@@ -102,7 +102,7 @@ void DRT::ELEMENTS::FluidIntFace::Pack(CORE::COMM::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidIntFace::Unpack(const std::vector<char>& data)
 {
-  dserror("this FluidIntFace element does not support communication");
+  FOUR_C_THROW("this FluidIntFace element does not support communication");
   return;
 }
 
@@ -136,7 +136,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
-    dserror("wrong number of nodes for master element");
+    FOUR_C_THROW("wrong number of nodes for master element");
   }
 
   //-----------------------------------------------------------------------
@@ -145,7 +145,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
-    dserror("wrong number of nodes for slave element");
+    FOUR_C_THROW("wrong number of nodes for slave element");
   }
 
   //-----------------------------------------------------------------------
@@ -267,7 +267,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
       }
 
       if (offset % size != 0)
-        dserror("there was at least one node with not %d dofs per node", size);
+        FOUR_C_THROW("there was at least one node with not %d dofs per node", size);
       int patchnode_index = offset / size;
 
       lm_slaveNodeToPatch.push_back(patchnode_index);
@@ -311,7 +311,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
       }
     }
     else
-      dserror("face's nodes not contained in masternodes_offset map");
+      FOUR_C_THROW("face's nodes not contained in masternodes_offset map");
   }
 
   return;
@@ -347,7 +347,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
-    dserror("wrong number of nodes for master element");
+    FOUR_C_THROW("wrong number of nodes for master element");
   }
 
   //-----------------------------------------------------------------------
@@ -356,7 +356,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
-    dserror("wrong number of nodes for slave element");
+    FOUR_C_THROW("wrong number of nodes for slave element");
   }
 
   //-----------------------------------------------------------------------
@@ -504,7 +504,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
       }
 
       if (offset % size != 0)
-        dserror("there was at least one node with not %d dofs per node", size);
+        FOUR_C_THROW("there was at least one node with not %d dofs per node", size);
       int patchnode_index = offset / size;
 
       lm_slaveNodeToPatch.push_back(patchnode_index);
@@ -551,7 +551,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
       }
     }
     else
-      dserror("face's nodes not contained in masternodes_offset map");
+      FOUR_C_THROW("face's nodes not contained in masternodes_offset map");
   }
 
 
@@ -575,7 +575,7 @@ void DRT::ELEMENTS::FluidIntFace::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidIntFace::Lines()
 {
-  dserror("Lines of FluidIntFace not implemented");
+  FOUR_C_THROW("Lines of FluidIntFace not implemented");
 }
 
 /*----------------------------------------------------------------------*
@@ -583,7 +583,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidIntFace::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidIntFace::Surfaces()
 {
-  dserror("Surfaces of FluidIntFace not implemented");
+  FOUR_C_THROW("Surfaces of FluidIntFace not implemented");
 }
 
 /*----------------------------------------------------------------------*
@@ -600,7 +600,7 @@ int DRT::ELEMENTS::FluidIntFace::Evaluate(Teuchos::ParameterList& params,
   //         this line avoids linker errors
   DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(this);
 
-  dserror("not available");
+  FOUR_C_THROW("not available");
 
   return 0;
 }
@@ -613,7 +613,7 @@ int DRT::ELEMENTS::FluidIntFace::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("not available");
+  FOUR_C_THROW("not available");
 
   return 0;
 }

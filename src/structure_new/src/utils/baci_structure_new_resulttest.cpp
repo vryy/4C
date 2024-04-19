@@ -70,7 +70,7 @@ namespace
 
     if (local_id < 0)
     {
-      dserror("You tried to test %s on a proc that does not own node %i.",
+      FOUR_C_THROW("You tried to test %s on a proc that does not own node %i.",
           name_and_component.name.c_str(), node_id);
     }
 
@@ -117,7 +117,7 @@ namespace
 
     if (voigt_index < 0)
     {
-      dserror(
+      FOUR_C_THROW(
           "You try to test an unknown %s component %s. Use one of %s{_xx, _yy, _zz, _xy, _xz, "
           "_yz}.",
           label.c_str(), prefix.c_str(), prefix.c_str());
@@ -127,7 +127,8 @@ namespace
 
     if (local_id < 0)
     {
-      dserror("You tried to test %s on a proc that does not own node %i.", label.c_str(), node_id);
+      FOUR_C_THROW(
+          "You tried to test %s on a proc that does not own node %i.", label.c_str(), node_id);
     }
 
     return nodal_data[voigt_index][local_id];
@@ -168,7 +169,7 @@ void STR::ResultTest::Init(
 
   if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::struct_ale and
       (GLOBAL::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0)
-    dserror("Material displ. are not yet considered!");
+    FOUR_C_THROW("Material displ. are not yet considered!");
   else
     dismatn_ = Teuchos::null;
 
@@ -205,7 +206,8 @@ void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1, strudisc_->Name().c_str());
+    FOUR_C_THROW(
+        "Node %d does not belong to discretization %s", node + 1, strudisc_->Name().c_str());
   }
   else
   {
@@ -240,8 +242,8 @@ void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
           unknownpos = false;
           int lid = disnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-                actnode->Id());
+            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
+                idx, actnode->Id());
           result = (*disn_)[lid];
         }
       }
@@ -263,8 +265,8 @@ void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
           unknownpos = false;
           int lid = dismpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-                actnode->Id());
+            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
+                idx, actnode->Id());
           result = (*dismatn_)[lid];
         }
       }
@@ -286,8 +288,8 @@ void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
           unknownpos = false;
           int lid = velnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-                actnode->Id());
+            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
+                idx, actnode->Id());
           result = (*veln_)[lid];
         }
       }
@@ -309,8 +311,8 @@ void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
           unknownpos = false;
           int lid = accnpmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-                actnode->Id());
+            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
+                idx, actnode->Id());
           result = (*accn_)[lid];
         }
       }
@@ -320,7 +322,7 @@ void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
       {
         if (data_->GetStressDataNodePostprocessed() == Teuchos::null)
         {
-          dserror(
+          FOUR_C_THROW(
               "It looks like you don't write stresses. You have to specify the stress type in "
               "IO->STRUCT_STRESS");
         }
@@ -334,7 +336,7 @@ void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
       {
         if (data_->GetStressDataNodePostprocessed() == Teuchos::null)
         {
-          dserror(
+          FOUR_C_THROW(
               "It looks like you don't write strains. You have to specify the strain type in "
               "IO->STRUCT_STRAIN");
         }
@@ -374,14 +376,15 @@ void STR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
           unknownpos = false;
           int lid = reactmap.LID(strudisc_->Dof(0, actnode, idx));
           if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-                actnode->Id());
+            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
+                idx, actnode->Id());
           result = (*reactn_)[lid];
         }
       }
 
       // catch position std::strings, which are not handled by structure result test
-      if (unknownpos) dserror("Quantity '%s' not supported in structure testing", position.c_str());
+      if (unknownpos)
+        FOUR_C_THROW("Quantity '%s' not supported in structure testing", position.c_str());
 
       // compare values
       const int err = CompareValues(result, "NODE", res);
@@ -411,7 +414,7 @@ void STR::ResultTest::TestSpecial(
       if (result.has_value())
         nerr += CompareValues(*result, "SPECIAL", res);
       else
-        dserror(
+        FOUR_C_THROW(
             "STR::ResultTest::TestSpecial: Special result has no defined value assigned to it!");
       ++test_count;
       break;
@@ -423,7 +426,8 @@ void STR::ResultTest::TestSpecial(
     }
     default:
     {
-      dserror("STR::ResultTest::TestSpecial: Undefined status type (enum=%d)!", special_status);
+      FOUR_C_THROW(
+          "STR::ResultTest::TestSpecial: Undefined status type (enum=%d)!", special_status);
       exit(EXIT_FAILURE);
     }
   }
@@ -457,7 +461,7 @@ std::optional<double> STR::ResultTest::GetSpecialResult(
     return GetEnergy(quantity, special_status);
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Quantity '%s' not supported by special result testing functionality "
         "for structure field!",
         quantity.c_str());
@@ -519,7 +523,7 @@ std::optional<int> STR::ResultTest::GetNodesPerProcNumber(
 
   // extract processor ID
   if (proc_num >= strudisc_->Comm().NumProc())
-    dserror("STR::ResultTest::GetNodesPerProcNumber: Invalid processor ID!");
+    FOUR_C_THROW("STR::ResultTest::GetNodesPerProcNumber: Invalid processor ID!");
 
   if (strudisc_->Comm().MyPID() == proc_num)
   {
@@ -563,7 +567,7 @@ int STR::GetIntegerNumberAtLastPositionOfName(const std::string& quantity)
   }
   catch (const std::invalid_argument& e)
   {
-    dserror(
+    FOUR_C_THROW(
         "You provided the wrong format. The integer number must be "
         "at the very last position of the name, separated by an underscore. "
         "The correct format is:\n"

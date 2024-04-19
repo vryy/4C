@@ -145,7 +145,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       }
       else
       {
-        dserror(" expected combination line2/quad4 for surface/parent pair ");
+        FOUR_C_THROW(" expected combination line2/quad4 for surface/parent pair ");
       }
       break;
     }
@@ -159,7 +159,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       }
       else
       {
-        dserror(" expected combination quad4/hex8 for surface/parent pair ");
+        FOUR_C_THROW(" expected combination quad4/hex8 for surface/parent pair ");
       }
       break;
     }
@@ -172,13 +172,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       }
       else
       {
-        dserror(" expected combination tri3/tet4 for surface/parent pair ");
+        FOUR_C_THROW(" expected combination tri3/tet4 for surface/parent pair ");
       }
       break;
     }
     default:
     {
-      dserror("surface/parent element pair not yet implemented. Just do it.\n");
+      FOUR_C_THROW("surface/parent element pair not yet implemented. Just do it.\n");
       break;
     }
   }
@@ -239,7 +239,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
   {
-    dserror("Continuity boundary integral for FPSI coupling is only implemented for 3D and 2D!");
+    FOUR_C_THROW(
+        "Continuity boundary integral for FPSI coupling is only implemented for 3D and 2D!");
   }
 
   // number of parentnodes
@@ -316,11 +317,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   Teuchos::RCP<const Epetra_Vector> fluidvelocity_n = discretization.GetState("veln");
   Teuchos::RCP<const Epetra_Vector> gridvelocity = discretization.GetState("gridv");
 
-  if (fluidvelocity_np == Teuchos::null) dserror("Cannot get state vector 'fluidvelocity_np'");
-  if (gridvelocity == Teuchos::null) dserror("Cannot get state vector 'gridvelocity'");
-  if (displacements_np == Teuchos::null) dserror("Cannot get state vector 'displacements_np'");
-  if (fluidvelocity_n == Teuchos::null) dserror("Cannot get state vector 'fluidvelocity_n'");
-  if (displacements_n == Teuchos::null) dserror("Cannot get state vector 'displacements_n'");
+  if (fluidvelocity_np == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fluidvelocity_np'");
+  if (gridvelocity == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridvelocity'");
+  if (displacements_np == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacements_np'");
+  if (fluidvelocity_n == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fluidvelocity_n'");
+  if (displacements_n == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacements_n'");
 
   // get integration rule
   const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
@@ -358,7 +359,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
           GLOBAL::Problem::Instance()->GetDis("porofluid");
       it = InterfaceFacingElementMap->find(ele->Id());
       if (it == InterfaceFacingElementMap->end())
-        dserror("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
+        FOUR_C_THROW("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
 
       DRT::Element* porofluidelement = porofluiddis->gElement(it->second);
 
@@ -382,7 +383,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
     it = InterfaceFacingElementMap->find(ele->Id());
     if (it == InterfaceFacingElementMap->end())
-      dserror("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
+      FOUR_C_THROW("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
 
     DRT::Element* fluidelement = fluiddis->gElement(it->second);
 
@@ -409,7 +410,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   }
 
   const double timescale = params.get<double>("timescale", -1.0);
-  if (timescale == -1.0) dserror("no timescale parameter in parameter list");
+  if (timescale == -1.0) FOUR_C_THROW("no timescale parameter in parameter list");
 
   if (displacements_np != Teuchos::null)
   {
@@ -417,8 +418,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     CORE::FE::ExtractMyValues(*displacements_np, my_displacements_np, lm);
     CORE::FE::ExtractMyValues(*displacements_np, my_parentdisp_np, plm);
   }
-  dsassert(my_displacements_np.size() != 0, "no displacement values for boundary element");
-  dsassert(my_parentdisp_np.size() != 0, "no displacement values for parent element");
+  FOUR_C_ASSERT(my_displacements_np.size() != 0, "no displacement values for boundary element");
+  FOUR_C_ASSERT(my_parentdisp_np.size() != 0, "no displacement values for parent element");
 
   if (displacements_n != Teuchos::null)
   {
@@ -426,9 +427,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     CORE::FE::ExtractMyValues(*displacements_n, my_displacements_n, lm);
     CORE::FE::ExtractMyValues(*displacements_n, my_parentdisp_n, plm);
   }
-  dsassert(
+  FOUR_C_ASSERT(
       my_displacements_n.size() != 0, "no displacement values for boundary element at time step n");
-  dsassert(my_parentdisp_n.size() != 0, "no displacement values for parent element at time step n");
+  FOUR_C_ASSERT(
+      my_parentdisp_n.size() != 0, "no displacement values for parent element at time step n");
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   for (int inode = 0; inode < Base::bdrynen_; ++inode)
@@ -513,7 +515,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
   if (structele == nullptr && block != "NeumannIntegration" && block != "NeumannIntegration_Ale")
   {
-    dserror("Structure element %i not on local processor", currparenteleid);
+    FOUR_C_THROW("Structure element %i not on local processor", currparenteleid);
   }
 
   // get porous material
@@ -523,7 +525,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(structele->Material());
     if (structmat->MaterialType() != INPAR::MAT::m_structporo)
     {
-      dserror("invalid structure material for poroelasticity");
+      FOUR_C_THROW("invalid structure material for poroelasticity");
     }
   }
 
@@ -611,7 +613,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     xji.Invert(xjm);
     xji_n.Invert(xjm_n);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // check unitiy of  [xji] o [xjm]
     CORE::LINALG::Matrix<nsd_, nsd_> eye;
     eye.Multiply(xji, xjm);
@@ -621,13 +623,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
           abs(eye(2, 2) - 1.0) > 1e-11)
       {
         std::cout << eye << std::endl;
-        dserror("matrix times its inverse is not equal identity ... that sucks !!!");
+        FOUR_C_THROW("matrix times its inverse is not equal identity ... that sucks !!!");
       }
       if (abs(eye(0, 1)) > 1e-11 or abs(eye(0, 2)) > 1e-11 or abs(eye(1, 0)) > 1e-11 or
           abs(eye(1, 2)) > 1e-11 or abs(eye(2, 0)) > 1e-11 or abs(eye(2, 1)) > 1e-11)
       {
         std::cout << eye << std::endl;
-        dserror("matrix times its inverse is not equal identity ... that sucks !!!");
+        FOUR_C_THROW("matrix times its inverse is not equal identity ... that sucks !!!");
       }
     }
     else if (nsd_ == 2)
@@ -635,12 +637,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       if (abs(eye(0, 0) - 1.0) > 1e-11 or abs(eye(1, 1) - 1.0) > 1e-11)
       {
         std::cout << eye << std::endl;
-        dserror("matrix times its inverse is not equal identity ... that sucks !!!");
+        FOUR_C_THROW("matrix times its inverse is not equal identity ... that sucks !!!");
       }
       if (abs(eye(0, 1)) > 1e-11 or abs(eye(1, 0)) > 1e-11)
       {
         std::cout << eye << std::endl;
-        dserror("matrix times its inverse is not equal identity ... that sucks !!!");
+        FOUR_C_THROW("matrix times its inverse is not equal identity ... that sucks !!!");
       }
     }
 #endif
@@ -727,7 +729,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     else
       porosityint = 1.0;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (porosityint < 0.00001)
     {
       std::cout << "Discretization: " << discretization.Name() << std::endl;
@@ -735,7 +737,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       std::cout << "Porosity:       " << porosityint << "  at gp: " << gpid << std::endl;
       std::cout << "Pressure at gp: " << pressint(0, 0) << std::endl;
       std::cout << "Jacobian:       " << J << std::endl;
-      dserror("unreasonably low porosity for poro problem");
+      FOUR_C_THROW("unreasonably low porosity for poro problem");
     }
 #endif
 
@@ -1094,12 +1096,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       }
     }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (abs(scalarintegraltransformfac - Base::drs_) > 1e-11)
     {
       std::cout << "Base::drs_ = " << Base::drs_ << std::endl;
       std::cout << "scalarintegraltransformfac = " << scalarintegraltransformfac << std::endl;
-      dserror("scalarintegraltransformfac should be equal Base::drs_ !");
+      FOUR_C_THROW("scalarintegraltransformfac should be equal Base::drs_ !");
     }
 #endif
 
@@ -1552,7 +1554,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
           else if (block == "defaultblock" && (block != "fluid" && block != "fluidfluid" &&
                                                   block != "structure" && block != "conti"))
           {
-            dserror("no proper block specification available in parameterlist ...");
+            FOUR_C_THROW("no proper block specification available in parameterlist ...");
           }
         }
       }
@@ -1670,7 +1672,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       {
         if (discretization.Name() != "fluid")
         {
-          dserror(
+          FOUR_C_THROW(
               "Tried to call NeumannIntegration on a discretization other than 'fluid'. \n"
               "You think that's funny, hu ?? Roundhouse-Kick !!!");
         }
@@ -1704,7 +1706,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       else
       {
-        dserror("expected combination line2/quad4 for line/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 for line/parent pair");
       }
       break;
     }
@@ -1716,7 +1718,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       else
       {
-        dserror("expected combination line3/quad9 for line/parent pair");
+        FOUR_C_THROW("expected combination line3/quad9 for line/parent pair");
       }
       break;
     }
@@ -1729,7 +1731,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       else
       {
-        dserror("expected combination nurbs3/nurbs9 for line/parent pair");
+        FOUR_C_THROW("expected combination nurbs3/nurbs9 for line/parent pair");
       }
       break;
     }
@@ -1742,7 +1744,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       else
       {
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       }
       break;
     }
@@ -1754,7 +1756,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       else
       {
-        dserror("expected combination tri3/tet4 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri3/tet4 for surface/parent pair");
       }
       break;
     }
@@ -1766,7 +1768,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       else
       {
-        dserror("expected combination tri6/tet10 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri6/tet10 for surface/parent pair");
       }
       break;
     }
@@ -1778,13 +1780,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
       }
       else
       {
-        dserror("expected combination hex27/hex27 for surface/parent pair");
+        FOUR_C_THROW("expected combination hex27/hex27 for surface/parent pair");
       }
       break;
     }
     default:
     {
-      dserror("surface/parent element pair not yet implemented. Just do it.\n");
+      FOUR_C_THROW("surface/parent element pair not yet implemented. Just do it.\n");
       break;
     }
   }
@@ -1799,7 +1801,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
 {
   // This function is only implemented for 3D and 2D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
-    dserror("PoroBoundary is only implemented for 3D and 2D!");
+    FOUR_C_THROW("PoroBoundary is only implemented for 3D and 2D!");
 
   // get element location vector and ownerships
   std::vector<int> lm;
@@ -1835,8 +1837,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
   }
-  dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
-  dsassert(parentdispnp.size() != 0, "no displacement values for parent element");
+  FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
+  FOUR_C_ASSERT(parentdispnp.size() != 0, "no displacement values for parent element");
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   for (int inode = 0; inode < Base::bdrynen_; ++inode)
@@ -1864,8 +1866,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
   Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
 
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velaf'");
-  if (gridvel == Teuchos::null) dserror("Cannot get state vector 'gridv'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
+  if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
 
   std::vector<double> myvelnp(lm.size());
   CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
@@ -2049,7 +2051,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
-    dserror("NoPenetration is only implemented for 3D and 2D!");
+    FOUR_C_THROW("NoPenetration is only implemented for 3D and 2D!");
 
   // get integration rule
   const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
@@ -2071,7 +2073,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     mydispnp.resize(lm.size());
     CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
   }
-  dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
+  FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   for (int inode = 0; inode < Base::bdrynen_; ++inode)
@@ -2083,13 +2085,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
 
   condVector = discretization.GetState("condVector");
   if (condVector == Teuchos::null)
-    dserror("could not get state 'condVector'");
+    FOUR_C_THROW("could not get state 'condVector'");
   else
   {
     mycondVector.resize(lm.size());
     CORE::FE::ExtractMyValues(*condVector, mycondVector, lm);
   }
-  dsassert(mycondVector.size() != 0, "no condition IDs values for boundary element");
+  FOUR_C_ASSERT(mycondVector.size() != 0, "no condition IDs values for boundary element");
 
   // calculate normal
   CORE::LINALG::SerialDenseVector normal;
@@ -2148,8 +2150,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
 
-    if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
-    if (gridvel == Teuchos::null) dserror("Cannot get state vector 'gridv'");
+    if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
+    if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
 
     std::vector<double> myvelnp(lm.size());
     CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
@@ -2270,7 +2272,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     }
   }
   else
-    dserror("unknown coupling type for no penetration boundary condition");
+    FOUR_C_THROW("unknown coupling type for no penetration boundary condition");
 }
 
 template <CORE::FE::CellType distype>
@@ -2281,7 +2283,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
-    dserror("NoPenetration is only implemented for 3D and 2D!");
+    FOUR_C_THROW("NoPenetration is only implemented for 3D and 2D!");
 
   // get integration rule
   const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
@@ -2305,7 +2307,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
@@ -2313,7 +2315,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
         Base::xyze_(idim, inode) += mydispnp[Base::numdofpernode_ * inode + idim];
   }
   else
-    dserror("fluid poro element not an ALE element!");
+    FOUR_C_THROW("fluid poro element not an ALE element!");
 
   // calculate normal
   CORE::LINALG::SerialDenseVector normal;
@@ -2383,7 +2385,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       else
       {
-        dserror("expected combination line2/quad4 or line2/tri3 for line/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 or line2/tri3 for line/parent pair");
       }
       break;
     }
@@ -2395,7 +2397,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       else
       {
-        dserror("expected combination line3/quad9 for line/parent pair");
+        FOUR_C_THROW("expected combination line3/quad9 for line/parent pair");
       }
       break;
     }
@@ -2408,7 +2410,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       else
       {
-        dserror("expected combination nurbs3/nurbs9 for line/parent pair");
+        FOUR_C_THROW("expected combination nurbs3/nurbs9 for line/parent pair");
       }
       break;
     }
@@ -2421,7 +2423,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       else
       {
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       }
       break;
     }
@@ -2433,7 +2435,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       else
       {
-        dserror("expected combination tri3/tet4 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri3/tet4 for surface/parent pair");
       }
       break;
     }
@@ -2445,7 +2447,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       else
       {
-        dserror("expected combination tri6/tet10 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri6/tet10 for surface/parent pair");
       }
       break;
     }
@@ -2457,7 +2459,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       else
       {
-        dserror("expected combination hex27/hex27 for surface/parent pair");
+        FOUR_C_THROW("expected combination hex27/hex27 for surface/parent pair");
       }
       break;
     }
@@ -2470,13 +2472,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
       }
       else
       {
-        dserror("expected combination nurbs9/nurbs27 for line/parent pair");
+        FOUR_C_THROW("expected combination nurbs9/nurbs27 for line/parent pair");
       }
       break;
     }
     default:
     {
-      dserror("surface/parent element pair not yet implemented. Just do it.\n");
+      FOUR_C_THROW("surface/parent element pair not yet implemented. Just do it.\n");
       break;
     }
   }
@@ -2491,16 +2493,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
 {
   // This function is only implemented for 3D and 2D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
-    dserror("PoroBoundary is only implemented for 3D and 2D!");
+    FOUR_C_THROW("PoroBoundary is only implemented for 3D and 2D!");
 
   POROELAST::Coupltype coupling =
       params.get<POROELAST::Coupltype>("coupling", POROELAST::undefined);
-  if (coupling == POROELAST::undefined) dserror("no coupling defined for poro-boundary condition");
+  if (coupling == POROELAST::undefined)
+    FOUR_C_THROW("no coupling defined for poro-boundary condition");
   const bool offdiag(coupling == POROELAST::fluidstructure);
 
   // get timescale parameter from parameter list (depends on time integration scheme)
   double timescale = params.get<double>("timescale", -1.0);
-  if (timescale == -1.0 and offdiag) dserror("no timescale parameter in parameter list");
+  if (timescale == -1.0 and offdiag) FOUR_C_THROW("no timescale parameter in parameter list");
 
   // reset timescale in stationary case
   if (Base::fldparatimint_->IsStationary()) timescale = 0.0;
@@ -2539,8 +2542,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     CORE::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
   }
-  dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
-  dsassert(parentdispnp.size() != 0, "no displacement values for parent element");
+  FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
+  FOUR_C_ASSERT(parentdispnp.size() != 0, "no displacement values for parent element");
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   for (int inode = 0; inode < Base::bdrynen_; ++inode)
@@ -2568,8 +2571,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
   Teuchos::RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
 
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
-  if (gridvel == Teuchos::null) dserror("Cannot get state vector 'gridv'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
+  if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
 
   std::vector<double> myvelnp(lm.size());
   CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
@@ -2862,11 +2865,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
-    dserror("PressureCoupling is only implemented for 2D and 3D!");
+    FOUR_C_THROW("PressureCoupling is only implemented for 2D and 3D!");
 
   POROELAST::Coupltype coupling =
       params.get<POROELAST::Coupltype>("coupling", POROELAST::undefined);
-  if (coupling == POROELAST::undefined) dserror("no coupling defined for poro-boundary condition");
+  if (coupling == POROELAST::undefined)
+    FOUR_C_THROW("no coupling defined for poro-boundary condition");
   const bool offdiag(coupling == POROELAST::fluidstructure);
 
   // get integration rule
@@ -2891,7 +2895,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
@@ -2906,7 +2910,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
   // extract local values from the global vectors
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
 
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
   CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
@@ -3082,7 +3086,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       else
       {
-        dserror("expected combination line2/quad4 or line2/tri3 for line/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 or line2/tri3 for line/parent pair");
       }
       break;
     }
@@ -3095,7 +3099,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       else
       {
-        dserror("expected combination line3/quad9 for line/parent pair");
+        FOUR_C_THROW("expected combination line3/quad9 for line/parent pair");
       }
       break;
     }
@@ -3108,7 +3112,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       else
       {
-        dserror("expected combination nurbs3/nurbs9 for line/parent pair");
+        FOUR_C_THROW("expected combination nurbs3/nurbs9 for line/parent pair");
       }
       break;
     }
@@ -3122,7 +3126,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       else
       {
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       }
       break;
     }
@@ -3135,7 +3139,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       else
       {
-        dserror("expected combination tri3/tet4 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri3/tet4 for surface/parent pair");
       }
       break;
     }
@@ -3148,7 +3152,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       else
       {
-        dserror("expected combination tri6/tet10 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri6/tet10 for surface/parent pair");
       }
       break;
     }
@@ -3161,13 +3165,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       }
       else
       {
-        dserror("expected combination hex27/hex27 for surface/parent pair");
+        FOUR_C_THROW("expected combination hex27/hex27 for surface/parent pair");
       }
       break;
     }
     default:
     {
-      dserror("surface/parent element pair not yet implemented. Just do it.\n");
+      FOUR_C_THROW("surface/parent element pair not yet implemented. Just do it.\n");
       break;
     }
   }
@@ -3182,7 +3186,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
-    dserror("PressureCoupling is only implemented for 2D and 3D!");
+    FOUR_C_THROW("PressureCoupling is only implemented for 2D and 3D!");
 
   // get integration rule
   const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
@@ -3206,7 +3210,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
@@ -3222,7 +3226,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
   Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
 
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
   CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
@@ -3449,7 +3453,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       else
       {
-        dserror("expected combination line2/quad4 or line2/tri3 for line/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 or line2/tri3 for line/parent pair");
       }
       break;
     }
@@ -3462,7 +3466,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       else
       {
-        dserror("expected combination line3/quad9 for line/parent pair");
+        FOUR_C_THROW("expected combination line3/quad9 for line/parent pair");
       }
       break;
     }
@@ -3475,7 +3479,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       else
       {
-        dserror("expected combination nurbs3/nurbs9 for line/parent pair");
+        FOUR_C_THROW("expected combination nurbs3/nurbs9 for line/parent pair");
       }
       break;
     }
@@ -3489,7 +3493,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       else
       {
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       }
       break;
     }
@@ -3502,7 +3506,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       else
       {
-        dserror("expected combination tri3/tet4 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri3/tet4 for surface/parent pair");
       }
       break;
     }
@@ -3515,7 +3519,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       else
       {
-        dserror("expected combination tri6/tet10 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri6/tet10 for surface/parent pair");
       }
       break;
     }
@@ -3528,13 +3532,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       }
       else
       {
-        dserror("expected combination hex27/hex27 for surface/parent pair");
+        FOUR_C_THROW("expected combination hex27/hex27 for surface/parent pair");
       }
       break;
     }
     default:
     {
-      dserror("surface/parent element pair not yet implemented. Just do it.\n");
+      FOUR_C_THROW("surface/parent element pair not yet implemented. Just do it.\n");
       break;
     }
   }
@@ -3549,7 +3553,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
-    dserror("PressureCoupling is only implemented for 2D and 3D!");
+    FOUR_C_THROW("PressureCoupling is only implemented for 2D and 3D!");
 
   // get integration rule
   const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
@@ -3563,7 +3567,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
   // get timescale parameter from parameter list (depends on time integration scheme)
   double timescale = params.get<double>("timescale", -1.0);
-  if (timescale == -1.0) dserror("no timescale parameter in parameter list");
+  if (timescale == -1.0) FOUR_C_THROW("no timescale parameter in parameter list");
 
   // reset timescale in stationary case
   if (Base::fldparatimint_->IsStationary()) timescale = 0.0;
@@ -3580,7 +3584,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
@@ -3596,7 +3600,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
   Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
 
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
   CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
@@ -3620,7 +3624,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
   Teuchos::RCP<const Epetra_Vector> glambda = discretization.GetState("lambda");
 
-  if (glambda == Teuchos::null) dserror("Cannot get state vector 'lambda'");
+  if (glambda == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'lambda'");
 
   std::vector<double> mylambda(lm.size());
   CORE::FE::ExtractMyValues(*glambda, mylambda, lm);
@@ -4063,7 +4067,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       else
       {
-        dserror("expected combination line2/quad4 or line2/tri3 for line/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 or line2/tri3 for line/parent pair");
       }
       break;
     }
@@ -4076,7 +4080,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       else
       {
-        dserror("expected combination line3/quad9 for line/parent pair");
+        FOUR_C_THROW("expected combination line3/quad9 for line/parent pair");
       }
       break;
     }
@@ -4089,7 +4093,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       else
       {
-        dserror("expected combination nurbs3/nurbs9 for line/parent pair");
+        FOUR_C_THROW("expected combination nurbs3/nurbs9 for line/parent pair");
       }
       break;
     }
@@ -4103,7 +4107,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       else
       {
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       }
       break;
     }
@@ -4116,7 +4120,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       else
       {
-        dserror("expected combination tri3/tet4 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri3/tet4 for surface/parent pair");
       }
       break;
     }
@@ -4129,7 +4133,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       else
       {
-        dserror("expected combination tri6/tet10 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri6/tet10 for surface/parent pair");
       }
       break;
     }
@@ -4142,13 +4146,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       }
       else
       {
-        dserror("expected combination hex27/hex27 for surface/parent pair");
+        FOUR_C_THROW("expected combination hex27/hex27 for surface/parent pair");
       }
       break;
     }
     default:
     {
-      dserror("surface/parent element pair not yet implemented. Just do it.\n");
+      FOUR_C_THROW("surface/parent element pair not yet implemented. Just do it.\n");
       break;
     }
   }
@@ -4163,7 +4167,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
-    dserror("PressureCoupling is only implemented for 2D and 3D!");
+    FOUR_C_THROW("PressureCoupling is only implemented for 2D and 3D!");
 
   // get integration rule
   const CORE::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
@@ -4187,7 +4191,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
@@ -4203,7 +4207,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
   Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
 
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
   CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
@@ -4424,7 +4428,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       else
       {
-        dserror("expected combination line2/quad4 or line2/tri3 for line/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 or line2/tri3 for line/parent pair");
       }
       break;
     }
@@ -4437,7 +4441,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       else
       {
-        dserror("expected combination line3/quad9 for line/parent pair");
+        FOUR_C_THROW("expected combination line3/quad9 for line/parent pair");
       }
       break;
     }
@@ -4450,7 +4454,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       else
       {
-        dserror("expected combination nurbs3/nurbs9 for line/parent pair");
+        FOUR_C_THROW("expected combination nurbs3/nurbs9 for line/parent pair");
       }
       break;
     }
@@ -4464,7 +4468,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       else
       {
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       }
       break;
     }
@@ -4477,7 +4481,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       else
       {
-        dserror("expected combination tri3/tet4 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri3/tet4 for surface/parent pair");
       }
       break;
     }
@@ -4490,7 +4494,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       else
       {
-        dserror("expected combination tri6/tet10 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri6/tet10 for surface/parent pair");
       }
       break;
     }
@@ -4503,13 +4507,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       }
       else
       {
-        dserror("expected combination hex27/hex27 for surface/parent pair");
+        FOUR_C_THROW("expected combination hex27/hex27 for surface/parent pair");
       }
       break;
     }
     default:
     {
-      dserror("surface/parent element pair not yet implemented. Just do it.\n");
+      FOUR_C_THROW("surface/parent element pair not yet implemented. Just do it.\n");
       break;
     }
   }
@@ -4524,7 +4528,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
-    dserror("PressureCoupling is only implemented for 2D and 3D!");
+    FOUR_C_THROW("PressureCoupling is only implemented for 2D and 3D!");
 
   // get element location vector and ownerships
   std::vector<int> lm;
@@ -4554,7 +4558,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "no displacement values for boundary element");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode = 0; inode < Base::bdrynen_; ++inode)
@@ -4570,7 +4574,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
   Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
 
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
   CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);

@@ -197,7 +197,7 @@ namespace ADAPTER
      */
     virtual Teuchos::RCP<const CORE::LINALG::SparseOperator> AssembleFluidCouplingMatrix() const
     {
-      dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
+      FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
     };
 
@@ -211,7 +211,7 @@ namespace ADAPTER
      */
     virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const
     {
-      dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
+      FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
     };
 
@@ -225,7 +225,7 @@ namespace ADAPTER
      */
     virtual Teuchos::RCP<Epetra_Vector> AssembleStructureCouplingResidual() const
     {
-      dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
+      FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
     };
 
@@ -239,7 +239,7 @@ namespace ADAPTER
      */
     virtual Teuchos::RCP<Epetra_Vector> AssembleFluidCouplingResidual() const
     {
-      dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
+      FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
     };
 

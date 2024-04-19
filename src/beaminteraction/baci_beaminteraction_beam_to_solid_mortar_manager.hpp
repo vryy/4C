@@ -195,7 +195,7 @@ namespace BEAMINTERACTION
      */
     inline void CheckSetup() const
     {
-      if (!is_setup_) dserror("Setup not called on BeamToSolidMortarManager!");
+      if (!is_setup_) FOUR_C_THROW("Setup not called on BeamToSolidMortarManager!");
     }
 
     /**
@@ -203,7 +203,8 @@ namespace BEAMINTERACTION
      */
     inline void CheckGlobalMaps() const
     {
-      if (!is_global_maps_build_) dserror("Global maps are not build in BeamToSolidMortarManager!");
+      if (!is_global_maps_build_)
+        FOUR_C_THROW("Global maps are not build in BeamToSolidMortarManager!");
     }
 
     /**
@@ -211,7 +212,8 @@ namespace BEAMINTERACTION
      */
     inline void CheckLocalMaps() const
     {
-      if (!is_local_maps_build_) dserror("Local maps are not build in BeamToSolidMortarManager!");
+      if (!is_local_maps_build_)
+        FOUR_C_THROW("Local maps are not build in BeamToSolidMortarManager!");
     }
 
     /**

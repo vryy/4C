@@ -64,7 +64,7 @@ static void pop_map_node(MAP_ITERATOR* iterator)
 
   if (iterator->stack.count == 0)
   {
-    dserror("map iterator stack empty");
+    FOUR_C_THROW("map iterator stack empty");
   }
   else
   {

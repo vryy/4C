@@ -196,7 +196,7 @@ void MAT::Robinson::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Robinson*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -246,7 +246,8 @@ void MAT::Robinson::Unpack(const std::vector<char>& data)
     backstresscurr_->push_back(tmp);
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 
@@ -691,7 +692,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,      // (i) time st
   if (fabs(kksq) <= 1e-10)  // shrthrshld = kksq
   {
     ff = -1.0;
-    dserror("Division by zero: Shear threshold very close to zero");
+    FOUR_C_THROW("Division by zero: Shear threshold very close to zero");
   }
   else
   {
@@ -708,7 +709,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,      // (i) time st
     // calculate theta1 used for the material constant \bar{\mu}
     // \bar{\mu} = (23.8 . tempnp - 2635.0) . (1.0/811.0 - 1.0/tempnp)), vgl. (14)
     double th1 = (23.8 * tempnp - 2635.0) * (1.0 / 811.0 - 1.0 / tempnp);
-    if (std::isinf(th1)) dserror("Infinite theta1");
+    if (std::isinf(th1)) FOUR_C_THROW("Infinite theta1");
     // theory is the same as in literature, but present implementation differs, e.g.,
     // here: A == \bar{\mu} = 0.5/(mu exp(theta1)) = 1/(2 mu exp(theta1)
     // cf. Arya: \bar{\mu} := \mu . exp(- theta1), vgl. (12), f(F) includes mu
@@ -1072,7 +1073,7 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   if (fabs(kk0sq) <= 1e-10)
   {
     gg = 0.0;
-    dserror("Division by zero: Shear threshold very close to zero");
+    FOUR_C_THROW("Division by zero: Shear threshold very close to zero");
   }
   // K_0^2 > 1.0E-10
   else  // (fabs(kk0sq) > 1e-10)

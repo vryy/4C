@@ -115,12 +115,12 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
     {
       DRT::ELEMENTS::Transport* element =
           dynamic_cast<DRT::ELEMENTS::Transport*>(discret_->lColElement(i));
-      if (element == nullptr) dserror("Invalid element type!");
+      if (element == nullptr) FOUR_C_THROW("Invalid element type!");
 
       if (element->Material()->MaterialType() == INPAR::MAT::m_matlist_reactions)
         element->SetImplType(INPAR::SCATRA::impltype_advreac);
       else
-        dserror("Invalid material type for HeterogeneousReactionStrategy!");
+        FOUR_C_THROW("Invalid material type for HeterogeneousReactionStrategy!");
     }  // loop over all column elements
   }
 
@@ -242,7 +242,7 @@ void SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionSanityCheck()
 
         if (not slave_cond->ContainsNode(node_gid))
         {
-          dserror(
+          FOUR_C_THROW(
               "Surface discretization for membrane transport is "
               "supposed to wear ScatraHeteroReactionSlave condition!");
         }
@@ -263,7 +263,7 @@ void SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionSanityCheck()
 
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "please implement check for new combination of volume transport "
           "- surface transport elements.");
     }

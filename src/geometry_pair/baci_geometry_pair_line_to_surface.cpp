@@ -38,7 +38,7 @@ GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GeometryPai
   int myrank = -1;
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
   if (element1->Owner() != myrank)
-    dserror(
+    FOUR_C_THROW(
         "The GeometryPairLineToSurface pair has to be on the same processor as the line element! "
         "Currently the pair is on rank %d, the line element on %d!",
         myrank, element1->Owner());
@@ -207,13 +207,13 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
   // Check the input parameters.
   {
     if (surface::geometry_type_ == DiscretizationTypeGeometry::quad && fixed_parameter > 1)
-      dserror(
+      FOUR_C_THROW(
           "Fixed_parameter in IntersectLineWithSurfaceEdge has to be smaller than 2 with a "
           "quad element.");
     else if (surface::geometry_type_ == DiscretizationTypeGeometry::none)
-      dserror("Wrong DiscretizationTypeGeometry type given.");
+      FOUR_C_THROW("Wrong DiscretizationTypeGeometry type given.");
     else if (fixed_parameter > 2)
-      dserror("fixed_parameter in IntersectLineWithSurfaceEdge can be 2 at maximum.");
+      FOUR_C_THROW("fixed_parameter in IntersectLineWithSurfaceEdge can be 2 at maximum.");
   }
 
   // Approximated size of surface and beam diameter for valid projection check.
@@ -412,7 +412,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetFac
   }
   else
   {
-    dserror("Wrong DiscretizationTypeGeometry given!");
+    FOUR_C_THROW("Wrong DiscretizationTypeGeometry given!");
   }
 }
 

@@ -45,7 +45,7 @@ void DRT::ELEMENTS::FluidRuntimeOutputParams::Init(
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidRuntimeOutputParams::Setup()
 {
-  if (not IsInit()) dserror("Init() has not been called, yet!");
+  if (not IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -56,7 +56,7 @@ void DRT::ELEMENTS::FluidRuntimeOutputParams::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidRuntimeOutputParams::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+  if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

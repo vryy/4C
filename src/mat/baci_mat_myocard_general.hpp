@@ -34,7 +34,7 @@ class MyocardGeneral
   {
     if (gp > 0)
     {
-      dserror("Multiple Gauss points only implemented for MV and FHN model");
+      FOUR_C_THROW("Multiple Gauss points only implemented for MV and FHN model");
       return 0.;
     }
 
@@ -53,7 +53,7 @@ class MyocardGeneral
   {
     if (gp > 0)
     {
-      dserror("Multiple Gauss points only implemented for MV and FHN model");
+      FOUR_C_THROW("Multiple Gauss points only implemented for MV and FHN model");
       return 0.;
     }
 
@@ -72,7 +72,7 @@ class MyocardGeneral
   {
     if (gp > 0)
     {
-      dserror("Multiple Gauss points only implemented for MV and FHN model");
+      FOUR_C_THROW("Multiple Gauss points only implemented for MV and FHN model");
       return 0.;
     }
     else
@@ -86,7 +86,7 @@ class MyocardGeneral
   virtual void SetInternalState(const int k, const double val, int gp)
   {
     if (gp > 0)
-      dserror("Multiple Gauss points only implemented for MV and FHN model");
+      FOUR_C_THROW("Multiple Gauss points only implemented for MV and FHN model");
     else
       SetInternalState(k, val);
 
@@ -102,14 +102,14 @@ class MyocardGeneral
   ///  return ionic currents
   virtual double GetIonicCurrents(const int k, int gp) const
   {
-    dserror("Multiple Gauss Points only implemented for MV and FHN model");
+    FOUR_C_THROW("Multiple Gauss Points only implemented for MV and FHN model");
     return 0.;
   };
 
   // resize internal state variables if number of Gauss point changes
   virtual void ResizeInternalStateVariables(int gp)
   {
-    dserror("Multiple Gauss Points only implemented for MV and FHN model");
+    FOUR_C_THROW("Multiple Gauss Points only implemented for MV and FHN model");
     return;
   };
 

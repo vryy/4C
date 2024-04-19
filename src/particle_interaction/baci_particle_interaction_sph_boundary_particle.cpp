@@ -66,7 +66,8 @@ void PARTICLEINTERACTION::SPHBoundaryParticleBase::Setup(
 
   // safety check
   if (boundarytypes_.empty())
-    dserror("no boundary or rigid particles defined but a boundary particle formulation is set!");
+    FOUR_C_THROW(
+        "no boundary or rigid particles defined but a boundary particle formulation is set!");
 }
 
 PARTICLEINTERACTION::SPHBoundaryParticleAdami::SPHBoundaryParticleAdami(

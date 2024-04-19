@@ -49,7 +49,7 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
           element1, element2, line_to_3d_evaluation_data));
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "The given geometry pair strategy is not universally valid. You might want to create "
           "your pair directly if you need certain features (for example cross section "
           "projection)!");
@@ -111,7 +111,7 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
           element1, element2, line_to_surface_evaluation_data));
     default:
     {
-      dserror("The given geometry pair strategy is not valid.");
+      FOUR_C_THROW("The given geometry pair strategy is not valid.");
       return Teuchos::null;
     }
   }

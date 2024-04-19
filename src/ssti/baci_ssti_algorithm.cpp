@@ -74,7 +74,7 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
 
   // safety check
   if (structparams.get<std::string>("INT_STRATEGY") == "Old")
-    dserror("Old structural time integration is not supported");
+    FOUR_C_THROW("Old structural time integration is not supported");
 
   struct_adapterbase_ptr_ = ADAPTER::BuildStructureAlgorithm(structparams);
 
@@ -103,26 +103,28 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
   Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
   Teuchos::RCP<DRT::DofSetInterface> structdofset = structuredis->GetDofSetProxy();
   Teuchos::RCP<DRT::DofSetInterface> thermodofset = thermodis->GetDofSetProxy();
-  if (scatradis->AddDofSet(structdofset) != 1) dserror("unexpected dof sets in scatra field");
-  if (scatradis->AddDofSet(thermodofset) != 2) dserror("unexpected dof sets in scatra field");
-  if (structuredis->AddDofSet(scatradofset) != 1) dserror("unexpected dof sets in structure field");
-  if (structuredis->AddDofSet(thermodofset) != 2) dserror("unexpected dof sets in structure field");
-  if (thermodis->AddDofSet(structdofset) != 1) dserror("unexpected dof sets in thermo field");
-  if (thermodis->AddDofSet(scatradofset) != 2) dserror("unexpected dof sets in thermo field");
-  if (thermodis->AddDofSet(thermodofset) != 3) dserror("unexpected dof sets in thermo field");
+  if (scatradis->AddDofSet(structdofset) != 1) FOUR_C_THROW("unexpected dof sets in scatra field");
+  if (scatradis->AddDofSet(thermodofset) != 2) FOUR_C_THROW("unexpected dof sets in scatra field");
+  if (structuredis->AddDofSet(scatradofset) != 1)
+    FOUR_C_THROW("unexpected dof sets in structure field");
+  if (structuredis->AddDofSet(thermodofset) != 2)
+    FOUR_C_THROW("unexpected dof sets in structure field");
+  if (thermodis->AddDofSet(structdofset) != 1) FOUR_C_THROW("unexpected dof sets in thermo field");
+  if (thermodis->AddDofSet(scatradofset) != 2) FOUR_C_THROW("unexpected dof sets in thermo field");
+  if (thermodis->AddDofSet(thermodofset) != 3) FOUR_C_THROW("unexpected dof sets in thermo field");
 
   // is adaptive time stepping activated?
   if (CORE::UTILS::IntegralValue<bool>(sstitimeparams, "ADAPTIVE_TIMESTEPPING"))
   {
     // safety check: adaptive time stepping in one of the subproblems?
     if (!CORE::UTILS::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
-      dserror(
+      FOUR_C_THROW(
           "Must provide adaptive time stepping in one of the subproblems. (Currently just ScaTra)");
     if (CORE::UTILS::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
         INPAR::STR::timada_kind_none)
-      dserror("Adaptive time stepping in SSI currently just from ScaTra");
+      FOUR_C_THROW("Adaptive time stepping in SSI currently just from ScaTra");
     if (CORE::UTILS::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
-      dserror("Currently, only one step methods are allowed for adaptive time stepping");
+      FOUR_C_THROW("Currently, only one step methods are allowed for adaptive time stepping");
   }
 
   // now we can finally fill our discretizations
@@ -161,15 +163,16 @@ void SSTI::SSTIAlgorithm::Setup()
   if (structure_ == Teuchos::null)
     structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
         struct_adapterbase_ptr_->StructureField());
-  if (structure_ == Teuchos::null) dserror("No valid pointer to ADAPTER::SSIStructureWrapper !");
+  if (structure_ == Teuchos::null)
+    FOUR_C_THROW("No valid pointer to ADAPTER::SSIStructureWrapper !");
 
   // check maps from subproblems
   if (scatra_->ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
-    dserror("Scalar transport discretization does not have any degrees of freedom!");
+    FOUR_C_THROW("Scalar transport discretization does not have any degrees of freedom!");
   if (thermo_->ScaTraField()->DofRowMap()->NumGlobalElements() == 0)
-    dserror("Scalar transport discretization does not have any degrees of freedom!");
+    FOUR_C_THROW("Scalar transport discretization does not have any degrees of freedom!");
   if (structure_->DofRowMap()->NumGlobalElements() == 0)
-    dserror("Structure discretization does not have any degrees of freedom!");
+    FOUR_C_THROW("Structure discretization does not have any degrees of freedom!");
 
   // set up materials
   AssignMaterialPointers();
@@ -187,17 +190,17 @@ void SSTI::SSTIAlgorithm::Setup()
 
     // safety checks
     if (meshtying_strategy_scatra_ == Teuchos::null)
-      dserror("Invalid scatra-scatra interface coupling strategy!");
+      FOUR_C_THROW("Invalid scatra-scatra interface coupling strategy!");
     if (meshtying_strategy_scatra_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
-      dserror("SSTI only implemented for interface coupling with matching interface nodes!");
+      FOUR_C_THROW("SSTI only implemented for interface coupling with matching interface nodes!");
 
     // extract meshtying strategy for scatra-scatra interface coupling on thermo discretization
     meshtying_strategy_thermo_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(
         thermo_->ScaTraField()->Strategy());
     if (meshtying_strategy_thermo_ == Teuchos::null)
-      dserror("Invalid scatra-scatra interface coupling strategy!");
+      FOUR_C_THROW("Invalid scatra-scatra interface coupling strategy!");
     if (meshtying_strategy_thermo_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
-      dserror("SSTI only implemented for interface coupling with matching interface nodes!");
+      FOUR_C_THROW("SSTI only implemented for interface coupling with matching interface nodes!");
 
     // setup everything for SSTI structure meshtying
     ssti_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTying(
@@ -229,7 +232,7 @@ void SSTI::SSTIAlgorithm::CloneDiscretizations(const Epetra_Comm& comm)
     thermodis->FillComplete();
   }
   else
-    dserror("Only matching nodes in SSTI");
+    FOUR_C_THROW("Only matching nodes in SSTI");
 }
 
 /*----------------------------------------------------------------------*
@@ -415,7 +418,7 @@ Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSTI::SSTIAlgorithm::ThermoField() const
 /*----------------------------------------------------------------------*/
 void SSTI::SSTIAlgorithm::CheckIsInit()
 {
-  if (not isinit_) dserror("Init(...) was not called.");
+  if (not isinit_) FOUR_C_THROW("Init(...) was not called.");
 }
 
 /*----------------------------------------------------------------------*/
@@ -438,7 +441,7 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::CloneThermoParams(
       break;
     }
     default:
-      dserror("Initial field type for thermo not supported");
+      FOUR_C_THROW("Initial field type for thermo not supported");
   }
 
   thermoparams_copy.set<int>("INITFUNCNO", thermoparams.get<int>("INITTHERMOFUNCT"));
@@ -468,7 +471,7 @@ Teuchos::RCP<SSTI::SSTIAlgorithm> SSTI::BuildSSTI(INPAR::SSTI::SolutionScheme co
       break;
     }
     default:
-      dserror("unknown coupling algorithm for SSTI!");
+      FOUR_C_THROW("unknown coupling algorithm for SSTI!");
   }
   return ssti;
 }

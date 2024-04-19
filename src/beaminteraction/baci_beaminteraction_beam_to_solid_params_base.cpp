@@ -57,7 +57,7 @@ void BEAMINTERACTION::BeamToSolidParamsBase::SetBaseParams(
     // Penalty parameter.
     penalty_parameter_ = beam_to_solid_params_list.get<double>("PENALTY_PARAMETER");
     if (penalty_parameter_ < 0.0)
-      dserror("beam-to-volume-meshtying penalty parameter must not be negative!");
+      FOUR_C_THROW("beam-to-volume-meshtying penalty parameter must not be negative!");
 
     // Gauss rule for integration along the beam (segments).
     gauss_rule_ =

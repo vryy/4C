@@ -99,7 +99,7 @@ void CONTACT::AUG::Potential::Compute()
 {
   if (isvalid_.potential_) return;
 
-  if (not issetup_) dserror("Call Setup() first!");
+  if (not issetup_) FOUR_C_THROW("Call Setup() first!");
 
   const Epetra_Vector& cn = data_.Cn();
 
@@ -144,7 +144,7 @@ void CONTACT::AUG::Potential::ComputeLin(const Epetra_Vector& dir)
 
   if (not isvalid_.potential_) Compute();
 
-  if (not isvalid_.state_) dserror("Call SetState() first!");
+  if (not isvalid_.state_) FOUR_C_THROW("Call SetState() first!");
 
   Teuchos::RCP<Epetra_Vector> dincrSlMa =
       Teuchos::rcp(new Epetra_Vector(*data_.GSlMaDofRowMapPtr(), true));
@@ -178,7 +178,7 @@ void CONTACT::AUG::Potential::ComputeLinActive(
   Epetra_Vector gradWGapD(*data_.GActiveNDofRowMapPtr());
 
   int err = data_.DLmNWGapLinMatrixPtr()->Multiply(false, dincrSlMa, gradWGapD);
-  if (err) dserror("Vector-matrix multiplication failed! (err=%d)", err);
+  if (err) FOUR_C_THROW("Vector-matrix multiplication failed! (err=%d)", err);
 
   // --------------------------------------------------------------------------
   // Potential: Active contributions
@@ -253,7 +253,7 @@ double CONTACT::AUG::Potential::GetTimeIntegrationFactor() const
 double CONTACT::AUG::Potential::Get(
     enum POTENTIAL::Type pot_type, enum POTENTIAL::SetType pot_set) const
 {
-  if (not isvalid_.potential_) dserror("Call Compute() first!");
+  if (not isvalid_.potential_) FOUR_C_THROW("Call Compute() first!");
 
   switch (pot_type)
   {
@@ -264,7 +264,7 @@ double CONTACT::AUG::Potential::Get(
     case POTENTIAL::Type::infeasibility_measure:
       return GetInfeasibilityMeasure(pot_set);
     default:
-      dserror("Unknown POTENTIAL::Type enumerator ( enum = %d )", pot_type);
+      FOUR_C_THROW("Unknown POTENTIAL::Type enumerator ( enum = %d )", pot_type);
       exit(EXIT_FAILURE);
   }
 
@@ -276,7 +276,7 @@ double CONTACT::AUG::Potential::Get(
 double CONTACT::AUG::Potential::GetLin(enum POTENTIAL::Type pot_type,
     enum POTENTIAL::SetType pot_set, enum POTENTIAL::LinTerm lin_term) const
 {
-  if (not isvalid_.linearization_) dserror("Call ComputeLin() first!");
+  if (not isvalid_.linearization_) FOUR_C_THROW("Call ComputeLin() first!");
 
   switch (pot_type)
   {
@@ -287,7 +287,7 @@ double CONTACT::AUG::Potential::GetLin(enum POTENTIAL::Type pot_type,
     case POTENTIAL::Type::infeasibility_measure:
       return GetInfeasibilityMeasureLin(lin_term, pot_set);
     default:
-      dserror("Unknown POTENTIAL::Type enumerator ( enum = %d )", pot_type);
+      FOUR_C_THROW("Unknown POTENTIAL::Type enumerator ( enum = %d )", pot_type);
       exit(EXIT_FAILURE);
   }
 
@@ -321,7 +321,7 @@ double CONTACT::AUG::Potential::GetLagrangian(enum POTENTIAL::SetType pot_set) c
       break;
     }
     default:
-      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      FOUR_C_THROW("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
       exit(EXIT_FAILURE);
   }
 
@@ -356,7 +356,7 @@ double CONTACT::AUG::Potential::GetLagrangianLin(
       val += GetInactiveLagrangianLin(lin_term);
       break;
     default:
-      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      FOUR_C_THROW("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
       exit(EXIT_FAILURE);
   }
 
@@ -383,7 +383,7 @@ double CONTACT::AUG::Potential::GetActiveLagrangianLin(const enum POTENTIAL::Lin
       val = 0.0;
       break;
     default:
-      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      FOUR_C_THROW("Unknown LinTerm enumerator ( enum = %d )", lin_term);
       exit(EXIT_FAILURE);
   }
   return TimeIntScaleNp(val);
@@ -404,7 +404,7 @@ double CONTACT::AUG::Potential::GetInactiveLagrangianLin(
     case POTENTIAL::LinTerm::wrt_d_and_z:
       return 0.0;
     default:
-      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      FOUR_C_THROW("Unknown LinTerm enumerator ( enum = %d )", lin_term);
       exit(EXIT_FAILURE);
   }
 }
@@ -437,7 +437,7 @@ double CONTACT::AUG::Potential::GetAugmentedLagrangian(enum POTENTIAL::SetType p
       break;
     }
     default:
-      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      FOUR_C_THROW("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
       exit(EXIT_FAILURE);
   }
 
@@ -464,7 +464,7 @@ double CONTACT::AUG::Potential::GetAugmentedLagrangianLin(
       val += GetInactiveAugmentedLagrangianLin(lin_term);
       break;
     default:
-      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      FOUR_C_THROW("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
       exit(EXIT_FAILURE);
   }
 
@@ -492,7 +492,7 @@ double CONTACT::AUG::Potential::GetActiveAugmentedLagrangianLin(
       val = 0.0;
       break;
     default:
-      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      FOUR_C_THROW("Unknown LinTerm enumerator ( enum = %d )", lin_term);
       exit(EXIT_FAILURE);
   }
 
@@ -514,7 +514,7 @@ double CONTACT::AUG::Potential::GetInactiveAugmentedLagrangianLin(
     case POTENTIAL::LinTerm::wrt_d_and_z:
       return 0.0;
     default:
-      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      FOUR_C_THROW("Unknown LinTerm enumerator ( enum = %d )", lin_term);
       exit(EXIT_FAILURE);
   }
 }
@@ -546,7 +546,7 @@ double CONTACT::AUG::Potential::GetInfeasibilityMeasure(enum POTENTIAL::SetType 
       break;
     }
     default:
-      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      FOUR_C_THROW("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
       exit(EXIT_FAILURE);
   }
 
@@ -573,7 +573,7 @@ double CONTACT::AUG::Potential::GetInfeasibilityMeasureLin(
       val += GetInactiveInfeasibilityMeasureLin(lin_term);
       break;
     default:
-      dserror("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
+      FOUR_C_THROW("Unknown POTENTIAL::SetType enumerator ( enum = %d )", pot_set);
       exit(EXIT_FAILURE);
   }
 
@@ -594,7 +594,7 @@ double CONTACT::AUG::Potential::GetActiveInfeasibilityMeasureLin(
     case POTENTIAL::LinTerm::wrt_z_and_z:
       return 0.0;
     default:
-      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      FOUR_C_THROW("Unknown LinTerm enumerator ( enum = %d )", lin_term);
       exit(EXIT_FAILURE);
   }
 }
@@ -613,7 +613,7 @@ double CONTACT::AUG::Potential::GetInactiveInfeasibilityMeasureLin(
     case POTENTIAL::LinTerm::wrt_z_and_z:
       return 0.0;
     default:
-      dserror("Unknown LinTerm enumerator ( enum = %d )", lin_term);
+      FOUR_C_THROW("Unknown LinTerm enumerator ( enum = %d )", lin_term);
       exit(EXIT_FAILURE);
   }
 }

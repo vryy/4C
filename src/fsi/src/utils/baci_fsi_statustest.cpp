@@ -50,25 +50,25 @@ double NOX::FSI::GenericNormF::computeNorm(const Epetra_Vector& v)
   {
     case ::NOX::Abstract::Vector::TwoNorm:
       err = v.Norm2(&norm);
-      if (err != 0) dserror("norm failed");
+      if (err != 0) FOUR_C_THROW("norm failed");
       if (scaleType_ == Scaled) norm /= sqrt(1.0 * n);
       break;
 
     case ::NOX::Abstract::Vector::OneNorm:
       err = v.Norm1(&norm);
-      if (err != 0) dserror("norm failed");
+      if (err != 0) FOUR_C_THROW("norm failed");
       if (scaleType_ == Scaled) norm /= n;
       break;
 
     case ::NOX::Abstract::Vector::MaxNorm:
       err = v.NormInf(&norm);
-      if (err != 0) dserror("norm failed");
+      if (err != 0) FOUR_C_THROW("norm failed");
       if (scaleType_ == Scaled)
-        dserror("It does not make sense to scale a MaxNorm by the vector length.");
+        FOUR_C_THROW("It does not make sense to scale a MaxNorm by the vector length.");
       break;
 
     default:
-      dserror("norm type confusion");
+      FOUR_C_THROW("norm type confusion");
       break;
   }
 
@@ -337,11 +337,11 @@ double NOX::FSI::GenericNormUpdate::computeNorm(const Epetra_Vector& v)
     case ::NOX::Abstract::Vector::MaxNorm:
       normUpdate_ = vec.norm(normType_);
       if (scaleType_ == Scaled)
-        dserror("It does not make sense to scale a MaxNorm by the vector length.");
+        FOUR_C_THROW("It does not make sense to scale a MaxNorm by the vector length.");
       break;
 
     default:
-      dserror("norm type confusion");
+      FOUR_C_THROW("norm type confusion");
       break;
   }
 

@@ -31,7 +31,7 @@ namespace
     // catch errors if time is smaller or larger than the time range
     if (upper_bound_time == time_value_pairs.begin() || upper_bound_time == time_value_pairs.end())
     {
-      dserror(
+      FOUR_C_THROW(
           "Linear interpolation failed. The given time %f is outside the range of provided "
           "time-value pairs.",
           time);
@@ -76,7 +76,7 @@ void MAT::UTILS::MUSCLE::EvaluateLambert(
   // error handling
   if (numiter >= maxiter)
   {
-    dserror(
+    FOUR_C_THROW(
         "Maximal number of iterations for evaluation of Lambert W function with Halley's method "
         "exceeded for tolerance %E.",
         tol);
@@ -374,7 +374,7 @@ double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(const d
 
   // ft needs to be in interval [0, 1]
   if (ft < 0.00 || ft > 1.00)
-    dserror(
+    FOUR_C_THROW(
         "Function value not physical, please prescribe a function with values in interval [0,1].");
 
   const double sigma_max_ft = sigma_max * ft;
@@ -391,13 +391,14 @@ double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByMap(const dou
 
   if (it == activation_map.end())
   {
-    dserror("Key (element id) %d not found in activation map.", activation_map_key);
+    FOUR_C_THROW("Key (element id) %d not found in activation map.", activation_map_key);
   }
   const double ft = LineralyInterpolateBetweenTimes(it->second, t_current);
 
   // ft needs to be in interval [0, 1]
   if (ft < 0.00 || ft > 1.00)
-    dserror("Function value not physical, please prescribe activation values in interval [0,1].");
+    FOUR_C_THROW(
+        "Function value not physical, please prescribe activation values in interval [0,1].");
 
   const double sigma_max_ft = sigma_max * ft;
 

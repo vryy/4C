@@ -36,7 +36,8 @@ MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
 // Create an instance of the constituent from the parameters
 Teuchos::RCP<MAT::Material> MIXTURE::PAR::MixtureConstituent::CreateMaterial()
 {
-  dserror("Cannot create mixture constituent from this method. Use CreateConstituent() instead.");
+  FOUR_C_THROW(
+      "Cannot create mixture constituent from this method. Use CreateConstituent() instead.");
 }
 
 // Create the parameters of the constituents from the material number and the reference mass
@@ -46,13 +47,13 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
   // for the sake of safety
   if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
   {
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }
 
   // yet another safety check
   if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
   {
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
   }
 
   // retrieve problem instance to read from
@@ -123,7 +124,8 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
     default:
       break;
   }
-  dserror("The referenced material with id %d is not registered as a Mixture Constituent!", matnum);
+  FOUR_C_THROW(
+      "The referenced material with id %d is not registered as a Mixture Constituent!", matnum);
 }
 
 MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params, int id)
@@ -135,7 +137,7 @@ MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent
 void MIXTURE::MixtureConstituent::ReadElement(int numgp, INPUT::LineDefinition* linedef)
 {
   // Init must only be called once
-  if (has_read_element_) dserror("ReadElement() is called multiple times. Just once allowed.");
+  if (has_read_element_) FOUR_C_THROW("ReadElement() is called multiple times. Just once allowed.");
   has_read_element_ = true;
   numgp_ = numgp;
 }
@@ -144,10 +146,10 @@ void MIXTURE::MixtureConstituent::ReadElement(int numgp, INPUT::LineDefinition* 
 void MIXTURE::MixtureConstituent::Setup(Teuchos::ParameterList& params, const int eleGID)
 {
   // Setup must be called after Init()
-  if (!has_read_element_) dserror("ReadElement() must be called before Setup()");
+  if (!has_read_element_) FOUR_C_THROW("ReadElement() must be called before Setup()");
 
   // Setup must only be called once
-  if (is_setup_) dserror("Setup() is called multiple times. Just once allowed.");
+  if (is_setup_) FOUR_C_THROW("Setup() is called multiple times. Just once allowed.");
   is_setup_ = true;
 }
 
@@ -178,7 +180,7 @@ void MIXTURE::MixtureConstituent::EvaluateElasticPart(const CORE::LINALG::Matrix
     const CORE::LINALG::Matrix<3, 3>& F_in, Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
-  dserror("This constituent cannot handle an additional inelastic part.");
+  FOUR_C_THROW("This constituent cannot handle an additional inelastic part.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

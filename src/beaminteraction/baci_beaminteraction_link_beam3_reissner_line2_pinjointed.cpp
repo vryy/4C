@@ -108,7 +108,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
     std::cout << "\ninitbspotpos2 =";
     initpos[1].Print(std::cout);
 
-    dserror(
+    FOUR_C_THROW(
         "Initialization of BeamLinkPinJointed failed because the two given binding "
         "spot positions are almost identical, i.e. extremely short linker!");
   }
@@ -154,7 +154,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
     std::cout << "\nsecond_base_vecor_linkerele = ";
     second_base_vecor_linkerele.Print(std::cout);
 
-    dserror(
+    FOUR_C_THROW(
         "Initialization of BeamLinkPinJointed failed because the second base vector of the"
         "linker element's triad has almost length zero!");
   }
@@ -184,7 +184,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Init(int id,
     std::cout << "\nthird_base_vecor_linkerele = ";
     third_base_vecor_linkerele.Print(std::cout);
 
-    dserror(
+    FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed failed because the third base vector of the"
         "linker element's triad is no unit vector!");
   }
@@ -301,7 +301,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Unpack(const std::vector<ch
     CORE::COMM::ParObject* object = CORE::COMM::Factory(dataele);  // Unpack is done here
     DRT::ELEMENTS::Beam3r* linkele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(object);
     if (linkele == nullptr)
-      dserror("failed to unpack Beam3r object within BeamLinkBeam3rLine2PinJointed");
+      FOUR_C_THROW("failed to unpack Beam3r object within BeamLinkBeam3rLine2PinJointed");
     linkele_ = Teuchos::rcp(linkele);
   }
   else
@@ -358,7 +358,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateStiff(
 
   // Todo the linearization is incomplete yet. fix this or delete related code and
   // resort to truss linker element
-  dserror(
+  FOUR_C_THROW(
       "we miss stiffness contributions from rotation of the nodal triads here! "
       "implement the transformation matrices that describe the dependency of triad "
       "rotation on current position of binding spots, i.e. nodal positions and "
@@ -405,7 +405,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateForceStiff(
 
   // Todo the linearization is incomplete yet. fix this or delete related code and
   // resort to truss linker element
-  dserror(
+  FOUR_C_THROW(
       "we miss stiffness contributions from rotation of the nodal triads here! "
       "implement the transformation matrices that describe the dependency of triad "
       "rotation on current position of binding spots, i.e. nodal positions and "
@@ -472,7 +472,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
     std::cout << "\ninitbspottriad2 =";
     GetBindSpotPos2().Print(std::cout);
 
-    dserror(
+    FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed failed because the two given binding "
         "spot positions are almost identical!");
   }
@@ -523,7 +523,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
     std::cout << "\nsecond_base_vecor_linkerele = ";
     second_base_vecor_linkerele.Print(std::cout);
 
-    dserror(
+    FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed failed because the second base vector of the"
         "linker element's triad has almost length zero!");
   }
@@ -557,7 +557,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
     std::cout << "\nthird_base_vecor_linkerele = ";
     third_base_vecor_linkerele.Print(std::cout);
 
-    dserror(
+    FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed failed because the third base vector of the"
         "linker element's triad is no unit vector!");
   }

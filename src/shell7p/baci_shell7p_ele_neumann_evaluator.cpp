@@ -39,7 +39,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(DRT::Element& ele,
       return EvaluateNeumann<CORE::FE::CellType::tri6>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
     default:
-      dserror(
+      FOUR_C_THROW(
           "The discretization type you are trying to evaluate the Neumann condition for is not yet "
           "implemented in EvaluateNeumannByElement.");
   }
@@ -124,7 +124,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
   }
   else
   {
-    dserror("Unknown type of SurfaceNeumann condition");
+    FOUR_C_THROW("Unknown type of SurfaceNeumann condition");
   }
   // get values and switches from the condition
   const auto& onoff = *condition.Get<std::vector<int>>("onoff");
@@ -132,13 +132,14 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
 
   // ensure that at least as many curves/functs as dofs are available
   if (onoff.size() < DETAIL::node_dof)
-    dserror("Fewer functions or curves defined than the element's nodal degree of freedoms (6).");
+    FOUR_C_THROW(
+        "Fewer functions or curves defined than the element's nodal degree of freedoms (6).");
 
   for (std::size_t checkdof = num_dim; checkdof < onoff.size(); ++checkdof)
   {
     if (onoff[checkdof] != 0)
     {
-      dserror(
+      FOUR_C_THROW(
           "You have activated more than %d dofs in your Neumann boundary condition. This is higher "
           "than the dimension of the element.",
           num_dim);
@@ -205,7 +206,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
       }
       break;
       default:
-        dserror("Unknown type of configuration");
+        FOUR_C_THROW("Unknown type of configuration");
     }
 
     // get thickness direction derivative perpendicular to g1 and g2 (with area as length)
@@ -219,7 +220,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
             g_metrics_kovariant(0, 1) * g_metrics_kovariant(1, 0);
     // compute line increment ds
     double ds = g3.Norm2();
-    if (ds <= 1.0e-14) dserror("Element Area equal 0.0 or negativ detected");
+    if (ds <= 1.0e-14) FOUR_C_THROW("Element Area equal 0.0 or negativ detected");
 
     // material/reference coordinates of Gaussian point
     CORE::LINALG::Matrix<num_dim, 1> gauss_point_reference_coordinates;
@@ -261,7 +262,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
         // hydrostatic pressure dependent on z-coordinate of gaussian point
         case neum_consthydro_z:
         {
-          if (onoff[2] != 1) dserror("hydropressure must be on third dof");
+          if (onoff[2] != 1) FOUR_C_THROW("hydropressure must be on third dof");
           value_times_integration_factor =
               -value[2] * function_scale_factors[2] * gpweights * g3(dim, 0);
         }
@@ -270,7 +271,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
         // height
         case neum_increhydro_z:
         {
-          if (onoff[2] != 1) dserror("hydropressure must be on third dof");
+          if (onoff[2] != 1) FOUR_C_THROW("hydropressure must be on third dof");
           double height = total_time * 10.0;
           double pressure = 0.0;
           if (gauss_point_current_coordinates(2, 0) <= height)
@@ -283,13 +284,13 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
         case neum_orthopressure:
         case neum_opres_FSI:
         {
-          if (onoff[2] != 1) dserror("orthopressure must be on third dof");
+          if (onoff[2] != 1) FOUR_C_THROW("orthopressure must be on third dof");
           value_times_integration_factor =
               value[2] * function_scale_factors[2] * gpweights * g3(dim, 0);
         }
         break;
         default:
-          dserror("Unknown type of SurfaceNeumann load");
+          FOUR_C_THROW("Unknown type of SurfaceNeumann load");
       }  // end switch(eletype)
 
       for (auto nodeid = 0; nodeid < SHELL::DETAIL::num_node<distype>; ++nodeid)

@@ -248,7 +248,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingStress(cons
   }
   else
   {
-    dserror("coupling stress poroelast not yet implemented for pressure-based variant");
+    FOUR_C_THROW("coupling stress poroelast not yet implemented for pressure-based variant");
   }
 }
 

@@ -145,7 +145,7 @@ namespace FLD
     */
     virtual void PrintTimeStepInfo()
     {
-      dserror("you are in the base class");
+      FOUR_C_THROW("you are in the base class");
       return;
     }
 
@@ -494,20 +494,20 @@ namespace FLD
     //! Give local order of accuracy of velocity part
     virtual int MethodOrderOfAccuracyVel() const
     {
-      dserror("Not implemented in base class. May be overwritten by derived class.");
+      FOUR_C_THROW("Not implemented in base class. May be overwritten by derived class.");
       return 0;
     }
 
     //! Give local order of accuracy of pressure part
     virtual int MethodOrderOfAccuracyPres() const
     {
-      dserror("Not implemented in base class. May be overwritten by derived class.");
+      FOUR_C_THROW("Not implemented in base class. May be overwritten by derived class.");
       return 0;
     }
     //! Return linear error coefficient of velocity
     virtual double MethodLinErrCoeffVel() const
     {
-      dserror("Not implemented in base class. May be overwritten by derived class.");
+      FOUR_C_THROW("Not implemented in base class. May be overwritten by derived class.");
       return 0;
     }
 
@@ -912,7 +912,7 @@ namespace FLD
         const int startfuncno  ///< number of spatial function
         ) override
     {
-      dserror("not implemented in base class");
+      FOUR_C_THROW("not implemented in base class");
     }
 
     virtual void UpdateIterIncrementally(

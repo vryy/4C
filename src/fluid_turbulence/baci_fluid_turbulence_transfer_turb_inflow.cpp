@@ -79,13 +79,13 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
       {
         if (dir != direction)
         {
-          dserror("multiple directions are not supported yet");
+          FOUR_C_THROW("multiple directions are not supported yet");
         }
       }
 
       if (id != 0)
       {
-        dserror("expecting only one group of coupling surfaces (up to now), its %d", id);
+        FOUR_C_THROW("expecting only one group of coupling surfaces (up to now), its %d", id);
       }
 
       switch (toggle)
@@ -126,7 +126,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
           break;
         }
         default:
-          dserror("toggle non master or slave");
+          FOUR_C_THROW("toggle non master or slave");
       }
     }
 
@@ -179,7 +179,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     {
       if (pair->second.size() != 1)
       {
-        dserror("expected one node to match, got %d out of %d", pair->second.size(),
+        FOUR_C_THROW("expected one node to match, got %d out of %d", pair->second.size(),
             slavenodeids.size());
       }
     }
@@ -221,7 +221,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       {
         // do not compute an "alternative" curvefac here since a negative time value
         // indicates an error.
-        dserror("Negative time value: time = %f", time);
+        FOUR_C_THROW("Negative time value: time = %f", time);
       }
     }
     else  // we do not have a time curve --- time curve factor is constant equal 1
@@ -252,7 +252,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       }
       else
       {
-        dserror("master %d in midtosid but not on proc. This was unexpected", gid);
+        FOUR_C_THROW("master %d in midtosid but not on proc. This was unexpected", gid);
       }
     }
 
@@ -334,7 +334,7 @@ void FLD::TransferTurbulentInflowCondition::GetData(
   }
   else
   {
-    dserror("unknown direction");
+    FOUR_C_THROW("unknown direction");
   }
 
   const auto mytoggle = *cond->Get<std::string>("toggle");
@@ -348,7 +348,7 @@ void FLD::TransferTurbulentInflowCondition::GetData(
   }
   else
   {
-    dserror("expecting either master or slave");
+    FOUR_C_THROW("expecting either master or slave");
   }
 
   // find out whether we will use a time curve
@@ -389,7 +389,7 @@ void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
   // you didn't
   if (rblock.empty() == false)
   {
-    dserror("rblock not empty");
+    FOUR_C_THROW("rblock not empty");
   }
 
   // receive from predecessor
@@ -397,7 +397,7 @@ void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
 
   if (tag != (myrank + numproc - 1) % numproc)
   {
-    dserror("received wrong message (ReceiveAny)");
+    FOUR_C_THROW("received wrong message (ReceiveAny)");
   }
 
   exporter.Wait(request);
@@ -460,7 +460,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
 
   if ((int)mymasters_vel.size() != numveldof_)
   {
-    dserror("expecting three spatial dimensions in mymasters_vel to unpack into");
+    FOUR_C_THROW("expecting three spatial dimensions in mymasters_vel to unpack into");
   }
 
   for (int rr = 0; rr < numveldof_; ++rr)
@@ -515,13 +515,13 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(std::vector<
       }
       else
       {
-        dserror("master id %d was not in midtosid_", mymasters[rr]);
+        FOUR_C_THROW("master id %d was not in midtosid_", mymasters[rr]);
       }
     }
 
     if (midtosid_[mymasters[rr]].size() < 1)
     {
-      dserror("require at least one slave to master %d, got %d", mymasters[rr],
+      FOUR_C_THROW("require at least one slave to master %d, got %d", mymasters[rr],
           midtosid_[mymasters[rr]].size());
     }
   }
@@ -562,14 +562,14 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<in
 
   if (mymasters_vel.size() != (unsigned)numveldof_)
   {
-    dserror("expecting three spatial dimensions in mymasters_vel to pack");
+    FOUR_C_THROW("expecting three spatial dimensions in mymasters_vel to pack");
   }
 
   for (int rr = 0; rr < numveldof_; ++rr)
   {
     if ((int)(mymasters_vel[rr]).size() != size)
     {
-      dserror("at least one of the components of mymasters_vel has the wrong size");
+      FOUR_C_THROW("at least one of the components of mymasters_vel has the wrong size");
     }
   }
 
@@ -589,7 +589,7 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(std::vector<in
 
     if (iter == midtosid_.end())
     {
-      dserror("tried to pack slaves to master master %d, got none", mymasters[rr]);
+      FOUR_C_THROW("tried to pack slaves to master master %d, got none", mymasters[rr]);
     }
     else
     {
@@ -670,7 +670,7 @@ void FLD::TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
               double y = slave->X()[1];
               double z = slave->X()[2];
 
-              dserror(
+              FOUR_C_THROW(
                   "Dirichlet condition required on slave node (%12.5e,%12.5e,%12.5e), id %d, dof "
                   "%d of transfer condition",
                   x, y, z, id, rr);
@@ -737,7 +737,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       {
         // do not compute an "alternative" curvefac here since a negative time value
         // indicates an error.
-        dserror("Negative time value: time = %f", time);
+        FOUR_C_THROW("Negative time value: time = %f", time);
       }
     }
     else  // we do not have a time curve --- time curve factor is constant equal 1
@@ -784,7 +784,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       }
       else
       {
-        dserror("master %d in midtosid but not on proc. This was unexpected", gid);
+        FOUR_C_THROW("master %d in midtosid but not on proc. This was unexpected", gid);
       }
     }
 
@@ -889,7 +889,7 @@ void FLD::TransferTurbulentInflowConditionXW::SetValuesAvailableOnThisProc(
               double y = slave->X()[1];
               double z = slave->X()[2];
 
-              dserror(
+              FOUR_C_THROW(
                   "Dirichlet condition required on slave node (%12.5e,%12.5e,%12.5e), id %d, dof "
                   "%d of transfer condition",
                   x, y, z, id, rr);
@@ -910,7 +910,7 @@ void FLD::TransferTurbulentInflowConditionXW::SetValuesAvailableOnThisProc(
                 velnp->ReplaceGlobalValues(1, &value, &gid);
               }
               else
-                dserror("xwall dofs don't have active dbc for transfer");
+                FOUR_C_THROW("xwall dofs don't have active dbc for transfer");
             }
         }
       }
@@ -974,7 +974,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
       }
       else
       {
-        dserror("master %d in midtosid but not on proc. This was unexpected", gid);
+        FOUR_C_THROW("master %d in midtosid but not on proc. This was unexpected", gid);
       }
     }
 

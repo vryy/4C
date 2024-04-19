@@ -32,7 +32,7 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::ScaTraEleCalcElch(
 
   // safety check
   if (not my::scatraparatimint_->IsIncremental())
-    dserror(
+    FOUR_C_THROW(
         "Since the ion-transport equations are non-linear, it can be solved only incrementally!!");
 }
 

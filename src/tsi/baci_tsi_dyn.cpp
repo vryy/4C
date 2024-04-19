@@ -74,7 +74,7 @@ void tsi_dyn_drt()
       break;
     }
     default:
-      dserror("Unknown solutiontype for thermo-structure interaction: %d", coupling);
+      FOUR_C_THROW("Unknown solutiontype for thermo-structure interaction: %d", coupling);
       break;
   }  // end switch
 

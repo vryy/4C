@@ -46,7 +46,7 @@ void XFEM::UTILS::GetStdAverageWeights(
       break;
     }
     default:
-      dserror("XFEM::UTILS::GetAverageWeights: AveragingStrategy not implemented here!");
+      FOUR_C_THROW("XFEM::UTILS::GetAverageWeights: AveragingStrategy not implemented here!");
   }
 
   return;
@@ -131,7 +131,8 @@ void XFEM::UTILS::NIT_Compute_ViscPenalty_Stabfac(
   }
   else if (visc_stab_trace_estimate != INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
   {
-    dserror("unknown trace-inequality-estimate type for viscous part of Nitsche's penalty term");
+    FOUR_C_THROW(
+        "unknown trace-inequality-estimate type for viscous part of Nitsche's penalty term");
   }
   return;
 }
@@ -226,7 +227,7 @@ double XFEM::UTILS::NIT_getTraceEstimateConstant(
         break;  // wedge6 -> tri3 reduction (tri3 elements in 2D plane)
       default:
       {
-        dserror("not a valid pseudo 2D element-type - what to do?");
+        FOUR_C_THROW("not a valid pseudo 2D element-type - what to do?");
         trace_inequality_distype = CORE::FE::CellType::dis_none;
         break;
       }
@@ -323,7 +324,7 @@ double XFEM::UTILS::NIT_getTraceEstimateConstant(
       return 4.10462;
       break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT taken from hex20
     default:
-      dserror("constant for trace inequality not specified for this element type yet: % i",
+      FOUR_C_THROW("constant for trace inequality not specified for this element type yet: % i",
           trace_inequality_distype);
       break;
   };
@@ -413,7 +414,7 @@ void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transf
       break;
     }
     default:
-      dserror("unsupported integration cell type");
+      FOUR_C_THROW("unsupported integration cell type");
   }
 
   return;
@@ -441,10 +442,10 @@ double XFEM::UTILS::ComputeMeasCutSurf(const std::map<int, std::vector<CORE::FE:
 
     // get side's boundary cells
     std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>>::const_iterator j = bcells.find(sid);
-    if (j == bcells.end()) dserror("missing boundary cell");
+    if (j == bcells.end()) FOUR_C_THROW("missing boundary cell");
 
     const std::vector<CORE::GEO::CUT::BoundaryCell *> &bcs = j->second;
-    if (bcs.size() != cutintpoints.size()) dserror("boundary cell integration rules mismatch");
+    if (bcs.size() != cutintpoints.size()) FOUR_C_THROW("boundary cell integration rules mismatch");
 
     //--------------------------------------------
     // loop boundary cells w.r.t current cut side
@@ -528,7 +529,7 @@ double XFEM::UTILS::ComputeMeasFace(DRT::Element *ele,  ///< fluid element
   double drs = 0.0;
 
   if (nsd != 3)
-    dserror("don't call this function for non-3D examples, adapt the following for 2D!");
+    FOUR_C_THROW("don't call this function for non-3D examples, adapt the following for 2D!");
 
   CORE::FE::GaussRule2D gaussrule = CORE::FE::GaussRule2D::undefined;
   switch (face_shape)
@@ -543,7 +544,7 @@ double XFEM::UTILS::ComputeMeasFace(DRT::Element *ele,  ///< fluid element
       gaussrule = CORE::FE::GaussRule2D::tri_1point;
       break;
     default:
-      dserror("shape type unknown!\n");
+      FOUR_C_THROW("shape type unknown!\n");
       break;
   }
 
@@ -616,13 +617,13 @@ double XFEM::UTILS::EvalElementVolume(CORE::LINALG::Matrix<3, CORE::FE::num_node
     case CORE::FE::CellType::nurbs27:
     {
       if (nurbs_weights == nullptr || nurbs_knots == nullptr)
-        dserror("For Nurbs elements, weights and knots are required!");
+        FOUR_C_THROW("For Nurbs elements, weights and knots are required!");
       CORE::FE::NURBS::nurbs_get_funct_deriv(
           funct, deriv, xsi, *nurbs_knots, *nurbs_weights, distype);
       break;
     }
     default:
-      dserror("Distype not handled yet!");
+      FOUR_C_THROW("Distype not handled yet!");
   }
 
   //
@@ -647,7 +648,7 @@ double XFEM::UTILS::EvalElementVolume(CORE::LINALG::Matrix<3, CORE::FE::num_node
   xjm.MultiplyNT(deriv, xyze);
   double det = xji.Invert(xjm);
 
-  if (det < 1E-16) dserror("GLOBAL ELEMENT ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", det);
+  if (det < 1E-16) FOUR_C_THROW("GLOBAL ELEMENT ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", det);
 
   // compute integration factor
   return gpweight * det;
@@ -679,7 +680,7 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
   const INPAR::XFEM::AveragingStrategy averaging_strategy =
       cond_manager->GetAveragingStrategy(coup_sid, ele->Id());
   if (emb == Teuchos::null and averaging_strategy == INPAR::XFEM::Embedded_Sided)
-    dserror("no coupling interface available, however Embedded_Sided coupling is activated!");
+    FOUR_C_THROW("no coupling interface available, however Embedded_Sided coupling is activated!");
 
   // characteristic element length to be computed
   double h_k = 0.0;
@@ -723,12 +724,13 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
     case INPAR::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf:
     {
       if (averaging_strategy == INPAR::XFEM::Embedded_Sided)
-        dserror("ViscStab_hk_cut_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
+        FOUR_C_THROW(
+            "ViscStab_hk_cut_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
 
       // compute the cut surface measure
       meas_surf = XFEM::UTILS::ComputeMeasCutSurf(bintpoints, bcells);
 
-      if (fabs(meas_surf) < 1.e-8) dserror("Element contribution to interface has zero size.");
+      if (fabs(meas_surf) < 1.e-8) FOUR_C_THROW("Element contribution to interface has zero size.");
 
       // compute the cut volume measure
       for (CORE::GEO::CUT::plain_volumecell_set::const_iterator i = vcSet.begin(); i != vcSet.end();
@@ -739,7 +741,7 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
       }
 
       if (meas_vol < 0.0)
-        dserror(
+        FOUR_C_THROW(
             " measure of cut partial volume is smaller than 0.0: %f Attention with increasing "
             "Nitsche-Parameter!!!",
             meas_vol);
@@ -754,7 +756,8 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
     case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf:
     {
       if (averaging_strategy == INPAR::XFEM::Embedded_Sided)
-        dserror("ViscStab_hk_ele_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
+        FOUR_C_THROW(
+            "ViscStab_hk_ele_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
 
       // compute the cut surface measure
       meas_surf = XFEM::UTILS::ComputeMeasCutSurf(bintpoints, bcells);
@@ -771,10 +774,11 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
     case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_ele_surf:
     {
       if (averaging_strategy != INPAR::XFEM::Embedded_Sided)
-        dserror("ViscStab_hk_ele_vol_div_by_ele_surf just reasonable for Embedded_Sided_Coupling!");
+        FOUR_C_THROW(
+            "ViscStab_hk_ele_vol_div_by_ele_surf just reasonable for Embedded_Sided_Coupling!");
 
       DRT::FaceElement *fele = dynamic_cast<DRT::FaceElement *>(face);
-      if (!fele) dserror("Cast to FaceElement failed!");
+      if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
 
       //---------------------------------------------------
       // compute the uncut element's surface measure
@@ -790,7 +794,7 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
       //---------------------------------------------------
       {
         if (averaging_strategy == INPAR::XFEM::Embedded_Sided)
-          dserror(
+          FOUR_C_THROW(
               "ViscStab_hk_ele_vol_div_by_max_ele_surf not reasonable for "
               "Embedded_Sided_Coupling!");
 
@@ -809,7 +813,7 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
         break;
       }
     default:
-      dserror("unknown type of characteristic element length");
+      FOUR_C_THROW("unknown type of characteristic element length");
       break;
   }
 
@@ -820,7 +824,8 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
 
   // check plausibility
   if (h_k < 1e-14)
-    dserror("the characteristic element length is zero or smaller, it has not been set properly!");
+    FOUR_C_THROW(
+        "the characteristic element length is zero or smaller, it has not been set properly!");
 
   return h_k;
 }
@@ -930,12 +935,12 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
     }
   }
   else if (MassConservationScaling != INPAR::XFEM::MassConservationScaling_only_visc)
-    dserror("Unknown scaling choice in calculation of Nitsche's penalty parameter");
+    FOUR_C_THROW("Unknown scaling choice in calculation of Nitsche's penalty parameter");
 
   if (IsConservative and (XFF_ConvStabScaling != INPAR::XFEM::XFF_ConvStabScaling_none or
                              ConvStabScaling != INPAR::XFEM::ConvStabScaling_none))
   {
-    dserror(
+    FOUR_C_THROW(
         "convective stabilization is not available for conservative form of Navier-Stokes, but "
         "possible to implement!");
   }
@@ -969,7 +974,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
       NIT_inflow_stab = std::max(0.0, -veln_normal);
     }
     else
-      dserror("No valid INPAR::XFEM::ConvStabScaling for xfluid/xfsi problems");
+      FOUR_C_THROW("No valid INPAR::XFEM::ConvStabScaling for xfluid/xfsi problems");
   }
 
   NIT_inflow_stab *= densaf_master;  // my::densaf_;
@@ -985,7 +990,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
     NIT_full_stab_fac += NIT_inflow_stab;
   }
   else
-    dserror("Unknown combination type in calculation of Nitsche's penalty parameter.");
+    FOUR_C_THROW("Unknown combination type in calculation of Nitsche's penalty parameter.");
 
   return;
 }
@@ -1072,7 +1077,7 @@ void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele,
     vel_s.Multiply(vels, funct);
   }
   else
-    dserror("Your Slave Element is not a quad4?");
+    FOUR_C_THROW("Your Slave Element is not a quad4?");
 }
 
 

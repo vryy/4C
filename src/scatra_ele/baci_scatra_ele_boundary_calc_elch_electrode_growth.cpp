@@ -64,7 +64,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   Teuchos::RCP<const MAT::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
   if (matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
@@ -73,7 +73,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2IKineticsGrowth)
-    dserror("Received illegal condition type!");
+    FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
   const double faraday = myelch::elchparams_->Faraday();
@@ -81,7 +81,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   if (kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer)
   {
-    dserror(
+    FOUR_C_THROW(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
   }
@@ -134,7 +134,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       }
       default:
       {
-        dserror("Model for scatra-scatra interface growth kinetics not implemented!");
+        FOUR_C_THROW("Model for scatra-scatra interface growth kinetics not implemented!");
       }
     }
 
@@ -158,16 +158,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
     CORE::LINALG::SerialDenseVector& eslaveresidual)
 {
   // safety checks
-  if (my::numscal_ != 1) dserror("Invalid number of transported scalars!");
-  if (my::numdofpernode_ != 2) dserror("Invalid number of degrees of freedom per node!");
+  if (my::numscal_ != 1) FOUR_C_THROW("Invalid number of transported scalars!");
+  if (my::numdofpernode_ != 2) FOUR_C_THROW("Invalid number of degrees of freedom per node!");
   if (myelch::elchparams_->EquPot() != INPAR::ELCH::equpot_divi)
-    dserror("Invalid closing equation for electric potential!");
+    FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
   if (matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
@@ -180,7 +180,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
       my::scatraparamsboundary_->ConditionType();
   if (s2iconditiontype != DRT::Condition::S2IKinetics and
       s2iconditiontype != DRT::Condition::S2IKineticsGrowth)
-    dserror("Received illegal condition type!");
+    FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
@@ -208,7 +208,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     // evaluate factor F/RT
     const double frt = myelch::elchparams_->FRT();
@@ -309,7 +309,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
         break;
       }
       default:
-        dserror("S2I condition type not recognized!");
+        FOUR_C_THROW("S2I condition type not recognized!");
     }
   }  // loop over integration points
 }
@@ -419,7 +419,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   Teuchos::RCP<const MAT::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
   if (matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
@@ -432,7 +432,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::scatraparamsboundary_->ConditionType();
   if (s2iconditiontype != DRT::Condition::S2IKinetics and
       s2iconditiontype != DRT::Condition::S2IKineticsGrowth)
-    dserror("Received illegal condition type!");
+    FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
@@ -460,7 +460,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     // evaluate factor F/RT
     const double frt = myelch::elchparams_->FRT();
@@ -585,7 +585,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
         break;
       }
       default:
-        dserror("S2I condition type not recognized!");
+        FOUR_C_THROW("S2I condition type not recognized!");
     }
   }
 }
@@ -603,7 +603,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   Teuchos::RCP<const MAT::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
   if (matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
@@ -612,20 +612,20 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2IKineticsGrowth)
-    dserror("Received illegal condition type!");
+    FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   if (kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer)
   {
-    dserror(
+    FOUR_C_THROW(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
   }
   const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
-  if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
+  if (kr < 0.0) FOUR_C_THROW("Charge transfer constant k_r is negative!");
   const double resistivity = my::scatraparamsboundary_->Resistivity();
   const double factor =
       my::scatraparamsboundary_->MolarMass() / (my::scatraparamsboundary_->Density());
@@ -643,7 +643,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     // evaluate factor F/RT
     const double frt = myelch::elchparams_->FRT();
@@ -716,7 +716,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   Teuchos::RCP<const MAT::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
   if (matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
@@ -728,13 +728,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       eslavegrowthhist, discretization, la, "growthhist", my::scatraparams_->NdsGrowth());
 
   if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2IKineticsGrowth)
-    dserror("Received illegal condition type!");
+    FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   if (kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer)
   {
-    dserror(
+    FOUR_C_THROW(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
   }
@@ -764,7 +764,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     // evaluate factor F/RT
     const double frt = myelch::elchparams_->FRT();

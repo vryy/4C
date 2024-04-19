@@ -33,7 +33,7 @@ void CONTACT::IntegratorEhl::IntegrateGP_3D(MORTAR::Element& sele, MORTAR::Eleme
   bool bound = false;
   for (int i = 0; i < sele.NumNode(); ++i)
     if (dynamic_cast<CONTACT::Node*>(sele.Nodes()[i])->IsOnBoundorCE())
-      dserror("no boundary modification for EHL implemented");
+      FOUR_C_THROW("no boundary modification for EHL implemented");
 
   // is quadratic case?
   bool quad = sele.IsQuad();
@@ -77,7 +77,7 @@ void CONTACT::IntegratorEhl::IntegrateGP_2D(MORTAR::Element& sele, MORTAR::Eleme
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi)
 {
-  dserror("2D EHL integration not supported");
+  FOUR_C_THROW("2D EHL integration not supported");
 }
 
 
@@ -124,7 +124,7 @@ void CONTACT::IntegratorEhl::GP_WeightedSurfGradAndDeriv(MORTAR::Element& sele, 
   {
     DRT::Node* node = sele.Nodes()[a];
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
-    if (!cnode) dserror("this is not a contact node");
+    if (!cnode) FOUR_C_THROW("this is not a contact node");
 
     for (int c = 0; c < sele.NumNode(); ++c)
     {
@@ -191,7 +191,7 @@ void CONTACT::IntegratorEhl::GP_WeightedAvRelVel(MORTAR::Element& sele, MORTAR::
 {
   const int dim = 3;
   if (Dim() != dim)
-    dserror("dimension inconsistency, or is this not implemented for all spatial dimensions?");
+    FOUR_C_THROW("dimension inconsistency, or is this not implemented for all spatial dimensions?");
 
   CORE::LINALG::Matrix<dim, 1> t1, t2;
   std::vector<CORE::GEN::Pairedvector<int, double>> dt1, dt2;

@@ -51,7 +51,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
   InvalidEleData();
   if (distype == CORE::FE::CellType::nurbs27) GetNurbsEleInfo(&discretization);
 
-  dsassert(kintype_ == INPAR::STR::KinemType::nonlinearTotLag,
+  FOUR_C_ASSERT(kintype_ == INPAR::STR::KinemType::nonlinearTotLag,
       "only geometricallly nonlinear formluation for plasticity!");
 
   // start with "none"
@@ -75,7 +75,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     case DRT::ELEMENTS::struct_calc_linstiff:
     case DRT::ELEMENTS::struct_calc_linstiffmass:
     {
-      dserror("linear kinematics version out dated");
+      FOUR_C_THROW("linear kinematics version out dated");
       break;
     }
 
@@ -90,7 +90,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       // need current displacement and residual/incremental displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
       if ((disp == Teuchos::null))
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(la[0].lm_.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
       // create a dummy element matrix to apply linearised EAS-stuff onto
@@ -110,7 +110,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         {
           // get the velocities
           Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0, "velocity");
-          if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+          if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           CORE::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
@@ -118,13 +118,13 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         if (discretization.HasState(1, "temperature"))
         {
           Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-          if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+          if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
           const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
           if (la[1].Size() != nen_ * numdofpernode_thr)
-            dserror("Location vector length for temperature does not match!");
+            FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
           CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
@@ -152,7 +152,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(la[0].lm_.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
@@ -170,7 +170,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         {
           // get the velocities
           Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0, "velocity");
-          if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+          if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           CORE::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
@@ -179,13 +179,13 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         if (discretization.HasState(1, "temperature"))
         {
           Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-          if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+          if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
           const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
           if (la[1].Size() != nen_ * numdofpernode_thr)
-            dserror("Location vector length for temperature does not match!");
+            FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
           CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
@@ -206,7 +206,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(la[0].lm_.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
       // stiffness
@@ -232,7 +232,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         {
           // get the velocities
           Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0, "velocity");
-          if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+          if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           CORE::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
@@ -240,13 +240,13 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         if (discretization.HasState(1, "temperature"))
         {
           Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-          if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+          if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
           const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
           if (la[1].Size() != nen_ * numdofpernode_thr)
-            dserror("Location vector length for temperature does not match!");
+            FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
           CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
@@ -298,9 +298,9 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
             params, "iostrain", INPAR::STR::strain_none);
       }
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-      if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-      if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
+      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
 
       std::vector<double> mydisp((la[0].lm_).size());
       CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
@@ -320,7 +320,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         {
           // get the velocities
           Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0, "velocity");
-          if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+          if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           CORE::FE::ExtractMyValues(*vel, myvel, la[0].lm_);
@@ -328,13 +328,13 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         if (discretization.HasState(1, "temperature"))
         {
           Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-          if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+          if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
           const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
           if (la[1].Size() != nen_ * numdofpernode_thr)
-            dserror("Location vector length for temperature does not match!");
+            FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
           CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
@@ -411,13 +411,13 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       if (discretization.HasState(1, "temperature"))
       {
         Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-        if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the dimension of the
         // problem
         const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
         if (la[1].Size() != nen_ * numdofpernode_thr)
-          dserror("Location vector length for temperature does not match!");
+          FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
         mytempnp.resize(((la[0].lm_).size()) / nsd_, 0.0);
         CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
@@ -431,7 +431,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       }
       else  // old structural time integration
       {
-        dsassert(elevec1_epetra.length() < 1, "The given result vector is too short.");
+        FOUR_C_ASSERT(elevec1_epetra.length() < 1, "The given result vector is too short.");
         elevec1_epetra(0) = intenergy;
       }
     }
@@ -440,7 +440,8 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     case DRT::ELEMENTS::struct_calc_recover:
     {
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-      if (res == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (res == Teuchos::null)
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> myres((la[0].lm_).size());
       CORE::FE::ExtractMyValues(*res, myres, la[0].lm_);
       CORE::LINALG::Matrix<nen_ * nsd_, 1> res_d(myres.data(), true);
@@ -453,13 +454,13 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> tempres =
               discretization.GetState(1, "residual temperature");
-          if (tempres == Teuchos::null) dserror("Cannot get state vector 'tempres'");
+          if (tempres == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempres'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
           const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
           if (la[1].Size() != nen_ * numdofpernode_thr)
-            dserror("Location vector length for temperature does not match!");
+            FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           mytempres.resize(((la[0].lm_).size()) / nsd_, 0.0);
           CORE::FE::ExtractMyValues(*tempres, mytempres, la[1].lm_);
@@ -495,7 +496,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
     case DRT::ELEMENTS::struct_init_gauss_point_data_output:
     {
-      dsassert(IsParamsInterface(),
+      FOUR_C_ASSERT(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
       // Save number of Gauss of the element for gauss point data output
       StrParamsInterface().GaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
@@ -511,7 +512,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
     case ELEMENTS::struct_gauss_point_data_output:
     {
-      dsassert(IsParamsInterface(),
+      FOUR_C_ASSERT(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
 
       // Collection and assembly of gauss point data
@@ -562,7 +563,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
                 }
               }
               else
-                dserror(
+                FOUR_C_THROW(
                     "only element centered and Gauss point material internal variables for "
                     "so3_plast");
 
@@ -578,11 +579,11 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::none:
-              dserror(
+              FOUR_C_THROW(
                   "You specified a Gauss point data output type of none, so you should not end up "
                   "here.");
             default:
-              dserror("Unknown Gauss point data output type.");
+              FOUR_C_THROW("Unknown Gauss point data output type.");
           }
         }
       }
@@ -591,7 +592,7 @@ int DRT::ELEMENTS::So3Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
     //============================================================================
     default:
-      dserror("Unknown type of action for So3Plast");
+      FOUR_C_THROW("Unknown type of action for So3Plast");
       break;
   }  // action
 
@@ -696,12 +697,13 @@ int DRT::ELEMENTS::So3Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < nsd_)
-    dserror("Fewer functions or curves defined than the element has dofs.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   for (int checkdof = nsd_; checkdof < int(onoff->size()); ++checkdof)
   {
     if ((*onoff)[checkdof] != 0)
-      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+      FOUR_C_THROW(
+          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS
@@ -736,9 +738,9 @@ int DRT::ELEMENTS::So3Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
     // compute determinant of Jacobian
     const double detJ = jac.Determinant();
     if (detJ == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     // material/reference co-ordinates of Gauss point
     if (havefunct)
@@ -810,7 +812,7 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
   const double dt = StrParamsInterface().GetDeltaTime();
   const double timefac_d =
       StrParamsInterface().GetTimIntFactorVel() / StrParamsInterface().GetTimIntFactorDisp();
-  if (timefac_d <= 0 || dt <= 0) dserror("time integration parameters not provided");
+  if (timefac_d <= 0 || dt <= 0) FOUR_C_THROW("time integration parameters not provided");
 
   FillPositionArrays(disp, vel, temp);
 
@@ -825,7 +827,7 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
   {
-    if (tsi_) dserror("TSI with so3Plast elements only with PlasticElastHyper material");
+    if (tsi_) FOUR_C_THROW("TSI with so3Plast elements only with PlasticElastHyper material");
   }
 
   // EAS matrix block
@@ -984,7 +986,7 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
       case soh8p_easnone:
         break;
       default:
-        dserror("Don't know what to do with EAS type %d", eastype_);
+        FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
         break;
     }
 
@@ -1039,7 +1041,7 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
         case soh8p_easnone:
           break;
         default:
-          dserror("Don't know what to do with EAS type %d", eastype_);
+          FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
           break;
       }
     }
@@ -1073,7 +1075,7 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_kdT_tsi(
   if (eastype_ != soh8p_easnone)
   {
     if (KdT_eas_ == Teuchos::null)
-      dserror("for TSI with EAS the block KdT_eas_ should be acessible here");
+      FOUR_C_THROW("for TSI with EAS the block KdT_eas_ should be acessible here");
     k_dT->Update(1., *KdT_eas_, 1.);
   }
   return;
@@ -1102,7 +1104,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
-    dserror("so3_ssn_plast elements only with PlasticElastHyper material");
+    FOUR_C_THROW("so3_ssn_plast elements only with PlasticElastHyper material");
 
   // temporary Epetra matrix for matrix-matrix-matrix products
   CORE::LINALG::SerialDenseMatrix tmp;
@@ -1164,7 +1166,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
           voigt_red(6, 5) = voigt_red(7, 6) = voigt_red(8, 7) = 1.;
       break;
     default:
-      dserror("Don't know what to do with plastic spin type %d", spintype);
+      FOUR_C_THROW("Don't know what to do with plastic spin type %d", spintype);
       break;
   }
 
@@ -1195,7 +1197,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
       dDpdbeta(8, 7) = -1.;
       break;
     default:
-      dserror("Don't know what to do with plastic spin type %d", spintype);
+      FOUR_C_THROW("Don't know what to do with plastic spin type %d", spintype);
       break;
   }
 
@@ -1212,7 +1214,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
   CORE::LINALG::Matrix<numstr_, spintype> d_cauchy_db;
   if (is_nitsche_contact_)
   {
-    if (N_XYZ == nullptr) dserror("shape derivative not provided");
+    if (N_XYZ == nullptr) FOUR_C_THROW("shape derivative not provided");
 
     CORE::LINALG::Matrix<9, numdofperelement_> dFdd;
     for (int k = 0; k < nen_; ++k)
@@ -1229,7 +1231,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
     cauchy_deriv_.at(gp).Clear();
     if (fbar_)
     {
-      if (RCG == nullptr) dserror("CondensePlasticity(...) requires RCG in case of FBAR");
+      if (RCG == nullptr) FOUR_C_THROW("CondensePlasticity(...) requires RCG in case of FBAR");
       CORE::LINALG::Matrix<6, 1> tmp61;
       tmp61.Multiply(.5, d_cauchy_dC, (*RCG));
       cauchy_deriv_.at(gp).MultiplyNT(
@@ -1291,7 +1293,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
           1., Kab.values(), detJ_w, M->values(), dpk2db.A());
       break;
     default:
-      dserror("Don't know what to do with EAS type %d", eastype_);
+      FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
       break;
   }
 
@@ -1308,7 +1310,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
     CORE::LINALG::Matrix<spintype + 1, numdofperelement_> dNCPdd;
     if (fbar_)
     {
-      if (RCG == nullptr) dserror("CondensePlasticity(...) requires RCG in case of FBAR");
+      if (RCG == nullptr) FOUR_C_THROW("CondensePlasticity(...) requires RCG in case of FBAR");
       CORE::LINALG::Matrix<spintype + 1, 1> tmp61;
       tmp61.Multiply(.5, dncpdc, (*RCG));
       dNCPdd.MultiplyNT((*f_bar_factor) * (*f_bar_factor) * 2. / 3., tmp61, *htensor, 0.);
@@ -1361,7 +1363,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
               0., Kba_->at(gp).values(), 1., voigt_red.A(), tmp.values());
           break;
         default:
-          dserror("Don't know what to do with EAS type %d", eastype_);
+          FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
           break;
       }
     }
@@ -1381,7 +1383,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
     int err = solve_for_kbbinv.invert();
     if (err != 0)
     {
-      // check, if errors are tolerated or should throw a dserror
+      // check, if errors are tolerated or should throw a FOUR_C_THROW
       bool error_tol = false;
       if (params.isParameter("tolerate_errors")) error_tol = params.get<bool>("tolerate_errors");
       if (error_tol)
@@ -1390,7 +1392,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
         return;
       }
       else
-        dserror("Inversion of Kbb failed");
+        FOUR_C_THROW("Inversion of Kbb failed");
     }
     // temporary  Kdb.Kbb^-1
     CORE::LINALG::Matrix<numdofperelement_, spintype> KdbKbb;
@@ -1425,7 +1427,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
       CORE::LINALG::Matrix<numdofperelement_, 1> dHepDissDd;
       if (fbar_)
       {
-        if (RCG == nullptr) dserror("CondensePlasticity(...) requires RCG in case of FBAR");
+        if (RCG == nullptr) FOUR_C_THROW("CondensePlasticity(...) requires RCG in case of FBAR");
         CORE::LINALG::Matrix<1, 1> tmp11;
         tmp11.MultiplyTN(.5, dHdC, (*RCG));
         dHepDissDd.Multiply((*f_bar_factor) * (*f_bar_factor) * 2. / 3., *htensor, tmp11, 0.);
@@ -1441,7 +1443,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
       // Plastic heating and dissipation dbeta
       CORE::LINALG::Matrix<spintype, 1> dHepDissDbeta;
       if (spintype != zerospin)
-        dserror("no TSI with plastic spin yet");
+        FOUR_C_THROW("no TSI with plastic spin yet");
       else
         CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, zerospin, zerospin + 1, 1>(
             0., dHepDissDbeta.A(), 1., dDpdbeta.A(), dHdLp.A());
@@ -1462,9 +1464,9 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
       {
         // error checks
         if (dHda == nullptr)
-          dserror("dHda is nullptr pointer");
+          FOUR_C_THROW("dHda is nullptr pointer");
         else if ((int)dHda->size() != numgpt_)
-          dserror("dHda has wrong size");
+          FOUR_C_THROW("dHda has wrong size");
 
         switch (eastype_)
         {
@@ -1496,7 +1498,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
           case soh8p_easnone:
             break;
           default:
-            dserror("Don't know what to do with EAS type %d", eastype_);
+            FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
             break;
         }
       }
@@ -1628,7 +1630,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
           // do nothing
           break;
         default:
-          dserror("Don't know what to do with EAS type %d", eastype_);
+          FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
           break;
       }
     }
@@ -1691,7 +1693,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
               1., feas_->values(), -1., Kab.values(), dDp_last_iter_[gp].values());
           break;
         default:
-          dserror("Don't know what to do with EAS type %d", eastype_);
+          FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
           break;
       }
     }
@@ -1870,11 +1872,11 @@ void DRT::ELEMENTS::So3Plast<distype>::RecoverEAS(
       case soh8p_easnone:
         break;
       default:
-        dserror("Don't know what to do with EAS type %d", eastype_);
+        FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
         break;
     }
   else
-    dserror("no line search implemented yet");
+    FOUR_C_THROW("no line search implemented yet");
 
   StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas, neas_,
       alpha_eas_inc_->values(), alpha_eas_->values(), step_length, Owner());
@@ -1892,7 +1894,7 @@ void DRT::ELEMENTS::So3Plast<distype>::RecoverPlasticity(
 {
   const double step_length = StrParamsInterface().GetStepLength();
 
-  if (StrParamsInterface().IsDefaultStep() == false) dserror("no line search implemented yet");
+  if (StrParamsInterface().IsDefaultStep() == false) FOUR_C_THROW("no line search implemented yet");
 
   // first, store the state of the previous accepted Newton step
   StrParamsInterface().SumIntoMyPreviousSolNorm(
@@ -1961,7 +1963,7 @@ void DRT::ELEMENTS::So3Plast<distype>::RecoverPlasticity(
       case soh8p_easnone:
         break;
       default:
-        dserror("Don't know what to do with EAS type %d", eastype_);
+        FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
         break;
     }
   }  // EAS part
@@ -2066,7 +2068,7 @@ double DRT::ELEMENTS::So3Plast<distype>::CalcIntEnergy(
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
-    dserror("elastic strain energy in so3plast elements only for plastic material");
+    FOUR_C_THROW("elastic strain energy in so3plast elements only for plastic material");
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -2122,14 +2124,14 @@ void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
   if (distype == CORE::FE::CellType::nurbs27) GetNurbsEleInfo();
 
   if (fbar_ || eastype_ != soh8p_easnone)
-    dserror("cauchy stress not available for fbar or eas elements");
+    FOUR_C_THROW("cauchy stress not available for fbar or eas elements");
 
   if (temp || d_cauchyndir_dT || d2_cauchyndir_dd_dT)
     if (!temp || !d_cauchyndir_dT || !d2_cauchyndir_dd_dT)
-      dserror("inconsistent temperature dependency input");
+      FOUR_C_THROW("inconsistent temperature dependency input");
   if (temp && Material()->MaterialType() != INPAR::MAT::m_plelasthyper)
   {
-    dserror(
+    FOUR_C_THROW(
         "thermo-mechanical Nitsche contact only with PlasticElastHyper"
         "\nIf you want to do elasticity, set a negative yield stress ;)");
   }
@@ -2383,11 +2385,11 @@ void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXiPlast(
     CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT)
 {
-  if (distype != CORE::FE::CellType::hex8 || numgpt_ != 8) dserror("only for hex8 with 8 gp");
+  if (distype != CORE::FE::CellType::hex8 || numgpt_ != 8) FOUR_C_THROW("only for hex8 with 8 gp");
   if (Material()->MaterialType() != INPAR::MAT::m_plelasthyper)
-    dserror("only PlasticElastHyper materials here");
+    FOUR_C_THROW("only PlasticElastHyper materials here");
   if ((int)cauchy_.size() != numgpt_ || (int)cauchy_deriv_.size() != numgpt_)
-    dserror("have you evaluated the cauchy stress???");
+    FOUR_C_THROW("have you evaluated the cauchy stress???");
 
   cauchy_n_dir = 0.0;
   if (d_cauchyndir_dxi) d_cauchyndir_dxi->Clear();
@@ -2494,7 +2496,7 @@ void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXi(
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
     double* d_cauchyndir_dc)
 {
-  if (d_cauchyndir_dc != nullptr) dserror("Not implemented");
+  if (d_cauchyndir_dc != nullptr) FOUR_C_THROW("Not implemented");
 
   bool elastic = true;
   auto* plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
@@ -2545,14 +2547,14 @@ void DRT::ELEMENTS::So3Plast<distype>::OutputStrains(const int gp,
         total_glstrain(4) = RCG()(1, 2);
         total_glstrain(5) = RCG()(2, 0);
 
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = total_glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * total_glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
         // inverse of deformation gradient
         CORE::LINALG::Matrix<3, 3> invdefgrd;
@@ -2577,7 +2579,7 @@ void DRT::ELEMENTS::So3Plast<distype>::OutputStrains(const int gp,
         break;
       default:
       {
-        dserror("requested strain type not available");
+        FOUR_C_THROW("requested strain type not available");
         break;
       }
     }
@@ -2596,13 +2598,13 @@ void DRT::ELEMENTS::So3Plast<distype>::OutputStress(const int gp,
   {
     case INPAR::STR::stress_2pk:
     {
-      if (elestress == nullptr) dserror("stress data not available");
+      if (elestress == nullptr) FOUR_C_THROW("stress data not available");
       for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = PK2()(i);
     }
     break;
     case INPAR::STR::stress_cauchy:
     {
-      if (elestress == nullptr) dserror("stress data not available");
+      if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
       static CORE::LINALG::Matrix<3, 3> pkstress;
       pkstress(0, 0) = PK2()(0);
@@ -2632,7 +2634,7 @@ void DRT::ELEMENTS::So3Plast<distype>::OutputStress(const int gp,
       break;
     default:
     {
-      dserror("requested stress type not available");
+      FOUR_C_THROW("requested stress type not available");
       break;
     }
   }
@@ -2662,7 +2664,7 @@ void DRT::ELEMENTS::So3Plast<distype>::Kinematics(const int gp)
   SetInvJ().Multiply(DerivShapeFunction(), Xrefe());
   // xij_ = ds/dx
   SetDetJ() = SetInvJ().Invert();
-  if (DetJ() < 1.0E-16) dserror("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", DetJ());
+  if (DetJ() < 1.0E-16) FOUR_C_THROW("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", DetJ());
 
   /* get the inverse of the Jacobian matrix which looks like:
    **            [ x_,r  y_,r  z_,r ]^-1
@@ -2829,7 +2831,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateStiffMatrix(const int gp,
         case soh8p_easnone:
           break;
         default:
-          dserror("Don't know what to do with EAS type %d", eastype_);
+          FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
           break;
       }
     }  // ---------------------------------------------------------------- EAS
@@ -2858,7 +2860,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
-    dserror("tsi only with m_plelasthyper material type");
+    FOUR_C_THROW("tsi only with m_plelasthyper material type");
 
   // Gauss point temperature
   const double gp_temp = Temp().Dot(ShapeFunction());
@@ -2893,7 +2895,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
       case soh8p_easnone:
         break;
       default:
-        dserror("Don't know what to do with EAS type %d", eastype_);
+        FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
         break;
     }
   }
@@ -3064,7 +3066,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
         case soh8p_easnone:
           break;
         default:
-          dserror("Don't know what to do with EAS type %d", eastype_);
+          FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
           break;
       }
     }  // enhance the deformation rate
@@ -3113,7 +3115,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
         case soh8p_easnone:
           break;
         default:
-          dserror("Don't know what to do with EAS type %d", eastype_);
+          FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
           break;
       }
     }
@@ -3133,12 +3135,12 @@ void DRT::ELEMENTS::So3Plast<distype>::HeatFlux(const std::vector<double>& temp,
     CORE::LINALG::SerialDenseMatrix* d2q_dT_dn, CORE::LINALG::SerialDenseMatrix* d2q_dT_dpxi)
 {
   if (!dq_dT || !dq_dd || !dq_dn || !dq_dpxi || !d2q_dT_dd || !d2q_dT_dn || !d2q_dT_dpxi)
-    dserror("input inconsistent");
+    FOUR_C_THROW("input inconsistent");
 
   InvalidGpData();
   InvalidEleData();
 
-  if (NumMaterial() < 2) dserror("where's my second material");
+  if (NumMaterial() < 2) FOUR_C_THROW("where's my second material");
   Teuchos::RCP<MAT::FourierIso> mat_thr =
       Teuchos::rcp_dynamic_cast<MAT::FourierIso>(Material(1), true);
   const double k0 = mat_thr->Conductivity();

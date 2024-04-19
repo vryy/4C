@@ -13,7 +13,7 @@
 #define BACI_VERSION_MINOR @baci_VERSION_MINOR@
 
 // This flag guards assertions and special checks that are often expensive and should only run when debugging.
-#cmakedefine BACI_DEBUG
+#cmakedefine FOUR_C_ENABLE_ASSERTIONS
 
 #cmakedefine BACI_DSERROR_DUMP
 

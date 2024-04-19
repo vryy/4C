@@ -79,7 +79,7 @@ namespace DRT::ELEMENTS
     {
       if constexpr (!CORE::FE::use_lagrange_shapefnct<celltype>)
       {
-        dserror("The full linearization is only implemented for lagrangian elements.");
+        FOUR_C_THROW("The full linearization is only implemented for lagrangian elements.");
       }
 
       using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
