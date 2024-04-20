@@ -417,35 +417,54 @@ namespace FSI
 
     // L2-NORMS (split)
     //--------------------------------------------------------------------------//
-    double normstrrhsL2_;      //!< L2-norm of structural residual
-    double normflvelrhsL2_;    //!< L2-norm of fluid velocity residual
-    double normflpresrhsL2_;   //!< L2-norm of fluid pressure residual
-    double normpflvelrhsL2_;   //!< L2-norm of poro fluid velocity residual
-    double normpflpresrhsL2_;  //!< L2-norm of poro fluid pressure residual
+    double normstrrhsL2_ = std::numeric_limits<double>::max();  //!< L2-norm of structural residual
+    double normflvelrhsL2_ =
+        std::numeric_limits<double>::max();  //!< L2-norm of fluid velocity residual
+    double normflpresrhsL2_ =
+        std::numeric_limits<double>::max();  //!< L2-norm of fluid pressure residual
+    double normpflvelrhsL2_ =
+        std::numeric_limits<double>::max();  //!< L2-norm of poro fluid velocity residual
+    double normpflpresrhsL2_ =
+        std::numeric_limits<double>::max();  //!< L2-norm of poro fluid pressure residual
 
     //--------------------------------------------------------------------------//
-    double normstrincL2_;      //!< L2-norm of structural increment
-    double normflvelincL2_;    //!< L2-norm of fluid velocity increment
-    double normflpresincL2_;   //!< L2-norm of fluid pressure increment
-    double normpflvelincL2_;   //!< L2-norm of poro fluid velocity increment
-    double normpflpresincL2_;  //!< L2-norm of poro fluid pressure increment
+    double normstrincL2_ = std::numeric_limits<double>::max();  //!< L2-norm of structural increment
+    double normflvelincL2_ =
+        std::numeric_limits<double>::max();  //!< L2-norm of fluid velocity increment
+    double normflpresincL2_ =
+        std::numeric_limits<double>::max();  //!< L2-norm of fluid pressure increment
+    double normpflvelincL2_ =
+        std::numeric_limits<double>::max();  //!< L2-norm of poro fluid velocity increment
+    double normpflpresincL2_ =
+        std::numeric_limits<double>::max();  //!< L2-norm of poro fluid pressure increment
     //--------------------------------------------------------------------------//
 
     // Inf-NORMS (split)
     //--------------------------------------------------------------------------//
-    double normstrrhsInf_;      //!< Inf-norm of structural residual
-    double normflvelrhsInf_;    //!< Inf-norm of fluid velocity residual
-    double normflpresrhsInf_;   //!< Inf-norm of fluid pressure residual
-    double normpflvelrhsInf_;   //!< Inf-norm of poro fluid velocity residual
-    double normpflpresrhsInf_;  //!< Inf-norm of poro fluid pressure residual
+    double normstrrhsInf_ =
+        std::numeric_limits<double>::max();  //!< Inf-norm of structural residual
+    double normflvelrhsInf_ =
+        std::numeric_limits<double>::max();  //!< Inf-norm of fluid velocity residual
+    double normflpresrhsInf_ =
+        std::numeric_limits<double>::max();  //!< Inf-norm of fluid pressure residual
+    double normpflvelrhsInf_ =
+        std::numeric_limits<double>::max();  //!< Inf-norm of poro fluid velocity residual
+    double normpflpresrhsInf_ =
+        std::numeric_limits<double>::max();  //!< Inf-norm of poro fluid pressure residual
 
     //--------------------------------------------------------------------------//
-    double normstrincInf_;      //!< Inf-norm of structural increment
-    double normstrincdispInf_;  //!< Inf-norm of structural displacement increment
-    double normflvelincInf_;    //!< Inf-norm of fluid velocity increment
-    double normflpresincInf_;   //!< Inf-norm of fluid pressure increment
-    double normpflvelincInf_;   //!< Inf-norm of poro fluid velocity residual
-    double normpflpresincInf_;  //!< Inf-norm of poro fluid pressure residual
+    double normstrincInf_ =
+        std::numeric_limits<double>::max();  //!< Inf-norm of structural increment
+    double normstrincdispInf_ =
+        std::numeric_limits<double>::max();  //!< Inf-norm of structural displacement increment
+    double normflvelincInf_ =
+        std::numeric_limits<double>::max();  //!< Inf-norm of fluid velocity increment
+    double normflpresincInf_ =
+        std::numeric_limits<double>::max();  //!< Inf-norm of fluid pressure increment
+    double normpflvelincInf_ =
+        std::numeric_limits<double>::max();  //!< Inf-norm of poro fluid velocity residual
+    double normpflpresincInf_ =
+        std::numeric_limits<double>::max();  //!< Inf-norm of poro fluid pressure residual
 
     //@}
 
@@ -453,8 +472,8 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name Iteration counter
 
-    int iter_;        //!< inner iteration step
-    int iter_outer_;  //!< iteration counter for outer Newton loop
+    int iter_{};        //!< inner iteration step
+    int iter_outer_{};  //!< iteration counter for outer Newton loop
 
     const int itermin_;        //!< minimally requested inner iteration
     const int itermax_;        //!< maximally permitted inner iterations
