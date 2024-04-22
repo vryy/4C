@@ -197,7 +197,7 @@ void SCATRA::TimIntCardiacMonodomain::SetElementSpecificScaTraParameters(
     if (INPAR::SCATRA::timeint_gen_alpha ==
         CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
       if (params_->get<double>("ALPHA_M") < 1.0 or params_->get<double>("ALPHA_F") < 1.0)
-        dserror(
+        FOUR_C_THROW(
             "EP calculation with semiimplicit timestepping scheme only tested for gen-alpha with "
             "alpha_f = alpha_m = 1!");
 

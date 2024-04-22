@@ -25,7 +25,7 @@ CORE::LINALG::LinalgProjectedOperator::LinalgProjectedOperator(Teuchos::RCP<Epet
     : project_(project), A_(A), projector_(projector)
 {
   if (project_ && (projector == Teuchos::null))
-    dserror("Kernel projection enabled but got no projector object");
+    FOUR_C_THROW("Kernel projection enabled but got no projector object");
 
   return;
 }  // CORE::LINALG::LinalgProjectedOperator::LinalgProjectedOperator

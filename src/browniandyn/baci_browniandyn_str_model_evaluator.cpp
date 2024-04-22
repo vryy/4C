@@ -54,7 +54,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // safety check, brownian dynamics simulation only for one step theta and
   // theta = 1.0 (see Cyron 2012)
   if (TimInt().GetDataSDynPtr()->GetDynamicType() != INPAR::STR::dyna_onesteptheta)
-    dserror("Brownian dynamics simulation only consistent for one step theta schema.");
+    FOUR_C_THROW("Brownian dynamics simulation only consistent for one step theta schema.");
 
   discret_ptr_ = DiscretPtr();
 
@@ -213,7 +213,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::AssembleForce(
   // safety check, brownian dynamics simulation for with one step theta and
   // theta = 1.0 (see Cyron 2012)
   if (abs(timefac_np - 1.0) > 1.0e-8)
-    dserror(
+    FOUR_C_THROW(
         "Brownian dynamics simulation only consistent for one step theta scheme"
         " and theta = 1.0 .");
 
@@ -391,7 +391,7 @@ void STR::MODELEVALUATOR::BrownianDyn::EvaluateBrownian(Teuchos::ParameterList& 
 
   // todo: this needs to go, just pass ParamsInterface to elements
   if (p.numParams() > 1)
-    dserror(
+    FOUR_C_THROW(
         "Please use the STR::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
   // -------------------------------------------------------------------------
@@ -619,7 +619,7 @@ void STR::MODELEVALUATOR::BrownianDyn::RandomNumbersPerElement()
     }
     else
     {
-      dserror("Brownian dynamics simulation not (yet) implemented for this element type.");
+      FOUR_C_THROW("Brownian dynamics simulation not (yet) implemented for this element type.");
     }
   }
   // -------------------------------------------------------------------------

@@ -37,7 +37,7 @@ const IO::VisualizationData& IO::VisualizationManager::GetVisualizationData(
 {
   if (visualization_map_.find(visualization_data_name) == visualization_map_.end())
   {
-    dserror("The requested visualization data \"%s\" is not registered.",
+    FOUR_C_THROW("The requested visualization data \"%s\" is not registered.",
         visualization_data_name.c_str());
   }
   return visualization_map_.at(visualization_data_name).first;
@@ -68,7 +68,7 @@ IO::VisualizationData& IO::VisualizationManager::RegisterVisualizationData(
 {
   if (visualization_map_.find(visualization_data_name) != visualization_map_.end())
   {
-    dserror(
+    FOUR_C_THROW(
         "You are trying to register visualization data with the name \"%s\" but the "
         "visualization data is already registered, this is not possible",
         visualization_data_name.c_str());

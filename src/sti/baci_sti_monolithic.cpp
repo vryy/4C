@@ -64,9 +64,9 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 {
   // safety checks
   if (!ScaTraField()->IsIncremental())
-    dserror("Must have incremental solution approach for scatra-thermo interaction!");
+    FOUR_C_THROW("Must have incremental solution approach for scatra-thermo interaction!");
   if (ThermoField()->SystemMatrix() == Teuchos::null)
-    dserror("System matrix associated with temperature field must be a sparse matrix!");
+    FOUR_C_THROW("System matrix associated with temperature field must be a sparse matrix!");
 
   // set control parameters for Newton-Raphson iteration loop
   itermax_ = fieldparameters_->sublist("NONLINEAR").get<int>("ITEMAX");
@@ -197,7 +197,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -212,7 +212,8 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     {
       // safety check
       if (!solver_->Params().isSublist("AMGnxn Parameters"))
-        dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
+        FOUR_C_THROW(
+            "Global system matrix with block structure requires AMGnxn block preconditioner!");
 
       // initialize global system matrix
       systemmatrix_ = Teuchos::rcp(
@@ -230,7 +231,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     {
       // safety check
       if (ScaTraField()->MatrixType() != CORE::LINALG::MatrixType::sparse)
-        dserror("Incompatible matrix type associated with scalar transport field!");
+        FOUR_C_THROW("Incompatible matrix type associated with scalar transport field!");
 
       // initialize global system matrix
       systemmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMap(), 27, false, true));
@@ -244,7 +245,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
     default:
     {
-      dserror("Type of global system matrix for scatra-thermo interaction not recognized!");
+      FOUR_C_THROW("Type of global system matrix for scatra-thermo interaction not recognized!");
       break;
     }
   }
@@ -292,7 +293,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -341,7 +342,7 @@ void STI::Monolithic::FDCheck()
             ->EpetraMatrix();
   }
   else
-    dserror("Global system matrix must be a block sparse matrix!");
+    FOUR_C_THROW("Global system matrix must be a block sparse matrix!");
   sysmat_original->FillComplete();
 
   // make a copy of system right-hand side vector
@@ -368,7 +369,8 @@ void STI::Monolithic::FDCheck()
     // impose perturbation
     if (statenp->Map().MyGID(colgid))
       if (statenp->SumIntoGlobalValue(colgid, 0, ScaTraField()->FDCheckEps()))
-        dserror("Perturbation could not be imposed on state vector for finite difference check!");
+        FOUR_C_THROW(
+            "Perturbation could not be imposed on state vector for finite difference check!");
     ScaTraField()->Phinp()->Update(1., *maps_->ExtractVector(statenp, 0), 0.);
     ThermoField()->Phinp()->Update(1., *maps_->ExtractVector(statenp, 1), 0.);
 
@@ -395,7 +397,7 @@ void STI::Monolithic::FDCheck()
     {
       // get global index of current matrix row
       const int rowgid = sysmat_original->RowMap().GID(rowlid);
-      if (rowgid < 0) dserror("Invalid global ID of matrix row!");
+      if (rowgid < 0) FOUR_C_THROW("Invalid global ID of matrix row!");
 
       // get relevant entry in current row of original system matrix
       double entry(0.);
@@ -419,7 +421,7 @@ void STI::Monolithic::FDCheck()
 
       // confirm accuracy of first comparison
       if (abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
-        dserror("Finite difference check involves values too close to numerical zero!");
+        FOUR_C_THROW("Finite difference check involves values too close to numerical zero!");
 
       // absolute and relative errors in first comparison
       const double abserr1 = entry - fdval;
@@ -453,7 +455,7 @@ void STI::Monolithic::FDCheck()
 
         // confirm accuracy of second comparison
         if (abs(right) > 1.e-17 and abs(right) < 1.e-15)
-          dserror("Finite difference check involves values too close to numerical zero!");
+          FOUR_C_THROW("Finite difference check involves values too close to numerical zero!");
 
         // absolute and relative errors in second comparison
         const double abserr2 = left - right;
@@ -495,7 +497,7 @@ void STI::Monolithic::FDCheck()
     {
       printf(
           "--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n", counterglobal);
-      dserror("Finite difference check failed for STI system matrix!");
+      FOUR_C_THROW("Finite difference check failed for STI system matrix!");
     }
     else
     {
@@ -522,7 +524,7 @@ void STI::Monolithic::OutputMatrixToFile(
     const double tolerance)
 {
   // safety check
-  if (!sparseoperator->Filled()) dserror("Sparse operator must be filled for output!");
+  if (!sparseoperator->Filled()) FOUR_C_THROW("Sparse operator must be filled for output!");
 
   // extract communicator
   const Epetra_Comm& comm = sparseoperator->Comm();
@@ -533,14 +535,14 @@ void STI::Monolithic::OutputMatrixToFile(
   const auto blocksparsematrix =
       Teuchos::rcp_dynamic_cast<const CORE::LINALG::BlockSparseMatrixBase>(sparseoperator);
   if (sparsematrix == Teuchos::null and blocksparsematrix == Teuchos::null)
-    dserror("Unknown type of sparse operator!");
+    FOUR_C_THROW("Unknown type of sparse operator!");
 
   // extract row map
   const Epetra_Map& rowmap =
       sparsematrix != Teuchos::null ? sparsematrix->RowMap() : blocksparsematrix->FullRowMap();
 
   // safety check
-  if (!rowmap.UniqueGIDs()) dserror("Row map of matrix must be non-overlapping!");
+  if (!rowmap.UniqueGIDs()) FOUR_C_THROW("Row map of matrix must be non-overlapping!");
 
   // copy global IDs of matrix rows stored on current processor into vector
   std::vector<int> myrowgids(rowmap.NumMyElements(), 0);
@@ -563,7 +565,7 @@ void STI::Monolithic::OutputMatrixToFile(
   if (sparsematrix != Teuchos::null)
   {
     if (crsmatrix.Import(*sparsematrix->EpetraMatrix(), Epetra_Import(fullrowmap, rowmap), Insert))
-      dserror("Matrix import failed!");
+      FOUR_C_THROW("Matrix import failed!");
   }
   else
   {
@@ -573,7 +575,7 @@ void STI::Monolithic::OutputMatrixToFile(
       {
         if (crsmatrix.Import(*blocksparsematrix->Matrix(i, j).EpetraMatrix(),
                 Epetra_Import(fullrowmap, blocksparsematrix->RangeMap(i)), Insert))
-          dserror("Matrix import failed!");
+          FOUR_C_THROW("Matrix import failed!");
       }
     }
   }
@@ -604,7 +606,7 @@ void STI::Monolithic::OutputMatrixToFile(
       double* values;
       int* indices;
       if (crsmatrix.ExtractGlobalRowView(rowgid, numentries, values, indices))
-        dserror("Cannot extract matrix row with global ID %d!", rowgid);
+        FOUR_C_THROW("Cannot extract matrix row with global ID %d!", rowgid);
 
       // sort entries in current matrix row in ascending order of column global ID via map
       std::map<int, double> entries;
@@ -631,7 +633,7 @@ void STI::Monolithic::OutputMatrixToFile(
   comm.Barrier();
 
   // throw error to abort simulation for debugging
-  dserror("Matrix was output to *.csv file!");
+  FOUR_C_THROW("Matrix was output to *.csv file!");
 }
 
 /*--------------------------------------------------------------------------------*
@@ -647,7 +649,8 @@ void STI::Monolithic::OutputVectorToFile(
 
   // safety check
   if (!map.UniqueGIDs())
-    dserror("Vector output to *.csv file currently only works for non-overlapping vector maps!");
+    FOUR_C_THROW(
+        "Vector output to *.csv file currently only works for non-overlapping vector maps!");
 
   // copy global IDs of vector components stored on current processor into vector
   std::vector<int> mygids(map.NumMyElements(), 0);
@@ -717,7 +720,7 @@ void STI::Monolithic::OutputVectorToFile(
   comm.Barrier();
 
   // throw error to abort simulation for debugging
-  dserror("Vector was output to *.csv file!");
+  FOUR_C_THROW("Vector was output to *.csv file!");
 }
 
 /*--------------------------------------------------------------------------------*
@@ -770,7 +773,7 @@ void STI::Monolithic::AssembleMatAndRHS()
       // check global system matrix
       Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocksystemmatrix =
           Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(systemmatrix_);
-      if (blocksystemmatrix == Teuchos::null) dserror("System matrix is not a block matrix!");
+      if (blocksystemmatrix == Teuchos::null) FOUR_C_THROW("System matrix is not a block matrix!");
 
       switch (ScaTraField()->MatrixType())
       {
@@ -833,7 +836,7 @@ void STI::Monolithic::AssembleMatAndRHS()
                 }
                 default:
                 {
-                  dserror("Invalid type of scatra-scatra interface coupling!");
+                  FOUR_C_THROW("Invalid type of scatra-scatra interface coupling!");
                   break;
                 }
               }
@@ -905,7 +908,7 @@ void STI::Monolithic::AssembleMatAndRHS()
               }
               default:
               {
-                dserror("Invalid type of scatra-scatra interface coupling!");
+                FOUR_C_THROW("Invalid type of scatra-scatra interface coupling!");
                 break;
               }
             }
@@ -1004,7 +1007,7 @@ void STI::Monolithic::AssembleMatAndRHS()
 
               default:
               {
-                dserror("Invalid type of scatra-scatra interface coupling!");
+                FOUR_C_THROW("Invalid type of scatra-scatra interface coupling!");
                 break;
               }
             }
@@ -1027,7 +1030,7 @@ void STI::Monolithic::AssembleMatAndRHS()
 
         default:
         {
-          dserror("Invalid matrix type associated with scalar transport field!");
+          FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
           break;
         }
         case CORE::LINALG::MatrixType::undefined:
@@ -1043,7 +1046,7 @@ void STI::Monolithic::AssembleMatAndRHS()
     {
       // check global system matrix
       auto systemmatrix = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(systemmatrix_);
-      if (systemmatrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
+      if (systemmatrix == Teuchos::null) FOUR_C_THROW("System matrix is not a sparse matrix!");
 
       // construct global system matrix by adding matrix blocks
       systemmatrix->Add(*ScaTraField()->SystemMatrix(), false, 1.0, 0.0);
@@ -1111,7 +1114,7 @@ void STI::Monolithic::AssembleMatAndRHS()
 
           default:
           {
-            dserror("Invalid type of scatra-scatra interface coupling!");
+            FOUR_C_THROW("Invalid type of scatra-scatra interface coupling!");
             break;
           }
         }
@@ -1130,7 +1133,7 @@ void STI::Monolithic::AssembleMatAndRHS()
 
     default:
     {
-      dserror("Type of global system matrix for scatra-thermo interaction not recognized!");
+      FOUR_C_THROW("Type of global system matrix for scatra-thermo interaction not recognized!");
       break;
     }
   }
@@ -1181,7 +1184,7 @@ void STI::Monolithic::BuildNullSpaces() const
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -1234,7 +1237,7 @@ void STI::Monolithic::ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solver
     for (int i = 0; i < scatradis.NumMyRowNodes(); ++i)
     {
       const int lid = DofRowMap()->LID(scatradis.Dof(0, scatradis.lRowNode(i), 0));
-      if (lid < 0) dserror("Cannot find scatra degree of freedom!");
+      if (lid < 0) FOUR_C_THROW("Cannot find scatra degree of freedom!");
       for (int j = 0; j < numdofpernode_scatra; ++j) modes_scatra[j][lid + j] = 1.;
     }
 
@@ -1246,7 +1249,7 @@ void STI::Monolithic::ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solver
     for (int i = 0; i < thermodis.NumMyRowNodes(); ++i)
     {
       const int lid = DofRowMap()->LID(thermodis.Dof(0, thermodis.lRowNode(i), 0));
-      if (lid < 0) dserror("Cannot find thermo degree of freedom!");
+      if (lid < 0) FOUR_C_THROW("Cannot find thermo degree of freedom!");
       for (int j = 0; j < numdofpernode_thermo; ++j) modes_thermo[j][lid + j] = 1.;
     }
 
@@ -1357,11 +1360,11 @@ bool STI::Monolithic::ExitNewtonRaphson()
       if (std::isnan(concdofnorm) or std::isnan(concresnorm) or std::isnan(concincnorm) or
           std::isnan(potdofnorm) or std::isnan(potresnorm) or std::isnan(potincnorm) or
           std::isnan(thermodofnorm) or std::isnan(thermoresnorm) or std::isnan(thermoincnorm))
-        dserror("Vector norm is not a number!");
+        FOUR_C_THROW("Vector norm is not a number!");
       if (std::isinf(concdofnorm) or std::isinf(concresnorm) or std::isinf(concincnorm) or
           std::isinf(potdofnorm) or std::isinf(potresnorm) or std::isinf(potincnorm) or
           std::isinf(thermodofnorm) or std::isinf(thermoresnorm) or std::isinf(thermoincnorm))
-        dserror("Vector norm is infinity!");
+        FOUR_C_THROW("Vector norm is infinity!");
 
       // prevent division by zero
       if (concdofnorm < 1.e-10) concdofnorm = 1.e-10;
@@ -1461,7 +1464,7 @@ bool STI::Monolithic::ExitNewtonRaphson()
 
     default:
     {
-      dserror("Type of scalar transport not yet available!");
+      FOUR_C_THROW("Type of scalar transport not yet available!");
       break;
     }
   }
@@ -1506,7 +1509,7 @@ void STI::Monolithic::Solve()
 
     // safety check
     if (!systemmatrix_->Filled())
-      dserror("Complete() has not been called on global system matrix yet!");
+      FOUR_C_THROW("Complete() has not been called on global system matrix yet!");
 
     // perform finite difference check on time integrator level
     if (ScaTraField()->FDCheckType() == INPAR::SCATRA::fdcheck_global) FDCheck();
@@ -1571,7 +1574,7 @@ void STI::Monolithic::Solve()
         }
         default:
         {
-          dserror("Invalid type of scatra-scatra interface coupling!");
+          FOUR_C_THROW("Invalid type of scatra-scatra interface coupling!");
           break;
         }
       }
@@ -1618,7 +1621,7 @@ void STI::Monolithic::ApplyDirichletOffDiag(
 
       default:
       {
-        dserror("Invalid type of scatra-scatra interface coupling!");
+        FOUR_C_THROW("Invalid type of scatra-scatra interface coupling!");
         break;
       }
     }
@@ -1655,7 +1658,7 @@ void STI::Monolithic::AssembleDomainInterfaceOffDiag(
     }
     default:
     {
-      dserror("Unknown matrix type");
+      FOUR_C_THROW("Unknown matrix type");
       break;
     }
   }
@@ -1777,7 +1780,7 @@ void STI::Monolithic::AssembleDomainInterfaceOffDiag(
     }
     default:
     {
-      dserror("Unknown matrix type");
+      FOUR_C_THROW("Unknown matrix type");
       break;
     }
   }

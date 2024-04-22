@@ -77,7 +77,8 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
   const std::vector<int>* cond_nodes = condition->GetNodes();
   int cond_nodes_size = cond_nodes->size();
 
-  if (cond_nodes_size == 0) dserror("No nodes in nodal cloud of condition %s", condname.c_str());
+  if (cond_nodes_size == 0)
+    FOUR_C_THROW("No nodes in nodal cloud of condition %s", condname.c_str());
 
   // loop over all conditioned nodes
   for (int node = 0; node < cond_nodes_size; node++)
@@ -86,7 +87,7 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
     int nodeid = cond_nodes->at(node);
     // get node pointer
     DRT::Node* node_ptr = dis->gNode(nodeid);
-    if (node_ptr == nullptr) dserror("Could not get node with id %d", nodeid);
+    if (node_ptr == nullptr) FOUR_C_THROW("Could not get node with id %d", nodeid);
 
     if (dis->NodeRowMap()->LID(nodeid) != -1)
     {
@@ -122,17 +123,17 @@ void IMMERSED::ImmersedBase::DoDirichletCond(const Teuchos::RCP<Epetra_Vector>& 
   {
     int gid = dbcmap_new->GID(i);
 
-#ifdef BACI_DEBUG
-    if (mynumvals == 0) dserror("dbcmap empty!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    if (mynumvals == 0) FOUR_C_THROW("dbcmap empty!");
     int err = -2;
     int lid = dirichvals->Map().LID(gid);
     err = statevector->ReplaceGlobalValue(gid, 0, myvals[lid]);
     if (err == -1)
-      dserror("VectorIndex >= NumVectors()");
+      FOUR_C_THROW("VectorIndex >= NumVectors()");
     else if (err == 1)
-      dserror("GlobalRow not associated with calling processor");
+      FOUR_C_THROW("GlobalRow not associated with calling processor");
     else if (err != -1 and err != 1 and err != 0)
-      dserror("Trouble using ReplaceGlobalValue on fluid state vector. ErrorCode = %d", err);
+      FOUR_C_THROW("Trouble using ReplaceGlobalValue on fluid state vector. ErrorCode = %d", err);
 #else
     int lid = dirichvals->Map().LID(gid);
     statevector->ReplaceGlobalValue(gid, 0, myvals[lid]);
@@ -156,17 +157,17 @@ void IMMERSED::ImmersedBase::DoDirichletCond(const Teuchos::RCP<Epetra_Vector>& 
   {
     int gid = dbcmap_new->GID(i);
 
-#ifdef BACI_DEBUG
-    if (mynumvals == 0) dserror("dbcmap empty!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    if (mynumvals == 0) FOUR_C_THROW("dbcmap empty!");
     int err = -2;
     int lid = dirichvals->Map().LID(gid);
     err = statevector->ReplaceGlobalValue(gid, 0, myvals[lid]);
     if (err == -1)
-      dserror("VectorIndex >= NumVectors()");
+      FOUR_C_THROW("VectorIndex >= NumVectors()");
     else if (err == 1)
-      dserror("GlobalRow not associated with calling processor");
+      FOUR_C_THROW("GlobalRow not associated with calling processor");
     else if (err != -1 and err != 1 and err != 0)
-      dserror("Trouble using ReplaceGlobalValue on fluid state vector. ErrorCode = %d", err);
+      FOUR_C_THROW("Trouble using ReplaceGlobalValue on fluid state vector. ErrorCode = %d", err);
 #else
     int lid = dirichvals->Map().LID(gid);
 
@@ -272,7 +273,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
       DRT::ELEMENTS::FluidImmersedBase* immersedelebase =
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
       if (immersedelebase == nullptr)
-        dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
+        FOUR_C_THROW("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
 
       // evaluate this element and fill vector with immersed dirichlets
       int row = strategy->FirstDofSet();
@@ -327,7 +328,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersedNoAssembly(Teuchos::ParameterList& 
       DRT::ELEMENTS::FluidImmersedBase* immersedelebase =
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
       if (immersedelebase == nullptr)
-        dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
+        FOUR_C_THROW("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
 
       // provide important objects to ParameterList
       params.set<int>("action", action);
@@ -340,7 +341,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersedNoAssembly(Teuchos::ParameterList& 
       else if (dis->Name() == "porofluid")
         params.set<std::string>("immerseddisname", "cell");
       else
-        dserror("no corresponding immerseddisname set for this type of backgrounddis!");
+        FOUR_C_THROW("no corresponding immerseddisname set for this type of backgrounddis!");
 
       // evaluate the element
       CORE::LINALG::SerialDenseMatrix dummymat;
@@ -381,7 +382,7 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(
       DRT::ELEMENTS::FluidImmersedBase* immersedelebase =
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(iele);
       if (immersedelebase == nullptr)
-        dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
+        FOUR_C_THROW("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
 
       // evaluate this element and fill vector with immersed dirichlets
       int row = strategy->FirstDofSet();
@@ -423,9 +424,9 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
     Teuchos::RCP<DRT::Discretization> evaldis, Teuchos::ParameterList& params,
     DRT::AssembleStrategy& strategy, const std::string& condstring, const int condid)
 {
-#ifdef BACI_DEBUG
-  if (!(evaldis->Filled())) dserror("FillComplete() was not called");
-  if (!(evaldis->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (!(evaldis->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(evaldis->HaveDofs())) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 #endif
 
   int row = strategy.FirstDofSet();
@@ -455,7 +456,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
       {
         std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
         if (geom.empty())
-          dserror(
+          FOUR_C_THROW(
               "evaluation of condition with empty geometry on proc %d", evaldis->Comm().MyPID());
 
         std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
@@ -496,7 +497,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
         evaldis->Comm().MaxAll(&mygeometrysize, &maxgeometrysize, 1);
         curr = geom.begin();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         std::cout << "PROC " << evaldis->Comm().MyPID() << ": mygeometrysize = " << mygeometrysize
                   << " maxgeometrysize = " << maxgeometrysize << std::endl;
 #endif
@@ -525,7 +526,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
           int err = curr->second->Evaluate(params, *evaldis, la[0].lm_, strategy.Elematrix1(),
               strategy.Elematrix2(), strategy.Elevector1(), strategy.Elevector2(),
               strategy.Elevector3());
-          if (err) dserror("error while evaluating elements");
+          if (err) FOUR_C_THROW("error while evaluating elements");
 
           // assemble every element contribution only once
           // do not assemble after dummy call for internal communication
@@ -643,7 +644,7 @@ std::vector<double> IMMERSED::ImmersedBase::CalcGlobalResultantfromEpetraVector(
   const int nummyrownodes = dis->NumMyRowNodes();
   const int myveclength = vec_epetra->MyLength();
 
-  if (myveclength != nummyrownodes * 3) dserror("local vector length is invalid!");
+  if (myveclength != nummyrownodes * 3) FOUR_C_THROW("local vector length is invalid!");
 
   for (int i = 0; i < nummyrownodes; i++)
   {

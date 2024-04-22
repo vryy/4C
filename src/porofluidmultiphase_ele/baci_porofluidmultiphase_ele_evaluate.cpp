@@ -70,7 +70,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
       break;
     default:
     {
-      dserror("Unknown type of action '%i' for PoroFluidMultiPhase", action);
+      FOUR_C_THROW("Unknown type of action '%i' for PoroFluidMultiPhase", action);
       break;
     }
   }  // switch(action)
@@ -86,7 +86,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::EvaluateNeumann(Teuchos::ParameterList& 
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("EvaluateNeumann for PoroFluidMultiPhase  not yet implemented!");
+  FOUR_C_THROW("EvaluateNeumann for PoroFluidMultiPhase  not yet implemented!");
   //    The function is just a dummy. For PoroFluidMultiPhase elements, the integration
   //    integration of volume Neumann conditions (body forces) takes place
   //    in the element. We need it there for potential stabilisation terms!

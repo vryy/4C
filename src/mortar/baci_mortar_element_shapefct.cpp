@@ -45,7 +45,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
     // *********************************************************************
     case MORTAR::Element::lin1D_edge0:
     {
-      dserror(
+      FOUR_C_THROW(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
           "instead");
       val[0] = 0.0;
@@ -60,7 +60,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
     // *********************************************************************
     case MORTAR::Element::lin1D_edge1:
     {
-      dserror(
+      FOUR_C_THROW(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
           "instead");
       val[0] = 1.0;
@@ -141,7 +141,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       // *********************************************************************
     case MORTAR::Element::quad1D_modified:
     {
-      dserror("Quadratic LM for quadratic interpolation in 2D not available!");
+      FOUR_C_THROW("Quadratic LM for quadratic interpolation in 2D not available!");
       break;
     }
       // *********************************************************************
@@ -150,7 +150,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       // *********************************************************************
     case MORTAR::Element::quad1D_edge0:
     {
-      dserror(
+      FOUR_C_THROW(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
           "instead");
       val[0] = 0.0;
@@ -167,7 +167,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       // *********************************************************************
     case MORTAR::Element::quad1D_edge1:
     {
-      dserror(
+      FOUR_C_THROW(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
           "instead");
       val[0] = -xi[0];
@@ -828,9 +828,9 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       // pre-calculated consistent dual shape functions
       else
       {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (MoData().DualShape()->numCols() != 2 && MoData().DualShape()->numRows() != 2)
-          dserror("Dual shape functions coefficient matrix calculated in the wrong size");
+          FOUR_C_THROW("Dual shape functions coefficient matrix calculated in the wrong size");
 #endif
         const int nnodes = NumNode();
         CORE::LINALG::SerialDenseVector stdval(nnodes, true);
@@ -858,7 +858,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       // *********************************************************************
     case MORTAR::Element::lindual1D_edge0:
     {
-      dserror(
+      FOUR_C_THROW(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
           "instead");
       val[0] = 0.0;
@@ -873,7 +873,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       // *********************************************************************
     case MORTAR::Element::lindual1D_edge1:
     {
-      dserror(
+      FOUR_C_THROW(
           "ERROR: explicit edge modification is outdated! We apply a genreal transformaiton "
           "instead");
       val[0] = 1.0;
@@ -940,9 +940,10 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
     {
       const int nnodes = 4;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (nnodes != NumNode())
-        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
+        FOUR_C_THROW(
+            "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
       // get solution matrix with dual parameters
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1024,9 +1025,10 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       double detg = 0.0;
       const int nnodes = 3;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (nnodes != NumNode())
-        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
+        FOUR_C_THROW(
+            "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1100,9 +1102,10 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       double detg = 0.0;
       const int nnodes = 3;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (nnodes != NumNode())
-        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
+        FOUR_C_THROW(
+            "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1194,9 +1197,10 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       double detg = 0.0;
       const int nnodes = 6;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (nnodes != NumNode())
-        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
+        FOUR_C_THROW(
+            "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1269,9 +1273,10 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       double detg = 0.0;
       const int nnodes = 8;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (nnodes != NumNode())
-        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
+        FOUR_C_THROW(
+            "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1343,9 +1348,10 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       double detg = 0.0;
       const int nnodes = 9;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (nnodes != NumNode())
-        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
+        FOUR_C_THROW(
+            "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1417,9 +1423,10 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       double detg = 0.0;
       const int nnodes = 6;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (nnodes != NumNode())
-        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
+        FOUR_C_THROW(
+            "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1507,9 +1514,10 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       double detg = 0.0;
       const int nnodes = 8;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (nnodes != NumNode())
-        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
+        FOUR_C_THROW(
+            "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1598,9 +1606,10 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       double detg = 0.0;
       const int nnodes = 9;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (nnodes != NumNode())
-        dserror("MORTAR::Element shape function for LM incompatible with number of element nodes!");
+        FOUR_C_THROW(
+            "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
       CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
@@ -1851,7 +1860,7 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
       // *********************************************************************
     default:
     {
-      dserror("Unknown shape function type identifier");
+      FOUR_C_THROW("Unknown shape function type identifier");
       break;
     }
   }
@@ -1865,18 +1874,18 @@ void MORTAR::Element::ShapeFunctions(MORTAR::Element::ShapeType shape, const dou
 bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseVector& val,
     CORE::LINALG::SerialDenseMatrix& deriv, const int valdim, bool dualquad)
 {
-  if (!xi) dserror("EvaluateShape called with xi=nullptr");
+  if (!xi) FOUR_C_THROW("EvaluateShape called with xi=nullptr");
 
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("EvaluateShapeLagMult: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
 
   // check for boundary nodes
   bool bound = false;
   for (int i = 0; i < NumNode(); ++i)
   {
     Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
-    if (!mymrtrnode) dserror("EvaluateShapeLagMult: Null pointer!");
+    if (!mymrtrnode) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
 
@@ -1885,17 +1894,17 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
     // 2D linear case (2noded line element)
     case CORE::FE::CellType::line2:
     {
-      if (valdim != 2) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
       ShapeFunctions(MORTAR::Element::lin1D, xi, val, deriv);
       break;
     }
       // 2D quadratic case (3noded line element)
     case CORE::FE::CellType::line3:
     {
-      if (valdim != 3) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       if (dualquad && !bound)
-        dserror(
+        FOUR_C_THROW(
             "There is no quadratic interpolation for dual shape functions for 2-D problems with "
             "quadratic elements available!");
       else if (dualquad && bound)
@@ -1907,21 +1916,21 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 3D linear case (3noded triangular element)
     case CORE::FE::CellType::tri3:
     {
-      if (valdim != 3) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
       ShapeFunctions(MORTAR::Element::lin2D, xi, val, deriv);
       break;
     }
       // 3D bilinear case (4noded quadrilateral element)
     case CORE::FE::CellType::quad4:
     {
-      if (valdim != 4) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 4) FOUR_C_THROW("Inconsistency in EvaluateShape");
       ShapeFunctions(MORTAR::Element::bilin2D, xi, val, deriv);
       break;
     }
       // 3D quadratic case (6noded triangular element)
     case CORE::FE::CellType::tri6:
     {
-      if (valdim != 6) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 6) FOUR_C_THROW("Inconsistency in EvaluateShape");
       if (dualquad && !bound)
         ShapeFunctions(MORTAR::Element::quad2D_modified, xi, val, deriv);
       else if (dualquad && bound)
@@ -1933,7 +1942,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 3D serendipity case (8noded quadrilateral element)
     case CORE::FE::CellType::quad8:
     {
-      if (valdim != 8) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 8) FOUR_C_THROW("Inconsistency in EvaluateShape");
       if (dualquad && !bound)
         ShapeFunctions(MORTAR::Element::serendipity2D_modified, xi, val, deriv);
       else if (dualquad && bound)
@@ -1945,7 +1954,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 3D biquadratic case (9noded quadrilateral element)
     case CORE::FE::CellType::quad9:
     {
-      if (valdim != 9) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 9) FOUR_C_THROW("Inconsistency in EvaluateShape");
       if (dualquad && !bound)
         ShapeFunctions(MORTAR::Element::biquad2D_modified, xi, val, deriv);
       else if (dualquad && bound)
@@ -1962,7 +1971,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 1D -- nurbs2
     case CORE::FE::CellType::nurbs2:
     {
-      if (valdim != 2) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
@@ -1981,7 +1990,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 1D -- nurbs3
     case CORE::FE::CellType::nurbs3:
     {
-      if (valdim != 3) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
@@ -2001,7 +2010,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 2D -- nurbs4
     case CORE::FE::CellType::nurbs4:
     {
-      if (valdim != 4) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 4) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
@@ -2025,7 +2034,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // 2D -- nurbs9
     case CORE::FE::CellType::nurbs9:
     {
-      if (valdim != 9) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 9) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
@@ -2040,9 +2049,9 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       CORE::FE::NURBS::nurbs_get_2D_funct_deriv(
           val, auxderiv, uv, Knots(), weights, CORE::FE::CellType::nurbs9);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (deriv.numCols() != 2 || deriv.numRows() != NumNode())
-        dserror("Inconsistency in EvaluateShape");
+        FOUR_C_THROW("Inconsistency in EvaluateShape");
 #endif
 
       // copy entries for to be conform with the mortar code!
@@ -2055,7 +2064,7 @@ bool MORTAR::Element::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseV
       // unknown case
     default:
     {
-      dserror("EvaluateShape called for unknown MORTAR::Element type");
+      FOUR_C_THROW("EvaluateShape called for unknown MORTAR::Element type");
       break;
     }
   }
@@ -2073,7 +2082,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
   // some methods don't need a Lagrange multiplier interpolation
   if (lmtype == INPAR::MORTAR::shape_none) return true;
 
-  if (!xi) dserror("EvaluateShapeLagMult called with xi=nullptr");
+  if (!xi) FOUR_C_THROW("EvaluateShapeLagMult called with xi=nullptr");
 
   // dual LM shape functions or not
   bool dual = false;
@@ -2082,14 +2091,14 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
 
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("EvaluateShapeLagMult: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
 
   switch (Shape())
   {
     // 2D linear case (2noded line element)
     case CORE::FE::CellType::line2:
     {
-      if (valdim != 2) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       if (dual)
         ShapeFunctions(MORTAR::Element::lindual1D, xi, val, deriv);
@@ -2101,7 +2110,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
       // 2D quadratic case (3noded line element)
     case CORE::FE::CellType::line3:
     {
-      if (valdim != 3) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       if (dual)
         ShapeFunctions(MORTAR::Element::quaddual1D, xi, val, deriv);
@@ -2158,7 +2167,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
     case CORE::FE::CellType::nurbs2:
     {
       if (dual)
-        dserror("no dual shape functions provided for nurbs!");
+        FOUR_C_THROW("no dual shape functions provided for nurbs!");
       else
         EvaluateShape(xi, val, deriv, valdim);
 
@@ -2239,7 +2248,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
     case CORE::FE::CellType::nurbs4:
     {
       if (dual)
-        dserror("no dual shape functions provided for nurbs!");
+        FOUR_C_THROW("no dual shape functions provided for nurbs!");
       else
         EvaluateShape(xi, val, deriv, valdim);
 
@@ -2250,7 +2259,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
     case CORE::FE::CellType::nurbs8:
     {
       if (dual)
-        dserror("no dual shape functions provided for nurbs!");
+        FOUR_C_THROW("no dual shape functions provided for nurbs!");
       else
         EvaluateShape(xi, val, deriv, valdim);
 
@@ -2331,7 +2340,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
       // unknown case
     default:
     {
-      dserror("EvaluateShapeLagMult called for unknown element type");
+      FOUR_C_THROW("EvaluateShapeLagMult called for unknown element type");
       break;
     }
   }
@@ -2393,7 +2402,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
       int numbound = (int)ids.size();
 
       // if all bound: error
-      if ((nnodes - numbound) < 1e-12) dserror("all nodes are bound");
+      if ((nnodes - numbound) < 1e-12) FOUR_C_THROW("all nodes are bound");
 
       const double factor = 1.0 / (nnodes - numbound);
       // row loop
@@ -2433,7 +2442,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
       {
         std::cout << "numnode= " << nnodes << "shape= " << CORE::FE::CellTypeToString(Shape())
                   << std::endl;
-        dserror("all nodes are bound");
+        FOUR_C_THROW("all nodes are bound");
       }
 
       const double factor = 1.0 / (nnodes - numbound);
@@ -2449,7 +2458,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
       }
     }
     else
-      dserror("unknown element type!");
+      FOUR_C_THROW("unknown element type!");
 
     MoData().Trafo() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(trafo));
   }
@@ -2473,7 +2482,7 @@ bool MORTAR::Element::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype
   }
   else
   {
-    dserror("unknown shape");
+    FOUR_C_THROW("unknown shape");
   }
 
   CORE::LINALG::SerialDenseVector tempval(nnodes, true);
@@ -2519,13 +2528,13 @@ bool MORTAR::Element::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmt
   // some methods don't need a Lagrange multiplier interpolation
   if (lmtype == INPAR::MORTAR::shape_none) return true;
 
-  if (!xi) dserror("EvaluateShapeLagMultLin called with xi=nullptr");
-  if (!IsSlave()) dserror("EvaluateShapeLagMultLin called for master element");
+  if (!xi) FOUR_C_THROW("EvaluateShapeLagMultLin called with xi=nullptr");
+  if (!IsSlave()) FOUR_C_THROW("EvaluateShapeLagMultLin called for master element");
 
   // check for feasible element types (line3,tri6, quad8 or quad9)
   if (Shape() != CORE::FE::CellType::line3 && Shape() != CORE::FE::CellType::tri6 &&
       Shape() != CORE::FE::CellType::quad8 && Shape() != CORE::FE::CellType::quad9)
-    dserror("Linear LM interpolation only for quadratic finite elements");
+    FOUR_C_THROW("Linear LM interpolation only for quadratic finite elements");
 
   // dual shape functions or not
   bool dual = false;
@@ -2534,21 +2543,21 @@ bool MORTAR::Element::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmt
 
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("EvaluateShapeLagMult: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
 
   // check for boundary nodes
   bool bound = false;
   for (int i = 0; i < NumNode(); ++i)
   {
     Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
-    if (!mymrtrnode) dserror("EvaluateShapeLagMult: Null pointer!");
+    if (!mymrtrnode) FOUR_C_THROW("EvaluateShapeLagMult: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
 
   // all nodes are interior: use unmodified shape functions
   if (!bound)
   {
-    dserror("You should not be here...");
+    FOUR_C_THROW("You should not be here...");
   }
 
   switch (Shape())
@@ -2575,7 +2584,7 @@ bool MORTAR::Element::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmt
       // dual Lagrange multipliers
       if (dual)
       {
-        // dserror("Quad->Lin modification of dual LM shape functions not yet implemented");
+        // FOUR_C_THROW("Quad->Lin modification of dual LM shape functions not yet implemented");
         if (Shape() == CORE::FE::CellType::tri6)
           ShapeFunctions(MORTAR::Element::quaddual2D_only_lin, xi, val, deriv);
         else if (Shape() == CORE::FE::CellType::quad8)
@@ -2601,7 +2610,7 @@ bool MORTAR::Element::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmt
       // unknown case
     default:
     {
-      dserror("EvaluateShapeLagMult called for unknown element type");
+      FOUR_C_THROW("EvaluateShapeLagMult called for unknown element type");
       break;
     }
   }
@@ -2639,9 +2648,9 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
         // establish fundamental data
         double detg = 0.0;
         static const int nnodes = 4;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (nnodes != NumNode())
-          dserror(
+          FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
         typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
@@ -2754,9 +2763,9 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
         // establish fundamental data
         double detg = 0.0;
         const int nnodes = 3;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (nnodes != NumNode())
-          dserror(
+          FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
         typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
@@ -2863,7 +2872,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
       //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
 
       /*
-       #ifdef BACI_DEBUG
+       #ifdef FOUR_C_ENABLE_ASSERTIONS
        // *******************************************************************
        // FINITE DIFFERENCE check of Lin(Ae)
        // *******************************************************************
@@ -2949,9 +2958,9 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
         double detg = 0.0;
         const int nnodes = 3;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (nnodes != NumNode())
-          dserror(
+          FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
@@ -3090,9 +3099,9 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
         // establish fundamental data
         double detg = 0.0;
         const int nnodes = 9;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (nnodes != NumNode())
-          dserror(
+          FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
@@ -3203,7 +3212,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
       //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
 
       /*
-       #ifdef BACI_DEBUG
+       #ifdef FOUR_C_ENABLE_ASSERTIONS
        // *******************************************************************
        // FINITE DIFFERENCE check of Lin(Ae)
        // *******************************************************************
@@ -3269,7 +3278,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
        }
        }
        // *******************************************************************
-       #endif // #ifdef BACI_DEBUG
+       #endif // #ifdef FOUR_C_ENABLE_ASSERTIONS
        */
 
       break;
@@ -3290,9 +3299,9 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
         // establish fundamental data
         double detg = 0.0;
         const int nnodes = 6;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (nnodes != NumNode())
-          dserror(
+          FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
@@ -3402,7 +3411,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
       //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
       //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
       /*
-       #ifdef BACI_DEBUG
+       #ifdef FOUR_C_ENABLE_ASSERTIONS
        // *******************************************************************
        // FINITE DIFFERENCE check of Lin(Ae)
        // *******************************************************************
@@ -3467,7 +3476,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
        }
        }
        // *******************************************************************
-       #endif // #ifdef BACI_DEBUG
+       #endif // #ifdef FOUR_C_ENABLE_ASSERTIONS
        */
       break;
     }
@@ -3487,9 +3496,9 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
         // establish fundamental data
         double detg = 0.0;
         const int nnodes = 8;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (nnodes != NumNode())
-          dserror(
+          FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
@@ -3770,7 +3779,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
       //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
       //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
       /*
-       #ifdef BACI_DEBUG
+       #ifdef FOUR_C_ENABLE_ASSERTIONS
        // *******************************************************************
        // FINITE DIFFERENCE check of Lin(Ae)
        // *******************************************************************
@@ -3847,7 +3856,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
        }
        }
        // *******************************************************************
-       #endif // #ifdef BACI_DEBUG
+       #endif // #ifdef FOUR_C_ENABLE_ASSERTIONS
        */
       break;
     }
@@ -3959,7 +3968,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
       //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
       //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
       /*
-       #ifdef BACI_DEBUG
+       #ifdef FOUR_C_ENABLE_ASSERTIONS
        // *******************************************************************
        // FINITE DIFFERENCE check of Lin(Ae)
        // *******************************************************************
@@ -4036,7 +4045,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
        }
        }
        // *******************************************************************
-       #endif // #ifdef BACI_DEBUG
+       #endif // #ifdef FOUR_C_ENABLE_ASSERTIONS
        */
       break;
     }
@@ -4056,9 +4065,9 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
         double detg = 0.0;
         const int nnodes = 6;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (nnodes != NumNode())
-          dserror(
+          FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
@@ -4198,9 +4207,9 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
         double detg = 0.0;
         const int nnodes = 8;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (nnodes != NumNode())
-          dserror(
+          FOUR_C_THROW(
               "MORTAR::Element shape function for LM incompatible with number of element nodes!");
 #endif
 
@@ -4332,7 +4341,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
       // *********************************************************************
     case MORTAR::Element::biquaddual2D_only_lin:
     {
-      dserror("biquaddual2D_only_lin not available!");
+      FOUR_C_THROW("biquaddual2D_only_lin not available!");
       break;
     }
       // *********************************************************************
@@ -4340,7 +4349,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
       // *********************************************************************
     default:
     {
-      dserror("Unknown shape function type identifier");
+      FOUR_C_THROW("Unknown shape function type identifier");
       break;
     }
   }
@@ -4354,7 +4363,7 @@ void MORTAR::Element::ShapeFunctionLinearizations(MORTAR::Element::ShapeType sha
 bool MORTAR::Element::Evaluate2ndDerivShape(
     const double* xi, CORE::LINALG::SerialDenseMatrix& secderiv, const int& valdim)
 {
-  if (!xi) dserror("Evaluate2ndDerivShape called with xi=nullptr");
+  if (!xi) FOUR_C_THROW("Evaluate2ndDerivShape called with xi=nullptr");
 
   //**********************************************************************
   // IMPORTANT NOTE: In 3D the ordering of the 2nd derivatives is:
@@ -4522,7 +4531,7 @@ bool MORTAR::Element::Evaluate2ndDerivShape(
       // 1D -- nurbs2
     case CORE::FE::CellType::nurbs2:
     {
-      if (valdim != 2) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 2) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
@@ -4544,7 +4553,7 @@ bool MORTAR::Element::Evaluate2ndDerivShape(
       // 1D -- nurbs3
     case CORE::FE::CellType::nurbs3:
     {
-      if (valdim != 3) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 3) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       CORE::LINALG::SerialDenseVector weights(3);
       for (int inode = 0; inode < 3; ++inode)
@@ -4567,7 +4576,7 @@ bool MORTAR::Element::Evaluate2ndDerivShape(
       // 2D -- nurbs4
     case CORE::FE::CellType::nurbs4:
     {
-      if (valdim != 4) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 4) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
@@ -4594,7 +4603,7 @@ bool MORTAR::Element::Evaluate2ndDerivShape(
       // 2D -- nurbs8
     case CORE::FE::CellType::nurbs8:
     {
-      if (valdim != 8) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 8) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
@@ -4621,7 +4630,7 @@ bool MORTAR::Element::Evaluate2ndDerivShape(
       // 2D -- nurbs9
     case CORE::FE::CellType::nurbs9:
     {
-      if (valdim != 9) dserror("Inconsistency in EvaluateShape");
+      if (valdim != 9) FOUR_C_THROW("Inconsistency in EvaluateShape");
 
       CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
@@ -4646,7 +4655,7 @@ bool MORTAR::Element::Evaluate2ndDerivShape(
     }
       // unknown case
     default:
-      dserror("Evaluate2ndDerivShape called for unknown element type");
+      FOUR_C_THROW("Evaluate2ndDerivShape called for unknown element type");
       break;
   }
 
@@ -4661,7 +4670,7 @@ bool MORTAR::Element::DerivShapeDual(
 {
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("DerivShapeDual: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("DerivShapeDual: Null pointer!");
 
   switch (Shape())
   {
@@ -4690,7 +4699,7 @@ bool MORTAR::Element::DerivShapeDual(
     {
       // check for middle "bound" node
       Node* mycnode2 = dynamic_cast<Node*>(mynodes[2]);
-      if (!mycnode2) dserror("DerivShapeDual: Null pointer!");
+      if (!mycnode2) FOUR_C_THROW("DerivShapeDual: Null pointer!");
       bool isonbound2 = mycnode2->IsOnBound();
 
       // locally linear Lagrange multipliers
@@ -4736,7 +4745,7 @@ bool MORTAR::Element::DerivShapeDual(
       // unknown case
     default:
     {
-      dserror("DerivShapeDual called for unknown element type");
+      FOUR_C_THROW("DerivShapeDual called for unknown element type");
       break;
     }
   }
@@ -4779,7 +4788,7 @@ bool MORTAR::Element::DerivShapeDual(
     int numbound = (int)ids.size();
 
     // if all bound: error
-    if ((nnodes - numbound) < 1e-12) dserror("all nodes are bound");
+    if ((nnodes - numbound) < 1e-12) FOUR_C_THROW("all nodes are bound");
 
     const double factor = 1.0 / (nnodes - numbound);
     // row loop
@@ -4815,7 +4824,7 @@ bool MORTAR::Element::DerivShapeDual(
     int numbound = (int)ids.size();
 
     // if all bound: error
-    if ((nnodes - numbound) < 1e-12) dserror("all nodes are bound");
+    if ((nnodes - numbound) < 1e-12) FOUR_C_THROW("all nodes are bound");
 
     const double factor = 1.0 / (nnodes - numbound);
     // row loop
@@ -4830,7 +4839,7 @@ bool MORTAR::Element::DerivShapeDual(
     }
   }
   else
-    dserror("unknown element type!");
+    FOUR_C_THROW("unknown element type!");
 
 
 

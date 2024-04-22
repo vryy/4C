@@ -210,7 +210,7 @@ namespace FLD
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "cannot determine orientation of plane normal in local coordinate system of element");
       }
       std::vector<int> inplanedirect;
@@ -338,7 +338,7 @@ namespace FLD
 
           // check for degenerated elements
           if (det <= 0.0)
-            dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+            FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
 
           // interpolated values at gausspoints
           double ugp = 0;
@@ -440,7 +440,7 @@ namespace FLD
       }
     }
     else
-      dserror("Unknown element type for low-Mach-number mean value evaluation\n");
+      FOUR_C_THROW("Unknown element type for low-Mach-number mean value evaluation\n");
 
     return;
   }  // DRT::ELEMENTS::Fluid::f3_calc_loma_means
@@ -614,7 +614,7 @@ namespace FLD
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "cannot determine orientation of plane normal in local coordinate system of element");
       }
       std::vector<int> inplanedirect;
@@ -738,7 +738,7 @@ namespace FLD
 
           // check for degenerated elements
           if (det <= 0.0)
-            dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+            FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
 
           // interpolated values at gausspoints
           double ugp = 0;
@@ -823,7 +823,7 @@ namespace FLD
       }
     }
     else
-      dserror("Unknown element type for turbulent passive scalar mean value evaluation\n");
+      FOUR_C_THROW("Unknown element type for turbulent passive scalar mean value evaluation\n");
 
     return;
   }  // DRT::ELEMENTS::Fluid::f3_calc_scatra_means
@@ -930,10 +930,10 @@ namespace FLD
       case CORE::FE::CellType::tet10:
       case CORE::FE::CellType::hex20:
       case CORE::FE::CellType::hex27:
-        dserror("the box filtering operation is only permitted for linear elements\n");
+        FOUR_C_THROW("the box filtering operation is only permitted for linear elements\n");
         break;
       default:
-        dserror("invalid discretization type for fluid3");
+        FOUR_C_THROW("invalid discretization type for fluid3");
     }
 
     // gaussian points
@@ -1425,7 +1425,7 @@ namespace FLD
         integrationrule_filter = CORE::FE::GaussRule3D::tet_1point;
         break;
       default:
-        dserror("invalid discretization type for fluid3");
+        FOUR_C_THROW("invalid discretization type for fluid3");
     }
 
     // gaussian points --- i.e. the midpoint
@@ -1678,7 +1678,7 @@ namespace FLD
         densint_hat = actmat->Density();
       }
       else
-        dserror("mat fluid expected");
+        FOUR_C_THROW("mat fluid expected");
 
       // overwrite densvelint_hat since it is used below
       for (int rr = 0; rr < 3; ++rr)
@@ -1875,10 +1875,10 @@ namespace FLD
       case CORE::FE::CellType::tet10:
       case CORE::FE::CellType::hex20:
       case CORE::FE::CellType::hex27:
-        dserror("the box filtering operation is only permitted for linear elements\n");
+        FOUR_C_THROW("the box filtering operation is only permitted for linear elements\n");
         break;
       default:
-        dserror("invalid discretization type for fluid3");
+        FOUR_C_THROW("invalid discretization type for fluid3");
     }
 
     // gaussian points
@@ -2040,7 +2040,7 @@ namespace FLD
       dens = actmat->Density();
       if (dens == 0.0 or dynvisc == 0.0)
       {
-        dserror("Could not get material parameters!");
+        FOUR_C_THROW("Could not get material parameters!");
       }
     }
 
@@ -2096,7 +2096,8 @@ namespace FLD
       double det = xji.Invert(xjm);
       // check for degenerated elements
       if (det < 1E-16)
-        dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+        FOUR_C_THROW(
+            "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
 
       // set element area or volume
       vol = wquad * det;
@@ -2114,7 +2115,7 @@ namespace FLD
     else if (turbmodelparamsmfs->get<std::string>("SCALE_SEPARATION") == "box_filter")
       alpha = 2.0;
     else
-      dserror("Unknown filter type!");
+      FOUR_C_THROW("Unknown filter type!");
     // allocate vector for parameter N
     // N may depend on the direction
     std::vector<double> Nvel(3);
@@ -2182,7 +2183,7 @@ namespace FLD
       else if (turbmodelparamsmfs->get<std::string>("REF_LENGTH") == "metric_tensor")
         reflength = INPAR::FLUID::metric_tensor;
       else
-        dserror("Unknown length!");
+        FOUR_C_THROW("Unknown length!");
       switch (reflength)
       {
         case INPAR::FLUID::streamlength:
@@ -2303,7 +2304,7 @@ namespace FLD
           break;
         }
         default:
-          dserror("Unknown length");
+          FOUR_C_THROW("Unknown length");
       }
 
         // alternative length for comparison, currently not used
@@ -2388,7 +2389,7 @@ namespace FLD
       }
 #endif
 
-      if (hk == 1.0e+10) dserror("Something went wrong!");
+      if (hk == 1.0e+10) FOUR_C_THROW("Something went wrong!");
 
       // get reference velocity
       INPAR::FLUID::RefVelocity refvel = INPAR::FLUID::strainrate;
@@ -2399,7 +2400,7 @@ namespace FLD
       else if (turbmodelparamsmfs->get<std::string>("REF_VELOCITY") == "fine_scale")
         refvel = INPAR::FLUID::fine_scale;
       else
-        dserror("Unknown velocity!");
+        FOUR_C_THROW("Unknown velocity!");
 
       switch (refvel)
       {
@@ -2419,9 +2420,9 @@ namespace FLD
           break;
         }
         default:
-          dserror("Unknown velocity!");
+          FOUR_C_THROW("Unknown velocity!");
       }
-      if (Re_ele < 0.0) dserror("Something went wrong!");
+      if (Re_ele < 0.0) FOUR_C_THROW("Something went wrong!");
 
       if (Re_ele < 1.0) Re_ele = 1.0;
 
@@ -2439,7 +2440,7 @@ namespace FLD
       //  N =log | ----------- |
       //        2|  lambda_nu  |
       double N_re = log(scale_ratio) / log(2.0);
-      if (N_re < 0.0) dserror("Something went wrong when calculating N!");
+      if (N_re < 0.0) FOUR_C_THROW("Something went wrong when calculating N!");
 
       for (int i = 0; i < NSD; i++) Nvel[i] = N_re;
     }
@@ -2469,7 +2470,7 @@ namespace FLD
     {
       // get Re from strain rate
       double Re_ele_str = strainnorm * hk * hk * dens / dynvisc;
-      if (Re_ele_str < 0.0) dserror("Something went wrong!");
+      if (Re_ele_str < 0.0) FOUR_C_THROW("Something went wrong!");
       // ensure positive values
       if (Re_ele_str < 1.0) Re_ele_str = 1.0;
 
@@ -2527,10 +2528,11 @@ namespace FLD
         //  N =log | ----------- |
         //        2|  lambda_nu  |
         Nphi = log(scale_ratio_phi) / log(2.0);
-        if (Nphi < 0.0) dserror("Something went wrong when calculating N!");
+        if (Nphi < 0.0) FOUR_C_THROW("Something went wrong when calculating N!");
       }
       else
-        dserror("Multifractal subgrid-scales for scalar transport with calculation of N, only!");
+        FOUR_C_THROW(
+            "Multifractal subgrid-scales for scalar transport with calculation of N, only!");
 
       // here, we have to distinguish three different cases:
       // Sc ~ 1 : fluid and scalar field have the nearly the same cutoff (usual case)
@@ -2554,12 +2556,12 @@ namespace FLD
         gamma = 4.0 / 3.0;
       else  // Pr >> 1
       {
-        if (fldpara->PhysicalType() == INPAR::FLUID::loma) dserror("Loma with Pr>>1?");
+        if (fldpara->PhysicalType() == INPAR::FLUID::loma) FOUR_C_THROW("Loma with Pr>>1?");
         if (Nvel[0] < 1.0)  // Sc >> 1 and fluid fully resolved, i.e., case 2 (ii)
           gamma = 2.0;
         else  // Sc >> 1 and fluid not fully resolved, i.e., case 2 (i)
         {
-          if (Nvel[0] > Nphi) dserror("Nvel < Nphi expected!");
+          if (Nvel[0] > Nphi) FOUR_C_THROW("Nvel < Nphi expected!");
           // here different options are possible
           // 1) we assume k^(-5/3) for the complete range
           gamma = 4.0 / 3.0;
@@ -2629,7 +2631,7 @@ namespace FLD
                "Smagorinsky_small")
         velderxy = fsvelintderxy;
       else
-        dserror("fssgvisc-type unknown");
+        FOUR_C_THROW("fssgvisc-type unknown");
 
 #ifdef SUBGRID_SCALE  // unused
       for (int idim = 0; idim < NSD; idim++)
@@ -2704,7 +2706,7 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> planecoords =
         modelparams->get<Teuchos::RCP<std::vector<double>>>("planecoords", Teuchos::null);
     if (planecoords == Teuchos::null)
-      dserror("planecoords is null, but need channel_flow_of_height_2\n");
+      FOUR_C_THROW("planecoords is null, but need channel_flow_of_height_2\n");
 
     bool found = false;
     int nlayer = 0;
@@ -2719,7 +2721,7 @@ namespace FLD
     }
     if (found == false)
     {
-      dserror("could not determine element layer");
+      FOUR_C_THROW("could not determine element layer");
     }
 
     (*sum_N_stream)[nlayer] += Nvel[0];
@@ -2802,7 +2804,8 @@ namespace FLD
       double det = xji.Invert(xjm);
       // check for degenerated elements
       if (det < 1E-16)
-        dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+        FOUR_C_THROW(
+            "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
 
       // set element volume
       vol = wquad * det;
@@ -2832,7 +2835,7 @@ namespace FLD
         det = xji.Invert(xjm);
         // check for degenerated elements
         if (det < 1E-16)
-          dserror(
+          FOUR_C_THROW(
               "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
 
         double fac = wquad * det;
@@ -2869,7 +2872,7 @@ namespace FLD
           visc = actmat->Viscosity();
         }
         else
-          dserror("Newtonian fluid or Sutherland material expected!");
+          FOUR_C_THROW("Newtonian fluid or Sutherland material expected!");
 
         // calculate characteristic element length
         double hk = 1.0e+10;
@@ -2989,7 +2992,7 @@ namespace FLD
             break;
           }
           default:
-            dserror("Unknown length");
+            FOUR_C_THROW("Unknown length");
         }
 
         // calculate norm of strain rate
@@ -3018,7 +3021,7 @@ namespace FLD
 
         // get Re from strain rate
         double Re_ele_str = strainnorm * hk * hk * dens / visc;
-        if (Re_ele_str < 0.0) dserror("Something went wrong!");
+        if (Re_ele_str < 0.0) FOUR_C_THROW("Something went wrong!");
         // ensure positive values
         if (Re_ele_str < 1.0) Re_ele_str = 1.0;
 
@@ -3080,7 +3083,7 @@ namespace FLD
 
       if (dispnp==Teuchos::null)
       {
-        dserror("Cannot get state vector 'dispnp'");
+        FOUR_C_THROW("Cannot get state vector 'dispnp'");
       }
 
       std::vector<double> mydispnp(lm.size());
@@ -3135,7 +3138,7 @@ namespace FLD
 
       if (dispnp == Teuchos::null)
       {
-        dserror("Cannot get state vector 'dispnp'");
+        FOUR_C_THROW("Cannot get state vector 'dispnp'");
       }
 
       std::vector<double> mydispnp(lm.size());
@@ -3215,7 +3218,7 @@ namespace FLD
           }
           else
           {
-            dserror("not implemented");
+            FOUR_C_THROW("not implemented");
           }
       */
 
@@ -3230,7 +3233,7 @@ namespace FLD
         CORE::FE::shape_function_deriv1<DISTYPE>(xsi, deriv);
       }
       else
-        dserror("Nurbs are not implemented yet");
+        FOUR_C_THROW("Nurbs are not implemented yet");
 
       CORE::LINALG::Matrix<nsd, nsd> xjm(true);
       CORE::LINALG::Matrix<nsd, nsd> xji(true);
@@ -3245,7 +3248,7 @@ namespace FLD
       // check for degenerated elements
       if (det < 0.0)
       {
-        dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+        FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
       }
 
       // set total integration factor

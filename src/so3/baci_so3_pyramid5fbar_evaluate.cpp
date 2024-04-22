@@ -53,7 +53,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_linstiff")
     act = SoPyramid5fbar::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
@@ -91,7 +91,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_struct_predict")
     return 0;
   else
-    dserror("Unknown type of action for So_pyramid5fbar");
+    FOUR_C_THROW("Unknown type of action for So_pyramid5fbar");
 
 
   // what should the element do
@@ -120,7 +120,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -142,7 +142,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -159,7 +159,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
 
     // linear stiffness and consistent mass matrix
     case calc_struct_linstiffmass:
-      dserror("Case 'calc_struct_linstiffmass' not yet implemented");
+      FOUR_C_THROW("Case 'calc_struct_linstiffmass' not yet implemented");
       break;
 
     // nonlinear stiffness, internal force vector, and consistent mass matrix
@@ -173,9 +173,9 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
       Teuchos::RCP<const Epetra_Vector> acc = discretization.GetState("acceleration");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
-      if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-      if (acc == Teuchos::null) dserror("Cannot get state vectors 'acceleration'");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
+      if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
+      if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'acceleration'");
 
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -205,9 +205,9 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
       Teuchos::RCP<std::vector<char>> straindata =
           params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-      if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-      if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
+      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -224,7 +224,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       // in case of small strain materials calculate plastic strains for post processing
       Teuchos::RCP<std::vector<char>> plstraindata =
           params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
-      if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
+      if (plstraindata == Teuchos::null) FOUR_C_THROW("Cannot get 'plastic strain' data");
       CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D> plstrain;
       auto ioplstrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
           params, "ioplstrain", INPAR::STR::strain_none);
@@ -256,11 +256,11 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_eleload:
-      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
       break;
 
     case calc_struct_fsiload:
-      dserror("Case not yet implemented");
+      FOUR_C_THROW("Case not yet implemented");
       break;
 
     case calc_struct_update_istep:
@@ -288,7 +288,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     {
       time_ = params.get<double>("total time");
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get displacement state");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -332,7 +332,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_energy:
     {
       // check length of elevec1
-      if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
+      if (elevec1_epetra.length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
       // initialization of internal energy
       double intenergy = 0.0;
@@ -344,7 +344,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this processor
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
@@ -489,7 +489,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
 
 
     default:
-      dserror("Unknown type of action for So_pyramid5fbar");
+      FOUR_C_THROW("Unknown type of action for So_pyramid5fbar");
       break;
   }
   return 0;
@@ -516,7 +516,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::InitJacobianMapping()
     // invJ_[gp].Shape(NUMDIM_SOP5,NUMDIM_SOP5);
     invJ_[gp].Multiply(derivs[gp], xrefe);
     detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
+    if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
     if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->IsInit()))
@@ -602,9 +602,9 @@ int DRT::ELEMENTS::SoPyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& param
     // compute determinant of Jacobian
     const double detJ = jac.Determinant();
     if (detJ == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     // material/reference co-ordinates of Gauss point
     if (havefunct)
@@ -811,7 +811,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     // check for negative jacobian
     if (detF_0 < 0. || detF < 0.)
     {
-      // check, if errors are tolerated or should throw a dserror
+      // check, if errors are tolerated or should throw a FOUR_C_THROW
       bool error_tol = false;
       if (params.isParameter("tolerate_errors")) error_tol = params.get<bool>("tolerate_errors");
       if (error_tol)
@@ -822,7 +822,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         return;
       }
       else
-        dserror("negative jacobian determinant");
+        FOUR_C_THROW("negative jacobian determinant");
     }
     // F_bar deformation gradient =(detF_0/detF)^1/3*F
     CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd_bar(defgrd);
@@ -849,14 +849,14 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain_bar(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain_bar(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
         CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> gl_bar;
         gl_bar(0, 0) = glstrain_bar(0);
@@ -888,7 +888,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       break;
       case INPAR::STR::strain_log:
       {
-        if (elestrain == nullptr) dserror("strain data not available");
+        if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
         /// the Eularian logarithmic strain is defined as the natural logarithm of the left stretch
         /// tensor [1,2]: \f[
@@ -972,7 +972,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
             // the solution to this problem is to evaluate the cauchygreen tensor with tempCG
             // computed with every combination of eigenvector orientations -- up to nine comparisons
             if (diffCG(i, j) > 1e-10)
-              dserror(
+              FOUR_C_THROW(
                   "eigenvector orientation error with the diffCG giving problems: %10.5e \n BUILD "
                   "SOLUTION TO FIX IT",
                   diffCG(i, j));
@@ -990,7 +990,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       case INPAR::STR::strain_none:
         break;
       default:
-        dserror("requested strain type not available");
+        FOUR_C_THROW("requested strain type not available");
         break;
     }
 
@@ -1069,7 +1069,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     {
       case INPAR::STR::strain_gl:
       {
-        if (eleplstrain == nullptr) dserror("plastic strain data not available");
+        if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain_bar =
             params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         for (int i = 0; i < 3; ++i) (*eleplstrain)(gp, i) = plglstrain_bar(i);
@@ -1078,7 +1078,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       break;
       case INPAR::STR::strain_ea:
       {
-        if (eleplstrain == nullptr) dserror("plastic strain data not available");
+        if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain_bar =
             params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
 
@@ -1098,7 +1098,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         break;
 
       default:
-        dserror("requested plastic strain type not available");
+        FOUR_C_THROW("requested plastic strain type not available");
         break;
     }  // switch (ioplstrain)
 
@@ -1107,13 +1107,13 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress_bar(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF_bar = defgrd_bar.Determinant();
 
         CORE::LINALG::Matrix<3, 3> pkstress_bar;
@@ -1143,7 +1143,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not available");
+        FOUR_C_THROW("requested stress type not available");
         break;
     }
 
@@ -1353,7 +1353,7 @@ int DRT::ELEMENTS::SoPyramid5fbarType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoPyramid5fbar*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_pyramid5fbar* failed");
+    if (!actele) FOUR_C_THROW("cast to So_pyramid5fbar* failed");
     actele->InitJacobianMapping();
   }
   return 0;

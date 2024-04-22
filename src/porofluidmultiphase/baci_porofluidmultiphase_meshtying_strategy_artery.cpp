@@ -155,7 +155,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::InitializeLinearSolver(
       solvertype == INPAR::SOLVER::SolverType::superlu)
     return;
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
+  if (solvertype != INPAR::SOLVER::SolverType::belos) FOUR_C_THROW("Iterative solver expected");
 
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
@@ -170,7 +170,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::InitializeLinearSolver(
     }
     break;
     default:
-      dserror("AMGnxn preconditioner expected");
+      FOUR_C_THROW("AMGnxn preconditioner expected");
       break;
   }
 

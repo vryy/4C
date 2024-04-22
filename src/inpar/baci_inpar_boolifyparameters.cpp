@@ -57,7 +57,7 @@ void INPUT::BoolifyValidInputParameters(
     else if ((value == "No") or (value == "NO") or (value == "no"))
       list.set<bool>(*name, false);
     else
-      dserror("Cannot deal with entry \"%s\"", value.c_str());
+      FOUR_C_THROW("Cannot deal with entry \"%s\"", value.c_str());
   }
 }
 

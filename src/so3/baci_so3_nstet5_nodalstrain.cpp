@@ -36,7 +36,7 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
 {
   // current displacement
   Teuchos::RCP<const Epetra_Vector> disp = dis.GetState("displacement");
-  if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
   // loop elements
   std::map<int, DRT::ELEMENTS::NStet5*>::iterator ele;
   for (ele = elecids_.begin(); ele != elecids_.end(); ++ele)
@@ -62,7 +62,8 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
 
       e->SubF(k) = e->BuildF(disp, e->SubNxyz(k));
       double J = e->SubF(k).Determinant();
-      if (J <= 0.0) dserror("det(F) of Element %d / Subelement %d %10.5e <= 0 !!\n", e->Id(), k, J);
+      if (J <= 0.0)
+        FOUR_C_THROW("det(F) of Element %d / Subelement %d %10.5e <= 0 !!\n", e->Id(), k, J);
     }  // for (int k=0; k<4; ++k)
 
   }  // ele
@@ -106,7 +107,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
   bool assemblevec1 = systemvector1 != Teuchos::null;
   bool assemblevec2 = systemvector2 != Teuchos::null;
   bool assemblevec3 = systemvector3 != Teuchos::null;
-  if (assemblevec2 || assemblevec3) dserror("Wrong assembly expectations");
+  if (assemblevec2 || assemblevec3) FOUR_C_THROW("Wrong assembly expectations");
 
   //-----------------------------------------------------------------
   // nodal stiffness and force (we don't do mass here)
@@ -141,7 +142,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
   if (systemmatrix != Teuchos::null && systemmatrix->Filled())
   {
     Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
-    if (!matrix.StorageOptimized()) dserror("Matrix must be StorageOptimized() when Filled()");
+    if (!matrix.StorageOptimized()) FOUR_C_THROW("Matrix must be StorageOptimized() when Filled()");
   }
 
   //-----------------------------------------------------------------
@@ -191,7 +192,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
           &nodalstress, &nodalstrain, iostress, iostrain);
 
       const int lid = dis.NodeRowMap()->LID(nodeLid);
-      if (lid == -1) dserror("Cannot find local id for row node");
+      if (lid == -1) FOUR_C_THROW("Cannot find local id for row node");
       for (int i = 0; i < 6; ++i)
       {
         (*(*nstress_)(i))[lid] = nodalstress[i];
@@ -199,7 +200,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
       }
     }
     else
-      dserror("Unknown action");
+      FOUR_C_THROW("Unknown action");
 
 
     //---------------------- do assembly of stiffness and internal force
@@ -236,10 +237,12 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
             {
               int errtwo = stifftmp->InsertGlobalValues(1, &lm[i], 1, &lm[j], &stiff(i, j));
               if (errtwo < 0)
-                dserror("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d", errtwo);
+                FOUR_C_THROW(
+                    "Epetra_FECrsMatrix::InsertGlobalValues returned error code %d", errtwo);
             }
             else if (errone)
-              dserror("Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d", errone);
+              FOUR_C_THROW(
+                  "Epetra_FECrsMatrix::SumIntoGlobalValues returned error code %d", errone);
           }
         }
         else  // local row
@@ -254,8 +257,8 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
             for (int j = 0; j < ndofperpatch; ++j)
             {
               int* loc = std::lower_bound(indices, indices + length, lclm[j]);
-              // #ifdef BACI_DEBUG
-              if (*loc != lclm[j]) dserror("Cannot find local column entry %d", lclm[j]);
+              // #ifdef FOUR_C_ENABLE_ASSERTIONS
+              if (*loc != lclm[j]) FOUR_C_THROW("Cannot find local column entry %d", lclm[j]);
               // #endif
               int pos = loc - indices;
 
@@ -283,7 +286,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
                 err += matrix.SumIntoMyValues(lrlm[i], 1, &stiff(i, j), &lclm[j]);
                 j++;
                 err += matrix.SumIntoMyValues(lrlm[i], 1, &stiff(i, j), &lclm[j]);
-                if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d", err);
+                if (err) FOUR_C_THROW("Epetra_CrsMatrix::SumIntoMyValues returned err=%d", err);
               }
             }
           }
@@ -303,7 +306,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
       {
         const int rgid = lm[i];
         const int lid = forcetmp1.Map().LID(rgid);
-        if (lid < 0) dserror("global row %d does not exist in column map", rgid);
+        if (lid < 0) FOUR_C_THROW("global row %d does not exist in column map", rgid);
         forcetmp1[lid] += force[i];
       }
     }
@@ -335,13 +338,13 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
     Epetra_Vector tmp(systemvector1->Map(), false);
     Epetra_Export exporter(forcetmp1.Map(), tmp.Map());
     int err = tmp.Export(forcetmp1, exporter, Add);
-    if (err) dserror("Export using exporter returned err=%d", err);
+    if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
     systemvector1->Update(1.0, tmp, 1.0);
   }
   if (assemblemat1)
   {
     int err = stifftmp->GlobalAssemble(*dmap, *rmap, false);
-    if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble returned err=%d", err);
+    if (err) FOUR_C_THROW("Epetra_FECrsMatrix::GlobalAssemble returned err=%d", err);
     const Epetra_Map& cmap = stifftmp->ColMap();
     for (int lrow = 0; lrow < stifftmp->NumMyRows(); ++lrow)
     {
@@ -352,21 +355,21 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
         const int grow = stifftmp->RowMap().GID(lrow);
         int* gindices;
         int err = stifftmp->ExtractGlobalRowView(grow, numentries, values, gindices);
-        if (err) dserror("Epetra_FECrsMatrix::ExtractGlobalRowView returned err=%d", err);
+        if (err) FOUR_C_THROW("Epetra_FECrsMatrix::ExtractGlobalRowView returned err=%d", err);
         for (int j = 0; j < numentries; ++j) systemmatrix1->Assemble(values[j], grow, gindices[j]);
       }
       else
       {
         int* lindices;
         int err = stifftmp->ExtractMyRowView(lrow, numentries, values, lindices);
-        if (err) dserror("Epetra_FECrsMatrix::ExtractMyRowView returned err=%d", err);
+        if (err) FOUR_C_THROW("Epetra_FECrsMatrix::ExtractMyRowView returned err=%d", err);
         if (systemmatrix != Teuchos::null && systemmatrix->Filled())
         {
           Epetra_CrsMatrix& matrix = *systemmatrix->EpetraMatrix();
           for (int j = 0; j < numentries; ++j)
           {
             int err = matrix.SumIntoMyValues(lrow, 1, &values[j], &lindices[j]);
-            if (err) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d", err);
+            if (err) FOUR_C_THROW("Epetra_CrsMatrix::SumIntoMyValues returned err=%d", err);
           }
         }
         else
@@ -420,7 +423,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
   for (int i = 0; i < ndofinpatch; ++i)
   {
     int lid = disp.Map().LID(lm[i]);
-    if (lid == -1) dserror("Cannot find degree of freedom on this proc");
+    if (lid == -1) FOUR_C_THROW("Cannot find degree of freedom on this proc");
     patchdisp[i] = disp[disp.Map().LID(lm[i])];
     //    tpatchdisp[i] = patchdisp[i];
     //    tpatchdisp[i].diff(i,ndofinpatch);
@@ -669,7 +672,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
   //----------------------------------------------------- geom. stiffness
   if (stiff)
   {
-    if (!force) dserror("Cannot compute stiffness matrix without computing internal force");
+    if (!force) FOUR_C_THROW("Cannot compute stiffness matrix without computing internal force");
 
     CORE::LINALG::SerialDenseMatrix kg(ndofinpatch, ndofinpatch, true);
     for (int m = 0; m < ndofinpatch; ++m)
@@ -738,7 +741,7 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(const Teuchos::RCP<MAT::Material>
       break;
     }
     default:
-      dserror("Illegal type %d of material for element NStet5 tet4", mat->MaterialType());
+      FOUR_C_THROW("Illegal type %d of material for element NStet5 tet4", mat->MaterialType());
       break;
   }
 
@@ -909,7 +912,7 @@ void DRT::ELEMENTS::NStet5Type::StrainOutput(const INPAR::STR::StrainType iostra
     case INPAR::STR::strain_none:
       break;
     default:
-      dserror("requested strain type not available");
+      FOUR_C_THROW("requested strain type not available");
   }
 
   return;
@@ -965,7 +968,7 @@ void DRT::ELEMENTS::NStet5Type::StrainOutput(const INPAR::STR::StrainType iostra
     case INPAR::STR::strain_none:
       break;
     default:
-      dserror("requested strain type not available");
+      FOUR_C_THROW("requested strain type not available");
   }
 
   return;
@@ -1013,7 +1016,7 @@ void DRT::ELEMENTS::NStet5Type::StressOutput(const INPAR::STR::StressType iostre
     case INPAR::STR::stress_none:
       break;
     default:
-      dserror("requested stress type not available");
+      FOUR_C_THROW("requested stress type not available");
   }
   return;
 }

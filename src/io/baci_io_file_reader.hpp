@@ -129,7 +129,7 @@ namespace IO
       }
       catch (...)
       {
-        dserror(
+        FOUR_C_THROW(
             "Could not read line '%s' from file. Likely the string's pattern is not "
             "convertible to an object of type %s",
             line_str.c_str(), CORE::UTILS::TryDemangle(typeid(T).name()).c_str());

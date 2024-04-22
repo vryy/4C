@@ -83,12 +83,12 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
 
     if (output_params_ptr_->GetMortarLambdaDiscretOutputFlag())
     {
-      dserror("Mortar discretization not implemented for beam-to-fluid meshtying!\n");
+      FOUR_C_THROW("Mortar discretization not implemented for beam-to-fluid meshtying!\n");
     }
 
     if (output_params_ptr_->GetMortarLambdaContinuousOutputFlag())
     {
-      dserror("Mortar discretization not implemented for beam-to-fluid meshtying!\n");
+      FOUR_C_THROW("Mortar discretization not implemented for beam-to-fluid meshtying!\n");
     }
 
     if (output_params_ptr_->GetIntegrationPointsOutputFlag())
@@ -184,7 +184,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputBeamToFlui
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::CheckInitSetup() const
 {
-  if (!isinit_ or !issetup_) dserror("Call Init() and Setup() first!");
+  if (!isinit_ or !issetup_) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 /**
@@ -192,7 +192,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::CheckInitSetup() cons
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::CheckInit() const
 {
-  if (!isinit_) dserror("Init() has not been called, yet!");
+  if (!isinit_) FOUR_C_THROW("Init() has not been called, yet!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -144,10 +144,10 @@ namespace XFEM
       // number space dimensions for element
       // const size_t nsd = projection_matrix.Rows();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (projection_matrix.numRows() != projection_matrix.numCols() ||
           projection_matrix.numRows() != normal.numRows())
-        dserror(
+        FOUR_C_THROW(
             "EvalProjectionMatrix: Rows and Cols of projection_matrix and normal vector do not "
             "fit!");
 #endif
@@ -236,7 +236,7 @@ namespace XFEM
       }
       // else
       DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(cutter_dis_->gElement(sid));
-      if (!fele) dserror("Cast to FaceElement failed!");
+      if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
       fele->SetParentMasterElement(
           coupl_dis_->gElement(fele->ParentElementId()), fele->FaceParentNumber());
       return fele->ParentElement();
@@ -248,7 +248,7 @@ namespace XFEM
     )
     {
       DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(cutter_dis_->gElement(sid));
-      if (!fele) dserror("Cast to FaceElement failed!");
+      if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
       return fele->ParentElement();
     }
 
@@ -256,7 +256,7 @@ namespace XFEM
     //! discretization)
     Teuchos::RCP<DRT::Discretization> GetAuxiliaryDiscretization()
     {
-      dsassert(init_volcoupling_,
+      FOUR_C_ASSERT(init_volcoupling_,
           "MeshVolCoupling::GetAuxiliaryDiscretization: Volume Coupling not initialized!");
       return aux_coup_dis_;
     }
@@ -277,7 +277,7 @@ namespace XFEM
     //! face element via solving a local eigenvalue problem
     virtual void EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele)
     {
-      dserror("EstimateNitscheTraceMaxEigenvalue not implemented for your coupling object!");
+      FOUR_C_THROW("EstimateNitscheTraceMaxEigenvalue not implemented for your coupling object!");
     }
 
     //! build an auxiliary discretization out of the elements, that contribute to the cutting
@@ -641,7 +641,7 @@ namespace XFEM
     Teuchos::RCP<XFEM::XFluidContactComm> Get_Contact_Comm()
     {
       if (xf_c_comm_ == Teuchos::null)
-        dserror("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
+        FOUR_C_THROW("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
       return xf_c_comm_;
     }
 

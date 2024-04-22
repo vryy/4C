@@ -58,7 +58,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::Init()
   {
     if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
-      dserror("temperature evaluation needed for linear transition of interface viscosity!");
+      FOUR_C_THROW("temperature evaluation needed for linear transition of interface viscosity!");
   }
 }
 
@@ -90,7 +90,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::Setup(
   // safety check
   for (const auto& type_i : fluidtypes_)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
-      dserror("no particle container for particle type '%s' found!",
+      FOUR_C_THROW("no particle container for particle type '%s' found!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 
   // update with actual boundary particle types

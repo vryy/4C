@@ -52,20 +52,20 @@ namespace CONTACT
         MORTAR::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
-      dserror("Segment based integration is currently unsupported!");
+      FOUR_C_THROW("Segment based integration is currently unsupported!");
     }
 
     void IntegrateDerivEle2D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles,
         bool* boundary_ele, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
-      dserror("Element based integration in 2D is currently unsupported!");
+      FOUR_C_THROW("Element based integration in 2D is currently unsupported!");
     }
 
     void IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
         Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override
     {
-      dserror("The auxiliary plane 3-D coupling integration case is currently unsupported!");
+      FOUR_C_THROW("The auxiliary plane 3-D coupling integration case is currently unsupported!");
     }
     //! @}
 
@@ -113,7 +113,7 @@ namespace CONTACT
         std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
         std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi) override
     {
-      dserror("2d problems not available for IntegratorNitscheFsi, as CutFEM is only 3D!");
+      FOUR_C_THROW("2d problems not available for IntegratorNitscheFsi, as CutFEM is only 3D!");
     }
 
    private:

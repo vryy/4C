@@ -146,18 +146,18 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // -1 is the default value, meaning that there is no coupling
   if (nds_disp_ != -1)
     if (nds_disp_ < 0 or nds_disp_ > discret_->NumDofSets() - 1)
-      dserror("invalid number of dofset for mesh displacements!");
+      FOUR_C_THROW("invalid number of dofset for mesh displacements!");
 
   // make sure the values make sense
   // -1 is the default value, meaning that there is no coupling
   if (nds_vel_ != -1)
     if (nds_vel_ < 0 or nds_vel_ > discret_->NumDofSets() - 1)
-      dserror("invalid number of dofset for mesh velocities!");
+      FOUR_C_THROW("invalid number of dofset for mesh velocities!");
 
   // make sure the values make sense
   // there has to be a valid number for the solid pressure in all cases
   if (nds_solidpressure_ < 0 or nds_solidpressure_ > discret_->NumDofSets() - 1)
-    dserror("invalid number of dofset for solid pressure!");
+    FOUR_C_THROW("invalid number of dofset for solid pressure!");
 
   // ensure that degrees of freedom in the discretization have been set
   if ((not discret_->Filled()) or (not discret_->HaveDofs())) discret_->FillComplete();
@@ -449,7 +449,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareFirstTimeStep()
     // if initial velocity field has not been set here, the initial time derivative of phi will be
     // calculated wrongly for some time integration schemes
     else
-      dserror("Initial velocity field has not been set!");
+      FOUR_C_THROW("Initial velocity field has not been set!");
   }
   return;
 }  // POROFLUIDMULTIPHASE::TimIntImpl::PrepareFirstTimeStep
@@ -537,12 +537,12 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetr
   TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE: apply mesh movement");
 
   if (nds_disp_ == -1)
-    dserror(
+    FOUR_C_THROW(
         "Dof set number of displacment related dofs"
         " has not been set!");
 
   // check existence of displacement vector
-  if (dispnp == Teuchos::null) dserror("Got null pointer for displacements!");
+  if (dispnp == Teuchos::null) FOUR_C_THROW("Got null pointer for displacements!");
 
   // provide POROFLUIDMULTIPHASE discretization with displacement field
   SetState(nds_disp_, "dispnp", dispnp);
@@ -829,7 +829,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyAdditionalDBCForVolFracPress()
     // check the material
     if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
         material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-      dserror("only poro multiphase and poro multiphase reactions material valid");
+      FOUR_C_THROW("only poro multiphase and poro multiphase reactions material valid");
 
     // cast
     const MAT::FluidPoroMultiPhase& multiphasemat =
@@ -1195,11 +1195,11 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
       }
       case INPAR::POROFLUIDMULTIPHASE::divcont_stop:
       {
-        dserror("Porofluid multiphase solver not converged in itemax steps!");
+        FOUR_C_THROW("Porofluid multiphase solver not converged in itemax steps!");
         break;
       }
       default:
-        dserror("unknown divercont action!");
+        FOUR_C_THROW("unknown divercont action!");
         break;
     }
     // yes, we stop the iteration
@@ -1212,10 +1212,10 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
   // check for INF's and NaN's before going on...
   for (std::size_t i = 0; i < prenorm.size(); ++i)
     if (std::isnan(incprenorm[i]) or std::isnan(prenorm[i]) or std::isnan(preresnorm[i]))
-      dserror("calculated vector norm is NaN.");
+      FOUR_C_THROW("calculated vector norm is NaN.");
   for (std::size_t i = 0; i < prenorm.size(); ++i)
     if (std::isinf(incprenorm[i]) or std::isinf(prenorm[i]) or std::isinf(preresnorm[i]))
-      dserror("calculated vector norm is INF.");
+      FOUR_C_THROW("calculated vector norm is INF.");
 
   return false;
 }  // TimIntImpl::AbortNonlinIter
@@ -1354,7 +1354,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructFlux()
       break;
     }
     default:
-      dserror("unknown method for recovery of fluxes!");
+      FOUR_C_THROW("unknown method for recovery of fluxes!");
       break;
   }
 }
@@ -1640,7 +1640,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
   if (isale_)
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discret_->GetState(nds_disp_, "dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot extract displacement field from discretization");
+    if (dispnp == Teuchos::null)
+      FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
@@ -1674,7 +1675,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
         {
           double value = ((*flux_)[k * dim + idim])[i];
           int err = flux_k->ReplaceMyValue(i, idim, value);
-          if (err != 0) dserror("Detected error in ReplaceMyValue");
+          if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
         }
       }
       output_->WriteVector(name, flux_k, IO::nodevector);
@@ -1699,7 +1700,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
         {
           double value = ((*phase_velocities_)[k * num_dim + idim])[i];
           int err = velocity_k->ReplaceMyValue(i, idim, value);
-          if (err != 0) dserror("Detected error in ReplaceMyValue");
+          if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
         }
       }
 
@@ -1739,7 +1740,7 @@ inline void POROFLUIDMULTIPHASE::TimIntImpl::IncrementTimeAndStep()
 void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 {
   if (calcerr_ == INPAR::POROFLUIDMULTIPHASE::calcerror_no) return;
-  dserror("Error calculation not yet implemented! Element evaluation is missing.");
+  FOUR_C_THROW("Error calculation not yet implemented! Element evaluation is missing.");
 
   // create the parameters for the error calculation
   Teuchos::ParameterList eleparams;
@@ -1753,13 +1754,13 @@ void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     {
       const int errorfunctnumber = poroparams_.get<int>("CALCERRORNO");
       if (errorfunctnumber < 1)
-        dserror("invalid value of paramter CALCERRORNO for error function evaluation!");
+        FOUR_C_THROW("invalid value of paramter CALCERRORNO for error function evaluation!");
 
       eleparams.set<int>("error function number", errorfunctnumber);
       break;
     }
     default:
-      dserror("Cannot calculate error. Unknown type of analytical test problem");
+      FOUR_C_THROW("Cannot calculate error. Unknown type of analytical test problem");
       break;
   }
 
@@ -1897,14 +1898,16 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetVelocityField(
   //---------------------------------------------------------------------------
   // preliminaries
   //---------------------------------------------------------------------------
-  if (nds_vel_ == -1) dserror("Dof set for velocity degreess of freedom has not been assigned!");
+  if (nds_vel_ == -1)
+    FOUR_C_THROW("Dof set for velocity degreess of freedom has not been assigned!");
 
-  if (vel == Teuchos::null) dserror("Velocity state is Teuchos::null");
+  if (vel == Teuchos::null) FOUR_C_THROW("Velocity state is Teuchos::null");
 
-  if (nds_vel_ >= discret_->NumDofSets()) dserror("Too few dofsets on poro fluid discretization!");
+  if (nds_vel_ >= discret_->NumDofSets())
+    FOUR_C_THROW("Too few dofsets on poro fluid discretization!");
 
   if (not vel->Map().SameAs(*discret_->DofRowMap(nds_vel_)))
-    dserror(
+    FOUR_C_THROW(
         "Map of given velocity and associated dof row map in poro fluid discretization"
         " do not match!");
 
@@ -1963,7 +1966,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X().data(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
 
@@ -1985,7 +1988,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
       discret_->GetCondition("Initfield", initfieldconditions);
 
       if (not initfieldconditions.size())
-        dserror(
+        FOUR_C_THROW(
             "Tried to evaluate initial field by condition without a corresponding condition "
             "defined on the PoroMultiFluid discretization!");
       std::set<int> numdofpernode;
@@ -1996,7 +1999,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
         if (condmaxnumdofpernode != 0) numdofpernode.insert(condmaxnumdofpernode);
       }
 
-      if (numdofpernode.empty()) dserror("No DOFs defined on initial field condtion!");
+      if (numdofpernode.empty()) FOUR_C_THROW("No DOFs defined on initial field condtion!");
 
       const int maxnumdofpernode = *(numdofpernode.rbegin());
 
@@ -2014,7 +2017,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
       break;
     }
     default:
-      dserror("Unknown option for initial field: %d", init);
+      FOUR_C_THROW("Unknown option for initial field: %d", init);
       break;
   }  // switch(init)
 
@@ -2148,7 +2151,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::FDCheck()
              *(Teuchos::rcp_static_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_)->Merge())))
             ->EpetraMatrix();
   else
-    dserror("Type of system matrix unknown!");
+    FOUR_C_THROW("Type of system matrix unknown!");
   sysmat_original->FillComplete();
 
   // make a copy of system right-hand side vector
@@ -2175,7 +2178,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::FDCheck()
     // impose perturbation
     if (phinp_->Map().MyGID(colgid))
       if (phinp_->SumIntoGlobalValue(colgid, 0, fdcheckeps_))
-        dserror("Perturbation could not be imposed on state vector for finite difference check!");
+        FOUR_C_THROW(
+            "Perturbation could not be imposed on state vector for finite difference check!");
 
     // carry perturbation over to state vectors at intermediate time stages if necessary
     ComputeIntermediateValues();
@@ -2200,7 +2204,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::FDCheck()
     {
       // get global index of current matrix row
       const int rowgid = sysmat_original->RowMap().GID(rowlid);
-      if (rowgid < 0) dserror("Invalid global ID of matrix row!");
+      if (rowgid < 0) FOUR_C_THROW("Invalid global ID of matrix row!");
 
       // get relevant entry in current row of original system matrix
       double entry(0.);
@@ -2224,7 +2228,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::FDCheck()
 
       // confirm accuracy of first comparison
       if (abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
-        dserror("Finite difference check involves values too close to numerical zero!");
+        FOUR_C_THROW("Finite difference check involves values too close to numerical zero!");
 
       // absolute and relative errors in first comparison
       const double abserr1 = entry - fdval;
@@ -2258,7 +2262,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::FDCheck()
 
         // confirm accuracy of second comparison
         if (abs(right) > 1.e-17 and abs(right) < 1.e-15)
-          dserror("Finite difference check involves values too close to numerical zero!");
+          FOUR_C_THROW("Finite difference check involves values too close to numerical zero!");
 
         // absolute and relative errors in second comparison
         const double abserr2 = left - right;
@@ -2300,7 +2304,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::FDCheck()
     {
       printf(
           "--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n", counterglobal);
-      dserror("Finite difference check failed for scalar transport system matrix!");
+      FOUR_C_THROW("Finite difference check failed for scalar transport system matrix!");
     }
     else
       printf(

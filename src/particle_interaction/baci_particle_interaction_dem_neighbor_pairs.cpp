@@ -115,9 +115,9 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairs()
     // absolute distance between particles
     const double absdist = UTILS::VecNormTwo(r_ji);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]) or absdist < (1.0e-10 * rad_j[0]))
-      dserror("absolute distance %f between particles close to zero!", absdist);
+      FOUR_C_THROW("absolute distance %f between particles close to zero!", absdist);
 #endif
 
     // gap between particles
@@ -204,9 +204,9 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
     // absolute distance between particle and wall contact point
     const double absdist = UTILS::VecNormTwo(r_ji);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]))
-      dserror("absolute distance %f between particle and wall close to zero!", absdist);
+      FOUR_C_THROW("absolute distance %f between particle and wall close to zero!", absdist);
 #endif
 
     // gap between particle and wall contact point
@@ -404,9 +404,9 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticlePairsAdhesion(
     // absolute distance between particles
     const double absdist = UTILS::VecNormTwo(r_ji);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]) or absdist < (1.0e-10 * rad_j[0]))
-      dserror("absolute distance %f between particles close to zero!", absdist);
+      FOUR_C_THROW("absolute distance %f between particles close to zero!", absdist);
 #endif
 
     // gap between particles
@@ -488,7 +488,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
       const Teuchos::RCP<const MAT::ParticleWallMaterialDEM>& particlewallmaterial =
           Teuchos::rcp_dynamic_cast<const MAT::ParticleWallMaterialDEM>(ele->Material());
       if (particlewallmaterial == Teuchos::null)
-        dserror("cast to MAT::ParticleWallMaterialDEM failed!");
+        FOUR_C_THROW("cast to MAT::ParticleWallMaterialDEM failed!");
 
       // get adhesion surface energy
       surface_energy = particlewallmaterial->AdhesionSurfaceEnergy();
@@ -513,9 +513,9 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
     // absolute distance between particle and wall contact point
     const double absdist = UTILS::VecNormTwo(r_ji);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]))
-      dserror("absolute distance %f between particle and wall close to zero!", absdist);
+      FOUR_C_THROW("absolute distance %f between particle and wall close to zero!", absdist);
 #endif
 
     // gap between particle and wall contact point

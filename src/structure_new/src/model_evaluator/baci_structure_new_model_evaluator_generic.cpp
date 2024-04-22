@@ -64,12 +64,15 @@ void STR::MODELEVALUATOR::Generic::Init(
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Generic::CheckInitSetup() const
 {
-  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Generic::CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
+void STR::MODELEVALUATOR::Generic::CheckInit() const
+{
+  FOUR_C_ASSERT(IsInit(), "Call Init() first!");
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

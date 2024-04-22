@@ -51,14 +51,14 @@ double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::Evaluate(
 {
   if (gap + params_->GetOffset() > 0)
   {
-    dserror("You should not be here. The Evaluate function is only tested for active nodes. ");
+    FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   double result = -1.0;
   gap = -gap;
   result *=
       (params_->GetA() * 1. / (gap - params_->GetOffset() - params_->GetB()) + params_->GetC());
   if (result > 0)
-    dserror(
+    FOUR_C_THROW(
         "The constitutive function you are using seems to be positive, even though the gap is "
         "negative. Please check your coefficients!");
   return result;
@@ -71,7 +71,7 @@ double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::EvaluateDeriv(
 {
   if (gap + params_->GetOffset() > 0)
   {
-    dserror("You should not be here. The Evaluate function is only tested for active nodes. ");
+    FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   gap = -gap;
   return (-params_->GetA() * 1. /

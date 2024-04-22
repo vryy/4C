@@ -34,10 +34,10 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
 
   // for the sake of safety
   if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
@@ -117,12 +117,12 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
       break;
     }
     default:
-      dserror("unknown material type %d", curmat->Type());
+      FOUR_C_THROW("unknown material type %d", curmat->Type());
       break;
   }
 
   if (starttime_ > endtime_)
-    dserror("WTF! It is not reasonable to have a starttime that is larger than the endtime!");
+    FOUR_C_THROW("WTF! It is not reasonable to have a starttime that is larger than the endtime!");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -144,7 +144,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Growth::CreateMaterial()
       mat = Teuchos::rcp(new MAT::GrowthVolumetric(this));
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "The growth law you have chosen is not valid for the standard volumetric growth "
           "material");
       mat = Teuchos::null;
@@ -239,7 +239,7 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = dynamic_cast<MAT::PAR::Growth*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -250,7 +250,7 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
   {  // no history data to unpack
     isinit_ = false;
     if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
     return;
   }
 
@@ -275,20 +275,21 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
   {
     CORE::COMM::ParObject* o = CORE::COMM::Factory(dataelastic);  // Unpack is done here
     auto* matel = dynamic_cast<MAT::So3Material*>(o);
-    if (matel == nullptr) dserror("failed to unpack elastic material");
+    if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     matelastic_ = Teuchos::rcp(matel);
   }
   else
     matelastic_ = Teuchos::null;
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------------*/
 void MAT::Growth::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   if (isinit_)
-    dserror("This function should just be called if the material is not yet initialized.");
+    FOUR_C_THROW("This function should just be called if the material is not yet initialized.");
 
   theta_ = Teuchos::rcp(new std::vector<double>(numgp));
   thetaold_ = Teuchos::rcp(new std::vector<double>(numgp));
@@ -398,21 +399,21 @@ bool MAT::GrowthVolumetric::VisData(
 {
   if (name == "theta")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int gp = 0; gp < numgp; gp++) temp += theta_->at(gp);
     data[0] = temp / numgp;
   }
   else if (name == "tr_mandel_e")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int gp = 0; gp < numgp; gp++) temp += tr_mandel_e_->at(gp);
     data[0] = temp / numgp;
   }
   else if (name == "lambda_fib_e")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int gp = 0; gp < numgp; gp++) temp += lambda_fib_e_->at(gp);
     data[0] = temp / numgp;
@@ -470,7 +471,8 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const int eleGID)
 {
   double time = params.get<double>("total time", -1.0);
-  if (abs(time + 1.0) < 1e-14) dserror("no time step or no total time given for growth material!");
+  if (abs(time + 1.0) < 1e-14)
+    FOUR_C_THROW("no time step or no total time given for growth material!");
   std::string action = params.get<std::string>("action", "none");
   bool output = false;
   if (action == "calc_struct_stress") output = true;
@@ -661,7 +663,7 @@ void MAT::GrowthVolumetric::EvaluateGrowth(double* theta, CORE::LINALG::Matrix<6
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // get gauss point number
-  if (gp == -1) dserror("No Gauss point number provided in material.");
+  if (gp == -1) FOUR_C_THROW("No Gauss point number provided in material.");
 
   double thetaold = ThetaOldAtGp(gp);
 
@@ -868,7 +870,7 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         paramsVolumetric_ = dynamic_cast<MAT::PAR::Growth*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -879,7 +881,7 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
   {  // no history data to unpack
     isinit_ = false;
     if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
     return;
   }
 
@@ -955,7 +957,8 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
   Growth::ExtractfromPack(position, data, basedata);
   Growth::Unpack(basedata);
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -978,7 +981,7 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
       // CIR-AXI-RAD nomenclature
       if (not(linedef->HaveNamed("RAD")))
       {
-        dserror(
+        FOUR_C_THROW(
             "If you want growth into the radial direction you need to specify RAD in your input "
             "file!");
       }
@@ -997,7 +1000,7 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
     {
       // FIBER1 nomenclature
       if (not(linedef->HaveNamed("FIBER1")))
-        dserror(
+        FOUR_C_THROW(
             "If you want growth in fiber direction you need to specify FIBER1 in your input file!");
 
       ReadFiber(linedef, "FIBER1", refdir_);
@@ -1015,14 +1018,14 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
     {
       // FIBER1 nomenclature
       if (not(linedef->HaveNamed("FIBER1")))
-        dserror(
+        FOUR_C_THROW(
             "If you want growth in fiber direction you need to specify FIBER1 in your input file!");
 
       ReadFiber(linedef, "FIBER1", refdir_);
 
       linedef->ExtractDouble("GROWTHTRIG", growthtrig_const_);
       if (not(linedef->HaveNamed("GROWTHTRIG")))
-        dserror("You need to specify GROWTHTRIG in your input file!");
+        FOUR_C_THROW("You need to specify GROWTHTRIG in your input file!");
 
       // only refdir is used - rest remains unused...
       curdir_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);

@@ -108,7 +108,7 @@ namespace CORE::GEO
         {
           if (not done_)
           {
-            if (path_.back() != u) dserror("confused");
+            if (path_.back() != u) FOUR_C_THROW("confused");
             path_.pop_back();
           }
         }

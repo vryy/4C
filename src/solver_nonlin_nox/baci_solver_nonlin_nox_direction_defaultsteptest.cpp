@@ -80,7 +80,7 @@ void NOX::NLN::Direction::Test::VolumeChange::computePrimalDirectionMeasures(
   ::NOX::Abstract::Group::ReturnType status =
       nln_grp.applyJacobianBlock(nox_primal_dir, result_ptr, 0, 0);
 
-  if (status != ::NOX::Abstract::Group::Ok) dserror("applyJacobianBlock failed");
+  if (status != ::NOX::Abstract::Group::Ok) FOUR_C_THROW("applyJacobianBlock failed");
 
   dirdir_ = nox_primal_dir.innerProduct(nox_primal_dir);
   dirres_ = nox_primal_dir.innerProduct(*result_ptr);
@@ -97,7 +97,7 @@ void NOX::NLN::Direction::Test::VolumeChange::computePrimalDirectionMeasures(
       nln_grp.computeElementVolumes(ref_ele_vols_);
 
   if (eval_status != ::NOX::Abstract::Group::Ok)
-    dserror("The evaluation of the reference volumes failed!");
+    FOUR_C_THROW("The evaluation of the reference volumes failed!");
 
   return nln_grp.computeTrialElementVolumes(curr_ele_vols_, dir, 1.0);
 }

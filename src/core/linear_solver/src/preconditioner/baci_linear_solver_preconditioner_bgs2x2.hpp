@@ -67,7 +67,7 @@ namespace CORE::LINALG
     /// not implemented
     int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
     {
-      dserror("Apply does not make sense for CORE::LINALG::BGS2x2_Operator");
+      FOUR_C_THROW("Apply does not make sense for CORE::LINALG::BGS2x2_Operator");
       return (-1);
     }
 
@@ -80,7 +80,7 @@ namespace CORE::LINALG
     /// not implemented
     double NormInf() const override
     {
-      dserror("NormInf not impl.");
+      FOUR_C_THROW("NormInf not impl.");
       return (-1.0);
     }
 
@@ -93,7 +93,7 @@ namespace CORE::LINALG
     /// not implemented
     bool HasNormInf() const override
     {
-      dserror("HasNormInf not impl.");
+      FOUR_C_THROW("HasNormInf not impl.");
       return false;
     }
 

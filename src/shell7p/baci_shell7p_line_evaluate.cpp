@@ -26,7 +26,7 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // we need the displacement at the previous step
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
   std::vector<double> displacements(dof_index_array.size());
   CORE::FE::ExtractMyValues(*disp, displacements, dof_index_array);
 
@@ -45,13 +45,15 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < node_dof_)
-    dserror("Fewer functions or curves defined than the element's nodal degree of freedoms (6).");
+    FOUR_C_THROW(
+        "Fewer functions or curves defined than the element's nodal degree of freedoms (6).");
 
   for (int checkdof = num_dim_; checkdof < int(onoff->size()); ++checkdof)
   {
     if ((*onoff)[checkdof] != 0)
     {
-      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+      FOUR_C_THROW(
+          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
     }
   }
 

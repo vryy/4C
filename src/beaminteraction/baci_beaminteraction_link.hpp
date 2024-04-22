@@ -207,13 +207,13 @@ namespace BEAMINTERACTION
     //! Check the init state
     inline void CheckInit() const
     {
-      if (not IsInit()) dserror("Call Init() first!");
+      if (not IsInit()) FOUR_C_THROW("Call Init() first!");
     }
 
     //! Check the init and setup state
     inline void CheckInitSetup() const
     {
-      if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+      if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
 

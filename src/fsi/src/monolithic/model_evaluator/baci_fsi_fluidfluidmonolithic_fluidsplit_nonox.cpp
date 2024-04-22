@@ -98,7 +98,7 @@ FSI::FluidFluidMonolithicFluidSplitNoNOX::FluidFluidMonolithicFluidSplitNoNOX(
                 "------------+"
              << std::endl;
 
-    dserror(errormsg.str());
+    FOUR_C_THROW(errormsg.str());
   }
 
   // Initialization of row/column transformation objects
@@ -165,8 +165,8 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystem()
  *----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupRHS(Epetra_Vector& f, bool firstcall)
 {
-#ifdef BACI_DEBUG
-  if (FluidField()->RHS() == Teuchos::null) dserror("empty fluid residual");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (FluidField()->RHS() == Teuchos::null) FOUR_C_THROW("empty fluid residual");
 #endif
 
   // Get the contributions from the field residuals
@@ -212,7 +212,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupRHS(Epetra_Vector& f, bool f
     // Fluid block system matrix
     const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockf =
         FluidField()->BlockSystemMatrix();
-    if (blockf == Teuchos::null) dserror("Expected fluid block matrix...");
+    if (blockf == Teuchos::null) FOUR_C_THROW("Expected fluid block matrix...");
 
     // F^G_...
     // Fluid shape derivative matrix
@@ -222,7 +222,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupRHS(Epetra_Vector& f, bool f
     // ALE block system matrix
     const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocka =
         AleField()->BlockSystemMatrix();
-    if (blocka == Teuchos::null) dserror("Expected ALE block matrix...");
+    if (blocka == Teuchos::null) FOUR_C_THROW("Expected ALE block matrix...");
 
     // Extracting submatrices for fluid & ALE from block field matrices:
     // F_{\Gamma\Gamma}, F_{I\Gamma} and A_{I\Gamma}
@@ -423,19 +423,19 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> f = FluidField()->BlockSystemMatrix();
   const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether allocation was successful
   if (s == Teuchos::null)
   {
-    dserror("expect structure block matrix");
+    FOUR_C_THROW("expect structure block matrix");
   }
   if (f == Teuchos::null)
   {
-    dserror("expect fluid block matrix");
+    FOUR_C_THROW("expect fluid block matrix");
   }
   if (a == Teuchos::null)
   {
-    dserror("expect ale block matrix");
+    FOUR_C_THROW("expect ale block matrix");
   }
 #endif
 
@@ -637,7 +637,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupVector(Epetra_Vector& f,
 
   // Add the converted interface RHS-contributions (scaled) to the global structural RHS!
   int err = modsv->Update(1.0, *sv, (1.0 - stimintparam) / (1.0 - ftimintparam) * fluidscale);
-  if (err) dserror("Update of structural residual vector failed! Error code %i", err);
+  if (err) FOUR_C_THROW("Update of structural residual vector failed! Error code %i", err);
 
   // Add the previous Lagrange Multiplier
   if (lambda_ != Teuchos::null)
@@ -646,7 +646,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupVector(Epetra_Vector& f,
         StructureField()->Interface()->InsertFSICondVector(FluidToStruct(lambda_));
     err = modsv->Update(stimintparam - ftimintparam * (1.0 - stimintparam) / (1.0 - ftimintparam),
         *lambdaglob, 1.0);
-    if (err) dserror("Update of structural residual vector failed! Error code %i", err);
+    if (err) FOUR_C_THROW("Update of structural residual vector failed! Error code %i", err);
 
     // Insert structural contribution
     Extractor().InsertVector(*modsv, 0, f);
@@ -790,7 +790,8 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::CreateCombinedDofRowMap()
   vecSpaces.push_back(AleField()->Interface()->OtherMap());
 
   // If the non-FSI fluid maps are empty
-  if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No inner fluid equations. Can't split!");
+  if (vecSpaces[1]->NumGlobalElements() == 0)
+    FOUR_C_THROW("No inner fluid equations. Can't split!");
 
   // The vector is complete, fill the system's global BlockRowMap
   // with the maps previously set together!
@@ -886,7 +887,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::BuildConvergenceNorms()
 
   // Norm of fluid pressure residual
   // This requires an Epetra_Map of the fluid pressure DOFs
-  if (FluidField()->PressureRowMap() == Teuchos::null) dserror("Empty pressure row map!");
+  if (FluidField()->PressureRowMap() == Teuchos::null) FOUR_C_THROW("Empty pressure row map!");
 
   // Finally, compute the fluid pressure RHS-norm
   fluidvelextract->ExtractOtherVector(innerfluidfluidrhs)->Norm2(&normflpresrhsL2_);

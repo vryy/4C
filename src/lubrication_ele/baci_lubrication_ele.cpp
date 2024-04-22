@@ -185,7 +185,7 @@ void DRT::ELEMENTS::Lubrication::Unpack(const std::vector<char>& data)
   distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -318,7 +318,7 @@ CORE::FE::CellType DRT::ELEMENTS::LubricationBoundary::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::LubricationBoundary::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("This LubricationBoundary element does not support communication");
+  FOUR_C_THROW("This LubricationBoundary element does not support communication");
 
   return;
 }
@@ -328,7 +328,7 @@ void DRT::ELEMENTS::LubricationBoundary::Pack(CORE::COMM::PackBuffer& data) cons
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::LubricationBoundary::Unpack(const std::vector<char>& data)
 {
-  dserror("This LubricationBoundary element does not support communication");
+  FOUR_C_THROW("This LubricationBoundary element does not support communication");
   return;
 }
 
@@ -368,7 +368,7 @@ int DRT::ELEMENTS::LubricationBoundary::NumSurface() const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Lines()
 {
-  dserror("Lines of LubricationBoundary not implemented");
+  FOUR_C_THROW("Lines of LubricationBoundary not implemented");
 }
 
 /*----------------------------------------------------------------------*
@@ -376,7 +376,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Line
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::LubricationBoundary::Surfaces()
 {
-  dserror("Surfaces of LubricationBoundary not implemented");
+  FOUR_C_THROW("Surfaces of LubricationBoundary not implemented");
 }
 
 FOUR_C_NAMESPACE_CLOSE

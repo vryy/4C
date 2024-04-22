@@ -140,7 +140,7 @@ namespace CORE::GEO
       const double det = xjm.Determinant();
       const double fac = intpoints.Weight(iquad) * det;
 
-      if (det <= 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT: %g", det);
+      if (det <= 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT: %g", det);
 
       vol += fac;
     }  // end loop over gauss points
@@ -157,7 +157,7 @@ namespace CORE::GEO
   double ElementLength(const CORE::FE::CellType& distype, const matrixtype& xyze)
   {
     if (distype != CORE::FE::CellType::line2 or xyze.numCols() != 2)
-      dserror("Currently only line2 elements are supported!");
+      FOUR_C_THROW("Currently only line2 elements are supported!");
 
     // calculate the distance between the two given nodes and return
     // the value
@@ -193,7 +193,7 @@ namespace CORE::GEO
       case CORE::FE::CellType::quad9:
         return ElementAreaT<CORE::FE::CellType::quad9>(xyze);
       default:
-        dserror("Unsupported surface element type!");
+        FOUR_C_THROW("Unsupported surface element type!");
         exit(EXIT_FAILURE);
     }
 
@@ -233,7 +233,7 @@ namespace CORE::GEO
       case CORE::FE::CellType::pyramid5:
         return ElementVolumeT<CORE::FE::CellType::pyramid5>(xyze);
       default:
-        dserror("add you distype here");
+        FOUR_C_THROW("add you distype here");
     }
     return -1.0;
   }

@@ -337,7 +337,7 @@ namespace WEAR
       if (Filled())
         return wdofmap_;
       else
-        dserror("CONTACT::WearInterface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::WearInterface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -350,7 +350,7 @@ namespace WEAR
       if (Filled())
         return wmdofmap_;
       else
-        dserror("CONTACT::WearInterface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::WearInterface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -363,7 +363,7 @@ namespace WEAR
       if (Filled())
         return sndofmap_;
       else
-        dserror("CONTACT::WearInterface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::WearInterface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -376,7 +376,7 @@ namespace WEAR
       if (Filled())
         return mndofmap_;
       else
-        dserror("CONTACT::WearInterface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::WearInterface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -389,7 +389,7 @@ namespace WEAR
       if (Filled())
         return activmasternodes_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -402,7 +402,7 @@ namespace WEAR
       if (Filled())
         return slipmasternodes_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -415,7 +415,7 @@ namespace WEAR
       if (Filled())
         return slipmn_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 

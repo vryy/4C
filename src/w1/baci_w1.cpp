@@ -288,7 +288,7 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // line search
   ExtractfromPack(position, data, old_step_length_);
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

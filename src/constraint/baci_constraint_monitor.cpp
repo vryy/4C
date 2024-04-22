@@ -85,7 +85,7 @@ void CONSTRAINTS::Monitor::Evaluate(
     case none:
       return;
     default:
-      dserror("Unknown monitor type to be evaluated in Monitor class!");
+      FOUR_C_THROW("Unknown monitor type to be evaluated in Monitor class!");
   }
   EvaluateMonitor(params, systemvector);
 }
@@ -99,8 +99,8 @@ void CONSTRAINTS::Monitor::Evaluate(
 void CONSTRAINTS::Monitor::EvaluateMonitor(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
-  if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -139,7 +139,7 @@ void CONSTRAINTS::Monitor::EvaluateMonitor(
       // call the element specific evaluate method
       int err = curr->second->Evaluate(
           params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-      if (err) dserror("error while evaluating elements");
+      if (err) FOUR_C_THROW("error while evaluating elements");
 
       // assembly
       std::vector<int> constrlm;

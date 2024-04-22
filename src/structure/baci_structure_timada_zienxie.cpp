@@ -34,7 +34,7 @@ STR::TimAdaZienXie::TimAdaZienXie(
   // check if marching TIS is second order accurate
   if (sti_->MethodOrderOfAccuracyDis() != 2)
   {
-    dserror(
+    FOUR_C_THROW(
         "%s can only work with 2nd order accurate marching scheme,"
         " whereas the actual %s is of order %i",
         MethodTitle().c_str(), sti_->MethodTitle().c_str(), sti_->MethodOrderOfAccuracyDis());

@@ -180,7 +180,7 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ThermoPlasticLinElast*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -243,7 +243,8 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
   // if it was already plastic before
   if (plastic_step != 0) plastic_step_ = true;
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 
@@ -362,7 +363,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
     int eleGID)
 {
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plstrain(true);
-  if (eleGID == -1) dserror("no element provided in material");
+  if (eleGID == -1) FOUR_C_THROW("no element provided in material");
 
   // get material parameters
   // Young's modulus
@@ -411,7 +412,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   // astrain^p,trial}_{n+1} = astrain^p_n
   strainbar_p = (strainbarpllast_->at(gp));
   if (strainbarpllast_->at(gp) < 0.0)
-    dserror("accumulated plastic strain has to be equal to or greater than zero!");
+    FOUR_C_THROW("accumulated plastic strain has to be equal to or greater than zero!");
 
   // ---------------------------------------------------- old back stress
   // beta^{trial}_{n+1} = beta_n
@@ -594,7 +595,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
       // if not converged and (m > m_max)
       if (itnum > itermax)
       {
-        dserror("local Newton iteration did not converge after iteration %3d/%3d with Res=%3f",
+        FOUR_C_THROW("local Newton iteration did not converge after iteration %3d/%3d with Res=%3f",
             itnum, itermax, Res);
       }
       // else: continue loop (m <= m_max)
@@ -640,7 +641,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
       // Kuhn-Tucker: Dgamma >= 0.0 --> astrain^p_{n+1} >= 0.0
       strainbar_p = strainbarpllast_->at(gp) + Dgamma;
       if (strainbar_p < 0.0)
-        dserror("accumulated plastic strain has to be equal or greater than zero");
+        FOUR_C_THROW("accumulated plastic strain has to be equal or greater than zero");
 
       // Prager's linear kinemativ hardening rule
       // kinematic hardening stress betabar (scalar-valued)
@@ -865,7 +866,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   // safety check:
   double tracestrainp = 0.0;
   tracestrainp = strain_p(0) + strain_p(1) + strain_p(2);
-  if (tracestrainp > 1.0E-8) dserror("trace of plastic strains is not equal to zero!");
+  if (tracestrainp > 1.0E-8) FOUR_C_THROW("trace of plastic strains is not equal to zero!");
 
   // ----------------------------------- linearisation of D_mech for k_Td
   DissipationCouplCond(*cmat, gp, G, Hiso, Hkin, heaviside, etanorm, Dgamma, N, *stress);
@@ -1485,7 +1486,8 @@ double MAT::ThermoPlasticLinElast::GetSigmaYAtStrainbarnp(
   {
     // get vector astrain^p_ref
     const std::vector<double> strainbar_p_ref = params_->strainbar_p_ref_;
-    if (sigma_y_ref.size() != strainbar_p_ref.size()) dserror("Samples have to fit to each other!");
+    if (sigma_y_ref.size() != strainbar_p_ref.size())
+      FOUR_C_THROW("Samples have to fit to each other!");
 
     // loop over samples
     for (int i = 0; i < samplenumber; ++i)
@@ -1549,7 +1551,7 @@ bool MAT::ThermoPlasticLinElast::VisData(
 {
   if (name == "accumulatedstrain")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int iter = 0; iter < numgp; iter++) temp += AccumulatedStrain(iter);
     data[0] = temp / numgp;

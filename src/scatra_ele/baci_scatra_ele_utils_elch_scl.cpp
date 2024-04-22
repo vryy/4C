@@ -57,7 +57,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchMat(
   const auto elchmat = Teuchos::rcp_static_cast<const MAT::ElchMat>(material);
 
   // safety check
-  if (elchmat->NumPhase() != 1) dserror("Can only have a single electrolyte phase at the moment!");
+  if (elchmat->NumPhase() != 1)
+    FOUR_C_THROW("Can only have a single electrolyte phase at the moment!");
 
   // extract electrolyte phase
   const auto elchphase = elchmat->PhaseById(elchmat->PhaseID(0));
@@ -68,7 +69,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchMat(
     MatElchPhase(elchphase, concentrations, temperature, diffmanager, diffcondmat);
   }
   else
-    dserror("Invalid material type!");
+    FOUR_C_THROW("Invalid material type!");
 }
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
@@ -151,7 +152,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchPhase(
       }
       default:
       {
-        dserror("Invalid material type!");
+        FOUR_C_THROW("Invalid material type!");
         break;
       }
     }

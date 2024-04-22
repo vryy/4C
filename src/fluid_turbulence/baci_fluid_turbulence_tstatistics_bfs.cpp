@@ -57,7 +57,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
   //----------------------------------------------------------------------
   // plausibility check
   int numdim = params_.get<int>("number of velocity degrees of freedom");
-  if (numdim != 3) dserror("Evaluation of turbulence statistics only for 3d flow problems!");
+  if (numdim != 3) FOUR_C_THROW("Evaluation of turbulence statistics only for 3d flow problems!");
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
   const INPAR::FLUID::PhysicalType physicaltype =
@@ -196,7 +196,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -259,7 +259,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -345,7 +345,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
   {
     // locactions given by Vogel&Eaton
     std::array<double, 10> givenpos = {2.2, 3.0, 3.73, 4.47, 5.2, 5.93, 6.67, 7.4, 8.13, 8.87};
-    if (numx1statlocations_ != 10) dserror("wrong number of numx1statlocations_");
+    if (numx1statlocations_ != 10) FOUR_C_THROW("wrong number of numx1statlocations_");
     // find locations
     for (int rr = 0; rr < numx1statlocations_; rr++)
     {
@@ -455,7 +455,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
         x2coordinates_->at(x2coordinates_->size() - 2);  // not needed here, upper wall is slip wall
   }
   else
-    dserror("Unknown geometry of backward facing step!");
+    FOUR_C_THROW("Unknown geometry of backward facing step!");
 
   //----------------------------------------------------------------------
   // allocate arrays for sums of mean values
@@ -1632,7 +1632,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int step)
       }
     }
     else if (geotype_ == TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton)
-      dserror("geometry not implemented for loma yet");
+      FOUR_C_THROW("geometry not implemented for loma yet");
 
     for (int i = 0; i < numx1statlocations_; ++i)
     {
@@ -1852,7 +1852,7 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int step)
       }
     }
     else if (geotype_ == TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton)
-      dserror("geometry not implemented for scatra yet");
+      FOUR_C_THROW("geometry not implemented for scatra yet");
 
     for (int i = 0; i < numx1statlocations_; ++i)
     {
@@ -1952,7 +1952,7 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int step)
  *----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsBfs::convertStringToGeoType(const std::string& geotype)
 {
-  dsassert(geotype != "none", "No geometry supplied");
+  FOUR_C_ASSERT(geotype != "none", "No geometry supplied");
 
   geotype_ = TurbulenceStatisticsBfs::none;
   if (geotype == "geometry_DNS_incomp_flow")
@@ -1962,7 +1962,7 @@ void FLD::TurbulenceStatisticsBfs::convertStringToGeoType(const std::string& geo
   else if (geotype == "geometry_EXP_vogel_eaton")
     geotype_ = TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton;
   else
-    dserror("(%s) geometry for backward facing step", geotype.c_str());
+    FOUR_C_THROW("(%s) geometry for backward facing step", geotype.c_str());
   return;
 }
 

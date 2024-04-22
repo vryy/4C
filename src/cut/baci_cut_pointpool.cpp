@@ -117,7 +117,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
         // note: be carefull with other cases, apart from mesh loading
         if (cut_side and cut_edge)
         {
-          dserror(
+          FOUR_C_THROW(
               "Scaling is %lf for non-nullptr cut_side and cut_edge. This should not be possible!",
               NODAL_POINT_TOLERANCE_SCALE);
         }
@@ -130,7 +130,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
         break;
       }
       default:
-        dserror("Unknown merge strategy is equal to %d", merge_strategy);
+        FOUR_C_THROW("Unknown merge strategy is equal to %d", merge_strategy);
     }
 
     // linear search for the node in the current leaf
@@ -207,7 +207,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
         }
 
         file.close();
-        dserror(err_msg.str());
+        FOUR_C_THROW(err_msg.str());
       }
 
       // if there are no points intersected by same side and edge but there  are still other points
@@ -514,7 +514,7 @@ void CORE::GEO::CUT::OctTreeNode::CollectElements(
     const BoundingBox& sidebox, plain_element_set& elements)
 {
   // see REMARK in cut_mesh.cpp
-  dserror(
+  FOUR_C_THROW(
       "collecting elements via the OctTreeNode does not find all possible element-side "
       "intersections");
 
@@ -643,7 +643,7 @@ CORE::GEO::CUT::OctTreeNode* CORE::GEO::CUT::OctTreeNode::FindNode(const double*
   }
   else
   {
-    dserror("Invalid point");
+    FOUR_C_THROW("Invalid point");
     return nullptr;
   }
   return nullptr;

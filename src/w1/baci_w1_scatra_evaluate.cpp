@@ -31,14 +31,14 @@ void DRT::ELEMENTS::Wall1Scatra::PreEvaluate(Teuchos::ParameterList& params,
     const int numdofpernode = NumDofPerNode(1, *(Nodes()[0]), discretization.Name());
 
     if (la[1].Size() != numnode * numdofpernode)
-      dserror("calc_struct_nlnstiff: Location vector length for velocities does not match!");
+      FOUR_C_THROW("calc_struct_nlnstiff: Location vector length for velocities does not match!");
 
     if (discretization.HasState(1, "scalarfield"))
     {
       // check if you can get the scalar state
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState(1, "scalarfield");
 
-      if (phinp == Teuchos::null) dserror("pre_evaluate: Cannot get state vector 'phinp' ");
+      if (phinp == Teuchos::null) FOUR_C_THROW("pre_evaluate: Cannot get state vector 'phinp' ");
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> myphi =
@@ -108,7 +108,7 @@ int DRT::ELEMENTS::Wall1Scatra::Evaluate(Teuchos::ParameterList& params,
   {
     // get the required action
     std::string action = params.get<std::string>("action", "none");
-    if (action == "none") dserror("No action supplied");
+    if (action == "none") FOUR_C_THROW("No action supplied");
   }
 
   // what should the element do

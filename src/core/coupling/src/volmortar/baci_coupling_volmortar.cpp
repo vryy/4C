@@ -61,7 +61,7 @@ CORE::VOLMORTAR::VolMortarCoupl::VolMortarCoupl(int dim,
 {
   // check
   if (not dis1_->Filled() or not dis2_->Filled())
-    dserror(
+    FOUR_C_THROW(
         "ERROR: FillComplete() has to be called on both discretizations before setup of "
         "VolMortarCoupl");
 
@@ -153,7 +153,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::BuildMaps(Teuchos::RCP<DRT::Discretization
 
     const std::vector<int> dof = dis->Dof(dofset, actnode);
     if (numcoupleddofs > dof.size())
-      dserror("got just %d dofs at node %d (lid=%d) but expected %d", dof.size(), nodes[i], i,
+      FOUR_C_THROW("got just %d dofs at node %d (lid=%d) but expected %d", dof.size(), nodes[i], i,
           numcoupleddofs);
 
     for (unsigned j = 0; j < dof.size(); ++j)
@@ -217,7 +217,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
 
   // no other possibility
   else
-    dserror("ERROR: Chosen INTTYPE not provided");
+    FOUR_C_THROW("ERROR: Chosen INTTYPE not provided");
 
   /***********************************************************
    * complete global matrices and create projection operator *
@@ -429,7 +429,7 @@ std::vector<int> CORE::VOLMORTAR::VolMortarCoupl::Search(DRT::Element& ele,
 void CORE::VOLMORTAR::VolMortarCoupl::AssignMaterials()
 {
   if (dis1_ == Teuchos::null or dis2_ == Teuchos::null)
-    dserror("no discretization for assigning materials!");
+    FOUR_C_THROW("no discretization for assigning materials!");
 
   // init search trees
   Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
@@ -548,7 +548,7 @@ std::vector<int> CORE::VOLMORTAR::VolMortarCoupl::GetAdjacentNodes(
         ids.push_back(7);
       }
       else
-        dserror("ERROR: Given Id is wrong!!!");
+        FOUR_C_THROW("ERROR: Given Id is wrong!!!");
 
       break;
     }
@@ -585,12 +585,12 @@ std::vector<int> CORE::VOLMORTAR::VolMortarCoupl::GetAdjacentNodes(
         ids.push_back(3);
       }
       else
-        dserror("ERROR: Given Id is wrong!!!");
+        FOUR_C_THROW("ERROR: Given Id is wrong!!!");
 
       break;
     }
     default:
-      dserror("ERROR: shape unknown\n");
+      FOUR_C_THROW("ERROR: shape unknown\n");
       break;
   }
 
@@ -626,7 +626,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
     edge_max = 9;
   }
   else
-    dserror("ERROR: Unknown shape for trafo matrix");
+    FOUR_C_THROW("ERROR: Unknown shape for trafo matrix");
 
   // loop over element nodes
   for (int i = 0; i < ele.NumNode(); ++i)
@@ -901,7 +901,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments()
        * Wrong Dimension !!!                            *
        **************************************************/
       else
-        dserror("ERROR: Problem dimension is not correct!");
+        FOUR_C_THROW("ERROR: Problem dimension is not correct!");
 
     }  // end master element loop
   }    // end slave element loop
@@ -944,7 +944,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments2D(DRT::Element& Aele, DRT
   if (!success)
   {
     bool backup = CenterTriangulation(cells, ClippedPolygon, tol);
-    if (!backup) dserror("ERROR: Triangulation failed!");
+    if (!backup) FOUR_C_THROW("ERROR: Triangulation failed!");
   }
 
   cellcounter_ += (int)cells.size();
@@ -1040,7 +1040,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput(
       CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar_parameters, "INTTYPE") ==
           INPAR::VOLMORTAR::inttype_segments)
   {
-    dserror("ERROR: MeshInit only for ele-based integration!!!");
+    FOUR_C_THROW("ERROR: MeshInit only for ele-based integration!!!");
   }
 
   if (CORE::UTILS::IntegralValue<int>(volmortar_parameters, "SHAPEFCN") ==
@@ -1118,10 +1118,10 @@ void CORE::VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
   // int err2 = mmatrixB_->Multiply(false, *var_A, *result_A);
 
   // if(err1!=0 or err2!=0)
-  //  dserror("error");
+  //  FOUR_C_THROW("error");
 
   int err = P21_->Multiply(false, *var_A, *result_A);
-  if (err != 0) dserror("error");
+  if (err != 0) FOUR_C_THROW("error");
 
   // substract both results
   result_A->Update(-1.0, *var_B, 1.0);
@@ -1279,25 +1279,25 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
 
     int err = 0;
     err = dmatrixXA_->Multiply(false, *mergedXa, *solDA);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     err = mmatrixXA_->Multiply(false, *mergedXb, *solMA);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     Teuchos::RCP<Epetra_Vector> solDB = CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
     Teuchos::RCP<Epetra_Vector> solMB = CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
 
     err = dmatrixXB_->Multiply(false, *mergedXb, *solDB);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     err = mmatrixXB_->Multiply(false, *mergedXa, *solMB);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     err = solDA->Update(-1.0, *solMA, 1.0);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     err = solDB->Update(-1.0, *solMB, 1.0);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     double ra = 0.0;
     double rb = 0.0;
@@ -1322,28 +1322,28 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
       Teuchos::RCP<Epetra_Vector> DiffB =
           CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb), true);
       err = DiffA->Update(1.0, *solDA, 0.0);
-      if (err != 0) dserror("stop");
+      if (err != 0) FOUR_C_THROW("stop");
       err = DiffA->Update(-1.0, *ResoldA, 1.0);
-      if (err != 0) dserror("stop");
+      if (err != 0) FOUR_C_THROW("stop");
       err = DiffB->Update(1.0, *solDB, 0.0);
-      if (err != 0) dserror("stop");
+      if (err != 0) FOUR_C_THROW("stop");
       err = DiffB->Update(-1.0, *ResoldB, 1.0);
-      if (err != 0) dserror("stop");
+      if (err != 0) FOUR_C_THROW("stop");
 
       double topa = 0.0;
       err = DiffA->Dot(*solDA, &topa);
-      if (err != 0) dserror("stop");
+      if (err != 0) FOUR_C_THROW("stop");
       double topb = 0.0;
       err = DiffB->Dot(*solDB, &topb);
-      if (err != 0) dserror("stop");
+      if (err != 0) FOUR_C_THROW("stop");
       double top = -(topa + topb);
 
       double downa = 0.0;
       err = DiffA->Dot(*DiffA, &downa);
-      if (err != 0) dserror("stop");
+      if (err != 0) FOUR_C_THROW("stop");
       double downb = 0.0;
       err = DiffB->Dot(*DiffB, &downb);
-      if (err != 0) dserror("stop");
+      if (err != 0) FOUR_C_THROW("stop");
       double down = (downa + downb);
 
       fac = top / down;
@@ -1352,10 +1352,10 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     }
 
     err = ResoldA->Update(1.0, *solDA, 0.0);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     err = ResoldB->Update(1.0, *solDB, 0.0);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     // relaxation parameter
@@ -1502,10 +1502,10 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
         CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
 
     err = dmatrixXA_->Multiply(false, *checka, *finalDA);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     err = mmatrixXA_->Multiply(false, *checkb, *finalMA);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     Teuchos::RCP<Epetra_Vector> finalDB =
         CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
@@ -1513,16 +1513,16 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
         CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
 
     err = dmatrixXB_->Multiply(false, *checkb, *finalDB);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     err = mmatrixXB_->Multiply(false, *checka, *finalMB);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     err = finalDA->Update(-1.0, *finalMA, 1.0);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     err = finalDB->Update(-1.0, *finalMB, 1.0);
-    if (err != 0) dserror("stop");
+    if (err != 0) FOUR_C_THROW("stop");
 
     double finalra = 0.0;
     double finalrb = 0.0;
@@ -1726,7 +1726,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
   // *******************************************
   // DEFAULT           *************************
   else
-    dserror("ERROR: Chosen Cuttype for volmortar not supported!");
+    FOUR_C_THROW("ERROR: Chosen Cuttype for volmortar not supported!");
 
   return;
 }
@@ -1764,7 +1764,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele, DR
     else if (mele.Shape() == CORE::FE::CellType::pyramid5)
       MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::pyramid5>(mele, xgl, xi, converged);
     else
-      dserror("ERROR: Shape function not supported!");
+      FOUR_C_THROW("ERROR: Shape function not supported!");
 
     if (converged == true)
     {
@@ -1790,7 +1790,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele, DR
           return false;
       }
       else
-        dserror("ERROR: Element type not supported!");
+        FOUR_C_THROW("ERROR: Element type not supported!");
     }
     else
     {
@@ -1845,7 +1845,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element&
       else if (sele.Shape() == CORE::FE::CellType::pyramid5)
         MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::pyramid5>(sele, xgl, xi, converged);
       else
-        dserror("ERROR: Shape function not supported!");
+        FOUR_C_THROW("ERROR: Shape function not supported!");
 
       if (converged == true)
       {
@@ -1869,7 +1869,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element&
           if ((xi[0] + xi[1] + xi[2]) < 1.0 - 3.0 * VOLMORTARCUTTOL) all = true;
         }
         else
-          dserror("ERROR: Element not supported!");
+          FOUR_C_THROW("ERROR: Element not supported!");
       }
     }  // end node loop
 
@@ -1883,7 +1883,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element&
       if (!xi0 or !xi1 or !xi2 or !xi0n or !xi1n or !xi2n) return false;
     }
     else
-      dserror("ERROR: Element not supported!");
+      FOUR_C_THROW("ERROR: Element not supported!");
   }
 
   {
@@ -1919,7 +1919,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element&
       else if (mele.Shape() == CORE::FE::CellType::pyramid5)
         MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::pyramid5>(mele, xgl, xi, converged);
       else
-        dserror("ERROR: Shape function not supported!");
+        FOUR_C_THROW("ERROR: Shape function not supported!");
 
       if (converged == true)
       {
@@ -1944,7 +1944,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element&
           if ((xi[0] + xi[1] + xi[2]) < 1.0 - 3.0 * VOLMORTARCUTTOL) all = true;
         }
         else
-          dserror("ERROR: Element not supported!");
+          FOUR_C_THROW("ERROR: Element not supported!");
       }
     }
 
@@ -1958,7 +1958,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element&
       if (!xi0 or !xi1 or !xi2 or !xi0n or !xi1n or !xi2n) return false;
     }
     else
-      dserror("ERROR: Element not supported!");
+      FOUR_C_THROW("ERROR: Element not supported!");
   }
 
   //--------------------------------------------------------
@@ -1983,7 +1983,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element&
     else if (sele.Shape() == CORE::FE::CellType::pyramid5)
       MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::pyramid5>(sele, xgl, xi, converged);
     else
-      dserror("ERROR: Shape function not supported!");
+      FOUR_C_THROW("ERROR: Shape function not supported!");
 
     if (converged == true)
     {
@@ -2004,7 +2004,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element&
           return true;
       }
       else
-        dserror("ERROR: Element not supported!");
+        FOUR_C_THROW("ERROR: Element not supported!");
     }
   }
 
@@ -2030,7 +2030,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element&
     else if (mele.Shape() == CORE::FE::CellType::pyramid5)
       MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::pyramid5>(mele, xgl, xi, converged);
     else
-      dserror("ERROR: Shape function not supported!");
+      FOUR_C_THROW("ERROR: Shape function not supported!");
 
     if (converged == true)
     {
@@ -2051,7 +2051,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element&
           return true;
       }
       else
-        dserror("ERROR: Element not supported!");
+        FOUR_C_THROW("ERROR: Element not supported!");
     }
   }
 
@@ -2095,7 +2095,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate2D(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -2124,7 +2124,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate2D(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -2132,7 +2132,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate2D(
       }
       default:
       {
-        dserror("ERROR: unknown shape!");
+        FOUR_C_THROW("ERROR: unknown shape!");
         break;
       }
     }
@@ -2165,7 +2165,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate2D(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -2194,7 +2194,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate2D(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -2202,7 +2202,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate2D(
       }
       default:
       {
-        dserror("ERROR: unknown shape!");
+        FOUR_C_THROW("ERROR: unknown shape!");
         break;
       }
     }
@@ -2285,7 +2285,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -2353,7 +2353,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -2421,7 +2421,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -2489,7 +2489,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -2557,7 +2557,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -2625,7 +2625,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -2633,7 +2633,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell(
       }
       default:
       {
-        dserror("ERROR: unknown shape!");
+        FOUR_C_THROW("ERROR: unknown shape!");
         break;
       }
     }
@@ -2741,7 +2741,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
     }
     default:
     {
-      dserror("ERROR: unknown shape!");
+      FOUR_C_THROW("ERROR: unknown shape!");
       break;
     }
   }
@@ -2849,7 +2849,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
     }
     default:
     {
-      dserror("ERROR: unknown shape!");
+      FOUR_C_THROW("ERROR: unknown shape!");
       break;
     }
   }
@@ -2915,7 +2915,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
     }
     default:
     {
-      dserror("ERROR: unknown shape!");
+      FOUR_C_THROW("ERROR: unknown shape!");
       break;
     }
   }
@@ -2982,7 +2982,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
     }
     default:
     {
-      dserror("ERROR: unknown shape!");
+      FOUR_C_THROW("ERROR: unknown shape!");
       break;
     }
   }
@@ -3077,7 +3077,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -3117,7 +3117,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -3157,7 +3157,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
           }
           default:
           {
-            dserror("ERROR: unknown shape!");
+            FOUR_C_THROW("ERROR: unknown shape!");
             break;
           }
         }
@@ -3165,7 +3165,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
       }
       default:
       {
-        dserror("ERROR: unknown shape!");
+        FOUR_C_THROW("ERROR: unknown shape!");
         break;
       }
     }
@@ -3246,7 +3246,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3D(
         }
         default:
         {
-          dserror("ERROR: unknown shape!");
+          FOUR_C_THROW("ERROR: unknown shape!");
           break;
         }
       }
@@ -3314,7 +3314,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3D(
         }
         default:
         {
-          dserror("ERROR: unknown shape!");
+          FOUR_C_THROW("ERROR: unknown shape!");
           break;
         }
       }
@@ -3382,7 +3382,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3D(
         }
         default:
         {
-          dserror("ERROR: unknown shape!");
+          FOUR_C_THROW("ERROR: unknown shape!");
           break;
         }
       }
@@ -3450,7 +3450,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3D(
         }
         default:
         {
-          dserror("ERROR: unknown shape!");
+          FOUR_C_THROW("ERROR: unknown shape!");
           break;
         }
       }
@@ -3518,7 +3518,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3D(
         }
         default:
         {
-          dserror("ERROR: unknown shape!");
+          FOUR_C_THROW("ERROR: unknown shape!");
           break;
         }
       }
@@ -3586,7 +3586,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3D(
         }
         default:
         {
-          dserror("ERROR: unknown shape!");
+          FOUR_C_THROW("ERROR: unknown shape!");
           break;
         }
       }
@@ -3594,7 +3594,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3D(
     }
     default:
     {
-      dserror("ERROR: unknown shape!");
+      FOUR_C_THROW("ERROR: unknown shape!");
       break;
     }
   }
@@ -3677,7 +3677,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
 
   // scalar inversion of diagonal values
   err = diag1->Reciprocal(*diag1);
-  if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  if (err > 0) FOUR_C_THROW("ERROR: Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd1->ReplaceDiagonalValues(*diag1);
@@ -3702,7 +3702,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
 
   // scalar inversion of diagonal values
   err = diag2->Reciprocal(*diag2);
-  if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  if (err > 0) FOUR_C_THROW("ERROR: Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd2->ReplaceDiagonalValues(*diag2);
@@ -3735,7 +3735,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::DefineVerticesSlave(
   // project slave nodes onto auxiliary plane
   int nnodes = ele.NumNode();
   DRT::Node** mynodes = ele.Nodes();
-  if (!mynodes) dserror("ERROR: ProjectSlave: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("ERROR: ProjectSlave: Null pointer!");
 
   // initialize storage for slave coords + their ids
   std::vector<double> vertices(3);
@@ -3765,7 +3765,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::DefineVerticesMaster(
   // project slave nodes onto auxiliary plane
   int nnodes = ele.NumNode();
   DRT::Node** mynodes = ele.Nodes();
-  if (!mynodes) dserror("ERROR: ProjectSlave: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("ERROR: ProjectSlave: Null pointer!");
 
   // initialize storage for slave coords + their ids
   std::vector<double> vertices(3);
@@ -3803,7 +3803,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORT
 
   // check input variables
   if ((int)poly1.size() < 3 || (int)poly2.size() < 3)
-    dserror("ERROR: Input Polygons must consist of min. 3 vertices each");
+    FOUR_C_THROW("ERROR: Input Polygons must consist of min. 3 vertices each");
 
   // check for rotation of polygon1 (slave) and polgon 2 (master)
   // note that we implicitly already rely on convexity here!
@@ -3846,8 +3846,8 @@ bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORT
   double check1 = cross1[0] * Auxn()[0] + cross1[1] * Auxn()[1] + cross1[2] * Auxn()[2];
   double check2 = cross2[0] * Auxn()[0] + cross2[1] * Auxn()[1] + cross2[2] * Auxn()[2];
 
-  // check polygon 1 and throw dserror if not c-clockwise
-  if (check1 <= 0) dserror("ERROR: Polygon 1 (slave) not ordered counter-clockwise!");
+  // check polygon 1 and throw FOUR_C_THROW if not c-clockwise
+  if (check1 <= 0) FOUR_C_THROW("ERROR: Polygon 1 (slave) not ordered counter-clockwise!");
 
   // check polygon 2 and reorder in c-clockwise direction
   if (check2 < 0) std::reverse(poly2.begin(), poly2.end());
@@ -3887,7 +3887,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORT
 
     // check scalar product
     double check = n[0] * nextedge[0] + n[1] * nextedge[1] + n[2] * nextedge[2];
-    if (check > 0) dserror("ERROR: Input polygon 1 not convex");
+    if (check > 0) FOUR_C_THROW("ERROR: Input polygon 1 not convex");
   }
 
   for (int i = 0; i < (int)poly2.size(); ++i)
@@ -3927,7 +3927,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORT
       // this may happen, so do NOT throw an error immediately
       // but instead check if the two elements to be clipped are
       // close to each other at all. If so, then really throw the
-      // dserror, if not, simply continue with the next pair!
+      // FOUR_C_THROW, if not, simply continue with the next pair!
       int sid = sele.Id();
       int mid = mele.Id();
       bool nearcheck = true;  // RoughCheckNodes();
@@ -4497,7 +4497,8 @@ bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORT
         for (int k = 0; k < 3; ++k)
           newpoint[j] += trafo(j, k) * (collconvexhull[i].Coord()[k] - newzero[k]);
 
-      if (abs(newpoint[2]) > tol) dserror("ERROR: Transformation to aux. plane failed: z!=0 !");
+      if (abs(newpoint[2]) > tol)
+        FOUR_C_THROW("ERROR: Transformation to aux. plane failed: z!=0 !");
       transformed(0, i) = newpoint[0];
       transformed(1, i) = newpoint[1];
     }
@@ -4812,7 +4813,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
       if (abs(Auxn()[0]) >= abs(Auxn()[1]) && abs(Auxn()[0]) >= abs(Auxn()[2])) direction = 1;
       if (abs(Auxn()[1]) >= abs(Auxn()[0]) && abs(Auxn()[1]) >= abs(Auxn()[2])) direction = 2;
       if (abs(Auxn()[2]) >= abs(Auxn()[0]) && abs(Auxn()[2]) >= abs(Auxn()[1])) direction = 3;
-      if (direction == 0) dserror("ERROR: Did not find best direction");
+      if (direction == 0) FOUR_C_THROW("ERROR: Did not find best direction");
 
       // intersection of the two perpendicular bisections
       // (solution of m1+s*c1 = n1+t*d1 and m2+s*c2 = n2+t*d2)
@@ -5029,7 +5030,8 @@ bool CORE::VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
       } while (!validneighbor1);
 
       // plausibility check
-      if (neighbor0 == c || neighbor1 == c) dserror("ERROR: Connected nodes not possible here");
+      if (neighbor0 == c || neighbor1 == c)
+        FOUR_C_THROW("ERROR: Connected nodes not possible here");
 
       // add triangles
       std::vector<int> add1(3);

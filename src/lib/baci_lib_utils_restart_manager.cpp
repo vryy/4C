@@ -41,9 +41,9 @@ DRT::UTILS::RestartManager::RestartManager()
   the_action.sa_flags = SA_SIGINFO;
 
   if (sigaction(SIGUSR1, &the_action, nullptr))
-    dserror("signal handler for action SIGUSR1 could not be registered");
+    FOUR_C_THROW("signal handler for action SIGUSR1 could not be registered");
   if (sigaction(SIGUSR2, &the_action, nullptr))
-    dserror("signal handler for action SIGUSR2 could not be registered");
+    FOUR_C_THROW("signal handler for action SIGUSR2 could not be registered");
 }
 
 /// set the time interval to enforce restart writing

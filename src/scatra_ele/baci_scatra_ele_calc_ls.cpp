@@ -41,7 +41,8 @@ DRT::ELEMENTS::ScaTraEleCalcLS<distype>::ScaTraEleCalcLS(
     : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname)
 {
   // safety check
-  if (my::scatrapara_->RBSubGrVel()) dserror("CalcSubgrVelocityLevelSet not available anymore");
+  if (my::scatrapara_->RBSubGrVel())
+    FOUR_C_THROW("CalcSubgrVelocityLevelSet not available anymore");
 
   return;
 }

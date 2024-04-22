@@ -74,13 +74,14 @@ namespace IMMERSED
     \brief composed FSI operator
 
     \note Relaxation for displacement coupled scheme is just experimental. By default displacement
-    coupling + relaxation invokes a dserror. NOX relaxes the vector x which is supposed to be the
-    vector that is handed over to the other field. Since x in our case is the boundary displacement
-    (in displacement coupled scheme) of the immersed structure but the vector applied to the fluid
-    field is the volume Dirichlet stored in the vector fluid_artifical_velocity_, relaxation of x
-    has no effect. That is why we get the factory from the fsi partitioned base class to extract the
-    relaxation parameter from there. Now we are able to relax our artificial velocity in this class.
-    This does not seem to work properly. For force coupled immersed fsi, everything works fine.
+    coupling + relaxation invokes a FOUR_C_THROW. NOX relaxes the vector x which is supposed to be
+    the vector that is handed over to the other field. Since x in our case is the boundary
+    displacement (in displacement coupled scheme) of the immersed structure but the vector applied
+    to the fluid field is the volume Dirichlet stored in the vector fluid_artifical_velocity_,
+    relaxation of x has no effect. That is why we get the factory from the fsi partitioned base
+    class to extract the relaxation parameter from there. Now we are able to relax our artificial
+    velocity in this class. This does not seem to work properly. For force coupled immersed fsi,
+    everything works fine.
 
     */
     void FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;

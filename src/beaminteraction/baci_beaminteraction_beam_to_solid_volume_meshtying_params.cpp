@@ -63,7 +63,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
         rotation_coupling_ != INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none and
         mortar_shape_function_rotation_ ==
             INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none)
-      dserror(
+      FOUR_C_THROW(
           "If mortar coupling and rotational coupling are activated, the shape function type for "
           "rotational coupling has to be explicitly given.");
 
@@ -87,7 +87,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
   // Sanity checks.
   if (rotation_coupling_ != INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none and
       couple_restart_state_)
-    dserror("Coupling restart state combined with rotational coupling is not yet implemented!");
+    FOUR_C_THROW(
+        "Coupling restart state combined with rotational coupling is not yet implemented!");
 
   isinit_ = true;
 }

@@ -58,7 +58,7 @@ namespace DRT::ELEMENTS
    */
   inline void LumpMatrix(CORE::LINALG::SerialDenseMatrix& matrix)
   {
-    dsassert(
+    FOUR_C_ASSERT(
         matrix.numRows() == matrix.numCols(), "The provided mass matrix is not a square matrix!");
 
     // we assume mass is a square matrix
@@ -171,7 +171,7 @@ namespace DRT::ELEMENTS
       bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
           discretization, &ele, element_nodes.knots_, element_nodes.weights_);
       if (zero_size)
-        dserror("GetMyNurbsKnotsAndWeights has to return a non zero size NURBS element.");
+        FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size NURBS element.");
     }
 
     return element_nodes;

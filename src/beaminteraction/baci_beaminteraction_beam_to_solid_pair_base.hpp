@@ -115,7 +115,7 @@ namespace BEAMINTERACTION
      */
     unsigned int GetNumAllActiveContactPointPairs() const override
     {
-      dserror("GetNumAllActiveContactPointPairs not yet implemented!");
+      FOUR_C_THROW("GetNumAllActiveContactPointPairs not yet implemented!");
       return 0;
     };
 
@@ -125,7 +125,7 @@ namespace BEAMINTERACTION
     void GetAllActiveContactPointCoordsElement1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
-      dserror("GetAllActiveContactPointCoordsElement1 not yet implemented!");
+      FOUR_C_THROW("GetAllActiveContactPointCoordsElement1 not yet implemented!");
     }
 
     /**
@@ -134,7 +134,7 @@ namespace BEAMINTERACTION
     void GetAllActiveContactPointCoordsElement2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
-      dserror("GetAllActiveContactPointCoordsElement2 not yet implemented!");
+      FOUR_C_THROW("GetAllActiveContactPointCoordsElement2 not yet implemented!");
     }
 
     /**
@@ -142,7 +142,7 @@ namespace BEAMINTERACTION
      */
     void GetAllActiveContactForces(std::vector<double>& forces) const override
     {
-      dserror("GetAllActiveContactForces not yet implemented!");
+      FOUR_C_THROW("GetAllActiveContactForces not yet implemented!");
     }
 
     /**
@@ -150,7 +150,7 @@ namespace BEAMINTERACTION
      */
     void GetAllActiveContactGaps(std::vector<double>& gaps) const override
     {
-      dserror("GetAllActiveContactGaps not yet implemented!");
+      FOUR_C_THROW("GetAllActiveContactGaps not yet implemented!");
     }
 
     /**
@@ -158,7 +158,7 @@ namespace BEAMINTERACTION
      */
     double GetEnergy() const override
     {
-      dserror("GetEnergy not implemented yet!");
+      FOUR_C_THROW("GetEnergy not implemented yet!");
       return 0.0;
     }
 

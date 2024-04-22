@@ -37,7 +37,7 @@ namespace CORE::GEO
     const int numnode = ele->NumNode();
 
     const DRT::Node* const* nodes = ele->Nodes();
-    dsassert(nodes != nullptr,
+    FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
     for (int inode = 0; inode < numnode; inode++)
@@ -63,11 +63,11 @@ namespace CORE::GEO
   template <CORE::FE::CellType distype, class M>
   void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
   {
-    dsassert(distype == ele->Shape(), "mismatch in distype");
+    FOUR_C_ASSERT(distype == ele->Shape(), "mismatch in distype");
     const int numnode = CORE::FE::num_nodes<distype>;
 
     const DRT::Node* const* nodes = ele->Nodes();
-    dsassert(nodes != nullptr,
+    FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
     for (int inode = 0; inode < numnode; inode++)
@@ -94,14 +94,14 @@ namespace CORE::GEO
   template <CORE::FE::CellType distype, int dim, class M>
   void fillInitialPositionArray(const DRT::Element* const ele, M& xyze)
   {
-    dsassert(distype == ele->Shape(), "mismatch in distype");
+    FOUR_C_ASSERT(distype == ele->Shape(), "mismatch in distype");
     const int numnode = CORE::FE::num_nodes<distype>;
 
     const DRT::Node* const* nodes = ele->Nodes();
-    dsassert(nodes != nullptr,
+    FOUR_C_ASSERT(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
-    dsassert((dim > 0) && (dim < 4), "Illegal number of space dimensions");
+    FOUR_C_ASSERT((dim > 0) && (dim < 4), "Illegal number of space dimensions");
 
     for (int inode = 0; inode < numnode; inode++)
     {

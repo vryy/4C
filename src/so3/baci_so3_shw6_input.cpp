@@ -39,19 +39,19 @@ bool DRT::ELEMENTS::SoShw6::ReadElement(
   else if (buffer == "linear")
   {
     kintype_ = INPAR::STR::KinemType::linear;
-    dserror("Reading of SOLIDSHW6 element failed onlz nonlinear kinetmatics implemented");
+    FOUR_C_THROW("Reading of SOLIDSHW6 element failed onlz nonlinear kinetmatics implemented");
   }
 
   // geometrically non-linear with Updated Lagrangean approach
   else
-    dserror("Reading of SOLIDSHW6 element failed KINEM unknown");
+    FOUR_C_THROW("Reading of SOLIDSHW6 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
 
   // Validate that materials doesn't use extended update call.
   if (SolidMaterial()->UsesExtendedUpdate())
-    dserror("This element currently does not support the extended update call.");
+    FOUR_C_THROW("This element currently does not support the extended update call.");
 
   linedef->ExtractString("EAS", buffer);
 
@@ -70,7 +70,7 @@ bool DRT::ELEMENTS::SoShw6::ReadElement(
     std::cout << "Warning: Solid-Shell Wegde6 without EAS" << std::endl;
   }
   else
-    dserror("Reading of SOLIDSHW6 EAS technology failed");
+    FOUR_C_THROW("Reading of SOLIDSHW6 EAS technology failed");
 
   // check for automatically align material space optimally with parameter space
   optimal_parameterspace_map_ = false;

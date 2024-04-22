@@ -115,7 +115,7 @@ namespace INPAR
       else if (name == "truss")
         type = truss;
       else
-        dserror("invalid filament type std::string ");
+        FOUR_C_THROW("invalid filament type std::string ");
 
       return type;
     };
@@ -131,7 +131,7 @@ namespace INPAR
       else if (name == "collagen")
         type = filtype_collagen;
       else
-        dserror("invalid filament type std::string ");
+        FOUR_C_THROW("invalid filament type std::string ");
 
       return type;
     };
@@ -150,7 +150,7 @@ namespace INPAR
         type = linkertype_integrin;
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "invalid crosslinker type %s. Possible values are arbitrary, actin, collagen and "
             "integrin.",
             name.c_str());

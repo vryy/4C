@@ -56,7 +56,7 @@ void STR::MODELEVALUATOR::Contact::Setup()
   factory.ReadAndCheckInput(cparams);
 
   // check for FillComplete of discretization
-  if (not Discret().Filled()) dserror("Discretization is not fillcomplete");
+  if (not Discret().Filled()) FOUR_C_THROW("Discretization is not fillcomplete");
 
   // ---------------------------------------------------------------------
   // build the contact interfaces
@@ -556,7 +556,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
   iowriter.WriteVector("tancontactstress", tangentialstressesexp);
 
 #ifdef CONTACTFORCEOUTPUT
-  dserror("Untested in the new structural framework!");
+  FOUR_C_THROW("Untested in the new structural framework!");
   // *********************************************************************
   // contact forces on slave non master side,
   // in normal and tangential direction
@@ -588,7 +588,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
 
   int dim = GLOBAL::Problem::Instance()->NDim();
 
-  if (dim == 2) dserror("Only working for 3D");
+  if (dim == 2) FOUR_C_THROW("Only working for 3D");
 
   std::vector<int> lnid, gnid;
 
@@ -624,7 +624,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
 
   // check interface size - just doing this now for a single interface
 
-  if (myInterface.size() != 1) dserror("Interface size should be 1");
+  if (myInterface.size() != 1) FOUR_C_THROW("Interface size should be 1");
 
   std::cout << "OUTPUT OF MASTER NODE IN CONTACT" << std::endl;
   // std::cout << "Master_node_in_contact x_dis y_dis z_dis" << std::endl;
@@ -674,7 +674,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
       fclose(MyFile);
     }
     else
-      dserror("ERROR: File for Output could not be opened.");
+      FOUR_C_THROW("ERROR: File for Output could not be opened.");
   }
 #endif  // CONTACTEXPORT
 #endif  // CONTACTFORCEOUTPUT
@@ -715,7 +715,7 @@ void STR::MODELEVALUATOR::Contact::ResetStepState()
 {
   CheckInitSetup();
 
-  dserror("Not yet implemented");
+  FOUR_C_THROW("Not yet implemented");
 }
 
 /*----------------------------------------------------------------------*
@@ -843,7 +843,7 @@ void STR::MODELEVALUATOR::Contact::ExtendLagrangeMultiplierDomain(
     lm_vec = tmp_ptr;
   }
   else
-    dserror("Unconsidered case.");
+    FOUR_C_THROW("Unconsidered case.");
 }
 
 /*----------------------------------------------------------------------*
@@ -979,7 +979,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> STR::MODELEVALUATOR::Contact::GetAuxD
   Teuchos::RCP<CORE::LINALG::SparseOperator> jacaux = GState().CreateAuxJacobian();
   bool ok = Int().AssembleJac(*jacaux, &g);
 
-  if (!ok) dserror("ERROR: CreateAuxJacobian went wrong!");
+  if (!ok) FOUR_C_THROW("ERROR: CreateAuxJacobian went wrong!");
 
   return jacaux;
 }

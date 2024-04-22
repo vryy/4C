@@ -109,7 +109,7 @@ namespace DRT
           case CORE::FE::CellType::nurbs9:
             return DRT::ELEMENTS::WallNurbs9PoroType::Instance().UniqueParObjectId();
           default:
-            dserror("unknown element type");
+            FOUR_C_THROW("unknown element type");
             break;
         }
         return -1;
@@ -159,7 +159,7 @@ namespace DRT
           case CORE::FE::CellType::nurbs9:
             return DRT::ELEMENTS::WallNurbs9PoroType::Instance();
           default:
-            dserror("unknown element type");
+            FOUR_C_THROW("unknown element type");
             break;
         }
         return DRT::ELEMENTS::WallQuad4PoroType::Instance();

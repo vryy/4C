@@ -86,7 +86,7 @@ void NOX::FSI::Group::CaptureSystemState()
 
   // check return value of computeNewton call
   if (status == ::NOX::Abstract::Group::NotConverged || status == ::NOX::Abstract::Group::Failed)
-    dserror("NOX::FSI::Group::computeNewton: linear solver not converged...");
+    FOUR_C_THROW("NOX::FSI::Group::computeNewton: linear solver not converged...");
 
   return status;
 }

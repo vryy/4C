@@ -66,7 +66,7 @@ namespace
     }
     else
     {
-      dserror("Unknown history adaption strategy %s!", input.c_str());
+      FOUR_C_THROW("Unknown history adaption strategy %s!", input.c_str());
     }
   }
 }  // namespace
@@ -320,7 +320,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::EvaluateElasticPart
     Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
     CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
-  dserror(
+  FOUR_C_THROW(
       "The full constrained mixture fiber cannot be evaluated with an additional inelastic "
       "deformation.");
 }

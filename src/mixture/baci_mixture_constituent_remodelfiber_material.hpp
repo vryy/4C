@@ -33,7 +33,7 @@ namespace MIXTURE
       RemodelFiberMaterial(const Teuchos::RCP<MAT::PAR::Material>& matdata);
       Teuchos::RCP<MAT::Material> CreateMaterial() override
       {
-        dserror("This type of material is not created with CreateMaterial()");
+        FOUR_C_THROW("This type of material is not created with CreateMaterial()");
         std::exit(1);
       }
 

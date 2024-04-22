@@ -59,7 +59,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet10>());
       default:
-        dserror("Wrong element type for fluid element.");
+        FOUR_C_THROW("Wrong element type for fluid element.");
     }
   }
   else if (meshtying_discretization == INPAR::FBI::BeamToFluidDiscretization::mortar)
@@ -94,7 +94,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line2>());
           default:
-            dserror("Wrong element type for solid element.");
+            FOUR_C_THROW("Wrong element type for solid element.");
         }
         break;
       }
@@ -123,7 +123,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>());
           default:
-            dserror("Wrong element type for solid element.");
+            FOUR_C_THROW("Wrong element type for solid element.");
         }
         break;
       }
@@ -152,16 +152,16 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>());
           default:
-            dserror("Wrong element type for solid element.");
+            FOUR_C_THROW("Wrong element type for solid element.");
         }
         break;
       }
       default:
-        dserror("Wrong mortar shape function.");
+        FOUR_C_THROW("Wrong mortar shape function.");
     }
   }
   else
-    dserror("Discretization type not yet implemented!\n");
+    FOUR_C_THROW("Discretization type not yet implemented!\n");
 
   // Default return value.
   return Teuchos::null;

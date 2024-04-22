@@ -92,7 +92,7 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
   // ensure that the ALE string was removed from conditions
   {
     DRT::Condition* cond = discret_->GetCondition("ALEDirichlet");
-    if (cond) dserror("Found a ALE Dirichlet condition. Remove ALE string!");
+    if (cond) FOUR_C_THROW("Found a ALE Dirichlet condition. Remove ALE string!");
   }
 
   if (msht_ == INPAR::ALE::meshsliding)
@@ -160,7 +160,7 @@ void ALE::Ale::SetInitialDisplacement(const INPAR::ALE::InitialDisp init, const 
                                   .Evaluate(lnode->X().data(), 0, d);
 
           int err = dispn_->ReplaceMyValues(1, &initialval, &doflid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
 
@@ -170,7 +170,7 @@ void ALE::Ale::SetInitialDisplacement(const INPAR::ALE::InitialDisp init, const 
       break;
     }
     default:
-      dserror("Unknown option for initial displacement: %d", init);
+      FOUR_C_THROW("Unknown option for initial displacement: %d", init);
       break;
   }
 
@@ -383,7 +383,7 @@ std::string ALE::Ale::ElementActionString(const enum INPAR::ALE::AleDynamic name
       return "calc_ale_springs_spatial";
       break;
     default:
-      dserror("Cannot make std::string for ALE type %d", name);
+      FOUR_C_THROW("Cannot make std::string for ALE type %d", name);
       return "";
   }
 }
@@ -568,7 +568,7 @@ void ALE::Ale::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
     switch (divercont_)
     {
       case INPAR::ALE::divcont_stop:
-        dserror("ALE newton not converged in %i iterations. Abort! ", maxiter_);
+        FOUR_C_THROW("ALE newton not converged in %i iterations. Abort! ", maxiter_);
         break;
       case INPAR::ALE::divcont_continue:
         if (discret_->Comm().MyPID() == 0)
@@ -578,7 +578,7 @@ void ALE::Ale::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
         }
         break;
       default:
-        dserror("Unknown divercont action! ");
+        FOUR_C_THROW("Unknown divercont action! ");
         break;
     }
   }
@@ -606,11 +606,11 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
   // some consistency checks
   if (interface == Teuchos::null && dbc_type != ALE::UTILS::MapExtractor::dbc_set_std &&
       dbc_type != ALE::UTILS::MapExtractor::dbc_set_x_ff)
-    dserror(
+    FOUR_C_THROW(
         "For non-standard use of SetupDBCMapEx, please provide a valid ALE::UTILS::MapExtractor.");
 
   if (xff_interface == Teuchos::null && dbc_type == ALE::UTILS::MapExtractor::dbc_set_x_ff)
-    dserror(
+    FOUR_C_THROW(
         "For non-standard use of SetupDBCMapEx with fluid-fluid coupling, please provide a "
         "XFluidFluidMapExtractor.");
   // REMARK: for all applications, setup of the standard Dirichlet sets is done in the ctor of this
@@ -659,7 +659,7 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
       break;
     }
     default:
-      dserror("Undefined type of ALE Dirichlet sets.");
+      FOUR_C_THROW("Undefined type of ALE Dirichlet sets.");
       break;
   }
 
@@ -824,7 +824,7 @@ bool ALE::Ale::EvaluateElementQuality()
     if (negdetjac <= 0)
     {
       validshapes = false;
-      dserror("Negative determinant %e in time step %i", negdetjac, step_);
+      FOUR_C_THROW("Negative determinant %e in time step %i", negdetjac, step_);
     }
 
     return validshapes;
@@ -887,7 +887,7 @@ void ALE::AleLinear::EvaluateElements()
   else if (not BlockSystemMatrix().is_null())
     BlockSystemMatrix()->Apply(*Dispnp(), *WriteAccessResidual());
   else
-    dserror("Can't compute residual for linear ALE.");
+    FOUR_C_THROW("Can't compute residual for linear ALE.");
 
   return;
 }

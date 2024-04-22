@@ -160,7 +160,7 @@ void FSI::ConstrMonolithicStructureSplit::CreateCombinedDofRowMap()
   vecSpaces.push_back(conman_->GetConstraintMap());
 
   if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No inner structural equations. Splitting not possible. Panic.");
+    FOUR_C_THROW("No inner structural equations. Splitting not possible. Panic.");
 
   SetDofRowMaps(vecSpaces);
 
@@ -203,7 +203,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   // And we are concerned with the u(n) part here.
 
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
-  if (a == Teuchos::null) dserror("expect ale block matrix");
+  if (a == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
   const CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 1);
 
@@ -298,11 +298,11 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(
   // const ADAPTER::Coupling& coupsa = StructureAleCoupling();
 
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
-  if (s == Teuchos::null) dserror("expect structure block matrix");
+  if (s == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
   Teuchos::RCP<CORE::LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
-  if (f == Teuchos::null) dserror("expect fluid matrix");
+  if (f == Teuchos::null) FOUR_C_THROW("expect fluid matrix");
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
-  if (a == Teuchos::null) dserror("expect ale block matrix");
+  if (a == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
   CORE::LINALG::SparseMatrix& aii = a->Matrix(0, 0);
   CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 1);

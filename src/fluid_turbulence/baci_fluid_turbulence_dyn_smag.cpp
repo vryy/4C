@@ -64,7 +64,7 @@ FLD::DynSmagFilter::DynSmagFilter(
           special_flow_homdir_ = modelparams->get<std::string>("HOMDIR", "not_specified");
         }
         else
-          dserror("Expected homogeneous direction!");
+          FOUR_C_THROW("Expected homogeneous direction!");
         if (discret_->Comm().MyPID() == 0)
         {
           std::cout << "------->  Homogeneous direction(s): " << special_flow_homdir_ << std::endl;
@@ -112,7 +112,7 @@ FLD::DynSmagFilter::DynSmagFilter(
           calc_Ci_ = false;
 
           if (params_.sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") > 0.0)
-            dserror(
+            FOUR_C_THROW(
                 "Set C_YOSHIZAWA < 0.0 in combination with C_SMAGORINSKY_AVERAGED==true and "
                 "C_INCLUDE_CI==false!");
         }
@@ -333,11 +333,11 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
       if (dir1coords_ == Teuchos::null)
       {
-        dserror("need the coordinates of planes for in plane averaging");
+        FOUR_C_THROW("need the coordinates of planes for in plane averaging");
       }
       else if ((*dir1coords_).size() < 2)
       {
-        dserror("no planes for averaging are available");
+        FOUR_C_THROW("no planes for averaging are available");
       }
 
       numlayers = (*dir1coords_).size() - 1;
@@ -354,25 +354,25 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
       if (dir1coords_ == Teuchos::null)
       {
-        dserror("need the coordinates 1 for averaging");
+        FOUR_C_THROW("need the coordinates 1 for averaging");
       }
       else if ((*dir2coords_).size() < 2)
       {
-        dserror("no coordinates 1 for averaging are available");
+        FOUR_C_THROW("no coordinates 1 for averaging are available");
       }
       if (dir1coords_ == Teuchos::null)
       {
-        dserror("need the coordinates 2 for averaging");
+        FOUR_C_THROW("need the coordinates 2 for averaging");
       }
       else if ((*dir2coords_).size() < 2)
       {
-        dserror("no coordinates 2 for averaging are available");
+        FOUR_C_THROW("no coordinates 2 for averaging are available");
       }
 
       numlayers = ((*dir1coords_).size() - 1) * ((*dir2coords_).size() - 1);
     }
     else
-      dserror("Homogeneous directions not supported!");
+      FOUR_C_THROW("Homogeneous directions not supported!");
 
     count_for_average.resize(numlayers);
     local_count_for_average.resize(numlayers);
@@ -447,7 +447,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     int err = ele->Evaluate(
         calc_smag_const_params, *discret_, lm, dummym1, dummym2, dummyv1, dummyv2, dummyv3);
     if (err)
-      dserror("Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), ele->Id(), err);
+      FOUR_C_THROW("Proc %d: Element %d returned err=%d", discret_->Comm().MyPID(), ele->Id(), err);
 
     // get turbulent Cs and Ci of this element
     double ele_Cs_delta_sq = calc_smag_const_params.get<double>("ele_Cs_delta_sq");
@@ -456,7 +456,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     const int id = ele->Id();
     int myerr = Cs_delta_sq->ReplaceGlobalValues(1, &ele_Cs_delta_sq, &id);
     myerr += Ci_delta_sq->ReplaceGlobalValues(1, &ele_Ci_delta_sq, &id);
-    if (myerr != 0) dserror("Problem");
+    if (myerr != 0) FOUR_C_THROW("Problem");
 
     // local contributions to in plane averaging for channel flows
     if (homdir_)
@@ -504,7 +504,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
         }
         if (found == false)
         {
-          dserror("could not determine element layer");
+          FOUR_C_THROW("could not determine element layer");
         }
       }
       else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or
@@ -545,7 +545,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
         }
         if (dir1found == false)
         {
-          dserror("could not determine element layer");
+          FOUR_C_THROW("could not determine element layer");
         }
         for (n2layer = 0; n2layer < (int)(*dir2coords_).size() - 1;)
         {
@@ -558,14 +558,14 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
         }
         if (dir2found == false)
         {
-          dserror("could not determine element layer");
+          FOUR_C_THROW("could not determine element layer");
         }
 
         const int numdir1layer = (int)(*dir1coords_).size() - 1;
         nlayer = numdir1layer * n2layer + n1layer;
       }
       else
-        dserror("Homogeneous directions not supported!");
+        FOUR_C_THROW("Homogeneous directions not supported!");
 
       // add it up
       local_ele_sum_LijMij[nlayer] += LijMij;
@@ -625,12 +625,12 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
       // perform some checks first
       if (count_for_average[rr] == 0 and
           ((*averaged_LijMij)[rr] != 0.0 or (*averaged_MijMij)[rr] != 0.0))
-        dserror("Expected 'averaged_LijMij' or 'averaged_MijMij' equal zero!");
+        FOUR_C_THROW("Expected 'averaged_LijMij' or 'averaged_MijMij' equal zero!");
       if (physicaltype_ == INPAR::FLUID::loma)
       {
         if (count_for_average[rr] == 0 and
             ((*averaged_CI_numerator)[rr] != 0.0 or (*averaged_CI_denominator)[rr] != 0.0))
-          dserror("Expected 'averaged_CI_numerator' or 'averaged_CI_denominator' equal zero!");
+          FOUR_C_THROW("Expected 'averaged_CI_numerator' or 'averaged_CI_denominator' equal zero!");
       }
 
       // calculate averaged quantities
@@ -674,7 +674,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
         modelparams->set<Teuchos::RCP<std::vector<double>>>("dir2coords_", dir2coords_);
       }
       else
-        dserror("More than two homogeneous directions not supported!");
+        FOUR_C_THROW("More than two homogeneous directions not supported!");
     }
   }  // end if hom dir
 
@@ -724,11 +724,11 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
 
       if (dir1coords_ == Teuchos::null)
       {
-        dserror("need the coordinates of planes for in plane averaging");
+        FOUR_C_THROW("need the coordinates of planes for in plane averaging");
       }
       else if ((*dir1coords_).size() < 2)
       {
-        dserror("no planes for averaging are available");
+        FOUR_C_THROW("no planes for averaging are available");
       }
 
       numlayers = (*dir1coords_).size() - 1;
@@ -745,25 +745,25 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
 
       if (dir1coords_ == Teuchos::null)
       {
-        dserror("need the coordinates 1 for averaging");
+        FOUR_C_THROW("need the coordinates 1 for averaging");
       }
       else if ((*dir2coords_).size() < 2)
       {
-        dserror("no coordinates 1 for averaging are available");
+        FOUR_C_THROW("no coordinates 1 for averaging are available");
       }
       if (dir1coords_ == Teuchos::null)
       {
-        dserror("need the coordinates 2 for averaging");
+        FOUR_C_THROW("need the coordinates 2 for averaging");
       }
       else if ((*dir2coords_).size() < 2)
       {
-        dserror("no coordinates 2 for averaging are available");
+        FOUR_C_THROW("no coordinates 2 for averaging are available");
       }
 
       numlayers = ((*dir1coords_).size() - 1) * ((*dir2coords_).size() - 1);
     }
     else
-      dserror("Homogeneous directions not supported!");
+      FOUR_C_THROW("Homogeneous directions not supported!");
 
     count_for_average.resize(numlayers);
     local_count_for_average.resize(numlayers);
@@ -826,7 +826,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
     int err = ele->Evaluate(
         calc_turb_prandtl_params, *scatradiscret_, la, dummym1, dummym2, dummyv1, dummyv2, dummyv3);
     if (err)
-      dserror(
+      FOUR_C_THROW(
           "Proc %d: Element %d returned err=%d", scatradiscret_->Comm().MyPID(), ele->Id(), err);
 
     // get turbulent Prandlt number of this element
@@ -834,7 +834,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
     // and store it in vector
     const int id = ele->Id();
     int myerr = Prt->ReplaceGlobalValues(1, &ele_Prt, &id);
-    if (myerr != 0) dserror("Problem");
+    if (myerr != 0) FOUR_C_THROW("Problem");
 
     // local contributions to in plane averaging for channel flows
     if (homdir_)
@@ -875,7 +875,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
         }
         if (found == false)
         {
-          dserror("could not determine element layer");
+          FOUR_C_THROW("could not determine element layer");
         }
       }
       else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or
@@ -916,7 +916,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
         }
         if (dir1found == false)
         {
-          dserror("could not determine element layer");
+          FOUR_C_THROW("could not determine element layer");
         }
         for (n2layer = 0; n2layer < (int)(*dir2coords_).size() - 1;)
         {
@@ -929,14 +929,14 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
         }
         if (dir2found == false)
         {
-          dserror("could not determine element layer");
+          FOUR_C_THROW("could not determine element layer");
         }
 
         const int numdir1layer = (int)(*dir1coords_).size() - 1;
         nlayer = numdir1layer * n2layer + n1layer;
       }
       else
-        dserror("Homogeneous directions not supported!");
+        FOUR_C_THROW("Homogeneous directions not supported!");
 
       // add it up
       local_ele_sum_LkMk[nlayer] += LkMk;
@@ -977,7 +977,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
       // perform some checks first
       if (count_for_average[rr] == 0 and
           ((*averaged_LkMk)[rr] != 0.0 or (*averaged_MkMk)[rr] != 0.0))
-        dserror("Expected 'averaged_LkMk' and 'averaged_MkMk' equal zero!");
+        FOUR_C_THROW("Expected 'averaged_LkMk' and 'averaged_MkMk' equal zero!");
 
       // calculate averaged quantities
       // we have to exclude zero here, since, for backward-facing steps, the step is contained and
@@ -1013,7 +1013,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
         modelparams->set<Teuchos::RCP<std::vector<double>>>("dir2coords_", dir2coords_);
       }
       else
-        dserror("More than two homogeneous directions not supported!");
+        FOUR_C_THROW("More than two homogeneous directions not supported!");
     }
   }  // end if turbulent channel flow
 

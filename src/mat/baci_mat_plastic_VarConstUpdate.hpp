@@ -169,7 +169,7 @@ namespace MAT
         CORE::LINALG::Matrix<6, 1>* pk2, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
         const int eleGID)
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
     }
 
     /// evaluate stresses and stiffness contribution
@@ -178,7 +178,7 @@ namespace MAT
         Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>* pk2,
         CORE::LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
     }
 
     /// evaluate stresses and stiffness contribution
@@ -187,7 +187,7 @@ namespace MAT
         Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>* cTvol,
         CORE::LINALG::Matrix<6, 6>* dCTvoldE, const int gp, const int eleGID)
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
     }
 
     /// evaluate everything needed for the condensation of the plastic deformation
@@ -213,7 +213,7 @@ namespace MAT
         const int eleGID  ///< global ID of element
     )
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
     }
 
     /// evaluate everything needed for the condensation of the plastic deformation
@@ -240,32 +240,32 @@ namespace MAT
         const int eleGID  ///< global ID of element
     )
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
     }
 
     /// update plastic history variables
     void UpdateGP(const int gp, const CORE::LINALG::Matrix<3, 3>* deltaDp) override
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
     }
 
     /// get plastic algorithm parameters
     void GetParams(double s, double cpl) override
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
     }
 
     /// is this GP active
     virtual bool Active(int gp)
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
       return false;
     }
 
     /// heating at this gp
     double& HepDiss(int gp) override
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
       static double a = 0.;
       return a;
     }
@@ -273,7 +273,7 @@ namespace MAT
     /// derivative of heating at this gp
     CORE::LINALG::SerialDenseVector& dHepDissDd(int gp) override
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
       static CORE::LINALG::SerialDenseVector tmp(0);
       return tmp;
     }
@@ -281,7 +281,7 @@ namespace MAT
     // derivative of heating w.r.t. temperature
     double& dHepDT(int gp) override
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
       static double a = 0.;
       return a;
     }
@@ -290,7 +290,7 @@ namespace MAT
     // (only EAS contribution)
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseVector>> dHepDTeas() override
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
       return Teuchos::null;
     }
 
@@ -304,7 +304,7 @@ namespace MAT
         bool* elast, bool* as_converged, CORE::LINALG::Matrix<6, 1>* dHdC,
         CORE::LINALG::Matrix<6, 1>* dHdDp, Teuchos::ParameterList& params, const double dt)
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
     }
 
 
@@ -315,7 +315,7 @@ namespace MAT
         CORE::LINALG::Matrix<9, 9>* dNCPdLp, CORE::LINALG::Matrix<6, 9>* dPK2dLp, bool* active,
         bool* elast, bool* as_converged, const double dt)
     {
-      dserror("Don't need this for Variationally consistent constitutive update");
+      FOUR_C_THROW("Don't need this for Variationally consistent constitutive update");
     }
 
 

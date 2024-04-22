@@ -85,7 +85,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
   {
     const Teuchos::RCP<const MAT::MatList> actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
-    if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
@@ -100,7 +100,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
   {
     const Teuchos::RCP<MAT::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
-    if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
   {
     const Teuchos::RCP<MAT::MatListChemotaxis> actmat =
         Teuchos::rcp_dynamic_cast<MAT::MatListChemotaxis>(material);
-    if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     chemo::GetChemotaxisCoefficients(
         material);  // read all chemotaxis input from material and copy it into local variables
@@ -137,7 +137,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
   {
     const Teuchos::RCP<MAT::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
-    if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     chemo::GetChemotaxisCoefficients(
         material);  // read all chemotaxis input from material and copy it into local variables

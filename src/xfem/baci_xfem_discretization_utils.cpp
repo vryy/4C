@@ -121,7 +121,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
     Teuchos::RCP<DRT::DiscretizationFaces> xdis =
         Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(dis, true);
     if (xdis == Teuchos::null)
-      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
+      FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
     s << "View \" " << disname;
 
@@ -167,9 +167,10 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   //
   if (xdis == Teuchos::null)
   {
-    dserror("No XFEM discretization for XFEM problem available!");
+    FOUR_C_THROW("No XFEM discretization for XFEM problem available!");
 
-    // REMARK: standard fluid could also step into this routine, as a special case! (remove dserror)
+    // REMARK: standard fluid could also step into this routine, as a special case! (remove
+    // FOUR_C_THROW)
     if (!dis->Filled()) dis->FillComplete();
 
     return;
@@ -178,7 +179,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   if (!xdis->Filled()) xdis->FillComplete();
 
   const Epetra_Map* noderowmap = xdis->NodeRowMap();
-  if (noderowmap == nullptr) dserror("we expect a fill-complete call before!");
+  if (noderowmap == nullptr) FOUR_C_THROW("we expect a fill-complete call before!");
 
   // now we can reserve dofs for xfem discretization
   int nodeindexrange =
@@ -295,7 +296,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretization(
     const std::map<int, Teuchos::RCP<DRT::Element>>& sourceelements,
     const std::vector<std::string>& conditions_to_copy) const
 {
-  if (!sourcedis->Filled()) dserror("sourcedis is not filled");
+  if (!sourcedis->Filled()) FOUR_C_THROW("sourcedis is not filled");
   const int myrank = targetdis->Comm().MyPID();
 
   const int numothernoderow = sourcedis->NumMyRowNodes();
@@ -401,7 +402,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretization(
   }
   // delete conditioned nodes, which are not connected to any unconditioned elements
   for (std::set<int>::iterator it = condnodecolset.begin(); it != condnodecolset.end(); ++it)
-    if (not sourcedis->DeleteNode(*it)) dserror("Node %d could not be deleted!", *it);
+    if (not sourcedis->DeleteNode(*it)) FOUR_C_THROW("Node %d could not be deleted!", *it);
 
   // delete conditioned elements from source discretization
   for (std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator sourceele_iter =
@@ -475,7 +476,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretizationByBoundaryCondit
     const std::vector<DRT::Condition*>& boundary_conds,
     const std::vector<std::string>& conditions_to_copy) const
 {
-  if (not sourcedis->Filled()) dserror("sourcedis is not filled");
+  if (not sourcedis->Filled()) FOUR_C_THROW("sourcedis is not filled");
   const int myrank = targetdis->Comm().MyPID();
 
   // element map
@@ -497,7 +498,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretizationByBoundaryCondit
   {
     DRT::FaceElement* src_face_element = dynamic_cast<DRT::FaceElement*>(cit->second.get());
     if (src_face_element == nullptr)
-      dserror("Dynamic cast failed! The src element %d is no DRT::FaceElement!", cit->second->Id());
+      FOUR_C_THROW(
+          "Dynamic cast failed! The src element %d is no DRT::FaceElement!", cit->second->Id());
     // get the parent element
     DRT::Element* src_ele = src_face_element->ParentElement();
     int src_ele_gid = src_face_element->ParentElementId();
@@ -514,7 +516,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretizationByBoundaryCondit
         if (node->Owner() == myrank) src_my_gnodes[gid] = node;
       }
       else
-        dserror("All nodes of known elements must be known!");
+        FOUR_C_THROW("All nodes of known elements must be known!");
     }
   }
 

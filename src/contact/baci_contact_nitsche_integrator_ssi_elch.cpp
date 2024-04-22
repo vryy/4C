@@ -39,7 +39,8 @@ CONTACT::IntegratorNitscheSsiElch::IntegratorNitscheSsiElch(
     Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
     : IntegratorNitscheSsi(params, eletype, comm)
 {
-  if (std::abs(theta_) > 1.0e-16) dserror("SSI Elch Contact just implemented Adjoint free ...");
+  if (std::abs(theta_) > 1.0e-16)
+    FOUR_C_THROW("SSI Elch Contact just implemented Adjoint free ...");
 }
 
 /*----------------------------------------------------------------------*
@@ -85,7 +86,7 @@ void CONTACT::IntegratorNitscheSsiElch::GPTSForces(MORTAR::Element& slave_ele,
       return;
   }
 
-  dsassert(dim == Dim(), "dimension inconsistency");
+  FOUR_C_ASSERT(dim == Dim(), "dimension inconsistency");
 
   // calculate normals and derivatives
   const CORE::LINALG::Matrix<dim, 1> normal(gp_normal, true);
@@ -216,7 +217,7 @@ double CONTACT::IntegratorNitscheSsiElch::CalculateDetFOfParentElement(
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Not implemented for discretization type: %i!", electrode_ele->ParentElement()->Shape());
       break;
     }
@@ -248,7 +249,7 @@ void CONTACT::IntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const d
     }
     default:
     {
-      dserror("Not implemented for discretization type: %i!", electrode_ele->Shape());
+      FOUR_C_THROW("Not implemented for discretization type: %i!", electrode_ele->Shape());
       break;
     }
   }
@@ -266,7 +267,7 @@ void CONTACT::IntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const d
   const int num_ele_nodes = CORE::FE::num_nodes<distype>;
   const int ele_dim = CORE::FE::dim<distype>;
 
-  dsassert(num_ele_nodes == electrode_ele->NumNode(),
+  FOUR_C_ASSERT(num_ele_nodes == electrode_ele->NumNode(),
       "Number of nodes is not matching discretization type");
 
   static CORE::LINALG::Matrix<num_ele_nodes, dim> xyze;
@@ -313,13 +314,13 @@ void CONTACT::IntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
   {
     if (electrode_quantities.element->MoData().ParentScalarDof().empty()) return;
     if (electrolyte_quantities.element->MoData().ParentScalarDof().empty())
-      dserror("Something went wrong!");
+      FOUR_C_THROW("Something went wrong!");
   }
   else
   {
     if (electrolyte_quantities.element->MoData().ParentScalarDof().empty()) return;
     if (electrode_quantities.element->MoData().ParentScalarDof().empty())
-      dserror("Something went wrong!");
+      FOUR_C_THROW("Something went wrong!");
   }
 
   // get the scatra-scatra interface kinetic model
@@ -363,7 +364,7 @@ void CONTACT::IntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
       // extract saturation value of intercalated lithium concentration from electrode material
       const double cmax = electrode_material->CMax();
       if (cmax < 1.0e-12)
-        dserror("Saturation value c_max of intercalated lithium concentration is too small!");
+        FOUR_C_THROW("Saturation value c_max of intercalated lithium concentration is too small!");
 
       const double detF = CalculateDetFOfParentElement(electrode_quantities);
 
@@ -461,7 +462,8 @@ void CONTACT::IntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
       break;
     default:
     {
-      dserror("Evaluation is not implemented for this scatra-scatra interface kinetic model: %i",
+      FOUR_C_THROW(
+          "Evaluation is not implemented for this scatra-scatra interface kinetic model: %i",
           kinetic_model);
     }
   }
@@ -659,7 +661,7 @@ void CONTACT::IntegratorNitscheSsiElch::AssignElectrodeAndElectrolyteQuantities(
     // safety check
     if (electrode_material == Teuchos::null)
     {
-      dserror(
+      FOUR_C_THROW(
           "Something went wrong, neither slave nor master side is electrode material. This is a "
           "fatal error!");
     }

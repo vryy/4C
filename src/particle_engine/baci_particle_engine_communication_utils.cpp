@@ -31,7 +31,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
 
   // mpi communicator
   const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
-  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+  if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
 
   // ---- communicate target processors to all processors ----
   std::vector<int> targetprocs(numproc, 0);
@@ -51,8 +51,8 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   for (const auto& p : sdata)
   {
     int const torank = p.first;
-    if (myrank == torank) dserror("processor should not send messages to itself!");
-    if (torank < 0) dserror("processor can not send messages to processor < 0!");
+    if (myrank == torank) FOUR_C_THROW("processor should not send messages to itself!");
+    if (torank < 0) FOUR_C_THROW("processor can not send messages to processor < 0!");
 
     sizetargets[counter] = torank;
 
@@ -60,14 +60,14 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
 
     // check sending size of message
     if (not(msgsizetosend > 0))
-      dserror("sending non-positive message size %i to proc %i!", msgsizetosend, torank);
+      FOUR_C_THROW("sending non-positive message size %i to proc %i!", msgsizetosend, torank);
 
     // perform non-blocking send operation
     MPI_Isend(&msgsizetosend, 1, MPI_INT, torank, 1234, mpicomm->Comm(), &sizerequest[counter]);
 
     ++counter;
   }
-  if (counter != numsendtoprocs) dserror("number of messages is mixed up!");
+  if (counter != numsendtoprocs) FOUR_C_THROW("number of messages is mixed up!");
 
   // ---- receive size of messages ----
   std::vector<MPI_Request> recvrequest(numrecvfromprocs);
@@ -83,14 +83,14 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
 
     // check message tag
     if (msgtag != 1234)
-      dserror("received data on proc %i with wrong tag from proc %i", myrank, msgsource);
+      FOUR_C_THROW("received data on proc %i with wrong tag from proc %i", myrank, msgsource);
 
     // get message size
     int msgsize = -1;
     MPI_Get_count(&status, MPI_INT, &msgsize);
 
     // check size of message
-    if (msgsize != 1) dserror("message size not correct (one int expected)!");
+    if (msgsize != 1) FOUR_C_THROW("message size not correct (one int expected)!");
 
     // perform blocking receive operation
     int msgsizetorecv = -1;
@@ -99,7 +99,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
 
     // check received size of message
     if (not(msgsizetorecv > 0))
-      dserror("received non-positive message size %i from proc %i!", msgsizetorecv, msgsource);
+      FOUR_C_THROW("received non-positive message size %i from proc %i!", msgsizetorecv, msgsource);
 
     // resize receiving buffer to received size
     std::vector<char>& rbuffer = rdata[msgsource];
@@ -123,8 +123,8 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
     if (flag)
     {
       int const torank = sizetargets[index];
-      if (myrank == torank) dserror("processor should not send messages to itself!");
-      if (torank < 0) dserror("processor can not send messages to processor < 0!");
+      if (myrank == torank) FOUR_C_THROW("processor should not send messages to itself!");
+      if (torank < 0) FOUR_C_THROW("processor can not send messages to processor < 0!");
 
       // reference to send buffer
       std::vector<char>& sbuffer = sdata[torank];

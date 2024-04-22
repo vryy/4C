@@ -92,13 +92,13 @@ namespace BEAMINTERACTION
     void GetAllInteractingPointCoordsElement1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
-      dserror("not implemented yet");
+      FOUR_C_THROW("not implemented yet");
     }
 
     void GetAllInteractingPointCoordsElement2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
-      dserror("not implemented yet");
+      FOUR_C_THROW("not implemented yet");
     }
 
     /*!
@@ -107,13 +107,13 @@ namespace BEAMINTERACTION
     void GetForcesAtAllInteractingPointsElement1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const override
     {
-      dserror("not implemented yet");
+      FOUR_C_THROW("not implemented yet");
     }
 
     void GetForcesAtAllInteractingPointsElement2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const override
     {
-      dserror("not implemented yet");
+      FOUR_C_THROW("not implemented yet");
     }
 
     /*!
@@ -122,13 +122,13 @@ namespace BEAMINTERACTION
     void GetMomentsAtAllInteractingPointsElement1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const override
     {
-      dserror("not implemented yet");
+      FOUR_C_THROW("not implemented yet");
     }
 
     void GetMomentsAtAllInteractingPointsElement2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const override
     {
-      dserror("not implemented yet");
+      FOUR_C_THROW("not implemented yet");
     }
 
     /*!

@@ -106,18 +106,18 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetParameters(
 
   // diffusion for L2-projection
   projectdiff_ = reinitlist.get<double>("PROJECTION_DIFF");
-  if (projectdiff_ < 0.0) dserror("Diffusivity has to be positive!");
+  if (projectdiff_ < 0.0) FOUR_C_THROW("Diffusivity has to be positive!");
 
   // lumping for L2-projection
   lumping_ = CORE::UTILS::IntegralValue<bool>(reinitlist, "LUMPING");
 
   // check for illegal combination
-  if (projectdiff_ > 0.0 and lumping_ == true) dserror("Illegal combination!");
+  if (projectdiff_ > 0.0 and lumping_ == true) FOUR_C_THROW("Illegal combination!");
   if (projectdiff_ > 0.0 and reinittype_ == INPAR::SCATRA::reinitaction_sussman)
-    dserror("Illegal combination!");
-  // The second dserror is added here for safety reasons. I think that using a diffusive term for
-  // the reconstruction of the velocity for reinitialization is possible, but I have not yet further
-  // investigated this option. Therefore, you should test it first.
+    FOUR_C_THROW("Illegal combination!");
+  // The second FOUR_C_THROW is added here for safety reasons. I think that using a diffusive term
+  // for the reconstruction of the velocity for reinitialization is possible, but I have not yet
+  // further investigated this option. Therefore, you should test it first.
 
   return;
 }

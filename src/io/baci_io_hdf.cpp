@@ -27,7 +27,7 @@ IO::HDFReader::HDFReader(std::string dir)
   // inhibit delayed closure, throws error if file contents still in use
   H5Plist_ = H5Pcreate(H5P_FILE_ACCESS);
   herr_t status = H5Pset_fclose_degree(H5Plist_, H5F_CLOSE_WEAK);
-  if (status < 0) dserror("Failed to set file access list");
+  if (status < 0) FOUR_C_THROW("Failed to set file access list");
 }
 
 /*----------------------------------------------------------------------*
@@ -37,7 +37,7 @@ IO::HDFReader::~HDFReader()
 {
   Close();
   herr_t status = H5Pclose(H5Plist_);
-  if (status < 0) dserror("Failed to close file access list");
+  if (status < 0) FOUR_C_THROW("Failed to close file access list");
 }
 
 /*----------------------------------------------------------------------*
@@ -64,7 +64,7 @@ void IO::HDFReader::Open(std::string basename, int num_output_procs, int new_pro
     {
       filenames_.push_back(buf.str());
       files_.push_back(H5Fopen(buf.str().c_str(), H5F_ACC_RDONLY, H5Plist_));
-      if (files_[i] < 0) dserror("Failed to open HDF-file %s", filenames_[i].c_str());
+      if (files_[i] < 0) FOUR_C_THROW("Failed to open HDF-file %s", filenames_[i].c_str());
     }
     else
     {
@@ -81,7 +81,7 @@ void IO::HDFReader::Open(std::string basename, int num_output_procs, int new_pro
 Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadElementData(
     int step, int new_proc_num, int my_id) const
 {
-  if (files_.size() == 0) dserror("Tried to read data without opening any file");
+  if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
   std::ostringstream path;
   path << "/step" << step << "/elements";
   int start, end;
@@ -106,7 +106,7 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadElementData(
 Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadCondition(
     const int step, const int new_proc_num, const int my_id, const std::string condname) const
 {
-  if (files_.size() == 0) dserror("Tried to read data without opening any file");
+  if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
 
   std::ostringstream path;
   path << "/step" << step << "/" << condname;
@@ -129,7 +129,7 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadCondition(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadKnotvector(const int step) const
 {
-  if (files_.size() == 0) dserror("Tried to read data without opening any file");
+  if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
 
   std::ostringstream path;
   path << "/step" << step << "/"
@@ -154,7 +154,7 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadKnotvector(const int step) co
 Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadNodeData(
     int step, int new_proc_num, int my_id) const
 {
-  if (files_.size() == 0) dserror("Tried to read data without opening any file");
+  if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
   std::ostringstream path;
   path << "/step" << step << "/nodes";
   int start, end;
@@ -188,11 +188,11 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadCharData(
     hid_t dataset = H5Dopen(files_[i], cpath);
     if (dataset < 0)
     {
-      dserror("Failed to open dataset %s in HDF-file %s", cpath, filenames_[i].c_str());
+      FOUR_C_THROW("Failed to open dataset %s in HDF-file %s", cpath, filenames_[i].c_str());
     }
     hid_t dataspace = H5Dget_space(dataset);
     if (dataspace < 0)
-      dserror("Failed to get dataspace from dataset %s in HDF-file %s", path.c_str(),
+      FOUR_C_THROW("Failed to get dataspace from dataset %s in HDF-file %s", path.c_str(),
           filenames_[i].c_str());
     int rank = H5Sget_simple_extent_ndims(dataspace);
     switch (rank)
@@ -204,7 +204,7 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadCharData(
         hsize_t dim, maxdim;
         int res = H5Sget_simple_extent_dims(dataspace, &dim, &maxdim);
         if (res < 0)
-          dserror("Failed to get size from dataspace in HDF-file %s", filenames_[i].c_str());
+          FOUR_C_THROW("Failed to get size from dataspace in HDF-file %s", filenames_[i].c_str());
         data->resize(offset + dim);
         herr_t status =
             H5Dread(dataset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &((*data)[offset]));
@@ -217,14 +217,16 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadCharData(
         break;
       }
       default:
-        dserror("HDF5 rank=%d unsupported", rank);
+        FOUR_C_THROW("HDF5 rank=%d unsupported", rank);
         break;
     }
 
     herr_t status = H5Sclose(dataspace);
-    if (status < 0) dserror("Failed to close node dataspace", path.c_str(), filenames_[i].c_str());
+    if (status < 0)
+      FOUR_C_THROW("Failed to close node dataspace", path.c_str(), filenames_[i].c_str());
     status = H5Dclose(dataset);
-    if (status < 0) dserror("Failed to close node dataset", path.c_str(), filenames_[i].c_str());
+    if (status < 0)
+      FOUR_C_THROW("Failed to close node dataset", path.c_str(), filenames_[i].c_str());
   }
   return data;
 }
@@ -244,11 +246,11 @@ Teuchos::RCP<std::vector<int>> IO::HDFReader::ReadIntData(
     hid_t dataset = H5Dopen(files_[i], path.c_str());
     if (dataset < 0)
     {
-      dserror("Failed to open dataset %s in HDF-file %s", path.c_str(), filenames_[i].c_str());
+      FOUR_C_THROW("Failed to open dataset %s in HDF-file %s", path.c_str(), filenames_[i].c_str());
     }
     hid_t dataspace = H5Dget_space(dataset);
     if (dataspace < 0)
-      dserror("Failed to get dataspace from dataset %s in HDF-file %s", path.c_str(),
+      FOUR_C_THROW("Failed to get dataspace from dataset %s in HDF-file %s", path.c_str(),
           filenames_[i].c_str());
     int rank = H5Sget_simple_extent_ndims(dataspace);
     switch (rank)
@@ -260,28 +262,28 @@ Teuchos::RCP<std::vector<int>> IO::HDFReader::ReadIntData(
         hsize_t dim, maxdim;
         int res = H5Sget_simple_extent_dims(dataspace, &dim, &maxdim);
         if (res < 0)
-          dserror("Failed to get size from dataspace in HDF-file %s", filenames_[i].c_str());
+          FOUR_C_THROW("Failed to get size from dataspace in HDF-file %s", filenames_[i].c_str());
         data->resize(offset + dim);
         herr_t status =
             H5Dread(dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &((*data)[offset]));
         offset += dim;
         if (status < 0)
-          dserror("Failed to read data from dataset %s in HDF-file %s", path.c_str(),
+          FOUR_C_THROW("Failed to read data from dataset %s in HDF-file %s", path.c_str(),
               filenames_[i].c_str());
         break;
       }
       default:
-        dserror("HDF5 rank=%d unsupported", rank);
+        FOUR_C_THROW("HDF5 rank=%d unsupported", rank);
         break;
     }
 
     herr_t status = H5Sclose(dataspace);
     if (status < 0)
-      dserror(
+      FOUR_C_THROW(
           "Failed to close node dataspace %s in HDF-file %s", path.c_str(), filenames_[i].c_str());
     status = H5Dclose(dataset);
     if (status < 0)
-      dserror(
+      FOUR_C_THROW(
           "Failed to close node dataset %s in HDF-file %s", path.c_str(), filenames_[i].c_str());
   }
   return data;
@@ -299,10 +301,10 @@ Teuchos::RCP<std::vector<double>> IO::HDFReader::ReadDoubleData(
   {
     hid_t dataset = H5Dopen(files_[i], path.c_str());
     if (dataset < 0)
-      dserror("Failed to open dataset %s in HDF-file %s", path.c_str(), filenames_[i].c_str());
+      FOUR_C_THROW("Failed to open dataset %s in HDF-file %s", path.c_str(), filenames_[i].c_str());
     hid_t dataspace = H5Dget_space(dataset);
     if (dataspace < 0)
-      dserror("Failed to get dataspace from dataset %s in HDF-file %s", path.c_str(),
+      FOUR_C_THROW("Failed to get dataspace from dataset %s in HDF-file %s", path.c_str(),
           filenames_[i].c_str());
     int rank = H5Sget_simple_extent_ndims(dataspace);
     switch (rank)
@@ -315,29 +317,29 @@ Teuchos::RCP<std::vector<double>> IO::HDFReader::ReadDoubleData(
         hsize_t dim, maxdim;
         int res = H5Sget_simple_extent_dims(dataspace, &dim, &maxdim);
         if (res < 0)
-          dserror("Failed to get size from dataspace in HDF-file %s", filenames_[i].c_str());
+          FOUR_C_THROW("Failed to get size from dataspace in HDF-file %s", filenames_[i].c_str());
         data->resize(offset + dim);
         herr_t status =
             H5Dread(dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &((*data)[offset]));
         lengths.push_back(dim);
         offset += dim;
         if (status < 0)
-          dserror("Failed to read data from dataset %s in HDF-file %s", path.c_str(),
+          FOUR_C_THROW("Failed to read data from dataset %s in HDF-file %s", path.c_str(),
               filenames_[i].c_str());
         break;
       }
       default:
-        dserror("HDF5 rank=%d unsupported", rank);
+        FOUR_C_THROW("HDF5 rank=%d unsupported", rank);
         break;
     }
 
     herr_t status = H5Sclose(dataspace);
     if (status < 0)
-      dserror(
+      FOUR_C_THROW(
           "Failed to close node dataspace %s in HDF-file %s", path.c_str(), filenames_[i].c_str());
     status = H5Dclose(dataset);
     if (status < 0)
-      dserror(
+      FOUR_C_THROW(
           "Failed to close node dataset %s in HDF-file %s", path.c_str(), filenames_[i].c_str());
   }
   return data;
@@ -351,7 +353,7 @@ Teuchos::RCP<Epetra_MultiVector> IO::HDFReader::ReadResultData(
   int new_proc_num = Comm.NumProc();
   int my_id = Comm.MyPID();
 
-  if (files_.size() == 0) dserror("Tried to read data without opening any file");
+  if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
   int start, end;
   CalculateRange(new_proc_num, my_id, start, end);
 
@@ -368,7 +370,7 @@ Teuchos::RCP<Epetra_MultiVector> IO::HDFReader::ReadResultData(
   Teuchos::RCP<std::vector<double>> values = ReadDoubleData(value_path, start, end, lengths);
 
   if (static_cast<int>(values->size()) != res->MyLength() * res->NumVectors())
-    dserror("vector value size mismatch: %d != %d", values->size(),
+    FOUR_C_THROW("vector value size mismatch: %d != %d", values->size(),
         res->MyLength() * res->NumVectors());
 
   // Rearrange multi vectors that are read with fewer processors than written.
@@ -395,12 +397,12 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadResultDataVecChar(std::string
     std::string value_path, int columns, const Epetra_Comm& Comm,
     Teuchos::RCP<Epetra_Map>& elemap) const
 {
-  if (columns != 1) dserror("got multivector, std::vector<char> expected");
+  if (columns != 1) FOUR_C_THROW("got multivector, std::vector<char> expected");
 
   int new_proc_num = Comm.NumProc();
   int my_id = Comm.MyPID();
 
-  if (files_.size() == 0) dserror("Tried to read data without opening any file");
+  if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
   int start, end;
   CalculateRange(new_proc_num, my_id, start, end);
 
@@ -421,7 +423,7 @@ Teuchos::RCP<std::vector<char>> IO::HDFReader::ReadCharVector(
   int new_proc_num = Comm.NumProc();
   int my_id = Comm.MyPID();
 
-  if (files_.size() == 0) dserror("Tried to read data without opening any file");
+  if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
   int start, end;
   CalculateRange(new_proc_num, my_id, start, end);
 
@@ -439,7 +441,7 @@ void IO::HDFReader::Close()
     if (files_[i] != -1)
     {
       herr_t status = H5Fclose(files_[i]);
-      if (status < 0) dserror("Failed to close HDF-file %s", filenames_[i].c_str());
+      if (status < 0) FOUR_C_THROW("Failed to close HDF-file %s", filenames_[i].c_str());
       files_[i] = -1;
     }
   }

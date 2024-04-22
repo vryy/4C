@@ -67,7 +67,7 @@ void test_unit_intersection_touch()
 
     if (e->Nodes()[0]->point()->Id() != 7 or e->Nodes()[1]->point()->Id() != 4)
     {
-      dserror("unexpected nodal id");
+      FOUR_C_THROW("unexpected nodal id");
     }
 
 
@@ -84,7 +84,7 @@ void test_unit_intersection_touch()
       CORE::GEO::CUT::Point* p = *i;
       if (p->Id() != 8)
       {
-        dserror("unexpected nodal id");
+        FOUR_C_THROW("unexpected nodal id");
       }
     }
   }

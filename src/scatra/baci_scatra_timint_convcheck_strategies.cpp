@@ -69,9 +69,9 @@ bool SCATRA::ConvCheckStrategyStd::AbortNonlinIter(
 
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_L2) or std::isnan(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is not a number!");
+    FOUR_C_THROW("Calculated vector norm for concentration is not a number!");
   if (std::isinf(conc_state_L2) or std::isinf(conc_res_L2) or std::isinf(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is infinity!");
+    FOUR_C_THROW("Calculated vector norm for concentration is infinity!");
 
   // care for the case that nothing really happens in the concentration field
   if (conc_state_L2 < 1.e-5) conc_state_L2 = 1.;
@@ -232,7 +232,7 @@ bool SCATRA::ConvCheckStrategyStd::AbortOuterIter(
           << std::endl;
     }
 
-    dserror("Outer iteration did not converge within maximum number of iteration steps!");
+    FOUR_C_THROW("Outer iteration did not converge within maximum number of iteration steps!");
 
     return true;
   }
@@ -271,9 +271,9 @@ bool SCATRA::ConvCheckStrategyStdMicroScale::AbortNonlinIter(
 
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_L2) or std::isnan(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is not a number!");
+    FOUR_C_THROW("Calculated vector norm for concentration is not a number!");
   if (std::isinf(conc_state_L2) or std::isinf(conc_res_L2) or std::isinf(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is infinity!");
+    FOUR_C_THROW("Calculated vector norm for concentration is infinity!");
 
   // care for the case that nothing really happens in the concentration field
   if (conc_state_L2 < 1.e-5) conc_state_L2 = 1.;
@@ -284,7 +284,7 @@ bool SCATRA::ConvCheckStrategyStdMicroScale::AbortNonlinIter(
     return true;  // converged
 
   // throw error in case maximum number of iteration steps is reached without convergence
-  if (itnum == itmax_) dserror("Newton-Raphson algorithm on micro scale did not converge!");
+  if (itnum == itmax_) FOUR_C_THROW("Newton-Raphson algorithm on micro scale did not converge!");
 
   // return maximum residual value for adaptivity of linear solver tolerance
   actresidual = std::max(conc_res_L2, conc_inc_L2 / conc_state_L2);
@@ -346,13 +346,13 @@ bool SCATRA::ConvCheckStrategyStdElch::AbortNonlinIter(
 
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_L2) or std::isnan(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is not a number!");
+    FOUR_C_THROW("Calculated vector norm for concentration is not a number!");
   if (std::isinf(conc_state_L2) or std::isinf(conc_res_L2) or std::isinf(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is infinity!");
+    FOUR_C_THROW("Calculated vector norm for concentration is infinity!");
   if (std::isnan(pot_state_L2) or std::isnan(pot_res_L2) or std::isnan(pot_inc_L2))
-    dserror("Calculated vector norm for electric potential is not a number!");
+    FOUR_C_THROW("Calculated vector norm for electric potential is not a number!");
   if (std::isinf(pot_state_L2) or std::isinf(pot_res_L2) or std::isinf(pot_inc_L2))
-    dserror("Calculated vector norm for electric potential is infinity!");
+    FOUR_C_THROW("Calculated vector norm for electric potential is infinity!");
 
   // care for the case that nothing really happens in the concentration or electric potential fields
   if (conc_state_L2 < 1.e-5) conc_state_L2 = 1.;
@@ -487,7 +487,7 @@ bool SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter(
   const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategys2i =
       Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatratimint.Strategy());
   if (meshtyingstrategys2i == Teuchos::null)
-    dserror("Invalid scalar transport meshtying strategy!");
+    FOUR_C_THROW("Invalid scalar transport meshtying strategy!");
 
   // compute L2 norm of Lagrange multiplier state vector
   double lm_state_L2(0.0);
@@ -503,13 +503,13 @@ bool SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter(
 
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_L2) or std::isnan(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is not a number!");
+    FOUR_C_THROW("Calculated vector norm for concentration is not a number!");
   if (std::isinf(conc_state_L2) or std::isinf(conc_res_L2) or std::isinf(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is infinity!");
+    FOUR_C_THROW("Calculated vector norm for concentration is infinity!");
   if (std::isnan(lm_state_L2) or std::isnan(lm_res_L2) or std::isnan(lm_inc_L2))
-    dserror("Calculated vector norm for Lagrange multipliers is not a number!");
+    FOUR_C_THROW("Calculated vector norm for Lagrange multipliers is not a number!");
   if (std::isinf(lm_state_L2) or std::isinf(lm_res_L2) or std::isinf(lm_inc_L2))
-    dserror("Calculated vector norm for Lagrange multipliers is infinity!");
+    FOUR_C_THROW("Calculated vector norm for Lagrange multipliers is infinity!");
 
   // care for the case that nothing really happens in the concentration or Lagrange multiplier
   // fields
@@ -665,7 +665,7 @@ bool SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter(
   const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategys2i =
       Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatratimint.Strategy());
   if (meshtyingstrategys2i == Teuchos::null)
-    dserror("Invalid scalar transport meshtying strategy!");
+    FOUR_C_THROW("Invalid scalar transport meshtying strategy!");
 
   // compute L2 norm of Lagrange multiplier state vector
   double lm_state_L2(0.0);
@@ -681,17 +681,17 @@ bool SCATRA::ConvCheckStrategyS2ILMElch::AbortNonlinIter(
 
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_L2) or std::isnan(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is not a number!");
+    FOUR_C_THROW("Calculated vector norm for concentration is not a number!");
   if (std::isinf(conc_state_L2) or std::isinf(conc_res_L2) or std::isinf(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is infinity!");
+    FOUR_C_THROW("Calculated vector norm for concentration is infinity!");
   if (std::isnan(pot_state_L2) or std::isnan(pot_res_L2) or std::isnan(pot_inc_L2))
-    dserror("Calculated vector norm for electric potential is not a number!");
+    FOUR_C_THROW("Calculated vector norm for electric potential is not a number!");
   if (std::isinf(pot_state_L2) or std::isinf(pot_res_L2) or std::isinf(pot_inc_L2))
-    dserror("Calculated vector norm for electric potential is infinity!");
+    FOUR_C_THROW("Calculated vector norm for electric potential is infinity!");
   if (std::isnan(lm_state_L2) or std::isnan(lm_res_L2) or std::isnan(lm_inc_L2))
-    dserror("Calculated vector norm for Lagrange multipliers is not a number!");
+    FOUR_C_THROW("Calculated vector norm for Lagrange multipliers is not a number!");
   if (std::isinf(lm_state_L2) or std::isinf(lm_res_L2) or std::isinf(lm_inc_L2))
-    dserror("Calculated vector norm for Lagrange multipliers is infinity!");
+    FOUR_C_THROW("Calculated vector norm for Lagrange multipliers is infinity!");
 
   // care for the case that nothing really happens in the concentration, electric potential, or
   // Lagrange multiplier fields
@@ -812,7 +812,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
 {
   // cast scalar transport time integrator
   const ScaTraTimIntElch* const elchtimint = dynamic_cast<const ScaTraTimIntElch*>(&scatratimint);
-  if (elchtimint == nullptr) dserror("Cast of scalar transport time integrator failed!");
+  if (elchtimint == nullptr) FOUR_C_THROW("Cast of scalar transport time integrator failed!");
 
   // extract processor ID
   const int mypid = scatratimint.Discretization()->Comm().MyPID();
@@ -874,17 +874,17 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
 
   // safety checks
   if (std::isnan(L2_state_conc_el) or std::isnan(L2_res_conc_el) or std::isnan(L2_inc_conc_el))
-    dserror("Calculated vector norm for electrolyte concentration is not a number!");
+    FOUR_C_THROW("Calculated vector norm for electrolyte concentration is not a number!");
   if (std::isinf(L2_state_conc_el) or std::isinf(L2_res_conc_el) or std::isinf(L2_inc_conc_el))
-    dserror("Calculated vector norm for electrolyte concentration is infinity!");
+    FOUR_C_THROW("Calculated vector norm for electrolyte concentration is infinity!");
   if (std::isnan(L2_state_pot_el) or std::isnan(L2_res_pot_el) or std::isnan(L2_inc_pot_el))
-    dserror("Calculated vector norm for electrolyte potential is not a number!");
+    FOUR_C_THROW("Calculated vector norm for electrolyte potential is not a number!");
   if (std::isinf(L2_state_pot_el) or std::isinf(L2_res_pot_el) or std::isinf(L2_inc_pot_el))
-    dserror("Calculated vector norm for electrolyte potential is infinity!");
+    FOUR_C_THROW("Calculated vector norm for electrolyte potential is infinity!");
   if (std::isnan(L2_state_pot_ed) or std::isnan(L2_res_pot_ed) or std::isnan(L2_inc_pot_ed))
-    dserror("Calculated vector norm for electrode potential is not a number!");
+    FOUR_C_THROW("Calculated vector norm for electrode potential is not a number!");
   if (std::isinf(L2_state_pot_ed) or std::isinf(L2_res_pot_ed) or std::isinf(L2_inc_pot_ed))
-    dserror("Calculated vector norm for electrode potential is infinity!");
+    FOUR_C_THROW("Calculated vector norm for electrode potential is infinity!");
 
   // care for the case that nothing really happens in the electrolyte concentration, electrolyte
   // potential, or electrode potential fields
@@ -1005,7 +1005,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
 {
   // cast scalar transport time integrator
   const ScaTraTimIntElch* const elchtimint = dynamic_cast<const ScaTraTimIntElch*>(&scatratimint);
-  if (elchtimint == nullptr) dserror("Cast of scalar transport time integrator failed!");
+  if (elchtimint == nullptr) FOUR_C_THROW("Cast of scalar transport time integrator failed!");
 
   // extract processor ID
   const int mypid = scatratimint.Discretization()->Comm().MyPID();
@@ -1093,7 +1093,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
                 << std::endl;
     }
 
-    dserror("Outer iteration did not converge within maximum number of iteration steps!");
+    FOUR_C_THROW("Outer iteration did not converge within maximum number of iteration steps!");
 
     return true;
   }
@@ -1131,9 +1131,9 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatra::AbortNonlinIter(
 
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_Rms) or std::isnan(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is not a number!");
+    FOUR_C_THROW("Calculated vector norm for concentration is not a number!");
   if (std::isinf(conc_state_L2) or std::isinf(conc_res_Rms) or std::isinf(conc_inc_L2))
-    dserror("Calculated vector norm for concentration is infinity!");
+    FOUR_C_THROW("Calculated vector norm for concentration is infinity!");
 
   // care for the case that nothing really happens in the concentration field
   if (conc_state_L2 < 1.e-6) conc_state_L2 = 1.;
@@ -1243,7 +1243,7 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
   // get mesh tying strategy
   Teuchos::RCP<SCATRA::MeshtyingStrategyArtery> scatramsht =
       Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyArtery>(scatratimint.Strategy());
-  if (scatramsht == Teuchos::null) dserror("cast to Meshtying strategy failed!");
+  if (scatramsht == Teuchos::null) FOUR_C_THROW("cast to Meshtying strategy failed!");
 
   // compute L2 norm of concentration state vector
   double conc_state_L2(0.0);
@@ -1279,10 +1279,10 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
   // safety checks
   if (std::isnan(conc_state_L2) or std::isnan(conc_res_Rms) or std::isnan(conc_inc_L2) or
       std::isnan(conc_state_art_L2) or std::isnan(conc_res_art_Rms) or std::isnan(conc_inc_art_L2))
-    dserror("Calculated vector norm for concentration is not a number!");
+    FOUR_C_THROW("Calculated vector norm for concentration is not a number!");
   if (std::isinf(conc_state_L2) or std::isinf(conc_res_Rms) or std::isinf(conc_inc_L2) or
       std::isinf(conc_state_art_L2) or std::isinf(conc_res_art_Rms) or std::isinf(conc_inc_art_L2))
-    dserror("Calculated vector norm for concentration is infinity!");
+    FOUR_C_THROW("Calculated vector norm for concentration is infinity!");
 
   // care for the case that nothing really happens in the concentration field
   if (conc_state_L2 < 1.e-6) conc_state_L2 = 1.;

@@ -129,7 +129,8 @@ void FLD::TimIntRedModels::Init()
     // Models
     if ((ART_timeInt_ != Teuchos::null) or (airway_imp_timeInt_ != Teuchos::null))
     {
-      dserror("No problem types involving airways are supported for use with locsys conditions!");
+      FOUR_C_THROW(
+          "No problem types involving airways are supported for use with locsys conditions!");
     }
   }
 }

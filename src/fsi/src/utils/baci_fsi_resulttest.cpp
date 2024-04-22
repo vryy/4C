@@ -44,7 +44,7 @@ FSI::FSIResultTest::FSIResultTest(
       const Teuchos::RCP<FSI::MonolithicFluidSplit>& fsiobject =
           Teuchos::rcp_dynamic_cast<FSI::MonolithicFluidSplit>(fsi);
 
-      if (fsiobject == Teuchos::null) dserror("Cast to FSI::MonolithicFluidSplit failed.");
+      if (fsiobject == Teuchos::null) FOUR_C_THROW("Cast to FSI::MonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->FluidField()->Discretization();
@@ -58,7 +58,7 @@ FSI::FSIResultTest::FSIResultTest(
       const Teuchos::RCP<FSI::MonolithicStructureSplit>& fsiobject =
           Teuchos::rcp_dynamic_cast<FSI::MonolithicStructureSplit>(fsi);
 
-      if (fsiobject == Teuchos::null) dserror("Cast to FSI::MonolithicStructureSplit failed.");
+      if (fsiobject == Teuchos::null) FOUR_C_THROW("Cast to FSI::MonolithicStructureSplit failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->StructureField()->Discretization();
@@ -71,7 +71,8 @@ FSI::FSIResultTest::FSIResultTest(
       const Teuchos::RCP<FSI::MortarMonolithicFluidSplit>& fsiobject =
           Teuchos::rcp_dynamic_cast<FSI::MortarMonolithicFluidSplit>(fsi);
 
-      if (fsiobject == Teuchos::null) dserror("Cast to FSI::MortarMonolithicFluidSplit failed.");
+      if (fsiobject == Teuchos::null)
+        FOUR_C_THROW("Cast to FSI::MortarMonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->FluidField()->Discretization();
@@ -85,7 +86,7 @@ FSI::FSIResultTest::FSIResultTest(
           Teuchos::rcp_dynamic_cast<FSI::MortarMonolithicFluidSplitSaddlePoint>(fsi);
 
       if (fsiobject == Teuchos::null)
-        dserror("Cast to FSI::MortarMonolithicFluidSplitSaddlePoint failed.");
+        FOUR_C_THROW("Cast to FSI::MortarMonolithicFluidSplitSaddlePoint failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->FluidField()->Discretization();
@@ -101,7 +102,7 @@ FSI::FSIResultTest::FSIResultTest(
           Teuchos::rcp_dynamic_cast<FSI::MortarMonolithicStructureSplit>(fsi);
 
       if (fsiobject == Teuchos::null)
-        dserror("Cast to FSI::MortarMonolithicStructureSplit failed.");
+        FOUR_C_THROW("Cast to FSI::MortarMonolithicStructureSplit failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->StructureField()->Discretization();
@@ -114,7 +115,8 @@ FSI::FSIResultTest::FSIResultTest(
       const Teuchos::RCP<FSI::SlidingMonolithicFluidSplit>& fsiobject =
           Teuchos::rcp_dynamic_cast<FSI::SlidingMonolithicFluidSplit>(fsi);
 
-      if (fsiobject == Teuchos::null) dserror("Cast to FSI::SlidingMonolithicFluidSplit failed.");
+      if (fsiobject == Teuchos::null)
+        FOUR_C_THROW("Cast to FSI::SlidingMonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->FluidField()->Discretization();
@@ -128,7 +130,7 @@ FSI::FSIResultTest::FSIResultTest(
           Teuchos::rcp_dynamic_cast<FSI::SlidingMonolithicStructureSplit>(fsi);
 
       if (fsiobject == Teuchos::null)
-        dserror("Cast to FSI::SlidingMonolithicStructureSplit failed.");
+        FOUR_C_THROW("Cast to FSI::SlidingMonolithicStructureSplit failed.");
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->StructureField()->Discretization();
@@ -166,7 +168,7 @@ FSI::FSIResultTest::FSIResultTest(
           Teuchos::rcp_dynamic_cast<FSI::FluidFluidMonolithicStructureSplitNoNOX>(fsi);
 
       if (fsiobject == Teuchos::null)
-        dserror("Cast to FSI::FluidFluidMonolithicStructureSplitNoNOX failed.");
+        FOUR_C_THROW("Cast to FSI::FluidFluidMonolithicStructureSplitNoNOX failed.");
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -180,7 +182,7 @@ FSI::FSIResultTest::FSIResultTest(
           Teuchos::rcp_dynamic_cast<FSI::FluidFluidMonolithicFluidSplitNoNOX>(fsi);
 
       if (fsiobject == Teuchos::null)
-        dserror("Cast to FSI::FluidFluidMonolithicFluidSplitNoNOX failed.");
+        FOUR_C_THROW("Cast to FSI::FluidFluidMonolithicFluidSplitNoNOX failed.");
 
       fsilambda_ = fsiobject->lambda_;
 
@@ -212,7 +214,8 @@ void FSI::FSIResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& te
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1, slavedisc_->Name().c_str());
+    FOUR_C_THROW(
+        "Node %d does not belong to discretization %s", node + 1, slavedisc_->Name().c_str());
   }
   else
   {
@@ -252,7 +255,8 @@ void FSI::FSIResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& te
       }
 
       // catch quantity strings, which are not handled by fsi result test
-      if (unknownquantity) dserror("Quantity '%s' not supported in fsi testing", quantity.c_str());
+      if (unknownquantity)
+        FOUR_C_THROW("Quantity '%s' not supported in fsi testing", quantity.c_str());
 
       // compare values
       const int err = CompareValues(result, "NODE", res);
@@ -268,7 +272,7 @@ void FSI::FSIResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& te
 /*----------------------------------------------------------------------*/
 void FSI::FSIResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  dserror("FSI ELEMENT test not implemented, yet.");
+  FOUR_C_THROW("FSI ELEMENT test not implemented, yet.");
 
   return;
 }
@@ -304,7 +308,7 @@ void FSI::FSIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int&
   }
 
   // catch quantity strings, which are not handled by fsi result test
-  if (unknownquantity) dserror("Quantity '%s' not supported in fsi testing", quantity.c_str());
+  if (unknownquantity) FOUR_C_THROW("Quantity '%s' not supported in fsi testing", quantity.c_str());
 
   // compare values
   const int err = CompareValues(result, "SPECIAL", res);

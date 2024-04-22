@@ -80,7 +80,7 @@ void CORE::ADAPTER::MortarVolCoupl::Init(int spatial_dimension,
   if ((dis1->NumDofSets() == 1) and (dis2->NumDofSets() == 1) and createauxdofs)
   {
     if (coupleddof12 == nullptr or coupleddof21 == nullptr)
-      dserror("ERROR: No coupling dofs for volmortar algorithm specified!");
+      FOUR_C_THROW("ERROR: No coupling dofs for volmortar algorithm specified!");
 
     CreateAuxDofsets(dis1, dis2, coupleddof12, coupleddof21);
   }
@@ -118,7 +118,7 @@ void CORE::ADAPTER::MortarVolCoupl::Setup(const Teuchos::ParameterList& params)
     coupdis->EvaluateConsistentInterpolation();
   //-----------------------
   else
-    dserror("ERROR: Chosen coupling not implemented!!!");
+    FOUR_C_THROW("ERROR: Chosen coupling not implemented!!!");
 
   // get the P operators
   P12_ = coupdis->GetPMatrix12();
@@ -169,9 +169,9 @@ void CORE::ADAPTER::MortarVolCoupl::CreateAuxDofsets(Teuchos::RCP<DRT::Discretiz
   // add proxy of velocity related degrees of freedom to scatra discretization
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
   dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(coupleddof21->size(), 0, 0, true));
-  if (dis2->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in fluid field");
+  if (dis2->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
   dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(coupleddof12->size(), 0, 0, true));
-  if (dis1->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in structure field");
+  if (dis1->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in structure field");
 
   // call AssignDegreesOfFreedom also for auxiliary dofsets
   // note: the order of FillComplete() calls determines the gid numbering!
@@ -213,7 +213,7 @@ Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::ApplyVectorMapp
 
   Teuchos::RCP<Epetra_Vector> mapvec = CORE::LINALG::CreateVector(P12_->RowMap(), true);
   int err = P12_->Multiply(false, *vec, *mapvec);
-  if (err != 0) dserror("ERROR: Matrix multiply returned error code %i", err);
+  if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   return mapvec;
 }
@@ -230,7 +230,7 @@ Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::ApplyVectorMapp
 
   Teuchos::RCP<Epetra_Vector> mapvec = CORE::LINALG::CreateVector(P21_->RowMap(), true);
   int err = P21_->Multiply(false, *vec, *mapvec);
-  if (err != 0) dserror("ERROR: Matrix multiply returned error code %i", err);
+  if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   return mapvec;
 }
@@ -283,11 +283,11 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
 void CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
-#ifdef BACI_DEBUG
-  if (not mv->Map().PointSameAs(P21_->DomainMap())) dserror("master dof map vector expected");
-  if (not sv->Map().PointSameAs(P21_->RowMap())) dserror("slave dof map vector expected");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (not mv->Map().PointSameAs(P21_->DomainMap())) FOUR_C_THROW("master dof map vector expected");
+  if (not sv->Map().PointSameAs(P21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
   if (sv->NumVectors() != mv->NumVectors())
-    dserror("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
+    FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
 #endif
 
   // safety check
@@ -299,7 +299,7 @@ void CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
 
   // project
   int err = P21_->Multiply(false, *mv, sv_aux);
-  if (err != 0) dserror("ERROR: Matrix multiply returned error code %i", err);
+  if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
   std::copy(
@@ -371,11 +371,11 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
 void CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
-#ifdef BACI_DEBUG
-  if (not mv->Map().PointSameAs(P12_->RowMap())) dserror("master dof map vector expected");
-  if (not sv->Map().PointSameAs(P21_->RowMap())) dserror("slave dof map vector expected");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (not mv->Map().PointSameAs(P12_->RowMap())) FOUR_C_THROW("master dof map vector expected");
+  if (not sv->Map().PointSameAs(P21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
   if (sv->NumVectors() != mv->NumVectors())
-    dserror("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
+    FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
 #endif
 
   // safety check
@@ -387,7 +387,7 @@ void CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
 
   // project
   int err = P12_->Multiply(false, *sv, mv_aux);
-  if (err != 0) dserror("ERROR: Matrix multiply returned error code %i", err);
+  if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
   std::copy(

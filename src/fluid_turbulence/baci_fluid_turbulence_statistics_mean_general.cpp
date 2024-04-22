@@ -35,7 +35,7 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
       velpressplitter_(velpressplitter),
       withscatra_(withscatra)
 {
-  if (discret_ == Teuchos::null) dserror("valid discretization expected");
+  if (discret_ == Teuchos::null) FOUR_C_THROW("valid discretization expected");
 
   // get directions to do spatial averaging
   homdir_.clear();
@@ -86,7 +86,7 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
       withscatra_(withscatra)
 {
   if (discret_ == Teuchos::null and standarddofset_ == Teuchos::null)
-    dserror("valid discretization (standard fluid) or standard dofset (XFEM fluid) expected");
+    FOUR_C_THROW("valid discretization (standard fluid) or standard dofset (XFEM fluid) expected");
 
   // get directions to do spatial averaging
   homdir_.clear();
@@ -222,7 +222,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
         odim[0] = -1;
         odim[1] = -1;
 
-        dserror("dimension to average not in 0-2\n", dim);
+        FOUR_C_THROW("dimension to average not in 0-2\n", dim);
         break;
       }
     }
@@ -361,7 +361,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
   // than the slave side.
   if (numlines == 0)
   {
-    // dserror("No node with the smallest coordinate in direction %d found. Changing master and
+    // FOUR_C_THROW("No node with the smallest coordinate in direction %d found. Changing master and
     // slave of the pbc might help. Read remark.");
     if (discret_->Comm().MyPID() == 0)
       std::cout << "Warning: Sampling for paraview output (averaged velocity/pressure) is "
@@ -425,7 +425,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       // you didn't
       if (rblock.empty() == false)
       {
-        dserror("rblock not empty");
+        FOUR_C_THROW("rblock not empty");
       }
 
       rblock.clear();
@@ -436,7 +436,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -642,7 +642,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
           {
             if (numprocs == 1)
             {
-              dserror("didn\'t find node %d on single proc\n", lnode->Id());
+              FOUR_C_THROW("didn\'t find node %d on single proc\n", lnode->Id());
             }
           }
         }
@@ -650,7 +650,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
         {
           if (numprocs == 1)
           {
-            dserror("didn\'t find node %d on single proc\n", lnode->Id());
+            FOUR_C_THROW("didn\'t find node %d on single proc\n", lnode->Id());
           }
         }
       }
@@ -712,7 +712,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
   {
     if (count[i] == 0)
     {
-      dserror("no layers have been detected along line %d\n", i);
+      FOUR_C_THROW("no layers have been detected along line %d\n", i);
     }
 
     avg_u[i] /= count[i];
@@ -736,7 +736,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       // you didn't
       if (rblock.empty() == false)
       {
-        dserror("rblock not empty");
+        FOUR_C_THROW("rblock not empty");
       }
 
       // receive from predecessor
@@ -745,7 +745,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -941,7 +941,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
           if (err > 0)
           {
-            dserror("lid was not on proc %d\n", myrank);
+            FOUR_C_THROW("lid was not on proc %d\n", myrank);
           }
         }
       }
@@ -1324,7 +1324,7 @@ void FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
     if (prev_avg_scatra_ != Teuchos::null)
       output.WriteVector("averaged_phinp", prev_avg_scatra_);
     else
-      dserror("Could not write vector to result file");
+      FOUR_C_THROW("Could not write vector to result file");
 
     if (scatradis_->Comm().MyPID() == 0)
     {

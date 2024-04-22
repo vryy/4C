@@ -188,7 +188,7 @@ bool CORE::GEO::CUT::VolumeCell::Contains(Point* p)
 bool CORE::GEO::CUT::VolumeCell::Contains(CORE::LINALG::Matrix<3, 1>& x)
 {
   if (integrationcells_.size() == 0)
-    dserror(
+    FOUR_C_THROW(
         "no integrationcells for volumecell stored, implement Contains check without "
         "integrationcells");
 
@@ -214,7 +214,7 @@ void CORE::GEO::CUT::VolumeCell::CreateTet4IntegrationCells(Mesh& mesh,
     const std::vector<Point*>& tet = *i;
     if (tet.size() != 4)
     {
-      dserror("tet expected");
+      FOUR_C_THROW("tet expected");
     }
     NewTet4Cell(mesh, tet);
   }
@@ -226,7 +226,7 @@ void CORE::GEO::CUT::VolumeCell::CreateTet4IntegrationCells(Mesh& mesh,
     const std::vector<Point*>& points = i->second;
 
     std::size_t length = points.size();
-    if (length % 3 != 0) dserror("expect list of triangles");
+    if (length % 3 != 0) FOUR_C_THROW("expect list of triangles");
 
     length /= 3;
     std::vector<Point*> p(3);
@@ -407,7 +407,7 @@ void CORE::GEO::CUT::VolumeCell::NewBoundaryCell(
 {
   if (facets_.count(f) == 0)
   {
-    dserror("facet does not belong to volume cell");
+    FOUR_C_THROW("facet does not belong to volume cell");
   }
   switch (shape)
   {
@@ -424,7 +424,7 @@ void CORE::GEO::CUT::VolumeCell::NewBoundaryCell(
       NewQuad4Cell(mesh, f, x);
       break;
     default:
-      dserror("Unsupported shape ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
+      FOUR_C_THROW("Unsupported shape ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -543,7 +543,7 @@ void CORE::GEO::CUT::VolumeCell::NewIntegrationCell(
       NewPyramid5Cell(mesh, x);
       break;
     default:
-      dserror("Unsupported shape ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
+      FOUR_C_THROW("Unsupported shape ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -665,7 +665,7 @@ std::string CORE::GEO::CUT::VolumeCell::IsThisPointInside(CORE::LINALG::Matrix<3
   element_->LocalCoordinates(xglo, xloc);
 
   const CORE::GEO::CUT::Point::PointPosition posi = Position();
-  if (posi == 0) dserror("undefined position for the volumecell");
+  if (posi == 0) FOUR_C_THROW("undefined position for the volumecell");
 
   VolumeIntegration vc(this, element_, posi, 0);
   std::string inside = vc.IsPointInside(xloc);
@@ -753,7 +753,7 @@ void CORE::GEO::CUT::VolumeCell::TestSurface()
         {
           for (unsigned l = 0; l < facetlines.size(); l++)
           {
-            dserror(
+            FOUR_C_THROW(
                 "not supported when using std::set in definition of point_line_set. Adapt this. "
                 "Anyway this routine is not bugfree! This about before using this function!!!");
           }
@@ -765,7 +765,7 @@ void CORE::GEO::CUT::VolumeCell::TestSurface()
         {
           for (unsigned l = 0; l < facetlineindex.size(); l++)
             if (facetlineindex[k] == facetlineindex[l] and k != l)
-              dserror("volume cut facets not closed!!");
+              FOUR_C_THROW("volume cut facets not closed!!");
         }
 
         //        //Find the connection.
@@ -784,7 +784,7 @@ void CORE::GEO::CUT::VolumeCell::TestSurface()
         // probably be best implemented
         // with some sort of tree structure.
 
-        dserror("volume cut facets not closed");
+        FOUR_C_THROW("volume cut facets not closed");
       }
     }
   }
@@ -950,7 +950,7 @@ void CORE::GEO::CUT::VolumeCell::DumpGmshGaussPointsTessellation()
       }
       default:
       {
-        dserror("Include this element here");
+        FOUR_C_THROW("Include this element here");
         break;
       }
     }
@@ -1002,7 +1002,7 @@ void CORE::GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
       }
       default:
       {
-        dserror("Include this element here");
+        FOUR_C_THROW("Include this element here");
         break;
       }
     }
@@ -1035,7 +1035,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::CreateProjected(
   CORE::LINALG::Matrix<3, nen> xie;
 
   const std::vector<CORE::GEO::CUT::Point*>& cpoints = ic->Points();
-  if (cpoints.size() != nen) dserror("non-matching number of points");
+  if (cpoints.size() != nen) FOUR_C_THROW("non-matching number of points");
 
   for (unsigned i = 0; i < nen; ++i)
   {
@@ -1173,7 +1173,7 @@ void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
             NewQuad4Cell(mesh, fac, tri);
           }
           else
-            dserror("Triangulation created neither tri3 or quad4");
+            FOUR_C_THROW("Triangulation created neither tri3 or quad4");
         }
       }
 
@@ -1248,10 +1248,10 @@ void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCellsLevelSetSide(Mesh& mesh,
     INPAR::CUT::BCellGaussPts BCellgausstype)
 {
   if (not fac->BelongsToLevelSetSide())
-    dserror("Why would you call BC-creation for LS-Side without a LS side?");
+    FOUR_C_THROW("Why would you call BC-creation for LS-Side without a LS side?");
 
   if (BCellgausstype == INPAR::CUT::BCellGaussPts_MomentFitting)
-    dserror("Not supported for BC-Cell creation for LevelSetSides.");
+    FOUR_C_THROW("Not supported for BC-Cell creation for LevelSetSides.");
 
   // Is the facet split/triangulated and if it consists of 4 corners is it planar.
   //  Then decompose and create Boundary Cells from triangulation/split.
@@ -1338,7 +1338,7 @@ void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCellsLevelSetSide(Mesh& mesh,
         NewQuad4Cell(mesh, fac, tri_temp);
       }
       else
-        dserror("Triangulation created neither tri3 or quad4");
+        FOUR_C_THROW("Triangulation created neither tri3 or quad4");
     }
   }
   else
@@ -1394,7 +1394,7 @@ void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCellsLevelSetSide(Mesh& mesh,
       NewQuad4Cell(mesh, fac, tri_temp);
     }
     else
-      dserror("Triangulation created neither tri3 or quad4");
+      FOUR_C_THROW("Triangulation created neither tri3 or quad4");
   }
 }
 
@@ -1502,7 +1502,7 @@ void CORE::GEO::CUT::VolumeCell::MomentFitGaussWeights(
   {
     if (!SetPositionCutSideBased())
     {
-      dserror("undefined position for the volumecell");
+      FOUR_C_THROW("undefined position for the volumecell");
     }
   }
 
@@ -1542,10 +1542,10 @@ void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
     Element* elem, Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype)
 {
   if (elem->Shape() != CORE::FE::CellType::hex8 && elem->Shape() != CORE::FE::CellType::hex20)
-    dserror("DirectDivergenceGaussRule: Just hex8 and hex20 avaiable yet in DD!");
+    FOUR_C_THROW("DirectDivergenceGaussRule: Just hex8 and hex20 avaiable yet in DD!");
 
   if (BCellgausstype != INPAR::CUT::BCellGaussPts_Tessellation)
-    dserror(
+    FOUR_C_THROW(
         "DirectDivergenceGaussRule: just INPAR::CUT::BCellGaussPts_Tessellation supported at the "
         "moment!");
 
@@ -1554,7 +1554,7 @@ void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
   {
     if (!SetPositionCutSideBased())
     {
-      dserror("undefined position for the volumecell");
+      FOUR_C_THROW("undefined position for the volumecell");
     }
   }
 
@@ -1564,7 +1564,8 @@ void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
 
   // If the Volume Cell consists of less than 4 facets, it can't span a volume in 3D.
   if (Facets().size() < 4)
-    dserror("If the Volume Cell consists of less than 4 facets, it can't span a volume in 3D?");
+    FOUR_C_THROW(
+        "If the Volume Cell consists of less than 4 facets, it can't span a volume in 3D?");
   // return;
 
   isNegligibleSmall_ = false;
@@ -1616,7 +1617,8 @@ void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
 void CORE::GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
 {
   if (element_->Shape() != CORE::FE::CellType::hex8)
-    dserror("Currently Direct divergence in global coordinates works only for hex8 elements\n");
+    FOUR_C_THROW(
+        "Currently Direct divergence in global coordinates works only for hex8 elements\n");
 
   CORE::FE::GaussIntegration intpoints(gp_);
 
@@ -1645,7 +1647,7 @@ void CORE::GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
       }
       default:
       {
-        dserror(
+        FOUR_C_THROW(
             "Currently Direct divergence in global coordinates works only for hex8, hex20, hex27 "
             "elements\n");
         break;
@@ -1688,7 +1690,7 @@ const std::set<int>& CORE::GEO::CUT::VolumeCell::VolumeCellPointIds()
     }
   }
 
-  if (vcpoints_ids_.size() == 0) dserror("The size of volumecell points is zero!!");
+  if (vcpoints_ids_.size() == 0) FOUR_C_THROW("The size of volumecell points is zero!!");
 
   return vcpoints_ids_;
 }
@@ -1699,7 +1701,7 @@ const std::set<int>& CORE::GEO::CUT::VolumeCell::VolumeCellPointIds()
 bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
 {
   if (Position() != Point::undecided)
-    dserror(
+    FOUR_C_THROW(
         "Do not call FindPositionCutSideBased() if Position for volumecell is already set (%d)!",
         (int)Position());
 
@@ -1765,7 +1767,7 @@ bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
                   << ref_vec(2, 0) << ")" << std::endl;
         std::cout << "Facet Vector: (" << norm_fac(0, 0) << "," << norm_fac(1, 0) << ","
                   << norm_fac(2, 0) << ")" << std::endl;
-        dserror("Check this really small dotProduct! %d", dotProduct);
+        FOUR_C_THROW("Check this really small dotProduct! %d", dotProduct);
       }
 
       outsidenormal[f] = (dotProduct > 0);
@@ -1803,7 +1805,7 @@ bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
 
   if (iter == 1000 && !done)
   {
-    dserror(
+    FOUR_C_THROW(
         "SetPositionCutSideBased failed: too many iterations (theoretically a facet with many "
         "points could also lead to this)!");
     return false;
@@ -1829,21 +1831,21 @@ bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
       if ((on->second && prod > 0) || (!on->second && prod < 0))  // this means that the
       {
         if (posi != Point::undecided && posi != Point::inside)
-          dserror(
+          FOUR_C_THROW(
               "SetPositionCutSideBased: posi != Point::undecided && posi != Point::inside (Are all "
               "you Cut Sides oriented correct?)");
-        // dserror("SetPositionCutSideBased: posi != Point::undecided && posi != Point::inside (Are
-        // all you Cut Sides oriented correct?)");
+        // FOUR_C_THROW("SetPositionCutSideBased: posi != Point::undecided && posi != Point::inside
+        // (Are all you Cut Sides oriented correct?)");
         posi = Point::inside;
       }
       else
       {
         if (posi != Point::undecided && posi != Point::outside)
-          dserror(
+          FOUR_C_THROW(
               "SetPositionCutSideBased: posi != Point::undecided && posi != Point::outside (Are "
               "all you Cut Sides oriented correct?)");
-        // dserror("SetPositionCutSideBased: posi != Point::undecided && posi != Point::outside (Are
-        // all you Cut Sides oriented correct?)");
+        // FOUR_C_THROW("SetPositionCutSideBased: posi != Point::undecided && posi != Point::outside
+        // (Are all you Cut Sides oriented correct?)");
         posi = Point::outside;
       }
     }

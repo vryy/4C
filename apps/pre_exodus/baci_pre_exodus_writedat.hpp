@@ -78,7 +78,7 @@ namespace EXODUS
       case DRT::Condition::NoGeom:
         return "";
       default:
-        dserror("Unknown Condition GeometryType");
+        FOUR_C_THROW("Unknown Condition GeometryType");
     }
     return "";
   }

@@ -34,7 +34,7 @@ ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discr
 {
   // make sure
 
-  if (fluid_ == Teuchos::null) dserror("Failed to create the underlying fluid adapter");
+  if (fluid_ == Teuchos::null) FOUR_C_THROW("Failed to create the underlying fluid adapter");
 
   Discretization()->GetCondition("NoPenetration", nopencond_);
 }
@@ -47,8 +47,8 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
     Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
     POROELAST::Coupltype coupltype)
 {
-  if (!(Discretization()->Filled())) dserror("FillComplete() was not called");
-  if (!Discretization()->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!Discretization()->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   Discretization()->SetState(0, "dispnp", Dispnp());
   Discretization()->SetState(0, "scaaf", Scaaf());
@@ -130,7 +130,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
     Discretization()->EvaluateCondition(params, couplstrategy, "NoPenetration");
   }
   else
-    dserror("unknown coupling type for no penetration BC");
+    FOUR_C_THROW("unknown coupling type for no penetration BC");
 
   Discretization()->ClearState();
 

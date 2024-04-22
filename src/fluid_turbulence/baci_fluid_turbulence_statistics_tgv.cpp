@@ -29,7 +29,7 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<DRT::Discreti
   //----------------------------------------------------------------------
   // plausibility check
   int numdim = params_.get<int>("number of velocity degrees of freedom");
-  if (numdim != 3) dserror("Evaluation of turbulence statistics only for 3d flow!");
+  if (numdim != 3) FOUR_C_THROW("Evaluation of turbulence statistics only for 3d flow!");
 
   // get number of elements
   numele_ = discret_->NumGlobalElements();

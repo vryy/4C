@@ -57,7 +57,8 @@ WEAR::LagrangeStrategyWear::LagrangeStrategyWear(
   for (int z = 0; z < (int)interfaces.size(); ++z)
   {
     interface_.push_back(Teuchos::rcp_dynamic_cast<WEAR::WearInterface>(interfaces[z]));
-    if (interface_[z] == Teuchos::null) dserror("LagrangeStrategyWear: Interface-cast failed!");
+    if (interface_[z] == Teuchos::null)
+      FOUR_C_THROW("LagrangeStrategyWear: Interface-cast failed!");
   }
 
   // set wear contact status
@@ -179,7 +180,7 @@ void WEAR::LagrangeStrategyWear::SetupWear(bool redistributed, bool init)
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         cnode->WearData().wcurr()[0] = 0.0;
@@ -191,7 +192,7 @@ void WEAR::LagrangeStrategyWear::SetupWear(bool redistributed, bool init)
         {
           int gid = interface_[i]->MasterColNodes()->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
-          if (!node) dserror("Cannot find node with gid %", gid);
+          if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
           cnode->WearData().wcurr()[0] = 0.0;
@@ -442,7 +443,7 @@ void WEAR::LagrangeStrategyWear::AssembleMortar()
         {
           int gid = interface_[i]->SlaveRowNodes()->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
-          if (!node) dserror("Cannot find node with gid %", gid);
+          if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
           if (cnode->FriData().Slip() == true)
@@ -568,7 +569,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearImplExpl(
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-    dserror("Condensation only for dual LM");
+    FOUR_C_THROW("Condensation only for dual LM");
 
   // get stick map
   Teuchos::RCP<Epetra_Map> gstickt = CORE::LINALG::SplitMap(*gactivet_, *gslipt_);
@@ -590,11 +591,11 @@ void WEAR::LagrangeStrategyWear::CondenseWearImplExpl(
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+  if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd->ReplaceDiagonalValues(*diag);
-  if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+  if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
 
   // do the multiplication mhat = inv(D) * M
   mhatmatrix_ = CORE::LINALG::MLMultiply(*invd, false, *mmatrix_, false, false, false, true);
@@ -1553,8 +1554,8 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-    dserror("Condensation only for dual LM");
-  if (wearshapefcn != INPAR::WEAR::wear_shape_dual) dserror("Condensation only for dual wear");
+    FOUR_C_THROW("Condensation only for dual LM");
+  if (wearshapefcn != INPAR::WEAR::wear_shape_dual) FOUR_C_THROW("Condensation only for dual wear");
 
   // get stick map
   Teuchos::RCP<Epetra_Map> gstickt = CORE::LINALG::SplitMap(*gactivet_, *gslipt_);
@@ -1576,11 +1577,11 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+  if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd->ReplaceDiagonalValues(*diag);
-  if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+  if (err < 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
 
   // do the multiplication mhat = inv(D) * M
   mhatmatrix_ = CORE::LINALG::MLMultiply(*invd, false, *mmatrix_, false, false, false, true);
@@ -1843,7 +1844,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
 
   // scalar inversion of diagonal values
   erre = diage->Reciprocal(*diage);
-  if (erre > 0) dserror("Reciprocal: Zero diagonal entry!");
+  if (erre > 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   erre = inve->ReplaceDiagonalValues(*diage);
@@ -2762,7 +2763,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
         ematrix_->Complete(
             *gsdofnrowmap_, *gactiven_);  // quadr. matrix --> for dual shapes --> diag.
       else
-        dserror("chosen shape fnc for wear not supported!");
+        FOUR_C_THROW("chosen shape fnc for wear not supported!");
 
       twmatrix_->Complete(*gsdofnrowmap_, *gactiven_);
 
@@ -2779,7 +2780,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
         ematrix_->Complete(
             *gsdofnrowmap_, *gslipn_);  // quadr. matrix --> for dual shapes --> diag.
       else
-        dserror("chosen shape fnc for wear not supported!");
+        FOUR_C_THROW("chosen shape fnc for wear not supported!");
 
       twmatrix_->Complete(*gsdofnrowmap_, *gslipn_);
 
@@ -2858,7 +2859,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 #ifdef WEARIMPLICITFDLM
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    if (!wearimpl_) dserror("Explicit wear algorithm: no FD check necessary!");
+    if (!wearimpl_) FOUR_C_THROW("Explicit wear algorithm: no FD check necessary!");
 
     interface_[i]->FDCheckWearDerivLm();
   }
@@ -2867,7 +2868,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 #ifdef WEARIMPLICITFD
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    if (!wearimpl_) dserror("Explicit wear algorithm: no FD check necessary!");
+    if (!wearimpl_) FOUR_C_THROW("Explicit wear algorithm: no FD check necessary!");
 
     interface_[i]->FDCheckWearDeriv();
   }
@@ -2905,7 +2906,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
 #ifdef CONTACTFDT_D
 
-  if (!wearprimvar_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearprimvar_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
   // FD check of stick condition
   for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->FDCheckDerivT_D(*lintdis_);
@@ -2914,9 +2915,9 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
 #ifdef CONTACTFDT_D_MASTER
 
-  if (!wearprimvar_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearprimvar_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
-  if (!wearbothpv_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearbothpv_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
   // FD check of stick condition
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -2926,7 +2927,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
 #ifdef CONTACTFDE_D
 
-  if (!wearprimvar_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearprimvar_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
   // FD check of stick condition
   for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->FDCheckDerivE_D(*linedis_);
@@ -2935,9 +2936,9 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
 #ifdef CONTACTFDE_D_MASTER
 
-  if (!wearprimvar_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearprimvar_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
-  if (!wearbothpv_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearbothpv_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
   // FD check of stick condition
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -2959,7 +2960,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
 #ifdef CONTACTFDMORTART
 
-  if (!wearprimvar_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearprimvar_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
   // FD check of Mortar matrix D derivatives
   std::cout << " -- CONTACTFDMORTART -----------------------------------" << std::endl;
@@ -2972,7 +2973,7 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
 #ifdef CONTACTFDMORTARE
 
-  if (!wearprimvar_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearprimvar_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
   // FD check of Mortar matrix D derivatives
   std::cout << " -- CONTACTFDMORTARE -----------------------------------" << std::endl;
@@ -2985,9 +2986,9 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
 #ifdef CONTACTFDMORTARE_MASTER
 
-  if (!wearprimvar_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearprimvar_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
-  if (!wearbothpv_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearbothpv_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
   // FD check of Mortar matrix D derivatives
   std::cout << " -- CONTACTFDMORTARE_MASTER -----------------------------------" << std::endl;
@@ -3000,9 +3001,9 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
 #ifdef CONTACTFDMORTART_MASTER
 
-  if (!wearprimvar_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearprimvar_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
-  if (!wearbothpv_) dserror("FD CHECK ONLY FOR DISCRETE WEAR!");
+  if (!wearbothpv_) FOUR_C_THROW("FD CHECK ONLY FOR DISCRETE WEAR!");
 
   // FD check of Mortar matrix D derivatives
   std::cout << " -- CONTACTFDMORTART_MASTER -----------------------------------" << std::endl;
@@ -3196,7 +3197,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
   // *** CASE 1: FRICTIONLESS CONTACT ************************************
   if (!friction_)
   {
-    dserror("LagrangeStrategyWear::SaddlePointSolve: Wear called without friction!");
+    FOUR_C_THROW("LagrangeStrategyWear::SaddlePointSolve: Wear called without friction!");
   }
 
   //**********************************************************************
@@ -3755,7 +3756,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
     wearmrhs_ = wearrhsM;
   }
   else
-    dserror("unknown wear algorithm!");
+    FOUR_C_THROW("unknown wear algorithm!");
 
   //**********************************************************************
   // build and solve saddle point system
@@ -3935,7 +3936,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
   // invalid system types
   //**********************************************************************
   else
-    dserror("Invalid system type in BuildSaddlePointProblem");
+    FOUR_C_THROW("Invalid system type in BuildSaddlePointProblem");
 
   return;
 }
@@ -4048,7 +4049,7 @@ void WEAR::LagrangeStrategyWear::OutputWear()
     INPAR::MORTAR::ShapeFcn shapefcn =
         CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
     if (shapefcn == INPAR::MORTAR::shape_standard)
-      dserror("Evaluation of wear only for dual shape functions so far.");
+      FOUR_C_THROW("Evaluation of wear only for dual shape functions so far.");
 
     // vectors
     Teuchos::RCP<Epetra_Vector> wear_vector = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -4065,13 +4066,13 @@ void WEAR::LagrangeStrategyWear::OutputWear()
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // be aware of problem dimension
         int dim = Dim();
         int numdof = frinode->NumDof();
-        if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
+        if (dim != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
 
         // nodal normal vector and wear
         double nn[3];
@@ -4139,7 +4140,7 @@ void WEAR::LagrangeStrategyWear::OutputWear()
     // different wear coefficients on both sides...
     const double wearcoeff_s = Params().get<double>("WEARCOEFF", 0.0);
     const double wearcoeff_m = Params().get<double>("WEARCOEFF_MASTER", 0.0);
-    if (wearcoeff_s < 1e-12) dserror("wcoeff negative!!!");
+    if (wearcoeff_s < 1e-12) FOUR_C_THROW("wcoeff negative!!!");
 
     const double fac = wearcoeff_s / (wearcoeff_s + wearcoeff_m);
 
@@ -4164,7 +4165,7 @@ void WEAR::LagrangeStrategyWear::OutputWear()
       // different wear coefficients on both sides...
       double wearcoeff_s = Params().get<double>("WEARCOEFF", 0.0);
       double wearcoeff_m = Params().get<double>("WEARCOEFF_MASTER", 0.0);
-      if (wearcoeff_s < 1e-12) dserror("wcoeff negative!!!");
+      if (wearcoeff_s < 1e-12) FOUR_C_THROW("wcoeff negative!!!");
 
       double fac = wearcoeff_m / (wearcoeff_s + wearcoeff_m);
 
@@ -4266,7 +4267,7 @@ void WEAR::LagrangeStrategyWear::DoWriteRestart(
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       int dof = (activetoggle->Map()).LID(gid);
 
@@ -4315,7 +4316,7 @@ void WEAR::LagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-      dserror("Condensation only for dual LM");
+      FOUR_C_THROW("Condensation only for dual LM");
 
     // **********************************************
     // LAGR MULT RECOVERING
@@ -4430,7 +4431,7 @@ void WEAR::LagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-      dserror("Condensation only for dual LM");
+      FOUR_C_THROW("Condensation only for dual LM");
 
     // extract slave displacements from disi
     Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -4772,7 +4773,7 @@ void WEAR::LagrangeStrategyWear::DoReadRestart(
       if ((*activetoggle)[dof] == 1)
       {
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
         // set value active / inactive in cnode
@@ -4955,7 +4956,7 @@ void WEAR::LagrangeStrategyWear::UpdateWearDiscretIterate(bool store)
       {
         int gid = interface_[i]->SlaveColNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // reset
@@ -4972,7 +4973,7 @@ void WEAR::LagrangeStrategyWear::UpdateWearDiscretIterate(bool store)
         {
           int gid = masternodes->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
-          if (!node) dserror("Cannot find node with gid %", gid);
+          if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
           // reset
@@ -5094,7 +5095,7 @@ void WEAR::LagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::Quan
       {
         int gid = masternodes->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // store updated wcurr into node
@@ -5108,7 +5109,7 @@ void WEAR::LagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::Quan
       {
         int gid = masternodes->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // store updated wcurr into node
@@ -5123,13 +5124,13 @@ void WEAR::LagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::Quan
       {
         int gid = snodemap->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
         // be aware of problem dimension
         const int dim = Dim();
         const int numdof = cnode->NumDof();
-        if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
+        if (dim != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
 
         // find indices for DOFs of current node in Epetra_Vector
         // and extract this node's quantity from vectorinterface
@@ -5138,15 +5139,15 @@ void WEAR::LagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::Quan
         for (int dof = 0; dof < dim; ++dof)
         {
           locindex[dof] = (vectorinterface->Map()).LID(cnode->Dofs()[dof]);
-          if (locindex[dof] < 0) dserror("StoreNodalQuantites: Did not find dof in map");
+          if (locindex[dof] < 0) FOUR_C_THROW("StoreNodalQuantites: Did not find dof in map");
 
           switch (type)
           {
             case MORTAR::StrategyBase::wupdate:
             {
-              // throw a dserror if node is Active and DBC
+              // throw a FOUR_C_THROW if node is Active and DBC
               if (cnode->IsDbc() && cnode->Active())
-                dserror("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+                FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
 
               // explicity set global Lag. Mult. to zero for D.B.C nodes
               if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
@@ -5159,9 +5160,9 @@ void WEAR::LagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::Quan
             }
             case MORTAR::StrategyBase::wupdateT:
             {
-              // throw a dserror if node is Active and DBC
+              // throw a FOUR_C_THROW if node is Active and DBC
               if (cnode->IsDbc() && cnode->Active())
-                dserror("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+                FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
 
               // explicity set global Lag. Mult. to zero for D.B.C nodes
               if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
@@ -5174,9 +5175,9 @@ void WEAR::LagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::Quan
             }
             case MORTAR::StrategyBase::wold:
             {
-              // throw a dserror if node is Active and DBC
+              // throw a FOUR_C_THROW if node is Active and DBC
               if (cnode->IsDbc() && cnode->Active())
-                dserror("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+                FOUR_C_THROW("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
 
               // explicity set global Lag. Mult. to zero for D.B.C nodes
               if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
@@ -5192,7 +5193,8 @@ void WEAR::LagrangeStrategyWear::StoreNodalQuantities(MORTAR::StrategyBase::Quan
             // weighted wear
             case MORTAR::StrategyBase::weightedwear:
             {
-              if (!friction_) dserror("This should not be called for contact without friction");
+              if (!friction_)
+                FOUR_C_THROW("This should not be called for contact without friction");
 
               // update wear only once per node
               if (dof == 0)

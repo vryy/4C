@@ -166,13 +166,13 @@ void DRT::ELEMENTS::FluidHDGWeakComp::Unpack(const std::vector<char>& data)
 
   int val = 0;
   ExtractfromPack(position, data, val);
-  dsassert(val >= 0 && val < 255, "Degree out of range");
+  FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
   degree_ = val;
   ExtractfromPack(position, data, val);
   completepol_ = val;
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 
@@ -250,7 +250,7 @@ int DRT::ELEMENTS::FluidHDGWeakComp::Evaluate(Teuchos::ParameterList& params,
       break;
 
     default:
-      dserror("Unknown type of action '%i' for FluidHDGWeakComp", act);
+      FOUR_C_THROW("Unknown type of action '%i' for FluidHDGWeakComp", act);
       break;
   }
 

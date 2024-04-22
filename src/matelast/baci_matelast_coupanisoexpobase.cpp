@@ -175,18 +175,18 @@ void MAT::ELASTIC::CoupAnisoExpoBase::AddStressAnisoPrincipal(const CORE::LINALG
 void MAT::ELASTIC::CoupAnisoExpoBase::GetFiberVecs(
     std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs)
 {
-  dserror("Getting the fiber vectors is not implemented in the base version of CoupAnisoExpo");
+  FOUR_C_THROW("Getting the fiber vectors is not implemented in the base version of CoupAnisoExpo");
 }
 
 void MAT::ELASTIC::CoupAnisoExpoBase::SetFiberVecs(const double newgamma,
     const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
-  dserror("Setting the fiber vectors is not implemented in the base version of CoupAnisoExpo");
+  FOUR_C_THROW("Setting the fiber vectors is not implemented in the base version of CoupAnisoExpo");
 }
 
 void MAT::ELASTIC::CoupAnisoExpoBase::SetFiberVecs(const CORE::LINALG::Matrix<3, 1>& fibervec)
 {
-  dserror("Setting the fiber vectors is not implemented in the base version of CoupAnisoExpo");
+  FOUR_C_THROW("Setting the fiber vectors is not implemented in the base version of CoupAnisoExpo");
 }
 
 

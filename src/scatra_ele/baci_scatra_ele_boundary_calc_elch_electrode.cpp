@@ -61,7 +61,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
 {
   // safety check
   if (myelch::elchparams_->EquPot() != INPAR::ELCH::equpot_divi)
-    dserror("Invalid closing equation for electric potential!");
+    FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // get condition specific parameter
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
@@ -121,7 +121,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     const double pseudo_contact_fac = my::CalculatePseudoContactFactor(
         is_pseudo_contact, eslavestress_vector, normal, my::funct_);
@@ -208,7 +208,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     case INPAR::S2I::kinetics_butlervolmerreducedresistance:
     {
       if (matelectrode == Teuchos::null)
-        dserror("Invalid electrode material for scatra-scatra interface coupling!");
+        FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
       // extract saturation value of intercalated lithium concentration from electrode material
       const double cmax = matelectrode->CMax();
@@ -307,7 +307,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
         }  // case INPAR::S2I::kinetics_butlervolmerresistance:
         default:
         {
-          dserror("something went wrong");
+          FOUR_C_THROW("something went wrong");
         }
       }
       break;
@@ -370,7 +370,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
         }
       }
       else if (k_ss.numRows() or k_sm.numRows() or r_s.length())
-        dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
+        FOUR_C_THROW(
+            "Must provide both slave-side matrices and slave-side vector or none of them!");
 
       if (k_ms.numRows() and k_mm.numRows() and r_m.length())
       {
@@ -415,7 +416,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
         }
       }
       else if (k_ms.numRows() or k_mm.numRows() or r_m.length())
-        dserror("Must provide both master-side matrices and master-side vector or none of them!");
+        FOUR_C_THROW(
+            "Must provide both master-side matrices and master-side vector or none of them!");
 
       break;
     }  // case INPAR::S2I::kinetics_constantinterfaceresistance
@@ -428,7 +430,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 
     default:
     {
-      dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
+      FOUR_C_THROW("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
     }
   }  // switch(kineticmodel)
 }
@@ -556,7 +558,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::
 
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Kinetic model for capacitance of scatra-scatra interface coupling is not yet "
           "implemented!");
     }
@@ -627,7 +629,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
 
     // evaluate overall integration factors
     const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
-    if (timefacwgt < 0.0) dserror("Integration factor is negative!");
+    if (timefacwgt < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -656,7 +658,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
         const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
 
         if (matelectrode == Teuchos::null)
-          dserror("Invalid electrode material for scatra-scatra interface coupling!");
+          FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
         // extract saturation value of intercalated lithium concentration from electrode material
         const double cmax = matelectrode->CMax();
@@ -726,7 +728,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
           }
           default:
           {
-            dserror("Unknown differentiation type");
+            FOUR_C_THROW("Unknown differentiation type");
           }
         }
         break;
@@ -778,7 +780,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
           }
           default:
           {
-            dserror("Unknown primary quantity to calculate derivative");
+            FOUR_C_THROW("Unknown primary quantity to calculate derivative");
           }
         }
 
@@ -791,7 +793,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
       }
       default:
       {
-        dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
+        FOUR_C_THROW("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
       }
     }  // switch(kineticmodel)
   }    // loop over integration points
@@ -861,7 +863,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 
     // evaluate overall integration factors
     const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
-    if (timefacwgt < 0.0) dserror("Integration factor is negative!");
+    if (timefacwgt < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     // compute matrix and vector contributions according to kinetic
     // model for current scatra-scatra interface coupling condition
@@ -917,7 +919,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
           }
           default:
           {
-            dserror("Unknown differentiation type");
+            FOUR_C_THROW("Unknown differentiation type");
           }
         }
         break;
@@ -925,7 +927,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 
       default:
       {
-        dserror(
+        FOUR_C_THROW(
             "Kinetic model for scatra-scatra interface coupling with capacitance is not yet "
             "implemented!");
       }
@@ -940,7 +942,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::GetV
     const Teuchos::RCP<const MAT::Material>& material, const int k) const
 {
   // valence cannot be computed for electrode material
-  dserror("Valence cannot be computed for electrode material!");
+  FOUR_C_THROW("Valence cannot be computed for electrode material!");
 }
 
 /*----------------------------------------------------------------------*
@@ -1015,7 +1017,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     }
   }
   else if (k_ss.numRows() or k_sm.numRows() or r_s.length())
-    dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
+    FOUR_C_THROW("Must provide both slave-side matrices and slave-side vector or none of them!");
 
   // assemble master side element rhs and linearizations
   if (k_ms.numRows() and k_mm.numRows() and r_m.length())
@@ -1056,7 +1058,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     }
   }
   else if (k_ms.numRows() or k_mm.numRows() or r_m.length())
-    dserror("Must provide both master-side matrices and master-side vector or none of them!");
+    FOUR_C_THROW("Must provide both master-side matrices and master-side vector or none of them!");
 }
 
 /*----------------------------------------------------------------------*
@@ -1118,7 +1120,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     }
   }
   else if (k_ss.numRows() or k_ms.numRows() or r_s.length() or r_m.length())
-    dserror("You did not provide the correct set of matrices and vectors!");
+    FOUR_C_THROW("You did not provide the correct set of matrices and vectors!");
 }
 
 /*----------------------------------------------------------------------*
@@ -1216,7 +1218,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2
       case INPAR::S2I::kinetics_butlervolmerreducedresistance:
       {
         if (matelectrode == Teuchos::null)
-          dserror("Invalid electrode material for scatra-scatra interface coupling!");
+          FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
         // extract saturation value of intercalated lithium concentration from electrode material
         const double cmax = matelectrode->CMax();
@@ -1292,7 +1294,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2
           }  // case INPAR::S2I::kinetics_butlervolmerresistance:
           default:
           {
-            dserror("something went wrong");
+            FOUR_C_THROW("something went wrong");
           }
         }
         break;
@@ -1326,7 +1328,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2
       }
       default:
       {
-        dserror("kinetic model not implemented.");
+        FOUR_C_THROW("kinetic model not implemented.");
       }
     }
   }

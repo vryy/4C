@@ -39,7 +39,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
 
   // open EXODUS II file
   exoid_ = ex_open(exofilenamechar, EX_READ, &CPU_word_size, &IO_word_size, &exoversion);
-  if (exoid_ <= 0) dserror("Error while opening EXODUS II file %s", exofilenamechar);
+  if (exoid_ <= 0) FOUR_C_THROW("Error while opening EXODUS II file %s", exofilenamechar);
 
   // print version
   std::cout << "File " << exofilename << " was created with EXODUS II library version "
@@ -60,7 +60,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
     std::vector<double> y(num_nodes);
     std::vector<double> z(num_nodes);
     error = ex_get_coord(exoid_, x.data(), y.data(), z.data());
-    if (error != 0) dserror("exo error returned");
+    if (error != 0) FOUR_C_THROW("exo error returned");
 
     // store nodes in map
     nodes_ = Teuchos::rcp(new std::map<int, std::vector<double>>);
@@ -80,9 +80,9 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
     std::vector<int> epropID(num_elem_blk);
     std::vector<int> ebids(num_elem_blk);
     error = ex_get_ids(exoid_, EX_ELEM_BLOCK, ebids.data());
-    if (error != 0) dserror("exo error returned");
+    if (error != 0) FOUR_C_THROW("exo error returned");
     error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", epropID.data());
-    if (error != 0) dserror("exo error returned");
+    if (error != 0) FOUR_C_THROW("exo error returned");
     for (int i = 0; i < num_elem_blk; ++i)
     {
       // Read Element Blocks into Map
@@ -92,20 +92,20 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
       // &num_attr);
       error = ex_get_block(exoid_, EX_ELEM_BLOCK, ebids[i], mychar, &num_el_in_blk,
           &num_nod_per_elem, nullptr, nullptr, &num_attr);
-      if (error != 0) dserror("exo error returned");
+      if (error != 0) FOUR_C_THROW("exo error returned");
       // prefer std::string to store element type
       std::string ele_type(mychar);
 
       // get ElementBlock name
       error = ex_get_name(exoid_, EX_ELEM_BLOCK, ebids[i], mychar);
-      if (error != 0) dserror("exo error returned");
+      if (error != 0) FOUR_C_THROW("exo error returned");
       // prefer std::string to store name
       std::string blockname(mychar);
 
       // get element connectivity
       std::vector<int> allconn(num_nod_per_elem * num_el_in_blk);
       error = ex_get_conn(exoid_, EX_ELEM_BLOCK, ebids[i], allconn.data(), nullptr, nullptr);
-      if (error != 0) dserror("exo error returned");
+      if (error != 0) FOUR_C_THROW("exo error returned");
       Teuchos::RCP<std::map<int, std::vector<int>>> eleconn =
           Teuchos::rcp(new std::map<int, std::vector<int>>);
       for (int j = 0; j < num_el_in_blk; ++j)
@@ -150,7 +150,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
         std::cout << "'ex_get_set' for EX_NODE_SET returned warning while reading node set "
                   << npropID[i] << std::endl;
       else if (error < 0)
-        dserror("error reading node set");
+        FOUR_C_THROW("error reading node set");
       std::set<int> nodes_in_set;
       for (int j = 0; j < num_nodes_in_set; ++j) nodes_in_set.insert(node_set_node_list[j]);
       NodeSet actNodeSet(nodes_in_set, nodesetname, "none");
@@ -228,7 +228,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
       std::vector<int> side_set_side_list(num_side_in_set);
       error = ex_get_set(
           exoid_, EX_SIDE_SET, spropID[i], side_set_elem_list.data(), side_set_side_list.data());
-      if (error != 0) dserror("error reading side set");
+      if (error != 0) FOUR_C_THROW("error reading side set");
       std::map<int, std::vector<int>> sides_in_set;
       for (int j = 0; j < num_side_in_set; ++j)
       {
@@ -302,8 +302,6 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   {
     std::pair<std::map<int, std::vector<double>>::iterator, bool> check;
     check = baseNodes->insert(std::pair<int, std::vector<double>>(i_node->first, i_node->second));
-    // happens when concatenating: if (check.second == false)  dserror("Extension node already
-    // exists!");
   }
   nodes_ = baseNodes;
 
@@ -320,7 +318,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
     check = elementBlocks_.insert(
         std::pair<int, Teuchos::RCP<ElementBlock>>(i_block->first, i_block->second));
     if (check.second == false)
-      dserror("Extension ElementBlock already exists!");
+      FOUR_C_THROW("Extension ElementBlock already exists!");
     else
       total_num_elem += i_block->second->GetNumEle();
   }
@@ -336,7 +334,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   {
     std::pair<std::map<int, NodeSet>::iterator, bool> check;
     check = nodeSets_.insert(std::pair<int, NodeSet>(i_ns->first, i_ns->second));
-    if (check.second == false) dserror("Extension NodeSet already exists!");
+    if (check.second == false) FOUR_C_THROW("Extension NodeSet already exists!");
   }
 
   // merge SideSets
@@ -349,7 +347,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   {
     std::pair<std::map<int, SideSet>::iterator, bool> check;
     check = sideSets_.insert(std::pair<int, SideSet>(i_ss->first, i_ss->second));
-    if (check.second == false) dserror("Extension SideSet already exists!");
+    if (check.second == false) FOUR_C_THROW("Extension SideSet already exists!");
   }
 }
 
@@ -362,7 +360,7 @@ void EXODUS::Mesh::CloseExo() const
   // close exodus II file
   int exoid = GetExoId();
   int error = ex_close(exoid);
-  if (error < 0) dserror("error while closing exodus II file");
+  if (error < 0) FOUR_C_THROW("error while closing exodus II file");
 }
 
 
@@ -421,7 +419,8 @@ std::string EXODUS::Mesh::GetTitle() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<EXODUS::ElementBlock> EXODUS::Mesh::GetElementBlock(const int id) const
 {
-  if (elementBlocks_.find(id) == elementBlocks_.end()) dserror("ElementBlock %d not found.", id);
+  if (elementBlocks_.find(id) == elementBlocks_.end())
+    FOUR_C_THROW("ElementBlock %d not found.", id);
 
   return (elementBlocks_.find(id))->second;
 }
@@ -430,7 +429,7 @@ Teuchos::RCP<EXODUS::ElementBlock> EXODUS::Mesh::GetElementBlock(const int id) c
 /*----------------------------------------------------------------------*/
 EXODUS::NodeSet EXODUS::Mesh::GetNodeSet(const int id) const
 {
-  if (nodeSets_.find(id) == nodeSets_.end()) dserror("NodeSet %d not found.", id);
+  if (nodeSets_.find(id) == nodeSets_.end()) FOUR_C_THROW("NodeSet %d not found.", id);
 
   return (nodeSets_.find(id))->second;
 }
@@ -439,7 +438,7 @@ EXODUS::NodeSet EXODUS::Mesh::GetNodeSet(const int id) const
 /*----------------------------------------------------------------------*/
 EXODUS::SideSet EXODUS::Mesh::GetSideSet(const int id) const
 {
-  if (sideSets_.find(id) == sideSets_.end()) dserror("SideSet %d not found.", id);
+  if (sideSets_.find(id) == sideSets_.end()) FOUR_C_THROW("SideSet %d not found.", id);
 
   return (sideSets_.find(id))->second;
 }
@@ -561,7 +560,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
     // EXODUS::ElementBlock acteb = ebs.find(actebid)->second;
     tm2 = Teuchos::null;
     // EXODUS::ElementBlock::Shape actshape = acteb.GetShape();
-    if (actebid < 0) dserror("invalid element block id");
+    if (actebid < 0) FOUR_C_THROW("invalid element block id");
     EXODUS::ElementBlock::Shape actshape = eblocks[actebid].GetShape();
     Teuchos::RCP<Teuchos::TimeMonitor> tm3 = Teuchos::rcp(new Teuchos::TimeMonitor(*time3));
     // map<int,std::vector<int> > acteconn = acteb.GetEleConn();
@@ -608,7 +607,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
       default:
       {
         std::cout << ShapeToString(actshape) << ":" << std::endl;
-        dserror("Parent Element Type not supported");
+        FOUR_C_THROW("Parent Element Type not supported");
         break;
       }
     }
@@ -627,7 +626,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
       PrintVec(std::cout, parent_ele);
       std::cout << ShapeToString(actshape) << ",Face: " << actface << ",childsize:" << child.size()
                 << std::endl;
-      dserror("Child Ele error");
+      FOUR_C_THROW("Child Ele error");
     }
     // insert child into SideSet Connectivity
     conn.insert(std::pair<int, std::vector<int>>(i_side->first, child));
@@ -702,7 +701,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(
         actebid = i - 1;
         break;
       }
-    if (actebid < 0) dserror("invalid element block id");
+    if (actebid < 0) FOUR_C_THROW("invalid element block id");
     EXODUS::ElementBlock::Shape actshape = eblocks[actebid].GetShape();
 
     // get act parent ele from actual Side
@@ -738,7 +737,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(
       default:
       {
         std::cout << ShapeToString(actshape) << ":" << std::endl;
-        dserror("Parent Element Type not supported");
+        FOUR_C_THROW("Parent Element Type not supported");
         break;
       }
     }
@@ -759,7 +758,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(
       PrintVec(std::cout, parent_ele);
       std::cout << ShapeToString(actshape) << ",Face: " << actface << ",childsize:" << child.size()
                 << std::endl;
-      dserror("Child Ele error");
+      FOUR_C_THROW("Child Ele error");
     }
 
     // insert child into SideSet Connectivity
@@ -892,7 +891,7 @@ std::vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(
       tricounter++;
     }
     else
-      dserror("Number of basenodes for conversion from SideSet to EBlock not supported");
+      FOUR_C_THROW("Number of basenodes for conversion from SideSet to EBlock not supported");
   }
   if (quadcounter > 0)
   {
@@ -973,7 +972,7 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
   const char* title = title_.c_str();
   error = ex_put_init(
       exoid, title, num_dim_, num_nodes, num_elem_, num_elem_blk, num_node_sets, num_side_sets);
-  if (error != 0) dserror("error in exfile init");
+  if (error != 0) FOUR_C_THROW("error in exfile init");
 
   /* Write QA record based on original exofile */
   int num_qa_rec;
@@ -1033,13 +1032,13 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
           nsID,  // node set id
           num_nodes_in_set,
           0);  // yet no distribution factors
-      if (error != 0) dserror("error writing node set params");
+      if (error != 0) FOUR_C_THROW("error writing node set params");
       std::vector<int> nodelist(num_nodes_in_set);
       ns.FillNodelistArray(nodelist.data());
       error = ex_put_set(exoid, EX_NODE_SET, nsID, nodelist.data(), nullptr);
-      if (error != 0) dserror("error writing node set \"%s\" ", nsname);
+      if (error != 0) FOUR_C_THROW("error writing node set \"%s\" ", nsname);
       error = ex_put_name(exoid, EX_NODE_SET, nsID, nsname);
-      if (error != 0) dserror("error writing node set name");
+      if (error != 0) FOUR_C_THROW("error writing node set name");
     }
   }
 
@@ -1064,17 +1063,17 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
         num_nod_per_elem,  // num of nodes per ele
         0, 0,
         1);  // num of attributes, not supported yet ->1
-    if (error != 0) dserror("error writing element block");
+    if (error != 0) FOUR_C_THROW("error writing element block");
     // Write Element Connectivity
     std::vector<int> conn(num_nod_per_elem * numele);
     eb.FillEconnArray(conn.data());
     error = ex_put_conn(exoid, EX_ELEM_BLOCK, blockID, conn.data(), nullptr, nullptr);
-    if (error != 0) dserror("error writing element block conns");
+    if (error != 0) FOUR_C_THROW("error writing element block conns");
     // write block name
     const std::string bname = eb.GetName();
     const char* blockname = bname.c_str();
     error = ex_put_name(exoid, EX_ELEM_BLOCK, blockID, blockname);
-    if (error != 0) dserror("error writing element block name");
+    if (error != 0) FOUR_C_THROW("error writing element block name");
   }
 
   // Write SideSets ************************************************************
@@ -1092,7 +1091,7 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
         ssID,  // side set id
         num_side_in_set,
         0);  // yet no distribution factors
-    if (error != 0) dserror("error writing side set params");
+    if (error != 0) FOUR_C_THROW("error writing side set params");
     std::vector<int> side_set_elem_list(num_side_in_set);
     std::vector<int> side_set_side_list(num_side_in_set);
     // in case the sideset is newly created we have to adjust element ids to global numbering
@@ -1107,16 +1106,16 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
 
     error =
         ex_put_set(exoid, EX_SIDE_SET, ssID, side_set_elem_list.data(), side_set_side_list.data());
-    if (error != 0) dserror("error writing side set");
+    if (error != 0) FOUR_C_THROW("error writing side set");
     error = ex_put_name(exoid, EX_SIDE_SET, ssID, ssname);
-    if (error != 0) dserror("error writing sideset name");
+    if (error != 0) FOUR_C_THROW("error writing sideset name");
   }
 
   // ***************************************************************************
 
   // close file
   error = ex_close(exoid);
-  if (error != 0) dserror("error closing exodus file");
+  if (error != 0) FOUR_C_THROW("error closing exodus file");
   std::cout << ".. finished" << std::endl;
 }
 
@@ -1250,7 +1249,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GlobalifySSeleids(const int ssid) 
 
   for (i_ss = sideset.begin(); i_ss != sideset.end(); ++i_ss)
   {
-    if (i_ss->second.size() != 3) dserror("Problem in new SideSet!");  // double check
+    if (i_ss->second.size() != 3) FOUR_C_THROW("Problem in new SideSet!");  // double check
     int ebid = i_ss->second.at(2);
     int lowerbound = glob_eb_erange.at(ebid_rangepos.find(ebid)->second);
     i_ss->second.at(0) = i_ss->second.at(0) + lowerbound + 1;
@@ -1453,7 +1452,7 @@ EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype,
   {
     if (CORE::FE::getNumberOfElementNodes(PreShapeToDrt(Distype)) != (int)elem->second.size())
     {
-      dserror("number of read nodes does not fit the distype");
+      FOUR_C_THROW("number of read nodes does not fit the distype");
     }
   }
   return;
@@ -1473,7 +1472,7 @@ std::vector<int> EXODUS::ElementBlock::GetEleNodes(int i) const
 int EXODUS::ElementBlock::GetEleNode(int ele, int node) const
 {
   std::map<int, std::vector<int>>::const_iterator it = eleconn_->find(ele);
-  if (it == eleconn_->end()) dserror("Element not found");
+  if (it == eleconn_->end()) FOUR_C_THROW("Element not found");
   std::vector<int> elenodes = GetEleNodes(ele);
   return elenodes[node];
 }
@@ -1628,7 +1627,6 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
     EXODUS::ElementBlock::Shape quadshape = quadblock->GetShape();
     if ((quadshape != EXODUS::ElementBlock::quad4) && (quadshape != EXODUS::ElementBlock::shell4))
     {
-      // dserror("Only quad4 or shell4 in quad->tri conversion");
       std::cout << "Warning! Only quad4 or shell4 in quad->tri conversion. Skipping EBlock"
                 << std::endl;
     }

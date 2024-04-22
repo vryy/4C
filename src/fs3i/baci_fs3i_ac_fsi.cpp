@@ -72,19 +72,19 @@ void FS3I::ACFSI::Init()
   const Teuchos::ParameterList& fs3idynac = fs3idyn.sublist("AC");
 
   // if ( fs3idyn.get<int>("RESULTSEVRY") != 1 )
-  //   dserror("If you want the fsi problem to be periodically repeated from some point, you have to
-  //   have RESULTSEVRY set to 1!");
+  //   FOUR_C_THROW("If you want the fsi problem to be periodically repeated from some point, you
+  //   have to have RESULTSEVRY set to 1!");
   // if ( fs3idyn.get<int>("RESTARTEVRY") != 1 )
-  //   dserror("If you want the fsi problem to be periodically repeated from some point, you have to
-  //   have RESTARTEVRY set to 1!");
+  //   FOUR_C_THROW("If you want the fsi problem to be periodically repeated from some point, you
+  //   have to have RESTARTEVRY set to 1!");
 
   if (fsiperiod_ <= 1e-14)
-    dserror(
+    FOUR_C_THROW(
         "You need to specify the PERIODICITY. If you don't want that change your PROBLEMTYPE to "
         "gas_fluid_structure_interaction!");
 
   if ((dt_large_ + 1e-14) <= dt_)
-    dserror(
+    FOUR_C_THROW(
         "You need to specify a LARGE_TIMESCALE_TIMESTEP and it must be larger than the 'normal' "
         "fs3i TIMESTEP!");
 
@@ -96,18 +96,18 @@ void FS3I::ACFSI::Init()
 
     if (thisperiod != fsiperiod_)
     {
-      dserror("your impedance TIMEPERIOD and your fs3i PERIODICITY do not match!");
+      FOUR_C_THROW("your impedance TIMEPERIOD and your fs3i PERIODICITY do not match!");
     }
   }
 
   if (not ModuloIsRealtiveZero(fsiperiod_, dt_, fsiperiod_))
-    dserror("Choose a time step such that TIMESTEP = PERIODIC / n with n being an integer!");
+    FOUR_C_THROW("Choose a time step such that TIMESTEP = PERIODIC / n with n being an integer!");
 
   if (not ModuloIsRealtiveZero(dt_large_, fsiperiod_, dt_large_))
-    dserror("Choose LARGE_TIMESCALE_TIMESTEP as a multiple of PERIODICITY!");
+    FOUR_C_THROW("Choose LARGE_TIMESCALE_TIMESTEP as a multiple of PERIODICITY!");
 
   if (infperm_)
-    dserror("AC-FS3I does have a finite interface permeability. So set INF_PERM to NO!");
+    FOUR_C_THROW("AC-FS3I does have a finite interface permeability. So set INF_PERM to NO!");
 
   const int fsiperssisteps = fs3idynac.get<int>("FSI_STEPS_PER_SCATRA_STEP");
   const INPAR::FS3I::SolutionSchemeOverFields couplingalgo =
@@ -115,28 +115,29 @@ void FS3I::ACFSI::Init()
   const double wk_rel_tol = fs3idynac.get<double>("WINDKESSEL_REL_TOL");
 
   if (couplingalgo == INPAR::FS3I::fs3i_IterStagg and fsiperssisteps != 1)
-    dserror("In an iteratively staggered FS3I scheme subcycling is not supported!");
+    FOUR_C_THROW("In an iteratively staggered FS3I scheme subcycling is not supported!");
 
   if (couplingalgo == INPAR::FS3I::fs3i_IterStagg and not IsRealtiveEqualTo(wk_rel_tol, -1.0, 1.0))
-    dserror(
+    FOUR_C_THROW(
         "In an iteratively staggered FS3I scheme periodical repetition of the fsi problem is not "
         "supported!");
 
   if (not IsRealtiveEqualTo(dt_, fsiperssisteps * fsi_->FluidField()->Dt(), 1.0))
-    dserror("Your fluid time step does not match!");
+    FOUR_C_THROW("Your fluid time step does not match!");
   if (not IsRealtiveEqualTo(dt_, fsiperssisteps * fsi_->StructureField()->Dt(), 1.0))
-    dserror("Your structure time step does not match!");
+    FOUR_C_THROW("Your structure time step does not match!");
   if (not IsRealtiveEqualTo(dt_, fsiperssisteps * fsi_->AleField()->Dt(), 1.0))
-    dserror("Your ale time step does not match!");
+    FOUR_C_THROW("Your ale time step does not match!");
   if (not IsRealtiveEqualTo(dt_, scatravec_[0]->ScaTraField()->Dt(), 1.0))
-    dserror("Your fluid scatra time step does not match!");
+    FOUR_C_THROW("Your fluid scatra time step does not match!");
   if (not IsRealtiveEqualTo(dt_, scatravec_[1]->ScaTraField()->Dt(), 1.0))
-    dserror("Your structure scatra time step does not match!");
+    FOUR_C_THROW("Your structure scatra time step does not match!");
 
   if (not(INPAR::FLUID::wss_standard ==
           CORE::UTILS::IntegralValue<INPAR::FLUID::WSSType>(
               GLOBAL::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")))
-    dserror("WSS_TYPE must be 'Standard', we will mean the WSS by using the fs3i mean manager!");
+    FOUR_C_THROW(
+        "WSS_TYPE must be 'Standard', we will mean the WSS by using the fs3i mean manager!");
 
   return;
 }
@@ -209,7 +210,7 @@ void FS3I::ACFSI::ReadRestart()
         fluidreaderbeginnperiod.ReadVector(WallShearStress_lp_new, "SumWss");
         const double SumDtWss = fluidreaderbeginnperiod.ReadDouble("SumDtWss");
         if (abs(SumDtWss - fsiperiod_) > 1e-14)
-          dserror(
+          FOUR_C_THROW(
               "SumWss and SumDtWss must be read from a step, which was written at the end of a fsi "
               "period!");
 
@@ -217,7 +218,7 @@ void FS3I::ACFSI::ReadRestart()
         WallShearStress_lp_new->Update(1.0, *WallShearStress_lp_, -1.0);
         double diff_norm(0.0);
         WallShearStress_lp_new->Norm2(&diff_norm);
-        if (diff_norm > 1e-10) dserror("WallShearStress_lp_ is not written/read correctly!");
+        if (diff_norm > 1e-10) FOUR_C_THROW("WallShearStress_lp_ is not written/read correctly!");
 
         // reconstruct fluidphinp_lp_
         fluidreaderbeginnperiod.ReadVector(fluidphinp_lp_, "SumPhi");
@@ -374,7 +375,7 @@ void FS3I::ACFSI::SmallTimeScaleOuterLoop()
       SmallTimeScaleOuterLoopIterStagg();
       break;
     default:
-      dserror("partitioned FS3I coupling scheme not implemented!");
+      FOUR_C_THROW("partitioned FS3I coupling scheme not implemented!");
       break;
   }
 }
@@ -688,10 +689,10 @@ void FS3I::ACFSI::DoFSIStepSubcycled(const int subcyclingsteps)
   // do time and step in fsi (including subfields) and fs3i match after we will have called
   // SmallTimeScaleUpdateAndOutput()
   if (not IsRealtiveEqualTo(fsi_->FluidField()->Time(), time_, time_))
-    dserror("After the subcycling the fsi time and fs3i time do not match anymore!");
+    FOUR_C_THROW("After the subcycling the fsi time and fs3i time do not match anymore!");
 
   if (not IsRealtiveEqualTo(fsi_->FluidField()->Step(), step_, step_))
-    dserror("After the subcycling the fsi step and fs3i step do not match anymore!");
+    FOUR_C_THROW("After the subcycling the fsi step and fs3i step do not match anymore!");
 }
 
 /*----------------------------------------------------------------------*
@@ -734,7 +735,7 @@ void FS3I::ACFSI::DoFSIStepPeriodic()
 double FS3I::ACFSI::GetStepOfOnePeriodAgoAndPrepareReading(const int actstep, const double acttime)
 {
   if (not ModuloIsRealtiveZero(fsiperiod_, dt_, fsiperiod_))
-    dserror("PERIODICITY should be an multiple of TIMESTEP!");
+    FOUR_C_THROW("PERIODICITY should be an multiple of TIMESTEP!");
 
   const int previousperiodstep =
       actstep - round(fsiperiod_ / dt_);  // here we assume a constant timestep over the last period
@@ -761,7 +762,7 @@ double FS3I::ACFSI::GetStepOfOnePeriodAgoAndPrepareReading(const int actstep, co
 
     // Now check if the candidate is right
     if (not IsRealtiveEqualTo(previousperiodtime + fsiperiod_, acttime, acttime))
-      dserror("You can't change your TIMESTEP when you are within the FSI PERIODIC cycle!");
+      FOUR_C_THROW("You can't change your TIMESTEP when you are within the FSI PERIODIC cycle!");
   }
 
   return previousperiodstep;
@@ -774,7 +775,7 @@ double FS3I::ACFSI::GetStepOfBeginnOfThisPeriodAndPrepareReading(
     const int actstep, const double acttime, const double dt)
 {
   if (not ModuloIsRealtiveZero(fsiperiod_, dt, fsiperiod_))
-    dserror("PERIODICITY should be an multiple of TIMESTEP!");
+    FOUR_C_THROW("PERIODICITY should be an multiple of TIMESTEP!");
 
   const double beginnperiodtime = acttime - (fmod(acttime + 1e-14, fsiperiod_) - 1e-14);
   const int teststep =
@@ -812,7 +813,7 @@ double FS3I::ACFSI::GetStepOfBeginnOfThisPeriodAndPrepareReading(
 
     // Now check if the candidate is right
     if (not ModuloIsRealtiveZero(testtime, fsiperiod_, testtime))
-      dserror("Why is the time not a multiple of FSI PERIODIC cycle??");
+      FOUR_C_THROW("Why is the time not a multiple of FSI PERIODIC cycle??");
   }
 
   return teststep;
@@ -1047,7 +1048,7 @@ bool FS3I::ACFSI::ScatraConvergenceCheck(const int itnum)
       printf("+---------------------------------------------------------------+\n");
     }
     // yes, we stop!
-    //    dserror("Scatra not converged in itemax steps!");
+    //    FOUR_C_THROW("Scatra not converged in itemax steps!");
     return true;
   }
   else
@@ -1152,7 +1153,7 @@ bool FS3I::ACFSI::PartFs3iConvergenceCkeck(const int itnum)
                    "\n************************************************************************\n"
                 << std::endl;
     }
-    //    dserror("The partitioned FS3I solver did not converge in ITEMAX steps!");
+    //    FOUR_C_THROW("The partitioned FS3I solver did not converge in ITEMAX steps!");
   }
 
   return stopnonliniter;
@@ -1175,18 +1176,19 @@ void FS3I::ACFSI::CheckIfTimesAndStepsAndDtsMatch()
   const double structurescatratime = scatravec_[1]->ScaTraField()->Time();
 
   if (not IsRealtiveEqualTo(fluidtime, time_, time_))
-    dserror("Your fluid time %f does not match the fs3i time %f!", fluidtime, time_);
+    FOUR_C_THROW("Your fluid time %f does not match the fs3i time %f!", fluidtime, time_);
   if (not IsRealtiveEqualTo(structuretime, time_, time_))
-    dserror("Your structure time %f does not match the fs3i time %f!", structuretime, time_);
+    FOUR_C_THROW("Your structure time %f does not match the fs3i time %f!", structuretime, time_);
   if (not IsRealtiveEqualTo(aletime, time_, time_))
-    dserror("Your ale time %f does not match the fs3i time %f!", aletime, time_);
+    FOUR_C_THROW("Your ale time %f does not match the fs3i time %f!", aletime, time_);
   if (not IsRealtiveEqualTo(fsitime, time_, time_))
-    dserror("Your fsi time %f does not match the fs3i time %f!", fsitime, time_);
+    FOUR_C_THROW("Your fsi time %f does not match the fs3i time %f!", fsitime, time_);
   if (not IsRealtiveEqualTo(fluidscatratime, time_, time_))
-    dserror("Your fluid-scalar time %f does not match the fs3i time %f!", fluidscatratime, time_);
+    FOUR_C_THROW(
+        "Your fluid-scalar time %f does not match the fs3i time %f!", fluidscatratime, time_);
   if (not IsRealtiveEqualTo(structurescatratime, time_, time_))
-    dserror("Your structure-scalar time %f does not match the fs3i time %f!", structurescatratime,
-        time_);
+    FOUR_C_THROW("Your structure-scalar time %f does not match the fs3i time %f!",
+        structurescatratime, time_);
 
   // check steps
   const int fluidstep = fsi_->FluidField()->Step();
@@ -1197,18 +1199,19 @@ void FS3I::ACFSI::CheckIfTimesAndStepsAndDtsMatch()
   const int structurescatrastep = scatravec_[1]->ScaTraField()->Step();
 
   if (not IsRealtiveEqualTo(fluidstep, step_, step_))
-    dserror("Your fluid step %i does not match the fs3i step %i!", fluidstep, step_);
+    FOUR_C_THROW("Your fluid step %i does not match the fs3i step %i!", fluidstep, step_);
   if (not IsRealtiveEqualTo(structurestep, step_, step_))
-    dserror("Your structure step %i does not match the fs3i step %i!", structurestep, step_);
+    FOUR_C_THROW("Your structure step %i does not match the fs3i step %i!", structurestep, step_);
   if (not IsRealtiveEqualTo(alestep, step_, step_))
-    dserror("Your ale step %i does not match the fs3i step %i!", alestep, step_);
+    FOUR_C_THROW("Your ale step %i does not match the fs3i step %i!", alestep, step_);
   if (not IsRealtiveEqualTo(fsistep, step_, step_))
-    dserror("Your fsi step %i does not match the fs3i step %i!", fsistep, step_);
+    FOUR_C_THROW("Your fsi step %i does not match the fs3i step %i!", fsistep, step_);
   if (not IsRealtiveEqualTo(fluidscatrastep, step_, step_))
-    dserror("Your fluid-scalar step %i does not match the fs3i step %i!", fluidscatrastep, step_);
+    FOUR_C_THROW(
+        "Your fluid-scalar step %i does not match the fs3i step %i!", fluidscatrastep, step_);
   if (not IsRealtiveEqualTo(structurescatrastep, step_, step_))
-    dserror("Your structure-scalar step %i does not match the fs3i step %i!", structurescatrastep,
-        step_);
+    FOUR_C_THROW("Your structure-scalar step %i does not match the fs3i step %i!",
+        structurescatrastep, step_);
 
   // check dts
   const double fsiperssisteps =
@@ -1222,17 +1225,18 @@ void FS3I::ACFSI::CheckIfTimesAndStepsAndDtsMatch()
   const double structurescatradt = scatravec_[1]->ScaTraField()->Dt();
 
   if (not IsRealtiveEqualTo(fluiddt, dt_, 1.0))
-    dserror("Your fluid dt %f does not match the fs3i time %f!", fluiddt, dt_);
+    FOUR_C_THROW("Your fluid dt %f does not match the fs3i time %f!", fluiddt, dt_);
   if (not IsRealtiveEqualTo(structuredt, dt_, 1.0))
-    dserror("Your structure dt %f does not match the fs3i time %f!", structuredt, dt_);
+    FOUR_C_THROW("Your structure dt %f does not match the fs3i time %f!", structuredt, dt_);
   if (not IsRealtiveEqualTo(aledt, dt_, 1.0))
-    dserror("Your ale dt %f does not match the fs3i time %f!", aledt, dt_);
+    FOUR_C_THROW("Your ale dt %f does not match the fs3i time %f!", aledt, dt_);
   if (not IsRealtiveEqualTo(fsidt, dt_, 1.0))
-    dserror("Your fsi dt %f does not match the fs3i time %f!", fsidt, dt_);
+    FOUR_C_THROW("Your fsi dt %f does not match the fs3i time %f!", fsidt, dt_);
   if (not IsRealtiveEqualTo(fluidscatradt, dt_, 1.0))
-    dserror("Your fluid-scalar dt %f does not match the fs3i time %f!", fluidscatradt, dt_);
+    FOUR_C_THROW("Your fluid-scalar dt %f does not match the fs3i time %f!", fluidscatradt, dt_);
   if (not IsRealtiveEqualTo(structurescatradt, dt_, 1.0))
-    dserror("Your structure-scalar dt %f does not match the fs3i time %f!", structurescatradt, dt_);
+    FOUR_C_THROW(
+        "Your structure-scalar dt %f does not match the fs3i time %f!", structurescatradt, dt_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

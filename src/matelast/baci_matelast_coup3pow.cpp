@@ -41,7 +41,7 @@ void MAT::ELASTIC::Coup3Pow::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>&
 
   // If d<2
   if (d < 2)
-    dserror(
+    FOUR_C_THROW(
         "The Elast_Coup3Pow - material only works for positive integer exponents, which are larger "
         "than two.");
 

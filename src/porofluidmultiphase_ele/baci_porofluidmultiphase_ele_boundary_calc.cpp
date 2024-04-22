@@ -119,7 +119,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::ExtractElementA
     const int ndsdisp = params_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(D
     {
       // check if the neumann conditions were set
       DRT::Condition* condition = params.get<DRT::Condition*>("condition");
-      if (condition == nullptr) dserror("Cannot access Neumann boundary condition!");
+      if (condition == nullptr) FOUR_C_THROW("Cannot access Neumann boundary condition!");
 
       // evaluate neumann loads
       EvaluateNeumann(ele, params, discretization, *condition, la, *elevec[0]);
@@ -192,7 +192,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
   const auto* func = condition.Get<std::vector<int>>("funct");
 
   if (numdofpernode_ != numdof)
-    dserror(
+    FOUR_C_THROW(
         "The NUMDOF you have entered in your NEUMANN CONDITION does not equal the number of "
         "scalars.");
 

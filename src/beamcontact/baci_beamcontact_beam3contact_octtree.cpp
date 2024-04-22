@@ -102,20 +102,21 @@ Beam3ContactOctTree::Beam3ContactOctTree(
   }
   else
   {
-    dserror("OctTree called with unknown type of parameter list!");
+    FOUR_C_THROW("OctTree called with unknown type of parameter list!");
   }
 
   // sanity checks for extrusion value(s)
   if ((int)extrusionvalue_->size() > 2)
-    dserror("You gave %i values for BEAMS_EXTVAL! Check your input file.",
+    FOUR_C_THROW("You gave %i values for BEAMS_EXTVAL! Check your input file.",
         (int)extrusionvalue_->size());
   if ((int)extrusionvalue_->size() == 1) extrusionvalue_->push_back(extrusionvalue_->at(0));
   for (int i = 0; i < (int)extrusionvalue_->size(); i++)
     if (extrusionvalue_->at(i) < 1.0 && !additiveextrusion_)
-      dserror("BEAMS_EXTVAL( %i ) = %4.2f < 1.0 does not make any sense! Check your input file.", i,
+      FOUR_C_THROW(
+          "BEAMS_EXTVAL( %i ) = %4.2f < 1.0 does not make any sense! Check your input file.", i,
           extrusionvalue_->at(i));
   if (boundingbox_ == Beam3ContactOctTree::cyloriented && (int)extrusionvalue_->size() != 2)
-    dserror(
+    FOUR_C_THROW(
         "For cylindrical, oriented bounding boxes, TWO extrusion factors are mandatory! Check "
         "BEAMS_EXTVAL in your input file.");
 
@@ -142,7 +143,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(
       boundingbox_ = Beam3ContactOctTree::cyloriented;
 
       if (btsol_)
-        dserror(
+        FOUR_C_THROW(
             "Only axis aligned or spherical bounding boxes possible for beam-to-solid contact!");
     }
     break;
@@ -154,7 +155,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(
     }
     break;
     default:
-      dserror("No octree (i.e. none) declared in your input file!");
+      FOUR_C_THROW("No octree (i.e. none) declared in your input file!");
       break;
   }
 
@@ -262,7 +263,7 @@ std::vector<int> Beam3ContactOctTree::InWhichOctantLies(const int& thisBBoxID)
 bool Beam3ContactOctTree::IntersectBBoxesWith(
     CORE::LINALG::SerialDenseMatrix& nodecoords, CORE::LINALG::SerialDenseMatrix& nodeLID)
 {
-  dserror("Not in use!");
+  FOUR_C_THROW("Not in use!");
 
   /* notes:
    * 1) do not apply this before having constructed the octree. This is merely a query tool
@@ -294,7 +295,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(
       CreateSPBB(nodecoords, 0, bboxlimits);
       break;
     default:
-      dserror("No or an invalid Octree type was chosen. Check your input file!");
+      FOUR_C_THROW("No or an invalid Octree type was chosen. Check your input file!");
       break;
   }
 
@@ -353,7 +354,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(
                   intersection = IntersectionSPBB(bboxinoct, bboxlimits);
                   break;
                 default:
-                  dserror("No or an invalid Octree type was chosen. Check your input file!");
+                  FOUR_C_THROW("No or an invalid Octree type was chosen. Check your input file!");
                   break;
               }
             }
@@ -421,11 +422,11 @@ void Beam3ContactOctTree::OctreeOutput(
         for (int v = 0; v < (int)octreelimits_[u].numRows(); v++)
           if (v % 2 == 0 && octreelimits_[u](v) < rootbox_(v) &&
               fabs(octreelimits_[u](v) - rootbox_(v)) > 1e-8)
-            dserror("Octant minimum %4.10f below root box minimum %4.10f", octreelimits_[u](v),
+            FOUR_C_THROW("Octant minimum %4.10f below root box minimum %4.10f", octreelimits_[u](v),
                 rootbox_(v));
           else if (v % 2 == 1 && octreelimits_[u](v) > rootbox_(v) &&
                    fabs(octreelimits_[u](v) - rootbox_(v)) > 1e-8)
-            dserror("Octant maximum %4.10f above root box minimum %4.10f", octreelimits_[u](v),
+            FOUR_C_THROW("Octant maximum %4.10f above root box minimum %4.10f", octreelimits_[u](v),
                 rootbox_(v));
 #endif
     }
@@ -495,7 +496,7 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
                  !BEAMINTERACTION::UTILS::IsRigidSphereElement(*element))
           (*diameter_)[i] = 0.0;
         // feasibility check
-        if ((*diameter_)[i] < 0.0) dserror("ERROR: Did not receive feasible element radius.");
+        if ((*diameter_)[i] < 0.0) FOUR_C_THROW("ERROR: Did not receive feasible element radius.");
       }
     }
   }
@@ -563,7 +564,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
           coord(j, 1) = coord_aux(j);
         }
         if (boundingbox_ == Beam3ContactOctTree::cyloriented)
-          dserror(
+          FOUR_C_THROW(
               "Only axis-aligned or spherical bounding boxes possible for beam-to-sphere contact!");
       }
       else
@@ -575,7 +576,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
             CalcCornerPos(element, currentpositions, coord);
             break;
           case Beam3ContactOctTree::cyloriented:
-            dserror(
+            FOUR_C_THROW(
                 "Only axis aligned or spherical bounding boxes possible for beam-to-solid "
                 "contact!");
             break;
@@ -583,7 +584,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
             CalcCornerPos(element, currentpositions, coord);
             break;
           default:
-            dserror("No or an invalid Octree type was chosen. Check your input file!");
+            FOUR_C_THROW("No or an invalid Octree type was chosen. Check your input file!");
             break;
         }
       }
@@ -600,7 +601,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
           CreateSPBB(coord, elecolid);
           break;
         default:
-          dserror("No or an invalid Octree type was chosen. Check your input file!");
+          FOUR_C_THROW("No or an invalid Octree type was chosen. Check your input file!");
           break;
       }
     }
@@ -647,13 +648,13 @@ void Beam3ContactOctTree::CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, con
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) dserror("Not in use!");
+  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
 
   // factor by which the box is extruded in each dimension
   double extrusionvalue = GetBoundingBoxExtrusionValue();
 
   if (elecolid < 0 || elecolid >= searchdis_.ElementColMap()->NumMyElements())
-    dserror("Given Element Column Map ID is %d !", elecolid);
+    FOUR_C_THROW("Given Element Column Map ID is %d !", elecolid);
 
   int elegid = searchdis_.ElementColMap()->GID(elecolid);
 
@@ -754,7 +755,7 @@ void Beam3ContactOctTree::CreateCOBB(CORE::LINALG::SerialDenseMatrix& coord, con
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) dserror("Not in use!");
+  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
   // make the bounding box continuous
   std::vector<int> cut(3, 0);
   int numshifts = 0;
@@ -857,7 +858,7 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) dserror("Not in use!");
+  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
   // make the bounding box continuous
   std::vector<int> cut(3, 0);
   int numshifts = 0;
@@ -881,7 +882,7 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
                       (coord(2, 0) - coord(2, 1)) * (coord(2, 0) - coord(2, 1)));
     }
     else
-      dserror("coord matrix of nodal positions has wrong dimensions here!");
+      FOUR_C_THROW("coord matrix of nodal positions has wrong dimensions here!");
   }
   else if (BEAMINTERACTION::UTILS::IsRigidSphereElement(*element))
   {
@@ -896,7 +897,7 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
                       (coord(2, 0) - coord(2, 1)) * (coord(2, 0) - coord(2, 1)));
     }
     else
-      dserror("coord matrix of nodal positions has wrong dimensions here!");
+      FOUR_C_THROW("coord matrix of nodal positions has wrong dimensions here!");
   }
 
   // we want an additive extrusion of the radius, hence "2.0"
@@ -1202,7 +1203,7 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double>>& allbboxess
           }
           break;
           default:
-            dserror("No or an invalid Octree type was chosen. Check your input file!");
+            FOUR_C_THROW("No or an invalid Octree type was chosen. Check your input file!");
             break;
         }
         if (assignbboxtooctant)
@@ -1317,7 +1318,7 @@ void Beam3ContactOctTree::CreateSubOctants(CORE::LINALG::Matrix<6, 1>& parentoct
   // safety: only cubic octants for now.
   if (fabs(suboctedgelength(0) - suboctedgelength(1)) > 1e-8 ||
       fabs(suboctedgelength(0) - suboctedgelength(2)) > 1e-8)
-    dserror("Check GetRootBox()! Octants must be cubic!");
+    FOUR_C_THROW("Check GetRootBox()! Octants must be cubic!");
 
   suboctlimits.clear();
   for (int i = 0; i < 2; i++)
@@ -1471,7 +1472,7 @@ bool Beam3ContactOctTree::COBBIsInThisOctant(CORE::LINALG::Matrix<3, 1>& octcent
         //              std::cout<<bboxcoords[k]<<" ";
         //          std::cout<<std::endl;
         //          std::cout<<"; \nISEC : "<<aux(0)<<" "<<aux(1)<<" "<<aux(2)<<"\nLambda =
-        //          "<<lambda_k<<", normal = "<<normal<<std::endl; dserror("CRIT II");
+        //          "<<lambda_k<<", normal = "<<normal<<std::endl; FOUR_C_THROW("CRIT II");
         //        }
         return true;
       }
@@ -1563,7 +1564,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(
               intersection = IntersectionSPBB(bboxIDs);
               break;
             default:
-              dserror("No or an invalid Octree type was chosen. Check your input file!");
+              FOUR_C_THROW("No or an invalid Octree type was chosen. Check your input file!");
               break;
           }
 
@@ -1640,7 +1641,7 @@ bool Beam3ContactOctTree::IntersectionAABB(
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) dserror("Not in use!");
+  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
 
   // translate box / element GIDs to ElementColMap()-LIDs
   // note: GID and ColumnMap LID are usually the same except for crosslinker elements from
@@ -1701,7 +1702,7 @@ bool Beam3ContactOctTree::IntersectionCOBB(
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) dserror("Not in use!");
+  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
 
   /* intersection test by calculating the distance between the two bounding box center lines
    * and comparing it to the respective diameters of the beams*/
@@ -1818,7 +1819,7 @@ bool Beam3ContactOctTree::IntersectionSPBB(
   // store the limits of this bounding box into bboxlimits if needed. Since the hypothetical
   // bounding box stands for a crosslinker to be set, we just need the exact dimensions of the
   // element
-  if (bboxlimits != Teuchos::null) dserror("Not in use!");
+  if (bboxlimits != Teuchos::null) FOUR_C_THROW("Not in use!");
 
   int bboxid0 = searchdis_.ElementColMap()->LID(bboxIDs[0]);
   int bboxid1 = searchdis_.ElementColMap()->LID(bboxIDs[1]);
@@ -1925,7 +1926,7 @@ void Beam3ContactOctTree::CalcCornerPos(DRT::Element* element,
   for (int k = 0; k < 3; ++k)
   {
     if (coord_max(k) == -1.0e12 || coord_min(k) == 1.0e12)
-      dserror("ERROR: CalcCornerPos was not successful");
+      FOUR_C_THROW("ERROR: CalcCornerPos was not successful");
   }
   /*  We don't fill real node coordinates in the matrix coord, but only the min/max x-,y-,z- values
      over all nodes of the considered elements. These coordinates coord_max and coord_min can thus
@@ -1948,8 +1949,8 @@ void Beam3ContactOctTree::UndoEffectOfPeriodicBoundaryCondition(
     CORE::LINALG::SerialDenseMatrix& coord, std::vector<int>& cut, int& numshifts)
 {
   if (coord.numRows() != 3 || coord.numCols() != 2)
-    dserror("coord must have the dimension M()==3, N()==2!");
-  if ((int)cut.size() != 3) dserror("cut is of wrong size %i!", (int)cut.size());
+    FOUR_C_THROW("coord must have the dimension M()==3, N()==2!");
+  if ((int)cut.size() != 3) FOUR_C_THROW("cut is of wrong size %i!", (int)cut.size());
   // By definition, we shift the second position!
   for (int dof = 0; dof < coord.numRows(); dof++)
   {
@@ -1988,9 +1989,10 @@ double Beam3ContactOctTree::GetBoundingBoxExtrusionValue()
       extrusionvalue = extrusionvalue_->at(0);
       break;
     default:
-      dserror("No bounding box type chosen!");
+      FOUR_C_THROW("No bounding box type chosen!");
   }
-  if (extrusionvalue < 0.0) dserror("Check bounding box extrusion value %d < 0.0!", extrusionvalue);
+  if (extrusionvalue < 0.0)
+    FOUR_C_THROW("Check bounding box extrusion value %d < 0.0!", extrusionvalue);
   return extrusionvalue;
 }
 

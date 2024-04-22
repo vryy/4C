@@ -238,6 +238,6 @@ void test_sud_sc1()
   {
     std::cout << tessVol[i] << "\t" << momFitVol[i] << "\t" << dirDivVol[i] << "\n";
     if (fabs(tessVol[i] - momFitVol[i]) > 1e-9 || fabs(dirDivVol[i] - momFitVol[i]) > 1e-9)
-      dserror("volume predicted by either one of the method is wrong");
+      FOUR_C_THROW("volume predicted by either one of the method is wrong");
   }
 }

@@ -43,9 +43,11 @@ void PASI::PasiPartOneWayCoup::Setup()
 
     if (walldatastate->GetDispRow() == Teuchos::null or
         walldatastate->GetDispCol() == Teuchos::null)
-      dserror("wall displacements not initialized!");
-    if (walldatastate->GetVelCol() == Teuchos::null) dserror("wall velocities not initialized!");
-    if (walldatastate->GetAccCol() == Teuchos::null) dserror("wall accelerations not initialized!");
+      FOUR_C_THROW("wall displacements not initialized!");
+    if (walldatastate->GetVelCol() == Teuchos::null)
+      FOUR_C_THROW("wall velocities not initialized!");
+    if (walldatastate->GetAccCol() == Teuchos::null)
+      FOUR_C_THROW("wall accelerations not initialized!");
   }
 }
 

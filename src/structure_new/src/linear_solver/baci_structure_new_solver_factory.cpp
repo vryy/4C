@@ -84,7 +84,7 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolv
         (*linsolvers)[*mt_iter] = BuildCardiovascular0DLinSolver(sdyn, actdis);
         break;
       default:
-        dserror("No idea which solver to use for the given model type %s",
+        FOUR_C_THROW("No idea which solver to use for the given model type %s",
             ModelTypeString(*mt_iter).c_str());
         break;
     }
@@ -104,7 +104,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver
 
   // check if the structural solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for structural field. "
         "Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
@@ -140,7 +140,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver
 
         if (BEAMINTERACTION::UTILS::IsBeamElement(*element) &&
             (element->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance()))
-          dserror("Only beam3eb elements are currently allowed!");
+          FOUR_C_THROW("Only beam3eb elements are currently allowed!");
       }
 
       for (int i = 0; i < actdis.NumMyRowNodes(); i++)
@@ -242,7 +242,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
       // meshtying/contact for structure
       // check if the meshtying/contact solver has a valid solver number
       if (lin_solver_id == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for meshtying/contact problem. Please"
             " set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
@@ -259,7 +259,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
         if (prec != INPAR::SOLVER::PreconditionerType::cheap_simple &&
             prec != INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)  // TODO adapt
                                                                                    // error message
-          dserror(
+          FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar/Contact in saddlepoint "
               "formulation you have to choose a block preconditioner such as SIMPLE. Choose "
               "CheapSIMPLE or MueLu_contactSP (if MueLu is available) in the SOLVER %i block in "
@@ -279,7 +279,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
       else if (onlymeshtying)
         linsolver->Params().set<bool>("MESHTYING", true);
       else
-        dserror(
+        FOUR_C_THROW(
             "this cannot be: no saddlepoint problem for beamcontact "
             "or pure structure problem.");
 
@@ -306,7 +306,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
       // meshtying/contact for structure
       // check if the meshtying/contact solver has a valid solver number
       if (lin_solver_id == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for meshtying/contact problem. "
             "Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
@@ -361,7 +361,8 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
       linsolver->Params() = CORE::LINALG::Solver::TranslateSolverParameters(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
 
-      if (!linsolver->Params().isSublist("Belos Parameters")) dserror("Iterative solver expected!");
+      if (!linsolver->Params().isSublist("Belos Parameters"))
+        FOUR_C_THROW("Iterative solver expected!");
 
       const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
@@ -394,13 +395,13 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
     break;
     case INPAR::STR::consolve_uzawa:
     {
-      dserror(
+      FOUR_C_THROW(
           "Uzawa-type solution techniques for constraints aren't supported anymore within the new "
           "structural time-integration!");
     }
     break;
     default:
-      dserror("Unknown structural-constraint solution technique!");
+      FOUR_C_THROW("Unknown structural-constraint solution technique!");
   }
 
   return linsolver;
@@ -467,7 +468,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLi
     }
     break;
     default:
-      dserror("Unknown 0D cardiovascular-structural solution technique!");
+      FOUR_C_THROW("Unknown 0D cardiovascular-structural solution technique!");
   }
 
   return linsolver;

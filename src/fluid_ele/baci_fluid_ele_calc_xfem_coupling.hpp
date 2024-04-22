@@ -87,7 +87,7 @@ namespace DRT
             std::vector<double>& mymatrix         ///< slave element displacement vector
         )
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         virtual void AddSlaveEleDisp(
@@ -95,7 +95,7 @@ namespace DRT
             const std::vector<int>& lm            ///< local map
         )
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         //! @name accessors
@@ -107,7 +107,7 @@ namespace DRT
             const std::vector<int>& lm            ///< local map
         )
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         //! set slave element's nodal velocities
@@ -116,7 +116,7 @@ namespace DRT
             const std::vector<int>& lm            ///< local map
         )
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         /*!
@@ -147,14 +147,14 @@ namespace DRT
         virtual void GetInterfacePresnp(double& ipres  ///< interface pressure
         ) const
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         //! get interface pressure
         virtual void GetInterfacePresn(double& ipres  ///< interface pressure
         ) const
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         //! get interface velocity gradient
@@ -162,7 +162,7 @@ namespace DRT
                 velgradint  ///< interface velocity gradients at coupling slave side
         ) const
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         //! get interface velocity gradient
@@ -170,7 +170,7 @@ namespace DRT
                 velgradint  ///< interface velocity gradients at coupling slave side
         ) const
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         //! set state for interface velocity jump
@@ -180,7 +180,7 @@ namespace DRT
             const std::vector<int>& lm             ///< local map
         )
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         //! set state for interface velocity jump for previous time step
@@ -190,7 +190,7 @@ namespace DRT
             const std::vector<int>& lm             ///< local map
         )
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         //! get interface velocity jump at Gaussian point
@@ -199,7 +199,7 @@ namespace DRT
                                                          ///< or prescribed DBC at Gaussian point
         ) const
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         //! get interface velocity jump at Gaussian point for previous time step
@@ -208,7 +208,7 @@ namespace DRT
                                ///< prescribed DBC at Gaussian point
         ) const
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         //@}
@@ -217,7 +217,7 @@ namespace DRT
         //! gaussian point
         virtual void Evaluate(CORE::LINALG::Matrix<nsd_, 1>& xside)
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         }
 
         //! evaluate shape function, derivatives and transformation w.r.t coupling slave element at
@@ -225,7 +225,7 @@ namespace DRT
         virtual void Evaluate(
             CORE::LINALG::Matrix<nsd_, 1>& xside, CORE::LINALG::Matrix<nsd_, 1>& rst_slave)
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         }
 
         //! compute interface force for side nodes
@@ -235,7 +235,7 @@ namespace DRT
             const double& fac                         ///< integration factor
         )
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         }
 
         //! project gaussian point from linearized interface in normal direction onto corresponding
@@ -248,13 +248,13 @@ namespace DRT
                 xi_side  ///< local coordinates of projected gaussian point w.r.t side
         )
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         }
 
         //! evaluate element volume
         virtual double EvalElementVolume()
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
           return 0.0;
         }
       };
@@ -467,7 +467,7 @@ namespace DRT
                                           ///< standard & adjoint viscous term
         )
         {
-          dserror("Embedded-sided mixed/hybrid stress-based LM is not implemented yet!");
+          FOUR_C_THROW("Embedded-sided mixed/hybrid stress-based LM is not implemented yet!");
           return Teuchos::null;
         }
 

@@ -108,7 +108,7 @@ void MAT::NewmanMultiScale::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::NewmanMultiScale*>(mat);
       else
-        dserror("Type of parameter material %d does not match calling type %d!", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not match calling type %d!", mat->Type(),
             MaterialType());
     }
   }
@@ -120,7 +120,7 @@ void MAT::NewmanMultiScale::Unpack(const std::vector<char>& data)
 
   // final safety check
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d!", data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d!", data.size(), position);
 }
 
 /*--------------------------------------------------------------------*

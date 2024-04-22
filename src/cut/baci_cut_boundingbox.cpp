@@ -29,7 +29,7 @@ CORE::GEO::CUT::BoundingBox* CORE::GEO::CUT::BoundingBox::Create()
     case 3:
       return new ConcreteBoundingBox<3>();
     default:
-      dserror("Unsupported problem dimension!");
+      FOUR_C_THROW("Unsupported problem dimension!");
   }
 }
 

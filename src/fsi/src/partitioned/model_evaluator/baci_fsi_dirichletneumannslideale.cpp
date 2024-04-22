@@ -92,7 +92,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::FluidOp(
 
   if (fillFlag == User)
   {
-    dserror("not implemented");
+    FOUR_C_THROW("not implemented");
     // SD relaxation calculation
     return FluidToStruct(MBFluidField()->RelaxationSolve(StructToFluid(idispcurr), Dt()));
   }
@@ -163,7 +163,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
     if (CORE::UTILS::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
     {
-      dserror(
+      FOUR_C_THROW(
           "unknown interface force predictor '%s'", fsipart.get<std::string>("PREDICTOR").c_str());
     }
     return InterfaceForce();

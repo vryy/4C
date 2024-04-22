@@ -222,7 +222,7 @@ namespace DRT
     */
     virtual int NumDof(const Element* element) const
     {
-      dsassert(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       return NumDof(0, element);
     }
 
@@ -237,7 +237,7 @@ namespace DRT
     */
     virtual int Dof(const Element* element, const int dof) const
     {
-      dsassert(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       return Dof(0, element, dof);
     }
 
@@ -252,7 +252,7 @@ namespace DRT
     */
     virtual std::vector<int> Dof(const Element* element) const
     {
-      dsassert(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       return Dof(0, element);
     }
 
@@ -269,7 +269,7 @@ namespace DRT
     */
     virtual void Dof(const Element* element, const Node* node, std::vector<int>& lm) const
     {
-      dsassert(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       Dof(0, element, node, lm);
     }
 
@@ -285,7 +285,7 @@ namespace DRT
     */
     virtual void Dof(const Element* element, std::vector<int>& lm) const
     {
-      dsassert(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       Dof(0, element, lm);
     }
 
@@ -302,7 +302,7 @@ namespace DRT
     */
     virtual void Dof(const Node* node, const unsigned startindex, std::vector<int>& lm) const
     {
-      dsassert(dofsets_.size() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(dofsets_.size() == 1, "expect just one dof set");
       Dof(0, node, startindex, lm);
     }
 
@@ -340,7 +340,7 @@ namespace DRT
     */
     int NumDof(const Node* node) const
     {
-      dsassert(NumDofSets() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
       return NumDof(0, node);
     }
 
@@ -355,8 +355,8 @@ namespace DRT
     */
     virtual int NumDof(unsigned nds, const Node* node) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
       return dofsets_[nds]->NumDof(node);
     }
 
@@ -371,8 +371,8 @@ namespace DRT
     */
     virtual int NumDof(unsigned nds, const Element* element) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
       return dofsets_[nds]->NumDof(element);
     }
 
@@ -402,7 +402,7 @@ namespace DRT
     */
     int Dof(const Node* node, const int ldof) const
     {
-      dsassert(NumDofSets() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
       return Dof(0, node, ldof);
     }
 
@@ -418,8 +418,8 @@ namespace DRT
     */
     virtual int Dof(unsigned nds, const Node* node, const int dof) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
       return dofsets_[nds]->Dof(node, dof);
     }
 
@@ -435,8 +435,8 @@ namespace DRT
     */
     virtual int Dof(unsigned nds, const Element* element, const int dof) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
       return dofsets_[nds]->Dof(element, dof);
     }
 
@@ -451,7 +451,7 @@ namespace DRT
     */
     std::vector<int> Dof(const Node* node) const
     {
-      dsassert(NumDofSets() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
       return Dof(0, node);
     }
 
@@ -467,8 +467,8 @@ namespace DRT
     */
     virtual std::vector<int> Dof(unsigned nds, const Node* node) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
       return dofsets_[nds]->Dof(node);
     }
 
@@ -492,8 +492,8 @@ namespace DRT
     virtual void Dof(std::vector<int>& dof, const Node* node, unsigned nds, unsigned nodaldofset,
         const Element* element = nullptr) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
       return dofsets_[nds]->Dof(dof, node, nodaldofset);
     }
 
@@ -509,8 +509,8 @@ namespace DRT
     */
     virtual std::vector<int> Dof(unsigned nds, const Element* element) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
       return dofsets_[nds]->Dof(element);
     }
 
@@ -526,7 +526,7 @@ namespace DRT
     */
     void Dof(const Node* node, std::vector<int>& lm) const
     {
-      dsassert(NumDofSets() == 1, "expect just one dof set");
+      FOUR_C_ASSERT(NumDofSets() == 1, "expect just one dof set");
       Dof((unsigned)0, node, lm);
     }
 
@@ -543,8 +543,8 @@ namespace DRT
     */
     virtual void Dof(unsigned nds, const Node* node, std::vector<int>& lm) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
       dofsets_[nds]->Dof(node, lm);
     }
 
@@ -563,8 +563,8 @@ namespace DRT
     virtual void Dof(
         unsigned nds, const Element* element, const Node* node, std::vector<int>& lm) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
       dofsets_[nds]->Dof(element, node, lm);
     }
 
@@ -581,8 +581,8 @@ namespace DRT
     */
     virtual void Dof(unsigned nds, const Element* element, std::vector<int>& lm) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
       dofsets_[nds]->Dof(element, lm);
     }
 
@@ -601,8 +601,8 @@ namespace DRT
     virtual void Dof(
         unsigned nds, const Node* node, const unsigned startindex, std::vector<int>& lm) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
-      dsassert(havedof_, "no dofs assigned");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(havedof_, "no dofs assigned");
       dofsets_[nds]->Dof(node, startindex, lm);
     }
 
@@ -775,7 +775,7 @@ namespace DRT
     */
     [[nodiscard]] virtual DRT::Element* lRowElement(int lid) const
     {
-      dsassert(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
       return elerowptr_[lid];
     }
 
@@ -790,7 +790,7 @@ namespace DRT
     */
     virtual DRT::Element* lColElement(int lid) const
     {
-      dsassert(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
       return elecolptr_[lid];
     }
 
@@ -805,7 +805,7 @@ namespace DRT
      */
     [[nodiscard]] auto MyRowElementRange() const
     {
-      dsassert(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
       return std_20::ranges::views::all(elerowptr_);
     }
 
@@ -814,7 +814,7 @@ namespace DRT
      */
     [[nodiscard]] auto MyColElementRange() const
     {
-      dsassert(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
       return std_20::ranges::views::all(elecolptr_);
     }
 
@@ -850,7 +850,7 @@ namespace DRT
     */
     [[nodiscard]] virtual DRT::Node* lRowNode(int lid) const
     {
-      dsassert(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
       return noderowptr_[lid];
     }
 
@@ -865,21 +865,21 @@ namespace DRT
     */
     virtual DRT::Node* lColNode(int lid) const
     {
-      dsassert(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
       return nodecolptr_[lid];
     }
 
 
     [[nodiscard]] auto MyRowNodeRange() const
     {
-      dsassert(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
       return std_20::ranges::views::all(noderowptr_);
     }
 
 
     [[nodiscard]] auto MyColNodeRange() const
     {
-      dsassert(Filled(), "Discretization not Filled().");
+      FOUR_C_ASSERT(Filled(), "Discretization not Filled().");
       return std_20::ranges::views::all(nodecolptr_);
     }
 
@@ -1535,11 +1535,11 @@ namespace DRT
     [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> GetState(
         unsigned nds, const std::string& name) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       if (state_.size() <= nds) return Teuchos::null;
 
       if (auto state_iterator = state_[nds].find(name); state_iterator == state_[nds].end())
-        dserror("Cannot find state %s", name.data());
+        FOUR_C_THROW("Cannot find state %s", name.data());
       else
         return state_iterator->second;
     }
@@ -1551,7 +1551,7 @@ namespace DRT
      */
     virtual bool HasState(unsigned nds, const std::string& name) const
     {
-      dsassert(nds < dofsets_.size(), "undefined dof set");
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set");
       if (state_.size() <= nds) return false;
 
       return state_[nds].count(name) == 1;

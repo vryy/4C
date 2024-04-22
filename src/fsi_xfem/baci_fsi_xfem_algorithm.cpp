@@ -75,19 +75,19 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
     Teuchos::RCP<POROELAST::Monolithic> poro = Teuchos::rcp_dynamic_cast<POROELAST::Monolithic>(
         POROELAST::UTILS::CreatePoroAlgorithm(poroelastdyn, comm, false));
     if (poro == Teuchos::null)  // safety check
-      dserror(
+      FOUR_C_THROW(
           "Couldn't cast poro to POROELAST::Monolithic --> check your COUPALGO in the "
           "POROELASTICITY DYNAMIC section!");
     if (CORE::UTILS::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
             poroelastdyn, "COUPALGO") != INPAR::POROELAST::Monolithic)
-      dserror(
+      FOUR_C_THROW(
           "You created a different poroelast algorithm than monolithic (not combineable with xfpsi "
           "at the moment)--> check your COUPALGO in the POROELASTICITY DYNAMIC section!");
     structureporo_ = Teuchos::rcp(new ADAPTER::StructurePoroWrapper(
         poro, ADAPTER::StructurePoroWrapper::type_PoroField, true));
   }
   else
-    dserror("AlgorithmXFEM cannot handle this Fieldtype for structure!");
+    FOUR_C_THROW("AlgorithmXFEM cannot handle this Fieldtype for structure!");
 
   if (ale)
   {
@@ -99,7 +99,8 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
     Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
         new ADAPTER::AleBaseAlgorithm(fsidynparams, GLOBAL::Problem::Instance()->GetDis("ale")));
     ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFpsiWrapper>(ale->AleField());
-    if (ale_ == Teuchos::null) dserror("Cast from ADAPTER::Ale to ADAPTER::AleFpsiWrapper failed");
+    if (ale_ == Teuchos::null)
+      FOUR_C_THROW("Cast from ADAPTER::Ale to ADAPTER::AleFpsiWrapper failed");
   }
   else
   {
@@ -114,7 +115,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams, fdyn, "fluid", ale, false));
   fluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid->FluidField());
   if (fluid_ == Teuchos::null)
-    dserror("Cast of Fluid to XFluid failed! - Everything fine in SetupFluid()?");
+    FOUR_C_THROW("Cast of Fluid to XFluid failed! - Everything fine in SetupFluid()?");
   fluid_->Init(false);
 
   // Do setup of the fields here
@@ -138,7 +139,7 @@ void FSI::AlgorithmXFEM::Setup()
  *----------------------------------------------------------------------*/
 void FSI::AlgorithmXFEM::Update()
 {
-  dserror("currently unused");
+  FOUR_C_THROW("currently unused");
 
   StructurePoro()->Update();
   FluidField()->Update();

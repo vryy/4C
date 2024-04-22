@@ -44,27 +44,27 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(MORTAR::Elem
     MORTAR::Element& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
-  if (cparams_ptr.is_null()) dserror("The contact parameter interface pointer is undefined!");
+  if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror(
+    FOUR_C_THROW(
         "ERROR: IntegrateDerivCell3DAuxPlane called without specific shape "
         "function defined!");
 
   // check for problem dimension
-  dsassert(Dim() == 3, "ERROR: 3D integration method called for non-3D problem");
+  FOUR_C_ASSERT(Dim() == 3, "ERROR: 3D integration method called for non-3D problem");
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror(
+    FOUR_C_THROW(
         "ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of "
         "MORTAR::Element pair!");
   if (cell == Teuchos::null)
-    dserror("IntegrateDerivCell3DAuxPlane called without integration cell");
+    FOUR_C_THROW("IntegrateDerivCell3DAuxPlane called without integration cell");
 
   if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-    dserror(
+    FOUR_C_THROW(
         "ERROR: IntegrateDerivCell3DAuxPlane supports no Dual shape functions for the "
         "augmented Lagrange solving strategy!");
 
@@ -88,28 +88,28 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror(
+    FOUR_C_THROW(
         "ERROR: IntegrateDerivCell3DAuxPlane called without specific shape "
         "function defined!");
 
   // check for problem dimension
-  dsassert(Dim() == 3, "ERROR: 3D integration method called for non-3D problem");
+  FOUR_C_ASSERT(Dim() == 3, "ERROR: 3D integration method called for non-3D problem");
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
-  if (!mynodes) dserror("IntegrateDerivCell3D: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("IntegrateDerivCell3D: Null pointer!");
 
   // check input data
   for (unsigned test = 0; test < meles.size(); ++test)
   {
     if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
-      dserror(
+      FOUR_C_THROW(
           "ERROR: IntegrateDerivCell3D called on a wrong type of "
           "MORTAR::Element pair!");
   }
 
   // contact with wear
-  if (wearlaw_ != INPAR::WEAR::wear_none) dserror("Wear is not supported!");
+  if (wearlaw_ != INPAR::WEAR::wear_none) FOUR_C_THROW("Wear is not supported!");
 
   // Boundary Segmentation check -- HasProj()-check
   //  *boundary_ele = BoundarySegmCheck3D(sele,meles);
@@ -132,7 +132,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele
   Epetra_Vector* sele_times = cparams_ptr->Get<Epetra_Vector>(0);
   const int slid = sele_times->Map().LID(sele.Id());
   if (slid == -1)
-    dserror("Couldn't find the current slave element GID #%d on proc #%d.", sele.Id(),
+    FOUR_C_THROW("Couldn't find the current slave element GID #%d on proc #%d.", sele.Id(),
         sele_times->Map().Comm().MyPID());
   (*sele_times)[slid] += timer_ptr->getLastTimeIncr();
 
@@ -155,7 +155,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::Elemen
 void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::Element& sele,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
-  if (cparams_ptr.is_null()) dserror("The contact parameter interface pointer is undefined!");
+  if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
 
   integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), sele.Shape(), *cparams_ptr, this);
   integrator_->IntegrateDerivSlaveElement(sele);
@@ -172,27 +172,27 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::Element& 
   // *********************************************************************
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
-  if (cparams_ptr.is_null()) dserror("The contact parameter interface pointer is undefined!");
+  if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("IntegrateDerivSegment2D called without specific shape function defined!");
+    FOUR_C_THROW("IntegrateDerivSegment2D called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
   if (sele.Shape() == CORE::FE::CellType::line3 ||
       ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-    dserror("Petrov-Galerkin / quadratic FE interpolation not yet implemented.");
+    FOUR_C_THROW("Petrov-Galerkin / quadratic FE interpolation not yet implemented.");
 
   // check for problem dimension
-  dsassert(Dim() == 2, "ERROR: 2D integration method called for non-2D problem");
+  FOUR_C_ASSERT(Dim() == 2, "ERROR: 2D integration method called for non-2D problem");
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
+    FOUR_C_THROW("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   if ((sxia < -1.0) || (sxib > 1.0))
-    dserror("IntegrateAndDerivSegment called with infeasible slave limits!");
+    FOUR_C_THROW("IntegrateAndDerivSegment called with infeasible slave limits!");
   if ((mxia < -1.0) || (mxib > 1.0))
-    dserror("IntegrateAndDerivSegment called with infeasible master limits!");
+    FOUR_C_THROW("IntegrateAndDerivSegment called with infeasible master limits!");
 
   GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);
   timer_ptr->start(GlobalTimeID::IntegrateDerivSegment2D);
@@ -216,24 +216,24 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
   // *********************************************************************
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
-  if (cparams_ptr.is_null()) dserror("The contact parameter interface pointer is undefined!");
+  if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("IntegrateDerivSegment2D called without specific shape function defined!");
+    FOUR_C_THROW("IntegrateDerivSegment2D called without specific shape function defined!");
 
   // check for problem dimension
-  if (Dim() != 2) dserror("2D integration method called for non-2D problem");
+  if (Dim() != 2) FOUR_C_THROW("2D integration method called for non-2D problem");
 
   // get slave element nodes themselves
   DRT::Node** mynodes = sele.Nodes();
-  if (!mynodes) dserror("IntegrateAndDerivSegment: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // check input data
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
+      FOUR_C_THROW("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
   }
 
   // number of nodes (slave) and problem dimension
@@ -244,7 +244,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
   for (int k = 0; k < nrow; ++k)
   {
     MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
-    if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
+    if (!mymrtrnode) FOUR_C_THROW("IntegrateDerivSegment2D: Null pointer!");
   }
 
   GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);
@@ -272,7 +272,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
   Epetra_Vector* sele_times = cparams_ptr->Get<Epetra_Vector>(0);
   const int slid = sele_times->Map().LID(sele.Id());
   if (slid == -1)
-    dserror("Couldn't find the current slave element GID #%d on proc #%d.", sele.Id(),
+    FOUR_C_THROW("Couldn't find the current slave element GID #%d on proc #%d.", sele.Id(),
         sele_times->Map().Comm().MyPID());
   (*sele_times)[slid] += timer_ptr->getLastTimeIncr();
 
@@ -292,7 +292,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create(int pro
     case 3:
       return Create3D(slavetype, mastertype, cparams, wrapper);
     default:
-      dserror("Unsupported problem dimension %d", probdim);
+      FOUR_C_THROW("Unsupported problem dimension %d", probdim);
       exit(EXIT_FAILURE);
   }
 }
@@ -312,7 +312,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
     case CORE::FE::CellType::nurbs3:
       return Create2D<CORE::FE::CellType::nurbs3>(mastertype, cparams, wrapper);
     default:
-      dserror("Unsupported slave element type %d|\"%s\"", slavetype,
+      FOUR_C_THROW("Unsupported slave element type %d|\"%s\"", slavetype,
           CORE::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
   }
@@ -333,7 +333,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
     case CORE::FE::CellType::nurbs3:
       return Create2D<slavetype, CORE::FE::CellType::nurbs3>(cparams, wrapper);
     default:
-      dserror("Unsupported master element type %d|\"%s\"", mastertype,
+      FOUR_C_THROW("Unsupported master element type %d|\"%s\"", mastertype,
           CORE::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
@@ -361,7 +361,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
     }
     default:
     {
-      dserror("Unknown variational approach! (var_type= \"%s\" | %d)",
+      FOUR_C_THROW("Unknown variational approach! (var_type= \"%s\" | %d)",
           INPAR::CONTACT::VariationalApproach2String(var_type).c_str(), var_type);
       exit(EXIT_FAILURE);
     }
@@ -385,7 +385,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
     case CORE::FE::CellType::nurbs9:
       return Create3D<CORE::FE::CellType::nurbs9>(mastertype, cparams, wrapper);
     default:
-      dserror("Unsupported slave element type %d|\"%s\"",
+      FOUR_C_THROW("Unsupported slave element type %d|\"%s\"",
           CORE::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
@@ -408,7 +408,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
     case CORE::FE::CellType::nurbs9:
       return Create3D<slavetype, CORE::FE::CellType::nurbs9>(cparams, wrapper);
     default:
-      dserror("Unsupported master element type %d|\"%s\"",
+      FOUR_C_THROW("Unsupported master element type %d|\"%s\"",
           CORE::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
@@ -436,7 +436,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
     }
     default:
     {
-      dserror("Unknown variational approach! (var_type= \"%s\" | %d)",
+      FOUR_C_THROW("Unknown variational approach! (var_type= \"%s\" | %d)",
           INPAR::CONTACT::VariationalApproach2String(var_type).c_str(), var_type);
       exit(EXIT_FAILURE);
     }
@@ -495,7 +495,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
     MORTAR::Element& sele, double& sxia, double& sxib, MORTAR::Element& mele, double& mxia,
     double& mxib)
 {
-  dserror(
+  FOUR_C_THROW(
       "Deprecated method! The segmented based integration is no longer "
       "supported!");
 }
@@ -508,7 +508,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::IntegrateDerivCell3DAuxPlane(MORTAR::Element& sele, MORTAR::Element& mele,
     MORTAR::IntCell& cell, double* auxn)
 {
-  dserror(
+  FOUR_C_THROW(
       "Deprecated method! The segmented based integration is no longer "
       "supported!");
 }
@@ -571,7 +571,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evalua
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
   if (this->Wrapper().IntegrationType() != INPAR::MORTAR::inttype_elements)
-    dserror("How did you come here?");
+    FOUR_C_THROW("How did you come here?");
 
   const enum MORTAR::ActionType action = CParams().GetActionType();
 
@@ -599,7 +599,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evalua
     }
     default:
     {
-      dserror("Unconsidered ActionType = %d | \"%s\" ", action,
+      FOUR_C_THROW("Unconsidered ActionType = %d | \"%s\" ", action,
           MORTAR::ActionType2String(action).c_str());
       exit(EXIT_FAILURE);
     }
@@ -641,7 +641,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::SetEva
     }
     default:
     {
-      dserror("Unconsidered ActionType = %d | \"%s\" ", action,
+      FOUR_C_THROW("Unconsidered ActionType = %d | \"%s\" ", action,
           MORTAR::ActionType2String(action).c_str());
       exit(EXIT_FAILURE);
     }

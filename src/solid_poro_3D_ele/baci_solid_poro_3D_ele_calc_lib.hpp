@@ -47,7 +47,7 @@ namespace DRT::ELEMENTS
   {
     // get state of the global vector
     Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(dofset, state);
-    if (matrix_state == Teuchos::null) dserror("Cannot get state vector %s", state.c_str());
+    if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
     // ask for the number of dofs of dofset
     const int numdofpernode = discretization.NumDof(dofset, ele.Nodes()[0]);
@@ -96,7 +96,7 @@ namespace DRT::ELEMENTS
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "Unknown degrees of freedom per node. Currently, only dim+1, dim and 1 are supported. "
           "You have %d dofs per node.",
           numdofpernode);
@@ -637,7 +637,7 @@ namespace DRT::ELEMENTS
       inverse.setMatrix(Teuchos::rcpFromRef(pressderiv));
       int err = inverse.invert();
       if (err != 0)
-        dserror("Inversion of matrix for pressure derivative failed with error code %d.", err);
+        FOUR_C_THROW("Inversion of matrix for pressure derivative failed with error code %d.", err);
     }
 
     // calculate derivatives of saturation w.r.t. pressure

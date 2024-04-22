@@ -186,11 +186,12 @@ void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector>
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface->GetWallDataState();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (walldatastate->GetDispRow() == Teuchos::null or walldatastate->GetDispCol() == Teuchos::null)
-    dserror("wall displacements not initialized!");
-  if (walldatastate->GetVelCol() == Teuchos::null) dserror("wall velocities not initialized!");
-  if (walldatastate->GetAccCol() == Teuchos::null) dserror("wall accelerations not initialized!");
+    FOUR_C_THROW("wall displacements not initialized!");
+  if (walldatastate->GetVelCol() == Teuchos::null) FOUR_C_THROW("wall velocities not initialized!");
+  if (walldatastate->GetAccCol() == Teuchos::null)
+    FOUR_C_THROW("wall accelerations not initialized!");
 #endif
 
   // export displacement, velocity and acceleration states
@@ -252,11 +253,11 @@ void PASI::PartitionedAlgo::InitStructureField()
     struct_adapterbase_ptr_->Init(params, const_cast<Teuchos::ParameterList&>(params), structdis);
   }
   else if (params.get<std::string>("INT_STRATEGY") == "Old")
-    dserror(
+    FOUR_C_THROW(
         "Old time integration not supported in particle structure interaction!\n"
         "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!");
   else
-    dserror(
+    FOUR_C_THROW(
         "Unknown time integration requested!\n"
         "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!");
 
@@ -299,7 +300,7 @@ void PASI::PartitionedAlgo::BuildStructureModelEvaluator()
         struct_adapterbase_ptr_->StructureField());
 
     if (structurefield_ == Teuchos::null)
-      dserror("No valid pointer to ADAPTER::PASIStructureWrapper set!");
+      FOUR_C_THROW("No valid pointer to ADAPTER::PASIStructureWrapper set!");
 
     // set pointer to model evaluator in PASIStructureWrapper
     structurefield_->SetModelEvaluatorPtr(

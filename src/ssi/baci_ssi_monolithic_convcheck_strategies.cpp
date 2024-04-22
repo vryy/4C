@@ -66,9 +66,9 @@ void SSI::SSIMono::ConvCheckStrategyBase::CheckL2Norm(
     double& incnorm, double& resnorm, double& dofnorm) const
 {
   if (std::isnan(incnorm) or std::isnan(resnorm) or std::isnan(dofnorm))
-    dserror("Vector norm is not a number!");
+    FOUR_C_THROW("Vector norm is not a number!");
   if (std::isinf(incnorm) or std::isinf(resnorm) or std::isinf(dofnorm))
-    dserror("Vector norm is infinity!");
+    FOUR_C_THROW("Vector norm is infinity!");
 
   if (dofnorm < 1.e-10) dofnorm = 1.e-10;
 }

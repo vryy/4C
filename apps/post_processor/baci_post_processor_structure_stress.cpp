@@ -86,7 +86,7 @@ void StructureFilter::PostStress(const std::string groupname, const std::string 
 
   else
   {
-    dserror("Unknown stress/strain type");
+    FOUR_C_THROW("Unknown stress/strain type");
   }
 
   return;
@@ -109,7 +109,7 @@ struct WriteNodalStressStep : public SpecialFieldInterface
   {
     using namespace FourC;
 
-    dsassert(name.size() == 1, "Unexpected number of names");
+    FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
 
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
@@ -150,7 +150,7 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
   {
     using namespace FourC;
 
-    dsassert(name.size() == 1, "Unexpected number of names");
+    FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
     const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
@@ -186,7 +186,7 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
   {
     using namespace FourC;
 
-    dsassert(name.size() == 1, "Unexpected number of names");
+    FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
     const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
@@ -229,7 +229,7 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
   {
     using namespace FourC;
 
-    dsassert(name.size() == 1, "Unexpected number of names");
+    FOUR_C_ASSERT(name.size() == 1, "Unexpected number of names");
 
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
@@ -247,7 +247,7 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
     dis->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     if (nodal_thickness == Teuchos::null)
     {
-      dserror("vector containing nodal thickness not available");
+      FOUR_C_THROW("vector containing nodal thickness not available");
     }
 
     filter_.GetWriter().WriteNodalResultStep(
@@ -324,7 +324,7 @@ void StructureFilter::WriteStress(
   }
   else
   {
-    dserror("trying to write something that is not a stress or a strain");
+    FOUR_C_THROW("trying to write something that is not a stress or a strain");
     exit(1);
   }
 
@@ -346,10 +346,10 @@ void StructureFilter::WriteStress(
     }
     else if (stresskind == elementbased)
     {
-      dserror("element based membrane thickness postprocessed anyway!");
+      FOUR_C_THROW("element based membrane thickness postprocessed anyway!");
     }
     else
-      dserror("Unknown stress type");
+      FOUR_C_THROW("Unknown stress type");
   }
   else
   {
@@ -368,7 +368,7 @@ void StructureFilter::WriteStress(
           stresses, result, elementbased, groupname, std::vector<std::string>(1, name), out);
     }
     else
-      dserror("Unknown stress type");
+      FOUR_C_THROW("Unknown stress type");
   }
 }
 
@@ -394,7 +394,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
   {
     using namespace FourC;
 
-    dsassert(name.size() == 6, "Unexpected number of names");
+    FOUR_C_ASSERT(name.size() == 6, "Unexpected number of names");
 
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
@@ -706,7 +706,7 @@ void StructureFilter::WriteEigenStress(
   }
   else
   {
-    dserror("trying to write something that is not a stress or a strain");
+    FOUR_C_THROW("trying to write something that is not a stress or a strain");
     exit(1);
   }
 
@@ -724,7 +724,7 @@ void StructureFilter::WriteEigenStress(
     writer_->WriteSpecialField(stresses, result, elementbased, groupname, name, out);
   }
   else
-    dserror("Unknown heatflux type");
+    FOUR_C_THROW("Unknown heatflux type");
 }
 
 

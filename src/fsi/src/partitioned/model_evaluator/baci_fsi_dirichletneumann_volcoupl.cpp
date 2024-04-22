@@ -54,7 +54,7 @@ void FSI::DirichletNeumannVolCoupl::Setup()
   SetKinematicCoupling(
       CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == INPAR::FSI::CoupVarPart::disp);
 
-  if (!GetKinematicCoupling()) dserror("Currently only displacement coupling is supported!");
+  if (!GetKinematicCoupling()) FOUR_C_THROW("Currently only displacement coupling is supported!");
 
   SetupCouplingStructAle(fsidyn, Comm());
 
@@ -202,8 +202,8 @@ void FSI::InterfaceCorrector::SetInterfaceDisplacements(
 void FSI::InterfaceCorrector::CorrectInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
-  if (icoupfs_ == Teuchos::null) dserror("Coupling adapter not set!");
-  if (idisp_ == Teuchos::null) dserror("Interface displacements not set!");
+  if (icoupfs_ == Teuchos::null) FOUR_C_THROW("Coupling adapter not set!");
+  if (idisp_ == Teuchos::null) FOUR_C_THROW("Interface displacements not set!");
 
   // std::cout<<*finterface->FullMap()<<std::endl;
   // std::cout<<*disp_fluid<<std::endl;
@@ -212,7 +212,7 @@ void FSI::InterfaceCorrector::CorrectInterfaceDisplacements(Teuchos::RCP<Epetra_
   CORE::LINALG::Export(*disp_fluid, *deltadisp_);
   // deltadisp_ = finterface->ExtractFSICondVector(disp_fluid);
 
-  // dserror("stop");
+  // FOUR_C_THROW("stop");
 
   Teuchos::RCP<Epetra_Vector> idisp_fluid_corrected = icoupfs_->MasterToSlave(idisp_);
 
@@ -291,7 +291,7 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
       else if (aleele->Shape() == CORE::FE::CellType::hex8)
         MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::hex8>(*aleele, gpos, lpos);
       else
-        dserror("ERROR: element type not implemented!");
+        FOUR_C_THROW("ERROR: element type not implemented!");
 
       if (lpos[0] < -1.0 - tol || lpos[1] < -1.0 - tol || lpos[2] < -1.0 - tol ||
           lpos[0] > 1.0 + tol || lpos[1] > 1.0 + tol || lpos[2] > 1.0 + tol)
@@ -311,11 +311,11 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
         else if (aleele->Shape() == CORE::FE::CellType::hex8)
           MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::hex8>(*aleele, gposFSI, lposFSI);
         else
-          dserror("ERROR: element type not implemented!");
+          FOUR_C_THROW("ERROR: element type not implemented!");
 
         if (lposFSI[0] < -1.0 - tol || lposFSI[1] < -1.0 - tol || lposFSI[2] < -1.0 - tol ||
             lposFSI[0] > 1.0 + tol || lposFSI[1] > 1.0 + tol || lposFSI[2] > 1.0 + tol)
-          dserror("ERROR: wrong parameter space coordinates!");
+          FOUR_C_THROW("ERROR: wrong parameter space coordinates!");
 
         // valc distance to fsi node
         double vec0 = lposFSI[0] - lpos[0];
@@ -340,7 +340,7 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
           aleele->Shape() == CORE::FE::CellType::hex8)
         fac = 1.0 - 0.5 * dist;
       else
-        dserror("ERROR: element type not implemented!");
+        FOUR_C_THROW("ERROR: element type not implemented!");
 
       // safety
       if (dist > 2.0) fac = 0.0;
@@ -518,7 +518,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
         else if (aleele->Shape() == CORE::FE::CellType::hex8)
           MORTAR::UTILS::GlobalToLocal<CORE::FE::CellType::hex8>(*aleele, gpos, lpos);
         else
-          dserror("ERROR: element type not implemented!");
+          FOUR_C_THROW("ERROR: element type not implemented!");
 
         double tol = 1e-5;
         if (lpos[0] < -1.0 - tol || lpos[1] < -1.0 - tol || lpos[2] < -1.0 - tol ||

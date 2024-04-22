@@ -238,7 +238,7 @@ namespace XFEM
             output = "done Standard";
             break;
           default:
-            dserror("unknown status in TimeIntData class");
+            FOUR_C_THROW("unknown status in TimeIntData class");
             break;
         }
         return output;
@@ -257,7 +257,7 @@ namespace XFEM
             output = "predictor";
             break;
           default:
-            dserror("unknown type in TimeIntData class");
+            FOUR_C_THROW("unknown type in TimeIntData class");
             break;
         }
         return output;
@@ -373,7 +373,7 @@ namespace XFEM
     virtual void compute(std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectorsn,
         std::vector<Teuchos::RCP<Epetra_Vector>> newRowVectorsnp)
     {
-      dserror("Unused function! Use a function of the derived classes");
+      FOUR_C_THROW("Unused function! Use a function of the derived classes");
     };
 
     //! set computation type due to iteration counter
@@ -413,7 +413,8 @@ namespace XFEM
     //! return the number of Epetra vectors which shall get new values for a given type
     size_t vectorSize(TimeIntData::Type currtype) const
     {
-      if (newVectors_.size() == 0) dserror("call this function only when setting the final values");
+      if (newVectors_.size() == 0)
+        FOUR_C_THROW("call this function only when setting the final values");
 
       size_t size = 0;  // vector size
       switch (currtype)
@@ -425,7 +426,7 @@ namespace XFEM
           size = newVectors_.size() / 2;
           break;  // only first half with old solutions
         default:
-          dserror("undefined type");
+          FOUR_C_THROW("undefined type");
           break;
       }
       return size;
@@ -454,7 +455,7 @@ namespace XFEM
     {
       if (newTimeStep1 != newTimeStep2)
       {
-        dserror("how to check changing side at two different time steps?");
+        FOUR_C_THROW("how to check changing side at two different time steps?");
       }
       else
       {
@@ -709,7 +710,7 @@ namespace XFEM
       evel.Clear();
       epre.Clear();
 
-      if (vel_vec == Teuchos::null) dserror("vector is null");
+      if (vel_vec == Teuchos::null) FOUR_C_THROW("vector is null");
 
       // extract local values of the global vectors
       std::vector<double> mymatrix(lm.size());

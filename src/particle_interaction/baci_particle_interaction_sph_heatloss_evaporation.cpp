@@ -43,7 +43,7 @@ void PARTICLEINTERACTION::SPHHeatLossEvaporation::Init()
   // safety check
   if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::SurfaceTensionFormulation>(
           params_sph_, "SURFACETENSIONFORMULATION") == INPAR::PARTICLE::NoSurfaceTension)
-    dserror("surface tension evaluation needed for evaporation induced heat loss!");
+    FOUR_C_THROW("surface tension evaluation needed for evaporation induced heat loss!");
 }
 
 void PARTICLEINTERACTION::SPHHeatLossEvaporation::Setup(

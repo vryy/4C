@@ -138,7 +138,7 @@ void FS3I::FS3IBase::CheckInterfaceDirichletBC()
       if ((*test_slaveifdirich)[slavemap->LID(gid)] == 1.0 and
           (*slaveifdirich)[slavemap->LID(gid)] != 1.0)
       {
-        dserror("Dirichlet boundary conditions not matching at the interface");
+        FOUR_C_THROW("Dirichlet boundary conditions not matching at the interface");
       }
     }
   }
@@ -151,7 +151,7 @@ void FS3I::FS3IBase::CheckInterfaceDirichletBC()
       if ((*test_masterifdirich)[mastermap->LID(gid)] == 1.0 and
           (*masterifdirich)[mastermap->LID(gid)] != 1.0)
       {
-        dserror("Dirichlet boundary conditions not matching at the interface");
+        FOUR_C_THROW("Dirichlet boundary conditions not matching at the interface");
       }
     }
   }
@@ -187,7 +187,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
   {
     if (scatratimealgo != INPAR::SCATRA::timeint_one_step_theta or
         structtimealgo != INPAR::STR::dyna_onesteptheta)
-      dserror(
+      FOUR_C_THROW(
           "Partitioned FS3I computations should feature consistent time-integration schemes for "
           "the subproblems; in this case, a one-step-theta scheme is intended to be used for the "
           "fluid subproblem, and different schemes are intended to be used for the structure "
@@ -196,7 +196,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
     if (scatradynparams.get<double>("THETA") != fluiddynparams.get<double>("THETA") or
         scatradynparams.get<double>("THETA") !=
             structdynparams.sublist("ONESTEPTHETA").get<double>("THETA"))
-      dserror(
+      FOUR_C_THROW(
           "Parameter(s) theta for one-step-theta time-integration scheme defined in one or more of "
           "the individual fields do(es) not match for partitioned FS3I computation.");
   }
@@ -204,7 +204,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
   {
     if (scatratimealgo != INPAR::SCATRA::timeint_gen_alpha or
         structtimealgo != INPAR::STR::dyna_genalpha)
-      dserror(
+      FOUR_C_THROW(
           "Partitioned FS3I computations should feature consistent time-integration schemes for "
           "the subproblems; in this case, a (alpha_f-based) generalized-alpha scheme is intended "
           "to be used for the fluid subproblem, and different schemes are intended to be used for "
@@ -212,14 +212,14 @@ void FS3I::FS3IBase::CheckFS3IInputs()
   }
   else if (fluidtimealgo == INPAR::FLUID::timeint_npgenalpha)
   {
-    dserror(
+    FOUR_C_THROW(
         "Partitioned FS3I computations do not support n+1-based generalized-alpha time-integration "
         "schemes for the fluid subproblem!");
   }
   else if (fluidtimealgo == INPAR::FLUID::timeint_bdf2 or
            fluidtimealgo == INPAR::FLUID::timeint_stationary)
   {
-    dserror(
+    FOUR_C_THROW(
         "Partitioned FS3I computations do not support stationary of BDF2 time-integration schemes "
         "for the fluid subproblem!");
   }
@@ -227,7 +227,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
   // check that incremental formulation is used for scalar transport field,
   // according to structure and fluid field
   if (scatravec_[0]->ScaTraField()->IsIncremental() == false)
-    dserror("Incremental formulation required for partitioned FS3I computations!");
+    FOUR_C_THROW("Incremental formulation required for partitioned FS3I computations!");
 
 
   // is scatra calculated conservative?
@@ -243,7 +243,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
     {
       if (ADAPTER::GetScaTraImplType(structdis->lColElement(i)) !=
           INPAR::SCATRA::impltype_refconcreac)
-        dserror(
+        FOUR_C_THROW(
             "Your scalar fields have to be calculated in conservative form, "
             "since the velocity field in the structure is NOT divergence free!");
     }
@@ -254,7 +254,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
   if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(structdynparams, "DYNAMICTYP") ==
           INPAR::STR::dyna_statics and
       pstype != INPAR::STR::PreStress::mulf)
-    dserror(
+    FOUR_C_THROW(
         "Since we need a velocity field in the structure domain for the scalar field you need do "
         "calculate the structure dynamically! Exception: when prestressing..");
 
@@ -302,7 +302,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
         }
 
         if (scatravec_[i]->ScaTraField()->NumScal() != params->at(6))
-          dserror(
+          FOUR_C_THROW(
               "Number of scalars NUMSCAL in ScaTra coupling conditions with COUPID %i does not "
               "equal the number of scalars your scalar field has!",
               myID);
@@ -313,7 +313,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
           problem->GetDis("fluid")->GetCondition("FluidStressCalc", FSCCond);
 
           if (FSCCond.size() == 0)
-            dserror(
+            FOUR_C_THROW(
                 "If you have a WSS dependent interface permeablity you need at least one FLUID "
                 "STRESS CALC CONDITION to specify the region you want to evaluate the WSS. "
                 "Typically this region is equal to the SSI interface...");
@@ -325,7 +325,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
   }
 
   if (condIDs[0].size() != condIDs[1].size())
-    dserror("ScaTra coupling conditions need to be defined on both discretizations");
+    FOUR_C_THROW("ScaTra coupling conditions need to be defined on both discretizations");
 
   if (!infperm_)  // now do the testing
   {
@@ -348,47 +348,47 @@ void FS3I::FS3IBase::CheckFS3IInputs()
 
       // no the actual testing
       if (fluid_permcoeffs->at(0) != structure_permcoeffs->at(0))
-        dserror(
+        FOUR_C_THROW(
             "Permeability coefficient PERMCOEF of ScaTra couplings with COUPID %i needs to be the "
             "same!",
             ID);
       if (fluid_permcoeffs->at(1) != structure_permcoeffs->at(1))
-        dserror(
+        FOUR_C_THROW(
             "Hydraulic conductivity coefficient CONDUCT of ScaTra couplings with COUPID %i needs "
             "to be the same!",
             ID);
       if (fluid_permcoeffs->at(2) != structure_permcoeffs->at(2))
-        dserror(
+        FOUR_C_THROW(
             "Filtration coefficient coefficient FILTR of ScaTra couplings with COUPID %i needs to "
             "be the same!",
             ID);
       if (fluid_permcoeffs->at(2) < 0 or fluid_permcoeffs->at(2) > 1)
-        dserror(
+        FOUR_C_THROW(
             "The filtration coefficient FILTR of ScaTra couplings with COUPID %i must be in [0;1], "
             "since it is the ratio of average pore size per area!",
             ID);
       if (fluid_permcoeffs->at(3) != structure_permcoeffs->at(3))
-        dserror(
+        FOUR_C_THROW(
             "WSS onoff flag WSSONOFF of ScaTra couplings with COUPID %i needs to be the same!", ID);
       if (fluid_permcoeffs->at(4) != structure_permcoeffs->at(4))
-        dserror(
+        FOUR_C_THROW(
             "First WSS coefficient WSSCOEFFS of ScaTra couplings with COUPID %i needs to be the "
             "same!",
             ID);
       if (fluid_permcoeffs->at(5) != structure_permcoeffs->at(5))
-        dserror(
+        FOUR_C_THROW(
             "Second WSS coefficient WSSCOEFFS of ScaTra couplings with COUPID %i needs to be the "
             "same!",
             ID);
       if (fluid_permcoeffs->at(6) != structure_permcoeffs->at(6))
-        dserror(
+        FOUR_C_THROW(
             "Number of scalars NUMSCAL of ScaTra couplings with COUPID %i needs to be the same!",
             ID);
 
       for (int k = 0; k < numscal; k++)
       {
         if (fluid_permcoeffs->at(7 + k) != structure_permcoeffs->at(7 + k))
-          dserror("ONOFF vector of ScaTra couplings with COUPID %i needs to be the same!", ID);
+          FOUR_C_THROW("ONOFF vector of ScaTra couplings with COUPID %i needs to be the same!", ID);
 
         onoff_sum->at(k) += fluid_permcoeffs->at(7 + k);
       }
@@ -397,7 +397,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
     for (int j = 0; j < numscal; j++)
     {
       if (onoff_sum->at(j) > 1)
-        dserror(
+        FOUR_C_THROW(
             "In the ONOFF vector the %i-th scalar has been switched on multiple times. The ON is "
             "allowed only once per scalar!",
             j);
@@ -660,8 +660,8 @@ void FS3I::FS3IBase::SetupCoupledScatraMatrix()
   Teuchos::RCP<CORE::LINALG::SparseMatrix> scatra1 = scatravec_[0]->ScaTraField()->SystemMatrix();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> scatra2 = scatravec_[1]->ScaTraField()->SystemMatrix();
 
-  if (scatra1 == Teuchos::null) dserror("expect fluid scatra block matrix");
-  if (scatra2 == Teuchos::null) dserror("expect structure scatra block matrix");
+  if (scatra1 == Teuchos::null) FOUR_C_THROW("expect fluid scatra block matrix");
+  if (scatra2 == Teuchos::null) FOUR_C_THROW("expect structure scatra block matrix");
 
   if (infperm_)
   {
@@ -805,14 +805,14 @@ void FS3I::FS3IBase::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector>
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::CheckIsSetup()
 {
-  if (not IsSetup()) dserror("Setup() was not called.");
+  if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
 };
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::CheckIsInit()
 {
-  if (not IsInit()) dserror("Init(...) was not called.");
+  if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
 };
 
 FOUR_C_NAMESPACE_CLOSE

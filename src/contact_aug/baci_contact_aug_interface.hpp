@@ -76,7 +76,7 @@ namespace CONTACT
       inline INTERFACE::AssembleStrategy& AssembleStrategy() const
       {
         if (assemble_strategy_.is_null())
-          dserror("The interface assemble strategy has not been initialized!");
+          FOUR_C_THROW("The interface assemble strategy has not been initialized!");
 
         return *assemble_strategy_;
       }
@@ -226,7 +226,7 @@ namespace CONTACT
         if (Filled())
           return interfaceData_.SNDofRowMap();
         else
-          dserror("CONTACT::AugmentedInterface::FillComplete was not called");
+          FOUR_C_THROW("CONTACT::AugmentedInterface::FillComplete was not called");
         exit(EXIT_FAILURE);
       }
 
@@ -236,7 +236,7 @@ namespace CONTACT
         if (Filled())
           return interfaceData_.STDofRowMap();
         else
-          dserror("CONTACT::AugmentedInterface::FillComplete was not called");
+          FOUR_C_THROW("CONTACT::AugmentedInterface::FillComplete was not called");
         exit(EXIT_FAILURE);
       }
 
@@ -582,7 +582,7 @@ namespace CONTACT
         inline const Interface& Inter() const
         {
           if (not inter_)
-            dserror(
+            FOUR_C_THROW(
                 "The parent interface pointer has not been initialized "
                 "correctly!");
 
@@ -597,7 +597,7 @@ namespace CONTACT
         inline const InterfaceDataContainer& IData() const
         {
           if (not interfaceData_ptr_)
-            dserror(
+            FOUR_C_THROW(
                 "The interface data pointer has not been initialized "
                 "correctly!");
 

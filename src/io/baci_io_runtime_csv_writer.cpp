@@ -187,7 +187,7 @@ namespace IO
 
       // check if file was found
       if (not restartfile)
-        dserror("restart file '%s' could not be found", fullpathrestartfile.c_str());
+        FOUR_C_THROW("restart file '%s' could not be found", fullpathrestartfile.c_str());
 
       std::stringstream sectionpriorrestart;
 
@@ -233,10 +233,10 @@ namespace IO
   void RuntimeCsvWriterProc0::AppendDataVector(
       const std::string& dataname, const std::vector<double>& datavalues)
   {
-    dsassert(
+    FOUR_C_ASSERT(
         data_vectors_.count(dataname) > 0, "data vector '%s' not registered!", dataname.c_str());
 
-    dsassert((data_vectors_[dataname].first).size() == datavalues.size(),
+    FOUR_C_ASSERT((data_vectors_[dataname].first).size() == datavalues.size(),
         "size of data vector '%s' changed!", dataname.c_str());
 
     data_vectors_[dataname].first = datavalues;
@@ -244,7 +244,7 @@ namespace IO
 
   void RuntimeCsvWriterProc0::WriteCollectedDataToFile()
   {
-    if (data_vectors_.empty()) dserror("no data vectors registered!");
+    if (data_vectors_.empty()) FOUR_C_THROW("no data vectors registered!");
 
     std::ofstream outputfile(fullpathoutputfile_, std::ios_base::app);
     outputfile << timestep_ << "," << time_;
@@ -267,17 +267,17 @@ namespace IO
   void RuntimeCsvWriterProc0::WriteDataToFile(const double time, const unsigned int timestep,
       const std::map<std::string, std::vector<double>>& data) const
   {
-    if (data_vectors_.empty()) dserror("no data vectors registered!");
+    if (data_vectors_.empty()) FOUR_C_THROW("no data vectors registered!");
 
     std::ofstream outputfile(fullpathoutputfile_, std::ios_base::app);
     outputfile << timestep << "," << time;
 
     for (const auto& [data_name, data_vector] : data)
     {
-      dsassert(data_vectors_.count(data_name) > 0, "data vector '%s' not registered!",
+      FOUR_C_ASSERT(data_vectors_.count(data_name) > 0, "data vector '%s' not registered!",
           data_name.c_str());
 
-      dsassert((data_vectors_.at(data_name).first).size() == data_vector.size(),
+      FOUR_C_ASSERT((data_vectors_.at(data_name).first).size() == data_vector.size(),
           "size of data vector '%s' changed!", data_name.c_str());
 
       const int precision = (data_vectors_.at(data_name).second);

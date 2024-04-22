@@ -195,7 +195,7 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
 
     if (integrationcells.size() == 0)
     {
-      dserror("VolumeCell contains 0 integration cells.");
+      FOUR_C_THROW("VolumeCell contains 0 integration cells.");
     }
     //++++++++++++++++++++
   }
@@ -226,7 +226,7 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
   }
   if (error)
   {
-    dserror("Volume predicted by one of the methods is wrong.");
+    FOUR_C_THROW("Volume predicted by one of the methods is wrong.");
   }
   //------------------------------------------------------
   // ###########################################################
@@ -264,7 +264,7 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vec
 
     if (integrationcells.size() == 0)
     {
-      dserror("VolumeCell contains 0 integration cells.");
+      FOUR_C_THROW("VolumeCell contains 0 integration cells.");
     }
     //++++++++++++++++++++
   }
@@ -311,7 +311,7 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vec
   }
   if (error)
   {
-    dserror("Volume predicted by one of the methods is wrong.");
+    FOUR_C_THROW("Volume predicted by one of the methods is wrong.");
   }
   //------------------------------------------------------
   // ###########################################################
@@ -1311,8 +1311,8 @@ void test_ls_mesh_hex8_simple()
   }
   if (error)
   {
-    dserror("Volume predicted by one of the methods is wrong.");
-    // dserror("volume predicted by either one of the method is wrong");
+    FOUR_C_THROW("Volume predicted by one of the methods is wrong.");
+    // FOUR_C_THROW("volume predicted by either one of the method is wrong");
   }
   //------------------------------------------------------
   // ###########################################################
@@ -1444,7 +1444,7 @@ void test_ls_hex8_experiment_magnus()
 
     if (integrationcells.size() == 0)
     {
-      dserror("VolumeCell contains 0 integration cells.");
+      FOUR_C_THROW("VolumeCell contains 0 integration cells.");
     }
   }
 }
@@ -1658,7 +1658,7 @@ void test_ls_hex8_magnus7()
 //      if ( isPlanar == false )
 //      {
 //        std::cout << "WARNING: Facet is NOT planar!!!" << std::endl;
-//        //dserror("VolumeCell is not planar!!");
+//        //FOUR_C_THROW("VolumeCell is not planar!!");
 //      }
 //    }
 //

@@ -372,7 +372,7 @@ namespace CONTACT
     */
     virtual Teuchos::RCP<Epetra_Map> ActiveNodes() const
     {
-      if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
 
       return activenodes_;
     }
@@ -386,14 +386,14 @@ namespace CONTACT
     */
     virtual Teuchos::RCP<Epetra_Map> ActiveDofs() const
     {
-      if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
 
       return activedofs_;
     }
 
     virtual Teuchos::RCP<Epetra_Map> InActiveNodes() const
     {
-      if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
 
       return inactivenodes_;
     }
@@ -407,7 +407,7 @@ namespace CONTACT
     */
     virtual Teuchos::RCP<Epetra_Map> InActiveDofs() const
     {
-      if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
 
       return inactivedofs_;
     }
@@ -420,7 +420,7 @@ namespace CONTACT
     */
     virtual Teuchos::RCP<Epetra_Map> ActiveNDofs() const
     {
-      if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
 
       return activen_;
     }
@@ -433,7 +433,7 @@ namespace CONTACT
     */
     virtual Teuchos::RCP<Epetra_Map> ActiveTDofs() const
     {
-      if (not Filled()) dserror("CONTACT::Interface::FillComplete was not called");
+      if (not Filled()) FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
 
       return activet_;
     }
@@ -449,7 +449,7 @@ namespace CONTACT
       if (Filled())
         return slipnodes_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -464,7 +464,7 @@ namespace CONTACT
       if (Filled())
         return slipdofs_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -479,7 +479,7 @@ namespace CONTACT
       if (Filled())
         return slipt_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -494,7 +494,7 @@ namespace CONTACT
       if (Filled())
         return nonsmoothnodes_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -509,7 +509,7 @@ namespace CONTACT
       if (Filled())
         return smoothnodes_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -524,7 +524,7 @@ namespace CONTACT
       if (Filled())
         return sdofVertexRowmap_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
     /*!
@@ -538,7 +538,7 @@ namespace CONTACT
       if (Filled())
         return sdofVertexColmap_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
     virtual Teuchos::RCP<Epetra_Map> SdofEdgeRowmap() const
@@ -546,7 +546,7 @@ namespace CONTACT
       if (Filled())
         return sdofEdgeRowmap_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
     virtual Teuchos::RCP<Epetra_Map> SdofEdgeColmap() const
@@ -554,7 +554,7 @@ namespace CONTACT
       if (Filled())
         return sdofEdgeColmap_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
     virtual Teuchos::RCP<Epetra_Map> SdofSurfRowmap() const
@@ -562,7 +562,7 @@ namespace CONTACT
       if (Filled())
         return sdofSurfRowmap_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
     virtual Teuchos::RCP<Epetra_Map> SdofSurfColmap() const
@@ -570,7 +570,7 @@ namespace CONTACT
       if (Filled())
         return sdofSurfColmap_;
       else
-        dserror("CONTACT::Interface::FillComplete was not called");
+        FOUR_C_THROW("CONTACT::Interface::FillComplete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -1312,7 +1312,7 @@ namespace CONTACT
 
     Epetra_Vector& GetCnRef()
     {
-      if (cnValues_.is_null()) dserror("The cnValues_ is not initialized!");
+      if (cnValues_.is_null()) FOUR_C_THROW("The cnValues_ is not initialized!");
       return *cnValues_;
     }
 
@@ -1320,7 +1320,7 @@ namespace CONTACT
 
     Epetra_Vector& GetCtRef()
     {
-      if (ctValues_.is_null()) dserror("The ctValues_ is not initialized!");
+      if (ctValues_.is_null()) FOUR_C_THROW("The ctValues_ is not initialized!");
       return *ctValues_;
     }
 

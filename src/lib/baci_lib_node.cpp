@@ -121,7 +121,7 @@ void DRT::Node::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, x_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 
@@ -136,7 +136,7 @@ void DRT::Node::GetCondition(const std::string& name, std::vector<DRT::Condition
   int count = 0;
   std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator curr;
   for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
-  if (count != num) dserror("Mismatch in number of conditions found");
+  if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
 }
 
 
@@ -155,7 +155,7 @@ DRT::Condition* DRT::Node::GetCondition(const std::string& name) const
  *----------------------------------------------------------------------*/
 void DRT::Node::ChangePos(std::vector<double> nvector)
 {
-  dsassert(x_.size() == nvector.size(),
+  FOUR_C_ASSERT(x_.size() == nvector.size(),
       "Mismatch in size of the nodal coordinates vector and the vector to change the nodal "
       "position");
   for (std::size_t i = 0; i < x_.size(); ++i) x_[i] = x_[i] + nvector[i];
@@ -166,7 +166,7 @@ void DRT::Node::ChangePos(std::vector<double> nvector)
  *----------------------------------------------------------------------*/
 void DRT::Node::SetPos(std::vector<double> nvector)
 {
-  dsassert(x_.size() == nvector.size(),
+  FOUR_C_ASSERT(x_.size() == nvector.size(),
       "Mismatch in size of the nodal coordinates vector and the vector to set the new nodal "
       "position");
   for (std::size_t i = 0; i < x_.size(); ++i) x_[i] = nvector[i];
@@ -179,7 +179,7 @@ bool DRT::Node::VisData(const std::string& name, std::vector<double>& data)
 {
   if (name == "Nodeowner")
   {
-    if (static_cast<int>(data.size()) < 1) dserror("Size mismatch");
+    if (static_cast<int>(data.size()) < 1) FOUR_C_THROW("Size mismatch");
     data[0] = Owner();
     return true;
   }

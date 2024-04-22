@@ -109,7 +109,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELE
 
     // the last dof must have been an unused pressure dof
     if (nodecount != 0)
-      dserror("something is wrong in this element with the number of virtual nodes vs dofs");
+      FOUR_C_THROW("something is wrong in this element with the number of virtual nodes vs dofs");
 
     int err = EvaluateServiceXWall(
         ele, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
@@ -132,7 +132,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELE
     return err;
   }
   else
-    dserror("not xwall element");
+    FOUR_C_THROW("not xwall element");
 
 
   return 1;
@@ -227,7 +227,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(DRT::ELEMENTS::
 
     // the last dof must have been an unused pressure dof
     if (nodecount != 0)
-      dserror("something is wrong in this element with the number of virtual nodes vs dofs");
+      FOUR_C_THROW("something is wrong in this element with the number of virtual nodes vs dofs");
 
     int err = my::Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
         elevec1_epetra, elevec2_epetra, elevec3_epetra, my::intpoints_);
@@ -263,7 +263,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::Evaluate(DRT::ELEMENTS::
     return err;
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "this should not have happended: some nodes have too many dofs in the LM vector, because "
         "they are dof-blending nodes and the wrong LocationVector() function is called");
 
@@ -283,10 +283,10 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::E
   visc_ = 0.0;
 
   if (!(enrtype == DRT::ELEMENTS::Fluid::xwall))
-    dserror("This class is exclusively for the xwall enrichment type up to now");
+    FOUR_C_THROW("This class is exclusively for the xwall enrichment type up to now");
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
-  if (my::rotsymmpbc_->HasRotSymmPBC()) dserror("rotsymm pbc don't work with xwall");
+  if (my::rotsymmpbc_->HasRotSymmPBC()) FOUR_C_THROW("rotsymm pbc don't work with xwall");
 
   // get xwall toggle
   {
@@ -360,7 +360,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::E
   // get viscosity and density
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-    if (!actmat) dserror("not a newtonian fluid");
+    if (!actmat) FOUR_C_THROW("not a newtonian fluid");
     // get constant dynamic viscosity
     dens_ = actmat->Density();
     densinv_ = 1.0 / dens_;
@@ -527,7 +527,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalStdShapeFuncAndDeri
   my::det_ = my::xji_.Invert(my::xjm_);
 
   if (my::det_ < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", my::eid_, my::det_);
+    FOUR_C_THROW(
+        "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", my::eid_, my::det_);
 
   // compute integration factor
   my::fac_ = gpweight * my::det_;
@@ -675,8 +676,8 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EnrichmentShapeDer(
   CORE::LINALG::Matrix<numderiv2_, 1> der2trans_1(true);
   CORE::LINALG::Matrix<numderiv2_, 1> der2trans_2(true);
 
-  if (tauw < 1.0e-10) dserror("tauw is almost zero");
-  if (dens_ < 1.0e-10) dserror("density is almost zero");
+  if (tauw < 1.0e-10) FOUR_C_THROW("tauw is almost zero");
+  if (dens_ < 1.0e-10) FOUR_C_THROW("density is almost zero");
 
   const double utau = sqrt(tauw * densinv_);
   const double fac = 1.0 / (2.0 * sqrt(dens_ * tauw));
@@ -871,7 +872,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
 
         normwall.Multiply(derxy_, ewdist_);
         if (normwall.Norm2() < 1.0e-10)
-          dserror("normal vector has length zero, even in the second try");
+          FOUR_C_THROW("normal vector has length zero, even in the second try");
       }
 
       // unit vector
@@ -915,7 +916,7 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetMK()
     return CalcMK();
   else
     return mk_;
-  dserror("mk could not be determined for xwall");
+  FOUR_C_THROW("mk could not be determined for xwall");
   return 0.0;
 }
 
@@ -927,7 +928,7 @@ template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrty
 double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK()
 {
   if (my::is_higher_order_ele_ == false)
-    dserror("It is essential that the second derivatives exist!");
+    FOUR_C_THROW("It is essential that the second derivatives exist!");
 
   CORE::FE::GaussIntegration intpoints(CORE::FE::CellType::hex8, 1);
   if (distype == CORE::FE::CellType::hex8)
@@ -1006,13 +1007,13 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK()
       my::fldpara_->WhichTau() == INPAR::FLUID::tau_codina_convscaled)
   {
     if (!(my::fldpara_->CharEleLengthU() == INPAR::FLUID::volume_equivalent_diameter_u))
-      dserror("only volume equivalent diameter defined up to now");
+      FOUR_C_THROW("only volume equivalent diameter defined up to now");
 
     // volume equivalent diameter
     h_u = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Element length not defined for dynamic determination of mk for your stabilization "
         "parameter");
 
@@ -1139,7 +1140,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
       if (ui % 2 == 1)
         nodeui = (ui - 1) / 2;
       else
-        dserror("something wrong with indices. also correct in all following terms");
+        FOUR_C_THROW("something wrong with indices. also correct in all following terms");
 
       for (int idim = 0; idim < nsd_; ++idim)
       {
@@ -1330,7 +1331,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::LinMeshMotion_3D(
 {
   // xGderiv_ = sum(gridx(k,i) * deriv_(j,k), k);
   // xGderiv_ == xjm_
-  dserror("wrong");
+  FOUR_C_THROW("wrong");
 
   return;
 }

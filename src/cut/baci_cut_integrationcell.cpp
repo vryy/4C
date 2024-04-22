@@ -37,7 +37,7 @@ bool CORE::GEO::CUT::IntegrationCell::Contains(CORE::LINALG::Matrix<3, 1>& x)
     }
     default:
     {
-      dserror("unknown type of integration cell ");
+      FOUR_C_THROW("unknown type of integration cell ");
       break;
     }
   }
@@ -120,7 +120,7 @@ int CORE::GEO::CUT::Hex8IntegrationCell::CubatureDegree(CORE::FE::CellType eleme
     case CORE::FE::CellType::pyramid5:
       return 6;
     default:
-      dserror("no rule defined for this element type");
+      FOUR_C_THROW("no rule defined for this element type");
       exit(EXIT_FAILURE);
   }
 }
@@ -148,7 +148,7 @@ int CORE::GEO::CUT::Tet4IntegrationCell::CubatureDegree(CORE::FE::CellType eleme
     case CORE::FE::CellType::pyramid5:
       return 6;
     default:
-      dserror("no rule defined for this element type");
+      FOUR_C_THROW("no rule defined for this element type");
       exit(EXIT_FAILURE);
   }
 }

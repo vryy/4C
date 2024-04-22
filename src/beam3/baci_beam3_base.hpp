@@ -233,7 +233,7 @@ namespace DRT
           std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
           std::vector<double>& curvature_3_GPs) const
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
       }
 
       /** \brief Get spatial cross-section stress resultants
@@ -247,7 +247,7 @@ namespace DRT
           std::vector<double>& spatial_bending_moment_2_GPs,
           std::vector<double>& spatial_bending_moment_3_GPs) const
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
       }
 
       /** \brief Get spatial cross-section stress resultants
@@ -258,7 +258,7 @@ namespace DRT
           std::vector<double>& spatial_shear_force_2_GPs,
           std::vector<double>& spatial_shear_force_3_GPs) const
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
       }
 
       /** \brief Get spatial cross-section stress resultants
@@ -269,7 +269,7 @@ namespace DRT
           std::vector<double>& spatial_bending_moment_2_GPs,
           std::vector<double>& spatial_bending_moment_3_GPs) const
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
       }
 
       /** \brief Get material cross-section stress resultants
@@ -283,7 +283,7 @@ namespace DRT
           std::vector<double>& material_bending_moment_2_GPs,
           std::vector<double>& material_bending_moment_3_GPs) const
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
       }
 
       /** \brief Get number of degrees of freedom of a single node
@@ -292,7 +292,7 @@ namespace DRT
        *  \date 08/16 */
       int NumDofPerNode(const DRT::Node& node) const override
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
         return -1;
       }
 
@@ -326,7 +326,7 @@ namespace DRT
           const std::vector<double>& disp) const
       {
         // ToDo make pure virtual and add/generalize implementations in beam eles
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
       }
 
       /** \brief get generalized interpolation matrix which yields the variation of the position and
@@ -339,7 +339,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& Ivar, const double& xi,
           const std::vector<double>& disp) const
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
       }
 
       /** \brief get linearization of the product of (generalized interpolation matrix for
@@ -352,7 +352,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& stiffmat, const double& xi,
           const std::vector<double>& disp, const CORE::LINALG::SerialDenseVector& force) const
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
       }
 
       /** \brief get generalized interpolation matrix which yields the increments of the position
@@ -364,7 +364,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& Iinc, const double& xi,
           const std::vector<double>& disp) const
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
       }
 
       //! get internal (elastic) energy of element
@@ -410,7 +410,7 @@ namespace DRT
        *  \date 04/16 */
       inline STR::ELEMENTS::ParamsInterface& ParamsInterface() const
       {
-        if (not IsParamsInterface()) dserror("The interface ptr is not set!");
+        if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
       }
 
@@ -649,7 +649,7 @@ namespace DRT
           INPAR::BEAMINTERACTION::CrosslinkerType linkertype, unsigned int bspotlocn) const
       {
         if (bspotlocn > bspotposxi_.at(linkertype).size())
-          dserror("number of requested binding spot exceeds total number of binding spots");
+          FOUR_C_THROW("number of requested binding spot exceeds total number of binding spots");
 
         return bspotposxi_.at(linkertype)[bspotlocn];
       }

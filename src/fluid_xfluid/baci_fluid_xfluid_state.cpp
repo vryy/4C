@@ -35,9 +35,9 @@ FLD::XFluidState::CouplingState::CouplingState(
     : is_active_(true)
 {
   if (slavediscret_mat == Teuchos::null)
-    dserror("invalid slave discretization for coupling application");
+    FOUR_C_THROW("invalid slave discretization for coupling application");
   if (slavediscret_rhs == Teuchos::null)
-    dserror("invalid slave discretization for coupling application");
+    FOUR_C_THROW("invalid slave discretization for coupling application");
 
 
   // savegraph flag set to true, as there is no change in the matrix graph expected for the lifetime
@@ -95,7 +95,7 @@ void FLD::XFluidState::CouplingState::CompleteCouplingMatricesAndRhs(
   Epetra_Vector rhC_s_tmp(rhC_s_->Map(), true);
   Epetra_Export exporter_rhC_s_col(rhC_s_col_->Map(), rhC_s_tmp.Map());
   int err = rhC_s_tmp.Export(*rhC_s_col_, exporter_rhC_s_col, Add);
-  if (err) dserror("Export using exporter returned err=%d", err);
+  if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
 
   rhC_s_->Update(1.0, rhC_s_tmp, 0.0);
 }
@@ -231,8 +231,8 @@ void FLD::XFluidState::InitCouplingMatricesAndRhs()
   {
     Teuchos::RCP<XFEM::CouplingBase> coupling = condition_manager_->GetCouplingByIdx(coup_idx);
 
-#ifdef BACI_DEBUG
-    if (coupling == Teuchos::null) dserror("invalid coupling object!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    if (coupling == Teuchos::null) FOUR_C_THROW("invalid coupling object!");
 #endif
 
     Teuchos::RCP<XFluidState::CouplingState> coup_state = Teuchos::null;
@@ -268,7 +268,7 @@ void FLD::XFluidState::InitCouplingMatricesAndRhs()
             xfluiddofrowmap_, coupling->GetCondDis(), coupling->GetCouplingDis()));
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "coupling object is neither a level-set coupling object nor a mesh-coupling object");
     }
 

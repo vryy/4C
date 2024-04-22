@@ -37,7 +37,7 @@ void CORE::GEO::checkGeoType(const DRT::Element* element,
   else if (CORE::FE::getOrder(distype) == 2)
     eleGeoType = HIGHERORDER;
   else
-    dserror("order of element shapefuntion is not correct");
+    FOUR_C_THROW("order of element shapefuntion is not correct");
 
   // check if cartesian
   if (eleDim == 3)
@@ -90,7 +90,7 @@ void CORE::GEO::checkGeoType(const DRT::Element* element,
     if (CartesianCount > 2) cartesian = false;
   }
   else
-    dserror("dimension of element is not correct");
+    FOUR_C_THROW("dimension of element is not correct");
 
 
 

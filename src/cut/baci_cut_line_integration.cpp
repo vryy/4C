@@ -77,7 +77,7 @@ double LineIntegration::integrate_line()
       else if (intType_ == CORE::GEO::CUT::proj_z)
         linein = base_func_surfZ(actCoord, inte_num_, alpha_);
       else
-        dserror("Integration type unspecified");
+        FOUR_C_THROW("Integration type unspecified");
       inte = inte + weight * linein * drs;
     }
   }

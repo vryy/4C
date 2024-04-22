@@ -25,7 +25,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
-  dserror("not implemented. Use the Evaluate() method with Location Array instead!");
+  FOUR_C_THROW("not implemented. Use the Evaluate() method with Location Array instead!");
   return -1;
 }
 
@@ -86,7 +86,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
     default:
     {
       // other implementation types are invalid
-      dserror("Invalid implementation type!");
+      FOUR_C_THROW("Invalid implementation type!");
       break;
     }
   }

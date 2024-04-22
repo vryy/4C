@@ -37,7 +37,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
       new ADAPTER::AleBaseAlgorithm(prbdyn, GLOBAL::Problem::Instance()->GetDis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField(), true);
 
-  if (ale_ == Teuchos::null) dserror("Failed to cast to problem-specific ALE-wrapper");
+  if (ale_ == Teuchos::null) FOUR_C_THROW("Failed to cast to problem-specific ALE-wrapper");
 
   const int ndim = GLOBAL::Problem::Instance()->NDim();
 

@@ -65,7 +65,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
           discretization.GetState(ndsvel, "velocity field");
 
       // safety check
-      if (convel == Teuchos::null or vel == Teuchos::null) dserror("Cannot get state vector");
+      if (convel == Teuchos::null or vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -87,7 +87,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       // need current values of transported scalar
       // -> extract local values from global vectors
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       //----------------------------------------------------------------------
@@ -162,7 +162,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
             CalculateCurrent(q, fluxtype, fac);
           }
           else
-            dserror("Flux id, which should be calculated, does not exit in the dof set.");
+            FOUR_C_THROW("Flux id, which should be calculated, does not exit in the dof set.");
 
           // integrate and assemble everything into the "flux" vector
           for (unsigned vi = 0; vi < nen_; vi++)
@@ -183,11 +183,11 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
     case SCATRA::Action::calc_error:
     {
       // check if length suffices
-      if (elevec1_epetra.length() < 1) dserror("Result vector too short");
+      if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
 
       // need current solution
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       CalErrorComparedToAnalytSolution(ele, params, elevec1_epetra);
@@ -333,7 +333,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
 {
   // get actual values of transported scalars
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // extract local values from the global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
@@ -342,7 +342,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
 
   // get history variable (needed for double layer modeling)
   Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector 'hist'");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'hist'");
 
   // extract local values from the global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ehist(
@@ -351,7 +351,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
 
   // get current condition
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
-  if (cond == Teuchos::null) dserror("Cannot access condition 'ElchBoundaryKineticsPoint'!");
+  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKineticsPoint'!");
 
   // access parameters of the condition
   const int kinetics = *cond->Get<int>("kinetic model");
@@ -363,7 +363,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
   const int zerocur = *cond->Get<int>("zero_cur");
   if (nume < 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "The convention for electrochemical reactions at the electrodes does not allow \n"
         "a negative number of transferred electrons");
   }
@@ -373,7 +373,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
   const auto* stoich = cond->Get<std::vector<int>>("stoich");
   if ((unsigned int)my::numscal_ != (*stoich).size())
   {
-    dserror(
+    FOUR_C_THROW(
         "Electrode kinetics: number of stoichiometry coefficients %u does not match"
         " the number of ionic species %d",
         (*stoich).size(), my::numscal_);
@@ -390,7 +390,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
                                  kinetics == INPAR::ELCH::butler_volmer_yang1997 or
                                  kinetics == INPAR::ELCH::tafel or kinetics == INPAR::ELCH::linear))
     {
-      dserror(
+      FOUR_C_THROW(
           "Kinetic model Butler-Volmer / Butler-Volmer-Yang / Tafel and Linear: \n"
           "Only one educt and no product is allowed in the implemented version");
     }
@@ -398,7 +398,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
 
   // access input parameter
   const double frt = elchparams_->FRT();
-  if (frt <= 0.0) dserror("A negative factor frt is not possible by definition");
+  if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
   // get control parameter from parameter list
   const bool is_stationary = my::scatraparatimint_->IsStationary();
@@ -426,7 +426,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
       // BDF2:              timefac = 2/3 * dt
       // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
       timefac = my::scatraparatimint_->TimeFac();
-      if (timefac < 0.0) dserror("time factor is negative.");
+      if (timefac < 0.0) FOUR_C_THROW("time factor is negative.");
       // for correct scaling of rhs contribution (see below)
       rhsfac = 1 / my::scatraparatimint_->AlphaF();
     }
@@ -447,7 +447,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
   {
     // get actual values of transported scalars
     Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
-    if (phidtnp == Teuchos::null) dserror("Cannot get state vector 'ephidtnp'");
+    if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'ephidtnp'");
     // extract local values from the global vector
     std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(
         my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
@@ -459,7 +459,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
       // BDF2:              timefacrhs = 2/3 * dt
       // generalized-alpha: timefacrhs = (gamma/alpha_M) * dt
       timefac = my::scatraparatimint_->TimeFacRhs();
-      if (timefac < 0.) dserror("time factor is negative.");
+      if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
     EvaluateElectrodeStatusPoint(ele, elevec1_epetra, params, cond, ephinp, ephidtnp, kinetics,
@@ -494,19 +494,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKin
   if (epsilon == -1)
     epsilon = scalar;
   else if (epsilon <= 0 or epsilon > 1)
-    dserror("Boundary porosity has to be between 0 and 1, or -1 by default!");
+    FOUR_C_THROW("Boundary porosity has to be between 0 and 1, or -1 by default!");
 
   // extract nodal cloud of current condition
   const std::vector<int>* nodeids = cond->GetNodes();
 
   // safety checks
-  if (!nodeids) dserror("Electrode kinetics point boundary condition doesn't have nodal cloud!");
+  if (!nodeids)
+    FOUR_C_THROW("Electrode kinetics point boundary condition doesn't have nodal cloud!");
   if (nodeids->size() != 1)
-    dserror(
+    FOUR_C_THROW(
         "Electrode kinetics point boundary condition must be associated with exactly one node!");
   if (nsd_ele_ != 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Electrode kinetics point boundary conditions are applicable to one-dimensional problems "
         "only!");
   }
@@ -523,7 +524,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKin
     position = 1;
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Electrode kinetics point boundary condition must be imposed either on the leftmost or on "
         "the rightmost node of a line element!");
   }
@@ -594,7 +595,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
   if (epsilon == -1)
     epsilon = scalar;
   else if (epsilon <= 0 or epsilon > 1)
-    dserror("Boundary porosity has to be between 0 and 1, or -1 by default!");
+    FOUR_C_THROW("Boundary porosity has to be between 0 and 1, or -1 by default!");
 
   bool statistics = false;
 
@@ -602,13 +603,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
   const std::vector<int>* nodeids = cond->GetNodes();
 
   // safety checks
-  if (!nodeids) dserror("Electrode kinetics point boundary condition doesn't have nodal cloud!");
+  if (!nodeids)
+    FOUR_C_THROW("Electrode kinetics point boundary condition doesn't have nodal cloud!");
   if (nodeids->size() != 1)
-    dserror(
+    FOUR_C_THROW(
         "Electrode kinetics point boundary condition must be associated with exactly one node!");
   if (nsd_ele_ != 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Electrode kinetics point boundary conditions are applicable to one-dimensional problems "
         "only!");
   }
@@ -625,7 +627,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
     position = 1;
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Electrode kinetics point boundary condition must be imposed either on the leftmost or on "
         "the rightmost node of a line element!");
   }
@@ -655,7 +657,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
   // safety check
   if (!statistics)
   {
-    dserror(
+    FOUR_C_THROW(
         "There is no oxidized species O (stoich<0) defined in your input file!! \n"
         " Statistics could not be evaluated");
   }
@@ -763,7 +765,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* e
 
         // confirm accuracy of first comparison
         if (abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
-          dserror("Finite difference check involves values too close to numerical zero!");
+          FOUR_C_THROW("Finite difference check involves values too close to numerical zero!");
 
         // absolute and relative errors in first comparison
         const double abserr1 = entry - fdval;
@@ -798,7 +800,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* e
 
           // confirm accuracy of second comparison
           if (abs(right) > 1.e-17 and abs(right) < 1.e-15)
-            dserror("Finite difference check involves values too close to numerical zero!");
+            FOUR_C_THROW("Finite difference check involves values too close to numerical zero!");
 
           // absolute and relative errors in second comparison
           const double abserr2 = left - right;

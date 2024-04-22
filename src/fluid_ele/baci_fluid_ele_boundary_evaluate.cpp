@@ -103,7 +103,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(Teuchos::ParameterList& params,
     }
     default:
     {
-      dserror("Unknown type of action '%i' for Fluid Boundary", act);
+      FOUR_C_THROW("Unknown type of action '%i' for Fluid Boundary", act);
       break;
     }
   }  // end of switch(act)
@@ -146,7 +146,7 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(const Discretization& dis, Loc
       ParentElement()->LocationVector(dis, la, doDirichlet);
       break;
     case FLD::ba_none:
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
       break;
     default:
       // standard case: element assembles into its own dofs only

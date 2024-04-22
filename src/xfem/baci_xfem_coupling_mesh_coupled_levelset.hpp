@@ -79,10 +79,11 @@ namespace XFEM
               ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_);
 
           // Safety checks
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if ((conditionsmap_robin_dirch_.find(robin_id_dirch)) == conditionsmap_robin_dirch_.end())
         {
-          dserror("Key was not found in this instance!! Fatal error! (conditionsmap_robin_dirch_)");
+          FOUR_C_THROW(
+              "Key was not found in this instance!! Fatal error! (conditionsmap_robin_dirch_)");
         }
 #endif
       }
@@ -100,7 +101,7 @@ namespace XFEM
 
         double sliplength = 0.0;
 
-        if (sliplength < 0.0) dserror("The slip length can not be negative.");
+        if (sliplength < 0.0) FOUR_C_THROW("The slip length can not be negative.");
 
         if (sliplength != 0.0)
         {
@@ -127,20 +128,20 @@ namespace XFEM
       }
 
 // Safety checks
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (!std::signbit(static_cast<double>(robin_id_dirch)))
       {
         if ((conditionsmap_robin_neumann_.find(robin_id_dirch)) ==
             conditionsmap_robin_neumann_.end())
         {
-          dserror(
+          FOUR_C_THROW(
               "Key was not found in this instance!! Fatal error! (conditionsmap_robin_neumann_)");
         }
       }
       std::map<int, bool>::iterator it_bool;
       if ((it_bool = force_tangvel_map_.find(cond->Id())) == force_tangvel_map_.end())
       {
-        dserror("Key was not found in this instance!! Fatal error! (force_tangvel_map_)");
+        FOUR_C_THROW("Key was not found in this instance!! Fatal error! (force_tangvel_map_)");
       }
 #endif
     };
@@ -197,9 +198,9 @@ namespace XFEM
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
       }
       else
-        dserror("Element not considered.");
+        FOUR_C_THROW("Element not considered.");
 
-      if (sliplength < 0.0) dserror("The slip length can not be negative.");
+      if (sliplength < 0.0) FOUR_C_THROW("The slip length can not be negative.");
 
       if (sliplength != 0.0)
       {

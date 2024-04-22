@@ -135,7 +135,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
   if (((physicaltype_ == INPAR::FLUID::loma) or
           (physicaltype_ == INPAR::FLUID::varying_density)) and
       (fldparatimint_->IsStationary() == true))
-    dserror("physical type is not supported in stationary FLUID implementation.");
+    FOUR_C_THROW("physical type is not supported in stationary FLUID implementation.");
 
   // set flag for type of linearization (fixed-point-like or Newton)
   //  fix-point like for Oseen or Stokes problems
@@ -143,20 +143,20 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
       INPAR::FLUID::Newton)
   {
     if ((physicaltype_ == INPAR::FLUID::oseen) or (physicaltype_ == INPAR::FLUID::stokes))
-      dserror(
+      FOUR_C_THROW(
           "Full Newton-linearization does not make sense for Oseen or Stokes problems.\nThey are "
           "already linear problems. Fix input file!");
     is_newton_ = true;
   }
 
   if (fldparatimint_->IsGenalphaNP() and physicaltype_ == INPAR::FLUID::loma)
-    dserror("the combination Np_Gen_Alpha and loma is not supported");
+    FOUR_C_THROW("the combination Np_Gen_Alpha and loma is not supported");
 
   if (not fldparatimint_->IsGenalpha() and physicaltype_ == INPAR::FLUID::loma)
-    dserror("the combination OST and loma is said to be supported but does not work!!");
+    FOUR_C_THROW("the combination OST and loma is said to be supported but does not work!!");
 
   if (fldparatimint_->IsGenalphaNP() and is_conservative_)
-    dserror("the combination Np_Gen_Alpha and conservative flow is not supported");
+    FOUR_C_THROW("the combination Np_Gen_Alpha and conservative flow is not supported");
 
   if (not fldparatimint_->IsStationary() and is_conservative_ and
       physicaltype_ != INPAR::FLUID::incompressible)
@@ -193,7 +193,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
         CORE::UTILS::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist, "REYNOLDS-STRESS");
 
     if (supg_ and (physicaltype_ == INPAR::FLUID::stokes))
-      dserror(
+      FOUR_C_THROW(
           "Having SUPG-stabilization switched on (by default?) for Stokes problems, does not make "
           "sense! Please turn on brain before using BACI!");
 
@@ -225,7 +225,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
             whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
             whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt or
             whichtau_ == INPAR::FLUID::tau_hughes_franca_balestra_wo_dt))
-      dserror("Definition of Tau cannot be handled by the element");
+      FOUR_C_THROW("Definition of Tau cannot be handled by the element");
 
     // set correct stationary definition of stabilization parameter automatically
     if (fldparatimint_->IsStationary())
@@ -245,13 +245,13 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
       else if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
         whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
       else if (whichtau_ == INPAR::FLUID::tau_codina_convscaled)
-        dserror("This stabilization Parameter is not implemented for stationary flows");
+        FOUR_C_THROW("This stabilization Parameter is not implemented for stationary flows");
     }
 
     // tau_donea_huerta_wo_dt should only be used for stokes problems and vice versa
     if ((physicaltype_ == INPAR::FLUID::stokes) !=
         (whichtau_ == INPAR::FLUID::tau_hughes_franca_balestra_wo_dt))
-      dserror(
+      FOUR_C_THROW(
           "Tau from Hughes, Franca & Balestra should only be used for Stokes problems and vice "
           "versa!");
 
@@ -261,7 +261,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     if (not(charelelengthu_ == INPAR::FLUID::streamlength_u or
             charelelengthu_ == INPAR::FLUID::volume_equivalent_diameter_u or
             charelelengthu_ == INPAR::FLUID::root_of_volume_u))
-      dserror("Unknown characteristic element length for tau_Mu!");
+      FOUR_C_THROW("Unknown characteristic element length for tau_Mu!");
 
     // get and check characteristic element length for stabilization parameter
     // tau_Mp and tau_C
@@ -270,7 +270,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     if (not(charelelengthpc_ == INPAR::FLUID::streamlength_pc or
             charelelengthpc_ == INPAR::FLUID::volume_equivalent_diameter_pc or
             charelelengthpc_ == INPAR::FLUID::root_of_volume_pc))
-      dserror("Unknown characteristic element length for tau_Mp and tau_C!");
+      FOUR_C_THROW("Unknown characteristic element length for tau_Mp and tau_C!");
 
     // in case of viscous and/or reactive stabilization, decide whether to use
     // GLS or USFEM and ensure compatibility of respective definitions
@@ -279,14 +279,14 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     {
       viscreastabfac_ = -1.0;
       if (rstab_ == INPAR::FLUID::reactive_stab_gls)
-        dserror("inconsistent reactive and viscous stabilization!");
+        FOUR_C_THROW("inconsistent reactive and viscous stabilization!");
     }
     else if (vstab_ == INPAR::FLUID::viscous_stab_gls or
              vstab_ == INPAR::FLUID::viscous_stab_gls_only_rhs)
     {
       viscreastabfac_ = 1.0;
       if (rstab_ == INPAR::FLUID::reactive_stab_usfem)
-        dserror("inconsistent reactive and viscous stabilization!");
+        FOUR_C_THROW("inconsistent reactive and viscous stabilization!");
     }
     else if (vstab_ == INPAR::FLUID::viscous_stab_none)
     {
@@ -330,14 +330,14 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
   {
     if (not(fldparatimint_->IsStationary() and
             ((physicaltype_ == INPAR::FLUID::stokes) or (physicaltype_ == INPAR::FLUID::oseen))))
-      dserror(
+      FOUR_C_THROW(
           "Polynomial pressure projection has only been tested for stationary Stokes/Oseen "
           "problems. \n"
           "But it should work for other problems as well but only to circumvent "
           "inf-sup-instabilities! \n"
           "Convection instabilities have to be accounted for. \n"
           "Note that for now all residual-based stabilizations are switched off. \n"
-          "Remove this dserror at own risk and have fun!");
+          "Remove this FOUR_C_THROW at own risk and have fun!");
 
     if (myrank == 0)
     {
@@ -394,7 +394,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     is_inconsistent_ = false;
   }
   else
-    dserror("Unknown stabilization type");
+    FOUR_C_THROW("Unknown stabilization type");
 
   //---------------------------------
   // safety checks for time-dependent subgrid scales
@@ -402,7 +402,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
       (transient_ != INPAR::FLUID::inertia_stab_drop))
   {
     if (not fldparatimint_->IsGenalphaNP())
-      dserror(
+      FOUR_C_THROW(
           "time dependent subscales does not work for OST/AfGenAlpha/BDF2/Stationary. \nOne need "
           "to look for bugs");
   }
@@ -518,7 +518,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
   if (turbmodelparams.get<std::string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
   {
     if (fldparatimint_->IsStationary() == true)
-      dserror("Stationary turbulent flow does not make any sense");
+      FOUR_C_THROW("Stationary turbulent flow does not make any sense");
 
     std::string& physical_turbulence_model = turbmodelparams.get<std::string>("PHYSICAL_MODEL");
 
@@ -540,7 +540,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
       // wall function length is hard implemented
       if (turbmodelparamssgvisc.get<std::string>("CANONICAL_FLOW", "no") !=
           "channel_flow_of_height_2")
-        dserror("van_Driest_damping only for channel_flow_of_height_2\n");
+        FOUR_C_THROW("van_Driest_damping only for channel_flow_of_height_2\n");
 
       // for the Smagorinsky model with van Driest damping, we need
       // a viscous length to determine the y+ (heigth in wall units)
@@ -580,7 +580,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
       else if (turbmodelparamsmfs.get<std::string>("SCALE_SEPARATION") == "box_filter")
         alpha_ = 2.0;
       else
-        dserror("Unknown filter type!");
+        FOUR_C_THROW("Unknown filter type!");
 
       CalcN_ = CORE::UTILS::IntegralValue<int>(turbmodelparamsmfs, "CALC_N");
 
@@ -593,7 +593,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
       else if (turbmodelparamsmfs.get<std::string>("REF_VELOCITY") == "fine_scale")
         refvel_ = INPAR::FLUID::fine_scale;
       else
-        dserror("Unknown velocity!");
+        FOUR_C_THROW("Unknown velocity!");
 
       if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "cube_edge")
         reflength_ = INPAR::FLUID::cube_edge;
@@ -606,7 +606,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
       else if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "metric_tensor")
         reflength_ = INPAR::FLUID::metric_tensor;
       else
-        dserror("Unknown length!");
+        FOUR_C_THROW("Unknown length!");
 
       c_nu_ = turbmodelparamsmfs.get<double>("C_NU");
       c_diff_ = turbmodelparamsmfs.get<double>("C_DIFF");  // loma only
@@ -620,7 +620,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
       else if (turbmodelparamsmfs.get<std::string>("EVALUATION_B") == "integration_point")
         B_gp_ = true;
       else
-        dserror("Unknown evaluation point!");
+        FOUR_C_THROW("Unknown evaluation point!");
 
       beta_ = turbmodelparamsmfs.get<double>("BETA");
 
@@ -660,7 +660,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters(
     }
     else
     {
-      dserror("Up to now, only Smagorinsky, Vreman and Multifractal Subgrid Scales are available");
+      FOUR_C_THROW(
+          "Up to now, only Smagorinsky, Vreman and Multifractal Subgrid Scales are available");
     }
   }  // end if(Classical LES)
 }

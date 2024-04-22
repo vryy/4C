@@ -147,16 +147,16 @@ namespace ADAPTER
     //@{
     Teuchos::RCP<Epetra_Vector> Gap() override
     {
-      dserror("stop");
+      FOUR_C_THROW("stop");
       return Teuchos::null;
     }
     Teuchos::RCP<CORE::LINALG::SparseMatrix> NMatrix() override
     {
-      dserror("stop");
+      FOUR_C_THROW("stop");
       return Teuchos::null;
     }
-    void Evaluate() override { dserror("stop"); }
-    void Evaluate(Teuchos::RCP<Epetra_Vector> idisp) override { dserror("stop"); }
+    void Evaluate() override { FOUR_C_THROW("stop"); }
+    void Evaluate(Teuchos::RCP<Epetra_Vector> idisp) override { FOUR_C_THROW("stop"); }
     void EvaluateWithMeshRelocation(
         Teuchos::RCP<DRT::Discretization> slavedis,  ///< slave discretization
         Teuchos::RCP<DRT::Discretization> aledis,    ///< ALE discretization
@@ -165,14 +165,14 @@ namespace ADAPTER
         bool slavewithale                            ///< flag defining if slave is ALE
         ) override
     {
-      dserror("stop");
+      FOUR_C_THROW("stop");
     }
 
     void EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell>>&
             intcells  //!< vector of mortar integration cells
         ) override
     {
-      dserror("stop");
+      FOUR_C_THROW("stop");
     }
     //@}
 

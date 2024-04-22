@@ -104,7 +104,7 @@ CORE::FE::CellType DRT::ELEMENTS::Artery::Shape() const
     case 2:
       return CORE::FE::CellType::line2;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
   }
 }
 
@@ -150,7 +150,7 @@ void DRT::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
   impltype_ = static_cast<INPAR::ARTDYN::ImplType>(ExtractInt(position, data));
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

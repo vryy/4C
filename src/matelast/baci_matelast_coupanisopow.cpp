@@ -83,11 +83,11 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, INPUT::LineDefinition* linedef
     // error path
     else
     {
-      dserror("Reading of element local cosy for anisotropic materials failed");
+      FOUR_C_THROW("Reading of element local cosy for anisotropic materials failed");
     }
   }
   else
-    dserror("INIT mode not implemented");
+    FOUR_C_THROW("INIT mode not implemented");
 }
 
 void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(const CORE::LINALG::Matrix<6, 1>& rcg,
@@ -102,7 +102,7 @@ void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(const CORE::LINALG::Mat
 
   if (d2 <= 1.0)
   {
-    dserror(
+    FOUR_C_THROW(
         "exponential factor D2 should be greater than 1.0, since otherwise one can't achieve a "
         "stress free reference state");
   }
@@ -158,7 +158,8 @@ void MAT::ELASTIC::CoupAnisoPow::GetFiberVecs(
 void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(const double newgamma,
     const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
-  if ((params_->gamma_ < -90) || (params_->gamma_ > 90)) dserror("Fiber angle not in [-90,90]");
+  if ((params_->gamma_ < -90) || (params_->gamma_ > 90))
+    FOUR_C_THROW("Fiber angle not in [-90,90]");
   // convert
   double gamma = (params_->gamma_ * M_PI) / 180.;
 

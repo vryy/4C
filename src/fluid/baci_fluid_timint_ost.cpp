@@ -49,7 +49,8 @@ void FLD::TimIntOneStepTheta::Init()
   if (numstasteps_ > 0)
   {
     startalgo_ = true;
-    if (numstasteps_ > stepmax_) dserror("more steps for starting algorithm than steps overall");
+    if (numstasteps_ > stepmax_)
+      FOUR_C_THROW("more steps for starting algorithm than steps overall");
   }
 
   SetElementTimeParameter();
@@ -153,7 +154,7 @@ void FLD::TimIntOneStepTheta::OutputofFilteredVel(
   if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
     Sep_->Multiply(false, *velnp_, *row_finescaleveltmp);
   else
-    dserror("Unknown separation type!");
+    FOUR_C_THROW("Unknown separation type!");
 
   // get filtered or coarse scale velocity
   outvec->Update(1.0, *velnp_, -1.0, *row_finescaleveltmp, 0.0);
@@ -232,7 +233,7 @@ void FLD::TimIntOneStepTheta::ApplyExternalForces(Teuchos::RCP<Epetra_MultiVecto
 
   if (external_loadsn_ == Teuchos::null)
   {
-    dserror(
+    FOUR_C_THROW(
         "Starting algorithm for OST missing: Increase number of start steps"
         "or perform initialization of external forces");
   }
@@ -279,7 +280,7 @@ void FLD::TimIntOneStepTheta::ReadRestart(int step)
     {
       reader.ReadVector(external_loadsn_, "fexternal_n");
       if (have_fexternal != external_loadsn_->GlobalLength())
-        dserror("reading of external loads failed");
+        FOUR_C_THROW("reading of external loads failed");
     }
   }
 }
@@ -343,7 +344,7 @@ double FLD::TimIntOneStepTheta::MethodLinErrCoeffVel() const
   else if (MethodOrderOfAccuracy() == 2)
     fac = -1.0 / 12.0;  // = 1.0/6.0 - 0.5*theta_ with theta_ = 0.5
   else
-    dserror("Unknown Order of Accuracy for One Step Theta time integration.");
+    FOUR_C_THROW("Unknown Order of Accuracy for One Step Theta time integration.");
 
   return fac;
 }

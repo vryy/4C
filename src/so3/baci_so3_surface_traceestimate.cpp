@@ -37,7 +37,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
         return EstimateNitscheTraceMaxEigenvalueCombined<CORE::FE::CellType::hex8,
             CORE::FE::CellType::quad4>(parent_disp);
       else
-        dserror("how can an hex8 element have a surface that is not quad4 ???");
+        FOUR_C_THROW("how can an hex8 element have a surface that is not quad4 ???");
       break;
     case CORE::FE::CellType::hex27:
       return EstimateNitscheTraceMaxEigenvalueCombined<CORE::FE::CellType::hex27,
@@ -52,7 +52,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
           CORE::FE::CellType::nurbs9>(parent_disp);
       break;
     default:
-      dserror("parent shape not implemented");
+      FOUR_C_THROW("parent shape not implemented");
   }
 
   return 0;
@@ -319,7 +319,7 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
 {
   const int dim = CORE::FE::dim<dt_vol>;
   const int num_node = CORE::FE::num_nodes<dt_vol>;
-  if (dim != 3) dserror("this should be 3D");
+  if (dim != 3) FOUR_C_THROW("this should be 3D");
 
   CORE::LINALG::Matrix<3, 1> c;
   for (int r = 0; r < (int)xcurr.numRows(); ++r)
@@ -375,7 +375,7 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
         new_basis_found = true;
       }
     }
-    if (!new_basis_found) dserror("no new basis vector found");
+    if (!new_basis_found) FOUR_C_THROW("no new basis vector found");
   }
 
   // at this point basis should already contain an ONB.
@@ -408,7 +408,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
         return EstimateNitscheTraceMaxEigenvalueTSI<CORE::FE::CellType::hex8,
             CORE::FE::CellType::quad4>(parent_disp);
       else
-        dserror("how can an hex8 element have a surface that is not quad4 ???");
+        FOUR_C_THROW("how can an hex8 element have a surface that is not quad4 ???");
       break;
     case CORE::FE::CellType::hex27:
       return EstimateNitscheTraceMaxEigenvalueTSI<CORE::FE::CellType::hex27,
@@ -420,7 +420,7 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
       return EstimateNitscheTraceMaxEigenvalueTSI<CORE::FE::CellType::nurbs27,
           CORE::FE::CellType::nurbs9>(parent_disp);
     default:
-      dserror("parent shape not implemented");
+      FOUR_C_THROW("parent shape not implemented");
   }
 
   return 0;
@@ -487,7 +487,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrixTSI(
 
   CORE::FE::IntPointsAndWeights<dim> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
 
-  if (ParentElement()->NumMaterial() < 2) dserror("where's my second material");
+  if (ParentElement()->NumMaterial() < 2) FOUR_C_THROW("where's my second material");
   Teuchos::RCP<MAT::FourierIso> mat_thr =
       Teuchos::rcp_dynamic_cast<MAT::FourierIso>(ParentElement()->Material(1), true);
   const double k0 = mat_thr->Conductivity();
@@ -537,7 +537,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
   CORE::FE::IntPointsAndWeights<dim - 1> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
   CORE::LINALG::SerialDenseMatrix deriv_surf(2, CORE::FE::num_nodes<dt_surf>);
 
-  if (ParentElement()->NumMaterial() < 2) dserror("where's my second material");
+  if (ParentElement()->NumMaterial() < 2) FOUR_C_THROW("where's my second material");
   Teuchos::RCP<MAT::FourierIso> mat_thr =
       Teuchos::rcp_dynamic_cast<MAT::FourierIso>(ParentElement()->Material(1), true);
   const double k0 = mat_thr->Conductivity();

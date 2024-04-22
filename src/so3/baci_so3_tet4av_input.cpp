@@ -39,7 +39,7 @@ bool DRT::ELEMENTS::SoTet4av::ReadElement(
   }
   else
   {
-    dserror("Reading of SO_TET4 element failed KINEM unknown");
+    FOUR_C_THROW("Reading of SO_TET4 element failed KINEM unknown");
   }
 
   // check if material kinematics is compatible to element kinematics
@@ -47,7 +47,7 @@ bool DRT::ELEMENTS::SoTet4av::ReadElement(
 
   // Validate that materials doesn't use extended update call.
   if (SolidMaterial()->UsesExtendedUpdate())
-    dserror("This element currently does not support the extended update call.");
+    FOUR_C_THROW("This element currently does not support the extended update call.");
 
   return true;
 }

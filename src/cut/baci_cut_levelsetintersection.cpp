@@ -36,7 +36,7 @@ CORE::GEO::CUT::LevelSetIntersection::LevelSetIntersection(int myrank, bool crea
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::LevelSetIntersection::AddCutSide(int levelset_sid)
 {
-  if (!side_.is_null()) dserror("currently only one levelset-side is supported");
+  if (!side_.is_null()) FOUR_C_THROW("currently only one levelset-side is supported");
 
   // create the levelset-side
   side_ = Teuchos::rcp(Side::CreateLevelSetSide(levelset_sid));
@@ -50,7 +50,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::AddElement(
     const bool& check_lsv)
 {
   int numnode = nids.size();
-  if (numnode != xyz.numCols()) dserror("node coordinate number mismatch");
+  if (numnode != xyz.numCols()) FOUR_C_THROW("node coordinate number mismatch");
 
   bool ltz = false;
   bool gtz = false;

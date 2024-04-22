@@ -104,7 +104,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
   Teuchos::RCP<const Epetra_Vector> qanp = discretization.GetState("qanp");
   //  Teuchos::RCP<Epetra_Vector> Wfnp        = discretization.GetState("Wfnp");
 
-  if (qanp == Teuchos::null) dserror("Cannot get state vectors 'qanp'");
+  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(la[0].lm_.size());
@@ -184,7 +184,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateService(Artery* ele,
     }
     break;
     default:
-      dserror("Unkown type of action %d for Artery (LinExp formulation)", action);
+      FOUR_C_THROW("Unkown type of action %d for Artery (LinExp formulation)", action);
   }  // end of switch(act)
 
   return 0;
@@ -236,7 +236,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
 
   Teuchos::RCP<Epetra_Vector> scatran = params.get<Teuchos::RCP<Epetra_Vector>>("scatran");
 
-  if (qanp == Teuchos::null) dserror("Cannot get state vectors 'qanp'");
+  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
@@ -363,7 +363,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Initial(Artery* ele,
     wbo->ReplaceGlobalValues(1, &val, &gid);
   }
   else
-    dserror("Material law is not an artery");
+    FOUR_C_THROW("Material law is not an artery");
 }
 
 // ArteryEleCalcLinExp::Initial
@@ -473,7 +473,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
     pext_(1, 0) = pext2;
   }
   else
-    dserror("Material law is not an artery");
+    FOUR_C_THROW("Material law is not an artery");
 
   // Calculate the length of artery element
   const double L = sqrt(pow(xyze(0, 0) - xyze(0, 1), 2) + pow(xyze(1, 0) - xyze(1, 1), 2) +
@@ -971,7 +971,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
     pext_(1, 0) = pext2;
   }
   else
-    dserror("Material law is not an artery");
+    FOUR_C_THROW("Material law is not an artery");
 
 
 
@@ -983,7 +983,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   Teuchos::RCP<Epetra_Vector> Wfnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wfnp");
   Teuchos::RCP<Epetra_Vector> Wbnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wbnp");
 
-  if (qanp == Teuchos::null) dserror("Cannot get state vectors 'qanp'");
+  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
@@ -1023,7 +1023,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   // get the number of nodes per element
   const int numnds = ele->NumNode();
 
-  if (numnds != 2) dserror("An element with %d nodes is not supported", numnds);
+  if (numnds != 2) FOUR_C_THROW("An element with %d nodes is not supported", numnds);
 
   // check for the CFL number CFL = Max(abs(3/sqrt(3) * lambda2_i * dt/dx), abs(3/sqrt(3) *
   // lambda1_i * dt/dx))
@@ -1042,7 +1042,8 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
 
   if (3.0 / sqrt(3.0) * lambda_max * dt / L >= 1.0)
   {
-    dserror("CFL number at element %d is %f", ele->Id(), 3.0 / sqrt(3.0) * lambda_max * dt / L);
+    FOUR_C_THROW(
+        "CFL number at element %d is %f", ele->Id(), 3.0 / sqrt(3.0) * lambda_max * dt / L);
   }
 
   // Solve Riemann problem at the terminals
@@ -1060,7 +1061,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
       else if (TerminalType == "outlet")
         TermIO = 1.0;
       else
-        dserror(
+        FOUR_C_THROW(
             "Something is severely wrong! In/Out terminal condition should be either \"outlet\" or "
             "\"inlet\"");
 
@@ -1120,7 +1121,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
         int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
         if (local_id < 0)
         {
-          dserror("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
+          FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
               discretization.Comm().MyPID());
           exit(1);
         }
@@ -1212,7 +1213,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
     pext_(1, 0) = pext2;
   }
   else
-    dserror("Material law is not an artery");
+    FOUR_C_THROW("Material law is not an artery");
 
 
   // the number of nodes
@@ -1221,7 +1222,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
 
   Teuchos::RCP<const Epetra_Vector> qanp = discretization.GetState("qanp");
 
-  if (qanp == Teuchos::null) dserror("Cannot get state vectors 'qanp'");
+  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
@@ -1261,7 +1262,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
       else if (TerminalType == "outlet")
         TermIO = 1.0;
       else
-        dserror(
+        FOUR_C_THROW(
             "Something is severely wrong! In/Out terminal condition should be either \"outlet\" or "
             "\"inlet\"");
 
@@ -1269,7 +1270,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
       Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector>>("dbctog");
 
       if (bcval == Teuchos::null || dbctog == Teuchos::null)
-        dserror("Cannot get state vectors 'bcval' and 'dbctog'");
+        FOUR_C_THROW("Cannot get state vectors 'bcval' and 'dbctog'");
 
 
       th_(0, 0) = t1;
@@ -1291,7 +1292,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
       int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
       if (local_id < 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "node (%d) doesn't exist on proc(%d)", ele->Nodes()[i], discretization.Comm().MyPID());
         exit(1);
       }
@@ -1506,7 +1507,8 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
       }
       else
       {
-        dserror("double check input file, ArtInOutCond must be either \"inlet\" or \"outlet\"");
+        FOUR_C_THROW(
+            "double check input file, ArtInOutCond must be either \"inlet\" or \"outlet\"");
       }
 
       int gid = lm[2 * i + dof];
@@ -1594,14 +1596,14 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcPostprocessingValues(Arter
     pext_(1, 0) = pext2;
   }
   else
-    dserror("Material law is not an artery");
+    FOUR_C_THROW("Material law is not an artery");
 
 
   // the number of nodes
   const int numnode = my::iel_;
   std::vector<int>::iterator it_vcr;
 
-  if (qanp == Teuchos::null) dserror("Cannot get state vectors 'qanp'");
+  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
@@ -1761,7 +1763,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
     pext_(1, 0) = pext2;
   }
   else
-    dserror("Material law is not an artery");
+    FOUR_C_THROW("Material law is not an artery");
 
   // the number of nodes
   const int numnode = my::iel_;
@@ -1771,7 +1773,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
   Teuchos::RCP<Epetra_Vector> Wfnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wfnp");
   Teuchos::RCP<Epetra_Vector> Wbnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wbnp");
 
-  if (qanp == Teuchos::null) dserror("Cannot get state vectors 'qanp'");
+  if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
@@ -1813,7 +1815,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
   // get the number of nodes per element
   const int numnds = ele->NumNode();
 
-  if (numnds != 2) dserror("An element with %d nodes is not supported", numnds);
+  if (numnds != 2) FOUR_C_THROW("An element with %d nodes is not supported", numnds);
 
   // check for the CFL number CFL = Max(abs(3/sqrt(3) * lambda2_i * dt/dx), abs(3/sqrt(3) *
   // lambda1_i * dt/dx))

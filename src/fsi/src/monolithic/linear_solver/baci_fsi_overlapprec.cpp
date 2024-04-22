@@ -76,7 +76,7 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
 int FSI::BlockPreconditioningMatrix::ApplyInverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  if (UseTranspose()) dserror("no transpose preconditioning");
+  if (UseTranspose()) FOUR_C_THROW("no transpose preconditioning");
 
   Teuchos::RCP<Epetra_Vector> r;
 

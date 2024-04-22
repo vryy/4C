@@ -50,51 +50,51 @@ MAT::PAR::MuscleWeickenmeier::MuscleWeickenmeier(Teuchos::RCP<MAT::PAR::Material
 {
   // error handling for parameter ranges
   // passive material parameters
-  if (alpha_ <= 0.0) dserror("Material parameter ALPHA must be greater zero");
-  if (beta_ <= 0.0) dserror("Material parameter BETA must be greater zero");
-  if (gamma_ <= 0.0) dserror("Material parameter GAMMA must be greater zero");
-  if (omega0_ < 0.0 || omega0_ > 1.0) dserror("Material parameter OMEGA0 must be in [0;1]");
+  if (alpha_ <= 0.0) FOUR_C_THROW("Material parameter ALPHA must be greater zero");
+  if (beta_ <= 0.0) FOUR_C_THROW("Material parameter BETA must be greater zero");
+  if (gamma_ <= 0.0) FOUR_C_THROW("Material parameter GAMMA must be greater zero");
+  if (omega0_ < 0.0 || omega0_ > 1.0) FOUR_C_THROW("Material parameter OMEGA0 must be in [0;1]");
 
   // active material parameters
   // stimulation frequency dependent parameters
   if (Na_ < 0.0)
   {
-    dserror("Material parameter ACTMUNUM must be postive or zero");
+    FOUR_C_THROW("Material parameter ACTMUNUM must be postive or zero");
   }
 
   double sumrho = 0.0;
   for (int iMU = 0; iMU < muTypesNum_; ++iMU)
   {
-    if (I_[iMU] < 0.0) dserror("Material parameter INTERSTIM must be postive or zero");
-    if (rho_[iMU] < 0.0) dserror("Material parameter FRACACTMU must be postive or zero");
+    if (I_[iMU] < 0.0) FOUR_C_THROW("Material parameter INTERSTIM must be postive or zero");
+    if (rho_[iMU] < 0.0) FOUR_C_THROW("Material parameter FRACACTMU must be postive or zero");
 
     sumrho += rho_[iMU];
-    if (F_[iMU] < 0.0) dserror("Material parameter FTWITCH must be postive or zero");
-    if (T_[iMU] < 0.0) dserror("Material parameter TTWITCH must be postive or zero");
+    if (F_[iMU] < 0.0) FOUR_C_THROW("Material parameter FTWITCH must be postive or zero");
+    if (T_[iMU] < 0.0) FOUR_C_THROW("Material parameter TTWITCH must be postive or zero");
   }
 
-  if (muTypesNum_ > 1 && sumrho != 1.0) dserror("Sum of fractions of MU types must equal one");
+  if (muTypesNum_ > 1 && sumrho != 1.0) FOUR_C_THROW("Sum of fractions of MU types must equal one");
 
   // stretch dependent parameters
-  if (lambdaMin_ <= 0.0) dserror("Material parameter LAMBDAMIN must be postive");
-  if (lambdaOpt_ <= 0.0) dserror("Material parameter LAMBDAOPT must be postive");
+  if (lambdaMin_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAMIN must be postive");
+  if (lambdaOpt_ <= 0.0) FOUR_C_THROW("Material parameter LAMBDAOPT must be postive");
 
   // velocity dependent parameters
-  if (ke_ < 0.0) dserror("Material parameter KE should be postive or zero");
-  if (kc_ < 0.0) dserror("Material parameter KC should be postive or zero");
-  if (de_ < 0.0) dserror("Material parameter DE should be postive or zero");
-  if (dc_ < 0.0) dserror("Material parameter DC should be postive or zero");
+  if (ke_ < 0.0) FOUR_C_THROW("Material parameter KE should be postive or zero");
+  if (kc_ < 0.0) FOUR_C_THROW("Material parameter KC should be postive or zero");
+  if (de_ < 0.0) FOUR_C_THROW("Material parameter DE should be postive or zero");
+  if (dc_ < 0.0) FOUR_C_THROW("Material parameter DC should be postive or zero");
 
   // prescribed activation in time intervals
   if (actTimesNum_ != int(actTimes_.size()))
-    dserror("Number of activation times ACTTIMES must equal ACTTIMESNUM");
+    FOUR_C_THROW("Number of activation times ACTTIMES must equal ACTTIMESNUM");
   if (actIntervalsNum_ != int(actValues_.size()))
-    dserror("Number of activation values ACTVALUES must equal ACTINTERVALSNUM");
+    FOUR_C_THROW("Number of activation values ACTVALUES must equal ACTINTERVALSNUM");
   if (actTimesNum_ != actIntervalsNum_ + 1)
-    dserror("ACTTIMESNUM must be one smaller than ACTINTERVALSNUM");
+    FOUR_C_THROW("ACTTIMESNUM must be one smaller than ACTINTERVALSNUM");
 
   // density
-  if (density_ < 0.0) dserror("DENS should be positive");
+  if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::MuscleWeickenmeier::CreateMaterial()
@@ -184,7 +184,7 @@ void MAT::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::MuscleWeickenmeier*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -193,7 +193,8 @@ void MAT::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
 
   anisotropyExtension_.UnpackAnisotropy(data, position);
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 void MAT::MuscleWeickenmeier::Setup(int numgp, INPUT::LineDefinition* linedef)
@@ -354,11 +355,11 @@ void MAT::MuscleWeickenmeier::EvaluateActiveNominalStress(
   // save current simulation time
   double t_tot = params.get<double>("total time", -1);
   if (std::abs(t_tot + 1.0) < 1e-14)
-    dserror("No total time given for muscle Weickenmeier material!");
+    FOUR_C_THROW("No total time given for muscle Weickenmeier material!");
   // save (time) step size
   double timestep = params.get<double>("delta time", -1);
   if (std::abs(timestep + 1.0) < 1e-14)
-    dserror("No time step size given for muscle Weickenmeier material!");
+    FOUR_C_THROW("No time step size given for muscle Weickenmeier material!");
 
   // approximate first time derivative of lambdaM through BW Euler
   // dotLambdaM = (lambdaM_n - lambdaM_{n-1})/dt

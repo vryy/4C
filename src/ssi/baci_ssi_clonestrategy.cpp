@@ -69,7 +69,7 @@ void SSI::ScatraStructureCloneStrategy::CheckMaterialType(const int matid)
       (mtype != INPAR::MAT::m_electrode) && (mtype != INPAR::MAT::m_matlist) &&
       (mtype != INPAR::MAT::m_matlist_reactions) && (mtype != INPAR::MAT::m_myocard) &&
       (mtype != INPAR::MAT::m_thermostvenant))
-    dserror("Material with ID %d is not admissible for scalar transport elements", matid);
+    FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
 
@@ -93,7 +93,7 @@ void SSI::ScatraStructureCloneStrategy::SetElementData(
     INPAR::SCATRA::ImplType impltype = SSI::ScatraStructureCloneStrategy::GetImplType(oldele);
     if (impltype == INPAR::SCATRA::impltype_undefined)
     {
-      dserror(
+      FOUR_C_THROW(
           "ScatraStructureCloneStrategy copies scatra discretization from structure "
           "discretization, but the STRUCTURE elements that are defined in the .dat file are "
           "either not meant to be copied to scatra elements or the ImplType is set 'Undefined' "
@@ -108,7 +108,7 @@ void SSI::ScatraStructureCloneStrategy::SetElementData(
   }
   else
   {
-    dserror("unsupported element type '%s'", typeid(*newele).name());
+    FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
   }
 }
 
@@ -136,11 +136,11 @@ void SSI::ScatraStructureCloneStrategyManifold::SetElementData(
 
   if (impltype != INPAR::SCATRA::impltype_elch_electrode and
       impltype != INPAR::SCATRA::impltype_elch_diffcond and impltype != INPAR::SCATRA::impltype_std)
-    dserror("Scatra Impltype not supported for SSI with transport on manifolds");
+    FOUR_C_THROW("Scatra Impltype not supported for SSI with transport on manifolds");
 
   auto* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
   if (trans == nullptr or oldele->ElementType().Name() != "StructuralSurfaceType")
-    dserror("element type not supported");
+    FOUR_C_THROW("element type not supported");
 
   // set distype
   trans->SetDisType(oldele->Shape());

@@ -227,7 +227,7 @@ void check4nodedInline(
 
   std::vector<CORE::GEO::CUT::Point*> cell1 = split[0];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p4)
-    dserror("triangulation failed for check4nodedInline");
+    FOUR_C_THROW("triangulation failed for check4nodedInline");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -291,9 +291,9 @@ void check4nodedconcave(
   std::vector<CORE::GEO::CUT::Point*> cell1 = split[0];
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   if (cell1[0] != p2 || cell1[1] != p3 || cell1[2] != p4)
-    dserror("triangulation failed for check4nodedInline");
+    FOUR_C_THROW("triangulation failed for check4nodedInline");
   if (cell2[0] != p2 || cell2[1] != p4 || cell2[2] != p1)
-    dserror("triangulation failed for check4nodedInline");
+    FOUR_C_THROW("triangulation failed for check4nodedInline");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -361,7 +361,7 @@ void check5nodedInline(
 
   std::vector<CORE::GEO::CUT::Point*> cell1 = split[0];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p4 || cell1[3] != p5)
-    dserror("triangulation failed for check5nodedInline");
+    FOUR_C_THROW("triangulation failed for check5nodedInline");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -430,9 +430,9 @@ void check5nodedconvex(
   std::vector<CORE::GEO::CUT::Point*> cell1 = split[0];
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
-    dserror("triangulation failed for check5nodedconvex");
+    FOUR_C_THROW("triangulation failed for check5nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5)
-    dserror("triangulation failed for check5nodedconvex");
+    FOUR_C_THROW("triangulation failed for check5nodedconvex");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -502,9 +502,9 @@ void check5nodedconcave(
   std::vector<CORE::GEO::CUT::Point*> cell1 = split[0];
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p1 || cell1[3] != p2)
-    dserror("triangulation failed for check5nodedconcave");
+    FOUR_C_THROW("triangulation failed for check5nodedconcave");
   if (cell2[0] != p4 || cell2[1] != p2 || cell2[2] != p3)
-    dserror("triangulation failed for check5nodedconcave");
+    FOUR_C_THROW("triangulation failed for check5nodedconcave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -576,11 +576,11 @@ void check5nodedAdjacentconcave(
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   if (cell1[0] != p5 || cell1[1] != p1 || cell1[2] != p2)
-    dserror("triangulation failed for check5nodedAdjacentconcave");
+    FOUR_C_THROW("triangulation failed for check5nodedAdjacentconcave");
   if (cell2[0] != p3 || cell2[1] != p4 || cell2[2] != p5)
-    dserror("triangulation failed for check5nodedAdjacentconcave");
+    FOUR_C_THROW("triangulation failed for check5nodedAdjacentconcave");
   if (cell3[0] != p3 || cell3[1] != p5 || cell3[2] != p2)
-    dserror("triangulation failed for check5nodedAdjacentconcave");
+    FOUR_C_THROW("triangulation failed for check5nodedAdjacentconcave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -654,9 +654,9 @@ void check6nodedconvex(
   std::vector<CORE::GEO::CUT::Point*> cell1 = split[0];
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
-    dserror("triangulation failed for check6nodedconvex");
+    FOUR_C_THROW("triangulation failed for check6nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5 || cell2[3] != p6)
-    dserror("triangulation failed for check6nodedconvex");
+    FOUR_C_THROW("triangulation failed for check6nodedconvex");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -731,9 +731,9 @@ void check6nodedconcave(
   std::vector<CORE::GEO::CUT::Point*> cell1 = split[0];
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   if (cell1[0] != p5 || cell1[1] != p6 || cell1[2] != p1 || cell1[3] != p2)
-    dserror("triangulation failed for check6nodedconcave");
+    FOUR_C_THROW("triangulation failed for check6nodedconcave");
   if (cell2[0] != p5 || cell2[1] != p2 || cell2[2] != p3 || cell2[3] != p4)
-    dserror("triangulation failed for check6nodedconcave");
+    FOUR_C_THROW("triangulation failed for check6nodedconcave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -813,11 +813,11 @@ void check7nodedconvex(
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
-    dserror("triangulation failed for check7nodedconvex");
+    FOUR_C_THROW("triangulation failed for check7nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5 || cell2[3] != p6)
-    dserror("triangulation failed for check7nodedconvex");
+    FOUR_C_THROW("triangulation failed for check7nodedconvex");
   if (cell3[0] != p1 || cell3[1] != p6 || cell3[2] != p7)
-    dserror("triangulation failed for check7nodedconvex");
+    FOUR_C_THROW("triangulation failed for check7nodedconvex");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -897,11 +897,11 @@ void check7nodedconcave(
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   if (cell1[0] != p6 || cell1[1] != p7 || cell1[2] != p1 || cell1[3] != p2)
-    dserror("triangulation failed for check7nodedconcave");
+    FOUR_C_THROW("triangulation failed for check7nodedconcave");
   if (cell2[0] != p6 || cell2[1] != p2 || cell2[2] != p3 || cell2[3] != p4)
-    dserror("triangulation failed for check7nodedconcave");
+    FOUR_C_THROW("triangulation failed for check7nodedconcave");
   if (cell3[0] != p6 || cell3[1] != p4 || cell3[2] != p5)
-    dserror("triangulation failed for check7nodedconcave");
+    FOUR_C_THROW("triangulation failed for check7nodedconcave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -986,11 +986,11 @@ void check8nodedconvex(
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
-    dserror("triangulation failed for check8nodedconvex");
+    FOUR_C_THROW("triangulation failed for check8nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5 || cell2[3] != p6)
-    dserror("triangulation failed for check8nodedconvex");
+    FOUR_C_THROW("triangulation failed for check8nodedconvex");
   if (cell3[0] != p1 || cell3[1] != p6 || cell3[2] != p7 || cell3[3] != p8)
-    dserror("triangulation failed for check8nodedconvex");
+    FOUR_C_THROW("triangulation failed for check8nodedconvex");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -1075,11 +1075,11 @@ void check8nodedconcave(
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   if (cell1[0] != p8 || cell1[1] != p1 || cell1[2] != p2 || cell1[3] != p3)
-    dserror("triangulation failed for check8nodedconcave");
+    FOUR_C_THROW("triangulation failed for check8nodedconcave");
   if (cell2[0] != p8 || cell2[1] != p3 || cell2[2] != p4 || cell2[3] != p5)
-    dserror("triangulation failed for check8nodedconcave");
+    FOUR_C_THROW("triangulation failed for check8nodedconcave");
   if (cell3[0] != p8 || cell3[1] != p5 || cell3[2] != p6 || cell3[3] != p7)
-    dserror("triangulation failed for check8nodedconcave");
+    FOUR_C_THROW("triangulation failed for check8nodedconcave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -1166,11 +1166,11 @@ void check8nodedAdjacentconcave(
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6 || cell1[3] != p7)
-    dserror("triangulation failed for check8nodedAdjacentconcave");
+    FOUR_C_THROW("triangulation failed for check8nodedAdjacentconcave");
   if (cell2[0] != p3 || cell2[1] != p4 || cell2[2] != p7 || cell2[3] != p8)
-    dserror("triangulation failed for check8nodedAdjacentconcave");
+    FOUR_C_THROW("triangulation failed for check8nodedAdjacentconcave");
   if (cell3[0] != p3 || cell3[1] != p8 || cell3[2] != p1 || cell3[3] != p2)
-    dserror("triangulation failed for check8nodedAdjacentconcave");
+    FOUR_C_THROW("triangulation failed for check8nodedAdjacentconcave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -1261,13 +1261,13 @@ void check9nodedconvex(
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   std::vector<CORE::GEO::CUT::Point*> cell4 = split[3];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
-    dserror("triangulation failed for check9nodedconvex");
+    FOUR_C_THROW("triangulation failed for check9nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5 || cell2[3] != p6)
-    dserror("triangulation failed for check9nodedconvex");
+    FOUR_C_THROW("triangulation failed for check9nodedconvex");
   if (cell3[0] != p1 || cell3[1] != p6 || cell3[2] != p7 || cell3[3] != p8)
-    dserror("triangulation failed for check9nodedconvex");
+    FOUR_C_THROW("triangulation failed for check9nodedconvex");
   if (cell4[0] != p1 || cell4[1] != p8 || cell4[2] != p9)
-    dserror("triangulation failed for check9nodedconvex");
+    FOUR_C_THROW("triangulation failed for check9nodedconvex");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -1358,13 +1358,13 @@ void check9nodedconcave(
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   std::vector<CORE::GEO::CUT::Point*> cell4 = split[3];
   if (cell1[0] != p9 || cell1[1] != p1 || cell1[2] != p2 || cell1[3] != p3)
-    dserror("triangulation failed for check9nodedconcave");
+    FOUR_C_THROW("triangulation failed for check9nodedconcave");
   if (cell2[0] != p9 || cell2[1] != p3 || cell2[2] != p4 || cell2[3] != p5)
-    dserror("triangulation failed for check9nodedconcave");
+    FOUR_C_THROW("triangulation failed for check9nodedconcave");
   if (cell3[0] != p9 || cell3[1] != p5 || cell3[2] != p6 || cell3[3] != p7)
-    dserror("triangulation failed for check9nodedconcave");
+    FOUR_C_THROW("triangulation failed for check9nodedconcave");
   if (cell4[0] != p9 || cell4[1] != p7 || cell4[2] != p8)
-    dserror("triangulation failed for check9nodedconcave");
+    FOUR_C_THROW("triangulation failed for check9nodedconcave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -1460,13 +1460,13 @@ void check10nodedconvex(
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   std::vector<CORE::GEO::CUT::Point*> cell4 = split[3];
   if (cell1[0] != p1 || cell1[1] != p2 || cell1[2] != p3 || cell1[3] != p4)
-    dserror("triangulation failed for check10nodedconvex");
+    FOUR_C_THROW("triangulation failed for check10nodedconvex");
   if (cell2[0] != p1 || cell2[1] != p4 || cell2[2] != p5 || cell2[3] != p6)
-    dserror("triangulation failed for check10nodedconvex");
+    FOUR_C_THROW("triangulation failed for check10nodedconvex");
   if (cell3[0] != p1 || cell3[1] != p6 || cell3[2] != p7 || cell3[3] != p8)
-    dserror("triangulation failed for check10nodedconvex");
+    FOUR_C_THROW("triangulation failed for check10nodedconvex");
   if (cell4[0] != p1 || cell4[1] != p8 || cell4[2] != p9 || cell4[3] != p10)
-    dserror("triangulation failed for check10nodedconvex");
+    FOUR_C_THROW("triangulation failed for check10nodedconvex");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -1562,13 +1562,13 @@ void check10nodedconcave(
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   std::vector<CORE::GEO::CUT::Point*> cell4 = split[3];
   if (cell1[0] != p10 || cell1[1] != p1 || cell1[2] != p2 || cell1[3] != p3)
-    dserror("triangulation failed for check10nodedconcave");
+    FOUR_C_THROW("triangulation failed for check10nodedconcave");
   if (cell2[0] != p10 || cell2[1] != p3 || cell2[2] != p4 || cell2[3] != p5)
-    dserror("triangulation failed for check10nodedconcave");
+    FOUR_C_THROW("triangulation failed for check10nodedconcave");
   if (cell3[0] != p10 || cell3[1] != p5 || cell3[2] != p6 || cell3[3] != p7)
-    dserror("triangulation failed for check10nodedconcave");
+    FOUR_C_THROW("triangulation failed for check10nodedconcave");
   if (cell4[0] != p10 || cell4[1] != p7 || cell4[2] != p8 || cell4[3] != p9)
-    dserror("triangulation failed for check10nodedconcave");
+    FOUR_C_THROW("triangulation failed for check10nodedconcave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -1639,11 +1639,11 @@ void check5nodedTwinConcave(
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   if (cell1[0] != p5 || cell1[1] != p1 || cell1[2] != p2)
-    dserror("triangulation failed for check5nodedTwinConcave");
+    FOUR_C_THROW("triangulation failed for check5nodedTwinConcave");
   if (cell2[0] != p4 || cell2[1] != p5 || cell2[2] != p2)
-    dserror("triangulation failed for check5nodedTwinConcave");
+    FOUR_C_THROW("triangulation failed for check5nodedTwinConcave");
   if (cell3[0] != p4 || cell3[1] != p2 || cell3[2] != p3)
-    dserror("triangulation failed for check5nodedTwinConcave");
+    FOUR_C_THROW("triangulation failed for check5nodedTwinConcave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -1719,9 +1719,9 @@ void check6nodedTwinConcave(
   std::vector<CORE::GEO::CUT::Point*> cell1 = split[0];
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   if (cell1[0] != p3 || cell1[1] != p4 || cell1[2] != p5 || cell1[3] != p6)
-    dserror("triangulation failed for check6nodedTwinConcave");
+    FOUR_C_THROW("triangulation failed for check6nodedTwinConcave");
   if (cell2[0] != p1 || cell2[1] != p2 || cell2[2] != p3 || cell2[3] != p6)
-    dserror("triangulation failed for check6nodedTwinConcave");
+    FOUR_C_THROW("triangulation failed for check6nodedTwinConcave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -1808,11 +1808,11 @@ void check8nodedTriConcave(
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   if (cell1[0] != p2 || cell1[1] != p3 || cell1[2] != p4 || cell1[3] != p5)
-    dserror("triangulation failed for check8nodedTriConcave");
+    FOUR_C_THROW("triangulation failed for check8nodedTriConcave");
   if (cell2[0] != p8 || cell2[1] != p1 || cell2[2] != p2 || cell2[3] != p5)
-    dserror("triangulation failed for check8nodedTriConcave");
+    FOUR_C_THROW("triangulation failed for check8nodedTriConcave");
   if (cell3[0] != p8 || cell3[1] != p5 || cell3[2] != p6 || cell3[3] != p7)
-    dserror("triangulation failed for check8nodedTriConcave");
+    FOUR_C_THROW("triangulation failed for check8nodedTriConcave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -1908,11 +1908,11 @@ void check8nodedTriConcaveGenPlane(
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   if (cell1[0] != p2 || cell1[1] != p3 || cell1[2] != p4 || cell1[3] != p5)
-    dserror("triangulation failed for check8nodedTriConcaveGenPlane");
+    FOUR_C_THROW("triangulation failed for check8nodedTriConcaveGenPlane");
   if (cell2[0] != p8 || cell2[1] != p1 || cell2[2] != p2 || cell2[3] != p5)
-    dserror("triangulation failed for check8nodedTriConcaveGenPlane");
+    FOUR_C_THROW("triangulation failed for check8nodedTriConcaveGenPlane");
   if (cell3[0] != p8 || cell3[1] != p5 || cell3[2] != p6 || cell3[3] != p7)
-    dserror("triangulation failed for check8nodedTriConcaveGenPlane");
+    FOUR_C_THROW("triangulation failed for check8nodedTriConcaveGenPlane");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -1965,7 +1965,7 @@ void check13nodedConvex(
     }
   }*/
 
-  if (split.size() != 6) dserror("triangulation failed for check13nodedConvex");
+  if (split.size() != 6) FOUR_C_THROW("triangulation failed for check13nodedConvex");
 
   for (int i = 0; i < 6; i++)
   {
@@ -1973,13 +1973,13 @@ void check13nodedConvex(
     if (i == 5)
     {
       if (cell[0] != ptlist[0] || cell[1] != ptlist[i * 2 + 1] || cell[2] != ptlist[i * 2 + 2])
-        dserror("triangulation failed for check13nodedConvex");
+        FOUR_C_THROW("triangulation failed for check13nodedConvex");
     }
     else
     {
       if (cell[0] != ptlist[0] || cell[1] != ptlist[i * 2 + 1] || cell[2] != ptlist[i * 2 + 2] ||
           cell[3] != ptlist[i * 2 + 3])
-        dserror("triangulation failed for check13nodedConvex");
+        FOUR_C_THROW("triangulation failed for check13nodedConvex");
     }
   }
 }
@@ -2065,15 +2065,15 @@ void check7nodedconti3concave(
   std::vector<CORE::GEO::CUT::Point*> cell4 = split[3];
   std::vector<CORE::GEO::CUT::Point*> cell5 = split[4];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6)
-    dserror("triangulation failed for check7nodedconti3concave");
+    FOUR_C_THROW("triangulation failed for check7nodedconti3concave");
   if (cell2[0] != p4 || cell2[1] != p6 || cell2[2] != p7)
-    dserror("triangulation failed for check7nodedconti3concave");
+    FOUR_C_THROW("triangulation failed for check7nodedconti3concave");
   if (cell3[0] != p7 || cell3[1] != p1 || cell3[2] != p2)
-    dserror("triangulation failed for check7nodedconti3concave");
+    FOUR_C_THROW("triangulation failed for check7nodedconti3concave");
   if (cell4[0] != p3 || cell4[1] != p4 || cell4[2] != p7)
-    dserror("triangulation failed for check7nodedconti3concave");
+    FOUR_C_THROW("triangulation failed for check7nodedconti3concave");
   if (cell5[0] != p3 || cell5[1] != p7 || cell5[2] != p2)
-    dserror("triangulation failed for check7nodedconti3concave");
+    FOUR_C_THROW("triangulation failed for check7nodedconti3concave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -2170,13 +2170,13 @@ void check10nodedShift1ptConcave(
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   std::vector<CORE::GEO::CUT::Point*> cell4 = split[3];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6 || cell1[3] != p7)
-    dserror("triangulation failed for check10nodedShiftEarClipToSplit");
+    FOUR_C_THROW("triangulation failed for check10nodedShiftEarClipToSplit");
   if (cell2[0] != p3 || cell2[1] != p7 || cell2[2] != p8 || cell2[3] != p9)
-    dserror("triangulation failed for check10nodedShiftEarClipToSplit");
+    FOUR_C_THROW("triangulation failed for check10nodedShiftEarClipToSplit");
   if (cell3[0] != p9 || cell3[1] != p10 || cell3[2] != p1)
-    dserror("triangulation failed for check10nodedShiftEarClipToSplit");
+    FOUR_C_THROW("triangulation failed for check10nodedShiftEarClipToSplit");
   if (cell4[0] != p3 || cell4[1] != p1 || cell4[2] != p2)
-    dserror("triangulation failed for check10nodedShiftEarClipToSplit");
+    FOUR_C_THROW("triangulation failed for check10nodedShiftEarClipToSplit");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -2267,17 +2267,17 @@ void check8nodedEarClip(
   std::vector<CORE::GEO::CUT::Point*> cell5 = split[4];
   std::vector<CORE::GEO::CUT::Point*> cell6 = split[5];
   if (cell1[0] != p2 || cell1[1] != p3 || cell1[2] != p4)
-    dserror("triangulation failed for check8nodedEarClip");
+    FOUR_C_THROW("triangulation failed for check8nodedEarClip");
   if (cell2[0] != p2 || cell2[1] != p4 || cell2[2] != p5)
-    dserror("triangulation failed for check8nodedEarClip");
+    FOUR_C_THROW("triangulation failed for check8nodedEarClip");
   if (cell3[0] != p1 || cell3[1] != p2 || cell3[2] != p5)
-    dserror("triangulation failed for check8nodedEarClip");
+    FOUR_C_THROW("triangulation failed for check8nodedEarClip");
   if (cell4[0] != p1 || cell4[1] != p5 || cell4[2] != p6)
-    dserror("triangulation failed for check8nodedEarClip");
+    FOUR_C_THROW("triangulation failed for check8nodedEarClip");
   if (cell5[0] != p8 || cell5[1] != p1 || cell5[2] != p6)
-    dserror("triangulation failed for check8nodedEarClip");
+    FOUR_C_THROW("triangulation failed for check8nodedEarClip");
   if (cell6[0] != p6 || cell6[1] != p7 || cell6[2] != p8)
-    dserror("triangulation failed for check8nodedEarClip");
+    FOUR_C_THROW("triangulation failed for check8nodedEarClip");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -2360,15 +2360,15 @@ void check7noded2concave(
   std::vector<CORE::GEO::CUT::Point*> cell4 = split[3];
   std::vector<CORE::GEO::CUT::Point*> cell5 = split[4];
   if (cell1[0] != p5 || cell1[1] != p6 || cell1[2] != p7)
-    dserror("triangulation failed for check7nodedShiftSplitToEarClip");
+    FOUR_C_THROW("triangulation failed for check7nodedShiftSplitToEarClip");
   if (cell2[0] != p7 || cell2[1] != p1 || cell2[2] != p2)
-    dserror("triangulation failed for check7nodedShiftSplitToEarClip");
+    FOUR_C_THROW("triangulation failed for check7nodedShiftSplitToEarClip");
   if (cell3[0] != p7 || cell3[1] != p2 || cell3[2] != p3)
-    dserror("triangulation failed for check7nodedShiftSplitToEarClip");
+    FOUR_C_THROW("triangulation failed for check7nodedShiftSplitToEarClip");
   if (cell4[0] != p5 || cell4[1] != p7 || cell4[2] != p3)
-    dserror("triangulation failed for check7nodedShiftSplitToEarClip");
+    FOUR_C_THROW("triangulation failed for check7nodedShiftSplitToEarClip");
   if (cell5[0] != p5 || cell5[1] != p3 || cell5[2] != p4)
-    dserror("triangulation failed for check7nodedShiftSplitToEarClip");
+    FOUR_C_THROW("triangulation failed for check7nodedShiftSplitToEarClip");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -2444,11 +2444,11 @@ void ProblemSplitAnyFacet1(
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6)
-    dserror("triangulation failed for ProblemSplitAnyFacet1");
+    FOUR_C_THROW("triangulation failed for ProblemSplitAnyFacet1");
   if (cell2[0] != p4 || cell2[1] != p6 || cell2[2] != p1 || cell2[3] != p2)
-    dserror("triangulation failed for ProblemSplitAnyFacet1");
+    FOUR_C_THROW("triangulation failed for ProblemSplitAnyFacet1");
   if (cell3[0] != p4 || cell3[1] != p2 || cell3[2] != p3)
-    dserror("triangulation failed for ProblemSplitAnyFacet1");
+    FOUR_C_THROW("triangulation failed for ProblemSplitAnyFacet1");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -2528,11 +2528,11 @@ void InsideChcek1(CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::Element* e, CORE::
   std::vector<CORE::GEO::CUT::Point*> cell2 = split[1];
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6 || cell1[3] != p7)
-    dserror("triangulation failed for InsideChcek1");
+    FOUR_C_THROW("triangulation failed for InsideChcek1");
   if (cell2[0] != p3 || cell2[1] != p4 || cell2[2] != p7 || cell2[3] != p1)
-    dserror("triangulation failed for InsideChcek1");
+    FOUR_C_THROW("triangulation failed for InsideChcek1");
   if (cell3[0] != p3 || cell3[1] != p1 || cell3[2] != p2)
-    dserror("triangulation failed for InsideChcek1");
+    FOUR_C_THROW("triangulation failed for InsideChcek1");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -2658,21 +2658,21 @@ void check15node5concave(
   std::vector<CORE::GEO::CUT::Point*> cell7 = split[6];
   std::vector<CORE::GEO::CUT::Point*> cell8 = split[7];
   if (cell1[0] != p4 || cell1[1] != p5 || cell1[2] != p6)
-    dserror("triangulation failed for check15node5concave");
+    FOUR_C_THROW("triangulation failed for check15node5concave");
   if (cell2[0] != p8 || cell2[1] != p9 || cell2[2] != p10 || cell2[3] != p11)
-    dserror("triangulation failed for check15node5concave");
+    FOUR_C_THROW("triangulation failed for check15node5concave");
   if (cell3[0] != p7 || cell3[1] != p8 || cell3[2] != p11 || cell3[3] != p12)
-    dserror("triangulation failed for check15node5concave");
+    FOUR_C_THROW("triangulation failed for check15node5concave");
   if (cell4[0] != p15 || cell4[1] != p1 || cell4[2] != p2 || cell4[3] != p3)
-    dserror("triangulation failed for check15node5concave");
+    FOUR_C_THROW("triangulation failed for check15node5concave");
   if (cell5[0] != p13 || cell5[1] != p14 || cell5[2] != p15)
-    dserror("triangulation failed for check15node5concave");
+    FOUR_C_THROW("triangulation failed for check15node5concave");
   if (cell6[0] != p13 || cell6[1] != p15 || cell6[2] != p4)
-    dserror("triangulation failed for check15node5concave");
+    FOUR_C_THROW("triangulation failed for check15node5concave");
   if (cell7[0] != p7 || cell7[1] != p12 || cell7[2] != p13)
-    dserror("triangulation failed for check15node5concave");
+    FOUR_C_THROW("triangulation failed for check15node5concave");
   if (cell8[0] != p6 || cell8[1] != p13 || cell8[2] != p4)
-    dserror("triangulation failed for check15node5concave");
+    FOUR_C_THROW("triangulation failed for check15node5concave");
 }
 
 /*---------------------------------------------------------------------------------------*
@@ -2759,13 +2759,13 @@ void check8nodeQuadInsidePt(
   std::vector<CORE::GEO::CUT::Point*> cell3 = split[2];
   std::vector<CORE::GEO::CUT::Point*> cell4 = split[3];
   if (cell1[0] != p7 || cell1[1] != p8 || cell1[2] != p1 || cell1[3] != p2)
-    dserror("triangulation failed for check8nodeQuadInsidePt");
+    FOUR_C_THROW("triangulation failed for check8nodeQuadInsidePt");
   if (cell2[0] != p2 || cell2[1] != p3 || cell2[2] != p4 || cell2[3] != p5)
-    dserror("triangulation failed for check8nodeQuadInsidePt");
+    FOUR_C_THROW("triangulation failed for check8nodeQuadInsidePt");
   if (cell3[0] != p6 || cell3[1] != p7 || cell3[2] != p2)
-    dserror("triangulation failed for check8nodeQuadInsidePt");
+    FOUR_C_THROW("triangulation failed for check8nodeQuadInsidePt");
   if (cell4[0] != p6 || cell4[1] != p2 || cell4[2] != p5)
-    dserror("triangulation failed for check8nodeQuadInsidePt");
+    FOUR_C_THROW("triangulation failed for check8nodeQuadInsidePt");
 }
 
 void checkTemporary(CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::Element* e, CORE::GEO::CUT::Side* s)
@@ -2873,15 +2873,15 @@ void checkTemporary(CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::Element* e, CORE
   std::vector<GEO::CUT::Point*> cell4 = split[3];
   std::vector<GEO::CUT::Point*> cell5 = split[4];
   if( cell1[0]!=p10 || cell1[1]!=p1 || cell1[2]!=p2 )
-    dserror( "triangulation failed for check10nodedShiftEarClipToSplit" );
+    FOUR_C_THROW( "triangulation failed for check10nodedShiftEarClipToSplit" );
   if( cell2[0]!=p10 || cell2[1]!=p2 || cell2[2]!=p3 )
-    dserror( "triangulation failed for check10nodedShiftEarClipToSplit" );
+    FOUR_C_THROW( "triangulation failed for check10nodedShiftEarClipToSplit" );
   if( cell3[0]!=p4 || cell3[1]!=p5 || cell3[2]!=p6 || cell3[3]!=p7 )
-    dserror( "triangulation failed for check10nodedShiftEarClipToSplit" );
+    FOUR_C_THROW( "triangulation failed for check10nodedShiftEarClipToSplit" );
   if( cell4[0]!=p7 || cell4[1]!=p8 || cell4[2]!=p9 )
-    dserror( "triangulation failed for check10nodedShiftEarClipToSplit" );
+    FOUR_C_THROW( "triangulation failed for check10nodedShiftEarClipToSplit" );
   if( cell5[0]!=p9 || cell5[1]!=p10 || cell5[2]!=p3 || cell5[3]!=p4 )
-    dserror( "triangulation failed for check10nodedShiftEarClipToSplit" );*/
+    FOUR_C_THROW( "triangulation failed for check10nodedShiftEarClipToSplit" );*/
 }
 
 void checkTemporary2(

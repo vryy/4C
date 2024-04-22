@@ -56,8 +56,9 @@ void MAT::FiberAnisotropyExtension<numfib>::SetFibers(
 {
   if (gp >= GetAnisotropy()->GetNumberOfGaussPoints())
   {
-    dserror("The current Gauss point %i is out of range of the expected number of Gauss points %i.",
-        gp, GetAnisotropy()->GetNumberOfGaussPoints());
+    FOUR_C_THROW(
+        "The current Gauss point %i is out of range of the expected number of Gauss points %i.", gp,
+        GetAnisotropy()->GetNumberOfGaussPoints());
   }
 
   if (fibers_.empty())
@@ -115,10 +116,11 @@ const CORE::LINALG::Matrix<3, 1>& MAT::FiberAnisotropyExtension<numfib>::GetFibe
     case FiberLocation::GPFibers:
       return fibers_[gp][i];
     default:
-      dserror("You have not specified, whether you want fibers on GP level or on element level.");
+      FOUR_C_THROW(
+          "You have not specified, whether you want fibers on GP level or on element level.");
   }
 
-  // just for compilation reasons. We will never land here because of the dserror() above
+  // just for compilation reasons. We will never land here because of the FOUR_C_THROW() above
   std::abort();
 }
 
@@ -128,7 +130,7 @@ const CORE::LINALG::Matrix<6, 1>& MAT::FiberAnisotropyExtension<numfib>::GetStru
 {
   if (not static_cast<bool>(tensor_flags_ & STRUCTURAL_TENSOR_STRESS))
   {
-    dserror("You have not specified that you need the fiber vector.");
+    FOUR_C_THROW("You have not specified that you need the fiber vector.");
   }
   switch (fiberLocation_)
   {
@@ -137,10 +139,11 @@ const CORE::LINALG::Matrix<6, 1>& MAT::FiberAnisotropyExtension<numfib>::GetStru
     case FiberLocation::GPFibers:
       return fiberStructuralTensors_stress_[gp][i];
     default:
-      dserror("You have not specified, whether you want fibers on GP level or on element level.");
+      FOUR_C_THROW(
+          "You have not specified, whether you want fibers on GP level or on element level.");
   }
 
-  // just for compilation reasons. We will never land here because of the dserror() above
+  // just for compilation reasons. We will never land here because of the FOUR_C_THROW() above
   std::abort();
 }
 
@@ -150,7 +153,7 @@ const CORE::LINALG::Matrix<3, 3>& MAT::FiberAnisotropyExtension<numfib>::GetStru
 {
   if (not static_cast<bool>(tensor_flags_ & STRUCTURAL_TENSOR))
   {
-    dserror("You have not specified that you need the structural tensor.");
+    FOUR_C_THROW("You have not specified that you need the structural tensor.");
   }
   switch (fiberLocation_)
   {
@@ -159,10 +162,11 @@ const CORE::LINALG::Matrix<3, 3>& MAT::FiberAnisotropyExtension<numfib>::GetStru
     case FiberLocation::GPFibers:
       return fiberStructuralTensors_[gp][i];
     default:
-      dserror("You have not specified, whether you want fibers on GP level or on element level.");
+      FOUR_C_THROW(
+          "You have not specified, whether you want fibers on GP level or on element level.");
   }
 
-  // just for compilation reasons. We will never land here because of the dserror() above
+  // just for compilation reasons. We will never land here because of the FOUR_C_THROW() above
   std::abort();
 }
 

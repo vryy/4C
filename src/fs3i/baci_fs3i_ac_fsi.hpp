@@ -85,7 +85,7 @@ namespace FS3I
     /// Prepare time step
     void PrepareTimeStep() override
     {
-      dserror(
+      FOUR_C_THROW(
           "This function is not implemented! Use SmallTimeScalePrepareTimeStep() or "
           "LargeTimeScalePrepareTimeStep() instead!");
     };

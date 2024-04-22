@@ -60,9 +60,9 @@ MAT::PAR::Damage::Damage(Teuchos::RCP<MAT::PAR::Material> matdata)
       hardexpo_(*matdata->Get<double>("HARDEXPO")),
       abstol_(*matdata->Get<double>("TOL"))
 {
-  if (hardexpo_ < 0.0) dserror("Nonlinear hardening exponent must be non-negative!");
+  if (hardexpo_ < 0.0) FOUR_C_THROW("Nonlinear hardening exponent must be non-negative!");
   if (damden_ == 0.0)
-    dserror("Denominator has to be unequal to zero, otherwise floating point exception!");
+    FOUR_C_THROW("Denominator has to be unequal to zero, otherwise floating point exception!");
 }
 
 
@@ -172,7 +172,7 @@ void MAT::Damage::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Damage*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -242,7 +242,8 @@ void MAT::Damage::Unpack(const std::vector<char>& data)
   // if it was already plastic before, set true
   if (plastic_step != 0) plastic_step_ = true;
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 
@@ -389,8 +390,8 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  // material stiffness matrix
     const int gp, const int eleGID)
 {
-  if (gp == -1) dserror("no Gauss point number provided in material");
-  if (eleGID == -1) dserror("no element provided in material");
+  if (gp == -1) FOUR_C_THROW("no Gauss point number provided in material");
+  if (eleGID == -1) FOUR_C_THROW("no element provided in material");
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plstrain(true);
 
   // get material parameters
@@ -447,7 +448,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
   if (isohardvarlast_->at(gp) < 0.0)
   {
     std::cout << "Rplast am ele = " << eleGID << ": " << Rplast << std::endl;
-    dserror("damaged isotropic hardening variable has to be equal to or greater than zero!");
+    FOUR_C_THROW("damaged isotropic hardening variable has to be equal to or greater than zero!");
   }
 
   // get old integrity: omega_n = 1 - D_n
@@ -467,7 +468,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
   // astrain^{p,trial}_{n+1} = astrain^p_n
   strainbar_p = strainbarpllast_->at(gp);
   if (strainbarpllast_->at(gp) < 0.0)
-    dserror("accumulated plastic strain has to be equal to or greater than zero!");
+    FOUR_C_THROW("accumulated plastic strain has to be equal to or greater than zero!");
 
   // --------------------------------------------------- physical strains
   // convert engineering shear components into physical components
@@ -646,8 +647,9 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
         // if not converged (m > m_max)
         if (itnum > itermax)
         {
-          dserror("local Newton iteration did not converge after iteration %3d/%3d with Res=%3d",
-              itnum, itermax, Res);
+          FOUR_C_THROW(
+              "local Newton iteration did not converge after iteration %3d/%3d with Res=%3d", itnum,
+              itermax, Res);
         }
         // else: continue loop m <= m_max
 
@@ -687,7 +689,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
         if (strainbar_p < 0.0)
         {
           std::cout << "strainbar_p = " << strainbar_p << std::endl;
-          dserror("accumulated plastic strain has to be equal or greater than zero");
+          FOUR_C_THROW("accumulated plastic strain has to be equal or greater than zero");
         }
 
         // isotropic damage variable remains the same using D == 0 (omega=1)
@@ -861,7 +863,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
         // if not converged m > m_max
         if (itnum > itermax)
         {
-          dserror(
+          FOUR_C_THROW(
               "local Newton iteration did not converge after iteration %3d/%3d with Res=%3d in "
               "ele=%3d",
               itnum, itermax, Res, eleGID);
@@ -948,7 +950,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
                     << ": strainbarpllast_->at(gp) = " << strainbarpllast_->at(gp)
                     << ", omega = " << omega << ", Dgamma = " << Dgamma
                     << ", and strainbar_p = " << strainbar_p << std::endl;
-          dserror("accumulated plastic strain has to be equal or greater than zero");
+          FOUR_C_THROW("accumulated plastic strain has to be equal or greater than zero");
         }
 
 #ifdef DEBUGMATERIAL
@@ -975,7 +977,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(const CORE::LINALG::Matrix<3, 3>* d
       // admissible values: (0 <= D < 1) or (1 >= omega > 0)
       // sanity check: omega < 1.0e-20
       if (omega < 1.0e-20)
-        dserror(
+        FOUR_C_THROW(
             "INadmissible value of integrity: omega = %-14.8E in ele = %4d!"
             " \n Omega has to be greater than zero!",
             omega, eleGID);
@@ -1174,9 +1176,9 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
   //
   // 4) determine scalar-valued damage
   // D_{n+1} = D_n + 1/(1 - D_{n+1}) . y(s_tilde) . Dgamma / (1 - D)
-  if (gp == -1) dserror("no Gauss point number provided in material");
+  if (gp == -1) FOUR_C_THROW("no Gauss point number provided in material");
 
-  if (EleGID == -1) dserror("no element provided in material");
+  if (EleGID == -1) FOUR_C_THROW("no element provided in material");
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plstrain(true);
 
   // get material parameters
@@ -1241,7 +1243,7 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
   if (isohardvarlast_->at(gp) < 0.0)
   {
     std::cout << "Rplast am ele = " << EleGID << ": " << Rplast << std::endl;
-    dserror("damaged isotropic hardening variable has to be equal to or greater than zero!");
+    FOUR_C_THROW("damaged isotropic hardening variable has to be equal to or greater than zero!");
   }
 
   // get old integrity: omega_n = 1 - D_n
@@ -1265,7 +1267,7 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
   // astrain^{p,trial}_{n+1} = astrain^p_n
   strainbar_p = strainbarpllast_->at(gp);
   if (strainbarpllast_->at(gp) < 0.0)
-    dserror("accumulated plastic strain has to be equal to or greater than zero!");
+    FOUR_C_THROW("accumulated plastic strain has to be equal to or greater than zero!");
 
   // ------------------------------------------------ old back stress
   // beta^{trial}_{n+1} = beta_n
@@ -1641,7 +1643,8 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
       // if not converged m > m_max
       if (itnum > itermax)
       {
-        dserror("local Newton iteration did not converge after iteration %3d/%3d", itnum, itermax);
+        FOUR_C_THROW(
+            "local Newton iteration did not converge after iteration %3d/%3d", itnum, itermax);
       }
       // else: continue loop m <= m_max
 
@@ -1845,7 +1848,7 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
       {
         if (omega < 0.0)
         {
-          dserror("Damage variable has converged to unacceptable value");
+          FOUR_C_THROW("Damage variable has converged to unacceptable value");
         }
         break;
       }
@@ -1896,9 +1899,9 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
         g = (2.0 * G * Dgamma / omega + Hkin * Dgamma / (1.0 + Hkin_rec * Dgamma)) / qbar_tilde;
       }
       else
-        dserror("do not divide by zero!");
+        FOUR_C_THROW("do not divide by zero!");
 
-      if (g <= 0.0) dserror("factor g has to be greater zero! g =  %-14.8E", g);
+      if (g <= 0.0) FOUR_C_THROW("factor g has to be greater zero! g =  %-14.8E", g);
 
       // h_alg = 3 G + [ (1 - D_{n+1}) - y . Delta_astrain +
       //         + 2 G . (Delta_astrain)^2 . dy/ds_tilde : N_tilde ]
@@ -2111,7 +2114,7 @@ void MAT::Damage::EvaluateFullLemaitre(const CORE::LINALG::Matrix<3, 3>* defgrd,
     // admissible values: (0 <= D < 1) or (1 >= omega > 0)
     // sanity check: omega < 1.0e-20
     if (omega < 1.0e-20)
-      dserror(
+      FOUR_C_THROW(
           "INadmissible value of integrity: omega = %-14.8E in ele = %4d!"
           " \n Omega has to be greater than zero!",
           omega, EleGID);
@@ -2541,7 +2544,8 @@ void MAT::Damage::SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM
       // ---------------------------------------------------------- plastic terms
 
       // check if omega is admissible
-      if (omega < 1.0e-20) dserror("Omega has to be greater than zero! omega = %-14.8E\n", omega);
+      if (omega < 1.0e-20)
+        FOUR_C_THROW("Omega has to be greater than zero! omega = %-14.8E\n", omega);
 
       // be aware: in the 1st equilibrium (Newton) iteration (i=0) C^{ep} is
       // indeterminate due to Dgamma == 0.0
@@ -2986,7 +2990,8 @@ double MAT::Damage::GetSigmaYAtStrainbarnp(
   {
     // get vector astrain^p_ref
     const std::vector<double> strainbar_p_ref = params_->strainbar_p_ref_;
-    if (sigma_y_ref.size() != strainbar_p_ref.size()) dserror("Samples have to fit to each other!");
+    if (sigma_y_ref.size() != strainbar_p_ref.size())
+      FOUR_C_THROW("Samples have to fit to each other!");
 
     // loop over samples
     for (int i = 0; i < samplenumber; ++i)
@@ -3056,7 +3061,7 @@ bool MAT::Damage::VisData(const std::string& name, std::vector<double>& data, in
 {
   if (name == "accumulatedstrain")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int iter = 0; iter < numgp; iter++) temp += AccumulatedStrain(iter);
     data[0] = temp / numgp;
@@ -3064,7 +3069,7 @@ bool MAT::Damage::VisData(const std::string& name, std::vector<double>& data, in
 
   if (name == "isohardeningvar")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int iter = 0; iter < numgp; iter++) temp += IsotropicHardeningVariable(iter);
     data[0] = temp / numgp;
@@ -3072,7 +3077,7 @@ bool MAT::Damage::VisData(const std::string& name, std::vector<double>& data, in
 
   if (name == "damage")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int iter = 0; iter < numgp; iter++) temp += IsotropicDamage(iter);
     data[0] = temp / numgp;

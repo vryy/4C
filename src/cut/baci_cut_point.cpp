@@ -232,7 +232,7 @@ CORE::GEO::CUT::Line* CORE::GEO::CUT::Point::CutLine(
       }
       else
       {
-        dserror("not unique");
+        FOUR_C_THROW("not unique");
       }
     }
   }
@@ -313,7 +313,7 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
     if (CORE::MathOperations<CORE::CLN::ClnWrapper>::abs(l2_cln) <
         (p1->Tolerance() + p2->Tolerance()))
     {
-      dserror("edge with no length");
+      FOUR_C_THROW("edge with no length");
     }
 
 
@@ -329,7 +329,7 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
           << " (Tol = " << Tolerance() + p1->Tolerance() + p2->Tolerance() << ")"
           << "\n"
           << x << x1 << x2 << "\n";
-      dserror(str.str());
+      FOUR_C_THROW(str.str());
     }
     // transformation to the parameter space coordinate t of the edge (between -1 and 1)
     CORE::CLN::ClnWrapper t_cln = 2.0 * z_cln - 1.0;
@@ -345,7 +345,7 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
 
     if (fabs(l2) < (p1->Tolerance() + p2->Tolerance()))
     {
-      dserror("edge with no length");
+      FOUR_C_THROW("edge with no length");
     }
 
     double z = l1 / l2;
@@ -366,7 +366,7 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
           << " (Tol = " << Tolerance() + p1->Tolerance() + p2->Tolerance() << ")"
           << "\n"
           << x << x1 << x2 << "\n";
-      dserror(str.str());
+      FOUR_C_THROW(str.str());
     }
     // transformation to the parameter space coordinate t of the edge (between -1 and 1)
     double t = 2.0 * z - 1.0;
@@ -418,7 +418,7 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
           file.close();
           DumpConnectivityInfo();
           (*it)->DumpConnectivityInfo();
-          dserror(str.str());
+          FOUR_C_THROW(str.str());
         }
       }
     }
@@ -542,7 +542,7 @@ void CORE::GEO::CUT::Point::Position(Point::PointPosition pos)
   if (position_ != pos)
   {
     //  safety check, if the position of a facet changes from one side to the other
-    dsassert(IsCutPositionUnchanged(position_, pos),
+    FOUR_C_ASSERT(IsCutPositionUnchanged(position_, pos),
         "Are you sure that you want to change the point-position from inside to outside or vice "
         "versa?");
 
@@ -593,7 +593,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Point::CutSide(Side* side, Point* other)
       }
       else
       {
-        dserror("side not unique");
+        FOUR_C_THROW("side not unique");
       }
     }
   }
@@ -736,7 +736,7 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
 
         std::vector<Point*>::iterator pt =
             std::find(real_merged_points_.begin(), real_merged_points_.end(), p_from);
-        if (pt == real_merged_points_.end()) dserror("Not possible");
+        if (pt == real_merged_points_.end()) FOUR_C_THROW("Not possible");
       }
 
       std::string pre = prefix.str();
@@ -1020,7 +1020,7 @@ void CORE::GEO::CUT::Point::AddMergedPair(
   if (merged != merged_points_info_.end())
   {
     // actually this can happen
-    // dserror("This should not happen"); //
+    // FOUR_C_THROW("This should not happen"); //
   }
   else if (coord)
     merged_points_info_[inter] = std::make_pair(*coord, true);
@@ -1110,7 +1110,7 @@ void CORE::GEO::CUT::ConcretePoint<probDim>::MovePoint(const double* new_coord)
 {
   CORE::LINALG::Matrix<3, 1> coordm(new_coord, true);
   if (CORE::GEO::CUT::DistanceBetweenPoints(this, coordm) > BOXOVERLAP)
-    dserror("The point is not allowed to be moved that much");
+    FOUR_C_THROW("The point is not allowed to be moved that much");
 
 #if CUT_CREATION_INFO
   std::stringstream info;

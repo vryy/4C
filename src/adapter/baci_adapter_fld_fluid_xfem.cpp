@@ -150,7 +150,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceForces()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceVelnp()
 {
-  dserror("Robin stuff");
+  FOUR_C_THROW("Robin stuff");
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(FluidField(), true);
   return xfluid->ExtractStructInterfaceVelnp();
 }

@@ -91,7 +91,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::Unpack(const std::vector<char>& dat
   Membrane<distype>::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -139,7 +139,7 @@ bool DRT::ELEMENTS::MembraneScatra<distype>::ReadElement(
   else if (impltype == "Std")
     impltype_ = INPAR::SCATRA::impltype_std;
   else
-    dserror("Invalid implementation type for Wall1_Scatra elements!");
+    FOUR_C_THROW("Invalid implementation type for Wall1_Scatra elements!");
 
   return true;
 }

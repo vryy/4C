@@ -120,7 +120,7 @@ void FS3I::PartFS3I2Wc::InitialCalculations()
   // to a constant here and never touched again
   if ((fsi_->FluidField()->PhysicalType() == INPAR::FLUID::tempdepwater) &&
       (consthermpress_ != "Yes"))
-    dserror(
+    FOUR_C_THROW(
         "Constant thermodynamic pressure required if TFSI algorithm is used with "
         "temperature-dependent water!");
   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[0]->ScaTraField())
@@ -307,7 +307,7 @@ void FS3I::PartFS3I2Wc::SetScaTraValuesInFSI()
     }
     break;
     default:
-      dserror("Time integration scheme not supported");
+      FOUR_C_THROW("Time integration scheme not supported");
       break;
   }
 
@@ -381,7 +381,7 @@ bool FS3I::PartFS3I2Wc::ScatraConvergenceCheck(int itnum)
   if (Comm().MyPID() == 0)
     std::cout << "\n****************************************\n STRUCTURE-BASED SCALAR TRANSPORT "
                  "CHECK\n****************************************\n";
-  // dserror("ConvergenceCheck in scatra currently only for loma scatra!Fix this!");
+  // FOUR_C_THROW("ConvergenceCheck in scatra currently only for loma scatra!Fix this!");
   // scatra2stopnonliniter = scatravec_[1]->ScaTraField()->ConvergenceCheck(itnum,itmax_,ittol_);
   scatra2stopnonliniter =
       Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(scatravec_[1]->ScaTraField())

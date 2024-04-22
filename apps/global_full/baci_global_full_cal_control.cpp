@@ -194,7 +194,7 @@ void ntacal()
       break;
 
     default:
-      dserror("solution of unknown problemtyp %d requested",
+      FOUR_C_THROW("solution of unknown problemtyp %d requested",
           GLOBAL::Problem::Instance()->GetProblemType());
       break;
   }

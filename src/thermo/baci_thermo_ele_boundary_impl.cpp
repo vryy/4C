@@ -91,7 +91,7 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
        return cl3;
      }*/
     default:
-      dserror("Shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
+      FOUR_C_THROW("Shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
       break;
   }
   return nullptr;
@@ -142,7 +142,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
   // get the material (of the parent element)
   DRT::Element* genericparent = ele->ParentElement();
   // make sure the static cast below is really valid
-  dsassert(dynamic_cast<DRT::ELEMENTS::Thermo*>(genericparent) != nullptr,
+  FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Thermo*>(genericparent) != nullptr,
       "Parent element is no fluid element");
   DRT::ELEMENTS::Thermo* parentele = static_cast<DRT::ELEMENTS::Thermo*>(genericparent);
   Teuchos::RCP<MAT::Material> mat = parentele->Material();
@@ -154,7 +154,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     // access the global vector
     const Teuchos::RCP<Epetra_MultiVector> normals =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("normal vectors", Teuchos::null);
-    if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
+    if (normals == Teuchos::null) FOUR_C_THROW("Could not access vector 'normal vectors'");
 
     // get node coordinates (we have a nsd_+1 dimensional domain!)
     CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, CORE::LINALG::Matrix<nsd_ + 1, nen_>>(
@@ -203,7 +203,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
     // get current condition
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
-    if (cond == Teuchos::null) dserror("Cannot access condition 'ThermoConvections'");
+    if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
 
     // access parameters of the condition
     const std::string* tempstate = cond->Get<std::string>("temperature state");
@@ -251,7 +251,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         // get actual values of temperature from global location vector
         std::vector<double> mytempnp((la[0].lm_).size());
         Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
-        if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
         // build the element temperature
@@ -259,7 +259,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         etemp_.Update(etemp);                                        // copy
       }  // discretization.HasState("temperature")
       else
-        dserror("No old temperature T_n+1 available");
+        FOUR_C_THROW("No old temperature T_n+1 available");
     }
     // use temperature T_n of last known time step t_n
     else if (*tempstate == "Tempn")
@@ -269,7 +269,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         // get actual values of temperature from global location vector
         std::vector<double> mytempn((la[0].lm_).size());
         Teuchos::RCP<const Epetra_Vector> tempn = discretization.GetState("old temperature");
-        if (tempn == Teuchos::null) dserror("Cannot get state vector 'tempn'");
+        if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
 
         CORE::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
         // build the element temperature
@@ -277,10 +277,10 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         etemp_.Update(etemp);                                       // copy
       }  // discretization.HasState("old temperature")
       else
-        dserror("No old temperature T_n available");
+        FOUR_C_THROW("No old temperature T_n available");
     }
     else
-      dserror("Unknown type of convection boundary condition");
+      FOUR_C_THROW("Unknown type of convection boundary condition");
 
 #ifdef THRASOUTPUT
     if (ele->Id() == 0)
@@ -329,7 +329,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
       {
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
         // extract the displacements
         CORE::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
 
@@ -353,7 +353,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
       case INPAR::THR::dyna_statics:
       {
         if (*tempstate == "Tempn")
-          dserror("Old temperature T_n is not allowed with static time integrator");
+          FOUR_C_THROW("Old temperature T_n is not allowed with static time integrator");
         // continue
         break;
       }
@@ -377,7 +377,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
       case INPAR::THR::dyna_undefined:
       default:
       {
-        dserror("Don't know what to do...");
+        FOUR_C_THROW("Don't know what to do...");
         break;
       }
     }  // end of switch(timint)
@@ -418,7 +418,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
         // get current condition
         Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
-        if (cond == Teuchos::null) dserror("Cannot access condition 'ThermoConvections'");
+        if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
 
         // access parameters of the condition
         const std::string* tempstate = cond->Get<std::string>("temperature state");
@@ -466,7 +466,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
             // get actual values of temperature from global location vector
             std::vector<double> mytempnp((la[0].lm_).size());
             Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
-            if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+            if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
             CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
             // build the element temperature
@@ -474,7 +474,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
             etemp_.Update(etemp);                                        // copy
           }  // discretization.HasState("temperature")
           else
-            dserror("No old temperature T_n+1 available");
+            FOUR_C_THROW("No old temperature T_n+1 available");
         }  // Tempnp
         // use temperature T_n of last known time step t_n
         else if (*tempstate == "Tempn")
@@ -484,7 +484,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
             // get actual values of temperature from global location vector
             std::vector<double> mytempn((la[0].lm_).size());
             Teuchos::RCP<const Epetra_Vector> tempn = discretization.GetState("old temperature");
-            if (tempn == Teuchos::null) dserror("Cannot get state vector 'tempn'");
+            if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
 
             CORE::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
             // build the element temperature
@@ -492,10 +492,10 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
             etemp_.Update(etemp);                                       // copy
           }  // discretization.HasState("old temperature")
           else
-            dserror("No old temperature T_n available");
+            FOUR_C_THROW("No old temperature T_n available");
         }  // Tempn
         else
-          dserror("Unknown type of convection boundary condition");
+          FOUR_C_THROW("Unknown type of convection boundary condition");
 
 #ifdef THRASOUTPUT
         if (ele->Id() == 0)
@@ -512,7 +512,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(1, "displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
         // extract the displacements
         CORE::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
 
@@ -533,7 +533,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
           case INPAR::THR::dyna_statics:
           {
             if (*tempstate == "Tempn")
-              dserror("Old temperature T_n is not allowed with static time integrator");
+              FOUR_C_THROW("Old temperature T_n is not allowed with static time integrator");
             // continue
             break;
           }
@@ -560,7 +560,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
           case INPAR::THR::dyna_undefined:
           default:
           {
-            dserror("Don't know what to do...");
+            FOUR_C_THROW("Don't know what to do...");
             break;
           }
         }  // end of switch(timint)
@@ -570,7 +570,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
   }      // calc_thermo_fextconvection_coupltang
 
   else
-    dserror("Unknown type of action for Temperature Implementation: %s",
+    FOUR_C_THROW("Unknown type of action for Temperature Implementation: %s",
         THR::BoundaryActionToString(action).c_str());
 
   return 0;
@@ -673,7 +673,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
 
   // integrations points and weights
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // ----------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
@@ -772,7 +772,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
 
   // integrations points and weights for 2D, i.e. dim of boundary element
   CORE::FE::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
-  if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
+  if (intpoints.IP().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
 
   // set up matrices and parameters needed for the evaluation of current
   // interfacial area and its derivatives w.r.t. the displacements
@@ -1022,7 +1022,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
     }
     break;
     default:
-      dserror("Illegal number of space dimensions: %d", nsd_);
+      FOUR_C_THROW("Illegal number of space dimensions: %d", nsd_);
       break;
   }  // switch(nsd)
 
@@ -1142,7 +1142,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
     }
     break;
     default:
-      dserror("Illegal number of space dimensions: %d", nsd_);
+      FOUR_C_THROW("Illegal number of space dimensions: %d", nsd_);
       break;
   }  // switch(nsd)
 
@@ -1165,7 +1165,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
   // cast to nurbs discretization
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-  if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+  if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   std::vector<CORE::LINALG::SerialDenseVector> parentknots(3);
   myknots_.resize(2);

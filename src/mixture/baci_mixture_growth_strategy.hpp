@@ -34,7 +34,7 @@ namespace MIXTURE
       /// Override this method and throw error, as only the CreateGrowthStrategy() should be used.
       Teuchos::RCP<MAT::Material> CreateMaterial() final
       {
-        dserror(
+        FOUR_C_THROW(
             "Cannot create mixture growth strategy from this method. Use CreateGrowthStrategy() "
             "instead.");
         return Teuchos::null;

@@ -54,7 +54,7 @@ MIXTURE::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
 {
   if (params->growth_strategy_matid_ <= 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "You have not specified a growth strategy material id. Reference to the material with the "
         "growth strategy.");
   }
@@ -100,7 +100,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Update(CORE::LINALG::Matrix<3, 3> const&
     const double dt = params.get<double>("delta time", -1.0);
     if (dt < 0.0)
     {
-      dserror("The element does not write the timestep, which is fatal.");
+      FOUR_C_THROW("The element does not write the timestep, which is fatal.");
     }
 
     // Evaluate inverse growth deformation gradient
@@ -213,7 +213,7 @@ double MIXTURE::GrowthRemodelMixtureRule::GetConstituentInitialReferenceMassDens
       return params_->initial_reference_density_ * params_->mass_fractions_[i];
     }
   }
-  dserror("The constituent could not be found!");
+  FOUR_C_THROW("The constituent could not be found!");
   return 0.0;
 }
 

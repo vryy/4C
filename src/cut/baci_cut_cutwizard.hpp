@@ -67,7 +67,7 @@ namespace CORE::GEO
             back_disp_col_(Teuchos::null),
             back_levelset_col_(Teuchos::null)
       {
-        if (backdis.is_null()) dserror("null pointer to background dis, invalid!");
+        if (backdis.is_null()) FOUR_C_THROW("null pointer to background dis, invalid!");
       }
 
       virtual ~BackMesh() = default;
@@ -89,7 +89,8 @@ namespace CORE::GEO
 
       const Epetra_Vector& BackDispCol() const
       {
-        if (not IsBackDisp()) dserror("The background displacement was not initialized correctly!");
+        if (not IsBackDisp())
+          FOUR_C_THROW("The background displacement was not initialized correctly!");
 
         return *back_disp_col_;
       }
@@ -98,7 +99,8 @@ namespace CORE::GEO
 
       const Epetra_Vector& BackLevelSetCol() const
       {
-        if (not IsLevelSet()) dserror("No level-set values set for the background discretization!");
+        if (not IsLevelSet())
+          FOUR_C_THROW("No level-set values set for the background discretization!");
 
         return *back_levelset_col_;
       }
@@ -266,7 +268,7 @@ namespace CORE::GEO
 
     CORE::GEO::CUT::CombIntersection& Intersection()
     {
-      if (intersection_.is_null()) dserror("nullptr pointer!");
+      if (intersection_.is_null()) FOUR_C_THROW("nullptr pointer!");
 
       return *intersection_;
     }

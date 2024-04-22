@@ -32,7 +32,7 @@ MAT::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMateri
 {
   if (yield_stress_n_ == -1.0 && yield_stress_m_ == -1.0 && isohard_modulus_n_ == -1.0 &&
       isohard_modulus_m_ == -1.0)
-    dserror("no plasticity material parameter is given; use elastic material instead");
+    FOUR_C_THROW("no plasticity material parameter is given; use elastic material instead");
 
   if (isohard_modulus_n_ <= 0.0) yield_stress_n_ = -1.0;
 
@@ -40,17 +40,17 @@ MAT::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMateri
 
   if (torsion_plasticity_ && std::abs(GetYoungsModulus() - 2.0 * GetShearModulus()) > 1e-9)
   {
-    dserror(
+    FOUR_C_THROW(
         "Young's modulus must be equal to two times the shear modulus if plasticity for torsional "
         "moments is turned on");
   }
 
   if (yield_stress_m_ >= 0 && std::abs(GetMomentInertia2() - GetMomentInertia3()) > 1e-9)
-    dserror("area moment of inertia 2 and 3 need to be equal");
+    FOUR_C_THROW("area moment of inertia 2 and 3 need to be equal");
 
   if (torsion_plasticity_ && std::abs(GetMomentInertiaPolar() - 2.0 * GetMomentInertia2()) > 1e-9)
   {
-    dserror(
+    FOUR_C_THROW(
         "polar area moment of inertia needs to be assigned twice the value of area moment of "
         "inertia 2");
   }
@@ -66,7 +66,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::BeamReissnerElastPlasticMaterialParams::Cr
 
   if (Uses_FAD())
   {
-    dserror(
+    FOUR_C_THROW(
         "The elastoplastic beam material is not yet implemented to be used with automatic "
         "differentiation!");
   }
@@ -221,7 +221,8 @@ void MAT::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
       this->SetParameter(static_cast<MAT::PAR::BeamReissnerElastPlasticMaterialParams*>(mat));
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*-----------------------------------------------------------------------------------------------*

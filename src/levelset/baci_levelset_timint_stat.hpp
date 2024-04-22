@@ -42,14 +42,14 @@ namespace SCATRA
     /// read restart data
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override
     {
-      dserror("You should not need this function!");
+      FOUR_C_THROW("You should not need this function!");
       return;
     };
 
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph)
     {
-      dserror("You should not need this function!");
+      FOUR_C_THROW("You should not need this function!");
       return;
     };
 
@@ -58,7 +58,7 @@ namespace SCATRA
     /// current solution becomes old solution of next time step
     void UpdateState() override
     {
-      dserror("You should not need this function!");
+      FOUR_C_THROW("You should not need this function!");
       return;
     };
 
@@ -66,14 +66,14 @@ namespace SCATRA
     /// extended version for coupled level-set problems including reinitialization
     void Update() override
     {
-      dserror("You should not need this function!");
+      FOUR_C_THROW("You should not need this function!");
       return;
     };
 
     /// update phi within the reinitialization loop
     void UpdateReinit() override
     {
-      dserror("You should not need this function!");
+      FOUR_C_THROW("You should not need this function!");
       return;
     };
 

@@ -38,28 +38,28 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
 {
   // Some checks for more safety
   if (coupling_ == reac_coup_none)
-    dserror(
+    FOUR_C_THROW(
         "The coupling '%s' is not a valid reaction coupling. Valid couplings are "
         "'simple_multiplicative', 'constant' and 'michaelis_menten'.",
         (matdata->Get<std::string>("COUPLING"))->c_str());
 
   if (numscal_ != (int)stoich_->size())
-    dserror("number of scalars %d does not fit to size of the STOICH vector %d", numscal_,
+    FOUR_C_THROW("number of scalars %d does not fit to size of the STOICH vector %d", numscal_,
         stoich_->size());
 
   if (numscal_ != (int)couprole_->size())
-    dserror("number of scalars %d does not fit to size of the ROLE vector %d", numscal_,
+    FOUR_C_THROW("number of scalars %d does not fit to size of the ROLE vector %d", numscal_,
         couprole_->size());
 
   if (numscal_ != (int)reacstart_->size())
-    dserror("number of scalars %d does not fit to size of the REACSTART vector %d", numscal_,
+    FOUR_C_THROW("number of scalars %d does not fit to size of the REACSTART vector %d", numscal_,
         reacstart_->size());
 
   for (int ii = 0; ii < numscal_; ii++)
   {
     if (reacstart_->at(ii) < 0)
     {
-      dserror("In the REACSTART vector only non-negative values are allowed!");
+      FOUR_C_THROW("In the REACSTART vector only non-negative values are allowed!");
     }
     else if (reacstart_->at(ii) > 0)
     {
@@ -81,11 +81,11 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
           if (couprole_->at(ii) != 0.0) roleallzero = false;
         }
         if (roleallzero)
-          dserror(
+          FOUR_C_THROW(
               "reac_coup_simple_multiplicative must contain at least one non-zero entry in the "
               "ROLE list");
         if (stoichallzero)
-          dserror(
+          FOUR_C_THROW(
               "reac_coup_simple_multiplicative must contain at least one non-zero entry in the "
               "STOICH list");
 
@@ -102,11 +102,11 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
           if (couprole_->at(ii) != 0.0) roleallzero = false;
         }
         if (roleallzero)
-          dserror(
+          FOUR_C_THROW(
               "reac_coup_power_multiplicative must contain at least one positive entry in the ROLE "
               "list");
         if (stoichallzero)
-          dserror(
+          FOUR_C_THROW(
               "reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH "
               "list");
 
@@ -119,13 +119,15 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
         for (int ii = 0; ii < numscal_; ii++)
         {
           if (stoich_->at(ii) < 0)
-            dserror("reac_coup_constant must only contain positive entries in the STOICH list");
+            FOUR_C_THROW(
+                "reac_coup_constant must only contain positive entries in the STOICH list");
           if (couprole_->at(ii) != 0.0)
-            dserror("reac_coup_constant must only contain zero entries in the ROLE list");
+            FOUR_C_THROW("reac_coup_constant must only contain zero entries in the ROLE list");
           if (stoich_->at(ii) > 0) issomepositiv = true;
         }
         if (not issomepositiv)
-          dserror("reac_coup_constant must contain at least one positive entry in the STOICH list");
+          FOUR_C_THROW(
+              "reac_coup_constant must contain at least one positive entry in the STOICH list");
 
         break;
       }
@@ -140,11 +142,11 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
           if (couprole_->at(ii) != 0) roleallzero = false;
         }
         if (roleallzero)
-          dserror(
+          FOUR_C_THROW(
               "reac_coup_michaelis_menten must contain at least one non-zero entry in the ROLE "
               "list");
         if (stoichallzero)
-          dserror(
+          FOUR_C_THROW(
               "reac_coup_michaelis_menten must contain at least one non-zero entry in the STOICH "
               "list");
 
@@ -159,28 +161,28 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
           if (stoich_->at(ii) != 0)
           {
             if (round(couprole_->at(ii)) < 1)
-              dserror(
+              FOUR_C_THROW(
                   "reac_coup_byfunction: no function defined in the ROLE list for scalar with "
                   "positive entry in the STOICH list");
             if (functID == -1)
               functID = round(couprole_->at(ii));
             else if (functID != round(couprole_->at(ii)))
-              dserror("The FUNC IDs defined in the ROLE list should all match");
+              FOUR_C_THROW("The FUNC IDs defined in the ROLE list should all match");
           }
         }
         if (functID == -1)
-          dserror(
+          FOUR_C_THROW(
               "reac_coup_byfunction must contain at least one positive entry in the STOICH list");
 
         break;
       }
 
       case MAT::PAR::reac_coup_none:
-        dserror("reac_coup_none is not a valid coupling");
+        FOUR_C_THROW("reac_coup_none is not a valid coupling");
         break;
 
       default:
-        dserror("The couplingtype %i is not a valid coupling type.", coupling_);
+        FOUR_C_THROW("The couplingtype %i is not a valid coupling type.", coupling_);
         break;
     }
   }
@@ -301,11 +303,12 @@ void MAT::ScatraReactionMat::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraReactionMat*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*-------------------------------------------------------------------------------/
@@ -493,8 +496,8 @@ double MAT::ScatraReactionMat::CalcPermInfluence(const int k,  //!< current scal
   constants.push_back(std::pair<std::string, double>("z", gpcoord[2]));
 
   if (not(Stoich()->at(k) > 0))
-    dserror("You need to specify a positive STOICH entry for scalar %i", k);
-  if (fabs(ReacCoeff(constants)) > 1.0e-14) dserror("You need to set REACOEFF to 0.0!");
+    FOUR_C_THROW("You need to specify a positive STOICH entry for scalar %i", k);
+  if (fabs(ReacCoeff(constants)) > 1.0e-14) FOUR_C_THROW("You need to set REACOEFF to 0.0!");
 
   return (CalcReaBodyForceTerm(k, phinp, constants, Stoich()->at(k), scale));
 }

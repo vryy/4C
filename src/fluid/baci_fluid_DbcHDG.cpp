@@ -106,7 +106,7 @@ void FLD::UTILS::DbcHdgFluid::ReadDirichletCondition(const DRT::DiscretizationFa
         // get corresponding local id
         const int lid = info.toggle.Map().LID(gid);
         if (lid < 0)
-          dserror(
+          FOUR_C_THROW(
               "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;
@@ -162,7 +162,7 @@ void FLD::UTILS::DbcHdgFluid::DoDirichletCondition(const DRT::DiscretizationFace
 
   // get ids of conditioned nodes
   const std::vector<int>* nodeids = cond.GetNodes();
-  if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+  if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
 
   // get curves, functs, vals, and onoff toggles from the condition
   const auto* funct = cond.Get<std::vector<int>>("funct");
@@ -282,7 +282,7 @@ void FLD::UTILS::DbcHdgFluid::DoDirichletCondition(const DRT::DiscretizationFace
               DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tri6>::Instance()
                   ->EvaluatePressureAverage(fluidele, params, mat, elevec);
             else
-              dserror("Given distype currently not implemented.");
+              FOUR_C_THROW("Given distype currently not implemented.");
             pressureavgBC = elevec[0];
 
             (*systemvectors[0])[lid] = pressureavgBC;
@@ -342,7 +342,7 @@ void FLD::UTILS::DbcHdgFluid::DoDirichletCondition(const DRT::DiscretizationFace
         // get corresponding local id
         const int lid = toggle.Map().LID(gid);
         if (lid < 0)
-          dserror(
+          FOUR_C_THROW(
               "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;

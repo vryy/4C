@@ -116,7 +116,7 @@ CORE::FE::CellType DRT::ShardsKeyToDisType(const unsigned& key)
       break;
     }
     default:
-      dserror("Unknown conversion from Shards::key to disType!");
+      FOUR_C_THROW("Unknown conversion from Shards::key to disType!");
       break;
   }
   return distype;
@@ -194,7 +194,7 @@ void DRT::Element::Print(std::ostream& os) const
 bool DRT::Element::ReadElement(
     const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
 {
-  dserror("subclass implementations missing");
+  FOUR_C_THROW("subclass implementations missing");
   return false;
 }
 
@@ -228,7 +228,7 @@ void DRT::Element::SetMaterial(int matnum)
 {
   Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matnum);
   if (mat == Teuchos::null)
-    dserror(
+    FOUR_C_THROW(
         "Invalid material given to the element. \n"
         "Invalid are Summands of the Elasthyper-Toolbox and single Growth-Materials. \n"
         "If you like to use a Summand of the Elasthyper-Material define it via MAT_ElastHyper. \n"
@@ -243,7 +243,7 @@ void DRT::Element::SetMaterial(int index, Teuchos::RCP<MAT::Material> mat)
   else if (NumMaterial() == index)
     AddMaterial(mat);
   else
-    dserror(
+    FOUR_C_THROW(
         "Setting material at index %d not possible (neither overwrite nor append) since currently  "
         "only %d materials are stored",
         index, NumMaterial());
@@ -317,7 +317,7 @@ void DRT::Element::Unpack(const std::vector<char>& data)
   {
     CORE::COMM::ParObject* o = CORE::COMM::Factory(tmp);
     auto* mat = dynamic_cast<MAT::Material*>(o);
-    if (mat == nullptr) dserror("failed to unpack material");
+    if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack only first material
     mat_[0] = Teuchos::rcp(mat);
   }
@@ -335,7 +335,7 @@ void DRT::Element::Unpack(const std::vector<char>& data)
   }
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -354,7 +354,7 @@ bool DRT::Element::BuildNodalPointers(std::map<int, Teuchos::RCP<DRT::Node>>& no
     std::map<int, Teuchos::RCP<DRT::Node>>::const_iterator curr = nodes.find(nodeids[i]);
     // this node is not on this proc
     if (curr == nodes.end())
-      dserror("Element %d cannot find node %d", Id(), nodeids[i]);
+      FOUR_C_THROW("Element %d cannot find node %d", Id(), nodeids[i]);
     else
       node_[i] = curr->second.get();
   }
@@ -421,7 +421,7 @@ void DRT::Element::NodalConnectivity(
     }
   }
   else
-    dserror("implementation is missing for this distype (%s)",
+    FOUR_C_THROW("implementation is missing for this distype (%s)",
         CORE::FE::CellTypeToString(Shape()).c_str());
 
   return;
@@ -440,7 +440,7 @@ void DRT::Element::GetCondition(const std::string& name, std::vector<DRT::Condit
   int count = 0;
   std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator curr;
   for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
-  if (count != num) dserror("Mismatch in number of conditions found");
+  if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
   return;
 }
 
@@ -468,7 +468,7 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
 
   if (numnode != static_cast<int>(nds.size()))
   {
-    dserror("wrong number of nodes");
+    FOUR_C_THROW("wrong number of nodes");
   }
 
   la.Clear();
@@ -510,7 +510,7 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
                 dirich->Type() != DRT::Condition::LineDirichlet &&
                 dirich->Type() != DRT::Condition::SurfaceDirichlet &&
                 dirich->Type() != DRT::Condition::VolumeDirichlet)
-              dserror("condition with name Dirichlet is not of type Dirichlet");
+              FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
             flag = dirich->Get<std::vector<int>>("onoff");
           }
           for (unsigned j = 0; j < dof.size(); ++j)
@@ -560,7 +560,7 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
             dirich->Type() != DRT::Condition::LineDirichlet &&
             dirich->Type() != DRT::Condition::SurfaceDirichlet &&
             dirich->Type() != DRT::Condition::VolumeDirichlet)
-          dserror("condition with name Dirichlet is not of type Dirichlet");
+          FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
         flag = dirich->Get<std::vector<int>>("onoff");
       }
       for (unsigned j = 0; j < dof.size(); ++j)
@@ -606,7 +606,7 @@ void DRT::Element::LocationVector(
         dis.Dof(dof, node, dofset, 0, this);
 
         // if there are more dofs on the node than the element can handle, this cannot work
-        dsassert(NumDofPerNode(*node) <= (int)dof.size() or dofset != 0,
+        FOUR_C_ASSERT(NumDofPerNode(*node) <= (int)dof.size() or dofset != 0,
             "More dofs on node than element can handle! Internal error!");
 
         // assume that the first dofs are the relevant ones
@@ -629,7 +629,7 @@ void DRT::Element::LocationVector(
                 dirich->Type() != DRT::Condition::LineDirichlet &&
                 dirich->Type() != DRT::Condition::SurfaceDirichlet &&
                 dirich->Type() != DRT::Condition::VolumeDirichlet)
-              dserror("condition with name Dirichlet is not of type Dirichlet");
+              FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
             flag = dirich->Get<std::vector<int>>("onoff");
           }
           for (int j = 0; j < size; ++j)
@@ -715,7 +715,7 @@ void DRT::Element::LocationVector(
                 dirich->Type() != DRT::Condition::LineDirichlet &&
                 dirich->Type() != DRT::Condition::SurfaceDirichlet &&
                 dirich->Type() != DRT::Condition::VolumeDirichlet)
-              dserror("condition with name Dirichlet is not of type Dirichlet");
+              FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
             flag = dirich->Get<std::vector<int>>("onoff");
 
             // Every component gets NumDofPerComponent ones or zeros
@@ -742,7 +742,7 @@ void DRT::Element::LocationVector(
             dirich->Type() != DRT::Condition::LineDirichlet &&
             dirich->Type() != DRT::Condition::SurfaceDirichlet &&
             dirich->Type() != DRT::Condition::VolumeDirichlet)
-          dserror("condition with name Dirichlet is not of type Dirichlet");
+          FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
         flag = dirich->Get<std::vector<int>>("onoff");
       }
       for (unsigned j = 0; j < dof.size(); ++j)
@@ -803,7 +803,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
             dirich->Type() != DRT::Condition::LineDirichlet &&
             dirich->Type() != DRT::Condition::SurfaceDirichlet &&
             dirich->Type() != DRT::Condition::VolumeDirichlet)
-          dserror("condition with name dirichlet is not of type Dirichlet");
+          FOUR_C_THROW("condition with name dirichlet is not of type Dirichlet");
         flag = dirich->Get<std::vector<int>>("onoff");
       }
       const int owner = nodes[i]->Owner();
@@ -855,7 +855,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
         dirich->Type() != DRT::Condition::LineDirichlet &&
         dirich->Type() != DRT::Condition::SurfaceDirichlet &&
         dirich->Type() != DRT::Condition::VolumeDirichlet)
-      dserror("condition with name dirichlet is not of type Dirichlet");
+      FOUR_C_THROW("condition with name dirichlet is not of type Dirichlet");
     flag = dirich->Get<std::vector<int>>("onoff");
   }
   const int owner = Owner();
@@ -941,7 +941,7 @@ int DRT::Element::NumFace() const
     case 3:
       return NumSurface();
     default:
-      dserror("faces for discretization type %s not yet implemented",
+      FOUR_C_THROW("faces for discretization type %s not yet implemented",
           (CORE::FE::CellTypeToString(Shape())).c_str());
       return 0;
   }
@@ -953,7 +953,7 @@ int DRT::Element::NumFace() const
 DRT::Element* DRT::Element::Neighbor(const int face) const
 {
   if (face_.empty()) return nullptr;
-  dsassert(face < NumFace(), "there is no face with the given index");
+  FOUR_C_ASSERT(face < NumFace(), "there is no face with the given index");
   DRT::FaceElement* faceelement = face_[face].getRawPtr();
   if (faceelement->ParentMasterElement() == this)
     return faceelement->ParentSlaveElement();
@@ -969,7 +969,7 @@ void DRT::Element::SetFace(const int faceindex, DRT::FaceElement* faceelement)
 {
   const int nface = NumFace();
   if (face_.empty()) face_.resize(nface, Teuchos::null);
-  dsassert(faceindex < NumFace(), "there is no face with the given index");
+  FOUR_C_ASSERT(faceindex < NumFace(), "there is no face with the given index");
   face_[faceindex] = Teuchos::rcpFromRef<DRT::FaceElement>(*faceelement);
 }
 
@@ -980,7 +980,7 @@ void DRT::Element::SetFace(const int faceindex, Teuchos::RCP<DRT::FaceElement> f
 {
   const int nface = NumFace();
   if (face_.empty()) face_.resize(nface, Teuchos::null);
-  dsassert(faceindex < NumFace(), "there is no face with the given index");
+  FOUR_C_ASSERT(faceindex < NumFace(), "there is no face with the given index");
   face_[faceindex] = std::move(faceelement);
 }
 
@@ -1090,7 +1090,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(
       if (lid > -1)
         point(i_dir) = node->X()[i_dir] + result_data_dofbased[lid];
       else
-        dserror("received illegal dof local id: %d", lid);
+        FOUR_C_THROW("received illegal dof local id: %d", lid);
     }
     bounding_box.AddPoint(point);
   }
@@ -1170,7 +1170,7 @@ void DRT::FaceElement::Unpack(const std::vector<char>& data)
   parent_id_ = ExtractInt(position, data);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

@@ -49,8 +49,8 @@ void POROELAST::MonolithicStructureSplit::SetupSystem()
     vecSpaces.push_back(StructureField()->Interface()->OtherMap());
     vecSpaces.push_back(FluidField()->DofRowMap());
 
-    if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No structure equation. Panic.");
-    if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
+    if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
+    if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
 
     // full Poroelasticity-map
     fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
@@ -89,9 +89,9 @@ void POROELAST::MonolithicStructureSplit::SetupSystemMatrix(
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicStructureSplit::SetupSystemMatrix");
 
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
-  if (s == Teuchos::null) dserror("expect structure block matrix");
+  if (s == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
   Teuchos::RCP<CORE::LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
-  if (f == Teuchos::null) dserror("expect fluid matrix");
+  if (f == Teuchos::null) FOUR_C_THROW("expect fluid matrix");
 
   // just to play it safe ...
   mat.Zero();
@@ -108,7 +108,7 @@ void POROELAST::MonolithicStructureSplit::SetupSystemMatrix(
 
   // create empty matrix
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_sf = StructFluidCouplingBlockMatrix();
-  if (k_sf == Teuchos::null) dserror("expect coupling block matrix");
+  if (k_sf == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
   // call the element and calculate the matrix block
   ApplyStrCouplMatrix(k_sf);
@@ -119,7 +119,7 @@ void POROELAST::MonolithicStructureSplit::SetupSystemMatrix(
 
   // create empty matrix
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> k_fs = FluidStructCouplingBlockMatrix();
-  if (k_fs == Teuchos::null) dserror("expect coupling block matrix");
+  if (k_fs == Teuchos::null) FOUR_C_THROW("expect coupling block matrix");
 
   // call the element and calculate the matrix block
   ApplyFluidCouplMatrix(k_fs);

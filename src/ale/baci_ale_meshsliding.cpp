@@ -335,7 +335,7 @@ void ALE::Meshsliding::SplitMortarMatrix(Teuchos::RCP<CORE::LINALG::SparseMatrix
   bool suc = CORE::LINALG::SplitMatrix2x2(MortarMatrix, dofrowmap, dummy, gmdofrowmap, gsdofrowmap,
       MasterMatrix, SlaveMatrix, temp21, temp22);
 
-  if (!suc) dserror("\nCould not split Mortar Matriz!\n");
+  if (!suc) FOUR_C_THROW("\nCould not split Mortar Matriz!\n");
 
   // Complete Matrices
   MasterMatrix->Complete();

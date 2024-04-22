@@ -63,7 +63,7 @@ double SSTI::SSTIResultTest::ResultSpecial(const std::string& quantity) const
   // catch unknown quantity strings
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Quantity '%s' not supported by result testing functionality for scalar-structure-thermo "
         "interaction!",
         quantity.c_str());

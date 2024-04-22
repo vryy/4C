@@ -277,10 +277,10 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
   double r_max = params_dem_.get<double>("MAX_RADIUS");
 
   // safety checks
-  if (r_min < 0.0) dserror("negative minimum allowed particle radius!");
-  if (not(r_max > 0.0)) dserror("non-positive maximum allowed particle radius!");
+  if (r_min < 0.0) FOUR_C_THROW("negative minimum allowed particle radius!");
+  if (not(r_max > 0.0)) FOUR_C_THROW("non-positive maximum allowed particle radius!");
   if (r_min > r_max)
-    dserror("minimum allowed particle radius larger than maximum allowed particle radius!");
+    FOUR_C_THROW("minimum allowed particle radius larger than maximum allowed particle radius!");
 
   // get type of initial particle radius assignment
   INPAR::PARTICLE::InitialRadiusAssignment radiusdistributiontype =
@@ -311,10 +311,10 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
 
         // safety checks
         if (material->initRadius_ < r_min)
-          dserror("material particle radius smaller than minimum allowed particle radius!");
+          FOUR_C_THROW("material particle radius smaller than minimum allowed particle radius!");
 
         if (material->initRadius_ > r_max)
-          dserror("material particle radius larger than maximum allowed particle radius!");
+          FOUR_C_THROW("material particle radius larger than maximum allowed particle radius!");
 
         // (initial) radius of current phase
         std::vector<double> initradius(1);
@@ -346,10 +346,10 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
 
         // safety checks
         if (container->GetMinValueOfState(PARTICLEENGINE::Radius) < r_min)
-          dserror("minimum particle radius smaller than minimum allowed particle radius!");
+          FOUR_C_THROW("minimum particle radius smaller than minimum allowed particle radius!");
 
         if (container->GetMaxValueOfState(PARTICLEENGINE::Radius) > r_max)
-          dserror("maximum particle radius larger than maximum allowed particle radius!");
+          FOUR_C_THROW("maximum particle radius larger than maximum allowed particle radius!");
       }
 
       break;
@@ -362,7 +362,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
       double sigma = params_dem_.get<double>("RADIUSDISTRIBUTION_SIGMA");
 
       // safety check
-      if (not(sigma > 0.0)) dserror("non-positive sigma of random particle radius distribution!");
+      if (not(sigma > 0.0))
+        FOUR_C_THROW("non-positive sigma of random particle radius distribution!");
 
       // iterate over particle types
       for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -414,7 +415,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
     }
     default:
     {
-      dserror("invalid type of (random) particle radius distribution!");
+      FOUR_C_THROW("invalid type of (random) particle radius distribution!");
       break;
     }
   }

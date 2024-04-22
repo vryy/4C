@@ -73,16 +73,16 @@ void FS3I::PartFpS3I1Wc::Setup()
   // add proxy of fluid degrees of freedom to scatra discretization
   if (scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(
           fpsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
-    dserror("Scatra discretization has illegal number of dofsets!");
+    FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
   // check if scatra field has 2 discretizations, so that coupling is possible
   if (scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(
           fpsi_->PoroField()->StructureField()->Discretization()->GetDofSetProxy()) != 1)
-    dserror("unexpected dof sets in structure field");
+    FOUR_C_THROW("unexpected dof sets in structure field");
   // check if scatra field has 3 discretizations, so that coupling is possible
   if (scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(
           fpsi_->PoroField()->FluidField()->Discretization()->GetDofSetProxy()) != 2)
-    dserror("unexpected dof sets in structure field");
+    FOUR_C_THROW("unexpected dof sets in structure field");
 
   // Note: in the scatra fields we have now the following dof-sets:
   // fluidscatra dofset 0: fluidscatra dofset
@@ -275,7 +275,7 @@ bool FS3I::PartFpS3I1Wc::ScatraConvergenceCheck(const int itnum)
     }
     break;
     default:
-      dserror("Illegal ScaTra solvertype in FPS3I");
+      FOUR_C_THROW("Illegal ScaTra solvertype in FPS3I");
       break;
   }
   return false;

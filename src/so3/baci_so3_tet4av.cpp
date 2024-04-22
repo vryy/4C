@@ -167,7 +167,7 @@ void DRT::ELEMENTS::SoTet4av::Unpack(const std::vector<char>& data)
   SoBase::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

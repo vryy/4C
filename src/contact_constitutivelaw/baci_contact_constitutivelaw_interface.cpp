@@ -50,7 +50,7 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     int dim = cnode->NumDof();
@@ -148,7 +148,7 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
  *----------------------------------------------------------------------*/
 void CONTACT::ConstitutivelawInterface::AssembleRegTangentForcesPenalty()
 {
-  dserror("Frictional contact not yet implemented for rough surfaces\n");
+  FOUR_C_THROW("Frictional contact not yet implemented for rough surfaces\n");
 }
 
 FOUR_C_NAMESPACE_CLOSE

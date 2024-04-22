@@ -130,7 +130,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateNeuman
 
     default:
     {
-      dserror("Closing equation for electric potential not recognized!");
+      FOUR_C_THROW("Closing equation for electric potential not recognized!");
       break;
     }
   }  // switch(myelch::elchparams_->EquPot())
@@ -224,13 +224,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateElchB
 
     case INPAR::ELCH::equpot_poisson:
     {
-      dserror("Poisson equation combined with electrode boundary conditions not implemented!");
+      FOUR_C_THROW("Poisson equation combined with electrode boundary conditions not implemented!");
       break;
     }
 
     default:
     {
-      dserror("Unknown closing equation for electric potential!");
+      FOUR_C_THROW("Unknown closing equation for electric potential!");
       break;
     }
   }  // switch(myelch::elchparams_->EquPot())
@@ -260,14 +260,14 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::GetValence(
     if (species->MaterialType() == INPAR::MAT::m_ion)
     {
       valence = Teuchos::rcp_static_cast<const MAT::Ion>(species)->Valence();
-      if (abs(valence) < 1.e-14) dserror("Received zero valence!");
+      if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
     }
     else
-      dserror("Material species is not an ion!");
+      FOUR_C_THROW("Material species is not an ion!");
   }
 
   else
-    dserror("Unknown material!");
+    FOUR_C_THROW("Unknown material!");
 
   return valence;
 }

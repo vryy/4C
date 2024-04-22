@@ -50,7 +50,7 @@ namespace POROELASTSCATRA
 
       // 3.-Access the scatra discretization, make sure it's empty, and fill it by cloning the
       // structural one.
-      if (fluiddis->NumGlobalNodes() == 0) dserror("Fluid discretization is empty!");
+      if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
       if (!scatradis->Filled()) scatradis->FillComplete();
 
@@ -76,11 +76,14 @@ namespace POROELASTSCATRA
         Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
 
         // check if ScatraField has 2 discretizations, so that coupling is possible
-        if (scatradis->AddDofSet(structdofset) != 1) dserror("unexpected dof sets in scatra field");
-        if (scatradis->AddDofSet(fluiddofset) != 2) dserror("unexpected dof sets in scatra field");
+        if (scatradis->AddDofSet(structdofset) != 1)
+          FOUR_C_THROW("unexpected dof sets in scatra field");
+        if (scatradis->AddDofSet(fluiddofset) != 2)
+          FOUR_C_THROW("unexpected dof sets in scatra field");
         if (structdis->AddDofSet(scatradofset) != 2)
-          dserror("unexpected dof sets in structure field");
-        if (fluiddis->AddDofSet(scatradofset) != 2) dserror("unexpected dof sets in fluid field");
+          FOUR_C_THROW("unexpected dof sets in structure field");
+        if (fluiddis->AddDofSet(scatradofset) != 2)
+          FOUR_C_THROW("unexpected dof sets in fluid field");
 
         structdis->FillComplete();
         fluiddis->FillComplete();
@@ -116,16 +119,19 @@ namespace POROELASTSCATRA
         Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
         dofsetaux = Teuchos::rcp(
             new DRT::DofSetPredefinedDoFNumber(ndofpernode_scatra, ndofperelement_scatra, 0, true));
-        if (structdis->AddDofSet(dofsetaux) != 2) dserror("unexpected dof sets in structure field");
+        if (structdis->AddDofSet(dofsetaux) != 2)
+          FOUR_C_THROW("unexpected dof sets in structure field");
         dofsetaux = Teuchos::rcp(
             new DRT::DofSetPredefinedDoFNumber(ndofpernode_scatra, ndofperelement_scatra, 0, true));
-        if (fluiddis->AddDofSet(dofsetaux) != 2) dserror("unexpected dof sets in fluid field");
+        if (fluiddis->AddDofSet(dofsetaux) != 2) FOUR_C_THROW("unexpected dof sets in fluid field");
         dofsetaux = Teuchos::rcp(
             new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
-        if (scatradis->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in scatra field");
+        if (scatradis->AddDofSet(dofsetaux) != 1)
+          FOUR_C_THROW("unexpected dof sets in scatra field");
         dofsetaux = Teuchos::rcp(
             new DRT::DofSetPredefinedDoFNumber(ndofpernode_fluid, ndofperelement_fluid, 0, true));
-        if (scatradis->AddDofSet(dofsetaux) != 2) dserror("unexpected dof sets in scatra field");
+        if (scatradis->AddDofSet(dofsetaux) != 2)
+          FOUR_C_THROW("unexpected dof sets in scatra field");
 
         // call AssignDegreesOfFreedom also for auxiliary dofsets
         // note: the order of FillComplete() calls determines the gid numbering!

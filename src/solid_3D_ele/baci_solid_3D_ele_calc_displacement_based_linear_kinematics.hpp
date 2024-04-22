@@ -115,7 +115,7 @@ namespace DRT::ELEMENTS
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
             deformation_gradient)
     {
-      dserror(
+      FOUR_C_THROW(
           "The full linearization is not yet implemented for the displacement based formulation "
           "with linear kinematics.");
     }

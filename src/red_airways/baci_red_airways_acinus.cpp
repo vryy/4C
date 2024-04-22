@@ -130,7 +130,7 @@ CORE::FE::CellType DRT::ELEMENTS::RedAcinus::Shape() const
     case 3:
       return CORE::FE::CellType::line3;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
       break;
   }
 }
@@ -190,7 +190,7 @@ void DRT::ELEMENTS::RedAcinus::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, acinusParams_.generation);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -284,7 +284,7 @@ const DRT::REDAIRWAYS::AcinusParams& DRT::ELEMENTS::RedAcinus::GetAcinusParams()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::RedAcinus::Lines()
 {
-  dsassert(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
+  FOUR_C_ASSERT(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
 
   return {Teuchos::rcpFromRef(*this)};
 }

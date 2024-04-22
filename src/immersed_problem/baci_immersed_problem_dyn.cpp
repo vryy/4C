@@ -69,7 +69,7 @@ void immersed_problem_drt()
                 (problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
 
             if (inode == nullptr)
-              dserror(
+              FOUR_C_THROW(
                   "dynamic cast from Node to ImmersedNode failed.\n"
                   "Make sure you defined INODE instead of NODE in your input file.");
           }
@@ -77,7 +77,7 @@ void immersed_problem_drt()
           {
             // check if structural predictor ConstDisVelAcc is chosen in input file
             if (problem->StructuralDynamicParams().get<std::string>("PREDICT") != "ConstDisVelAcc")
-              dserror(
+              FOUR_C_THROW(
                   "Invalid structural predictor for immersed fsi!\n"
                   "Choose ConstDisVelAcc as predictor in ---STRUCTURAL DYNAMIC section.\n"
                   "Structural state projected onto fluid in new time step should be the same as in "
@@ -90,7 +90,7 @@ void immersed_problem_drt()
           else
           {
             algo = Teuchos::null;
-            dserror("unknown coupling scheme");
+            FOUR_C_THROW("unknown coupling scheme");
           }
 
           // init algo
@@ -132,7 +132,7 @@ void immersed_problem_drt()
 
         default:
         {
-          dserror("no valid problem type specified");
+          FOUR_C_THROW("no valid problem type specified");
           break;
         }  // default
         break;
@@ -141,7 +141,7 @@ void immersed_problem_drt()
     }  // case partitioned (default)
     case INPAR::IMMERSED::monolithic:
     {
-      dserror(
+      FOUR_C_THROW(
           "Monolithic solution scheme not implemented for immersed problems, yet.\n "
           "Make sure that the parameter COUPALGO is set to 'partitioned'");
       break;

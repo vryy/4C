@@ -34,7 +34,7 @@ PostVtuWriterNode::PostVtuWriterNode(PostField* field, const std::string& filena
   static_assert(29 == static_cast<int>(CORE::FE::CellType::max_distype),
       "The number of element types defined by CORE::FE::CellType does not match the "
       "number of element types supported by the post vtu filter.");
-  if (myrank_ != 0) dserror("Node based filtering only works in serial mode");
+  if (myrank_ != 0) FOUR_C_THROW("Node based filtering only works in serial mode");
 }
 
 
@@ -143,7 +143,7 @@ void PostVtuWriterNode::WriteGeo()
     }
   }
 
-  dsassert((int)coordinates.size() == 3 * outNodeId, "internal error");
+  FOUR_C_ASSERT((int)coordinates.size() == 3 * outNodeId, "internal error");
 
   // step 1: write node coordinates into file
   currentout_ << "<Piece NumberOfPoints=\"" << nnodes << "\" NumberOfCells=\"" << nelements
@@ -316,7 +316,7 @@ void PostVtuWriterNode::WriteDofResultStep(std::ofstream& file,
         if (fillzeros)
           solution.push_back(0.);
         else
-          dserror("received illegal dof local id: %d", lid);
+          FOUR_C_THROW("received illegal dof local id: %d", lid);
       }
     }
 
@@ -324,7 +324,7 @@ void PostVtuWriterNode::WriteDofResultStep(std::ofstream& file,
 
   }  // loop over all nodes
 
-  dsassert((int)solution.size() == ncomponents * nnodes, "internal error");
+  FOUR_C_ASSERT((int)solution.size() == ncomponents * nnodes, "internal error");
 
 
   // start the scalar fields that will later be written
@@ -339,7 +339,7 @@ void PostVtuWriterNode::WriteDofResultStep(std::ofstream& file,
   }
 
   if (currentPhase_ != POINTS)
-    dserror(
+    FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
   this->WriteSolutionVector(solution, ncomponents, name, file);
@@ -362,7 +362,8 @@ void PostVtuWriterNode::WriteNodalResultStep(std::ofstream& file,
   const Epetra_Map* colmap = dis->NodeColMap();
   const Epetra_BlockMap& vecmap = data->Map();
 
-  dsassert(colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
+  FOUR_C_ASSERT(
+      colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
       "Given data vector does not seem to match discretization node map");
 
   Teuchos::RCP<Epetra_MultiVector> ghostedData;
@@ -395,7 +396,7 @@ void PostVtuWriterNode::WriteNodalResultStep(std::ofstream& file,
     for (int d = numdf; d < ncomponents; ++d) solution.push_back(0.);
   }  // loop over all nodes
 
-  dsassert((int)solution.size() == ncomponents * nnodes, "internal error");
+  FOUR_C_ASSERT((int)solution.size() == ncomponents * nnodes, "internal error");
 
 
   // start the scalar fields that will later be written
@@ -410,7 +411,7 @@ void PostVtuWriterNode::WriteNodalResultStep(std::ofstream& file,
   }
 
   if (currentPhase_ != POINTS)
-    dserror(
+    FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
   this->WriteSolutionVector(solution, ncomponents, name, file);
@@ -434,34 +435,34 @@ void PostVtuWriterNode::WriteElementResultStep(std::ofstream& file,
 void PostVtuWriterNode::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
     int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates)
 {
-  dserror("VTU node based filter cannot handle NURBS elements");
+  FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }
 
 void PostVtuWriterNode::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
     std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
     std::vector<double>& coordinates)
 {
-  dserror("VTU node based filter cannot handle beam elements");
+  FOUR_C_THROW("VTU node based filter cannot handle beam elements");
 }
 
 void PostVtuWriterNode::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
     const int from, const bool fillzeros)
 {
-  dserror("VTU node based filter cannot handle NURBS elements");
+  FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }
 
 void PostVtuWriterNode::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros)
 {
-  dserror("VTU node based filter cannot handle beam elements");
+  FOUR_C_THROW("VTU node based filter cannot handle beam elements");
 }
 
 void PostVtuWriterNode::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,
     const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData)
 {
-  dserror("VTU node based filter cannot handle NURBS elements");
+  FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -41,9 +41,9 @@ MAT::PAR::InelasticDefgradScalar::InelasticDefgradScalar(Teuchos::RCP<MAT::PAR::
   // in case not all scatra dofs are transported scalars, the last scatra dof is a potential and can
   // not be treated as a concentration but it is treated like that in so3_scatra_evaluate.cpp in the
   // PreEvaluate method!
-  if (scalar1_ != 1) dserror("At the moment it is only possible that SCALAR1 induces growth");
+  if (scalar1_ != 1) FOUR_C_THROW("At the moment it is only possible that SCALAR1 induces growth");
   if (*matdata->Get<double>("SCALAR1_RefConc") < 0.0)
-    dserror("The reference concentration of SCALAR1 can't be negative");
+    FOUR_C_THROW("The reference concentration of SCALAR1 can't be negative");
 }
 
 /*--------------------------------------------------------------------*
@@ -81,12 +81,12 @@ MAT::PAR::InelasticDefgradIntercalFrac::InelasticDefgradIntercalFrac(
         break;
       }
       default:
-        dserror("The material you have specified by MATID has to be an electrode material!");
+        FOUR_C_THROW("The material you have specified by MATID has to be an electrode material!");
     }
   }
   else
   {
-    dserror("You have to enter a valid MATID for the corresponding electrode material!");
+    FOUR_C_THROW("You have to enter a valid MATID for the corresponding electrode material!");
   }
 }
 
@@ -102,7 +102,7 @@ MAT::PAR::InelasticDefgradPolyIntercalFrac::InelasticDefgradPolyIntercalFrac(
   // safety check
   if (poly_coeffs_.size() != static_cast<unsigned int>(*matdata->Get<int>("POLY_PARA_NUM")))
   {
-    dserror(
+    FOUR_C_THROW(
         "Number of coefficients POLY_PARA_NUM you entered in input file has to match the size "
         "of coefficient vector POLY_PARAMS");
   }
@@ -136,7 +136,7 @@ MAT::PAR::InelasticDeformationDirection::InelasticDeformationDirection(
 {
   if (growthdirection.size() != 3)
   {
-    dserror(
+    FOUR_C_THROW(
         "Since we have a 3D problem here, vector that defines the growth direction also needs to "
         "have the size 3!");
   }
@@ -167,10 +167,10 @@ MAT::PAR::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(
 
 {
   // safety checks
-  if (ref_temp_ < 0.0) dserror("Avoid negative reference temperatures");
+  if (ref_temp_ < 0.0) FOUR_C_THROW("Avoid negative reference temperatures");
   if (temp_growth_fac_ == 0.0)
   {
-    dserror(
+    FOUR_C_THROW(
         "Do not use 'MAT_InelasticDefgradLinTempIso' with a growth factor of 0.0. Use "
         "'MAT_InelasticDefgradNoGrowth' instead!");
   }
@@ -198,17 +198,17 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
 {
   // for the sake of safety
   if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
 
   // another safety check
   if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // check correct masslin type
   const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   if (CORE::UTILS::IntegralValue<INPAR::STR::MassLin>(sdyn, "MASSLIN") != INPAR::STR::ml_none)
   {
-    dserror(
+    FOUR_C_THROW(
         "If you use the material 'InelasticDefgradFactors' please set 'MASSLIN' in the "
         "STRUCTURAL DYNAMIC Section to 'None', or feel free to implement other possibility!");
   }
@@ -296,7 +296,7 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
     }
 
     default:
-      dserror("cannot deal with type %d", curmat->Type());
+      FOUR_C_THROW("cannot deal with type %d", curmat->Type());
   }
   // dummy return
   return Teuchos::null;
@@ -892,10 +892,11 @@ MAT::InelasticDefgradLinearShape::InelasticDefgradLinearShape(
     : growth_fac_(growth_fac), reference_value_(reference_value)
 {
   // safety checks
-  if (growth_fac < 0.0) dserror("Growth factor can not be negative, please check your input file!");
+  if (growth_fac < 0.0)
+    FOUR_C_THROW("Growth factor can not be negative, please check your input file!");
   if (growth_fac == 0.0)
   {
-    dserror(
+    FOUR_C_THROW(
         "Do not use linear growth laws with a growth factor of 0.0. Use "
         "'MAT_InelasticDefgradNoGrowth' instead!");
   }
@@ -985,7 +986,7 @@ void MAT::InelasticDefgradLinTempIso::EvaluateInverseInelasticDefGrad(
   const double reftemp = Parameter()->RefTemp();
 
   const double growthfactor = 1.0 + tempgrowthfac * (GetTemperatureGP() - reftemp);
-  if (growthfactor <= 0.0) dserror("Determinante of growth must not become negative");
+  if (growthfactor <= 0.0) FOUR_C_THROW("Determinante of growth must not become negative");
   const double isoinelasticdefo = std::pow(growthfactor, (1.0 / 3.0));
 
   // calculate inverse inelastic deformation gradient
@@ -1037,7 +1038,7 @@ void MAT::InelasticDefgradLinTempIso::EvaluateODStiffMat(
   const double reftemp = Parameter()->RefTemp();
 
   const double growthfactor = 1.0 + tempgrowthfac * (GetTemperatureGP() - reftemp);
-  if (growthfactor <= 0.0) dserror("Determinante of growth must not become negative");
+  if (growthfactor <= 0.0) FOUR_C_THROW("Determinante of growth must not become negative");
 
   const double scalefac = -tempgrowthfac / (3.0 * std::pow(growthfactor, 4.0 / 3.0));
 

@@ -107,7 +107,7 @@ NEIGHBORTOL ca. 3, since the sum of |xi1| and |xi2| has to be larger than three 
 //  not default: Off
 #ifdef AUTOMATICDIFF
 // TODO
-dserror(
+FOUR_C_THROW(
     "check functionality of FAD based linearization in case of beam3k and beam3r with Hermite cl "
     "intpol");
 typedef Sacado::Fad::DFad<double> TYPE;
@@ -180,15 +180,15 @@ typedef double TYPE;
 // default: 0.4
 
 #if defined(ENDPOINTPENALTY) and defined(CONSISTENTTRANSITION)
-dserror("So far, CONSISTENTTRANSITION does not work in combination with ENDPOINTPENALTY!");
+FOUR_C_THROW("So far, CONSISTENTTRANSITION does not work in combination with ENDPOINTPENALTY!");
 #endif
 
 #if defined(ENDPOINTSEGMENTATION) and !defined(AUTOMATICDIFF)
-dserror("ENDPOINTSEGMENTATION only works in combination with AUTOMATICDIFF!");
+FOUR_C_THROW("ENDPOINTSEGMENTATION only works in combination with AUTOMATICDIFF!");
 #endif
 
 #if defined(CONSISTENTTRANSITION) and !defined(AUTOMATICDIFF)
-dserror("CONSISTENTTRANSITION only works in combination with AUTOMATICDIFF!")
+FOUR_C_THROW("CONSISTENTTRANSITION only works in combination with AUTOMATICDIFF!")
 #endif
 
 // For the CONSISTENTTRANSITION case, the variations of the contact point coordinates are necessary.
@@ -196,7 +196,7 @@ dserror("CONSISTENTTRANSITION only works in combination with AUTOMATICDIFF!")
 // variable eta while xi is fixed. However, in case of ENDPOINTSEGMENTATION both, xi and eta, are
 // variable!
 #if defined(CONSISTENTTRANSITION) and defined(ENDPOINTSEGMENTATION)
-    dserror("CONSISTENTTRANSITION does not work in combination with ENDPOINTSEGMENTATION!")
+FOUR_C_THROW("CONSISTENTTRANSITION does not work in combination with ENDPOINTSEGMENTATION!")
 #endif
 
 
@@ -243,7 +243,7 @@ dserror("CONSISTENTTRANSITION only works in combination with AUTOMATICDIFF!")
 // #define AUTOMATICDIFFBTS                        // Decide if automatic differentiation via Sacado
 //  is used default: Off
 #ifdef AUTOMATICDIFFBTS
-        typedef Sacado::Fad::DFad<double> TYPEBTS;
+typedef Sacado::Fad::DFad<double> TYPEBTS;
 //  #define FADCHECKSTIFFNESS                     // Decide if FAD checks for contact stiffness are
 //  printed as output
 #ifndef FADCHECKSTIFFNESS

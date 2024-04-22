@@ -150,7 +150,7 @@ void IO::GMSH::ScalarElementFieldToGmsh(const Teuchos::RCP<DRT::Discretization> 
   if (scalarfield_ele_row->Map().SameAs(*discret->ElementRowMap()) == false)
   {
     std::cout << scalarfield_ele_row->Map() << std::endl << *discret->ElementRowMap() << std::endl;
-    dserror("The written field should be based on the element row map");
+    FOUR_C_THROW("The written field should be based on the element row map");
   }
 
   // currently the element value is used for every node of the element so that
@@ -428,7 +428,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
         else if (nsd == 2)
           CoordinatesToStream2D(xyze, distype, s);
         else
-          dserror("only two- and three-dimensional domains are supported");
+          FOUR_C_THROW("only two- and three-dimensional domains are supported");
 
         ScalarFieldToStream(myscalarfield, distype, s);
         s << "\n";
@@ -457,12 +457,12 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
           VectorFieldToStream2D(myvectorfield, distype, s);
         }
         else
-          dserror("");
+          FOUR_C_THROW("");
         s << "\n";
       }
     }
     else
-      dserror("The choosen field does not exist (wrong writting, ...)");
+      FOUR_C_THROW("The choosen field does not exist (wrong writting, ...)");
 
     s << "\n";
   }

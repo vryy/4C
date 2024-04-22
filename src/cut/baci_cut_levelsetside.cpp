@@ -113,7 +113,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
               return true;
             }
           }
-          dserror("expect two edge points");
+          FOUR_C_THROW("expect two edge points");
           break;
         }
         case 4:
@@ -144,7 +144,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           }
           if (edge_points.size() != 4 or cut_points.size() != 0)
           {
-            dserror("failed to associate cut points with edges");
+            FOUR_C_THROW("failed to associate cut points with edges");
           }
 
           // find levelset value at side center
@@ -167,7 +167,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
             int diff = zero_positions[i] - zero_positions[i - 1];
             if (diff == 1 or diff == 3)
             {
-              dserror("cannot have adjacent zeros");
+              FOUR_C_THROW("cannot have adjacent zeros");
             }
           }
 
@@ -183,7 +183,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           }
           else
           {
-            // dserror( "side center at interface on multiple cuts: undefined" );
+            // FOUR_C_THROW( "side center at interface on multiple cuts: undefined" );
             return false;
           }
 
@@ -262,7 +262,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           }
           else
           {
-            dserror("illegal levelset pattern");
+            FOUR_C_THROW("illegal levelset pattern");
           }
 
           return false;
@@ -274,7 +274,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
       break;
     }  // case CORE::FE::CellType::quad4:
     default:
-      dserror("Unsupported side shape! (shape = %d | %s )", side.Shape(),
+      FOUR_C_THROW("Unsupported side shape! (shape = %d | %s )", side.Shape(),
           CORE::FE::CellTypeToString(side.Shape()).c_str());
       break;
   }

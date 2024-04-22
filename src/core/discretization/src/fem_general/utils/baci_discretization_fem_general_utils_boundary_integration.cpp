@@ -330,7 +330,7 @@ void CORE::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
         break;
       }
       default:
-        dserror("invalid number of lines, unable to determine intpoint in parent");
+        FOUR_C_THROW("invalid number of lines, unable to determine intpoint in parent");
         break;
     }
   }
@@ -430,7 +430,7 @@ void CORE::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
         break;
       }
       default:
-        dserror("invalid number of lines, unable to determine intpoint in parent");
+        FOUR_C_THROW("invalid number of lines, unable to determine intpoint in parent");
         break;
     }
   }
@@ -484,13 +484,13 @@ void CORE::FE::LineGPToParentGP(V& pqxg, W& derivtrafo, const IntegrationPoints&
         break;
       }
       default:
-        dserror("invalid number of surfaces, unable to determine intpoint in parent");
+        FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
         break;
     }
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "only line2/quad4, line3/quad8, line3/quad9, nurbs3/nurbs9, line2/tri3 and line3/tri6 "
         "mappings of surface gausspoint to parent element implemented up to now\n");
   }

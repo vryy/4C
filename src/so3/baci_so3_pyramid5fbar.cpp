@@ -164,7 +164,7 @@ void DRT::ELEMENTS::SoPyramid5fbar::Unpack(const std::vector<char>& data)
   DRT::ELEMENTS::SoPyramid5::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

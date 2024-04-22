@@ -145,7 +145,7 @@ namespace CORE::LINALG
   void Inverse(CORE::LINALG::Matrix<dim, dim, T>& A)
   {
     T det = Determinant(A);
-    if (det == 0.0) dserror("Determinant of %dx%d matrix is exactly zero", dim, dim);
+    if (det == 0.0) FOUR_C_THROW("Determinant of %dx%d matrix is exactly zero", dim, dim);
     InverseReorderMatrixEntries(A);
     A.Scale(1. / det);
   }
@@ -257,7 +257,7 @@ namespace CORE::LINALG
         else if (sum > 0.0)
           me(z, z) = sqrt(sum);
         else
-          dserror("matrix is not positive definite!");
+          FOUR_C_THROW("matrix is not positive definite!");
       }
 
       // get y for G*y=De
@@ -311,7 +311,7 @@ namespace CORE::LINALG
         else if (sum > 0.0)
           me(z, z) = sqrt(sum);
         else
-          dserror("matrix is not positive definite!");
+          FOUR_C_THROW("matrix is not positive definite!");
       }
 
       // get y for G*y=de^T
@@ -361,7 +361,7 @@ namespace CORE::LINALG
         else if (sum > 0.0)
           A(z, z) = sqrt(sum);
         else
-          dserror("matrix is not positive definite!");
+          FOUR_C_THROW("matrix is not positive definite!");
       }
 
       // get y for G*y=de^T

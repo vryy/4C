@@ -62,7 +62,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   else if (*type == "neum_orthopressure")
     ltype = neum_orthopressure;
   else
-    dserror("Unknown type of SurfaceNeumann condition");
+    FOUR_C_THROW("Unknown type of SurfaceNeumann condition");
 
   // get values and switches from the condition
   const auto* onoff = condition.Get<std::vector<int>>("onoff");
@@ -81,7 +81,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < noddof)
-    dserror("Fewer functions or curves defined than the element has dofs.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   // set number of nodes
   const int numnod = NumNode();
@@ -122,7 +122,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     loadlin = false;  // no linearization needed for load in last converged configuration
 
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-    if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+    if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
     std::vector<double> mydisp(lm.size());
     CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -137,10 +137,11 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   else if (ltype == neum_orthopressure)
   {
     if (!loadlin)
-      dserror("No linearization provided for orthopressure load (add 'LOADLIN yes' to input file)");
+      FOUR_C_THROW(
+          "No linearization provided for orthopressure load (add 'LOADLIN yes' to input file)");
 
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
-    if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement new'");
+    if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
     std::vector<double> mydisp(lm.size());
     CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -188,7 +189,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
           shapefcts, deriv, e1, boundknots[0], weights, distype);
     }
     else
-      dserror("Wrong distype!");
+      FOUR_C_THROW("Wrong distype!");
 
     switch (ltype)
     {
@@ -247,13 +248,13 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       {  // orthogonal pressure (nonlinear load) on current config.
 
         // check for correct input
-        if ((*onoff)[0] != 1) dserror("orthopressure on 1st dof only!");
+        if ((*onoff)[0] != 1) FOUR_C_THROW("orthopressure on 1st dof only!");
         for (int checkdof = 1; checkdof < noddof; ++checkdof)
         {
-          if ((*onoff)[checkdof] != 0) dserror("orthopressure on 1st dof only!");
+          if ((*onoff)[checkdof] != 0) FOUR_C_THROW("orthopressure on 1st dof only!");
         }
         double ortho_value = (*val)[0];
-        if (!ortho_value) dserror("no orthopressure value given!");
+        if (!ortho_value) FOUR_C_THROW("no orthopressure value given!");
 
         // outward normal vector (unit vector)
         std::vector<double> unrm(Wall1::numdim_);
@@ -333,7 +334,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
       default:
       {
-        dserror("Unknown type of SurfaceNeumann load");
+        FOUR_C_THROW("Unknown type of SurfaceNeumann load");
         break;
       }
     }
@@ -437,7 +438,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(
       rule = CORE::FE::GaussRule1D::line_3point;
       break;
     default:
-      dserror("unknown number of nodes for gaussrule initialization");
+      FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
       break;
   }
   return rule;
@@ -476,7 +477,7 @@ double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDense
   double dr = 0.0;
   CORE::LINALG::SerialDenseMatrix der_par(1, 2);
   int err = CORE::LINALG::multiplyNT(der_par, deriv, xyze);
-  if (err != 0) dserror("Multiply failed");
+  if (err != 0) FOUR_C_THROW("Multiply failed");
   dr = sqrt(der_par(0, 0) * der_par(0, 0) + der_par(0, 1) * der_par(0, 1));
   if (unrm != nullptr)
   {
@@ -504,7 +505,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_constrarea")
     act = Wall1Line::calc_struct_constrarea;
   else if (action == "calc_struct_centerdisp")
@@ -512,7 +513,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_struct_areaconstrstiff")
     act = Wall1Line::calc_struct_areaconstrstiff;
   else
-    dserror("Unknown type of action for Wall1_Line");
+    FOUR_C_THROW("Unknown type of action for Wall1_Line");
   // create communicator
   const Epetra_Comm& Comm = discretization.Comm();
   // what the element has to do
@@ -523,14 +524,14 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     {
       if (distype != CORE::FE::CellType::line2)
       {
-        dserror("Area Constraint only works for line2 curves!");
+        FOUR_C_THROW("Area Constraint only works for line2 curves!");
       }
       // We are not interested in volume of ghosted elements
       if (Comm.MyPID() == Owner())
       {
         // element geometry update
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
         CORE::FE::ExtractMyValues(*disp, mydisp, lm);
         const int numnod = NumNode();
@@ -558,7 +559,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       {
         // element geometry update
         Teuchos::RCP<const Epetra_Vector> disptotal = discretization.GetState("displacementtotal");
-        if (disptotal == Teuchos::null) dserror("Cannot get state vector 'displacementtotal'");
+        if (disptotal == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementtotal'");
         std::vector<double> mydisp(lm.size());
         CORE::FE::ExtractMyValues(*disptotal, mydisp, lm);
         const int numnod = NumNode();
@@ -623,12 +624,12 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     {
       if (distype != CORE::FE::CellType::line2)
       {
-        dserror("Area Constraint only works for line2 curves!");
+        FOUR_C_THROW("Area Constraint only works for line2 curves!");
       }  // element geometry update
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null)
       {
-        dserror("Cannot get state vector 'displacement'");
+        FOUR_C_THROW("Cannot get state vector 'displacement'");
       }
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
@@ -653,7 +654,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     default:
-      dserror("Unimplemented type of action for Soh8Surface");
+      FOUR_C_THROW("Unimplemented type of action for Soh8Surface");
       break;
   }
   return 0;
@@ -683,11 +684,11 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_area_poro")
     act = Wall1Line::calc_struct_area_poro;
   else
-    dserror("Unknown type of action for StructuralSurface");
+    FOUR_C_THROW("Unknown type of action for StructuralSurface");
 
   // what the element has to do
   switch (act)
@@ -717,7 +718,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
       // element geometry update
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lmpar.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lmpar);
 
@@ -740,7 +741,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       const int numdofpernode = 3;
 
       Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState(1, "fluidvel");
-      if (velnp == Teuchos::null) dserror("Cannot get state vector 'fluidvel'");
+      if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fluidvel'");
       // extract local values of the global vectors
       std::vector<double> myvelpres(la[1].lm_.size());
       CORE::FE::ExtractMyValues(*velnp, myvelpres, la[1].lm_);
@@ -787,21 +788,22 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
           detJ = Jmat(0, 0) * Jmat(1, 1) - Jmat(0, 1) * Jmat(1, 0);
         }
         else
-          dserror("not implemented");
+          FOUR_C_THROW("not implemented");
 
         const double J = det / detJ;
 
         // get structure material
         Teuchos::RCP<MAT::StructPoro> structmat =
             Teuchos::rcp_static_cast<MAT::StructPoro>(parentele->Material());
-        if (structmat == Teuchos::null) dserror("invalid structure material for poroelasticity");
+        if (structmat == Teuchos::null)
+          FOUR_C_THROW("invalid structure material for poroelasticity");
         double porosity = 0.0;
         structmat->ComputeSurfPorosity(params, press, J, FaceParentNumber(), gp, porosity);
       }
     }
     break;
     default:
-      dserror("Unimplemented type of action for Soh8Surface");
+      FOUR_C_THROW("Unimplemented type of action for Soh8Surface");
       break;
   }
   return 0;
@@ -817,7 +819,7 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrDeriv(
   if (elevector.length() != 4)
   {
     std::cout << "Length of element Vector: " << elevector.length() << std::endl;
-    dserror("That is not the right size!");
+    FOUR_C_THROW("That is not the right size!");
   }
   // implementation of simple analytic solution
   elevector[0] = -xscurr(0, 1) - xscurr(1, 1);

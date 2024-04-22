@@ -29,7 +29,7 @@ namespace CORE::LINALG
     int DoAdd(const Epetra_CrsMatrix& A, const double scalarA, Epetra_CrsMatrix& B,
         const double scalarB, const int startRow = 0)
     {
-      if (!A.Filled()) dserror("Internal error, matrix A must have called FillComplete()");
+      if (!A.Filled()) FOUR_C_THROW("Internal error, matrix A must have called FillComplete()");
 
       const int NumMyRows = A.NumMyRows();
 
@@ -37,7 +37,7 @@ namespace CORE::LINALG
       // much faster than the global indices... :-)
       if (B.Filled())
       {
-        if (startRow != 0) dserror("Internal error. Not implemented.");
+        if (startRow != 0) FOUR_C_THROW("Internal error. Not implemented.");
 
         // step 1: get the indexing from A to B in a random-access array
         std::vector<int> AcolToBcol(A.ColMap().NumMyElements());
@@ -52,7 +52,7 @@ namespace CORE::LINALG
         {
           const int myRowB = B.RowMap().LID(A.RowMap().GID(i));
           if (myRowB == -1)
-            dserror(
+            FOUR_C_THROW(
                 "CORE::LINALG::Add: The row map of matrix B must be a superset of the row map of "
                 "Matrix "
                 "A.");
@@ -117,14 +117,14 @@ namespace CORE::LINALG
         int NumEntries = 0;
         int ierr =
             A.ExtractGlobalRowCopy(Row, Values.size(), NumEntries, Values.data(), Indices.data());
-        if (ierr) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", ierr);
+        if (ierr) FOUR_C_THROW("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", ierr);
         if (scalarA != 1.0)
           for (int j = 0; j < NumEntries; ++j) Values[j] *= scalarA;
         for (int j = 0; j < NumEntries; ++j)
         {
           int err = B.SumIntoGlobalValues(Row, 1, &Values[j], &Indices[j]);
           if (err < 0 || err == 2) err = B.InsertGlobalValues(Row, 1, &Values[j], &Indices[j]);
-          if (err < 0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
+          if (err < 0) FOUR_C_THROW("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
         }
       }
 
@@ -142,7 +142,7 @@ namespace CORE::LINALG
 void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
     CORE::LINALG::SparseMatrixBase& B, const double scalarB)
 {
-  if (!A.Filled()) dserror("FillComplete was not called on A");
+  if (!A.Filled()) FOUR_C_THROW("FillComplete was not called on A");
 
   Epetra_CrsMatrix* Aprime = nullptr;
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
@@ -168,7 +168,7 @@ void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
   B.Comm().MinAll(&localSuccess, &globalSuccess, 1);
   if (!globalSuccess)
   {
-    if (!B.Filled()) dserror("Unexpected state of B (expected: B not filled, got: B filled)");
+    if (!B.Filled()) FOUR_C_THROW("Unexpected state of B (expected: B not filled, got: B filled)");
 
     // not successful -> matrix structure must be un-completed to be able to add new
     // indices.
@@ -187,7 +187,7 @@ void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
     Epetra_CrsMatrix& B, const double scalarB)
 {
-  if (!A.Filled()) dserror("FillComplete was not called on A");
+  if (!A.Filled()) FOUR_C_THROW("FillComplete was not called on A");
 
   Epetra_CrsMatrix* Aprime = nullptr;
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
@@ -209,7 +209,7 @@ void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 
   int rowsAdded = DoAdd(*Aprime, scalarA, B, scalarB);
   if (rowsAdded != Aprime->RowMap().NumMyElements())
-    dserror("CORE::LINALG::Add: Could not add all entries from A into B in row %d",
+    FOUR_C_THROW("CORE::LINALG::Add: Could not add all entries from A into B in row %d",
         Aprime->RowMap().GID(rowsAdded));
 }
 
@@ -218,7 +218,7 @@ void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Transpose(const Epetra_CrsMatrix& A)
 {
-  if (!A.Filled()) dserror("FillComplete was not called on A");
+  if (!A.Filled()) FOUR_C_THROW("FillComplete was not called on A");
 
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans =
       Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(/*false,nullptr,false*/));
@@ -260,8 +260,8 @@ Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Multiply(
    */
 
   // make sure FillComplete was called on the matrices
-  if (!A.Filled()) dserror("A has to be FillComplete");
-  if (!B.Filled()) dserror("B has to be FillComplete");
+  if (!A.Filled()) FOUR_C_THROW("A has to be FillComplete");
+  if (!B.Filled()) FOUR_C_THROW("B has to be FillComplete");
 
   // do a very coarse guess of nonzeros per row (horrible memory consumption!)
   // int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
@@ -276,7 +276,7 @@ Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Multiply(
     C = new Epetra_CrsMatrix(::Copy, A.OperatorDomainMap(), guessnpr, false);
 
   int err = EpetraExt::MatrixMatrix::Multiply(A, transA, B, transB, *C, complete);
-  if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d", err);
+  if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::Multiply returned err = &d", err);
 
   return Teuchos::rcp(C);
 }
@@ -296,7 +296,7 @@ Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Multiply(const Epetra_CrsMatrix& A,
 void CORE::LINALG::SymmetriseMatrix(CORE::LINALG::SerialDenseMatrix& A)
 {
   const int n = A.numCols();
-  if (n != A.numRows()) dserror("Cannot symmetrize non-square matrix");
+  if (n != A.numRows()) FOUR_C_THROW("Cannot symmetrize non-square matrix");
   // do not make deep copy of A, matrix addition and full scaling just to sym it
   for (int i = 0; i < n; ++i)
     for (int j = i + 1; j < n; ++j)

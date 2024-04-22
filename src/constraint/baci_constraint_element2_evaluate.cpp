@@ -39,12 +39,12 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
     else if (*type == "angle")
       act = calc_MPC_angle_stiff;
     else
-      dserror(
+      FOUR_C_THROW(
           "No constraint type in 2d MPC specified. Value to control should by either be 'dist' or "
           "'angle'!");
   }
   else
-    dserror("Unknown type of action for ConstraintElement2");
+    FOUR_C_THROW("Unknown type of action for ConstraintElement2");
 
   switch (act)
   {
@@ -56,7 +56,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
     case calc_MPC_dist_stiff:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnode = 3;
@@ -76,7 +76,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
     case calc_MPC_angle_stiff:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnode = 3;
@@ -95,7 +95,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     default:
-      dserror("Unimplemented type of action");
+      FOUR_C_THROW("Unimplemented type of action");
   }
   return 0;
 
@@ -103,12 +103,12 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
 }  // end of DRT::ELEMENTS::ConstraintElement2::Evaluate
 
 /*----------------------------------------------------------------------*
- * Evaluate Neumann (->dserror) */
+ * Evaluate Neumann (->FOUR_C_THROW) */
 int DRT::ELEMENTS::ConstraintElement2::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("You called Evaluate Neumann of constraint element.");
+  FOUR_C_THROW("You called Evaluate Neumann of constraint element.");
   return 0;
 }
 

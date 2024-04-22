@@ -20,7 +20,7 @@ int DRT::ELEMENTS::Ale2Line::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("Line Neumann condition not implemented for Ale2");
+  FOUR_C_THROW("Line Neumann condition not implemented for Ale2");
 
   return 0;
 }

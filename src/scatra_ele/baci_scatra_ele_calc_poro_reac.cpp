@@ -32,7 +32,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
 {
   // safety check
   if (not my::scatrapara_->TauGP())
-    dserror("For poro reactions, tau needs to be evaluated by integration-point evaluations!");
+    FOUR_C_THROW("For poro reactions, tau needs to be evaluated by integration-point evaluations!");
 
   return;
 }
@@ -98,7 +98,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Materials(
       MatScaTra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:
-      dserror("Material type %i is not supported", material->MaterialType());
+      FOUR_C_THROW("Material type %i is not supported", material->MaterialType());
       break;
   }
   return;

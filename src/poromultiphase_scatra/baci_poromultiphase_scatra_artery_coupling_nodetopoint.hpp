@@ -60,7 +60,7 @@ namespace POROMULTIPHASESCATRA
      */
     void SetArteryDiamInMaterial() override
     {
-      dserror("Function 'SetArteryDiamInMaterial()' not possible for node-to-point coupling");
+      FOUR_C_THROW("Function 'SetArteryDiamInMaterial()' not possible for node-to-point coupling");
     };
 
     /*!
@@ -69,7 +69,8 @@ namespace POROMULTIPHASESCATRA
      */
     void ResetIntegratedDiamToZero() override
     {
-      dserror("Function 'ResetIntegratedDiamToZero()' not possible for node-to-point coupling");
+      FOUR_C_THROW(
+          "Function 'ResetIntegratedDiamToZero()' not possible for node-to-point coupling");
     };
 
     /*!
@@ -79,7 +80,7 @@ namespace POROMULTIPHASESCATRA
      */
     void EvaluateAdditionalLinearizationofIntegratedDiam() override
     {
-      dserror(
+      FOUR_C_THROW(
           "Function 'EvaluateAdditionalLinearizationofIntegratedDiam()' not possible for "
           "node-to-point coupling");
     };

@@ -90,7 +90,7 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
       return FluidBoundaryParent<CORE::FE::CellType::nurbs9>::Instance();
     }*/
     default:
-      dserror(
+      FOUR_C_THROW(
           "Element shape %d (%d nodes) not activated for boundary conditions requiring "
           "parent-element evaluations. Just do it.",
           ele->Shape(), ele->NumNode());
@@ -148,7 +148,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination line2/quad4 for surface/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 for surface/parent pair");
       break;
     }
     // 3D:
@@ -160,7 +160,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination tri3/tet4 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri3/tet4 for surface/parent pair");
       break;
     }
     // 3D:
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       break;
     }
     // 3D:
@@ -184,7 +184,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination quad8/hex20 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad8/hex20 for surface/parent pair");
       break;
     }
     // 3D:
@@ -196,12 +196,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination quad9/hex27 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad9/hex27 for surface/parent pair");
       break;
     }
     default:
     {
-      dserror("not implemented yet\n");
+      FOUR_C_THROW("not implemented yet\n");
       break;
     }
   }
@@ -226,7 +226,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination line2/quad4 for surface/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 for surface/parent pair");
       break;
     }
     // 3D:
@@ -238,12 +238,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       break;
     }
     default:
     {
-      dserror("not implemented yet\n");
+      FOUR_C_THROW("not implemented yet\n");
       break;
     }
   }
@@ -268,7 +268,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination line2/quad4 for surface/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 for surface/parent pair");
       break;
     }
     // 3D:
@@ -280,12 +280,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       break;
     }
     default:
     {
-      dserror("not implemented yet\n");
+      FOUR_C_THROW("not implemented yet\n");
       break;
     }
   }
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination line2/quad4 for surface/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 for surface/parent pair");
       break;
     }
     // 3D:
@@ -322,7 +322,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination tri3/tet4 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri3/tet4 for surface/parent pair");
       break;
     }
     // 3D:
@@ -334,7 +334,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       break;
     }
     // 3D:
@@ -346,7 +346,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination quad8/hex20 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad8/hex20 for surface/parent pair");
       break;
     }
     // 3D:
@@ -358,12 +358,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination quad9/hex27 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad9/hex27 for surface/parent pair");
       break;
     }
     default:
     {
-      dserror("not implemented yet\n");
+      FOUR_C_THROW("not implemented yet\n");
       break;
     }
   }
@@ -389,7 +389,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
-        dserror("expected combination line2/quad4 for surface/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 for surface/parent pair");
       break;
     }
     // 3D:
@@ -401,7 +401,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
-        dserror("expected combination tri3/tet4 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri3/tet4 for surface/parent pair");
       break;
     }
     case CORE::FE::CellType::tri6:
@@ -412,7 +412,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
-        dserror("expected combination tri6/tet10 for surface/parent pair");
+        FOUR_C_THROW("expected combination tri6/tet10 for surface/parent pair");
       break;
     }
     case CORE::FE::CellType::quad4:
@@ -423,7 +423,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       break;
     }
     case CORE::FE::CellType::quad8:
@@ -434,7 +434,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
-        dserror("expected combination quad8/hex20 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad8/hex20 for surface/parent pair");
       break;
     }
     case CORE::FE::CellType::quad9:
@@ -445,12 +445,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
-        dserror("expected combination quad9/hex27 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad9/hex27 for surface/parent pair");
       break;
     }
     default:
     {
-      dserror("not implemented yet\n");
+      FOUR_C_THROW("not implemented yet\n");
       break;
     }
   }
@@ -476,7 +476,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination line2/quad4 for surface/parent pair");
+        FOUR_C_THROW("expected combination line2/quad4 for surface/parent pair");
       break;
     }
     // 3D:
@@ -488,12 +488,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
-        dserror("expected combination quad4/hex8 for surface/parent pair");
+        FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       break;
     }
     default:
     {
-      dserror("not implemented yet\n");
+      FOUR_C_THROW("not implemented yet\n");
       break;
     }
   }
@@ -581,7 +581,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       pressure = *fdp_cond->Get<double>("ConstCoeff") * curvefac;
     }
     else
-      dserror("Unknown type of flow-dependent pressure condition: %s", (*condtype).c_str());
+      FOUR_C_THROW("Unknown type of flow-dependent pressure condition: %s", (*condtype).c_str());
 
     // get thermodynamic pressure at n+1/n+alpha_F
     const double thermpressaf = params.get<double>("thermpress at n+alpha_F/n+1", 1.0);
@@ -680,7 +680,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
     Teuchos::RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
     if (velaf == Teuchos::null or scaaf == Teuchos::null)
-      dserror("Cannot get state vector 'velaf' and/or 'scaaf'");
+      FOUR_C_THROW("Cannot get state vector 'velaf' and/or 'scaaf'");
 
     std::vector<double> mypvelaf(plm.size());
     std::vector<double> mypscaaf(plm.size());
@@ -704,7 +704,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     if (surfele->ParentElement()->IsAle())
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-      if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+      if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
       CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
       CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
@@ -770,7 +770,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       pxjm.MultiplyNT(pderiv, pxyze);
       const double pdet = pxji.Invert(pxjm);
       if (pdet < 1E-16)
-        dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
+        FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
       // compute measure tensor, infinitesimal area and outward unit normal
       // for boundary element
@@ -848,7 +848,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       {
         pscaaf = pfunct.Dot(pescaaf);
         if (pscaaf < 0.0)
-          dserror("Negative scalar in boundary computation for low-Mach-number flow!");
+          FOUR_C_THROW("Negative scalar in boundary computation for low-Mach-number flow!");
 
         // compute divergence of velocity from previous iteration
         for (int idim = 0; idim < nsd; ++idim)
@@ -1229,7 +1229,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
         }
       }
       else
-        dserror("incorrect number of spatial dimensions for parent element!");
+        FOUR_C_THROW("incorrect number of spatial dimensions for parent element!");
     }  // end of integration loop
   }    // end of (temporarily) switching off of flow-dependent pressure boundary
        // conditions for zero time-curve factor
@@ -1337,7 +1337,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   //---------------------------------------------------------------------
   // parent velocity at n+alpha_F
   Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
-  if (velaf == Teuchos::null) dserror("Cannot get state vector 'velaf'");
+  if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
   CORE::FE::ExtractMyValues(*velaf, mypvelaf, plm);
@@ -1368,7 +1368,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   if (surfele->ParentElement()->IsAle())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
     CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
@@ -1439,7 +1439,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
     pxjm.MultiplyNT(pderiv, pxyze);
     const double pdet = pxji.Invert(pxjm);
     if (pdet < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
+      FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
     // compute measure tensor, infinitesimal area and outward unit normal
     // for boundary element
@@ -1468,7 +1468,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
     // Contributions to element matrix and element vector
     //---------------------------------------------------------------------
     if ((nsd != 3) && (nsd != 2))
-      dserror("Incorrect number of spatial dimensions for parent element!");
+      FOUR_C_THROW("Incorrect number of spatial dimensions for parent element!");
 
     // Contributions to element matrix on left-hand side
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1671,7 +1671,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   //---------------------------------------------------------------------
   // parent velocity at n+alpha_F
   Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
-  if (velaf == Teuchos::null) dserror("Cannot get state vector 'velaf'");
+  if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
   CORE::FE::ExtractMyValues(*velaf, mypvelaf, plm);
@@ -1691,7 +1691,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   if (surfele->ParentElement()->IsAle())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
     CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
@@ -1764,7 +1764,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     pxjm.MultiplyNT(pderiv, pxyze);
     const double pdet = pxji.Invert(pxjm);
     if (pdet < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
+      FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
     // compute measure tensor, infinitesimal area and outward unit normal
     // for boundary element
@@ -1780,7 +1780,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     // Contributions to element matrix and element vector
     //---------------------------------------------------------------------
     if ((nsd != 3) && (nsd != 2))
-      dserror("Incorrect number of spatial dimensions for parent element!");
+      FOUR_C_THROW("Incorrect number of spatial dimensions for parent element!");
 
     // Contributions to element matrix on left-hand side
     // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1847,7 +1847,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   else if (*consistency == "diffusive-optimal")
     wd_gamma = -1.0;
   else
-    dserror("unknown type of consistency for weak DBC: %s", (*consistency).c_str());
+    FOUR_C_THROW("unknown type of consistency for weak DBC: %s", (*consistency).c_str());
 
   // decide whether to use it or not
   const std::string* deftauB = (*wdbc_cond).Get<std::string>("Definition of penalty parameter");
@@ -1857,7 +1857,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   else if (*deftauB == "constant")
     spalding = false;
   else
-    dserror("unknown definition of penalty parameter tauB for weak DBC: %s", (*deftauB).c_str());
+    FOUR_C_THROW(
+        "unknown definition of penalty parameter tauB for weak DBC: %s", (*deftauB).c_str());
 
   // linearisation of adjoint convective flux
   const std::string* linearisation_approach = (*wdbc_cond).Get<std::string>("Linearisation");
@@ -1867,7 +1868,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   else if (*linearisation_approach == "no_lin_conv_inflow")
     complete_linearisation = false;
   else
-    dserror("unknown linearisation for weak DBC: %s", (*linearisation_approach).c_str());
+    FOUR_C_THROW("unknown linearisation for weak DBC: %s", (*linearisation_approach).c_str());
 
   // find out whether there is a time curve and get factor
   // (time curve at n+1 applied for all time-integration schemes, but
@@ -1890,13 +1891,13 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   else if (*active_components == "only_in_normal_direction")
     onlynormal = true;
   else
-    dserror(
+    FOUR_C_THROW(
         "unknown definition of active components for weak DBC: %s", (*active_components).c_str());
 
   // optional scaling of penalty parameter
   const double scaling = *wdbc_cond->Get<double>("TauBscaling");
   if (spalding && fabs(scaling - 1.0) > 1e-9)
-    dserror(
+    FOUR_C_THROW(
         "Parameter tauB for weak DBC will be computed according to Spaldings law. Do not apply "
         "scaling factor != 1.0!\n");
 
@@ -1911,7 +1912,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     for (int i = 0; i < 3; ++i)
     {
       if ((*val)[i] * (*val)[i] > 1e-9)
-        dserror("Applying Spaldings law to a wall with non-zero velocity!\n");
+        FOUR_C_THROW("Applying Spaldings law to a wall with non-zero velocity!\n");
     }
   }
 
@@ -2006,7 +2007,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   //---------------------------------------------------------------------
   // parent velocity at n+alpha_F
   Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
-  if (velaf == Teuchos::null) dserror("Cannot get state vector 'velaf'");
+  if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
   CORE::FE::ExtractMyValues(*velaf, mypvelaf, plm);
@@ -2026,7 +2027,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   if (fldparatimint_->TimeAlgo() == INPAR::FLUID::timeint_npgenalpha)
   {
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-    if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
+    if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
     CORE::FE::ExtractMyValues(*velnp, mypvelnp, plm);
   }
@@ -2050,7 +2051,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   if (surfele->ParentElement()->IsAle())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
     CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
@@ -2124,7 +2125,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     pxjm.MultiplyNT(pderiv, pxyze);
     const double pdet = pxji.Invert(pxjm);
     if (pdet < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
+      FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
     // compute measure tensor, infinitesimal area and outward unit normal
     // for boundary element
@@ -2293,11 +2294,13 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     if (spalding)
     {
       if (nsd != 3)
-        dserror("Application of Spalding's law only reasonable for three-dimensional problems!");
+        FOUR_C_THROW(
+            "Application of Spalding's law only reasonable for three-dimensional problems!");
 
       // only constant density of 1.0 allowed, for the time being
       if (densaf_ != 1.0)
-        dserror("Only incompressible flow with density 1.0 allowed for Spalding's law so far!");
+        FOUR_C_THROW(
+            "Only incompressible flow with density 1.0 allowed for Spalding's law so far!");
 
       //                             +--------------------+
       //                            /  +---+              |
@@ -2386,7 +2389,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       {
         const double drdtauB = JacobianSpaldingResidual(y, visc_, tau_B, normu);
 
-        if (drdtauB < 1e-10) dserror("(Nearly) singular Jacobian of Spaldings equation");
+        if (drdtauB < 1e-10) FOUR_C_THROW("(Nearly) singular Jacobian of Spaldings equation");
 
         double inc = res / drdtauB;
 
@@ -2404,7 +2407,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
         ++count;
         if (count > 100)
-          dserror(
+          FOUR_C_THROW(
               "no convergence in 100 steps in Newton iteration during solution of Spaldings "
               "equation\n");
       }
@@ -3712,7 +3715,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       }  // onlynormal
     }
     else
-      dserror("incorrect number of spatial dimensions for parent element!");
+      FOUR_C_THROW("incorrect number of spatial dimensions for parent element!");
   }  // end integration loop
 
   return;
@@ -3806,7 +3809,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
   else if (nsd == 2)
     CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else
-    dserror("only 2D and 3D");
+    FOUR_C_THROW("only 2D and 3D");
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
   //---------------------------------------------------------------------
@@ -3818,7 +3821,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
       std::vector<double> mypedispnp((plm).size());
       std::vector<double> mybedispnp((blm).size());
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-      if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+      if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
       CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
       CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
@@ -3888,7 +3891,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     pxjm.MultiplyNT(pderiv, pxyze);
     const double pdet = pxji.Invert(pxjm);
     if (pdet < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
+      FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
     // compute measure tensor, infinitesimal area and outward unit normal
     // for boundary element
@@ -4125,7 +4128,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
       {
         std::cout << "Warning 1: " << Amat(vi, ui) << " " << Amat(ui, vi) << " "
                   << fabs(Amat(vi, ui) - Amat(ui, vi)) << std::endl;
-        dserror("Amat is not symmetric!!!");
+        FOUR_C_THROW("Amat is not symmetric!!!");
       }
     }
   }
@@ -4155,7 +4158,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     //    const double pdet = pxji.Invert(pxjm);
     pdet = pxji.Invert(pxjm);
     if (pdet < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
+      FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
     // compute integration factor for boundary element
     fac_ = pintpoints.IP().qwgt[iquad] * pdet;
@@ -4241,7 +4244,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
       if (fabs(Bmat(vi, ui) - Bmat(ui, vi)) > 1E-14)
       {
         std::cout << "Warning: " << Bmat(vi, ui) << " " << Bmat(ui, vi) << std::endl;
-        dserror("Bmat is not symmetric!!!");
+        FOUR_C_THROW("Bmat is not symmetric!!!");
       }
     }
   }
@@ -4300,14 +4303,14 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   if (material->MaterialType() == INPAR::MAT::m_carreauyasuda or
       material->MaterialType() == INPAR::MAT::m_modpowerlaw or
       material->MaterialType() == INPAR::MAT::m_herschelbulkley)
-    dserror("No non-Newtonian fluid allowed for mixed/hybrid DBCs so far!");
+    FOUR_C_THROW("No non-Newtonian fluid allowed for mixed/hybrid DBCs so far!");
 
   // get viscosity
   GetDensityAndViscosity(material, 0.0, 0.0, rateofstrain);
 
   // only constant density of 1.0 allowed, for the time being
   if (densaf_ != 1.0)
-    dserror("Only incompressible flow with density 1.0 allowed for weak DBCs so far!");
+    FOUR_C_THROW("Only incompressible flow with density 1.0 allowed for weak DBCs so far!");
 
   /// number of parentnodes
   static const int piel = CORE::FE::num_nodes<pdistype>;
@@ -4324,7 +4327,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   static const int numstressdof_ = CORE::FE::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
   if (fldparatimint_->TimeAlgo() == INPAR::FLUID::timeint_afgenalpha)
-    dserror(
+    FOUR_C_THROW(
         "The use of mixed hybrid boundary conditions and Afgenalpha has not been verified so far!");
 
   // --------------------------------------------------
@@ -4377,7 +4380,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   }
   else
   {
-    dserror("Unknown definition of penalty parameter: %s", (*deftauB).c_str());
+    FOUR_C_THROW("Unknown definition of penalty parameter: %s", (*deftauB).c_str());
   }
 
   // flag for utau computation (viscous tangent or at wall (a la Michler))
@@ -4439,13 +4442,13 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   CORE::LINALG::Matrix<piel, 1> pepres(true);
 
   Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velaf");
-  if (vel == Teuchos::null) dserror("Cannot get state vector 'velaf'");
+  if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   // extract local node values for pressure and velocities from global vectors
   if (fldparatimint_->TimeAlgo() == INPAR::FLUID::timeint_npgenalpha)
   {
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-    if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
+    if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
     double maxvel = 0;
 
@@ -4572,7 +4575,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       const double det = pxji.Invert(pxjm);
 
       if (det < 1E-16)
-        dserror(
+        FOUR_C_THROW(
             "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", parent->Id(), det);
 
       // compute integration factor
@@ -5042,7 +5045,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       }
 
       // compute averaged norm of traction by division by area element
-      if (area < 1e-13) dserror("Area too small, zero or even negative!");
+      if (area < 1e-13) FOUR_C_THROW("Area too small, zero or even negative!");
       normtraction /= area;
     }  // if (nsd==3)
   }
@@ -5184,7 +5187,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       const double det = pxji.Invert(pxjm);
 
       if (det < 1E-16)
-        dserror(
+        FOUR_C_THROW(
             "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", parent->Id(), det);
 
       //-----------------------------------------------------
@@ -5227,7 +5230,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           nGn += unitnormal(rr) * G(rr, nn) * unitnormal(nn);
         }
       }
-      if (nGn < 1e-14) dserror("nGn is zero or negative!");
+      if (nGn < 1e-14) FOUR_C_THROW("nGn is zero or negative!");
       const double h = 2.0 / sqrt(nGn);
 
       // interpolate to gausspoint
@@ -5376,7 +5379,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
             if (SpaldingJ < 1e-10)
             {
-              dserror("(Nearly) singular Jacobian of Spaldings equation");
+              FOUR_C_THROW("(Nearly) singular Jacobian of Spaldings equation");
             }
 
             double inc = res / SpaldingJ;
@@ -5401,7 +5404,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
               printf("WARNING: no convergence in 1000 steps in Newton iteration\n");
               printf("         in solution of Spaldings equation (res %12.5e), utau= %12.5e)\n",
                   res, utau);
-              dserror("Newton iteration diverged.");
+              FOUR_C_THROW("Newton iteration diverged.");
             }
 
             ++count;
@@ -5411,7 +5414,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           {
             const double dres_duplus = JacobianSpaldingResidual_uplus(y, visc_, utau, normu);
 
-            if (abs(dres_duplus) < 1e-12) dserror("prevent division by zero");
+            if (abs(dres_duplus) < 1e-12) FOUR_C_THROW("prevent division by zero");
             const double visc_dudy = -utau * utau / dres_duplus;
 
             if (fabs(normtraction) > 0.001 * visc_ / y)
@@ -5917,13 +5920,14 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     visc_ = actmat->Viscosity();
   }
   else
-    dserror("Material type is not supported for boundary element with parent-element evaluation!");
+    FOUR_C_THROW(
+        "Material type is not supported for boundary element with parent-element evaluation!");
 
   // check whether there is zero or negative density
-  if (densaf_ < 1e-15) dserror("zero or negative density!");
+  if (densaf_ < 1e-15) FOUR_C_THROW("zero or negative density!");
 
   // check whether there is zero or negative (physical) viscosity
-  if (visc_ < 1e-15) dserror("zero or negative (physical) diffusivity!");
+  if (visc_ < 1e-15) FOUR_C_THROW("zero or negative (physical) diffusivity!");
 
   return;
 }  // FluidBoundaryParent::GetDensityAndViscosity

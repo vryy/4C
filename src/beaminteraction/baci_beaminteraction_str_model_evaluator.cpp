@@ -211,13 +211,13 @@ void STR::MODELEVALUATOR::BeamInteraction::PostSetup()
 
     // safety checks
     if (half_interaction_distance_ > (0.5 * binstrategy_->GetMinBinSize()))
-      dserror(
+      FOUR_C_THROW(
           "Your half interaction distance %f is larger than half your smallest bin %f. You will "
           "not be\n"
           "able to track all interactions like this. Increase bin size?",
           half_interaction_distance_, 0.5 * binstrategy_->GetMinBinSize());
     if (half_interaction_distance_ < 0)
-      dserror("At least one model needs to define half interaction radius");
+      FOUR_C_THROW("At least one model needs to define half interaction radius");
   }
 }
 
@@ -291,7 +291,7 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
           GLOBAL::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none and
       beampenaltycouplingconditions.size() > 0)
-    dserror(
+    FOUR_C_THROW(
         "It is not yet possible to use beam-to-beam contact in combination with beam-to-beam point "
         "coupling because every coupling point is also interpreted as a point of contact between 2 "
         "beams.");
@@ -585,10 +585,10 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForce()
 
   // do communication
   if (ia_state_ptr_->GetForceNp()->GlobalAssemble(Add, false) != 0)
-    dserror("GlobalAssemble failed");
+    FOUR_C_THROW("GlobalAssemble failed");
   // add to non fe vector
   if (ia_force_beaminteraction_->Update(1., *ia_state_ptr_->GetForceNp(), 1.))
-    dserror("update went wrong");
+    FOUR_C_THROW("update went wrong");
 
   // transformation from ia_discret to problem discret
   TransformForce();
@@ -631,11 +631,11 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForceStiff()
 
   // do communication
   if (ia_state_ptr_->GetForceNp()->GlobalAssemble(Add, false) != 0)
-    dserror("GlobalAssemble failed");
+    FOUR_C_THROW("GlobalAssemble failed");
 
   // add to non fe vector
   if (ia_force_beaminteraction_->Update(1., *ia_state_ptr_->GetForceNp(), 1.))
-    dserror("update went wrong");
+    FOUR_C_THROW("update went wrong");
   if (not ia_state_ptr_->GetStiff()->Filled()) ia_state_ptr_->GetStiff()->Complete();
 
   TransformForceStiff();
@@ -734,7 +734,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(IO::DiscretizationReader&
 
   // need to read step next (as it was written next, do safety check)
   if (stepn != ia_reader.ReadInt("step") or stepn != bin_reader.ReadInt("step"))
-    dserror("Restart step not consistent with read restart step. ");
+    FOUR_C_THROW("Restart step not consistent with read restart step. ");
 
   // rebuild binning
   PartitionProblem();

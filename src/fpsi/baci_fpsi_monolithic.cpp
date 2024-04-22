@@ -71,7 +71,8 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
       new ADAPTER::AleBaseAlgorithm(fpsidynparams, GLOBAL::Problem::Instance()->GetDis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFpsiWrapper>(ale->AleField());
-  if (ale_ == Teuchos::null) dserror("cast from ADAPTER::Ale to ADAPTER::AleFpsiWrapper failed");
+  if (ale_ == Teuchos::null)
+    FOUR_C_THROW("cast from ADAPTER::Ale to ADAPTER::AleFpsiWrapper failed");
 
   coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 
@@ -89,7 +90,7 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   if (FluidField()->Discretization()->AddDofSet(
           AleField()->WriteAccessDiscretization()->GetDofSetProxy()) != 1)
   {
-    dserror("unexpected numbers of dofsets in fluid field");
+    FOUR_C_THROW("unexpected numbers of dofsets in fluid field");
   }
   FluidField()->Discretization()->FillComplete(true, false, false);
 }  // MonolithicBase
@@ -235,14 +236,14 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
 
   // Check for valid predictors
   if (sdynparams.get<std::string>("PREDICT") != "ConstDis")
-    dserror(
+    FOUR_C_THROW(
         "No Structural Predictor for FPSI implemented at the moment, choose <PREDICT = ConstDis> "
         "in you .dat file! \n --> Or feel free to add the missing terms coming from the predictors "
         "to BACI!");
 
   const Teuchos::ParameterList& fdynparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   if (fdynparams.get<std::string>("PREDICTOR") != "steady_state")
-    dserror(
+    FOUR_C_THROW(
         "No Fluid Predictor for FPSI implemented at the moment, choose <PREDICTOR = steady_state> "
         "in you .dat file! \n --> Or feel free to add the missing terms coming from the predictors "
         "to BACI!");
@@ -310,7 +311,7 @@ void FPSI::Monolithic::SetupSystem_FSI()
   // interface dof map for all fields and have just one transfer
   // operator from the interface map to the full field map.
   if (not coupsf_fsi.MasterDofMap()->SameAs(*coupsa_fsi.MasterDofMap()))
-    dserror("fsi structure interface dof maps do not match");
+    FOUR_C_THROW("fsi structure interface dof maps do not match");
 
   return;
 }
@@ -368,7 +369,7 @@ void FPSI::Monolithic::TimeStep()
 
     if (not systemmatrix_->Filled())
     {
-      dserror("Effective tangent matrix must be filled here !");
+      FOUR_C_THROW("Effective tangent matrix must be filled here !");
     }
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
@@ -404,7 +405,7 @@ void FPSI::Monolithic::TimeStep()
   }
   else if (iter_ >= maximumiterations_)
   {
-    dserror("Newton found no convergence in %d iterations", iter_);
+    FOUR_C_THROW("Newton found no convergence in %d iterations", iter_);
   }
 
   PoroField()->RecoverLagrangeMultiplierAfterTimeStep();
@@ -444,7 +445,7 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
   }
   else
   {
-    dserror("No existing increment vector !");
+    FOUR_C_THROW("No existing increment vector !");
   }
 
   PoroField()->UpdateStateIncrementally(sx, pfx);
@@ -502,7 +503,7 @@ void FPSI::Monolithic::SetupSolver()
 
   const int linsolvernumber = fpsidynamicparams.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "No linear solver defined for FPSI problem. Please set LINEAR_SOLVER in FPSI DYNAMIC to a "
         "valid number !");
 
@@ -553,7 +554,7 @@ void FPSI::Monolithic::SetupSolver()
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
   linesearch_ = CORE::UTILS::IntegralValue<int>(fpsidynparams, "LineSearch");
   if (linesearch_ == 1)
-    dserror(
+    FOUR_C_THROW(
         "Parameter 'LineSearch' is set to 'Yes' in the FPSI Dynamic section in your input-file.  \n"
         "Though the framework for a line search algorithm is implemented in fpsi_monolithic.cpp, \n"
         "a proper routine to reset the participating single fields is still required. In Chuck's \n"
@@ -575,7 +576,7 @@ void FPSI::Monolithic::CreateLinearSolver()
   // get the linear solver number
   const int linsolvernumber = fpsidyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "No linear solver defined for FPSI problem. Please set LINEAR_SOLVER in FPSI DYNAMIC to a "
         "valid number !");
 
@@ -586,7 +587,7 @@ void FPSI::Monolithic::CreateLinearSolver()
   const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
   // check if the structural solver has a valid solver number
   if (slinsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
@@ -597,7 +598,7 @@ void FPSI::Monolithic::CreateLinearSolver()
   const int flinsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
   // check if the fluid solver has a valid solver number
   if (flinsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for fluid field. Please set LINEAR_SOLVER in FLUID DYNAMIC to a "
         "valid number!");
 
@@ -608,7 +609,7 @@ void FPSI::Monolithic::CreateLinearSolver()
   const int alinsolvernumber = aledyn.get<int>("LINEAR_SOLVER");
   // check if the structural solver has a valid solver number
   if (alinsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for ALE field. Please set LINEAR_SOLVER in ALE DYNAMIC to a "
         "valid number!");
 
@@ -628,7 +629,7 @@ void FPSI::Monolithic::CreateLinearSolver()
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("Iterative solver expected");
+    FOUR_C_THROW("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(fpsisolverparams, "AZPREC");
@@ -643,7 +644,7 @@ void FPSI::Monolithic::CreateLinearSolver()
     }
     break;
     default:
-      dserror("AMGnxn preconditioner expected");
+      FOUR_C_THROW("AMGnxn preconditioner expected");
       break;
   }
 
@@ -866,7 +867,8 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& spar
     rhsold_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
     rhsold_->Update(1.0, *rhs_, 0.0);
     rhsold_->Norm2(&normofrhsold_);
-    if (abs(normofrhs_ - normofrhsold_) > 1.e-12 and iter_ > 1) dserror(" wrong copy of rhs_ ");
+    if (abs(normofrhs_ - normofrhsold_) > 1.e-12 and iter_ > 1)
+      FOUR_C_THROW(" wrong copy of rhs_ ");
   }
   // end prepare linesearch_
 
@@ -950,7 +952,7 @@ bool FPSI::Monolithic::Converged()
       convinc = normofiterinc_ < toleranceiterinc_;
       break;
     case INPAR::FPSI::absoluteconvergencenorm_sys_split:
-      dserror(
+      FOUR_C_THROW(
           "Check for convergence of primary variables with type <absolut sys split> not "
           "implemented yet!");
       break;
@@ -973,7 +975,7 @@ bool FPSI::Monolithic::Converged()
           );
       break;
     default:
-      dserror("Cannot check for convergence of primary variables for any reason :-p !");
+      FOUR_C_THROW("Cannot check for convergence of primary variables for any reason :-p !");
       break;
   }
   // residual forces
@@ -991,11 +993,11 @@ bool FPSI::Monolithic::Converged()
                   (normrhsfluidpressure_ / sqrtnfp_ < toleranceresidualforceslist_[4]));
       break;
     case INPAR::FPSI::relativconvergencenorm_sys:
-      dserror(
+      FOUR_C_THROW(
           "Check for convergence of residual forces with type <relativ_sys> not implemented yet!");
       break;
     default:
-      dserror("Cannot check for convergence of residual forces for any reason :-P !");
+      FOUR_C_THROW("Cannot check for convergence of residual forces for any reason :-P !");
       break;
   }
 
@@ -1006,7 +1008,7 @@ bool FPSI::Monolithic::Converged()
   else if (combinedconvergence_ == INPAR::FPSI::bop_or)
     converged = convinc or convfres;
   else
-    dserror("Something went terribly wrong with binary operator!");
+    FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
   // return things
   return converged;
@@ -1206,7 +1208,7 @@ void FPSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(11) << "rel-res_s";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1222,7 +1224,7 @@ void FPSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(11) << "rel-inc_s";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1241,7 +1243,7 @@ void FPSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       // oss <<std::setw(15)<< "finterface-res";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1269,7 +1271,7 @@ void FPSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(11) << "ale-inc";
       break;
     default:
-      dserror("Begin at the beginning and go on till you come to the end. Then stop.");
+      FOUR_C_THROW("Begin at the beginning and go on till you come to the end. Then stop.");
       break;
   }
 
@@ -1280,7 +1282,7 @@ void FPSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == nullptr) dserror("no ofile available");
+  if (ofile == nullptr) FOUR_C_THROW("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -1315,7 +1317,7 @@ void FPSI::Monolithic::PrintNewtonIterText(FILE* ofile)
       break;
     case INPAR::FPSI::relativconvergencenorm_sys:
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1330,7 +1332,7 @@ void FPSI::Monolithic::PrintNewtonIterText(FILE* ofile)
       break;
     case INPAR::FPSI::absoluteconvergencenorm_sys_split:
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1361,7 +1363,7 @@ void FPSI::Monolithic::PrintNewtonIterText(FILE* ofile)
       break;
     case INPAR::FPSI::relativconvergencenorm_sys:
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1399,7 +1401,7 @@ void FPSI::Monolithic::PrintNewtonIterText(FILE* ofile)
       break;
     case INPAR::FPSI::absoluteconvergencenorm_sys_split:
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1407,7 +1409,7 @@ void FPSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == nullptr) dserror("no ofile available");
+  if (ofile == nullptr) FOUR_C_THROW("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -1576,7 +1578,7 @@ void FPSI::Monolithic::FPSIFDCheck()
       std::cout << "iterinc:  " << *iterinc << std::endl;
       std::cout << "rhs_old:  " << *rhs_old << std::endl;
       std::cout << "rhs_copy: " << *rhs_copy << std::endl;
-      dserror("Stopped by FPSI - FDCheck!");
+      FOUR_C_THROW("Stopped by FPSI - FDCheck!");
     }
 
     int* index = &i;
@@ -1602,7 +1604,7 @@ void FPSI::Monolithic::FPSIFDCheck()
   SetupSystemMatrix();
 
   int err = stiff_approx->FillComplete();
-  if (err) dserror("FD_Check: FillComplete failed with err-code: %d", err);
+  if (err) FOUR_C_THROW("FD_Check: FillComplete failed with err-code: %d", err);
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> temp =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(stiff_approx, CORE::LINALG::Copy));
@@ -1744,7 +1746,7 @@ void FPSI::Monolithic::FPSIFDCheck()
   }
   else
     std::cout << "FPSIFDCheck failed" << std::endl;
-  // dserror("FPSIFDCheck failed");
+  // FOUR_C_THROW("FPSIFDCheck failed");
   PoroField()->FluidField()->Discretization()->ClearState();
   FluidField()->Discretization()->ClearState();
 

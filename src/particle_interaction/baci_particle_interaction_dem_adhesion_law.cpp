@@ -54,10 +54,10 @@ void PARTICLEINTERACTION::DEMAdhesionLawBase::Setup(const double& k_normal)
     const double nue = params_dem_.get<double>("POISSON_RATIO");
 
     // safety checks
-    if (young <= 0.0) dserror("invalid input parameter YOUNG_MODULUS (expected positive)!");
+    if (young <= 0.0) FOUR_C_THROW("invalid input parameter YOUNG_MODULUS (expected positive)!");
 
     if (nue <= -1.0 or nue > 0.5)
-      dserror("invalid input parameter POISSON_RATIO (expected in range ]-1.0; 0.5])!");
+      FOUR_C_THROW("invalid input parameter POISSON_RATIO (expected in range ]-1.0; 0.5])!");
 
     // determine the effective Young's modulus
     const double young_eff = young / (2 * (1 - UTILS::Pow<2>(nue)));
@@ -67,13 +67,13 @@ void PARTICLEINTERACTION::DEMAdhesionLawBase::Setup(const double& k_normal)
 
     // safety check
     if (adhesion_max_contact_pressure_ > 0.0)
-      dserror("positive adhesion maximum contact pressure!");
+      FOUR_C_THROW("positive adhesion maximum contact pressure!");
   }
   // use given maximum contact force
   else
   {
     // safety check
-    if (adhesion_max_contact_force_ > 0.0) dserror("positive adhesion maximum contact force!");
+    if (adhesion_max_contact_force_ > 0.0) FOUR_C_THROW("positive adhesion maximum contact force!");
   }
 }
 
@@ -91,7 +91,7 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::Init()
   DEMAdhesionLawBase::Init();
 
   // safety check
-  if (hamaker_constant <= 0.0) dserror("negative hamaker constant!");
+  if (hamaker_constant <= 0.0) FOUR_C_THROW("negative hamaker constant!");
 }
 
 void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
@@ -198,7 +198,7 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::CalculateIntersectionGap(
   double r13 = 0.0;
 
   if (disc > 0.0)
-    dserror("The combination of these input parameters leads to an unreasonable result!");
+    FOUR_C_THROW("The combination of these input parameters leads to an unreasonable result!");
 
   // All roots real, at least two are equal
   if (disc == 0.0)
@@ -293,7 +293,7 @@ void PARTICLEINTERACTION::DEMAdhesionLawRegDMT::AdhesionForce(const double& gap,
 
     // safety check
     if (gap_intersect_min < 0.0)
-      dserror("the combination of these input parameters leads to an unreasonable result!");
+      FOUR_C_THROW("the combination of these input parameters leads to an unreasonable result!");
   }
 
   // compute adhesion force (assume deformation phase)

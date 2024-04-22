@@ -151,9 +151,9 @@ namespace SCATRA
             // the current row belongs to the transport equation of species 'scalarid'
             rlid0 = rowmap00.LID(rgid);
             rlid1 = rowmap01.LID(rgid);
-#ifdef BACI_DEBUG
-            if (rlid0 < 0) dserror("Sparse matrix A00 does not have global row %d", rgid);
-            if (rlid1 < 0) dserror("Sparse matrix A01 does not have global row %d", rgid);
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+            if (rlid0 < 0) FOUR_C_THROW("Sparse matrix A00 does not have global row %d", rgid);
+            if (rlid1 < 0) FOUR_C_THROW("Sparse matrix A01 does not have global row %d", rgid);
 #endif
 
             // separate the (non-zero!) values of the current row
@@ -172,20 +172,22 @@ namespace SCATRA
             errone = matrix00_.EpetraMatrix()->SumIntoMyValues(
                 rlid0, nnode, values00.data(), localcol00map[scalarid].data());
             if (errone)
-              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A00", errone);
+              FOUR_C_THROW(
+                  "Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A00", errone);
             errone = matrix01_.EpetraMatrix()->SumIntoMyValues(
                 rlid1, nnode, values1.data(), localcol01.data());
             if (errone)
-              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A01", errone);
+              FOUR_C_THROW(
+                  "Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A01", errone);
           }
           else
           {
             // the current row belongs to the equation for the electric potential
             rlid0 = rowmap10.LID(rgid);
             rlid1 = rowmap11.LID(rgid);
-#ifdef BACI_DEBUG
-            if (rlid0 < 0) dserror("Sparse matrix A10 does not have global row %d", rgid);
-            if (rlid1 < 0) dserror("Sparse matrix A11 does not have global row %d", rgid);
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+            if (rlid0 < 0) FOUR_C_THROW("Sparse matrix A10 does not have global row %d", rgid);
+            if (rlid1 < 0) FOUR_C_THROW("Sparse matrix A11 does not have global row %d", rgid);
 #endif
             // separate the values of the current row
             int nodespassed = 0;
@@ -209,11 +211,13 @@ namespace SCATRA
             errone = matrix10_.EpetraMatrix()->SumIntoMyValues(
                 rlid0, nnode * numscal_, values0.data(), localcol10.data());
             if (errone)
-              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A10", errone);
+              FOUR_C_THROW(
+                  "Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A10", errone);
             errone = matrix11_.EpetraMatrix()->SumIntoMyValues(
                 rlid1, nnode, values1.data(), localcol11.data());
             if (errone)
-              dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A11", errone);
+              FOUR_C_THROW(
+                  "Epetra_CrsMatrix::SumIntoMyValues returned error code %d for A11", errone);
           }
         }  // for (int lrow=0; lrow<ldim; ++lrow)
       }

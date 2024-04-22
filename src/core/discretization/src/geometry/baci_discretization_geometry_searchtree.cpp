@@ -101,12 +101,12 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::searchElementsInRadius(
 
   std::map<int, std::set<int>> nodeset;
 
-  if (treeRoot_ == Teuchos::null) dserror("tree is not yet initialized !!!");
+  if (treeRoot_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!(treeRoot_->getElementList().empty()))
     nodeset = treeRoot_->searchElementsInRadius(dis, currentpositions, point, radius, label);
   else
-    dserror("element list is empty");
+    FOUR_C_THROW("element list is empty");
 
   return nodeset;
 }
@@ -120,14 +120,14 @@ void CORE::GEO::SearchTree::buildStaticSearchTree(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - buildStaticSearchTree");
 
-  if (treeRoot_ == Teuchos::null) dserror("tree is not yet initialized !!!");
+  if (treeRoot_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!treeRoot_->getElementList().empty())
   {
     treeRoot_->buildStaticSearchTree(currentBVs);
   }
   else
-    dserror("element list is empty");
+    FOUR_C_THROW("element list is empty");
 
   return;
 }
@@ -140,14 +140,14 @@ void CORE::GEO::SearchTree::buildStaticSearchTree(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - buildStaticSearchTree");
 
-  if (treeRoot_ == Teuchos::null) dserror("tree is not yet initialized !!!");
+  if (treeRoot_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!treeRoot_->getElementList().empty())
   {
     treeRoot_->buildStaticSearchTree(currentBVs);
   }
   else
-    dserror("element list is empty");
+    FOUR_C_THROW("element list is empty");
 
   return;
 }
@@ -162,14 +162,14 @@ void CORE::GEO::SearchTree::searchCollisions(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
-  if (treeRoot_ == Teuchos::null) dserror("tree is not yet initialized !!!");
+  if (treeRoot_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!treeRoot_->getElementList().empty())
   {
     treeRoot_->searchCollisions(currentBVs, queryBV, label, collisions);
   }
   else
-    dserror("element list is empty");
+    FOUR_C_THROW("element list is empty");
 
   return;
 }
@@ -184,7 +184,7 @@ void CORE::GEO::SearchTree::searchCollisions(
 {
   TEUCHOS_FUNC_TIME_MONITOR("SearchTree - queryTime");
 
-  if (treeRoot_ == Teuchos::null) dserror("tree is not yet initialized !!!");
+  if (treeRoot_ == Teuchos::null) FOUR_C_THROW("tree is not yet initialized !!!");
 
   if (!treeRoot_->getElementList().empty())
     treeRoot_->searchCollisions(currentKDOPs, queryKDOP, label, contactEleIds);
@@ -272,7 +272,7 @@ int CORE::GEO::SearchTree::TreeNode::getNumChildren() const
   else if (treeType_ == QUADTREE)
     return 4;
   else
-    dserror("treetype does not exist");
+    FOUR_C_THROW("treetype does not exist");
 
   return -1;
 }
@@ -1169,7 +1169,7 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRa
     {
       const std::vector<int> childindex = classifyRadius(radius, point);
       if (childindex.size() < 1)
-        dserror("no child found\n");
+        FOUR_C_THROW("no child found\n");
       else if (childindex.size() == 1)  // child node found which encloses AABB so step down
         return children_[childindex[0]]->searchElementsInRadius(
             dis, currentpositions, point, radius, label);
@@ -1192,7 +1192,7 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRa
       // search in appropriate child node
       const std::vector<int> childindex = classifyRadius(radius, point);
       if (childindex.size() < 1)
-        dserror("no child found\n");
+        FOUR_C_THROW("no child found\n");
       else if (childindex.size() == 1)  // child node found which encloses AABB so refine further
       {
         createChildren(dis, currentpositions);
@@ -1206,7 +1206,7 @@ std::map<int, std::set<int>> CORE::GEO::SearchTree::TreeNode::searchElementsInRa
       break;
     }
     default:
-      dserror("should not get here\n");
+      FOUR_C_THROW("should not get here\n");
   }
   return eleMap;
 }
@@ -1290,7 +1290,7 @@ void CORE::GEO::SearchTree::TreeNode::searchCollisions(
       break;
     }
     default:
-      dserror("should not get here\n");
+      FOUR_C_THROW("should not get here\n");
   }
   return;
 }
@@ -1336,7 +1336,7 @@ void CORE::GEO::SearchTree::TreeNode::searchCollisions(
       break;
     }
     default:
-      dserror("should not get here\n");
+      FOUR_C_THROW("should not get here\n");
   }
   return;
 }

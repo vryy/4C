@@ -52,7 +52,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
       if (material->MaterialType() == INPAR::MAT::m_matlist)
       {
         const Teuchos::RCP<MAT::MatList> actmat = Teuchos::rcp_dynamic_cast<MAT::MatList>(material);
-        if (actmat->NumMat() < my::numscal_) dserror("Not enough materials in MatList.");
+        if (actmat->NumMat() < my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
         for (int k = 0; k < my::numscal_; ++k)
         {
@@ -78,14 +78,14 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
       {
         // all materials in the matlist should be of the same kind
         if (updatemat.size() != (unsigned)my::numscal_)
-          dserror("Number of materials to be updated is not equal to number of scalars!");
+          FOUR_C_THROW("Number of materials to be updated is not equal to number of scalars!");
 
         // get time-step length
         const double dt = my::scatraparatimint_->Dt();
 
         // extract local values from the global vectors
         Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-        if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+        if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
         CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
         my::EvalShapeFuncAndDerivsAtEleCenter();
@@ -118,7 +118,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
           {
             int err = material_internal_state->ReplaceGlobalValue(
                 ele->Id(), k, material->GetInternalState(k));
-            if (err != 0) dserror("%i", err);
+            if (err != 0) FOUR_C_THROW("%i", err);
           }
         }
         params.set<Teuchos::RCP<Epetra_MultiVector>>(
@@ -168,7 +168,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
           {
             int err = material_ionic_currents->ReplaceGlobalValue(
                 ele->Id(), k, material->GetIonicCurrents(k));
-            if (err != 0) dserror("%i", err);
+            if (err != 0) FOUR_C_THROW("%i", err);
           }
         }
         params.set<Teuchos::RCP<Epetra_MultiVector>>(

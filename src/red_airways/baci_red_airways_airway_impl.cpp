@@ -178,7 +178,7 @@ namespace
     }
     else
     {
-      dserror("Material law is not a Newtonian fluid");
+      FOUR_C_THROW("Material law is not a Newtonian fluid");
       exit(1);
     }
 
@@ -212,7 +212,7 @@ namespace
     }
     else
     {
-      dserror("[%s] is not a defined ElemSolvingType of a RED_AIRWAY element",
+      FOUR_C_THROW("[%s] is not a defined ElemSolvingType of a RED_AIRWAY element",
           ele->ElemSolvingType().c_str());
     }
 
@@ -393,7 +393,7 @@ namespace
     }
     else
     {
-      dserror("[%s] is not a defined resistance model", ele->Resistance().c_str());
+      FOUR_C_THROW("[%s] is not a defined resistance model", ele->Resistance().c_str());
     }
 
     //------------------------------------------------------------
@@ -516,7 +516,7 @@ namespace
     }
     else
     {
-      dserror("[%s] is not an implemented element yet", (ele->Type()).c_str());
+      FOUR_C_THROW("[%s] is not an implemented element yet", (ele->Type()).c_str());
       exit(1);
     }
 
@@ -567,7 +567,7 @@ DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Im
       return airway;
     }
     default:
-      dserror("shape %d (%d nodes) not supported", red_airway->Shape(), red_airway->NumNode());
+      FOUR_C_THROW("shape %d (%d nodes) not supported", red_airway->Shape(), red_airway->NumNode());
       break;
   }
   return nullptr;
@@ -616,7 +616,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
   Teuchos::RCP<const Epetra_Vector> pnm = discretization.GetState("pnm");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
-    dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
+    FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -771,7 +771,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
           // check if O2 properties material exists
           if (id == -1)
           {
-            dserror("A material defining O2 properties in blood could not be found");
+            FOUR_C_THROW("A material defining O2 properties in blood could not be found");
             exit(1);
           }
           const MAT::PAR::Parameter* smat =
@@ -806,7 +806,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
           // check if O2 properties material exists
           if (id == -1)
           {
-            dserror("A material defining O2 properties in air could not be found");
+            FOUR_C_THROW("A material defining O2 properties in air could not be found");
             exit(1);
           }
           const MAT::PAR::Parameter* smat =
@@ -833,7 +833,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
         }
         else
         {
-          dserror("0D scatra must be predefined as either \"air\" or \"blood\"");
+          FOUR_C_THROW("0D scatra must be predefined as either \"air\" or \"blood\"");
           exit(1);
         }
       }
@@ -976,7 +976,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
 
   Teuchos::RCP<const Epetra_Vector> pn = discretization.GetState("pn");
 
-  if (pn == Teuchos::null) dserror("Cannot get state vectors 'pn'");
+  if (pn == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pn'");
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
@@ -1044,7 +1044,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             }
             else
             {
-              dserror(
+              FOUR_C_THROW(
                   "FUNCTION %i has to take either value 0.0 or 1.0. Not clear if flow or pressure "
                   "boundary condition should be active.",
                   (funct_id_switch - 1));
@@ -1106,7 +1106,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
           if (local_id < 0)
           {
-            dserror("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
                 discretization.Comm().MyPID());
             exit(1);
           }
@@ -1123,7 +1123,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           // -----------------------------------------------------------------
           if (CoupledTo3DParams.get() == nullptr)
           {
-            dserror(
+            FOUR_C_THROW(
                 "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters "
                 "passed don't exist");
             exit(1);
@@ -1284,7 +1284,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
           if (local_id < 0)
           {
-            dserror("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
                 discretization.Comm().MyPID());
             exit(1);
           }
@@ -1323,7 +1323,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
         }
         else
         {
-          dserror("precribed [%s] is not defined for reduced airways", Bc.c_str());
+          FOUR_C_THROW("precribed [%s] is not defined for reduced airways", Bc.c_str());
           exit(1);
         }
       }
@@ -1342,7 +1342,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
           if (local_id < 0)
           {
-            dserror("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
                 discretization.Comm().MyPID());
             exit(1);
           }
@@ -1397,7 +1397,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
   Teuchos::RCP<const Epetra_Vector> pnm = discretization.GetState("pnm");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
-    dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
+    FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -1565,7 +1565,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
 
   Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
 
-  if (pnp == Teuchos::null) dserror("Cannot get state vectors 'pnp'");
+  if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -1598,7 +1598,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
         // -----------------------------------------------------------------
         if (CoupledTo3DParams.get() == nullptr)
         {
-          dserror(
+          FOUR_C_THROW(
               "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters "
               "passed don't exist");
           exit(1);
@@ -1645,7 +1645,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
         else
         {
           std::string str = (*condition->Get<std::string>("ReturnedVariable"));
-          dserror("%s, is an unimplimented type of coupling", str.c_str());
+          FOUR_C_THROW("%s, is an unimplimented type of coupling", str.c_str());
           exit(1);
         }
         std::stringstream returnedBCwithId;
@@ -1663,7 +1663,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
         itrMap1D = map1D->find(returnedBCwithId.str());
         if (itrMap1D == map1D->end())
         {
-          dserror("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",
+          FOUR_C_THROW("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",
               returnedBC.c_str(), ID);
           exit(1);
         }
@@ -1775,7 +1775,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
 
   if (cfl1 >= 1.0 || cfl2 >= 1.0)
   {
-    dserror("Error 0D scatra solver detected a CFL numbers > 1.0: CFL(%f,%f)\n", cfl1, cfl2);
+    FOUR_C_THROW("Error 0D scatra solver detected a CFL numbers > 1.0: CFL(%f,%f)\n", cfl1, cfl2);
     exit(0);
   }
   //--------------------------------------------------------------------
@@ -1869,7 +1869,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
       }
       else
       {
-        dserror("A scalar transport element must be defined either as \"air\" or \"blood\"");
+        FOUR_C_THROW("A scalar transport element must be defined either as \"air\" or \"blood\"");
         exit(1);
       }
 
@@ -1891,7 +1891,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
         // check if O2 properties material exists
         if (id == -1)
         {
-          dserror("A material defining O2 properties in air could not be found");
+          FOUR_C_THROW("A material defining O2 properties in air could not be found");
           exit(1);
         }
         const MAT::PAR::Parameter* smat =
@@ -1926,7 +1926,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
         // check if O2 properties material exists
         if (id == -1)
         {
-          dserror("A material defining O2 properties in blood could not be found");
+          FOUR_C_THROW("A material defining O2 properties in blood could not be found");
           exit(1);
         }
         const MAT::PAR::Parameter* smat =
@@ -2261,7 +2261,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
   }
   else
   {
-    dserror("A scalar transport element must be defined either as \"air\" or \"blood\"");
+    FOUR_C_THROW("A scalar transport element must be defined either as \"air\" or \"blood\"");
     exit(1);
   }
 
@@ -2292,7 +2292,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
     // check if O2 properties material exists
     if (id == -1)
     {
-      dserror("A material defining O2 properties in air could not be found");
+      FOUR_C_THROW("A material defining O2 properties in air could not be found");
       exit(1);
     }
     const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
@@ -2331,7 +2331,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
     // check if O2 properties material exists
     if (id == -1)
     {
-      dserror("A material defining O2 properties in blood could not be found");
+      FOUR_C_THROW("A material defining O2 properties in blood could not be found");
       exit(1);
     }
     const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
@@ -2368,7 +2368,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
   }
   else
   {
-    dserror("A scalar transport element must be defined either as \"air\" or \"blood\"");
+    FOUR_C_THROW("A scalar transport element must be defined either as \"air\" or \"blood\"");
     exit(1);
   }
 

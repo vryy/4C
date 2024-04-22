@@ -159,7 +159,7 @@ namespace STR
     //! Return external force \f$F_{ext,n+1}\f$
     Teuchos::RCP<Epetra_Vector> FextNew() override
     {
-      dserror("FextNew() not available in AB2");
+      FOUR_C_THROW("FextNew() not available in AB2");
       return Teuchos::null;
     }
 

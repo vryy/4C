@@ -92,7 +92,7 @@ namespace CORE::GEO
         return computeFastXAABBT<3, CORE::FE::CellType::pyramid5>(xyze, eleGeoType);
       default:
         std::cout << CORE::FE::CellTypeToString(distype) << std::endl;
-        dserror("add your distype to this switch!");
+        FOUR_C_THROW("add your distype to this switch!");
     }
     return CORE::LINALG::Matrix<3, 2>(true);
   }

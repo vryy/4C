@@ -280,7 +280,7 @@ MyocardMinimal::MyocardMinimal(const double eps_deriv_myocard, const std::string
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Parameters for tissue type not supported for minimal model (only M, EPI, ENDO, Atria, "
         "pAtria, pAtriaRe, rAtria)");
   }
@@ -425,7 +425,7 @@ void MyocardMinimal::SetInternalState(const int k, const double val)
  *----------------------------------------------------------------------*/
 void MyocardMinimal::SetInternalState(const int k, const double val, int gp)
 {
-  if (v0_.size() < (unsigned)gp) dserror("Number of gp does not match");
+  if (v0_.size() < (unsigned)gp) FOUR_C_THROW("Number of gp does not match");
   switch (k)
   {
     case -1:
@@ -453,7 +453,7 @@ void MyocardMinimal::SetInternalState(const int k, const double val, int gp)
     }
     default:
     {
-      dserror("There are only 3 internal variables in this myocard material!");
+      FOUR_C_THROW("There are only 3 internal variables in this myocard material!");
       break;
     }
   }

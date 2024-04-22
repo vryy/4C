@@ -125,7 +125,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPr
       discretization.GetState(ndsvel, "convective velocity field");
 
   // safety check
-  if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
+  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // get values of velocity field from secondary dof-set
   const std::vector<int>& lmvel = la[ndsvel].lm_;
@@ -157,7 +157,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPr
   if (f != nullptr)
     CORE::FE::ExtractMyNodeBasedValues(peleptr, eflux, *f, 3);
   else
-    dserror("MultiVector %s has not been found!", name.c_str());
+    FOUR_C_THROW("MultiVector %s has not been found!", name.c_str());
 
   // calculate normal diffusive and velocity flux at each node of the
   // present boundary element
@@ -228,7 +228,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
         // compute temperature and check whether it is positive
         const double temp = my::funct_.Dot(ephinp[my::numscal_ - 1]);
         if (temp < 0.0)
-          dserror(
+          FOUR_C_THROW(
               "Negative temperature in ScaTra Arrhenius temperature density evaluation on "
               "boundary!");
 
@@ -237,7 +237,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
                       ->ComputeDensity(temp, thermpress_);
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "Type of material found in material list not supported, should be Arrhenius-type "
             "temperature!");
 
@@ -258,7 +258,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
       // compute temperature and check whether it is positive
       const double temp = my::funct_.Dot(ephinp[k]);
       if (temp < 0.0)
-        dserror("Negative temperature in ScaTra Sutherland density evaluation on boundary!");
+        FOUR_C_THROW("Negative temperature in ScaTra Sutherland density evaluation on boundary!");
 
       // compute density based on temperature and thermodynamic pressure
       density =
@@ -272,7 +272,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
       // compute temperature and check whether it is positive
       const double temp = my::funct_.Dot(ephinp[k]);
       if (temp < 0.0)
-        dserror(
+        FOUR_C_THROW(
             "Negative temperature in ScaTra temperature-dependent water density evaluation on "
             "boundary!");
 
@@ -318,7 +318,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
 
     default:
     {
-      dserror("Invalid material type!");
+      FOUR_C_THROW("Invalid material type!");
       break;
     }
   }

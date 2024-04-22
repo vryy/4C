@@ -97,7 +97,7 @@ void ADAPTER::StructureBaseAlgorithmNew::Init(const Teuchos::ParameterList& prbd
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::Setup()
 {
-  if (not IsInit()) dserror("You have to call Init() first!");
+  if (not IsInit()) FOUR_C_THROW("You have to call Init() first!");
 
   // major switch to different time integrators
   switch (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(*sdyn_, "DYNAMICTYP"))
@@ -116,7 +116,7 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
       SetupTimInt();  // <-- here is the show
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "Unknown time integration scheme '%s'", sdyn_->get<std::string>("DYNAMICTYP").c_str());
       break;
   }
@@ -131,8 +131,8 @@ void ADAPTER::StructureBaseAlgorithmNew::RegisterModelEvaluator(
     const std::string name, Teuchos::RCP<STR::MODELEVALUATOR::Generic> me)
 {
   // safety checks
-  if (not IsInit()) dserror("Init(...) must be called before RegisterModelEvaluator(...) !");
-  if (IsSetup()) dserror("RegisterModelEvaluator(...) must be called before Setup() !");
+  if (not IsInit()) FOUR_C_THROW("Init(...) must be called before RegisterModelEvaluator(...) !");
+  if (IsSetup()) FOUR_C_THROW("RegisterModelEvaluator(...) must be called before Setup() !");
 
   // set RCP ptr to model evaluator in problem dynamic parameter list
   const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
@@ -144,7 +144,7 @@ void ADAPTER::StructureBaseAlgorithmNew::RegisterModelEvaluator(
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
 {
-  if (not IsInit()) dserror("You have to call Init() first!");
+  if (not IsInit()) FOUR_C_THROW("You have to call Init() first!");
 
   // get the problem instance
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
@@ -224,10 +224,10 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
       {
         if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(*sdyn_, "DYNAMICTYP") !=
             INPAR::STR::dyna_genalpha)
-          dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
+          FOUR_C_THROW("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
         else if (CORE::UTILS::IntegralValue<INPAR::STR::MidAverageEnum>(
                      sdyn_->sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_trlike)
-          dserror(
+          FOUR_C_THROW(
               "In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=TrLike");
         break;
       }
@@ -302,7 +302,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
 void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     std::set<enum INPAR::STR::ModelType>& modeltypes) const
 {
-  if (not IsInit()) dserror("You have to call Init() first!");
+  if (not IsInit()) FOUR_C_THROW("You have to call Init() first!");
   // ---------------------------------------------------------------------------
   // check for meshtying and contact conditions
   // ---------------------------------------------------------------------------
@@ -418,12 +418,13 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       {
         if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
                 "Monolithic Coupling Model"))
-          dserror("Cannot have both partitioned and monolithic coupling at the same time!");
+          FOUR_C_THROW("Cannot have both partitioned and monolithic coupling at the same time!");
         const auto coupling_model_ptr =
             prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
                 "Partitioned Coupling Model");
         if (coupling_model_ptr.is_null())
-          dserror("The partitioned coupling model pointer is not allowed to be Teuchos::null!");
+          FOUR_C_THROW(
+              "The partitioned coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
         modeltypes.insert(INPAR::STR::model_partitioned_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
@@ -438,7 +439,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
             prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
                 "Monolithic Coupling Model");
         if (coupling_model_ptr.is_null())
-          dserror("The monolithic coupling model pointer is not allowed to be Teuchos::null!");
+          FOUR_C_THROW("The monolithic coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
         modeltypes.insert(INPAR::STR::model_monolithic_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
@@ -453,7 +454,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
             prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
                 "Basic Coupling Model");
         if (coupling_model_ptr.is_null())
-          dserror("The basic coupling model pointer is not allowed to be Teuchos::null!");
+          FOUR_C_THROW("The basic coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
         modeltypes.insert(INPAR::STR::model_basic_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
@@ -675,11 +676,11 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
   {
     if (sdyn_->get<double>("K_DAMP") < 0.0)
     {
-      dserror("Rayleigh damping parameter K_DAMP not explicitly given.");
+      FOUR_C_THROW("Rayleigh damping parameter K_DAMP not explicitly given.");
     }
     if (sdyn_->get<double>("M_DAMP") < 0.0)
     {
-      dserror("Rayleigh damping parameter M_DAMP not explicitly given.");
+      FOUR_C_THROW("Rayleigh damping parameter M_DAMP not explicitly given.");
     }
   }
 
@@ -798,7 +799,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(const Teuchos::Para
   // if no adaptive wrapper was found, we try to create a standard one
   if (str_wrapper_.is_null()) CreateWrapper(ti_strategy);
 
-  if (str_wrapper_.is_null()) dserror("No proper time integration found!");
+  if (str_wrapper_.is_null()) FOUR_C_THROW("No proper time integration found!");
 }
 
 
@@ -865,7 +866,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
               fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED") == INPAR::FSI::DirichletNeumann)
         str_wrapper_ = Teuchos::rcp(new FBIStructureWrapper(ti_strategy));
       else
-        dserror("Only DirichletNeumann is implemented for FBI so far");
+        FOUR_C_THROW("Only DirichletNeumann is implemented for FBI so far");
       break;
     }
     case GLOBAL::ProblemType::immersed_fsi:

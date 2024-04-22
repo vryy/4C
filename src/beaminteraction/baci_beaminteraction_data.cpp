@@ -102,7 +102,8 @@ void BEAMINTERACTION::DATA::CrosslinkerData::Unpack(std::vector<char> const& dat
   CORE::COMM::ParObject::ExtractfromPack(position, data, numbond_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
+    FOUR_C_THROW(
+        "Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
 
   return;
 }
@@ -158,7 +159,8 @@ void BEAMINTERACTION::DATA::BeamData::Unpack(std::vector<char> const& data)
 
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
+    FOUR_C_THROW(
+        "Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
 
   return;
 }
@@ -220,7 +222,8 @@ void BEAMINTERACTION::DATA::BindEventData::Unpack(std::vector<char> const& data)
   CORE::COMM::ParObject::ExtractfromPack(position, data, permission_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
+    FOUR_C_THROW(
+        "Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
 
   return;
 }
@@ -265,7 +268,8 @@ void BEAMINTERACTION::DATA::UnBindEventData::Unpack(std::vector<char> const& dat
       CORE::COMM::ParObject::ExtractInt(position, data));
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
+    FOUR_C_THROW(
+        "Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
 
   return;
 }

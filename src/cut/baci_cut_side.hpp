@@ -97,10 +97,10 @@ namespace CORE::GEO
       void SetMarkedSideProperties(int markedid, enum MarkedActions markedaction)
       {
         // No combination of cut-sides and marked sides!!
-        if (sid_ > -1) dserror("Currently a marked side and a cut side can not co-exist");
+        if (sid_ > -1) FOUR_C_THROW("Currently a marked side and a cut side can not co-exist");
         // Number of markings on the surface should not be more than 1
         if (markedsidemap_.size() > 0)
-          dserror("Currently more than one mark on a side is NOT possible.");
+          FOUR_C_THROW("Currently more than one mark on a side is NOT possible.");
 
         markedsidemap_.insert(std::pair<enum MarkedActions, int>(
             CORE::GEO::CUT::mark_and_create_boundarycells, markedid));
@@ -132,7 +132,7 @@ namespace CORE::GEO
       bool IsCloserSide(const T& startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer)
       {
         if (startpoint_xyz.M() != ProbDim())
-          dserror("The dimension of startpoint_xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of startpoint_xyz is wrong! (probdim = %d)", ProbDim());
         return IsCloserSide(startpoint_xyz.A(), other, is_closer);
       }
 
@@ -141,7 +141,7 @@ namespace CORE::GEO
 
       virtual bool JustParallelCut(Mesh& mesh, Edge& edge, PointSet& cut_points, int idx = -1)
       {
-        dserror("JustParallelCut is not implemented for the levelset!");
+        FOUR_C_THROW("JustParallelCut is not implemented for the levelset!");
         return false;
       }
 
@@ -150,7 +150,7 @@ namespace CORE::GEO
       void EdgeAt(const T1& rs, std::vector<Edge*>& edges)
       {
         if (static_cast<unsigned>(rs.M()) != Dim())
-          dserror("The dimension of rs is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
 
         EdgeAt(rs.A(), edges);
       }
@@ -160,9 +160,9 @@ namespace CORE::GEO
       void PointAt(const T1& rs, T2& xyz)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rs.M()) != Dim())
-          dserror("The dimension of rs is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
 
         PointAt(rs.A(), xyz.A());
 
@@ -175,7 +175,7 @@ namespace CORE::GEO
       void SideCenter(T1& midpoint)
       {
         if (midpoint.M() != ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         SideCenter(midpoint.A());
       }
 
@@ -188,9 +188,9 @@ namespace CORE::GEO
           const T1& xyz, T2& rsd, bool allow_dist = false, double tol = POSITIONTOL)
       {
         if (static_cast<unsigned>(xyz.M()) < ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rsd.M()) < ProbDim())
-          dserror("The dimension of rsd is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of rsd is wrong! (dim = %d)", Dim());
 
         const bool check = LocalCoordinates(xyz.A(), rsd.A(), allow_dist, tol);
 
@@ -208,9 +208,9 @@ namespace CORE::GEO
       bool WithinSide(const T1& xyz, T2& rs, double& dist)
       {
         if (static_cast<unsigned>(xyz.M()) != ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rs.M()) != Dim())
-          dserror("The dimension of rs is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
 
         return WithinSide(xyz.A(), rs.A(), dist);
       }
@@ -221,8 +221,8 @@ namespace CORE::GEO
       bool RayCut(const T1& p1_xyz, const T1& p2_xyz, T2& rs, double& line_xi)
       {
         if (p1_xyz.M() != ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        if (rs.M() != Dim()) dserror("The dimension of rs is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+        if (rs.M() != Dim()) FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
         return RayCut(p1_xyz.A(), p2_xyz.A(), rs.A(), line_xi);
       }
 
@@ -232,9 +232,9 @@ namespace CORE::GEO
       void Normal(const T1& rs, T2& normal, bool unitnormal = true)
       {
         if (static_cast<unsigned>(normal.M()) != ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rs.M()) != Dim())
-          dserror("The dimension of rs is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
 
         Normal(rs.A(), normal.A(), unitnormal);
       }
@@ -246,9 +246,9 @@ namespace CORE::GEO
       void Basis(const T1& rs, T2& t1, T2& t2, T2& n)
       {
         if (static_cast<unsigned>(t1.M()) != ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(rs.M()) != Dim())
-          dserror("The dimension of rs is wrong! (dim = %d)", Dim());
+          FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
 
         Basis(rs.A(), t1.A(), t2.A(), n.A());
       }
@@ -260,7 +260,7 @@ namespace CORE::GEO
       void BasisAtCenter(T& t1, T& t2, T& n)
       {
         if (static_cast<unsigned>(t1.M()) != ProbDim())
-          dserror("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
         BasisAtCenter(t1.A(), t2.A(), n.A());
       }
@@ -304,9 +304,9 @@ namespace CORE::GEO
       void Coordinates(T& xyze) const
       {
         if (static_cast<unsigned>(xyze.numRows()) < ProbDim())
-          dserror("The row dimension of xyze is wrong! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("The row dimension of xyze is wrong! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(xyze.numCols()) < NumNodes())
-          dserror("The col dimension of xyze is wrong! (numNodesSide = %d)", NumNodes());
+          FOUR_C_THROW("The col dimension of xyze is wrong! (numNodesSide = %d)", NumNodes());
 
         // if the matrix
         if (static_cast<unsigned>(xyze.numRows()) > ProbDim() or
@@ -402,7 +402,8 @@ namespace CORE::GEO
       template <class T>
       Node* OnNode(const T& x)
       {
-        if (x.M() != ProbDim()) dserror("x has the wrong dimension! (probDim = %d)", ProbDim());
+        if (x.M() != ProbDim())
+          FOUR_C_THROW("x has the wrong dimension! (probDim = %d)", ProbDim());
 
         T nx;
         for (std::vector<Node*>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
@@ -670,7 +671,7 @@ namespace CORE::GEO
       {
         // sanity check
         if (dim > 2)
-          dserror(
+          FOUR_C_THROW(
               "The element dimension of sides is not allowed to be greater"
               " than 2!");
       }
@@ -701,7 +702,7 @@ namespace CORE::GEO
             return shards::getCellTopologyData<shards::Line<2>>();
             break;
           default:
-            dserror("Unknown sidetype! (%d | %s)\n", sidetype,
+            FOUR_C_THROW("Unknown sidetype! (%d | %s)\n", sidetype,
                 CORE::FE::CellTypeToString(sidetype).c_str());
             break;
         }
@@ -748,7 +749,7 @@ namespace CORE::GEO
           }
           case CORE::FE::CellType::line2:
           {
-            dserror("If we need this, the edges will degenerate to nodes!");
+            FOUR_C_THROW("If we need this, the edges will degenerate to nodes!");
             break;
           }
           default:
@@ -817,7 +818,7 @@ namespace CORE::GEO
           }
           default:
           {
-            dserror("Unknown/unsupported side type!");
+            FOUR_C_THROW("Unknown/unsupported side type!");
             exit(EXIT_FAILURE);
           }
         }
@@ -843,7 +844,7 @@ namespace CORE::GEO
           case 1:
           {
             if (probdim == 3)
-              dserror(
+              FOUR_C_THROW(
                   "Dimension mismatch. A 1-dimensional element in a 3-dimensional space is "
                   "not a side, but a edge!");
 
@@ -863,7 +864,7 @@ namespace CORE::GEO
             break;
           }
           default:
-            dserror("Unsupported element dimension!");
+            FOUR_C_THROW("Unsupported element dimension!");
             break;
         }
         // force unit length
@@ -1047,7 +1048,7 @@ namespace CORE::GEO
         Side* s = nullptr;
         // sanity check
         if (probdim < CORE::FE::dim<sidetype>)
-          dserror("Problem dimension is smaller than the side dimension!");
+          FOUR_C_THROW("Problem dimension is smaller than the side dimension!");
 
         switch (probdim)
         {
@@ -1058,7 +1059,7 @@ namespace CORE::GEO
             s = new ConcreteSide<3, sidetype>(sid, nodes, edges);
             break;
           default:
-            dserror("Unsupported problem dimension! (probdim = %d)", probdim);
+            FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim);
             break;
         }
         return s;

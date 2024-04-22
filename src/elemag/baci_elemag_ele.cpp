@@ -76,7 +76,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ElemagType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented right now!");
+  FOUR_C_THROW("method ComputeNullSpace not implemented right now!");
   return nullspace;
 }
 
@@ -204,13 +204,13 @@ void DRT::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
   distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
   int val = 0;
   ExtractfromPack(position, data, val);
-  dsassert(val >= 0 && val < 255, "Degree out of range");
+  FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
   degree_ = val;
   ExtractfromPack(position, data, val);
   completepol_ = val;
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -386,7 +386,7 @@ void DRT::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
   // distype_ = static_cast<CORE::FE::CellType>( ExtractInt(position,data) );
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -409,7 +409,7 @@ void DRT::ELEMENTS::ElemagBoundary::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagBoundary::Lines()
 {
-  dserror("Lines of ElemagBoundary not implemented");
+  FOUR_C_THROW("Lines of ElemagBoundary not implemented");
 }
 
 
@@ -418,7 +418,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagBoundary::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagBoundary::Surfaces()
 {
-  dserror("Surfaces of ElemagBoundary not implemented");
+  FOUR_C_THROW("Surfaces of ElemagBoundary not implemented");
 }
 
 
@@ -444,7 +444,7 @@ int DRT::ELEMENTS::ElemagBoundary::EvaluateNeumann(Teuchos::ParameterList& param
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("dummy function called");
+  FOUR_C_THROW("dummy function called");
   return 0;
 }
 
@@ -546,7 +546,7 @@ CORE::FE::CellType DRT::ELEMENTS::ElemagIntFace::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ElemagIntFace::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("this ElemagIntFace element does not support communication");
+  FOUR_C_THROW("this ElemagIntFace element does not support communication");
   return;
 }
 
@@ -556,7 +556,7 @@ void DRT::ELEMENTS::ElemagIntFace::Pack(CORE::COMM::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ElemagIntFace::Unpack(const std::vector<char>& data)
 {
-  dserror("this ElemagIntFace element does not support communication");
+  FOUR_C_THROW("this ElemagIntFace element does not support communication");
   return;
 }
 
@@ -589,7 +589,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
-    dserror("wrong number of nodes for master element");
+    FOUR_C_THROW("wrong number of nodes for master element");
   }
 
   //-----------------------------------------------------------------------
@@ -598,7 +598,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
-    dserror("wrong number of nodes for slave element");
+    FOUR_C_THROW("wrong number of nodes for slave element");
   }
 
   //-----------------------------------------------------------------------
@@ -642,7 +642,8 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
     const int size = discretization.NumDof(dofset, node);
     const int offset = size * nds_master[k];
 
-    dsassert(dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
+    FOUR_C_ASSERT(
+        dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
 
     // insert a pair of node-Id and current length of master_lm ( to get the start offset for node's
     // dofs)
@@ -684,7 +685,8 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
       const int size = discretization.NumDof(dofset, node);
       const int offset = size * nds_slave[k];
 
-      dsassert(dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
+      FOUR_C_ASSERT(
+          dof.size() >= static_cast<unsigned>(offset + size), "illegal physical dofs offset");
       for (int j = 0; j < size; ++j)
       {
         int actdof = dof[offset + j];
@@ -716,7 +718,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
       }
 
       if (offset % size != 0)
-        dserror("there was at least one node with not %d dofs per node", size);
+        FOUR_C_THROW("there was at least one node with not %d dofs per node", size);
       int patchnode_index = offset / size;
 
       lm_slaveNodeToPatch.push_back(patchnode_index);
@@ -751,7 +753,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
       }
     }
     else
-      dserror("face's nodes not contained in masternodes_offset map");
+      FOUR_C_THROW("face's nodes not contained in masternodes_offset map");
   }
 
   return;
@@ -774,7 +776,7 @@ void DRT::ELEMENTS::ElemagIntFace::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagIntFace::Lines()
 {
-  dserror("Lines of ElemagIntFace not implemented");
+  FOUR_C_THROW("Lines of ElemagIntFace not implemented");
 }
 
 /*----------------------------------------------------------------------*
@@ -782,7 +784,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagIntFace::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagIntFace::Surfaces()
 {
-  dserror("Surfaces of ElemagIntFace not implemented");
+  FOUR_C_THROW("Surfaces of ElemagIntFace not implemented");
 }
 
 /*----------------------------------------------------------------------*
@@ -799,7 +801,7 @@ int DRT::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
   //         this line avoids linker errors
   // DRT::ELEMENTS::ElemagIntFaceImplInterface::Impl(this);
 
-  dserror("not available");
+  FOUR_C_THROW("not available");
 
   return 0;
 }
@@ -812,7 +814,7 @@ int DRT::ELEMENTS::ElemagIntFace::EvaluateNeumann(Teuchos::ParameterList& params
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("not available");
+  FOUR_C_THROW("not available");
 
   return 0;
 }

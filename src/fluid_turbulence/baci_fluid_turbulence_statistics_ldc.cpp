@@ -35,7 +35,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
   //----------------------------------------------------------------------
   // plausibility check
   int numdim = params_.get<int>("number of velocity degrees of freedom");
-  if (numdim != 3) dserror("Evaluation of turbulence statistics only for 3d flow problems!");
+  if (numdim != 3) FOUR_C_THROW("Evaluation of turbulence statistics only for 3d flow problems!");
 
   INPAR::FLUID::PhysicalType physicaltype =
       CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
@@ -182,7 +182,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -245,7 +245,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);
@@ -308,7 +308,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
 
       if (tag != (myrank + numprocs - 1) % numprocs)
       {
-        dserror("received wrong message (ReceiveAny)");
+        FOUR_C_THROW("received wrong message (ReceiveAny)");
       }
 
       exporter.Wait(request);

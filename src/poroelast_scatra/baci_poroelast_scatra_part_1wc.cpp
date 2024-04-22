@@ -185,7 +185,7 @@ POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
 
   // check if structure field has 2 discretizations, so that coupling is possible
   if (PoroField()->StructureField()->Discretization()->AddDofSet(scatradofset) != 1)
-    dserror("unexpected dof sets in structure field");
+    FOUR_C_THROW("unexpected dof sets in structure field");
 }
 
 /*----------------------------------------------------------------------*

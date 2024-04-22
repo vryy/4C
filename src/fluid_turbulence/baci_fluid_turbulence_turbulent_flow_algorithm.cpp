@@ -147,7 +147,7 @@ void FLD::TurbulentFlowAlgorithm::TransferInflowVelocity()
   Epetra_Export exporter(inflowvelnp->Map(), velnp_->Map());
   // export inflow velocity
   int err = velnp_->Export(*inflowvelnp, exporter, Insert);
-  if (err != 0) dserror("Export using exporter returned err=%d", err);
+  if (err != 0) FOUR_C_THROW("Export using exporter returned err=%d", err);
 
   if (fluiddis_->Comm().MyPID() == 0) std::cout << "done\n" << std::endl;
 
@@ -201,19 +201,19 @@ void FLD::TurbulentFlowAlgorithm::ReadRestart(const int restart)
   int err = 0;
   Epetra_Export exportvelnp(fluidvelnp->Map(), velnp->Map());
   err = velnp->Export(*fluidvelnp, exportvelnp, Insert);
-  if (err != 0) dserror("Export using exporter returned err=%d", err);
+  if (err != 0) FOUR_C_THROW("Export using exporter returned err=%d", err);
   Epetra_Export exportveln(fluidveln->Map(), veln->Map());
   err = veln->Export(*fluidveln, exportveln, Insert);
-  if (err != 0) dserror("Export using exporter returned err=%d", err);
+  if (err != 0) FOUR_C_THROW("Export using exporter returned err=%d", err);
   Epetra_Export exportvelnm(fluidvelnm->Map(), velnm->Map());
   err = velnm->Export(*fluidvelnm, exportvelnm, Insert);
-  if (err != 0) dserror("Export using exporter returned err=%d", err);
+  if (err != 0) FOUR_C_THROW("Export using exporter returned err=%d", err);
   Epetra_Export exportaccnp(fluidaccnp->Map(), accnp->Map());
   err = accnp->Export(*fluidaccnp, exportaccnp, Insert);
-  if (err != 0) dserror("Export using exporter returned err=%d", err);
+  if (err != 0) FOUR_C_THROW("Export using exporter returned err=%d", err);
   Epetra_Export exportaccn(fluidaccn->Map(), accn->Map());
   err = accn->Export(*fluidaccn, exportaccn, Insert);
-  if (err != 0) dserror("Export using exporter returned err=%d", err);
+  if (err != 0) FOUR_C_THROW("Export using exporter returned err=%d", err);
 
   // set values in the inflow field
   inflowfluidalgo_->FluidField()->SetRestart(

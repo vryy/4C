@@ -395,13 +395,13 @@ namespace XFEM
     /// check if Init() has been called yet
     inline void CheckInit() const
     {
-      if (not isinit_) dserror("Call Init() first!");
+      if (not isinit_) FOUR_C_THROW("Call Init() first!");
     }
 
     /// check if Init() and Setup() have been called yet
     inline void CheckInitSetup() const
     {
-      if ((not isinit_) or (not issetup_)) dserror("Call Init() and/or Setup() first!");
+      if ((not isinit_) or (not issetup_)) FOUR_C_THROW("Call Init() and/or Setup() first!");
     }
 
    private:
@@ -430,13 +430,13 @@ namespace XFEM
       CheckInit();
 
       if (dis_id >= master_interface_node_maps_.size())
-        dserror(
+        FOUR_C_THROW(
             "The index %d exceeds the master interface node row map size! "
             "(size = %d)",
             dis_id, master_interface_node_maps_.size());
 
       if (master_interface_node_maps_[dis_id].is_null())
-        dserror(
+        FOUR_C_THROW(
             "The master interface node row map %d was not initialized "
             "correctly.",
             dis_id);
@@ -451,7 +451,7 @@ namespace XFEM
     const CORE::LINALG::MultiMapExtractor& MaMapExtractor(enum MapType map_type) const
     {
       if (master_map_extractor_.at(map_type).is_null())
-        dserror("The master dof/node map extractor was not initialized!");
+        FOUR_C_THROW("The master dof/node map extractor was not initialized!");
 
       return *(master_map_extractor_[map_type]);
     }
@@ -476,13 +476,13 @@ namespace XFEM
       CheckInit();
 
       if (dis_id >= slave_map_extractors_.size())
-        dserror(
+        FOUR_C_THROW(
             "The index %d exceeds the slave map extractor size! "
             "(size = %d)",
             dis_id, slave_map_extractors_.size());
 
       if (slave_map_extractors_[dis_id].at(map_type).is_null())
-        dserror(
+        FOUR_C_THROW(
             "The slave dof/node map extractor %d was not initialized "
             "correctly.",
             dis_id);
@@ -502,13 +502,13 @@ namespace XFEM
       CheckInit();
 
       if (dis_id >= interface_matrix_row_transformers_.size())
-        dserror(
+        FOUR_C_THROW(
             "The index %d exceeds the matrix row transformer size! "
             "(size = %d)",
             dis_id, interface_matrix_row_transformers_.size());
 
       if (interface_matrix_row_transformers_[dis_id].is_null())
-        dserror(
+        FOUR_C_THROW(
             "The interface matrix row transformer %d was not initialized "
             "correctly.",
             dis_id);
@@ -528,13 +528,13 @@ namespace XFEM
       CheckInit();
 
       if (dis_id >= interface_matrix_col_transformers_.size())
-        dserror(
+        FOUR_C_THROW(
             "The index %d exceeds the matrix column transformer size! "
             "(size = %d)",
             dis_id, interface_matrix_col_transformers_.size());
 
       if (interface_matrix_col_transformers_[dis_id].is_null())
-        dserror(
+        FOUR_C_THROW(
             "The interface matrix column transformer %d was not initialized "
             "correctly.",
             dis_id);
@@ -554,13 +554,13 @@ namespace XFEM
       CheckInit();
 
       if (dis_id >= interface_matrix_row_col_transformers_.size())
-        dserror(
+        FOUR_C_THROW(
             "The index %d exceeds the matrix row col transformer size! "
             "(size = %d)",
             dis_id, interface_matrix_row_col_transformers_.size());
 
       if (interface_matrix_row_col_transformers_[dis_id].is_null())
-        dserror(
+        FOUR_C_THROW(
             "The interface matrix row col transformer %d was not initialized "
             "correctly.",
             dis_id);
@@ -586,13 +586,13 @@ namespace XFEM
       CheckInit();
 
       if (dis_id >= NumSlDis())
-        dserror(
+        FOUR_C_THROW(
             "The index %d exceeds the slave discretization vector size! "
             "(size = %d)",
             dis_id, SlDisVec().size());
 
       if (SlDisVec()[dis_id].is_null())
-        dserror(
+        FOUR_C_THROW(
             "The slave discretization %d was not initialized "
             "correctly.",
             dis_id);
@@ -604,12 +604,12 @@ namespace XFEM
     {
       CheckInit();
       if (dis_id >= interface_couplings_.size())
-        dserror(
+        FOUR_C_THROW(
             "The index %d exceeds the interface coupling size! "
             "(size = %d)",
             dis_id, interface_couplings_.size());
       if (interface_couplings_[dis_id].is_null())
-        dserror(
+        FOUR_C_THROW(
             "The interface coupling %d was not initialized "
             "correctly.",
             dis_id);
@@ -619,7 +619,7 @@ namespace XFEM
 
     inline const Epetra_Comm& Comm() const
     {
-      if (comm_.is_null()) dserror("The Epetra_Comm object has not been initialized!");
+      if (comm_.is_null()) FOUR_C_THROW("The Epetra_Comm object has not been initialized!");
 
       return *comm_;
     }

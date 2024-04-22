@@ -75,7 +75,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
         break;
       }
       default:
-        dserror(
+        FOUR_C_THROW(
             "unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
         exit(EXIT_FAILURE);
     }
@@ -84,7 +84,8 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
   }
   else
   {
-    dserror("unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
+    FOUR_C_THROW(
+        "unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
     exit(EXIT_FAILURE);
   }
 }
@@ -691,7 +692,8 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
       break;
     }
     default:
-      dserror("unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW(
+          "unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -766,7 +768,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
           break;
         }
         default:
-          dserror(
+          FOUR_C_THROW(
               "unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
           exit(EXIT_FAILURE);
       }
@@ -775,7 +777,8 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
       return qeh;
     }
     default:
-      dserror("unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW(
+          "unsupported distype ( distype = %s )", CORE::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -882,7 +885,7 @@ void CORE::GEO::CUT::MeshHandle::RemoveSubSide(CORE::GEO::CUT::Side* side)
       qsh.RemoveSubSidePointer(side);
     }
     else
-      dserror("Couldn't Identify side %d!", side->Id());
+      FOUR_C_THROW("Couldn't Identify side %d!", side->Id());
   }
 }
 
@@ -907,7 +910,8 @@ void CORE::GEO::CUT::MeshHandle::AddSubSide(CORE::GEO::CUT::Side* side)
     }
     else
     {
-      dserror("MeshHandle::AddSubSide: The SideHandle for Side %d does not exist yet!", side->Id());
+      FOUR_C_THROW(
+          "MeshHandle::AddSubSide: The SideHandle for Side %d does not exist yet!", side->Id());
       // One could create a new QuadraticSideHandle, if there is a reason to do so.
     }
   }
@@ -933,7 +937,8 @@ void CORE::GEO::CUT::MeshHandle::MarkSubSideasUnphysical(CORE::GEO::CUT::Side* s
       qsh.MarkSubSideunphysical(side);
     }
     else
-      dserror("MeshHandle::MarkSubSideasUnphysical: The SideHandle for Side %d does not exist yet!",
+      FOUR_C_THROW(
+          "MeshHandle::MarkSubSideasUnphysical: The SideHandle for Side %d does not exist yet!",
           side->Id());
   }
 }

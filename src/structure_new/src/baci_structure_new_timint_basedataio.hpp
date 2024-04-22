@@ -157,7 +157,7 @@ namespace STR
       {
         CheckInitSetup();
 
-        dsassert(!energyfile_.is_null(), "energy file stream uninitialized");
+        FOUR_C_ASSERT(!energyfile_.is_null(), "energy file stream uninitialized");
 
         return *energyfile_;
       };

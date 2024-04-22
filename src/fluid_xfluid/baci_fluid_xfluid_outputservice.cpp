@@ -161,7 +161,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
       // fluid volume
     }
     else
-      dserror("unknown number of dofs for output");
+      FOUR_C_THROW("unknown number of dofs for output");
   };
 
   // output (hydrodynamic) pressure for visualization
@@ -173,7 +173,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
 
   if (dispnp != Teuchos::null)
   {
-    if (gridvnp == Teuchos::null) dserror("Missing grid velocities for ALE-xfluid!");
+    if (gridvnp == Teuchos::null) FOUR_C_THROW("Missing grid velocities for ALE-xfluid!");
 
     // write ale displacement for t^{n+1}
     Teuchos::RCP<Epetra_Vector> dispnprm = Teuchos::rcp(new Epetra_Vector(*dispnp));
@@ -267,7 +267,7 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
 {
   if (!(bool)CORE::UTILS::IntegralValue<int>(
           GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
-    dserror(
+    FOUR_C_THROW(
         "If GMSH output is globally deactivated, don't create an instance of "
         "XFluidOutputServiceGmsh!");
 };
@@ -715,7 +715,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
       break;
     default:
     {
-      dserror("unsupported shape");
+      FOUR_C_THROW("unsupported shape");
       break;
     }
   }
@@ -860,7 +860,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             break;
           default:
           {
-            dserror("splitting facets failed");
+            FOUR_C_THROW("splitting facets failed");
             break;
           }
         }
@@ -939,7 +939,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
             }
             default:
             {
-              dserror("unsupported shape");
+              FOUR_C_THROW("unsupported shape");
               break;
             }
           }
@@ -987,7 +987,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           break;
         default:
         {
-          dserror("unsupported shape");
+          FOUR_C_THROW("unsupported shape");
           break;
         }
       }
@@ -1122,7 +1122,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           }
           default:
           {
-            dserror("unsupported shape");
+            FOUR_C_THROW("unsupported shape");
             break;
           }
         }
@@ -1200,7 +1200,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
           bound_f << "VT(";
           break;
         default:
-          //        dserror( "unsupported shape" );
+          //        FOUR_C_THROW( "unsupported shape" );
           break;
       }
 
@@ -1270,7 +1270,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
           }
           default:
           {
-            dserror("unsupported side shape %d", side->Shape());
+            FOUR_C_THROW("unsupported side shape %d", side->Shape());
             break;
           }
         }
@@ -1297,7 +1297,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputDiscretization(
   Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
   if (xdiscret == Teuchos::null)
-    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
+    FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
   // output for Element and Node IDs
   const std::string filename =
@@ -1326,7 +1326,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
   Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
   if (xdiscret == Teuchos::null)
-    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
+    FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
   // output for Element and Node IDs
   const std::string filename =
@@ -1360,7 +1360,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
                 double(ghost_penalty), actele, gmshfilecontent);
         }
         else
-          dserror("face %d in map not found", actele->Id());
+          FOUR_C_THROW("face %d in map not found", actele->Id());
       }
       gmshfilecontent << "};\n";
     }

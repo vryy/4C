@@ -138,7 +138,7 @@ namespace DRT
                       << 0 << 2 << 8 << 6 << 18 << 20 << 26 << 24 << 1 << 5 << 7 << 3 << 19 << 23
                       << 25 << 21 << 9 << 11 << 17 << 15 << 12 << 14 << 10 << 16 << 4 << 22 << 13);
         default:
-          dserror("Unknown element shape type: %d", baciele_shape_type);
+          FOUR_C_THROW("Unknown element shape type: %d", baciele_shape_type);
           return std::pair<uint8_t, std::vector<int>>(static_cast<uint8_t>(-1), std::vector<int>());
       }
     }

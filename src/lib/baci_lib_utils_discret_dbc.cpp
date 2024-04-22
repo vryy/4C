@@ -55,8 +55,8 @@ void DRT::UTILS::Dbc::operator()(const DRT::Discretization& discret,
     const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
     const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const
 {
-  if (!discret.Filled()) dserror("FillComplete() was not called");
-  if (!discret.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!discret.Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!discret.HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   // get the current time
   double time = -1.0;
@@ -65,7 +65,7 @@ void DRT::UTILS::Dbc::operator()(const DRT::Discretization& discret,
     time = params.get<double>("total time");
   }
   else
-    dserror("The 'total time' needs to be specified in your parameter list!");
+    FOUR_C_THROW("The 'total time' needs to be specified in your parameter list!");
 
   // vector of DOF-IDs which are Dirichlet BCs
   std::array<Teuchos::RCP<std::set<int>>, 2> dbcgids = {Teuchos::null, Teuchos::null};
@@ -125,7 +125,7 @@ Teuchos::RCP<Epetra_IntVector> DRT::UTILS::Dbc::CreateToggleVector(
     else if (systemvectors[0].is_null() and systemvectors[1].is_null() and
              systemvectors[2].is_null())
     {
-      dserror(
+      FOUR_C_THROW(
           "At least one systemvector must be provided. Otherwise, calling "
           "this method makes no sense.");
     }
@@ -193,7 +193,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
       hierarchical_order = 3;
       break;
     default:
-      dserror("Unknown condition type");
+      FOUR_C_THROW("Unknown condition type");
       break;
   }
 
@@ -215,7 +215,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
 {
   // get ids of conditioned nodes
   const std::vector<int>* nodeids = cond.GetNodes();
-  if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+  if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
   // get onoff toggles from condition
@@ -242,7 +242,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
       // ----------------------------------------------------------------------
       const DRT::Discretization* dis_ptr = dynamic_cast<const DRT::Discretization*>(&discret);
       if (not dis_ptr)
-        dserror(
+        FOUR_C_THROW(
             "Sorry! The given discretization is of wrong type. There is "
             "probably no column information available!");
 
@@ -271,7 +271,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
     int numdf = discret.NumStandardDof(0, actnode);
 
     if ((total_numdf % numdf) != 0)
-      dserror(
+      FOUR_C_THROW(
           "Illegal number of DoF's at this node! (nGID=%d)\n"
           "%d is not a multiple of %d",
           actnode->Id(), total_numdf, numdf);
@@ -279,7 +279,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
     // is the number of degrees of freedom given in the constraint definition sufficient?
     const int num_dbc_dofs = static_cast<int>((*onoff).size());
     if (num_dbc_dofs < numdf)
-      dserror("%d DOFs given but %d expected in %s", num_dbc_dofs, numdf, cond.Name().c_str());
+      FOUR_C_THROW("%d DOFs given but %d expected in %s", num_dbc_dofs, numdf, cond.Name().c_str());
 
     // loop over dofs of current nnode
     for (unsigned j = 0; j < total_numdf; ++j)
@@ -290,7 +290,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
       // get corresponding lid
       const int lid = info.toggle.Map().LID(gid);
       if (lid < 0)
-        dserror(
+        FOUR_C_THROW(
             "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
 
       // get position of label for this dof in condition line ( e.g. for XFEM )
@@ -373,12 +373,13 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
                << " with new value of " << value << " at time " << time << ".\nThe difference is "
                << std::setprecision(13) << std::abs(current_val - value) << " > " << dbc_tol
                << ".\nPlease try to adjust the input.";
-            dserror(ss.str());
+            FOUR_C_THROW(ss.str());
           }
         }
 
         if (hierarchical_order > current_order)
-          dserror("This couldn't happen, except if you try to read DBC not in descending order.");
+          FOUR_C_THROW(
+              "This couldn't happen, except if you try to read DBC not in descending order.");
 
         // dof has DBC, set toggle vector one
         info.toggle[lid] = 1;
@@ -448,13 +449,13 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
     const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   if (systemvectors[0].is_null() and systemvectors[1].is_null() and systemvectors[2].is_null())
-    dserror(
+    FOUR_C_THROW(
         "At least one systemvector must be provided. Otherwise, "
         "calling this method makes no sense.");
 
   // get ids of conditioned nodes
   const std::vector<int>* nodeids = cond.GetNodes();
-  if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+  if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
   // get onoff, funct, and val from condition
@@ -494,7 +495,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
     const int numdf = discret.NumStandardDof(0, actnode);
 
     if ((total_numdf % numdf) != 0)
-      dserror(
+      FOUR_C_THROW(
           "Illegal number of DoF's at this node! (nGID=%d)\n"
           "%d is not a multiple of %d",
           actnode->Id(), total_numdf, numdf);
@@ -507,7 +508,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
       // get corresponding lid
       const int lid = toggle.Map().LID(gid);
       if (lid < 0)
-        dserror(
+        FOUR_C_THROW(
             "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
       // get position of label for this dof in condition line
       const int onesetj = j % numdf;

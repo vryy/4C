@@ -27,7 +27,8 @@ int MORTAR::DofSet::AssignDegreesOfFreedom(
 {
   // first, we call the standard AssignDegreesOfFreedom from the base class
   const int count = DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
-  if (pccdofhandling_) dserror("Point coupling conditions not yet implemented for MORTAR::DofSet");
+  if (pccdofhandling_)
+    FOUR_C_THROW("Point coupling conditions not yet implemented for MORTAR::DofSet");
 
   // we'll get ourselves the row and column dof maps from the base class
   // and later replace them with our own version of them
@@ -41,7 +42,7 @@ int MORTAR::DofSet::AssignDegreesOfFreedom(
   for (int i = 0; i < numMyColumnNodes; ++i)
   {
     DRT::Node* node = dis.lColNode(i);
-    if (!node) dserror("Cannot find local column node %d", i);
+    if (!node) FOUR_C_THROW("Cannot find local column node %d", i);
 
     // get dofs of node as created by base class DofSet
     std::vector<int> gdofs = Dof(node);
@@ -49,17 +50,17 @@ int MORTAR::DofSet::AssignDegreesOfFreedom(
 
     // get dofs of node as we want them
     MORTAR::Node* mrtrnode =
-#ifndef BACI_DEBUG
+#ifndef FOUR_C_ENABLE_ASSERTIONS
         static_cast<MORTAR::Node*>(node);
 #else
         dynamic_cast<MORTAR::Node*>(node);
-    if (!mrtrnode) dserror("dynamic_cast DRT::Node -> MORTAR::Node failed");
+    if (!mrtrnode) FOUR_C_THROW("dynamic_cast DRT::Node -> MORTAR::Node failed");
 #endif
     const auto& newdofs = mrtrnode->Dofs();
     for (std::size_t j = 0; j < numDofsOfNode; ++j)
     {
       // build dof column map
-      if (!dofcolmap_->MyGID(gdofs[j])) dserror("Mismatch in degrees of freedom");
+      if (!dofcolmap_->MyGID(gdofs[j])) FOUR_C_THROW("Mismatch in degrees of freedom");
       int lid = dofcolmap_->LID(gdofs[j]);
       mycol[lid] = newdofs[j];
 
@@ -88,7 +89,7 @@ int MORTAR::DofSet::AssignDegreesOfFreedom(
       newdofcolmap->NumMyElements() != dofcolmap_->NumMyElements() ||
       newdofcolmap->NumGlobalElements() != dofcolmap_->NumGlobalElements() ||
       !newdofrowmap->UniqueGIDs())
-    dserror("Something's wrong in dof maps");
+    FOUR_C_THROW("Something's wrong in dof maps");
 
   // replace the old maps by our new ones (note: automatically deletes old ones)
   dofrowmap_ = newdofrowmap;

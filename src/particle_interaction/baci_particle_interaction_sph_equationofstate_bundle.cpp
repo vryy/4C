@@ -81,7 +81,7 @@ void PARTICLEINTERACTION::SPHEquationOfStateBundle::Init(
       }
       default:
       {
-        dserror("unknown equation of state type!");
+        FOUR_C_THROW("unknown equation of state type!");
         break;
       }
     }

@@ -46,7 +46,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
     // get the action required
     std::string action = params.get<std::string>("action", "calc_none");
     if (action == "calc_none")
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
       act = ELEMENTS::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
@@ -70,7 +70,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
     else
     {
       std::cout << action << std::endl;
-      dserror("Unknown type of action for Torsion3");
+      FOUR_C_THROW("Unknown type of action for Torsion3");
     }
   }
 
@@ -86,7 +86,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_linstiff:
     {
       // only nonlinear case implemented!
-      dserror("linear stiffness matrix called, but not implemented");
+      FOUR_C_THROW("linear stiffness matrix called, but not implemented");
     }
     break;
     // calculate internal energy
@@ -96,7 +96,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
       // making use of the local-to-global map lm one can extract current displacemnet and residual
       // values for each degree of freedom
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -117,12 +117,12 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
       //
       // get element displcements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       // get residual displacements
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-      if (res == Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
+      if (res == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       CORE::FE::ExtractMyValues(*res, myres, lm);
 
@@ -246,7 +246,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
 
     default:
       std::cout << "\ncalled element with action type " << ActionType2String(act);
-      dserror("Unknown type of action for Torsion3");
+      FOUR_C_THROW("Unknown type of action for Torsion3");
       break;
   }
   return 0;
@@ -317,7 +317,7 @@ void DRT::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params, std::vec
     }
     break;
     default:
-      dserror("unknown or improper type of material law");
+      FOUR_C_THROW("unknown or improper type of material law");
   }
 
   if (bendingpotential_ == quadratic)
@@ -325,7 +325,8 @@ void DRT::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params, std::vec
   else if (bendingpotential_ == cosine)
     (*intenergy)(0) = spring * (1 - s);
   else
-    dserror("\n No such bending potential. Possible bending potentials: \n quadratic \n cosine");
+    FOUR_C_THROW(
+        "\n No such bending potential. Possible bending potentials: \n quadratic \n cosine");
 
 
 }  // t3_energy
@@ -372,14 +373,14 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
   if (s > 1.0)
   {
     if ((s - 1.0) > 1.0e-14)
-      dserror("s out of admissible range [-1.0;1.0]");
+      FOUR_C_THROW("s out of admissible range [-1.0;1.0]");
     else  // tiny adaptation of s accounting for round-off errors
       s = 1.0;
   }
   if (s < -1.0)
   {
     if ((s + 1.0) < -1.0e-14)
-      dserror("s out of admissible range [-1.0;1.0]");
+      FOUR_C_THROW("s out of admissible range [-1.0;1.0]");
     else  // tiny adaptation of s accounting for round-off errors
       s = -1.0;
   }
@@ -448,7 +449,7 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
     }
     break;
     default:
-      dserror("unknown or improper type of material law");
+      FOUR_C_THROW("unknown or improper type of material law");
   }
 
   // bending potential quadratic
@@ -590,7 +591,7 @@ template <int nnode, int ndim>  // number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Torsion3::NodeShift(Teuchos::ParameterList& params,  //!< parameter list
     std::vector<double>& disp)  //!< element disp vector
 {
-  dserror(
+  FOUR_C_THROW(
       "Torsion3::NodeShift is deprecated; if needed adapt parameter handling according to "
       "parameter interface pointer first!");
 

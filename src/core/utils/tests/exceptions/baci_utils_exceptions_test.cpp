@@ -21,7 +21,7 @@ namespace
   {
     if (b == 0)
     {
-      dserror("Division by zero condition!");
+      FOUR_C_THROW("Division by zero condition!");
     }
     return (a / b);
   }

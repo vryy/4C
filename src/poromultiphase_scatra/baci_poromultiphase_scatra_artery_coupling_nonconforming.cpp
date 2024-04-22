@@ -130,7 +130,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup()
   if (arterycoupl == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp)
   {
     GetCouplingIdsfromInput();
-    if (couplingnodes_ntp_.size() == 0) dserror("No 1D Coupling Node Ids found for NTP Coupling");
+    if (couplingnodes_ntp_.size() == 0)
+      FOUR_C_THROW("No 1D Coupling Node Ids found for NTP Coupling");
     CreateCouplingPairsNTP();
   }
   else
@@ -174,7 +175,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::GetCouplin
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
-  if (!issetup_) dserror("Setup() has not been called");
+  if (!issetup_) FOUR_C_THROW("Setup() has not been called");
 
   if (!porofluidmanagersset_)
   {
@@ -398,7 +399,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetVarying
     // get the artery-material
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =
         Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(actele->Material());
-    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+    if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
 
     if (arterymat->DiameterLaw() == MAT::PAR::ArteryDiameterLaw::diameterlaw_by_function)
     {
@@ -449,7 +450,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
     contdis_->SetState("phin_fluid", phin_cont_);
     arterydis_->SetState("one_d_artery_pressure", phinp_art_);
     if (not evaluate_in_ref_config_ && not contdis_->HasState(1, "velocity field"))
-      dserror("evaluation in current configuration wanted but solid phase velocity not available!");
+      FOUR_C_THROW(
+          "evaluation in current configuration wanted but solid phase velocity not available!");
     if (has_varying_diam_) ResetIntegratedDiamToZero();
   }
   else if (contdis_->Name() == "scatra")
@@ -458,7 +460,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
     arterydis_->SetState("one_d_artery_phinp", phinp_art_);
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Only porofluid and scatra-discretizations are supported for linebased-coupling so far");
 
   // evaluate all pairs
@@ -494,7 +496,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
     EvaluateAdditionalLinearizationofIntegratedDiam();
   }
 
-  if (FErhs_->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble of right hand side failed");
+  if (FErhs_->GlobalAssemble(Add, false) != 0)
+    FOUR_C_THROW("GlobalAssemble of right hand side failed");
   rhs->Update(1.0, *FErhs_, 0.0);
 
   FEmat_->Complete();
@@ -636,7 +639,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SumDMIntoG
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::InvertKappa()
 {
   // global assemble
-  if (kappaInv_->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble of kappaInv_ failed");
+  if (kappaInv_->GlobalAssemble(Add, false) != 0)
+    FOUR_C_THROW("GlobalAssemble of kappaInv_ failed");
 
   // invert (pay attention to protruding elements)
   for (int i = 0; i < arterydis_->DofRowMap()->NumMyElements(); ++i)
@@ -678,7 +682,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArtery
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
                   CORE::FE::CellType::line2, CORE::FE::CellType::quad4, 3>());
             default:
-              dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+              FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
           }
         }
         case CORE::FE::CellType::hex8:
@@ -695,7 +699,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArtery
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
                   CORE::FE::CellType::line2, CORE::FE::CellType::hex8, 3>());
             default:
-              dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+              FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
           }
         }
         case CORE::FE::CellType::tet4:
@@ -712,7 +716,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArtery
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
                   CORE::FE::CellType::line2, CORE::FE::CellType::tet4, 3>());
             default:
-              dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+              FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
           }
         }
         case CORE::FE::CellType::tet10:
@@ -729,16 +733,16 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArtery
               return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
                   CORE::FE::CellType::line2, CORE::FE::CellType::tet10, 3>());
             default:
-              dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+              FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
           }
         }
         default:
-          dserror(
+          FOUR_C_THROW(
               "only quad4, hex8, tet4 and tet10 elements supported for continuous elements so far");
       }
     }
     default:
-      dserror("only line 2 elements supported for artery elements so far");
+      FOUR_C_THROW("only line 2 elements supported for artery elements so far");
   }
 
   return Teuchos::null;
@@ -801,7 +805,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetSolutio
 Teuchos::RCP<const Epetra_Vector>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::BloodVesselVolumeFraction()
 {
-  dserror("Not implemented in base class");
+  FOUR_C_THROW("Not implemented in base class");
   return Teuchos::null;
 }
 
@@ -815,7 +819,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::PrintOutCo
   else if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts)
     name = "Gauss-Point-To-Segment";
   else
-    dserror("unknown coupling method");
+    FOUR_C_THROW("unknown coupling method");
 
   std::cout << "<   Coupling-Method : " << std::left << std::setw(22) << name << "       >"
             << std::endl;
@@ -880,7 +884,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetTimeFac
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Only porofluid and scatra-discretizations are supported for non-conforming coupling so "
         "far");
   }

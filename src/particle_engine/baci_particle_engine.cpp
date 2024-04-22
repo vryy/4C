@@ -125,14 +125,15 @@ void PARTICLEENGINE::ParticleEngine::ReadRestart(
     // this std::shared_ptr holds the memory
     std::shared_ptr<CORE::COMM::ParObject> object(CORE::COMM::Factory(data));
     ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
-    if (particleobject == nullptr) dserror("received object is not a particle object!");
+    if (particleobject == nullptr) FOUR_C_THROW("received object is not a particle object!");
 
     // store read particle
     particlestoread.push_back(particleobject);
   }
 
   if (position != particledata->size())
-    dserror("mismatch in size of data %d <-> %d", static_cast<int>(particledata->size()), position);
+    FOUR_C_THROW(
+        "mismatch in size of data %d <-> %d", static_cast<int>(particledata->size()), position);
 
   // read restart of unique global identifier handler
   particleuniqueglobalidhandler_->ReadRestart(reader);
@@ -179,7 +180,7 @@ void PARTICLEENGINE::ParticleEngine::CheckNumberOfUniqueGlobalIds()
 {
   // mpi communicator
   const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
-  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+  if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
 
   // get number of particles on all processors
   int numberofparticles = GetNumberOfParticles();
@@ -194,7 +195,7 @@ void PARTICLEENGINE::ParticleEngine::CheckNumberOfUniqueGlobalIds()
 
   // safety check
   if (numberofparticles + numberofreusableglobalids != (maxglobalid + 1))
-    dserror("sum of particles and reusable global ids unequal total global ids: %d + %d != %d",
+    FOUR_C_THROW("sum of particles and reusable global ids unequal total global ids: %d + %d != %d",
         numberofparticles, numberofreusableglobalids, (maxglobalid + 1));
 }
 
@@ -219,7 +220,7 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     // get position of particle
     const std::vector<double>& pos = states[Position];
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // get type of particles
     ParticleType type = particlestocheck[i]->ReturnParticleType();
 
@@ -227,7 +228,8 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(type, Owned);
 
     if (static_cast<int>(pos.size()) != container->GetStateDim(Position))
-      dserror("dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
+      FOUR_C_THROW(
+          "dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
 #endif
 
     // check particle location with respect to bounding box in each spatial directions
@@ -239,9 +241,9 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
         // insert particle into set
         particlesoutsideboundingbox.insert(i);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (particlestocheck[i]->ReturnParticleGlobalID() < 0)
-          dserror("no global id assigned to particle!");
+          FOUR_C_THROW("no global id assigned to particle!");
 #endif
 
         // insert freed global id
@@ -492,7 +494,7 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
 
   // safety check
   if ((not validownedparticles_) or (not validghostedparticles_))
-    dserror("invalid relation of particles to bins!");
+    FOUR_C_THROW("invalid relation of particles to bins!");
 
   // relate half neighboring bins to owned bins
   if (not validhalfneighboringbins_) RelateHalfNeighboringBinsToOwnedBins();
@@ -662,7 +664,7 @@ const PARTICLEENGINE::ParticlesToBins& PARTICLEENGINE::ParticleEngine::GetPartic
 {
   // safety check
   if ((not validownedparticles_) or (not validghostedparticles_))
-    dserror("invalid map relating particles to bins!");
+    FOUR_C_THROW("invalid map relating particles to bins!");
 
   return particlestobins_;
 }
@@ -671,7 +673,7 @@ const PARTICLEENGINE::PotentialParticleNeighbors&
 PARTICLEENGINE::ParticleEngine::GetPotentialParticleNeighbors() const
 {
   // safety check
-  if (not validparticleneighbors_) dserror("invalid particle neighbors!");
+  if (not validparticleneighbors_) FOUR_C_THROW("invalid particle neighbors!");
 
   return potentialparticleneighbors_;
 }
@@ -680,7 +682,7 @@ PARTICLEENGINE::LocalIndexTupleShrdPtr
 PARTICLEENGINE::ParticleEngine::GetLocalIndexInSpecificContainer(int globalid) const
 {
   // safety check
-  if (not validglobalidtolocalindex_) dserror("invalid global id to local index map!");
+  if (not validglobalidtolocalindex_) FOUR_C_THROW("invalid global id to local index map!");
 
   // get local index of particle in specific container
   auto globalidIt = globalidtolocalindex_.find(globalid);
@@ -738,7 +740,7 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
 
   // mpi communicator
   const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
-  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+  if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
 
   // communicate global ids between all processors
   MPI_Allreduce(MPI_IN_PLACE, particlestoproc.data(), vecsize, MPI_INT, MPI_MAX, mpicomm->Comm());
@@ -749,24 +751,25 @@ void PARTICLEENGINE::ParticleEngine::GetParticlesWithinRadius(const double* posi
 {
   // safety check
   if ((not validownedparticles_) or (not validghostedparticles_))
-    dserror("invalid relation of particles to bins!");
+    FOUR_C_THROW("invalid relation of particles to bins!");
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // bin size safety check
   if (radius > minbinsize_)
-    dserror("the given radius is larger than the minimal bin size (%f > %f)!", radius, minbinsize_);
+    FOUR_C_THROW(
+        "the given radius is larger than the minimal bin size (%f > %f)!", radius, minbinsize_);
 #endif
 
   // get global id of bin
   const int gidofbin = binstrategy_->ConvertPosToGid(position);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // position outside computational domain
-  if (gidofbin == -1) dserror("position outside of computational domain!");
+  if (gidofbin == -1) FOUR_C_THROW("position outside of computational domain!");
 
   // bin not owned or ghosted by this processor
   if (bincolmap_->LID(gidofbin) < 0)
-    dserror("position not in owned or ghosted bin on this processor!");
+    FOUR_C_THROW("position not in owned or ghosted bin on this processor!");
 #endif
 
   // get neighboring bins to current bin
@@ -981,14 +984,14 @@ void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
     const int size = static_cast<int>(ghostbins.size());
     std::vector<int> pidlist(size);
     const int err = binrowmap_->RemoteIDList(size, ghostbins_vec.data(), pidlist.data(), nullptr);
-    if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d", err);
+    if (err < 0) FOUR_C_THROW("Epetra_BlockMap::RemoteIDList returned err=%d", err);
 
     for (int i = 0; i < size; ++i)
     {
       if (pidlist[i] == -1)
       {
         std::set<int>::iterator iter = bins.find(ghostbins_vec[i]);
-        if (iter == bins.end()) dserror("bin id is missing in bin set");
+        if (iter == bins.end()) FOUR_C_THROW("bin id is missing in bin set");
         // erase non-existing id
         bins.erase(iter);
       }
@@ -1001,7 +1004,7 @@ void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
       new Epetra_Map(-1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, comm_));
 
   if (bincolmap_->NumGlobalElements() == 1 && comm_.NumProc() > 1)
-    dserror("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");
+    FOUR_C_THROW("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");
 
   // make sure that all processors are either filled or unfilled
   binstrategy_->BinDiscret()->CheckFilledGlobally();
@@ -1094,7 +1097,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinDisDependentMapsAndSets()
 
   // check for finalized construction of binning discretization
   if (binstrategy_->BinDiscret()->Filled() == false)
-    dserror("construction of binning discretization not finalized!");
+    FOUR_C_THROW("construction of binning discretization not finalized!");
 
   // loop over row bins
   for (int rowlidofbin = 0; rowlidofbin < binrowmap_->NumMyElements(); ++rowlidofbin)
@@ -1134,7 +1137,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineBinDisDependentMapsAndSets()
   for (int dim = 0; dim < 3; ++dim)
     if (binstrategy_->HavePeriodicBoundaryConditionsAppliedInSpatialDirection(dim) and
         binperdir[dim] < 3)
-      dserror("at least 3 bins in direction with periodic boundary conditions necessary!");
+      FOUR_C_THROW("at least 3 bins in direction with periodic boundary conditions necessary!");
 
   // determine range of all inner bins
   std::vector<int> ijk_min(3);
@@ -1163,7 +1166,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
 
   // check for finalized construction of binning discretization
   if (binstrategy_->BinDiscret()->Filled() == false)
-    dserror("construction of binning discretization not finalized!");
+    FOUR_C_THROW("construction of binning discretization not finalized!");
 
   // loop over col bins
   for (int collidofbin = 0; collidofbin < bincolmap_->NumMyElements(); ++collidofbin)
@@ -1219,7 +1222,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
     }
 
     if (position != rmsg.size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1284,7 +1287,7 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
     std::vector<std::set<int>>& particlestoremove) const
 {
   // safety check
-  if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
+  if (not validownedparticles_) FOUR_C_THROW("invalid relation of owned particles to bins!");
 
   // get bounding box dimensions
   CORE::LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
@@ -1327,8 +1330,8 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
         // get global id of particle
         const int* currglobalid = container->GetPtrToGlobalID(ownedindex);
 
-#ifdef BACI_DEBUG
-        if (currglobalid[0] < 0) dserror("no global id assigned to particle!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+        if (currglobalid[0] < 0) FOUR_C_THROW("no global id assigned to particle!");
 #endif
 
         // insert freed global id
@@ -1389,7 +1392,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     // get position of particle
     const std::vector<double>& pos = states[Position];
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // get type of particles
     ParticleType type = particlestodistribute[i]->ReturnParticleType();
 
@@ -1397,7 +1400,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(type, Owned);
 
     if (static_cast<int>(pos.size()) != container->GetStateDim(Position))
-      dserror("dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
+      FOUR_C_THROW(
+          "dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
 #endif
 
     // get global id of bin
@@ -1417,7 +1421,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     std::vector<int> unique_pidlist(uniquesize);
     int err = binrowmap_->RemoteIDList(
         uniquesize, uniquevec_bingidlist.data(), unique_pidlist.data(), nullptr);
-    if (err < 0) dserror("RemoteIDList returned err=%d", err);
+    if (err < 0) FOUR_C_THROW("RemoteIDList returned err=%d", err);
 
     // 3) build full pid list via lookup table
     std::map<int, int> lookuptable;
@@ -1444,9 +1448,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     {
       ++numparticlesoutside;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (particlestodistribute[i]->ReturnParticleGlobalID() < 0)
-        dserror("no global id assigned to particle!");
+        FOUR_C_THROW("no global id assigned to particle!");
 #endif
 
       // insert freed global id
@@ -1482,7 +1486,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend)
 {
   // safety check
-  if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
+  if (not validownedparticles_) FOUR_C_THROW("invalid relation of owned particles to bins!");
 
   // clear particles being communicated to target processors
   communicatedparticletargets_.assign(comm_.NumProc(), std::vector<int>(0));
@@ -1517,9 +1521,9 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
       // particle left computational domain
       if (gidofbin == -1)
       {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         if (not particlestoremove[type].count(ownedindex))
-          dserror(
+          FOUR_C_THROW(
               "on processor %d a particle left the computational domain without being detected!",
               myrank_);
 #endif
@@ -1532,7 +1536,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
       // get owning processor
       auto targetIt = firstlayerbinsownedby_.find(gidofbin);
       if (targetIt == firstlayerbinsownedby_.end())
-        dserror("particle not owned on this proc but target processor is unknown!");
+        FOUR_C_THROW("particle not owned on this proc but target processor is unknown!");
       int sendtoproc = targetIt->second;
 
       int globalid(0);
@@ -1556,7 +1560,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
   // safety check
-  if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
+  if (not validownedparticles_) FOUR_C_THROW("invalid relation of owned particles to bins!");
 
   // iterate over this processors bins being ghosted by other processors
   for (const auto& targetIt : thisbinsghostedby_)
@@ -1601,7 +1605,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
   // safety check
-  if (not validdirectghosting_) dserror("invalid direct ghosting!");
+  if (not validdirectghosting_) FOUR_C_THROW("invalid direct ghosting!");
 
   // iterate over particle types
   for (const auto& type : particlecontainerbundle_->GetParticleTypes())
@@ -1640,7 +1644,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
     std::vector<std::vector<ParticleObjShrdPtr>>& particlestosend) const
 {
   // safety check
-  if (not validdirectghosting_) dserror("invalid direct ghosting!");
+  if (not validdirectghosting_) FOUR_C_THROW("invalid direct ghosting!");
 
   // iterate over particle types
   for (const auto& typeIt : particlestatestotypes)
@@ -1738,7 +1742,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
       // this std::shared_ptr holds the memory
       std::shared_ptr<CORE::COMM::ParObject> object(CORE::COMM::Factory(data));
       ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
-      if (particleobject == nullptr) dserror("received object is not a particle object!");
+      if (particleobject == nullptr) FOUR_C_THROW("received object is not a particle object!");
 
       // store received particle
       particlestoreceive[particleobject->ReturnParticleType()].push_back(
@@ -1746,7 +1750,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
     }
 
     if (position != rmsg.size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1812,7 +1816,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
     }
 
     if (position != rmsg.size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 
   // validate flags denoting validity of direct ghosting
@@ -1843,8 +1847,8 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
       // get states of particle
       const ParticleStates& states = particleobject->ReturnParticleStates();
 
-#ifdef BACI_DEBUG
-      if (globalid < 0) dserror("no global id assigned to particle!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (globalid < 0) FOUR_C_THROW("no global id assigned to particle!");
 
       // get bin of particle
       int gidofbin = particleobject->ReturnBinGid();
@@ -1862,14 +1866,15 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
         ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(type, Owned);
 
         if (static_cast<int>(pos.size()) != container->GetStateDim(Position))
-          dserror("dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
+          FOUR_C_THROW(
+              "dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
 
         // get global id of bin
         gidofbin = binstrategy_->ConvertPosToGid(pos.data());
       }
 
       // particle not owned by this processor
-      if (binrowmap_->LID(gidofbin) < 0) dserror("particle received not owned on this proc!");
+      if (binrowmap_->LID(gidofbin) < 0) FOUR_C_THROW("particle received not owned on this proc!");
 #endif
 
       // add particle to container of owned particles
@@ -1916,7 +1921,7 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
       // get bin of particle
       const int gidofbin = particleobject->ReturnBinGid();
       if (gidofbin < 0)
-        dserror("received ghosted particle contains no information about its bin gid!");
+        FOUR_C_THROW("received ghosted particle contains no information about its bin gid!");
 
       // add particle to container of ghosted particles
       int ghostedindex(0);
@@ -2062,11 +2067,12 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(&(lasttransferpos[statedim * index]));
 
-#ifdef BACI_DEBUG
-      if (gidofbin < 0) dserror("particle out of bounding box but not removed from container!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (gidofbin < 0)
+        FOUR_C_THROW("particle out of bounding box but not removed from container!");
 
       if (binrowmap_->LID(gidofbin) < 0)
-        dserror("particle not owned by this proc but not removed from container!");
+        FOUR_C_THROW("particle not owned by this proc but not removed from container!");
 #endif
 
       // add index relating (owned and ghosted) particles to col bins
@@ -2097,7 +2103,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineMinRelevantBinSize()
 void PARTICLEENGINE::ParticleEngine::DetermineBinWeights()
 {
   // safety check
-  if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
+  if (not validownedparticles_) FOUR_C_THROW("invalid relation of owned particles to bins!");
 
   // initialize weights of all bins
   binweights_->PutScalar(1.0e-05);

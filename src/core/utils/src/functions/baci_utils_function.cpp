@@ -170,7 +170,7 @@ namespace
             { return acc.empty() ? v.first : acc + ", " + v.first; });
       };
 
-      dserror(
+      FOUR_C_THROW(
           "It is not allowed to set primary variables of your problem as constants in the "
           "VARFUNCTION.\n\n"
           "Variables passed to Evaluate: %s \n"
@@ -259,7 +259,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
     // check the validity of the n-th component
     int compid = 0;
     ignore_errors_in([&]() { functcomp.ExtractInt("COMPONENT", compid); });
-    if (compid != n) dserror("expected COMPONENT %d but got COMPONENT %d", n, compid);
+    if (compid != n) FOUR_C_THROW("expected COMPONENT %d but got COMPONENT %d", n, compid);
 
 
     // read the expression of the n-th component of the i-th function
@@ -312,7 +312,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
 
             if (description_vec.size() != 1)
             {
-              dserror(
+              FOUR_C_THROW(
                   "Only expect one DESCRIPTION for variable of type 'expression' but %d were "
                   "given.",
                   description_vec.size());
@@ -345,7 +345,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
             std::size_t numtimes = times.size();
             std::size_t numdescriptions = description_vec.size();
             if (numtimes != numdescriptions + 1)
-              dserror("the number of TIMES and the number of DESCRIPTIONs must be consistent");
+              FOUR_C_THROW("the number of TIMES and the number of DESCRIPTIONs must be consistent");
 
             return Teuchos::rcp(
                 new MultiFunctionVariable(varname, times, description_vec, periodicdata));
@@ -364,7 +364,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
           }
           else
           {
-            dserror("unknown variable type");
+            FOUR_C_THROW("unknown variable type");
             return Teuchos::null;
           }
         });
@@ -386,7 +386,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
       const bool names_of_all_pieces_equal = std::all_of(
           pieces.begin(), pieces.end(), [&name](auto& var) { return var->Name() == name; });
       if (not names_of_all_pieces_equal)
-        dserror("Variable %d has a piece-wise definition with inconsistent names.", id);
+        FOUR_C_THROW("Variable %d has a piece-wise definition with inconsistent names.", id);
 
       functvarvector.emplace_back(Teuchos::rcp(new PiecewiseVariable(name, pieces)));
     }
@@ -418,7 +418,8 @@ double CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
   std::size_t component_mod = FindModifiedComponent(component, expr_);
 
   if (component_mod >= expr_.size())
-    dserror("There are %d expressions but tried to access component %d", expr_.size(), component);
+    FOUR_C_THROW(
+        "There are %d expressions but tried to access component %d", expr_.size(), component);
 
   // create map for variables
   std::map<std::string, double> variable_values;
@@ -448,7 +449,8 @@ std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateSpati
   std::size_t component_mod = FindModifiedComponent(component, expr_);
 
   if (component_mod >= expr_.size())
-    dserror("There are %d expressions but tried to access component %d", expr_.size(), component);
+    FOUR_C_THROW(
+        "There are %d expressions but tried to access component %d", expr_.size(), component);
 
 
   // variables
@@ -543,7 +545,7 @@ std::vector<double> CORE::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateTimeD
   // error for higher derivatives
   if (deg >= 3)
   {
-    dserror("Higher time derivatives than second not supported!");
+    FOUR_C_THROW("Higher time derivatives than second not supported!");
   }
 
   // return derivatives

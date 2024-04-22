@@ -140,7 +140,7 @@ void SCATRA::MeshtyingStrategyS2I::CondenseMatAndRHS(
     {
       // extract global system matrix
       Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsematrix = scatratimint_->SystemMatrix();
-      if (sparsematrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
+      if (sparsematrix == Teuchos::null) FOUR_C_THROW("System matrix is not a sparse matrix!");
 
       if (lmside_ == INPAR::S2I::side_slave)
       {
@@ -194,7 +194,7 @@ void SCATRA::MeshtyingStrategyS2I::CondenseMatAndRHS(
           // including interface contributions
           Epetra_Vector Q_residualslave(*interfacemaps_->Map(1));
           if (Q_->Multiply(true, *residualslave, Q_residualslave))
-            dserror("Matrix-vector multiplication failed!");
+            FOUR_C_THROW("Matrix-vector multiplication failed!");
           interfacemaps_->InsertVector(Q_residualslave, 1, *scatratimint_->Residual());
           interfacemaps_->AddVector(islaveresidual_, 1, scatratimint_->Residual());
         }
@@ -209,7 +209,7 @@ void SCATRA::MeshtyingStrategyS2I::CondenseMatAndRHS(
         // add projected slave-side entries to master-side entries of global residual vector
         Epetra_Vector P_residualslave(*interfacemaps_->Map(2));
         if (P_->Multiply(true, *residualslave, P_residualslave))
-          dserror("Matrix-vector multiplication failed!");
+          FOUR_C_THROW("Matrix-vector multiplication failed!");
         interfacemaps_->AddVector(P_residualslave, 2, *scatratimint_->Residual());
       }
 
@@ -249,14 +249,14 @@ void SCATRA::MeshtyingStrategyS2I::CondenseMatAndRHS(
         // including interface contributions
         Epetra_Vector Q_residualmaster(*interfacemaps_->Map(2));
         if (Q_->Multiply(true, *residualmaster, Q_residualmaster))
-          dserror("Matrix-vector multiplication failed!");
+          FOUR_C_THROW("Matrix-vector multiplication failed!");
         interfacemaps_->InsertVector(Q_residualmaster, 2, *scatratimint_->Residual());
         interfacemaps_->AddVector(*imasterresidual_, 2, *scatratimint_->Residual());
 
         // add projected master-side entries to slave-side entries of global residual vector
         Epetra_Vector P_residualmaster(*interfacemaps_->Map(1));
         if (P_->Multiply(true, *residualmaster, P_residualmaster))
-          dserror("Matrix-vector multiplication failed!");
+          FOUR_C_THROW("Matrix-vector multiplication failed!");
         interfacemaps_->AddVector(P_residualmaster, 1, *scatratimint_->Residual());
       }
 
@@ -276,7 +276,7 @@ void SCATRA::MeshtyingStrategyS2I::CondenseMatAndRHS(
 
     default:
     {
-      dserror("Type of mortar meshtying for scatra-scatra interface coupling not recognized!");
+      FOUR_C_THROW("Type of mortar meshtying for scatra-scatra interface coupling not recognized!");
       break;
     }
   }
@@ -351,7 +351,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         {
           // check matrix
           Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix = scatratimint_->SystemMatrix();
-          dsassert(systemmatrix != Teuchos::null, "System matrix is not a sparse matrix!");
+          FOUR_C_ASSERT(systemmatrix != Teuchos::null, "System matrix is not a sparse matrix!");
 
           // assemble linearizations of slave fluxes w.r.t. slave dofs into global system matrix
           systemmatrix->Add(*islavematrix_, false, 1., 1.);
@@ -398,12 +398,12 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             {
               // determine global ID of current matrix row
               const int slavedofgid = icoup_->SlaveDofMap()->GID(slavedoflid);
-              if (slavedofgid < 0) dserror("Couldn't find local ID %d in map!", slavedoflid);
+              if (slavedofgid < 0) FOUR_C_THROW("Couldn't find local ID %d in map!", slavedoflid);
 
               // determine global ID of associated master-side matrix column
               const int masterdofgid = icoup_->PermMasterDofMap()->GID(slavedoflid);
               if (masterdofgid < 0)
-                dserror("Couldn't find local ID %d in permuted map!", slavedoflid);
+                FOUR_C_THROW("Couldn't find local ID %d in permuted map!", slavedoflid);
 
               // insert value -1. into intersection of slave-side row and master-side column in
               // system matrix this effectively forces the slave-side degree of freedom to assume
@@ -412,7 +412,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
               if (systemmatrix->EpetraMatrix()->InsertGlobalValues(
                       slavedofgid, 1, &value, &masterdofgid) < 0)
               {
-                dserror(
+                FOUR_C_THROW(
                     "Cannot insert value -1. into matrix row with global ID %d and matrix column "
                     "with global ID %d!",
                     slavedofgid, masterdofgid);
@@ -425,7 +425,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
               if (systemmatrixrowsslave.EpetraMatrix()->InsertGlobalValues(
                       slavedofgid, 1, &zero, &masterdofgid) < 0)
               {
-                dserror(
+                FOUR_C_THROW(
                     "Cannot insert zero into matrix row with global ID %d and matrix column with "
                     "global ID %d!",
                     slavedofgid, masterdofgid);
@@ -448,7 +448,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // check matrix
           Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocksystemmatrix =
               scatratimint_->BlockSystemMatrix();
-          dsassert(blocksystemmatrix != Teuchos::null, "System matrix is not a block matrix!");
+          FOUR_C_ASSERT(blocksystemmatrix != Teuchos::null, "System matrix is not a block matrix!");
 
           Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockkss(
               islavematrix_->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
@@ -505,7 +505,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // safety check
           else
           {
-            dserror(
+            FOUR_C_THROW(
                 "Scatra-scatra interface coupling with evaluation of interface linearizations and "
                 "residuals on slave side only is not yet available for block system matrices!");
           }
@@ -515,7 +515,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
         default:
         {
-          dserror(
+          FOUR_C_THROW(
               "Type of global system matrix for scatra-scatra interface coupling not recognized!");
           break;
         }
@@ -545,17 +545,18 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         {
           // determine global ID of current vector entry
           const int slavedofgid = icoup_->SlaveDofMap()->GID(slavedoflid);
-          if (slavedofgid < 0) dserror("Couldn't find local ID %d in map!", slavedoflid);
+          if (slavedofgid < 0) FOUR_C_THROW("Couldn't find local ID %d in map!", slavedoflid);
 
           // copy current vector entry into temporary vector
           if (residualslave->ReplaceGlobalValue(slavedofgid, 0,
                   (*scatratimint_->Residual())[scatratimint_->DofRowMap()->LID(slavedofgid)]))
-            dserror("Cannot insert residual vector entry with global ID %d into temporary vector!",
+            FOUR_C_THROW(
+                "Cannot insert residual vector entry with global ID %d into temporary vector!",
                 slavedofgid);
 
           // zero out current vector entry
           if (scatratimint_->Residual()->ReplaceGlobalValue(slavedofgid, 0, 0.))
-            dserror(
+            FOUR_C_THROW(
                 "Cannot insert zero into residual vector entry with global ID %d!", slavedofgid);
         }
 
@@ -657,7 +658,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       {
         imastermatrix_->Complete(*interfacemaps_->FullMap(), *interfacemaps_->Map(2));
         if (imasterresidual_->GlobalAssemble(Add, true))
-          dserror("Assembly of auxiliary residual vector for master residuals not successful!");
+          FOUR_C_THROW(
+              "Assembly of auxiliary residual vector for master residuals not successful!");
       }
 
       // assemble global system of equations depending on matrix type
@@ -668,7 +670,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // extract global system matrix from time integrator
           const Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix =
               scatratimint_->SystemMatrix();
-          if (systemmatrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
+          if (systemmatrix == Teuchos::null) FOUR_C_THROW("System matrix is not a sparse matrix!");
 
           // assemble interface contributions into global system of equations
           switch (couplingtype_)
@@ -700,46 +702,46 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // assemble slave-side interface contributions into global residual vector
                 Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
                 if (D_->Multiply(true, *lm_, islaveresidual))
-                  dserror("Matrix-vector multiplication failed!");
+                  FOUR_C_THROW("Matrix-vector multiplication failed!");
                 interfacemaps_->AddVector(islaveresidual, 1, *scatratimint_->Residual(), -1.);
 
                 // assemble master-side interface contributions into global residual vector
                 Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
                 if (M_->Multiply(true, *lm_, imasterresidual))
-                  dserror("Matrix-vector multiplication failed!");
+                  FOUR_C_THROW("Matrix-vector multiplication failed!");
                 interfacemaps_->AddVector(imasterresidual, 2, *scatratimint_->Residual());
 
                 // build constraint residual vector associated with Lagrange multiplier dofs
                 Epetra_Vector ilmresidual(*islaveresidual_);
                 if (ilmresidual.ReplaceMap(*extendedmaps_->Map(1)))
-                  dserror("Couldn't replace map!");
-                if (lmresidual_->Update(1., ilmresidual, 0.)) dserror("Vector update failed!");
+                  FOUR_C_THROW("Couldn't replace map!");
+                if (lmresidual_->Update(1., ilmresidual, 0.)) FOUR_C_THROW("Vector update failed!");
                 if (E_->Multiply(true, *lm_, ilmresidual))
-                  dserror("Matrix-vector multiplication failed!");
-                if (lmresidual_->Update(1., ilmresidual, 1.)) dserror("Vector update failed!");
+                  FOUR_C_THROW("Matrix-vector multiplication failed!");
+                if (lmresidual_->Update(1., ilmresidual, 1.)) FOUR_C_THROW("Vector update failed!");
               }
               else
               {
                 // assemble slave-side interface contributions into global residual vector
                 Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
                 if (M_->Multiply(true, *lm_, islaveresidual))
-                  dserror("Matrix-vector multiplication failed!");
+                  FOUR_C_THROW("Matrix-vector multiplication failed!");
                 interfacemaps_->AddVector(islaveresidual, 1, *scatratimint_->Residual());
 
                 // assemble master-side interface contributions into global residual vector
                 Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
                 if (D_->Multiply(true, *lm_, imasterresidual))
-                  dserror("Matrix-vector multiplication failed!");
+                  FOUR_C_THROW("Matrix-vector multiplication failed!");
                 interfacemaps_->AddVector(imasterresidual, 2, *scatratimint_->Residual(), -1.);
 
                 // build constraint residual vector associated with Lagrange multiplier dofs
                 Epetra_Vector ilmresidual(Copy, *imasterresidual_, 0);
                 if (ilmresidual.ReplaceMap(*extendedmaps_->Map(1)))
-                  dserror("Couldn't replace map!");
-                if (lmresidual_->Update(1., ilmresidual, 0.)) dserror("Vector update failed!");
+                  FOUR_C_THROW("Couldn't replace map!");
+                if (lmresidual_->Update(1., ilmresidual, 0.)) FOUR_C_THROW("Vector update failed!");
                 if (E_->Multiply(true, *lm_, ilmresidual))
-                  dserror("Matrix-vector multiplication failed!");
-                if (lmresidual_->Update(1., ilmresidual, 1.)) dserror("Vector update failed!");
+                  FOUR_C_THROW("Matrix-vector multiplication failed!");
+                if (lmresidual_->Update(1., ilmresidual, 1.)) FOUR_C_THROW("Vector update failed!");
               }
 
               break;
@@ -756,7 +758,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 interfacemaps_->AddVector(islaveresidual_, 1, scatratimint_->Residual());
                 Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
                 if (P_->Multiply(true, *islaveresidual_, imasterresidual))
-                  dserror("Matrix-vector multiplication failed!");
+                  FOUR_C_THROW("Matrix-vector multiplication failed!");
                 interfacemaps_->AddVector(imasterresidual, 2, *scatratimint_->Residual(), -1.);
               }
               else
@@ -767,7 +769,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 systemmatrix->Add(*imastermatrix_, false, 1., 1.);
                 Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
                 if (P_->Multiply(true, *imasterresidual_, islaveresidual))
-                  dserror("Matrix-vector multiplication failed!");
+                  FOUR_C_THROW("Matrix-vector multiplication failed!");
                 interfacemaps_->AddVector(islaveresidual, 1, *scatratimint_->Residual(), -1.);
                 interfacemaps_->AddVector(*imasterresidual_, 2, *scatratimint_->Residual());
               }
@@ -794,7 +796,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
             default:
             {
-              dserror("Not yet implemented!");
+              FOUR_C_THROW("Not yet implemented!");
               break;
             }
           }
@@ -807,7 +809,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // extract global system matrix from time integrator
           Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocksystemmatrix =
               scatratimint_->BlockSystemMatrix();
-          if (blocksystemmatrix == Teuchos::null) dserror("System matrix is not a block matrix!");
+          if (blocksystemmatrix == Teuchos::null)
+            FOUR_C_THROW("System matrix is not a block matrix!");
 
           // assemble interface contributions into global system of equations
           switch (couplingtype_)
@@ -845,7 +848,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
             default:
             {
-              dserror("Not yet implemented!");
+              FOUR_C_THROW("Not yet implemented!");
               break;
             }
           }
@@ -855,7 +858,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
         default:
         {
-          dserror("Not yet implemented!");
+          FOUR_C_THROW("Not yet implemented!");
           break;
         }
       }
@@ -865,7 +868,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
     default:
     {
-      dserror("Not yet implemented!");
+      FOUR_C_THROW("Not yet implemented!");
       break;
     }
   }
@@ -913,7 +916,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             // check matrix
             const Teuchos::RCP<CORE::LINALG::SparseMatrix>& systemmatrix =
                 scatratimint_->SystemMatrix();
-            if (systemmatrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
+            if (systemmatrix == Teuchos::null)
+              FOUR_C_THROW("System matrix is not a sparse matrix!");
 
             // We assume that the scatra-scatra interface layer growth is caused by master-side
             // fluxes to the interface, whereas there is no mass exchange between the interface
@@ -940,7 +944,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             // check matrix
             Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocksystemmatrix =
                 scatratimint_->BlockSystemMatrix();
-            if (blocksystemmatrix == Teuchos::null) dserror("System matrix is not a block matrix!");
+            if (blocksystemmatrix == Teuchos::null)
+              FOUR_C_THROW("System matrix is not a block matrix!");
 
             // We assume that the scatra-scatra interface layer growth is caused by master-side
             // fluxes to the interface, whereas there is no mass exchange between the interface
@@ -979,7 +984,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
           default:
           {
-            dserror(
+            FOUR_C_THROW(
                 "Type of global system matrix for scatra-scatra interface coupling involving "
                 "interface layer growth not recognized!");
             break;
@@ -1024,7 +1029,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // check matrix
                 const Teuchos::RCP<CORE::LINALG::SparseMatrix> scatragrowthblock =
                     Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(scatragrowthblock_);
-                if (scatragrowthblock == Teuchos::null) dserror("Matrix is not a sparse matrix!");
+                if (scatragrowthblock == Teuchos::null)
+                  FOUR_C_THROW("Matrix is not a sparse matrix!");
 
                 // initialize matrix block
                 scatragrowthblock->Zero();
@@ -1111,7 +1117,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // check matrix
                 const Teuchos::RCP<CORE::LINALG::SparseMatrix> growthscatrablock =
                     Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(growthscatrablock_);
-                if (growthscatrablock == Teuchos::null) dserror("Matrix is not a sparse matrix!");
+                if (growthscatrablock == Teuchos::null)
+                  FOUR_C_THROW("Matrix is not a sparse matrix!");
 
                 // initialize matrix block
                 growthscatrablock->Zero();
@@ -1306,7 +1313,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
             default:
             {
-              dserror(
+              FOUR_C_THROW(
                   "Type of global system matrix for scatra-scatra interface coupling involving "
                   "interface layer growth not recognized!");
               break;
@@ -1350,7 +1357,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
       default:
       {
-        dserror(
+        FOUR_C_THROW(
             "Evaluation of scatra-scatra interface layer growth only implemented for conforming "
             "interface discretizations!");
         break;
@@ -1404,7 +1411,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
     case CORE::LINALG::MatrixType::sparse:
     {
       auto systemmatrix = scatratimint_->SystemMatrix();
-      dsassert(systemmatrix != Teuchos::null, "System matrix is not a sparse matrix!");
+      FOUR_C_ASSERT(systemmatrix != Teuchos::null, "System matrix is not a sparse matrix!");
 
       // assemble additional components of linearizations of slave fluxes due to capacitance
       // w.r.t. slave dofs into the global system matrix
@@ -1433,7 +1440,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
     {
       // check matrix
       auto blocksystemmatrix = scatratimint_->BlockSystemMatrix();
-      dsassert(blocksystemmatrix != Teuchos::null, "System matrix is not a block matrix!");
+      FOUR_C_ASSERT(blocksystemmatrix != Teuchos::null, "System matrix is not a block matrix!");
 
       // prepare linearizations of slave fluxes due to capacitance w.r.t. slave dofs
       auto blockkss = islavematrix_->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
@@ -1478,7 +1485,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
     }
     default:
     {
-      dserror("Type of global system matrix for scatra-scatra interface coupling not recognized!");
+      FOUR_C_THROW(
+          "Type of global system matrix for scatra-scatra interface coupling not recognized!");
       break;
     }
   }
@@ -1585,7 +1593,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMortarCells(const DRT::Discretization
 {
   // extract scatra-scatra interface coupling condition from parameter list
   const DRT::Condition* const condition = params.get<DRT::Condition*>("condition");
-  if (condition == nullptr) dserror("Cannot access scatra-scatra interface coupling condition!");
+  if (condition == nullptr)
+    FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // extract mortar integration cells associated with current condition
   const std::vector<std::pair<Teuchos::RCP<MORTAR::IntCell>, INPAR::SCATRA::ImplType>>& cells =
@@ -1596,21 +1605,21 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMortarCells(const DRT::Discretization
   {
     // extract current mortar integration cell
     const Teuchos::RCP<MORTAR::IntCell>& cell = icell.first;
-    if (cell == Teuchos::null) dserror("Invalid mortar integration cell!");
+    if (cell == Teuchos::null) FOUR_C_THROW("Invalid mortar integration cell!");
 
     // extract slave-side element associated with current cell
     auto* slaveelement = dynamic_cast<MORTAR::Element*>(idiscret.gElement(cell->GetSlaveId()));
     if (!slaveelement)
-      dserror("Couldn't extract slave element from mortar interface discretization!");
+      FOUR_C_THROW("Couldn't extract slave element from mortar interface discretization!");
 
     // extract master-side element associated with current cell
     auto* masterelement = dynamic_cast<MORTAR::Element*>(idiscret.gElement(cell->GetMasterId()));
     if (!masterelement)
-      dserror("Couldn't extract master element from mortar interface discretization!");
+      FOUR_C_THROW("Couldn't extract master element from mortar interface discretization!");
 
     // safety check
     if (!slaveelement->IsSlave() or masterelement->IsSlave())
-      dserror("Something is wrong with the slave-master element pairing!");
+      FOUR_C_THROW("Something is wrong with the slave-master element pairing!");
 
     // construct slave-side and master-side location arrays
     DRT::Element::LocationArray la_slave(idiscret.NumDofSets());
@@ -1669,20 +1678,20 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateNTS(const Epetra_IntVector& islavenod
     // extract slave-side node
     auto* const slavenode =
         dynamic_cast<MORTAR::Node* const>(idiscret.gNode(noderowmap_slave.GID(inode)));
-    if (slavenode == nullptr) dserror("Couldn't extract slave-side node from discretization!");
+    if (slavenode == nullptr) FOUR_C_THROW("Couldn't extract slave-side node from discretization!");
 
     // extract first slave-side element associated with current slave-side node
     auto* const slaveelement = dynamic_cast<MORTAR::Element* const>(slavenode->Elements()[0]);
-    if (!slaveelement) dserror("Invalid slave-side mortar element!");
+    if (!slaveelement) FOUR_C_THROW("Invalid slave-side mortar element!");
 
     // extract master-side element associated with current slave-side node
     auto* const masterelement =
         dynamic_cast<MORTAR::Element* const>(idiscret.gElement(islavenodestomasterelements[inode]));
-    if (!masterelement) dserror("Invalid master-side mortar element!");
+    if (!masterelement) FOUR_C_THROW("Invalid master-side mortar element!");
 
     // safety check
     if (!slaveelement->IsSlave() or masterelement->IsSlave())
-      dserror("Something is wrong with the slave-master element pairing!");
+      FOUR_C_THROW("Something is wrong with the slave-master element pairing!");
 
     // construct slave-side and master-side location arrays
     DRT::Element::LocationArray la_slave(idiscret.NumDofSets());
@@ -1740,7 +1749,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMortarElements(const Epetra_Map& iele
     // extract current mortar element
     auto* const element =
         dynamic_cast<MORTAR::Element* const>(idiscret.gElement(ielecolmap.GID(ielement)));
-    if (!element) dserror("Couldn't extract mortar element from mortar discretization!");
+    if (!element) FOUR_C_THROW("Couldn't extract mortar element from mortar discretization!");
 
     // construct location array for current mortar element
     DRT::Element::LocationArray la(idiscret.NumDofSets());
@@ -1787,7 +1796,7 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
 
     default:
     {
-      dserror("Invalid slave-side discretization type!");
+      FOUR_C_THROW("Invalid slave-side discretization type!");
       break;
     }
   }
@@ -1824,7 +1833,7 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
 
     default:
     {
-      dserror("Invalid master-side discretization type!");
+      FOUR_C_THROW("Invalid master-side discretization type!");
       break;
     }
   }
@@ -1874,7 +1883,7 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
 
     default:
     {
-      dserror("Unknown physical implementation type of mortar integration cell!");
+      FOUR_C_THROW("Unknown physical implementation type of mortar integration cell!");
       break;
     }
   }
@@ -1920,7 +1929,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       const int s2ikinetics_cond_interface_side = *s2ikinetics_cond->Get<int>("interface side");
 
       if (s2ikinetics_cond_id < 0)
-        dserror("Invalid condition ID %i for S2IKinetics Condition!", s2ikinetics_cond_id);
+        FOUR_C_THROW("Invalid condition ID %i for S2IKinetics Condition!", s2ikinetics_cond_id);
 
       // only continue if ID's match
       if (*s2imeshtying_cond->Get<int>("S2IKineticsID") != s2ikinetics_cond_id) continue;
@@ -1940,7 +1949,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           }
           else
           {
-            dserror(
+            FOUR_C_THROW(
                 "Cannot have multiple slave-side scatra-scatra interface kinetics conditions with "
                 "the same ID %i!",
                 s2ikinetics_cond_id);
@@ -1956,7 +1965,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             if (not(timeintscheme == INPAR::SCATRA::timeint_bdf2 or
                     timeintscheme == INPAR::SCATRA::timeint_one_step_theta))
             {
-              dserror(
+              FOUR_C_THROW(
                   "Solution of capacitive interface contributions, i.e. additional transient terms "
                   "is only implemented for OST and BDF2 time integration schemes.");
             }
@@ -1978,7 +1987,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           }
           else
           {
-            dserror(
+            FOUR_C_THROW(
                 "Cannot have multiple master-side scatra-scatra interface kinetics conditions with "
                 "the same ID %i!",
                 s2ikinetics_cond_id);
@@ -1988,7 +1997,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
         default:
         {
-          dserror("Invalid scatra-scatra interface kinetics condition!");
+          FOUR_C_THROW("Invalid scatra-scatra interface kinetics condition!");
           break;
         }
       }
@@ -2009,7 +2018,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       for (auto& mastercondition : master_conditions_)
         mastercondition.second->Add("ConditionID", -1);
 
-      if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
+      if (scatratimint_->NumScal() < 1)
+        FOUR_C_THROW("Number of transported scalars not correctly set!");
 
       // construct new (empty coupling adapter)
       icoup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
@@ -2034,7 +2044,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             num_dof_per_condition = scatratimint_->NumDofPerNodeInCondition(*kinetics_condition);
           else if (num_dof_per_condition !=
                    scatratimint_->NumDofPerNodeInCondition(*kinetics_condition))
-            dserror("all S2I conditions must have the same number of dof per node");
+            FOUR_C_THROW("all S2I conditions must have the same number of dof per node");
 
           if (*kinetics_condition->Get<int>("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
@@ -2044,7 +2054,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
-              dserror("Could not find master condition");
+              FOUR_C_THROW("Could not find master condition");
 
             DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
                 *mastercondition->second->GetNodes(), imasternodegidvec);
@@ -2072,7 +2082,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             num_dof_per_condition = scatratimint_->NumDofPerNodeInCondition(*kinetics_condition);
           else if (num_dof_per_condition !=
                    scatratimint_->NumDofPerNodeInCondition(*kinetics_condition))
-            dserror("all S2I conditions must have the same number of dof per node");
+            FOUR_C_THROW("all S2I conditions must have the same number of dof per node");
 
           if (*kinetics_condition->Get<int>("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
@@ -2082,7 +2092,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
-              dserror("Could not find master condition");
+              FOUR_C_THROW("Could not find master condition");
             else
               DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
                   *mastercondition->second->GetNodes(), imasternodegidset);
@@ -2150,14 +2160,14 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // safety checks
       if (imortarredistribution_ and couplingtype_ != INPAR::S2I::coupling_mortar_standard)
       {
-        dserror(
+        FOUR_C_THROW(
             "Parallel redistribution only implemented for scatra-scatra interface coupling based "
             "on standard mortar approach!");
       }
       if (CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(
               GLOBAL::Problem::Instance()->MortarCouplingParams(), "MESH_RELOCATION") !=
           INPAR::MORTAR::relocation_none)
-        dserror("Mesh relocation not yet implemented for scatra-scatra interface coupling!");
+        FOUR_C_THROW("Mesh relocation not yet implemented for scatra-scatra interface coupling!");
 
       // initialize empty interface maps
       Teuchos::RCP<Epetra_Map> imastermap =
@@ -2301,7 +2311,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
             default:
             {
-              dserror("Invalid search algorithm!");
+              FOUR_C_THROW("Invalid search algorithm!");
               break;
             }
           }
@@ -2331,7 +2341,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             auto* const slavenode =
                 dynamic_cast<MORTAR::Node*>(idiscret.gNode(noderowmap_slave.GID(inode)));
             if (!slavenode)
-              dserror("Couldn't extract slave-side mortar node from mortar discretization!");
+              FOUR_C_THROW("Couldn't extract slave-side mortar node from mortar discretization!");
 
             // find associated master-side elements
             std::vector<MORTAR::Element*> master_mortar_elements(0, nullptr);
@@ -2368,7 +2378,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               }
 
               else
-                dserror("Invalid discretization type of master-side element!");
+                FOUR_C_THROW("Invalid discretization type of master-side element!");
 
               // projected node lies inside master-side element
               (*islavenodestomasterelements)[inode] = master_mortar_ele->Id();
@@ -2377,7 +2387,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
             // safety check
             if ((*islavenodestomasterelements)[inode] == -1)
-              dserror("Couldn't match slave-side node with master-side element!");
+              FOUR_C_THROW("Couldn't match slave-side node with master-side element!");
 
             // determine physical implementation type of slave-side node based on first associated
             // element
@@ -2564,12 +2574,12 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               else
                 D_diag = CORE::LINALG::CreateVector(*interfacemaps_->Map(2));
               if (D_->ExtractDiagonalCopy(*D_diag))
-                dserror("Couldn't extract main diagonal from mortar matrix D!");
+                FOUR_C_THROW("Couldn't extract main diagonal from mortar matrix D!");
               if (D_diag->Reciprocal(*D_diag))
-                dserror("Couldn't invert main diagonal entries of mortar matrix D!");
+                FOUR_C_THROW("Couldn't invert main diagonal entries of mortar matrix D!");
 
               P_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*M_));
-              if (P_->LeftScale(*D_diag)) dserror("Setup of mortar projector P failed!");
+              if (P_->LeftScale(*D_diag)) FOUR_C_THROW("Setup of mortar projector P failed!");
 
               // free memory
               if (!slaveonly_)
@@ -2582,7 +2592,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               {
                 // set up mortar projector Q
                 Q_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*E_));
-                if (Q_->LeftScale(*D_diag)) dserror("Setup of mortar projector Q failed!");
+                if (Q_->LeftScale(*D_diag)) FOUR_C_THROW("Setup of mortar projector Q failed!");
 
                 // free memory
                 E_ = Teuchos::null;
@@ -2657,7 +2667,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
             default:
             {
-              dserror("Invalid type of mortar meshtying!");
+              FOUR_C_THROW("Invalid type of mortar meshtying!");
               break;
             }
           }
@@ -2677,7 +2687,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
     default:
     {
-      dserror("Type of mortar meshtying for scatra-scatra interface coupling not recognized!");
+      FOUR_C_THROW("Type of mortar meshtying for scatra-scatra interface coupling not recognized!");
       break;
     }
   }
@@ -2695,7 +2705,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
     {
       // safety check
       if (!scatratimint_->Solver()->Params().isSublist("AMGnxn Parameters"))
-        dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
+        FOUR_C_THROW(
+            "Global system matrix with block structure requires AMGnxn block preconditioner!");
 
       // initialize map extractors associated with blocks of global system matrix
       BuildBlockMapExtractors();
@@ -2704,7 +2715,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "%i is not a valid 'SCATRA::MatrixType'. Set a valid 'SCATRA::MatrixType' in your input "
           "file!",
           static_cast<int>(matrixtype_));
@@ -2802,7 +2813,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
             default:
             {
-              dserror(
+              FOUR_C_THROW(
                   "Type of global system matrix for scatra-scatra interface coupling involving "
                   "interface layer growth not recognized!");
               break;
@@ -2851,7 +2862,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                   scatratimint_->Discretization()->Dof(2, node, 0));
               if (doflid_growth < 0)
               {
-                dserror(
+                FOUR_C_THROW(
                     "Couldn't extract local ID of scatra-scatra interface layer thickness "
                     "variable!");
               }
@@ -2871,7 +2882,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
       default:
       {
-        dserror(
+        FOUR_C_THROW(
             "Unknown evaluation method for scatra-scatra interface coupling involving interface "
             "layer growth!");
         break;
@@ -3049,7 +3060,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
 
         default:
         {
-          dserror("Not implemented for this kinetic model: %i", kineticmodel);
+          FOUR_C_THROW("Not implemented for this kinetic model: %i", kineticmodel);
           break;
         }
       }
@@ -3084,7 +3095,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
 
         default:
         {
-          dserror("Not implemented for this kinetic model: %i", kineticmodel);
+          FOUR_C_THROW("Not implemented for this kinetic model: %i", kineticmodel);
           break;
         }
       }
@@ -3093,7 +3104,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
 
     default:
     {
-      dserror("Not implemented for this condition type: %i", conditiontype);
+      FOUR_C_THROW("Not implemented for this condition type: %i", conditiontype);
       break;
     }
   }
@@ -3219,14 +3230,14 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
         {
           // extract local ID of current node
           const int nodelid = scatratimint_->Discretization()->NodeRowMap()->LID(nodegid);
-          if (nodelid < 0) dserror("Couldn't extract local node ID!");
+          if (nodelid < 0) FOUR_C_THROW("Couldn't extract local node ID!");
 
           // extract local ID of scatra-scatra interface layer thickness variable associated with
           // current node
           const int doflid_growth = scatratimint_->Discretization()->DofRowMap(2)->LID(
               scatratimint_->Discretization()->Dof(2, node, 0));
           if (doflid_growth < 0)
-            dserror(
+            FOUR_C_THROW(
                 "Couldn't extract local ID of scatra-scatra interface layer thickness variable!");
 
           // copy thickness variable into target state vector of discrete scatra-scatra interface
@@ -3291,7 +3302,8 @@ void SCATRA::MeshtyingStrategyS2I::OutputInterfaceFlux() const
       condition_flux_name << "flux_S2I_condition_" << condition_id;
       condition_area_name << "area_S2I_condition_" << condition_id;
 
-      dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+      FOUR_C_ASSERT(
+          runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
       output_data[condition_flux_name.str()] = {(*s2i_flux)[1]};
       output_data[condition_area_name.str()] = {boundaryint};
     }
@@ -3319,14 +3331,14 @@ void SCATRA::MeshtyingStrategyS2I::ExtractMatrixRows(
 {
   // safety check
   if (rows.Filled())
-    dserror("Source matrix rows cannot be extracted into filled destination matrix!");
+    FOUR_C_THROW("Source matrix rows cannot be extracted into filled destination matrix!");
 
   // loop over all source matrix rows to be extracted
   for (int doflid = 0; doflid < rowmap.NumMyElements(); ++doflid)
   {
     // determine global ID of current matrix row
     const int dofgid = rowmap.GID(doflid);
-    if (dofgid < 0) dserror("Couldn't find local ID %d in map!", doflid);
+    if (dofgid < 0) FOUR_C_THROW("Couldn't find local ID %d in map!", doflid);
 
     // extract current matrix row from source matrix
     const int length = matrix.EpetraMatrix()->NumGlobalEntries(dofgid);
@@ -3335,12 +3347,12 @@ void SCATRA::MeshtyingStrategyS2I::ExtractMatrixRows(
     std::vector<int> indices(length, 0);
     if (matrix.EpetraMatrix()->ExtractGlobalRowCopy(
             dofgid, length, numentries, values.data(), indices.data()))
-      dserror("Cannot extract matrix row with global ID %d from source matrix!", dofgid);
+      FOUR_C_THROW("Cannot extract matrix row with global ID %d from source matrix!", dofgid);
 
     // copy current source matrix row into destination matrix
     if (rows.EpetraMatrix()->InsertGlobalValues(dofgid, numentries, values.data(), indices.data()) <
         0)
-      dserror("Cannot insert matrix row with global ID %d into destination matrix!", dofgid);
+      FOUR_C_THROW("Cannot insert matrix row with global ID %d into destination matrix!", dofgid);
   }
 }
 
@@ -3391,7 +3403,7 @@ void SCATRA::MeshtyingStrategyS2I::ComputeTimeStepSize(double& dt)
   // not implemented for standard scalar transport
   if (intlayergrowth_timestep_ > 0.)
   {
-    dserror(
+    FOUR_C_THROW(
         "Adaptive time stepping for scatra-scatra interface layer growth not implemented for "
         "standard scalar transport!");
   }
@@ -3414,20 +3426,20 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     // safety checks
     if (conditions.size() != 1)
     {
-      dserror(
+      FOUR_C_THROW(
           "Can't have more than one boundary condition for scatra-scatra interface layer growth at "
           "the moment!");
     }
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_none)
     {
-      dserror(
+      FOUR_C_THROW(
           "Invalid flag for evaluation of scatra-scatra interface coupling involving interface "
           "layer growth!");
     }
     if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic and
         scatratimint_->MethodName() != INPAR::SCATRA::timeint_one_step_theta)
     {
-      dserror(
+      FOUR_C_THROW(
           "Monolithic evaluation of scatra-scatra interface layer growth only implemented for "
           "one-step-theta time integration scheme at the moment!");
     }
@@ -3435,13 +3447,13 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
         *conditions[0]->Get<int>("regularization type") !=
             INPAR::S2I::RegularizationType::regularization_none)
     {
-      dserror(
+      FOUR_C_THROW(
           "No regularization implemented for semi-implicit evaluation of scatra-scatra interface "
           "layer growth!");
     }
     if (couplingtype_ != INPAR::S2I::coupling_matching_nodes)
     {
-      dserror(
+      FOUR_C_THROW(
           "Evaluation of scatra-scatra interface layer growth only implemented for conforming "
           "interface discretizations!");
     }
@@ -3462,7 +3474,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     Teuchos::RCP<DRT::DofSetInterface> dofset = Teuchos::rcp(
         new DRT::DofSetPredefinedDoFNumber(numdofpernode, Teuchos::null, Teuchos::null, true));
     if (scatratimint_->Discretization()->AddDofSet(dofset) != ++number_dofsets)
-      dserror("Scalar transport discretization exhibits invalid number of dofsets!");
+      FOUR_C_THROW("Scalar transport discretization exhibits invalid number of dofsets!");
     scatratimint_->SetNumberOfDofSetGrowth(number_dofsets);
 
     // initialize linear solver for monolithic scatra-scatra interface coupling involving interface
@@ -3475,7 +3487,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
                                      .get<int>("INTLAYERGROWTH_LINEAR_SOLVER");
       if (extendedsolver < 1)
       {
-        dserror(
+        FOUR_C_THROW(
             "Invalid ID of linear solver for monolithic scatra-scatra interface coupling involving "
             "interface layer growth!");
       }
@@ -3488,7 +3500,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   // safety check
   else if (intlayergrowth_evaluation_ != INPAR::S2I::growth_evaluation_none)
   {
-    dserror(
+    FOUR_C_THROW(
         "Cannot evaluate scatra-scatra interface coupling involving interface layer growth without "
         "specifying a corresponding boundary condition!");
   }
@@ -3499,19 +3511,19 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     if (not CORE::UTILS::IntegralValue<bool>(
             *scatratimint_->ScatraParameterList(), "ADAPTIVE_TIMESTEPPING"))
     {
-      dserror(
+      FOUR_C_THROW(
           "Adaptive time stepping for scatra-scatra interface layer growth requires "
           "ADAPTIVE_TIMESTEPPING flag to be set!");
     }
     if (not scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth"))
     {
-      dserror(
+      FOUR_C_THROW(
           "Adaptive time stepping for scatra-scatra interface layer growth requires corresponding "
           "boundary condition!");
     }
     if (intlayergrowth_timestep_ >= scatratimint_->Dt())
     {
-      dserror(
+      FOUR_C_THROW(
           "Adaptive time stepping for scatra-scatra interface layer growth requires that the "
           "modified time step size is smaller than the original time step size!");
     }
@@ -3634,7 +3646,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
           // check scalar transport system matrix
           Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsematrix =
               Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(systemmatrix);
-          if (sparsematrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
+          if (sparsematrix == Teuchos::null) FOUR_C_THROW("System matrix is not a sparse matrix!");
 
           // assemble extended system matrix including rows and columns associated with Lagrange
           // multipliers
@@ -3690,7 +3702,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
 
         default:
         {
-          dserror("Type of scatra-scatra interface coupling not recognized!");
+          FOUR_C_THROW("Type of scatra-scatra interface coupling not recognized!");
           break;
         }
       }
@@ -3712,7 +3724,8 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
               // check scalar transport system matrix
               const Teuchos::RCP<const CORE::LINALG::SparseMatrix> sparsematrix =
                   Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(systemmatrix);
-              if (sparsematrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
+              if (sparsematrix == Teuchos::null)
+                FOUR_C_THROW("System matrix is not a sparse matrix!");
 
               // assemble extended system matrix including rows and columns associated with
               // scatra-scatra interface layer thickness variables
@@ -3733,7 +3746,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
               const Teuchos::RCP<const CORE::LINALG::BlockSparseMatrixBase> blocksparsematrix =
                   Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(systemmatrix);
               if (blocksparsematrix == Teuchos::null)
-                dserror("System matrix is not a block sparse matrix!");
+                FOUR_C_THROW("System matrix is not a block sparse matrix!");
 
               // extract number of matrix row or column blocks associated with scalar transport
               // field
@@ -3762,7 +3775,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
 
             default:
             {
-              dserror(
+              FOUR_C_THROW(
                   "Type of global system matrix for scatra-scatra interface coupling involving "
                   "interface layer growth not recognized!");
               break;
@@ -3813,7 +3826,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
 
         default:
         {
-          dserror("Type of scatra-scatra interface coupling not recognized!");
+          FOUR_C_THROW("Type of scatra-scatra interface coupling not recognized!");
           break;
         }
       }  // switch(couplingtype_)
@@ -3823,7 +3836,7 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<CORE::LINALG::Solver
 
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Unknown evaluation method for scatra-scatra interface coupling involving interface "
           "layer growth!");
       break;
@@ -3839,13 +3852,13 @@ const CORE::LINALG::Solver& SCATRA::MeshtyingStrategyS2I::Solver() const
 
   if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
   {
-    if (extendedsolver_ == Teuchos::null) dserror("Invalid linear solver!");
+    if (extendedsolver_ == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
     solver = extendedsolver_.get();
   }
 
   else
   {
-    if (scatratimint_->Solver() == Teuchos::null) dserror("Invalid linear solver!");
+    if (scatratimint_->Solver() == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
     solver = scatratimint_->Solver().get();
   }
 
@@ -3909,7 +3922,8 @@ void SCATRA::MeshtyingStrategyS2I::FDCheck(
     // impose perturbation
     if (statenp.Map().MyGID(colgid))
       if (statenp.SumIntoGlobalValue(colgid, 0, fdcheckeps))
-        dserror("Perturbation could not be imposed on state vector for finite difference check!");
+        FOUR_C_THROW(
+            "Perturbation could not be imposed on state vector for finite difference check!");
     scatratimint_->Phinp()->Update(1., *extendedmaps_->ExtractVector(statenp, 0), 0.);
     growthnp_->Update(1., *extendedmaps_->ExtractVector(statenp, 1), 0.);
 
@@ -3936,7 +3950,7 @@ void SCATRA::MeshtyingStrategyS2I::FDCheck(
     {
       // get global index of current matrix row
       const int rowgid = sysmat_original.RowMap().GID(rowlid);
-      if (rowgid < 0) dserror("Invalid global ID of matrix row!");
+      if (rowgid < 0) FOUR_C_THROW("Invalid global ID of matrix row!");
 
       // get relevant entry in current row of original system matrix
       double entry(0.);
@@ -4030,7 +4044,7 @@ void SCATRA::MeshtyingStrategyS2I::FDCheck(
     {
       printf(
           "--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n", counterglobal);
-      dserror(
+      FOUR_C_THROW(
           "Finite difference check failed for extended system matrix involving scatra-scatra "
           "interface layer growth!");
     }
@@ -4123,7 +4137,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::Evaluate(const DRT::Discretizat
 
     default:
     {
-      dserror("Unknown action for mortar cell evaluation!");
+      FOUR_C_THROW("Unknown action for mortar cell evaluation!");
       break;
     }
   }
@@ -4148,7 +4162,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(const DRT::Discreti
       // extract condition from parameter list
       DRT::Condition* condition = params.get<DRT::Condition*>("condition");
       if (condition == nullptr)
-        dserror("Cannot access scatra-scatra interface coupling condition!");
+        FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
       // extract nodal state variables associated with slave and master elements
       ExtractNodeValues(idiscret, la_slave, la_master);
@@ -4163,7 +4177,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(const DRT::Discreti
 
     default:
     {
-      dserror("Unknown action for evaluation of node-to-segment coupling!");
+      FOUR_C_THROW("Unknown action for evaluation of node-to-segment coupling!");
       break;
     }
   }
@@ -4192,7 +4206,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarElement(
 
     default:
     {
-      dserror("Unknown action for evaluation of mortar element!");
+      FOUR_C_THROW("Unknown action for evaluation of mortar element!");
       break;
     }
   }
@@ -4218,7 +4232,7 @@ SCATRA::MortarCellCalc<distypeS, distypeM>::MortarCellCalc(
   // safety check
   if (nsd_slave_ != 2 or nsd_master_ != 2)
   {
-    dserror(
+    FOUR_C_THROW(
         "Scatra-scatra interface coupling with non-matching interface discretization currently "
         "only implemented for two-dimensional interface manifolds!");
   }
@@ -4246,7 +4260,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
   // extract interface state vector from interface discretization
   const Teuchos::RCP<const Epetra_Vector> state = idiscret.GetState(nds, statename);
   if (state == Teuchos::null)
-    dserror("Cannot extract state vector \"" + statename + "\" from interface discretization!");
+    FOUR_C_THROW(
+        "Cannot extract state vector \"" + statename + "\" from interface discretization!");
 
   // extract nodal state variables associated with slave element
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_slave_, 1>>(
@@ -4266,7 +4281,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
   // extract interface state vector from interface discretization
   const Teuchos::RCP<const Epetra_Vector> state = idiscret.GetState(nds, statename);
   if (state == Teuchos::null)
-    dserror("Cannot extract state vector \"" + statename + "\" from interface discretization!");
+    FOUR_C_THROW(
+        "Cannot extract state vector \"" + statename + "\" from interface discretization!");
 
   // extract nodal state variables associated with slave and master elements
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_slave_, 1>>(
@@ -4362,7 +4378,7 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
 
     default:
     {
-      dserror("Not yet implemented!");
+      FOUR_C_THROW("Not yet implemented!");
       break;
     }
   }
@@ -4418,7 +4434,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
 {
   // safety check
   if (couplingtype_ != INPAR::S2I::coupling_nts_standard)
-    dserror("This function should only be called when evaluating node-to-segment coupling!");
+    FOUR_C_THROW("This function should only be called when evaluating node-to-segment coupling!");
 
   // extract global ID of slave-side node
   const int& nodeid = slavenode.Id();
@@ -4433,7 +4449,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
       break;
     }
   }
-  if (index == -1) dserror("Couldn't find out index of slave-side node w.r.t. slave-side element!");
+  if (index == -1)
+    FOUR_C_THROW("Couldn't find out index of slave-side node w.r.t. slave-side element!");
 
   // set slave-side shape function array according to node position
   funct_slave_.Clear();
@@ -4460,7 +4477,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarMatrices(MORTAR::
 {
   // safety check
   if (numdofpernode_slave_ != numdofpernode_master_)
-    dserror("Must have same number of degrees of freedom per node on slave and master sides!");
+    FOUR_C_THROW("Must have same number of degrees of freedom per node on slave and master sides!");
 
   // determine quadrature rule
   const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::tri_7point);
@@ -4583,7 +4600,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
   // safety check
   if (numdofpernode_slave_ != 1 or numdofpernode_master_ != 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Invalid number of degrees of freedom per node! Code should theoretically work for more "
         "than one degree of freedom per node, but not yet tested!");
   }
@@ -4606,7 +4623,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * fac;
     const double timefacrhsfac =
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * fac;
-    if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalc<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<
         distypeM>(ephinp_slave_, ephinp_master_, pseudo_contact_fac, funct_slave_, funct_master_,
@@ -4630,7 +4647,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condi
   // safety check
   if (numdofpernode_slave_ != 1 or numdofpernode_master_ != 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Invalid number of degrees of freedom per node! Code should theoretically work for more "
         "than one degree of freedom per node, but not yet tested!");
   }
@@ -4646,7 +4663,7 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condi
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * lumpedarea;
   const double timefacrhsfac =
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * lumpedarea;
-  if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+  if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
   DRT::ELEMENTS::ScaTraEleBoundaryCalc<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<
       distypeM>(ephinp_slave, ephinp_master, pseudo_contact_fac, funct_slave_, funct_master_,
@@ -4787,7 +4804,7 @@ void SCATRA::MortarCellAssemblyStrategy::AssembleCellMatrix(
 
     default:
     {
-      dserror("Invalid interface side!");
+      FOUR_C_THROW("Invalid interface side!");
       break;
     }
   }
@@ -4808,7 +4825,7 @@ void SCATRA::MortarCellAssemblyStrategy::AssembleCellVector(
     case INPAR::S2I::side_slave:
     {
       if (systemvector->NumVectors() != 1)
-        dserror("Invalid number of vectors inside Epetra_MultiVector!");
+        FOUR_C_THROW("Invalid number of vectors inside Epetra_MultiVector!");
       CORE::LINALG::Assemble(*(*systemvector)(nds_rows_), cellvector, la_slave[nds_rows_].lm_,
           la_slave[nds_rows_].lmowner_);
 
@@ -4822,7 +4839,7 @@ void SCATRA::MortarCellAssemblyStrategy::AssembleCellVector(
         if (Teuchos::rcp_dynamic_cast<Epetra_FEVector>(systemvector)
                 ->SumIntoGlobalValues(static_cast<int>(la_master[nds_rows_].lm_.size()),
                     la_master[nds_rows_].lm_.data(), cellvector.values()))
-          dserror("Assembly into master-side system vector not successful!");
+          FOUR_C_THROW("Assembly into master-side system vector not successful!");
       }
 
       break;
@@ -4830,7 +4847,7 @@ void SCATRA::MortarCellAssemblyStrategy::AssembleCellVector(
 
     default:
     {
-      dserror("Invalid interface side!");
+      FOUR_C_THROW("Invalid interface side!");
       break;
     }
   }

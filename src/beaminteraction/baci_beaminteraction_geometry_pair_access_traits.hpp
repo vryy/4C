@@ -30,7 +30,7 @@ namespace GEOMETRYPAIR
       // Get the reference length of the beam element
       const auto* beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
       if (beam_element == nullptr)
-        dserror(
+        FOUR_C_THROW(
             "The element pointer has to point to a valid beam element when evaluating the shape "
             "function data of a hermite beam, as we need to get RefLength()!");
       shape_function_data.ref_length_ = beam_element->RefLength();

@@ -452,7 +452,7 @@ namespace DRT
       /// temporary method for compatibility with solidshell, needs clarification
       std::vector<double> getthicknessvector() const
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
         return std::vector<double>(3);
       };
 

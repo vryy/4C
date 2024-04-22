@@ -71,7 +71,7 @@ void DRT::ELEMENTS::StructureRuntimeOutputParams::Init(
     INPAR::STR::StrainType io_strain =
         CORE::UTILS::IntegralValue<INPAR::STR::StrainType>(io_parameter_list, "STRUCT_STRAIN");
     if (io_stress == INPAR::STR::stress_none and io_strain == INPAR::STR::strain_none)
-      dserror(
+      FOUR_C_THROW(
           "If stress / strain runtime output is required, one or two of the flags STRUCT_STRAIN / "
           "STRUCT_STRESS in the --IO section has to be set.");
   }
@@ -83,7 +83,7 @@ void DRT::ELEMENTS::StructureRuntimeOutputParams::Init(
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructureRuntimeOutputParams::Setup()
 {
-  dsassert(IsInit(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -94,7 +94,7 @@ void DRT::ELEMENTS::StructureRuntimeOutputParams::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructureRuntimeOutputParams::CheckInitSetup() const
 {
-  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

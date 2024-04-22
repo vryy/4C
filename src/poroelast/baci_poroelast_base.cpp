@@ -97,7 +97,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   }
 
   if (structure_ == Teuchos::null)
-    dserror("cast from ADAPTER::Structure to ADAPTER::FPSIStructureWrapper failed");
+    FOUR_C_THROW("cast from ADAPTER::Structure to ADAPTER::FPSIStructureWrapper failed");
 
   // ask base algorithm for the fluid time integrator
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
@@ -107,7 +107,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid->FluidField());
 
   if (fluid_ == Teuchos::null)
-    dserror("cast from ADAPTER::FluidBaseAlgorithm to ADAPTER::FluidPoro failed");
+    FOUR_C_THROW("cast from ADAPTER::FluidBaseAlgorithm to ADAPTER::FluidPoro failed");
 
   // as this is a two way coupled problem, every discretization needs to know the other one.
   // For this we use DofSetProxies and coupling objects which are setup here
@@ -137,7 +137,8 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     std::vector<DRT::Condition*> porocoupl;
     FluidField()->Discretization()->GetCondition("PoroCoupling", porocoupl);
     if (porocoupl.size() == 0)
-      dserror("no Poro Coupling Condition defined for porous media problem. Fix your input file!");
+      FOUR_C_THROW(
+          "no Poro Coupling Condition defined for porous media problem. Fix your input file!");
 
     // check time integration algo -> currently only one-step-theta scheme supported
     auto structtimealgo = CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
@@ -152,14 +153,14 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
                 (fluidtimealgo == INPAR::FLUID::timeint_afgenalpha or
                     fluidtimealgo == INPAR::FLUID::timeint_npgenalpha))))
     {
-      dserror(
+      FOUR_C_THROW(
           "porous media problem is limited in functionality (only one-step-theta scheme, "
           "stationary and (af)genalpha case possible)");
     }
 
     if (fluidtimealgo == INPAR::FLUID::timeint_npgenalpha)
     {
-      dserror(
+      FOUR_C_THROW(
           "npgenalpha time integration for porous fluid is possibly not valid. Either check the "
           "theory or use afgenalpha instead!");
     }
@@ -172,7 +173,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
 
       if (theta_struct != theta_fluid)
       {
-        dserror(
+        FOUR_C_THROW(
             "porous media problem is limited in functionality. Only one-step-theta scheme with "
             "equal theta for both fields possible. Fix your input file.");
       }
@@ -181,7 +182,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     std::string damping = sdyn.get<std::string>("DAMPING");
     if (damping != "Material" && structtimealgo != INPAR::STR::dyna_statics)
     {
-      dserror(
+      FOUR_C_THROW(
           "Material damping has to be used for dynamic porous media simulations! Set DAMPING to "
           "'Material' in the STRUCTURAL DYNAMIC section.");
     }
@@ -192,7 +193,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
         CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE");
     if (porosity_dof_ and physicaltype != INPAR::FLUID::poro_p1)
     {
-      dserror(
+      FOUR_C_THROW(
           "Poro P1 elements need a special fluid. Set 'PHYSICAL_TYPE' to 'Poro_P1' in the "
           "POROELASTICITY DYNAMIC section!");
     }
@@ -205,7 +206,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     {
       if (transientfluid != INPAR::POROELAST::transient_none)
       {
-        dserror(
+        FOUR_C_THROW(
             "Invalid option for stationary fluid! Set 'TRANSIENT_TERMS' in section POROELASTICITY "
             "DYNAMIC to 'none'!");
       }
@@ -214,7 +215,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     {
       if (transientfluid == INPAR::POROELAST::transient_none)
       {
-        dserror(
+        FOUR_C_THROW(
             "Invalid option for stationary fluid! Set 'TRANSIENT_TERMS' in section POROELASTICITY "
             "DYNAMIC to valid parameter!");
       }
@@ -222,7 +223,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
 
     if (transientfluid == INPAR::POROELAST::transient_momentum_only)
     {
-      dserror(
+      FOUR_C_THROW(
           "Option 'momentum' for parameter 'TRANSIENT_TERMS' in section POROELASTICITY DYNAMIC is "
           "not working properly! There is probably a bug in the linearization ....");
     }

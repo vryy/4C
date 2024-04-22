@@ -170,9 +170,9 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
     }
     else
     {
-      dserror(error_message.str() +
-                  "\n\nError when projecting the Gauss points. There are %d Gauss points, %d "
-                  "could be projected and %d of the projected ones are valid.",
+      FOUR_C_THROW(error_message.str() +
+                       "\n\nError when projecting the Gauss points. There are %d Gauss points, %d "
+                       "could be projected and %d of the projected ones are valid.",
           gauss_points.nquad, n_projections, n_valid_projections);
     }
   }
@@ -268,12 +268,12 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
     case INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
       break;
     default:
-      dserror("Wrong LineTo3DStrategy in Evaluate of Gauss point projection pairs.");
+      FOUR_C_THROW("Wrong LineTo3DStrategy in Evaluate of Gauss point projection pairs.");
   }
 
   // Only zero one segments are expected.
   if (segments.size() > 1)
-    dserror(
+    FOUR_C_THROW(
         "There should be zero or one segments for the Gauss point projection method. The actual "
         "value is %d!",
         segments.size());
@@ -298,7 +298,8 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
 
       // This algorithm only works if one intersection point was found.
       if (intersection_points.size() != 1)
-        dserror("In the segmentation case we expect exactly one found intersection point. Got: %d!",
+        FOUR_C_THROW(
+            "In the segmentation case we expect exactly one found intersection point. Got: %d!",
             intersection_points.size());
 
       // Get the limits of the segmented line.
@@ -337,7 +338,7 @@ std::vector<bool>& GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::GetLin
       pair->GetEvaluationData()->GetGaussPointProjectionTracker();
   auto find = projection_tracker.find(line_element_id);
   if (find == projection_tracker.end())
-    dserror("Could not find the projection tracker for line id %d.", line_element_id);
+    FOUR_C_THROW("Could not find the projection tracker for line id %d.", line_element_id);
   return find->second;
 }
 
@@ -353,7 +354,8 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
 {
   // Only zero segments are expected.
   if (segments.size() > 0)
-    dserror("There should be zero segments for the segmentation method. The actual value is %d!",
+    FOUR_C_THROW(
+        "There should be zero segments for the segmentation method. The actual value is %d!",
         segments.size());
 
   // Number of search points.
@@ -522,7 +524,7 @@ GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::GetSegmentTrackingSet(const pair_
       pair->GetEvaluationData()->GetSegmentTracker();
   auto find = segment_tracker_map.find(line_element_id);
   if (find == segment_tracker_map.end())
-    dserror("Could not find the segment tracker for line id %d.", line_element_id);
+    FOUR_C_THROW("Could not find the segment tracker for line id %d.", line_element_id);
   return find->second;
 }
 

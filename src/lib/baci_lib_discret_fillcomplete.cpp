@@ -147,7 +147,7 @@ int DRT::Discretization::FillComplete(
  *----------------------------------------------------------------------*/
 void DRT::Discretization::InitializeElements()
 {
-  if (!Filled()) dserror("FillComplete was not called");
+  if (!Filled()) FOUR_C_THROW("FillComplete was not called");
 
   CORE::COMM::ParObjectFactory::Instance().InitializeElements(*this);
 
@@ -176,7 +176,7 @@ void DRT::Discretization::BuildNodeRowMap()
       noderowptr_[count] = curr->second.get();
       ++count;
     }
-  if (count != nummynodes) dserror("Mismatch in no. of nodes");
+  if (count != nummynodes) FOUR_C_THROW("Mismatch in no. of nodes");
   noderowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummynodes, nodeids.data(), 0, Comm()));
   return;
 }
@@ -199,7 +199,7 @@ void DRT::Discretization::BuildNodeColMap()
     curr->second->SetLID(count);
     ++count;
   }
-  if (count != nummynodes) dserror("Mismatch in no. of nodes");
+  if (count != nummynodes) FOUR_C_THROW("Mismatch in no. of nodes");
   nodecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummynodes, nodeids.data(), 0, Comm()));
   return;
 }
@@ -225,7 +225,7 @@ void DRT::Discretization::BuildElementRowMap()
       elerowptr_[count] = curr->second.get();
       ++count;
     }
-  if (count != nummyeles) dserror("Mismatch in no. of elements");
+  if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
   elerowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, Comm()));
   return;
 }
@@ -247,7 +247,7 @@ void DRT::Discretization::BuildElementColMap()
     curr->second->SetLID(count);
     ++count;
   }
-  if (count != nummyeles) dserror("Mismatch in no. of elements");
+  if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
   elecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, Comm()));
   return;
 }
@@ -261,7 +261,7 @@ void DRT::Discretization::BuildElementToNodePointers()
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->BuildNodalPointers(node_);
-    if (!success) dserror("Building element <-> node topology failed");
+    if (!success) FOUR_C_THROW("Building element <-> node topology failed");
   }
   return;
 }
@@ -275,7 +275,7 @@ void DRT::Discretization::BuildElementToElementPointers()
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->BuildElementPointers(element_);
-    if (!success) dserror("Building element <-> element topology failed");
+    if (!success) FOUR_C_THROW("Building element <-> element topology failed");
   }
   return;
 }
@@ -298,7 +298,7 @@ void DRT::Discretization::BuildNodeToElementPointers()
     {
       DRT::Node* node = gNode(nodes[j]);
       if (!node)
-        dserror("Node %d is not on this proc %d", j, Comm().MyPID());
+        FOUR_C_THROW("Node %d is not on this proc %d", j, Comm().MyPID());
       else
         node->AddElementPtr(elecurr->second.get());
     }
@@ -311,9 +311,9 @@ void DRT::Discretization::BuildNodeToElementPointers()
  *----------------------------------------------------------------------*/
 int DRT::Discretization::AssignDegreesOfFreedom(int start)
 {
-  if (!Filled()) dserror("Filled()==false");
-  if (!NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
-  if (!ElementRowMap()->UniqueGIDs()) dserror("Element row map is not unique");
+  if (!Filled()) FOUR_C_THROW("Filled()==false");
+  if (!NodeRowMap()->UniqueGIDs()) FOUR_C_THROW("Nodal row map is not unique");
+  if (!ElementRowMap()->UniqueGIDs()) FOUR_C_THROW("Element row map is not unique");
 
   // Set the havedof flag before dofs are assigned. Some dof set
   // implementations do query the discretization after the assignment has been

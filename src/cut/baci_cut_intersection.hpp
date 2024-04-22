@@ -139,7 +139,7 @@ namespace CORE::GEO
 
         if (static_cast<unsigned>(xyze_lineElement.numRows()) != ProbDim() or
             static_cast<unsigned>(xyze_lineElement.numCols()) != NumNodesEdge())
-          dserror(
+          FOUR_C_THROW(
               "Dimension mismatch of xyze_lineElement! \n"
               "expected input: %d x %d (rows x cols)\n"
               "current input : %d x %d (rows x cols)",
@@ -147,7 +147,7 @@ namespace CORE::GEO
 
         if (static_cast<unsigned>(xyze_surfaceElement.numRows()) != ProbDim() or
             static_cast<unsigned>(xyze_surfaceElement.numCols()) != NumNodesSide())
-          dserror(
+          FOUR_C_THROW(
               "Dimension mismatch of xyze_surfaceElement! \n"
               "expected input: %d x %d (rows x cols)\n"
               "current input : %d x %d (rows x cols)",
@@ -234,7 +234,7 @@ namespace CORE::GEO
       void LocalSideCoordinates(std::vector<CORE::LINALG::Matrix<dimside, 1>>& side_rs_cuts)
       {
         if (GetIntersectionStatus() < intersect_single_cut_point)
-          dserror("INVALID IntersectionStatus! ( istatus = \"%s\" )",
+          FOUR_C_THROW("INVALID IntersectionStatus! ( istatus = \"%s\" )",
               IntersectionStatus2String(GetIntersectionStatus()).c_str());
 
         side_rs_cuts.clear();
@@ -252,7 +252,7 @@ namespace CORE::GEO
       void FinalPoints(std::vector<CORE::LINALG::Matrix<probdim, 1>>& xyz_cuts)
       {
         if (GetIntersectionStatus() < intersect_single_cut_point)
-          dserror("INVALID IntersectionStatus! ( istatus = \"%s\" )",
+          FOUR_C_THROW("INVALID IntersectionStatus! ( istatus = \"%s\" )",
               IntersectionStatus2String(GetIntersectionStatus()).c_str());
 
         xyz_cuts.clear();
@@ -277,7 +277,8 @@ namespace CORE::GEO
 
       inline void CheckInit() const
       {
-        if (not isinit_) dserror("The Intersection object is not initialized! Call Init() first.");
+        if (not isinit_)
+          FOUR_C_THROW("The Intersection object is not initialized! Call Init() first.");
       }
 
       virtual unsigned ProbDim() const = 0;
@@ -302,7 +303,7 @@ namespace CORE::GEO
       Mesh& GetMesh()
       {
         if (mesh_ptr_ != nullptr) return *mesh_ptr_;
-        dserror("The mesh pointer is not yet initialized!");
+        FOUR_C_THROW("The mesh pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
 
@@ -310,7 +311,7 @@ namespace CORE::GEO
       Mesh* GetMeshPtr()
       {
         if (mesh_ptr_ != nullptr) return mesh_ptr_;
-        dserror("The mesh pointer is not yet initialized!");
+        FOUR_C_THROW("The mesh pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
 
@@ -318,7 +319,7 @@ namespace CORE::GEO
       Edge& GetEdge()
       {
         if (edge_ptr_ != nullptr) return *edge_ptr_;
-        dserror("The edge pointer is not yet initialized!");
+        FOUR_C_THROW("The edge pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
 
@@ -326,7 +327,7 @@ namespace CORE::GEO
       Edge* GetEdgePtr()
       {
         if (edge_ptr_ != nullptr) return edge_ptr_;
-        dserror("The edge pointer is not yet initialized!");
+        FOUR_C_THROW("The edge pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
 
@@ -334,7 +335,7 @@ namespace CORE::GEO
       Side& GetSide()
       {
         if (side_ptr_ != nullptr) return *side_ptr_;
-        dserror("The side pointer is not yet initialized!");
+        FOUR_C_THROW("The side pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
 
@@ -342,7 +343,7 @@ namespace CORE::GEO
       Side* GetSidePtr()
       {
         if (side_ptr_ != nullptr) return side_ptr_;
-        dserror("The side pointer is not yet initialized!");
+        FOUR_C_THROW("The side pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
 
@@ -350,7 +351,7 @@ namespace CORE::GEO
       Options* GetOptionsPtr()
       {
         if (options_ptr_ != nullptr) return options_ptr_;
-        dserror("The option pointer is not yet initialized!");
+        FOUR_C_THROW("The option pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
 
@@ -420,7 +421,7 @@ namespace CORE::GEO
       {
         if (num_cut_points_ > 1 and (multiple_xsi_edge_.size() != num_cut_points_ or
                                         multiple_xsi_side_.size() != num_cut_points_))
-          dserror("Size mismatch!");
+          FOUR_C_THROW("Size mismatch!");
 
         return num_cut_points_;
       }
@@ -463,7 +464,7 @@ namespace CORE::GEO
       double* FinalPointEdgeEdge() override
       {
         CheckInit();
-        if (dimedge != dimside) dserror("This method only works for edge-edge intersection!");
+        if (dimedge != dimside) FOUR_C_THROW("This method only works for edge-edge intersection!");
 
         CORE::LINALG::Matrix<probdim, 1> x_edge_1;
         x_edge_1 = 0;
@@ -502,7 +503,7 @@ namespace CORE::GEO
           // NOTE: If such case ever occur, one might consider to create intersection on the
           // line between x_edge_2 and x_edge_1, in a way so that it will not be merged in any of
           // the participating edge endpoint
-          dserror(
+          FOUR_C_THROW(
               "Cannot decide which edge should serve as the basis for global coordinates in "
               "edge-edge intersection");
         }
@@ -548,7 +549,7 @@ namespace CORE::GEO
       double* FinalPoint() override
       {
         if (istatus_ != intersect_single_cut_point)
-          dserror(
+          FOUR_C_THROW(
               "INVALID IntersectionStatus: This routine is restricted to one single "
               "cut point only! ( istatus_ = \"%s\" )",
               IntersectionStatus2String(istatus_).c_str());
@@ -598,7 +599,7 @@ namespace CORE::GEO
                 CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
                 file.close();
                 GenerateGmshDump();
-                dserror("Distance between point touching edge is too high! Check this case!");
+                FOUR_C_THROW("Distance between point touching edge is too high! Check this case!");
               }
               it = touching_edges.erase(it);
             }
@@ -606,7 +607,8 @@ namespace CORE::GEO
               ++it;
           }
           else
-            dserror("Newton did not converge for simple ComputeDistance between point and a line");
+            FOUR_C_THROW(
+                "Newton did not converge for simple ComputeDistance between point and a line");
         }
       }
 
@@ -644,7 +646,7 @@ namespace CORE::GEO
                 tolerance, check_inside, touched_edges);
           }
           default:
-            dserror("Unexpected floattype for ComputeEdgeSideIntersectionT!");
+            FOUR_C_THROW("Unexpected floattype for ComputeEdgeSideIntersectionT!");
         }
       }
 
@@ -730,7 +732,7 @@ namespace CORE::GEO
               err_msg << "Touching " << touched.size()
                       << " edges, but no intersection! This should not happen! ";
               GenerateGmshDump();
-              dserror(err_msg.str());
+              FOUR_C_THROW(err_msg.str());
             }
           }
         }
@@ -771,7 +773,7 @@ namespace CORE::GEO
        *  the line is splitted into intersection of line with two tri3, obtained from the
        *  quad4. In the case it should always converge
        *
-       *  (5) throw dserror in case this intersection wasn't treated right --> this means
+       *  (5) throw FOUR_C_THROW in case this intersection wasn't treated right --> this means
        *  there is still handling of some special cases missing in the code & it does not
        *  mean that there is no intersection point.
        *
@@ -956,19 +958,19 @@ namespace CORE::GEO
             return ComputeEdgeTri3IntersectionT<INPAR::CUT::floattype_double>(triangleid, location);
           }
           default:
-            dserror("Unexpected floattype for ComputeEdgeTri3IntersectionT!");
+            FOUR_C_THROW("Unexpected floattype for ComputeEdgeTri3IntersectionT!");
         }
       }
 
       template <INPAR::CUT::CutFloattype floattype>
       bool ComputeEdgeTri3IntersectionT(int triangleid, KERNEL::PointOnSurfaceLoc& location)
       {
-        if (triangleid < 0) dserror("The triangle id has to be positive!");
+        if (triangleid < 0) FOUR_C_THROW("The triangle id has to be positive!");
 
         TEUCHOS_FUNC_TIME_MONITOR("ComputeEdgeTri3Intersection");
         CORE::LINALG::Matrix<3, 1> xsi;
         if (xsi_.M() != 3)
-          dserror("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
+          FOUR_C_THROW("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
         else
           xsi.SetView(xsi_.A());
 
@@ -1004,7 +1006,7 @@ namespace CORE::GEO
                 triangleid, close_to_shared_edge);
           }
           default:
-            dserror("Unexpected floattype for ComputeEdgeTri3IntersectionQuad4SplitT!");
+            FOUR_C_THROW("Unexpected floattype for ComputeEdgeTri3IntersectionQuad4SplitT!");
         }
       }
 
@@ -1012,12 +1014,12 @@ namespace CORE::GEO
       IntersectionStatus ComputeEdgeTri3IntersectionQuad4SplitT(
           int triangleid, bool* close_to_shared_edge = nullptr)
       {
-        if (triangleid < 0) dserror("The triangle id has to be positive!");
+        if (triangleid < 0) FOUR_C_THROW("The triangle id has to be positive!");
 
         TEUCHOS_FUNC_TIME_MONITOR("ComputeEdgeTri3Intersection");
         CORE::LINALG::Matrix<3, 1> xsi;
         if (xsi_.M() != 3)
-          dserror("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
+          FOUR_C_THROW("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
         else
           xsi.SetView(xsi_.A());
 
@@ -1063,7 +1065,7 @@ namespace CORE::GEO
         }
         else
         {
-          dserror("Cut::Intersection::GetTriangle: For Triangulation a QUAD4 is expected!");
+          FOUR_C_THROW("Cut::Intersection::GetTriangle: For Triangulation a QUAD4 is expected!");
         }
       };
 
@@ -1086,7 +1088,7 @@ namespace CORE::GEO
                 point, distance, tolerance, zeroarea, loc, touched_edges, signeddistance);
           }
           default:
-            dserror("Unexpected floattype for ComputeDistanceT!");
+            FOUR_C_THROW("Unexpected floattype for ComputeDistanceT!");
         }
       }
 
@@ -1098,7 +1100,7 @@ namespace CORE::GEO
         TEUCHOS_FUNC_TIME_MONITOR("ComputeDistance");
 
         if (dimside + dimedge != probdim)
-          dserror(
+          FOUR_C_THROW(
               "This ComputeDistance variant won't work! Think about using "
               "a CORE::GEO::CUT::Position object instead!");
         CORE::LINALG::Matrix<probdim, 1> xsi(xsi_.A(), true);
@@ -1153,7 +1155,7 @@ namespace CORE::GEO
           quad4_touched_edges.push_back(quad4_id);
         }
 
-        if (quad4_touched_edges.size() > 4) dserror("this should not be possible");
+        if (quad4_touched_edges.size() > 4) FOUR_C_THROW("this should not be possible");
       }
 
       /// Detects in the point is close to an endpoint of the edge
@@ -1196,7 +1198,7 @@ namespace CORE::GEO
                 extended_tri_tolerance_loc_triangle_split);
           }
           default:
-            dserror("Unexpected floattype for ComputeDistanceT!");
+            FOUR_C_THROW("Unexpected floattype for ComputeDistanceT!");
         }
       }
 
@@ -1206,7 +1208,7 @@ namespace CORE::GEO
           bool signeddistance, int tri3_id, bool& extended_tri_tolerance_loc_triangle_split)
       {
         if (sidetype != CORE::FE::CellType::quad4)
-          dserror(
+          FOUR_C_THROW(
               "This ComputeDistance routine is only meaningful for "
               "QUAD4 side elements! But you passed in a side element "
               "of type %i | %s.",
@@ -1215,7 +1217,8 @@ namespace CORE::GEO
         TEUCHOS_FUNC_TIME_MONITOR("ComputeDistance");
 
         // dimension of xsi: element dimension of 2 + 1 entry for the distance
-        if (xsi_.M() != 3) dserror("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
+        if (xsi_.M() != 3)
+          FOUR_C_THROW("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
         CORE::LINALG::Matrix<3, 1> xsi(xsi_.A(), true);
 
         // KERNEL::DebugComputeDistance<probdim,CORE::FE::CellType::tri3, floattype>
@@ -1339,7 +1342,7 @@ namespace CORE::GEO
           case CORE::FE::CellType::line2:
             return CreateConcreteIntersection<edgeType, CORE::FE::CellType::line2>(probdim);
           default:
-            dserror(
+            FOUR_C_THROW(
                 "Unsupported SideType! If meaningful, add your sideType here. \n"
                 "Given SideType = %s",
                 CORE::FE::CellTypeToString(side_type).c_str());
@@ -1361,7 +1364,7 @@ namespace CORE::GEO
             inter_ptr = new CORE::GEO::CUT::Intersection<3, edgeType, sideType>();
             break;
           default:
-            dserror("Unsupported ProbDim! ( probdim = %d )", probdim);
+            FOUR_C_THROW("Unsupported ProbDim! ( probdim = %d )", probdim);
             exit(EXIT_FAILURE);
         }
         return inter_ptr;

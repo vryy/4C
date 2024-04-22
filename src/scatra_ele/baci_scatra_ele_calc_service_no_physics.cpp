@@ -37,7 +37,7 @@ int DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::EvaluateAction(DRT:
 
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Not acting on this action. This ImplType is designed to be a dummy element without "
           "any physics used in SSI simulations. At the moment, only the minimal set of actions "
           "are implemented, that are needed for simulating a one-way coupling from scatra to "

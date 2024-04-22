@@ -67,7 +67,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   auto output = discret->Writer();
   if (discret->NumGlobalElements() == 0)
-    dserror("No elements in discretization %s", discret->Name().c_str());
+    FOUR_C_THROW("No elements in discretization %s", discret->Name().c_str());
   output->WriteMesh(0, 0.0);
 
   // -------------------------------------------------------------------
@@ -83,7 +83,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   // make a copy (inside an Teuchos::rcp) containing also all sublists
   auto scatratimeparams = Teuchos::rcp(new Teuchos::ParameterList(scatradyn));
-  if (scatratimeparams == Teuchos::null) dserror("Instantiation of Teuchos::ParameterList failed!");
+  if (scatratimeparams == Teuchos::null)
+    FOUR_C_THROW("Instantiation of Teuchos::ParameterList failed!");
 
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems
@@ -135,7 +136,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
           scatratimeparams->set<int>("INITFUNCNO", prbdyn.get<int>("STRUCTSCAL_INITFUNCNO"));
           break;
         default:
-          dserror("Your STRUCTSCAL_INITIALFIELD type is not supported!");
+          FOUR_C_THROW("Your STRUCTSCAL_INITIALFIELD type is not supported!");
           break;
       }
 
@@ -192,7 +193,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         break;
       }
       default:
-        dserror("Unknown time integration scheme for loMa!");
+        FOUR_C_THROW("Unknown time integration scheme for loMa!");
         break;
     }
   }
@@ -234,7 +235,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
                 discret, solver, elchparams, scatratimeparams, extraparams, output));
           }
           else
-            dserror("not identified");
+            FOUR_C_THROW("not identified");
         }
         else
         {
@@ -266,7 +267,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         break;
       }
       default:
-        dserror("Unknown time integration scheme for electrochemistry!");
+        FOUR_C_THROW("Unknown time integration scheme for electrochemistry!");
         break;
     }
   }
@@ -319,7 +320,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         {
           case GLOBAL::ProblemType::level_set:
           {
-            dserror(
+            FOUR_C_THROW(
                 "Stationary time integration scheme only supported for a selection of coupled "
                 "level-set problems!");
             exit(EXIT_FAILURE);
@@ -338,14 +339,14 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         switch (probtype)
         {
           default:
-            dserror("Unknown time-integration scheme for level-set problem");
+            FOUR_C_THROW("Unknown time-integration scheme for level-set problem");
             exit(EXIT_FAILURE);
         }
 
         break;
       }
       default:
-        dserror("Unknown time-integration scheme for level-set problem");
+        FOUR_C_THROW("Unknown time-integration scheme for level-set problem");
         break;
     }  // switch(timintscheme)
   }
@@ -392,7 +393,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
           break;
         }
         default:
-          dserror("Unknown time integration scheme for cardiac monodomain problem!");
+          FOUR_C_THROW("Unknown time integration scheme for cardiac monodomain problem!");
           break;
       }  // switch(timintscheme)
     }
@@ -430,7 +431,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         break;
       }
       default:
-        dserror("Unknown time integration scheme for porous medium multiphase problem!");
+        FOUR_C_THROW("Unknown time integration scheme for porous medium multiphase problem!");
         break;
     }  // switch(timintscheme)
   }
@@ -458,7 +459,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
         }
         default:
         {
-          dserror("Unknown time-integration scheme for HDG scalar transport problem");
+          FOUR_C_THROW("Unknown time-integration scheme for HDG scalar transport problem");
           break;
         }
       }
@@ -496,7 +497,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
           break;
         }
         default:
-          dserror("Unknown time-integration scheme for scalar transport problem");
+          FOUR_C_THROW("Unknown time-integration scheme for scalar transport problem");
           break;
       }  // switch(timintscheme)
     }
@@ -554,7 +555,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       if (prec != INPAR::SOLVER::PreconditionerType::cheap_simple)  // TODO adapt error message
       {
-        dserror(
+        FOUR_C_THROW(
             "If SIMPLER flag is set to YES you can only use CheapSIMPLE as preconditioner in your "
             "fluid solver. Choose CheapSIMPLE in the SOLVER %i block in your dat file.",
             linsolvernumber);
@@ -591,14 +592,14 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTes
 /*----------------------------------------------------------------------*/
 void ADAPTER::ScaTraBaseAlgorithm::CheckIsSetup() const
 {
-  if (not IsSetup()) dserror("Setup() was not called.");
+  if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::ScaTraBaseAlgorithm::CheckIsInit() const
 {
-  if (not IsInit()) dserror("Init(...) was not called.");
+  if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

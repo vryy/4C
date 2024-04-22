@@ -107,7 +107,7 @@ CORE::FE::CellType DRT::ELEMENTS::RedAirBloodScatra::Shape() const
     case 3:
       return CORE::FE::CellType::line3;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
   }
 }
 
@@ -176,7 +176,7 @@ void DRT::ELEMENTS::RedAirBloodScatra::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, generation_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -225,7 +225,7 @@ void DRT::ELEMENTS::RedAirBloodScatra::getParams(std::string name, double& var)
   it = elemParams_.find(name);
   if (it == elemParams_.end())
   {
-    dserror("[%s] is not found with in the element variables", name.c_str());
+    FOUR_C_THROW("[%s] is not found with in the element variables", name.c_str());
     exit(1);
   }
   var = elemParams_[name];
@@ -242,7 +242,7 @@ void DRT::ELEMENTS::RedAirBloodScatra::getParams(std::string name, int& var)
   }
   else
   {
-    dserror("[%s] is not found with in the element INT variables", name.c_str());
+    FOUR_C_THROW("[%s] is not found with in the element INT variables", name.c_str());
     exit(1);
   }
 }
@@ -252,7 +252,7 @@ void DRT::ELEMENTS::RedAirBloodScatra::getParams(std::string name, int& var)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::RedAirBloodScatra::Lines()
 {
-  dsassert(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
+  FOUR_C_ASSERT(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
 
   return {Teuchos::rcpFromRef(*this)};
 }

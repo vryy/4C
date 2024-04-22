@@ -57,7 +57,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
       break;
     }

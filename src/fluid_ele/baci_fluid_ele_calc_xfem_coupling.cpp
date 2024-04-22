@@ -54,7 +54,7 @@ void SlaveElementInterface<distype>::DefineStateNames(
       break;
     }
     default:
-      dserror("Unsupported element shape %d", slave_distype);
+      FOUR_C_THROW("Unsupported element shape %d", slave_distype);
       break;
   }
 }
@@ -109,7 +109,7 @@ SlaveElementInterface<distype>::CreateSlaveElementRepresentation(
         break;
       }
       default:
-        dserror("Unsupported boundary element shape %d", slave_ele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", slave_ele->Shape());
         break;
     }
   }
@@ -167,7 +167,7 @@ SlaveElementInterface<distype>::CreateSlaveElementRepresentation(
         break;
       }
       default:
-        dserror("unsupported boundary element shape %d", slave_ele->Shape());
+        FOUR_C_THROW("unsupported boundary element shape %d", slave_ele->Shape());
         break;
     }
   }
@@ -236,7 +236,7 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
         break;
       }
       default:
-        dserror("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
         break;
     }
   }
@@ -273,12 +273,12 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
         break;
       }
       default:
-        dserror("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
         break;
     }
   }
   else
-    dserror("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
+    FOUR_C_THROW("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
 
   return Teuchos::rcp(nit);
 }
@@ -341,7 +341,7 @@ NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(DRT::Element* bele,
         break;
       }
       default:
-        dserror("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
         break;
     }
   }
@@ -385,12 +385,12 @@ NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(DRT::Element* bele,
         break;
       }
       default:
-        dserror("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
         break;
     }
   }
   else
-    dserror("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
+    FOUR_C_THROW("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
 
   return Teuchos::rcp(nit);
 }
@@ -450,7 +450,7 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
         break;
       }
       default:
-        dserror("Unsupported volume element shape %d.", vele->Shape());
+        FOUR_C_THROW("Unsupported volume element shape %d.", vele->Shape());
         break;
     }
   }
@@ -467,7 +467,7 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
       }
       default:
         // expecting 3 dofs per slave element node as this is fluid-solid coupling
-        dserror("Unsupported volume element shape %d.", vele->Shape());
+        FOUR_C_THROW("Unsupported volume element shape %d.", vele->Shape());
         break;
     }
   }
@@ -509,7 +509,7 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
   // coupling
   if (numdofpernode != 3)
   {
-    dserror("Unsupported number of %d nodes for standard Dirichlet coupling.", numdofpernode);
+    FOUR_C_THROW("Unsupported number of %d nodes for standard Dirichlet coupling.", numdofpernode);
   }
 
   switch (bele->Shape())
@@ -543,7 +543,7 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
       break;
     }
     default:
-      dserror("Unsupported boundary element shape %d", bele->Shape());
+      FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
       break;
   }
 
@@ -613,7 +613,7 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidSided(
         break;
       }
       default:
-        dserror("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
         break;
     }
   }
@@ -657,12 +657,12 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidSided(
         break;
       }
       default:
-        dserror("Unsupported boundary element shape %d", bele->Shape());
+        FOUR_C_THROW("Unsupported boundary element shape %d", bele->Shape());
         break;
     }
   }
   else
-    dserror("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
+    FOUR_C_THROW("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
 
   return Teuchos::rcp(hlm);
 }

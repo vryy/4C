@@ -98,7 +98,7 @@ BEAMINTERACTION::BeamToSolidCondition::CreateContactPair(
     condition_contact_pairs_.push_back(contact_pair);
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "No contact pair was created. This is fatal, since we want to create a geometry pair on "
         "the contact pair here.");
 
@@ -183,7 +183,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSoli
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27,
           bts_template_arguments...>());
     default:
-      dserror("Wrong element type for solid element.");
+      FOUR_C_THROW("Wrong element type for solid element.");
       return Teuchos::null;
   }
 }
@@ -213,7 +213,7 @@ BEAMINTERACTION::CreateBeamToSolidVolumePairShapeNoNurbs(const CORE::FE::CellTyp
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10,
           bts_template_arguments...>());
     default:
-      dserror("Wrong element type for solid element.");
+      FOUR_C_THROW("Wrong element type for solid element.");
       return Teuchos::null;
   }
 }
@@ -240,7 +240,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSoli
       return CreateBeamToSolidVolumePairMortar<bts_class, bts_mortar_template_arguments...,
           GEOMETRYPAIR::t_line4>(shape, other_mortar_shape_function...);
     default:
-      dserror("Wrong mortar shape function.");
+      FOUR_C_THROW("Wrong mortar shape function.");
       return Teuchos::null;
   }
 }
@@ -307,7 +307,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
       return CreateBeamToSolidVolumePairShapeNoNurbs<BeamToSolidVolumeMeshtyingPair2D3DPlane>(
           shape);
     else
-      dserror(
+      FOUR_C_THROW(
           "2D-3D coupling is only implemented for Simo-Reissner and torsion free beam elements.");
   }
 
@@ -353,7 +353,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::BuildIdSets(
   surface_ids_.clear();
   for (const auto& map_item : condition_other_->Geometry())
   {
-    if (!map_item.second->IsFaceElement()) dserror("Expected FaceElement");
+    if (!map_item.second->IsFaceElement()) FOUR_C_THROW("Expected FaceElement");
     Teuchos::RCP<const DRT::FaceElement> face_element =
         Teuchos::rcp_dynamic_cast<const DRT::FaceElement>(map_item.second);
     const int solid_id = face_element->ParentElementId();
@@ -363,7 +363,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::BuildIdSets(
   // The size of the surface id set and the geometry in the conditions have to match, otherwise
   // there are two faces connected to the same element, which is not implemented at this point.
   if (surface_ids_.size() != condition_other_->Geometry().size())
-    dserror(
+    FOUR_C_THROW(
         "There are multiple faces connected to one solid element in this condition. This case is "
         "currently not implemented.");
 }
@@ -382,7 +382,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
       Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineToSurfaceEvaluationData>(
           geometry_evaluation_data_, false);
   if (line_to_surface_evaluation_data == Teuchos::null)
-    dserror("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
+    FOUR_C_THROW("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
 
   // If the pairs are FAD, i.e., if the averaged normals have to be evaluated using FAD.
   int fad_order = 0;
@@ -429,7 +429,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::Setup(
     }
     else
     {
-      dserror("The face of the solid element %d is not in the current condition!",
+      FOUR_C_THROW("The face of the solid element %d is not in the current condition!",
           pair->Element2()->Id());
     }
   }
@@ -499,7 +499,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::SetState(
       Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineToSurfaceEvaluationData>(
           geometry_evaluation_data_, false);
   if (line_to_surface_evaluation_data == Teuchos::null)
-    dserror("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
+    FOUR_C_THROW("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
 
   // Setup the geometry data for the surface patch.
   line_to_surface_evaluation_data->SetState(beaminteraction_data_state->GetDisColNp());
@@ -524,7 +524,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
       Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineToSurfaceEvaluationData>(
           geometry_evaluation_data_, false);
   if (line_to_surface_evaluation_data == Teuchos::null)
-    dserror("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
+    FOUR_C_THROW("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
   auto surface_normal_strategy = line_to_surface_evaluation_data->GetSurfaceNormalStrategy();
 
   if (IsMeshTying())
@@ -548,7 +548,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
       {
         if (rotational_coupling)
         {
-          dserror(
+          FOUR_C_THROW(
               "Beam-to-solid surface coupling with a Gauss-point-to-segment approach is not "
               "implemented for rotational coupling");
         }
@@ -580,7 +580,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_nurbs9>());
               default:
-                dserror("Wrong element type for surface element.");
+                FOUR_C_THROW("Wrong element type for surface element.");
             }
             break;
           }
@@ -614,7 +614,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite,
                       t_nurbs9>());
                 default:
-                  dserror("Wrong element type for surface element.");
+                  FOUR_C_THROW("Wrong element type for surface element.");
               }
             }
             else if (surface_normal_strategy ==
@@ -635,14 +635,14 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite,
                       t_quad9>());
                 default:
-                  dserror("Wrong element type for surface element.");
+                  FOUR_C_THROW("Wrong element type for surface element.");
               }
             }
-            dserror("Unknown surface normal strategy.");
+            FOUR_C_THROW("Unknown surface normal strategy.");
           }
 
           default:
-            dserror("Wrong coupling type.");
+            FOUR_C_THROW("Wrong coupling type.");
         }
         break;
       }
@@ -664,12 +664,12 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
             return BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
                 shape, mortar_shapefunction, rotational_coupling, surface_normal_strategy);
           default:
-            dserror("Wrong coupling type.");
+            FOUR_C_THROW("Wrong coupling type.");
         }
         break;
       }
       default:
-        dserror("Wrong coupling discretization.");
+        FOUR_C_THROW("Wrong coupling discretization.");
     }
   }
   else
@@ -716,7 +716,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
                       line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>,
                       t_hermite, t_nurbs9>());
                 default:
-                  dserror("Wrong element type for surface element.");
+                  FOUR_C_THROW("Wrong element type for surface element.");
               }
               break;
             case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContact::potential:
@@ -747,16 +747,16 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite,
                       t_nurbs9>());
                 default:
-                  dserror("Wrong element type for surface element.");
+                  FOUR_C_THROW("Wrong element type for surface element.");
               }
               break;
             default:
-              dserror("Wrong contact type.");
+              FOUR_C_THROW("Wrong contact type.");
           }
           break;
         }
         default:
-          dserror("Wrong contact discretization.");
+          FOUR_C_THROW("Wrong contact discretization.");
       }
     }
     else
@@ -793,7 +793,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
                       line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>,
                       t_line2, t_nurbs9>());
                 default:
-                  dserror("Wrong element type for surface element.");
+                  FOUR_C_THROW("Wrong element type for surface element.");
               }
               break;
             case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContact::potential:
@@ -824,16 +824,16 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
                       line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, t_line2,
                       t_nurbs9>());
                 default:
-                  dserror("Wrong element type for surface element.");
+                  FOUR_C_THROW("Wrong element type for surface element.");
               }
               break;
             default:
-              dserror("Wrong contact type.");
+              FOUR_C_THROW("Wrong contact type.");
           }
           break;
         }
         default:
-          dserror("Wrong contact discretization.");
+          FOUR_C_THROW("Wrong contact discretization.");
       }
     }
   }

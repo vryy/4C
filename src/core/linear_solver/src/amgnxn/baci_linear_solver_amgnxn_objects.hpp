@@ -131,26 +131,26 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
     void SetMatrix(Teuchos::RCP<CORE::LINALG::SparseMatrix> A, int i, int j) override
     {
-      if (i != j) dserror("You can only set diagonal blocks");
+      if (i != j) FOUR_C_THROW("You can only set diagonal blocks");
       matrices_[i] = A;
     }
 
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrix(int i, int j) const override
     {
-      if (i != j) dserror("You can only get diagonal blocks");
+      if (i != j) FOUR_C_THROW("You can only get diagonal blocks");
       return matrices_[i];
     }
 
     BlockedMatrix GetBlockedMatrix(
         const std::vector<int>& row_blocks, const std::vector<int>& col_blocks) const override
     {
-      dserror("Function not implemented yet.");
+      FOUR_C_THROW("Function not implemented yet.");
       return *this;
     }
 
     virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> GetBlockSparseMatrix()
     {
-      dserror("Function not implemented yet.");
+      FOUR_C_THROW("Function not implemented yet.");
       return Teuchos::null;
     }
 

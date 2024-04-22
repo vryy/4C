@@ -131,10 +131,10 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
 
   // for the sake of safety
   if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
@@ -1138,7 +1138,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       return params->CreateMaterial();
     }
     default:
-      dserror("unknown material type %d", curmat->Type());
+      FOUR_C_THROW("unknown material type %d", curmat->Type());
       break;
   }
 

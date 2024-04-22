@@ -94,7 +94,7 @@ namespace DRT
       bool IsViscousAdjointSymmetric() const
       {
         if (visc_adjoint_scaling_ == INPAR::XFEM::adj_none)
-          dserror("Do not call IsViscousAdjointSymmetric with adj_none");
+          FOUR_C_THROW("Do not call IsViscousAdjointSymmetric with adj_none");
         return visc_adjoint_scaling_ == INPAR::XFEM::adj_sym;
       }
 
@@ -112,7 +112,7 @@ namespace DRT
           case INPAR::XFEM::adj_skew:
             return -1.0;
           default:
-            dserror("Unkown type of AdjointScaling!");
+            FOUR_C_THROW("Unkown type of AdjointScaling!");
         }
         return 0.0;  // make compiler happy
       }

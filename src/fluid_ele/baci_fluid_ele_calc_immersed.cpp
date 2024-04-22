@@ -70,7 +70,7 @@ int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid*
   else if (num_gp_fluid_bound == 1000)
     degree_gp_fluid_bound = 19;
   else
-    dserror(
+    FOUR_C_THROW(
         "Invalid value for parameter NUM_GP_FLUID_BOUND (valid parameters are 8, 64, 125, 343, 729 "
         "and 1000).");
 
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
     {
       // safety check
       if (my::fldparatimint_->AlphaF() != 1.0 or my::fldparatimint_->Gamma() != 1.0)
-        dserror(
+        FOUR_C_THROW(
             "Boussinesq approximation in combination with generalized-alpha time integration "
             "has only been tested for BDF2-equivalent time integration parameters! "
             "Feel free to remove this error at your own risk!");
@@ -234,9 +234,9 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
   {
     // some checking
     if (my::fldparatimint_->IsStationary())
-      dserror("there is no time dependent subgrid scale closure for stationary problems\n");
+      FOUR_C_THROW("there is no time dependent subgrid scale closure for stationary problems\n");
     if (saccn == nullptr or sveln == nullptr or svelnp == nullptr)
-      dserror("no subscale array provided");
+      FOUR_C_THROW("no subscale array provided");
 
     // parameter definitions
     double alphaF = my::fldparatimint_->AlphaF();
@@ -279,7 +279,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
     // integration
     if (!my::fldparatimint_->IsGenalpha())
     {
-      dserror("the time-dependent subgrid closure requires a genalpha time integration\n");
+      FOUR_C_THROW("the time-dependent subgrid closure requires a genalpha time integration\n");
     }
 
     /*         +-                                       -+

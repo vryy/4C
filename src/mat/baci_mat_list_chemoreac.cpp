@@ -149,7 +149,7 @@ void MAT::MatListChemoReac::Unpack(const std::vector<char>& data)
         paramsreachemo_ = dynamic_cast<MAT::PAR::MatListChemoReac*>(mat);
       }
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -164,7 +164,8 @@ void MAT::MatListChemoReac::Unpack(const std::vector<char>& data)
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 FOUR_C_NAMESPACE_CLOSE

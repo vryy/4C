@@ -95,48 +95,65 @@ namespace CORE
   }  // namespace INTERNAL
 }  // namespace CORE
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
 
 /**
  * Assert that @p test is `true`. If not issue an error in the form of a CORE::Exception.
- * This macro is only active if BACI_DEBUG is set. In release mode, the @p test is not even
- * evaluated.
+ * This macro is only active if FOUR_C_ENABLE_ASSERTIONS is set. Otherwise, the @p test is not
+ * even evaluated.
  *
  * This macro takes the test to evaluate and an error message.
  * For example:
  *
  * @code
- *   dsassert(vector.size() == dim, "Vector size does not equal dimension.");
+ *   FOUR_C_ASSERT(vector.size() == dim, "Vector size does not equal dimension.");
  * @endcode
  */
-#define dsassert(test, args...) \
-  if (!(test))                  \
-  {                             \
-    dserror(args);              \
-  }                             \
-  static_assert(true, "Terminate dsassert with a comma.")
+#define FOUR_C_ASSERT(test, args...) \
+  if (!(test))                       \
+  {                                  \
+    FOUR_C_THROW(args);              \
+  }                                  \
+  static_assert(true, "Terminate FOUR_C_ASSERT with a comma.")
 
 #else
 
 /**
- * This macro would asserts that @p test is true, but only if BACI_DEBUG is set.
+ * This macro would asserts that @p test is true, but only if FOUR_C_ENABLE_ASSERTIONS is set.
  */
-#define dsassert(test, args...) static_assert(true, "Terminate dsassert with a comma.")
+#define FOUR_C_ASSERT(test, args...) static_assert(true, "Terminate FOUR_C_ASSERT with a comma.")
 
 #endif
 
 /**
- * Issue an error in the form of a CORE::Exception.
+ * Throw an error in the form of a CORE::Exception.
  *
  * This macro takes an error message, which may contain C-style formatting.
  * All format arguments are passed as additional arguments. For example:
  *
  * @code
- *   dserror("An error occured in iteration %d.", iter);
+ *   FOUR_C_THROW("An error occured in iteration %d.", iter);
  * @endcode
  */
-#define dserror \
+#define FOUR_C_THROW \
   FourC::CORE::INTERNAL::ErrorHelper { __FILE__, __LINE__ }
+
+/**
+ * Throw an error in the form of a CORE::Exception, unless the @p test is true.
+ *
+ * This macro takes an error message, which may contain C-style formatting.
+ * All format arguments are passed as additional arguments. For example:
+ *
+ * @code
+ *   FOUR_C_THROW_UNLESS(vector.size() == dim, "Vector size does not equal dimension d=%d.", dim);
+ * @endcode
+ */
+#define FOUR_C_THROW_UNLESS(test, args...) \
+  if (!(test))                             \
+  {                                        \
+    FOUR_C_THROW(args);                    \
+  }                                        \
+  static_assert(true, "Terminate FOUR_C_THROW_UNLESS with a comma.")
 
 FOUR_C_NAMESPACE_CLOSE
 

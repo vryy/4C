@@ -38,7 +38,7 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(DRT::Element& ele,
       return PreEvaluateScatra<CORE::FE::CellType::tri6>(
           ele, params, discretization, dof_index_array);
     default:
-      dserror(
+      FOUR_C_THROW(
           "The discretization type you are trying to pre-evaluate for shell7p scatra is not yet "
           "implemented.");
   }
@@ -57,7 +57,7 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::Paramet
     const int numscal = discretization.NumDof(1, ele.Nodes()[0]);
 
     if (dof_index_array[1].Size() != SHELL::DETAIL::num_node<distype> * numscal)
-      dserror("location vector length does not match!");
+      FOUR_C_THROW("location vector length does not match!");
 
     // name of scalarfield
     std::string scalarfield = "scalarfield";
@@ -67,7 +67,8 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatra(DRT::Element& ele, Teuchos::Paramet
       // get the scalar state
       Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.GetState(1, scalarfield);
 
-      if (scalarnp == Teuchos::null) dserror("can not get state vector %s", scalarfield.c_str());
+      if (scalarnp == Teuchos::null)
+        FOUR_C_THROW("can not get state vector %s", scalarfield.c_str());
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> myscalar =

@@ -56,7 +56,7 @@ void PASI::PasiPartTwoWayCoup::Init()
   // safety check
   if (convtolrelativedisp_ < 0.0 and convtolscaleddisp_ < 0.0 and convtolrelativeforce_ < 0.0 and
       convtolscaledforce_ < 0.0)
-    dserror("no convergence tolerance for partitioned iterations set!");
+    FOUR_C_THROW("no convergence tolerance for partitioned iterations set!");
 }
 
 void PASI::PasiPartTwoWayCoup::Setup()
@@ -76,10 +76,12 @@ void PASI::PasiPartTwoWayCoup::Setup()
 
     if (walldatastate->GetDispRow() == Teuchos::null or
         walldatastate->GetDispCol() == Teuchos::null)
-      dserror("wall displacements not initialized!");
-    if (walldatastate->GetVelCol() == Teuchos::null) dserror("wall velocities not initialized!");
-    if (walldatastate->GetAccCol() == Teuchos::null) dserror("wall accelerations not initialized!");
-    if (walldatastate->GetForceCol() == Teuchos::null) dserror("wall forces not initialized!");
+      FOUR_C_THROW("wall displacements not initialized!");
+    if (walldatastate->GetVelCol() == Teuchos::null)
+      FOUR_C_THROW("wall velocities not initialized!");
+    if (walldatastate->GetAccCol() == Teuchos::null)
+      FOUR_C_THROW("wall accelerations not initialized!");
+    if (walldatastate->GetForceCol() == Teuchos::null) FOUR_C_THROW("wall forces not initialized!");
   }
 }
 
@@ -90,7 +92,8 @@ void PASI::PasiPartTwoWayCoup::ReadRestart(int restartstep)
 
   IO::DiscretizationReader reader(structurefield_->Discretization(),
       GLOBAL::Problem::Instance()->InputControlFile(), restartstep);
-  if (restartstep != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
+  if (restartstep != reader.ReadInt("step"))
+    FOUR_C_THROW("Time step on file not equal to given step");
 
   // get interface force from restart
   reader.ReadVector(intfforcenp_, "intfforcenp");
@@ -284,8 +287,8 @@ void PASI::PasiPartTwoWayCoup::ClearInterfaceForces()
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface->GetWallDataState();
 
-#ifdef BACI_DEBUG
-  if (walldatastate->GetForceCol() == Teuchos::null) dserror("wall forces not initialized!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (walldatastate->GetForceCol() == Teuchos::null) FOUR_C_THROW("wall forces not initialized!");
 #endif
 
   // clear interface forces
@@ -304,8 +307,8 @@ void PASI::PasiPartTwoWayCoup::GetInterfaceForces()
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
       particlewallinterface->GetWallDataState();
 
-#ifdef BACI_DEBUG
-  if (walldatastate->GetForceCol() == Teuchos::null) dserror("wall forces not initialized!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (walldatastate->GetForceCol() == Teuchos::null) FOUR_C_THROW("wall forces not initialized!");
 #endif
 
   // clear interface forces
@@ -314,7 +317,7 @@ void PASI::PasiPartTwoWayCoup::GetInterfaceForces()
   // assemble interface forces
   Epetra_Export exporter(walldatastate->GetForceCol()->Map(), intfforcenp_->Map());
   int err = intfforcenp_->Export(*walldatastate->GetForceCol(), exporter, Add);
-  if (err) dserror("export of interface forces failed with err=%d", err);
+  if (err) FOUR_C_THROW("export of interface forces failed with err=%d", err);
 }
 
 bool PASI::PasiPartTwoWayCoup::ConvergenceCheck(int itnum)
@@ -412,7 +415,7 @@ bool PASI::PasiPartTwoWayCoup::ConvergenceCheck(int itnum)
         printf("+------------------------------------------------------------------------------+\n");
         // clang-format on
       }
-      dserror("The partitioned PASI solver did not converge in ITEMAX steps!");
+      FOUR_C_THROW("The partitioned PASI solver did not converge in ITEMAX steps!");
     }
   }
 
@@ -607,7 +610,8 @@ void PASI::PasiPartTwoWayCoupDispRelaxAitken::ReadRestart(int restartstep)
 
   IO::DiscretizationReader reader(structurefield_->Discretization(),
       GLOBAL::Problem::Instance()->InputControlFile(), restartstep);
-  if (restartstep != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
+  if (restartstep != reader.ReadInt("step"))
+    FOUR_C_THROW("Time step on file not equal to given step");
 
   // get relaxation parameter from restart
   omega_ = reader.ReadDouble("omega");

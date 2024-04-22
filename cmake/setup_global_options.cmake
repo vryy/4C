@@ -97,14 +97,8 @@ if(BACI_ENABLE_COVERAGE)
   endif()
 endif()
 
-baci_process_global_option(BACI_DSERROR_DUMP "dserror creates a core file" OFF)
+baci_process_global_option(BACI_DSERROR_DUMP "Uncaught exceptions create a core file" OFF)
 baci_process_global_option(BACI_TRAP_FE "Crash BACI if a nan or inf occurs" ON)
-
-baci_process_global_option(
-  BACI_DEBUG
-  "Turn on assertions and debug sections in code. Automatically turned on for DEBUG as CMAKE_BUILD_TYPE."
-  OFF
-  )
 
 ##
 # Optimization flags
@@ -120,7 +114,7 @@ baci_process_global_option(
 ##
 
 if(${BACI_BUILD_TYPE_UPPER} MATCHES DEBUG)
-  set(BACI_DEBUG
+  set(FOUR_C_ENABLE_ASSERTIONS
       "ON"
       CACHE BOOL "Forced ON due to build type DEBUG" FORCE
       )
@@ -144,6 +138,13 @@ if(${BACI_BUILD_TYPE_UPPER} MATCHES RELWITHDEBINFO)
   target_compile_options(baci_private_compile_interface INTERFACE "-g")
   enable_compiler_flag_if_supported("-funroll-loops")
 endif()
+
+# Evaluate this option now to get the correct output in case it is force ON in DEBUG mode.
+baci_process_global_option(
+  FOUR_C_ENABLE_ASSERTIONS
+  "Turn on assertions and debug sections in code. Automatically turned on for DEBUG as CMAKE_BUILD_TYPE."
+  OFF
+  )
 
 ##
 # Add potential user flags at the very end

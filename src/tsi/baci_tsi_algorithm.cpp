@@ -84,7 +84,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   if (CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
           GLOBAL::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") ==
       INPAR::STR::int_old)
-    dserror("old structural time integration no longer supported in tsi");
+    FOUR_C_THROW("old structural time integration no longer supported in tsi");
   else
   {
     Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo =
@@ -246,7 +246,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
           double disp = (*dummy)[slid];
           // insert velocity value into node-based vector
           err = dispnp_->ReplaceMyValue(lnodeid, index, disp);
-          if (err != 0) dserror("error while inserting a value into dispnp_");
+          if (err != 0) FOUR_C_THROW("error while inserting a value into dispnp_");
         }
 
         // for security reasons in 1D or 2D problems:
@@ -254,7 +254,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
         for (int index = numdim; index < 3; ++index)
         {
           err = dispnp_->ReplaceMyValue(lnodeid, index, 0.0);
-          if (err != 0) dserror("error while inserting a value into dispnp_");
+          if (err != 0) FOUR_C_THROW("error while inserting a value into dispnp_");
         }
       }  // for lnodid
 
@@ -293,7 +293,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
         double temp = (*dummy1)[slid];
         // insert velocity value into node-based vector
         int err = tempnp_->ReplaceMyValue(lnodeid, 0, temp);
-        if (err != 0) dserror("error while inserting a value into tempnp_");
+        if (err != 0) FOUR_C_THROW("error while inserting a value into tempnp_");
       }  // for lnodid
 
       StructureField()->Discretization()->Writer()->WriteVector(
@@ -314,7 +314,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
 void TSI::Algorithm::OutputDeformationInThr(
     Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<DRT::Discretization> structdis)
 {
-  if (dispnp == Teuchos::null) dserror("Got null pointer for displacements");
+  if (dispnp == Teuchos::null) FOUR_C_THROW("Got null pointer for displacements");
 
   int err(0);
 
@@ -347,7 +347,7 @@ void TSI::Algorithm::OutputDeformationInThr(
       double disp = (*dispnp)[slid];
       // insert velocity value into node-based vector
       err = dispnp_->ReplaceMyValue(lnodeid, index, disp);
-      if (err != 0) dserror("error while inserting a value into dispnp_");
+      if (err != 0) FOUR_C_THROW("error while inserting a value into dispnp_");
     }
 
     // for security reasons in 1D or 2D problems:
@@ -355,7 +355,7 @@ void TSI::Algorithm::OutputDeformationInThr(
     for (int index = numdim; index < 3; ++index)
     {
       err = dispnp_->ReplaceMyValue(lnodeid, index, 0.0);
-      if (err != 0) dserror("error while inserting a value into dispnp_");
+      if (err != 0) FOUR_C_THROW("error while inserting a value into dispnp_");
     }
 
   }  // for lnodid
@@ -439,9 +439,9 @@ void TSI::Algorithm::GetContactStrategy()
     if (CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
             GLOBAL::Problem::Instance()->StructuralDynamicParams(), "INT_STRATEGY") !=
         INPAR::STR::int_standard)
-      dserror("thermo-mechanical contact only with new structural time integration");
+      FOUR_C_THROW("thermo-mechanical contact only with new structural time integration");
 
-    if (coupST_ == Teuchos::null) dserror("coupST_ not yet here");
+    if (coupST_ == Teuchos::null) FOUR_C_THROW("coupST_ not yet here");
 
     STR::MODELEVALUATOR::Contact& a = static_cast<STR::MODELEVALUATOR::Contact&>(
         StructureField()->ModelEvaluator(INPAR::STR::model_contact));
@@ -457,7 +457,7 @@ void TSI::Algorithm::GetContactStrategy()
   else if (stype == INPAR::CONTACT::solution_lagmult)
   {
     if (StructureField()->HaveModel(INPAR::STR::model_contact))
-      dserror(
+      FOUR_C_THROW(
           "structure should not have a Lagrange strategy ... as long as condensed"
           "contact formulations are not moved to the new structural time integration");
 

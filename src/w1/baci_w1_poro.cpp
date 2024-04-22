@@ -147,7 +147,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::Unpack(const std::vector<char>& data)
 
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 
   init_ = true;
 }
@@ -182,7 +182,7 @@ bool DRT::ELEMENTS::Wall1Poro<distype>::ReadElement(
   // setup poro material
   Teuchos::RCP<MAT::StructPoro> poromat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
   if (poromat == Teuchos::null)
-    dserror("material assigned to poro element is not a poro material!");
+    FOUR_C_THROW("material assigned to poro element is not a poro material!");
   poromat->PoroSetup(numgpt_, linedef);
 
   ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(linedef);
@@ -222,12 +222,12 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterials()
   if (struct_mat_ == Teuchos::null)
   {
     struct_mat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-    if (struct_mat_ == Teuchos::null) dserror("cast to poro material failed");
+    if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
     if (struct_mat_->MaterialType() != INPAR::MAT::m_structporo and
         struct_mat_->MaterialType() != INPAR::MAT::m_structpororeaction and
         struct_mat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
-      dserror("invalid structure material for poroelasticity");
+      FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
   // get fluid material
@@ -238,12 +238,12 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterials()
     {
       fluid_mat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(Material(1));
       if (fluid_mat_ == Teuchos::null) return;
-      // dserror("cast to fluid poro material failed");
+      // FOUR_C_THROW("cast to fluid poro material failed");
       if (fluid_mat_->MaterialType() != INPAR::MAT::m_fluidporo)
-        dserror("invalid fluid material for poroelasticity");
+        FOUR_C_THROW("invalid fluid material for poroelasticity");
     }
     else
-      dserror("no second material defined for element %i", Id());
+      FOUR_C_THROW("no second material defined for element %i", Id());
   }
 }
 
@@ -254,12 +254,12 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterialsPressureBased()
   if (struct_mat_ == Teuchos::null)
   {
     struct_mat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-    if (struct_mat_ == Teuchos::null) dserror("cast to poro material failed");
+    if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
     if (struct_mat_->MaterialType() != INPAR::MAT::m_structporo and
         struct_mat_->MaterialType() != INPAR::MAT::m_structpororeaction and
         struct_mat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
-      dserror("invalid structure material for poroelasticity");
+      FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
   // Get Fluid-multiphase-Material
@@ -270,19 +270,19 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterialsPressureBased()
     {
       fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(Material(1));
       if (fluidmulti_mat_ == Teuchos::null)
-        dserror("cast to multiphase fluid poro material failed");
+        FOUR_C_THROW("cast to multiphase fluid poro material failed");
       if (fluidmulti_mat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
           fluidmulti_mat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-        dserror("invalid fluid material for poro-multiphase-elasticity");
+        FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");
       if (fluidmulti_mat_->NumFluidPhases() == 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE = 0 currently not supported since this requires "
             "an adaption of the definition of the solid pressure");
       }
     }
     else
-      dserror("no second material defined for element %i", Id());
+      FOUR_C_THROW("no second material defined for element %i", Id());
   }
 }
 

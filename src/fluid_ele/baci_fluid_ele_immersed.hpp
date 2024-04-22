@@ -200,10 +200,10 @@ namespace DRT
         stored_projected_intpoint_divergence_->clear();
 
         if (intpoint_has_projected_divergence_->size() > 0)
-          dserror("intpoint_has_projected_divergence_ not cleared properly");
+          FOUR_C_THROW("intpoint_has_projected_divergence_ not cleared properly");
 
         if (stored_projected_intpoint_divergence_->size() > 0)
-          dserror("stored_projected_intpoint_divergence_ not cleared properly");
+          FOUR_C_THROW("stored_projected_intpoint_divergence_ not cleared properly");
       };
 
       /*!
@@ -243,25 +243,25 @@ namespace DRT
       {
         if (name == "Owner")
         {
-          if ((int)data.size() < 1) dserror("Size mismatch");
+          if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
           data[0] = Owner();
           return true;
         }
         if (name == "IsImmersed")
         {
-          if ((int)data.size() < 1) dserror("Size mismatch");
+          if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
           data[0] = IsImmersed();
           return true;
         }
         if (name == "IsBoundaryImmersed")
         {
-          if ((int)data.size() < 1) dserror("Size mismatch");
+          if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
           data[0] = IsBoundaryImmersed();
           return true;
         }
         if (name == "EleGId")
         {
-          if ((int)data.size() < 1) dserror("Size mismatch");
+          if ((int)data.size() < 1) FOUR_C_THROW("Size mismatch");
           data[0] = Id();
           return true;
         }

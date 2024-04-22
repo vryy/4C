@@ -54,7 +54,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_linstiff")
     act = SoNurbs27::calc_struct_linstiff;
   else if (action == "calc_struct_nlnstiff")
@@ -86,7 +86,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_struct_predict")
     return 0;
   else
-    dserror("Unknown type of action '%s' for So_nurbs27", action.c_str());
+    FOUR_C_THROW("Unknown type of action '%s' for So_nurbs27", action.c_str());
   // what should the element do
   switch (act)
   {
@@ -110,7 +110,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -129,7 +129,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -148,7 +148,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -162,11 +162,11 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_eleload:
-      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
       break;
 
     case calc_struct_fsiload:
-      dserror("Case not yet implemented");
+      FOUR_C_THROW("Case not yet implemented");
       break;
 
     case calc_struct_update_istep:
@@ -187,7 +187,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
     {
       const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
-        dserror("To scale or not to scale, that's the query!");
+        FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
       {
         CalcSTCMatrix(elemat1, stc_scaling, params.get<int>("stc_layer"), lm, discretization, true);
@@ -199,7 +199,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
     {
       const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
-        dserror("To scale or not to scale, that's the query!");
+        FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
       {
         CalcSTCMatrix(
@@ -210,7 +210,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_energy:
     {
-      if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
+      if (elevec1_epetra.length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -222,7 +222,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::Evaluate(Teuchos::ParameterList& params,
     }
 
     default:
-      dserror("Unknown type of action for So_nurbs27");
+      FOUR_C_THROW("Unknown type of action for So_nurbs27");
   }
   return 0;
 }  // DRT::ELEMENTS::So_nurbs27::Evaluate
@@ -246,7 +246,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81>
 
   if (nurbsdis == nullptr)
   {
-    dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+    FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
 
   bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
@@ -556,12 +556,13 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::EvaluateNeumann(Teuchos::ParameterList& par
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SONURBS27)
-    dserror("Fewer functions or curves defined than the element has dofs.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   for (int checkdof = NUMDIM_SONURBS27; checkdof < int(onoff->size()); ++checkdof)
   {
     if ((*onoff)[checkdof] != 0)
-      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+      FOUR_C_THROW(
+          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS
@@ -581,7 +582,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::EvaluateNeumann(Teuchos::ParameterList& par
   //     o get weights
   auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-  if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+  if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   // there is nothing to be done for zero sized elements in knotspan
   if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return (0);
@@ -629,9 +630,9 @@ int DRT::ELEMENTS::NURBS::SoNurbs27::EvaluateNeumann(Teuchos::ParameterList& par
     // compute determinant of Jacobian
     const double detJ = jac.Determinant();
     if (detJ == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     // material/reference co-ordinates of Gauss point
     if (havefunct)
@@ -688,7 +689,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::InitJacobianMapping(DRT::Discretization& d
 
   if (nurbsdis == nullptr)
   {
-    dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+    FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
 
   bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
@@ -726,10 +727,10 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::InitJacobianMapping(DRT::Discretization& d
     invJ_[gp].Multiply(derivs[gp], xrefe);
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ_[gp] < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d", detJ_[gp],
-          Id(), gp);
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d",
+          detJ_[gp], Id(), gp);
   }
   return;
 }  // DRT::ELEMENTS::So_nurbs27::InitJacobianMapping()
@@ -758,7 +759,7 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
 
   if (nurbsdis == nullptr)
   {
-    dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+    FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
 
   bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
@@ -832,10 +833,10 @@ void DRT::ELEMENTS::NURBS::SoNurbs27::sonurbs27_nlnstiffmass(
     double detJ = invJac.Invert();
 
     if (detJ == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d", detJ_[gp],
-          Id(), gp);
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d",
+          detJ_[gp], Id(), gp);
 
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
@@ -1060,7 +1061,7 @@ int DRT::ELEMENTS::NURBS::SoNurbs27Type::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::NURBS::SoNurbs27*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_nurbs27* failed");
+    if (!actele) FOUR_C_THROW("cast to So_nurbs27* failed");
     actele->InitJacobianMapping(dis);
   }
   return 0;
@@ -1085,7 +1086,7 @@ double DRT::ELEMENTS::NURBS::SoNurbs27::CalcIntEnergy(
   //     o get knots
   //     o get weights
   auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-  if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+  if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
 
@@ -1154,10 +1155,10 @@ double DRT::ELEMENTS::NURBS::SoNurbs27::CalcIntEnergy(
     double detJ = invJac.Invert();
 
     if (detJ == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d", detJ_[gp],
-          Id(), gp);
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d",
+          detJ_[gp], Id(), gp);
 
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst

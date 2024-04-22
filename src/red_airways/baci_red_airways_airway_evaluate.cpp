@@ -37,7 +37,7 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
   // get the action required
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_sys_matrix_rhs")
     act = RedAirway::calc_sys_matrix_rhs;
   else if (action == "get_initial_state")
@@ -75,7 +75,7 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
     char errorout[200];
     sprintf(errorout, "Unknown type of action (%s) for reduced dimensional airway", action.c_str());
 
-    dserror(errorout);
+    FOUR_C_THROW(errorout);
   }
 
   /*
@@ -179,7 +179,7 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     default:
-      dserror("Unknown type of action for reduced dimensional airways");
+      FOUR_C_THROW("Unknown type of action for reduced dimensional airways");
       break;
   }  // end of switch(act)
 
@@ -230,7 +230,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::RedAirway::getOptimalGaussrule(
       rule = CORE::FE::GaussRule1D::line_3point;
       break;
     default:
-      dserror("unknown number of nodes for gaussrule initialization");
+      FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
       break;
   }
   return rule;
@@ -253,7 +253,7 @@ bool DRT::ELEMENTS::RedAirway::isHigherOrderElement(const CORE::FE::CellType dis
       hoel = false;
       break;
     default:
-      dserror("distype unknown!");
+      FOUR_C_THROW("distype unknown!");
       break;
   }
   return hoel;

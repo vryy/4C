@@ -132,7 +132,7 @@ void MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(const CONTA
   // reset the distributor of the exporter after use
   ResetExporter(slave_to_master_[bt]);
 
-  if (err) dserror("Import failed with err=%d", err);
+  if (err) FOUR_C_THROW("Import failed with err=%d", err);
 }
 
 /*----------------------------------------------------------------------------*
@@ -165,7 +165,7 @@ void MORTAR::MatrixRowColTransformer::UnredistributedToRedistributed(const CONTA
   // reset the distributor of the exporter after use
   ResetExporter(master_to_slave_[bt]);
 
-  if (err) dserror("Import failed with err=%d", err);
+  if (err) FOUR_C_THROW("Import failed with err=%d", err);
 }
 
 /*----------------------------------------------------------------------------*

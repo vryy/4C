@@ -84,13 +84,13 @@ void scatra_cardiac_monodomain_dyn(int restart)
     {
       // we directly use the elements from the scalar transport elements section
       if (scatradis->NumGlobalNodes() == 0)
-        dserror("No elements in the ---TRANSPORT ELEMENTS section");
+        FOUR_C_THROW("No elements in the ---TRANSPORT ELEMENTS section");
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
       if (linsolvernumber == -1)
       {
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in "
             "SCALAR TRANSPORT DYNAMIC to a valid number!");
       }
@@ -104,7 +104,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
           new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
-        dserror("Scatra discretization has illegal number of dofsets!");
+        FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       // allow TRANSPORT conditions, too
@@ -182,10 +182,11 @@ void scatra_cardiac_monodomain_dyn(int restart)
     }
     case INPAR::SCATRA::velocity_Navier_Stokes:  // Navier_Stokes
     {
-      dserror("Navier Stokes case not implemented for cardiac monodomain scalar transport problem");
+      FOUR_C_THROW(
+          "Navier Stokes case not implemented for cardiac monodomain scalar transport problem");
 
       // we use the fluid discretization as layout for the scalar transport discretization
-      if (fluiddis->NumGlobalNodes() == 0) dserror("Fluid discretization is empty!");
+      if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
       const INPAR::SCATRA::FieldCoupling fieldcoupling =
           CORE::UTILS::IntegralValue<INPAR::SCATRA::FieldCoupling>(
@@ -195,7 +196,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       if (scatradis->NumGlobalNodes() == 0)
       {
         if (fieldcoupling != INPAR::SCATRA::coupling_match)
-          dserror(
+          FOUR_C_THROW(
               "If you want matching fluid and scatra meshes, do clone you fluid mesh and use "
               "FIELDCOUPLING match!");
 
@@ -211,19 +212,19 @@ void scatra_cardiac_monodomain_dyn(int restart)
           DRT::ELEMENTS::Transport* element =
               dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
           if (element == nullptr)
-            dserror("Invalid element type!");
+            FOUR_C_THROW("Invalid element type!");
           else
             element->SetImplType(INPAR::SCATRA::impltype_std);
         }
 
         // add proxy of fluid transport degrees of freedom to scatra discretization
         if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
-          dserror("Scatra discretization has illegal number of dofsets!");
+          FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       }
       else
       {
         if (fieldcoupling != INPAR::SCATRA::coupling_volmortar)
-          dserror(
+          FOUR_C_THROW(
               "If you want non-matching fluid and scatra meshes, you need to use FIELDCOUPLING "
               "volmortar!");
 
@@ -246,10 +247,11 @@ void scatra_cardiac_monodomain_dyn(int restart)
         Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
         dofsetaux = Teuchos::rcp(
             new DRT::DofSetPredefinedDoFNumber(ndofpernode_scatra, ndofperelement_scatra, 0, true));
-        if (fluiddis->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in fluid field");
+        if (fluiddis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
         dofsetaux = Teuchos::rcp(
             new DRT::DofSetPredefinedDoFNumber(ndofpernode_fluid, ndofperelement_fluid, 0, true));
-        if (scatradis->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in scatra field");
+        if (scatradis->AddDofSet(dofsetaux) != 1)
+          FOUR_C_THROW("unexpected dof sets in scatra field");
 
         // call AssignDegreesOfFreedom also for auxiliary dofsets
         // note: the order of FillComplete() calls determines the gid numbering!
@@ -296,7 +298,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
       if (linsolvernumber == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in "
             "SCALAR TRANSPORT DYNAMIC to a valid number!");
 
@@ -324,7 +326,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       }
       else if (CORE::UTILS::IntegralValue<int>(
                    fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") == true)
-        dserror(
+        FOUR_C_THROW(
             "Turbulent inflow generation for passive scalar transport should be performed as fluid "
             "problem!");
 
@@ -343,7 +345,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
     }  // case 2
     default:
     {
-      dserror("unknown velocity field type for transport of passive scalar");
+      FOUR_C_THROW("unknown velocity field type for transport of passive scalar");
       break;
     }
   }

@@ -110,7 +110,7 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(
     if (solverPtr->Params().isSublist("Belos Parameters"))
     {
       if (iConstrPrec_.size() > 1)
-        dserror(
+        FOUR_C_THROW(
             "Currently only one constraint preconditioner interface can be handled! \n "
             "Needs to be extended!");
 
@@ -134,7 +134,7 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(
       else if (iConstrPrec_.begin()->first == NOX::NLN::sol_meshtying)
         mueluParams.set<std::string>("GLOBAL::ProblemType", "meshtying");
       else
-        dserror("Currently we support only a pure meshtying OR a pure contact problem!");
+        FOUR_C_THROW("Currently we support only a pure meshtying OR a pure contact problem!");
 
       mueluParams.set<int>("time step", step);
       // increase counter by one (historical reasons)
@@ -166,7 +166,7 @@ void NOX::NLN::CONTACT::LinearSystem::SetLinearProblemForSolve(Epetra_LinearProb
     }
     default:
     {
-      dserror("Unsupported matrix type! Type = %s",
+      FOUR_C_THROW("Unsupported matrix type! Type = %s",
           NOX::NLN::LinSystem::OperatorType2String(jacType_).c_str());
 
       exit(EXIT_FAILURE);
@@ -254,7 +254,7 @@ Teuchos::RCP<CORE::LINALG::Solver> NOX::NLN::CONTACT::LinearSystem::GetLinearCon
   CORE::LINALG::Solver* linsolver = iConstrPrec_.begin()->second->GetLinearSolver();
 
   if (not linsolver)
-    dserror(
+    FOUR_C_THROW(
         "Neither the general solver map, nor the constraint preconditioner "
         "knows the correct linear solver. Please check your input file.");
 
@@ -293,7 +293,7 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
   const int numcols = block_mat.Cols();
 
   if (numrows != numcols)
-    dserror("The number of row blocks must be equal the number of column blocks.");
+    FOUR_C_THROW("The number of row blocks must be equal the number of column blocks.");
 
   std::vector<std::vector<bool>> isempty(numrows, std::vector<bool>(numcols, false));
 
@@ -371,7 +371,7 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
   {
     case 0:
     {
-      dserror(
+      FOUR_C_THROW(
           "You are trying to solve a pure diagonal matrix. This is currently not"
           "supported, but feel free to extend the functionality.");
 
@@ -412,7 +412,7 @@ void NOX::NLN::CONTACT::LinearSystem::applyDiagonalInverse(
     CORE::LINALG::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const
 {
   if (mat.EpetraMatrix()->NumGlobalDiagonals() != mat.EpetraMatrix()->NumGlobalNonzeros())
-    dserror("The given matrix seems to be no diagonal matrix!");
+    FOUR_C_THROW("The given matrix seems to be no diagonal matrix!");
 
   Epetra_Vector lhs_block(mat.DomainMap(), true);
   CORE::LINALG::ExtractMyVector(lhs, lhs_block);
@@ -422,10 +422,10 @@ void NOX::NLN::CONTACT::LinearSystem::applyDiagonalInverse(
 
   Epetra_Vector diag_mat(mat.RangeMap(), true);
   int err = mat.ExtractDiagonalCopy(diag_mat);
-  if (err) dserror("ExtractDiagonalCopy failed! (err=%d)", err);
+  if (err) FOUR_C_THROW("ExtractDiagonalCopy failed! (err=%d)", err);
 
   err = lhs_block.ReciprocalMultiply(1.0, diag_mat, rhs_block, 0.0);
-  if (err) dserror("ReciprocalMultiply failed! (err=%d)", err);
+  if (err) FOUR_C_THROW("ReciprocalMultiply failed! (err=%d)", err);
 
   CORE::LINALG::AssembleMyVector(0.0, lhs, 1.0, lhs_block);
 }

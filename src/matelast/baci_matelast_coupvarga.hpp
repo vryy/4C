@@ -48,7 +48,7 @@ namespace MAT
         /// Factory method of the elastic summand
         Teuchos::RCP<MAT::Material> CreateMaterial() override
         {
-          dserror(
+          FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
@@ -117,7 +117,7 @@ namespace MAT
       void AddCoupDerivVol(
           const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4) override
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
       }
 
       /// Indicator for formulation

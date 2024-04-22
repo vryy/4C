@@ -51,7 +51,7 @@ namespace NOX
         void computeGradient(
             const ::NOX::Abstract::Group& group, ::NOX::Abstract::Vector& result) const override
         {
-          dserror("computeGradient is not implemented.");
+          FOUR_C_THROW("computeGradient is not implemented.");
         }
 
         //! Compute the slope of the Lagrangian merit function.
@@ -67,7 +67,7 @@ namespace NOX
         double computeQuadraticModel(
             const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const override
         {
-          dserror("computeQuadraticModel is not implemented.");
+          FOUR_C_THROW("computeQuadraticModel is not implemented.");
           return 0.0;
         }
 
@@ -75,7 +75,7 @@ namespace NOX
         void computeQuadraticMinimizer(
             const ::NOX::Abstract::Group& grp, ::NOX::Abstract::Vector& result) const override
         {
-          dserror("computeQuadraticMinimizer is not implemented.");
+          FOUR_C_THROW("computeQuadraticMinimizer is not implemented.");
         }
 
         /** \brief Computes the saddle-point model of the Lagrangian functional

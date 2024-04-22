@@ -81,14 +81,14 @@ namespace XFEM
       // cutter_dis, as long as we don't have another ghosting strategy for the cutter_dis ...
 
       if (pfmap->NumMyElements() != psmap->NumMyElements())
-        dserror(
+        FOUR_C_THROW(
             "InitializeStrucPresMap: (pfmap->NumGlobalElements() != psmap->NumGlobalElements())!");
 
       Teuchos::RCP<Epetra_Map> fullpfmap = CORE::LINALG::AllreduceEMap(*pfmap);
       Teuchos::RCP<Epetra_Map> fullpsmap = CORE::LINALG::AllreduceEMap(*psmap);
 
       if (fullpfmap->NumMyElements() != fullpsmap->NumMyElements())
-        dserror(
+        FOUR_C_THROW(
             "InitializeStrucPresMap: (fullpfmap->NumGlobalElements() != "
             "fullpsmap->NumGlobalElements())!");
 
@@ -149,7 +149,7 @@ namespace XFEM
     Teuchos::RCP<XFEM::XFluidContactComm> Get_Contact_Comm()
     {
       if (xf_c_comm_ == Teuchos::null)
-        dserror("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
+        FOUR_C_THROW("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
       return xf_c_comm_;
     }
 

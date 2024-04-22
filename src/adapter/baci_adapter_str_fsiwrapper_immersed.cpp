@@ -65,7 +65,7 @@ void ADAPTER::FSIStructureWrapperImmersed::ApplyImmersedInterfaceForces(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::ExtractImmersedInterfaceDispnp()
 {
-  dsassert(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
+  FOUR_C_ASSERT(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
       "Full map of map extractor and Dispnp() do not match.");
 
   return interface_->ExtractIMMERSEDCondVector(Dispnp());
@@ -75,7 +75,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::ExtractImmerse
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::ExtractFullInterfaceDispnp()
 {
-  dsassert(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
+  FOUR_C_ASSERT(interface_->FullMap()->PointSameAs(Dispnp()->Map()),
       "Full map of map extractor and Dispnp() do not match.");
 
   Teuchos::RCP<Epetra_Vector> fullvec =
@@ -105,7 +105,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::PredictImmerse
     }
     case 2:
       // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
-      dserror("interface velocity v(n-1) not available");
+      FOUR_C_THROW("interface velocity v(n-1) not available");
       break;
     case 3:
     {
@@ -131,11 +131,12 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::PredictImmerse
       break;
     }
     default:
-      dserror("unknown interface displacement predictor '%s'", GLOBAL::Problem::Instance()
-                                                                   ->FSIDynamicParams()
-                                                                   .sublist("PARTITIONED SOLVER")
-                                                                   .get<std::string>("PREDICTOR")
-                                                                   .c_str());
+      FOUR_C_THROW(
+          "unknown interface displacement predictor '%s'", GLOBAL::Problem::Instance()
+                                                               ->FSIDynamicParams()
+                                                               .sublist("PARTITIONED SOLVER")
+                                                               .get<std::string>("PREDICTOR")
+                                                               .c_str());
       break;
   }
 
@@ -162,7 +163,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::PredictFullInt
     }
     case 2:
       // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
-      dserror("interface velocity v(n-1) not available");
+      FOUR_C_THROW("interface velocity v(n-1) not available");
       break;
     case 3:
     {
@@ -215,11 +216,12 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::PredictFullInt
       break;
     }
     default:
-      dserror("unknown interface displacement predictor '%s'", GLOBAL::Problem::Instance()
-                                                                   ->FSIDynamicParams()
-                                                                   .sublist("PARTITIONED SOLVER")
-                                                                   .get<std::string>("PREDICTOR")
-                                                                   .c_str());
+      FOUR_C_THROW(
+          "unknown interface displacement predictor '%s'", GLOBAL::Problem::Instance()
+                                                               ->FSIDynamicParams()
+                                                               .sublist("PARTITIONED SOLVER")
+                                                               .get<std::string>("PREDICTOR")
+                                                               .c_str());
       break;
   }
 

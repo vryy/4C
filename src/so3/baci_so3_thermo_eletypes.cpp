@@ -101,7 +101,7 @@ int DRT::ELEMENTS::SoHex8ThermoType::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>* actele =
         dynamic_cast<DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex8_thermo* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex8_thermo* failed");
     // initialise all quantities
     actele->SoHex8::InitJacobianMapping();
     // as an alternative we can call: So_hex8Type::Initialize(dis);
@@ -209,7 +209,7 @@ int DRT::ELEMENTS::SoHex8fbarThermoType::Initialize(DRT::Discretization& dis)
         dynamic_cast<
             DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex8fbar, CORE::FE::CellType::hex8>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex8fbar_thermo* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex8fbar_thermo* failed");
 
     // initialise all quantities
     actele->SoHex8fbar::InitJacobianMapping();
@@ -308,7 +308,7 @@ int DRT::ELEMENTS::SoTet4ThermoType::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>* actele =
         dynamic_cast<DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet4_thermo* failed");
+    if (!actele) FOUR_C_THROW("cast to So_tet4_thermo* failed");
 
     actele->SoTet4::InitJacobianMapping();
     // as an alternative we can call: So_tet4Type::Initialize(dis);
@@ -405,7 +405,7 @@ int DRT::ELEMENTS::SoTet10ThermoType::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>* actele =
         dynamic_cast<DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet10_thermo* failed");
+    if (!actele) FOUR_C_THROW("cast to So_tet10_thermo* failed");
 
     actele->SoTet10::InitJacobianMapping();
     // as an alternative we can call: So_tet4Type::Initialize(dis);
@@ -502,7 +502,7 @@ int DRT::ELEMENTS::SoHex27ThermoType::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>* actele =
         dynamic_cast<DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex27_thermo* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex27_thermo* failed");
 
     actele->SoHex27::InitJacobianMapping();
     // as an alternative we can call: So_hex27Type::Initialize(dis);
@@ -599,7 +599,7 @@ int DRT::ELEMENTS::SoHex20ThermoType::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex20, CORE::FE::CellType::hex20>* actele =
         dynamic_cast<DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::SoHex20, CORE::FE::CellType::hex20>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex20_thermo* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex20_thermo* failed");
 
     actele->SoHex20::InitJacobianMapping();
     // as an alternative we can call: So_hex27Type::Initialize(dis);
@@ -703,7 +703,7 @@ int DRT::ELEMENTS::SoNurbs27ThermoType::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::NURBS::SoNurbs27, CORE::FE::CellType::nurbs27>* actele =
         dynamic_cast<DRT::ELEMENTS::So3Thermo<DRT::ELEMENTS::NURBS::SoNurbs27,
             CORE::FE::CellType::nurbs27>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex20_thermo* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex20_thermo* failed");
 
     actele->SoNurbs27::InitJacobianMapping(dis);
     // as an alternative we can call: So_hex27Type::Initialize(dis);

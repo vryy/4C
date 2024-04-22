@@ -71,7 +71,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
   beam_element_ = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1());
 
   if (beam_element_ == nullptr)
-    dserror(
+    FOUR_C_THROW(
         "cast to Beam3Base failed! first element in BeamToSpherePotentialPair pair"
         " must be a beam element!");
 
@@ -83,7 +83,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
   sphere_element_ = dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(Element2());
 
   if (sphere_element_ == nullptr)
-    dserror(
+    FOUR_C_THROW(
         "cast to Rigidsphere failed! second element in BeamToSpherePotentialPair pair"
         " must be a Rigidsphere element!");
 
@@ -123,15 +123,15 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
     if (chargeconds[0]->Type() == DRT::Condition::BeamPotential_LineChargeDensity)
       chargeconds_[0] = chargeconds[0];
     else
-      dserror("Provided condition is not of correct type BeamPotential_LineChargeDensity!");
+      FOUR_C_THROW("Provided condition is not of correct type BeamPotential_LineChargeDensity!");
 
     if (chargeconds[1]->Type() == DRT::Condition::RigidspherePotential_PointCharge)
       chargeconds_[1] = chargeconds[1];
     else
-      dserror("Provided condition is not of correct type RigidspherePotential_PointCharge!");
+      FOUR_C_THROW("Provided condition is not of correct type RigidspherePotential_PointCharge!");
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Expected TWO charge conditions for a (beam,rigidsphere) potential-based interaction "
         "pair!");
 
@@ -161,7 +161,7 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
     }
 
     default:
-      dserror("Invalid strategy to evaluate beam-to-sphere interaction potential!");
+      FOUR_C_THROW("Invalid strategy to evaluate beam-to-sphere interaction potential!");
   }
 
   // resize variables and fill with pre-computed values
@@ -281,7 +281,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
       prefactor *= std::pow(radius1_, 2) * M_PI;
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "No valid BEAMPOTENTIAL_TYPE specified. Choose either Surface or Volume in input file!");
   }
 
@@ -343,7 +343,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "\n|r1-r2|=0 ! Interacting points are identical! Potential law not defined in this case!"
           " Think about shifting nodes in unconverged state?!");
     }
@@ -540,7 +540,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
     }
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents)"
         " values are valid!");
 
@@ -579,11 +579,11 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Reset
   time_ = time;
 
   if (centerline_dofvec_ele1.size() != 3 * numnodes * numnodalvalues)
-    dserror("size mismatch! expected %d values for centerline_dofvec_ele1, but got %d",
+    FOUR_C_THROW("size mismatch! expected %d values for centerline_dofvec_ele1, but got %d",
         3 * numnodes * numnodalvalues, centerline_dofvec_ele1.size());
 
   if (centerline_dofvec_ele2.size() != 3)
-    dserror("size mismatch! expected %d values for centerline_dofvec_ele2, but got %d", 3,
+    FOUR_C_THROW("size mismatch! expected %d values for centerline_dofvec_ele2, but got %d", 3,
         centerline_dofvec_ele1.size());
 
 

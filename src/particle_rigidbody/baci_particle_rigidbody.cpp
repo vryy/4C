@@ -77,7 +77,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
         particleengineinterface_->GetParticleContainerBundle();
 
     if (not particlecontainerbundle->GetParticleTypes().count(PARTICLEENGINE::RigidPhase))
-      dserror("no particle container for particle type '%s' found!",
+      FOUR_C_THROW("no particle container for particle type '%s' found!",
           PARTICLEENGINE::EnumToTypeName(PARTICLEENGINE::RigidPhase).c_str());
   }
 
@@ -190,9 +190,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialAffiliationPairData()
     affiliationpairdata.insert(std::make_pair(globalid_i[0], rigidbody_k));
   }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
-    dserror("number of affiliation pairs and rigid particles not equal!");
+    FOUR_C_THROW("number of affiliation pairs and rigid particles not equal!");
 #endif
 }
 
@@ -215,9 +215,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
   // number of global ids on all processors
   const int numglobalids = allprocmaxglobalid + 1;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not(rigidbodyuniqueglobalidhandler_->GetMaxGlobalId() < 0))
-    dserror("maximum global id of rigid body unique global identifier handler already touched!");
+    FOUR_C_THROW(
+        "maximum global id of rigid body unique global identifier handler already touched!");
 #endif
 
   // request number of global ids of all rigid bodies on processor 0
@@ -227,10 +228,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
   // draw requested number of global ids
   rigidbodyuniqueglobalidhandler_->DrawRequestedNumberOfGlobalIds(requesteduniqueglobalids);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (myrank_ == 0)
     for (int i = 0; i < numglobalids; ++i)
-      if (requesteduniqueglobalids[i] != i) dserror("drawn requested global ids not consecutive!");
+      if (requesteduniqueglobalids[i] != i)
+        FOUR_C_THROW("drawn requested global ids not consecutive!");
 #endif
 
   // used global ids on all processors
@@ -241,7 +243,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
 
   // mpi communicator
   const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
-  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+  if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
 
   // get used global ids on all processors
   MPI_Allreduce(
@@ -551,7 +553,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ExtractPackedRigidBodyStates(std::vect
   }
 
   if (position != buffer.size())
-    dserror("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
+    FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyOwnership()
@@ -593,7 +595,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::DetermineOwnedAndHostedRigidBodies()
 
   // mpi communicator
   const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
-  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+  if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
 
   // get maximum number of particles per rigid body over all processors
   MPI_Allreduce(MPI_IN_PLACE, maxnumberofparticlesperrigidbodyonproc.data(), numglobalids, MPI_2INT,
@@ -660,7 +662,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::RelateOwnedRigidBodiesToHostingProcs()
     }
 
     if (position != rmsg.size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -747,7 +749,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
     }
 
     if (position != rmsg.size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -802,9 +804,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
-    dserror("number of affiliation pairs and rigid particles not equal!");
+    FOUR_C_THROW("number of affiliation pairs and rigid particles not equal!");
 #endif
 
   // loop over particles in container
@@ -815,10 +817,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
-      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+      FOUR_C_THROW("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
 #endif
 
     // get global id of affiliated rigid body k
@@ -844,8 +846,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
     const double* mass_k = &rigidbodydatastate_->GetRefMass()[rigidbody_k];
     double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
 
-#ifdef BACI_DEBUG
-    if (not(mass_k[0] > 0.0)) dserror("partial mass of rigid body %d is zero!", rigidbody_k);
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    if (not(mass_k[0] > 0.0)) FOUR_C_THROW("partial mass of rigid body %d is zero!", rigidbody_k);
 #endif
 
     // determine center of gravity of (partial) rigid body k
@@ -860,10 +862,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
-      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+      FOUR_C_THROW("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
 #endif
 
     // get global id of affiliated rigid body k
@@ -965,7 +967,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialMassQuantities(
     }
 
     if (position != rmsg.size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -983,10 +985,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeFullMassQuantities(
     // number of partial mass quantities of rigid body k including this processor
     const int numpartial_k = ownedrigidbodiestohostingprocs_[rigidbody_k].size() + 1;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (static_cast<int>(partialmass_k.size()) != numpartial_k or
         static_cast<int>(partialpos_k.size()) != numpartial_k)
-      dserror("the number of partial mass quantities of rigid body %d do not match!", rigidbody_k);
+      FOUR_C_THROW(
+          "the number of partial mass quantities of rigid body %d do not match!", rigidbody_k);
 #endif
 
     // get pointer to rigid body states
@@ -1019,10 +1022,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeFullMassQuantities(
     // number of partial mass quantities of rigid body k including this processor
     const int numpartial_k = ownedrigidbodiestohostingprocs_[rigidbody_k].size() + 1;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (static_cast<int>(partialmass_k.size()) != numpartial_k or
         static_cast<int>(partialinertia_k.size()) != numpartial_k)
-      dserror("the number of partial mass quantities of rigid body %d do not match!", rigidbody_k);
+      FOUR_C_THROW(
+          "the number of partial mass quantities of rigid body %d do not match!", rigidbody_k);
 #endif
 
     // get pointer to rigid body states
@@ -1095,9 +1099,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialForceAndTorque()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
-    dserror("number of affiliation pairs and rigid particles not equal!");
+    FOUR_C_THROW("number of affiliation pairs and rigid particles not equal!");
 #endif
 
   // loop over particles in container
@@ -1108,10 +1112,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialForceAndTorque()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
-      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+      FOUR_C_THROW("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
 #endif
 
     // get global id of affiliated rigid body k
@@ -1195,7 +1199,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialAndComputeFullForceAndTor
     }
 
     if (position != rmsg.size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1383,7 +1387,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyPositions()
     }
 
     if (position != rmsg.size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1440,7 +1444,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyVelocities()
     }
 
     if (position != rmsg.size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1498,7 +1502,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyAccelerations()
     }
 
     if (position != rmsg.size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1516,9 +1520,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleRelativePositionInBody
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
-    dserror("number of affiliation pairs and rigid particles not equal!");
+    FOUR_C_THROW("number of affiliation pairs and rigid particles not equal!");
 #endif
 
   // loop over particles in container
@@ -1529,10 +1533,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleRelativePositionInBody
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
-      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+      FOUR_C_THROW("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
 #endif
 
     // get global id of affiliated rigid body k
@@ -1565,9 +1569,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidParticleRelativePosition()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
-    dserror("number of affiliation pairs and rigid particles not equal!");
+    FOUR_C_THROW("number of affiliation pairs and rigid particles not equal!");
 #endif
 
   // loop over particles in container
@@ -1578,10 +1582,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidParticleRelativePosition()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
-      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+      FOUR_C_THROW("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
 #endif
 
     // get global id of affiliated rigid body k
@@ -1614,9 +1618,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticlePosition()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
-    dserror("number of affiliation pairs and rigid particles not equal!");
+    FOUR_C_THROW("number of affiliation pairs and rigid particles not equal!");
 #endif
 
   // loop over particles in container
@@ -1627,10 +1631,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticlePosition()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
-      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+      FOUR_C_THROW("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
 #endif
 
     // get global id of affiliated rigid body k
@@ -1664,9 +1668,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
-    dserror("number of affiliation pairs and rigid particles not equal!");
+    FOUR_C_THROW("number of affiliation pairs and rigid particles not equal!");
 #endif
 
   // loop over particles in container
@@ -1677,10 +1681,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
-      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+      FOUR_C_THROW("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
 #endif
 
     // get global id of affiliated rigid body k
@@ -1717,9 +1721,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleAccelerations()
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
-    dserror("number of affiliation pairs and rigid particles not equal!");
+    FOUR_C_THROW("number of affiliation pairs and rigid particles not equal!");
 #endif
 
   // loop over particles in container
@@ -1730,10 +1734,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleAccelerations()
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // no affiliation pair for current global id
     if (it == affiliationpairdata.end())
-      dserror("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
+      FOUR_C_THROW("no affiliated rigid body found for particle with global id %d", globalid_i[0]);
 #endif
 
     // get global id of affiliated rigid body k
@@ -1781,10 +1785,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodyMelting(
     {
       auto it = affiliationpairdata.find(globalid_i);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // no affiliation pair for current global id
       if (it == affiliationpairdata.end())
-        dserror("no affiliated rigid body found for particle with global id %d", globalid_i);
+        FOUR_C_THROW("no affiliated rigid body found for particle with global id %d", globalid_i);
 #endif
 
       // erase affiliation pair
@@ -1798,7 +1802,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
 {
   // get search radius
   const double searchradius = params_.get<double>("RIGID_BODY_PHASECHANGE_RADIUS");
-  if (not(searchradius > 0.0)) dserror("search radius not positive!");
+  if (not(searchradius > 0.0)) FOUR_C_THROW("search radius not positive!");
 
   // get reference to affiliation pair data
   std::unordered_map<int, int>& affiliationpairdata =
@@ -1825,9 +1829,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
       PARTICLEENGINE::LocalIndexTupleShrdPtr localindextuple =
           particleengineinterface_->GetLocalIndexInSpecificContainer(globalid_i);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not localindextuple)
-        dserror("particle with global id %d not found on this processor!", globalid_i);
+        FOUR_C_THROW("particle with global id %d not found on this processor!", globalid_i);
 
       // access values of local index tuples of particle i
       PARTICLEENGINE::TypeEnum type_i;
@@ -1835,11 +1839,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
       std::tie(type_i, status_i, std::ignore) = *localindextuple;
 
       if (type_i != PARTICLEENGINE::RigidPhase)
-        dserror("particle with global id %d not of particle type '%s'!", globalid_i,
+        FOUR_C_THROW("particle with global id %d not of particle type '%s'!", globalid_i,
             PARTICLEENGINE::EnumToTypeName(PARTICLEENGINE::RigidPhase).c_str());
 
       if (status_i == PARTICLEENGINE::Ghosted)
-        dserror("particle with global id %d not owned on this processor!", globalid_i);
+        FOUR_C_THROW("particle with global id %d not owned on this processor!", globalid_i);
 #endif
 
       // access values of local index tuples of particle i

@@ -168,7 +168,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
     // get the element via discret
     DRT::Element* e = dis.gElement(eid);
 
-    if (e == nullptr) dserror(" element not found, this should not be! ");
+    if (e == nullptr) FOUR_C_THROW(" element not found, this should not be! ");
 
     // get the nodes of this element
     int numnode = e->NumNode();
@@ -179,7 +179,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
     {
       Node* node = GetNode(nids[i]);
 
-      if (node == nullptr) dserror("node not found!");
+      if (node == nullptr) FOUR_C_THROW("node not found!");
 
       nodes[i] = node;
     }
@@ -255,7 +255,7 @@ void CORE::GEO::CUT::ParentIntersection::FillParallelDofSetData(
             // first vc in set
             VolumeCell* cell = *(ele_vc_sets_inside[set_index].begin());
 
-            if (cell == nullptr) dserror("pointer to first Volumecell of set is nullptr!");
+            if (cell == nullptr) FOUR_C_THROW("pointer to first Volumecell of set is nullptr!");
 
             CreateParallelDofSetDataVC(parallel_dofSetData, eid, set_index, true, cell, *set_it);
           }
@@ -286,7 +286,7 @@ void CORE::GEO::CUT::ParentIntersection::FillParallelDofSetData(
             // first vc in set
             VolumeCell* cell = *(ele_vc_sets_outside[set_index].begin());
 
-            if (cell == nullptr) dserror("pointer to first Volumecell of set is nullptr!");
+            if (cell == nullptr) FOUR_C_THROW("pointer to first Volumecell of set is nullptr!");
 
             CreateParallelDofSetDataVC(parallel_dofSetData, eid, set_index, false, cell, *set_it);
           }
@@ -354,7 +354,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC(
         Teuchos::rcp(new DofSetData(set_index, inside, cut_points_coords, eid, node_dofset_map)));
   }
   else
-    dserror("communication for empty node-dofset map not necessary!");
+    FOUR_C_THROW("communication for empty node-dofset map not necessary!");
 }
 
 
@@ -458,7 +458,7 @@ void CORE::GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>&
         //                Node * n = *i;
         //
         //                if( n->Id() >= 0) nds.push_back( n->DofSetNumberNEW( cells ) );
-        //                else dserror("node with negative Id gets no dofnumber!");
+        //                else FOUR_C_THROW("node with negative Id gets no dofnumber!");
 
         Node* n = *i;
 
@@ -484,7 +484,7 @@ void CORE::GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>&
           }
         }
         else
-          dserror("node with negative Id gets no dofnumber!");
+          FOUR_C_THROW("node with negative Id gets no dofnumber!");
       }
     }
 
@@ -546,7 +546,7 @@ void CORE::GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
     m.DirectDivergenceGaussRule(include_inner, BCellgausstype);
   }
   else
-    dserror("Undefined option of volumecell gauss points generation");
+    FOUR_C_THROW("Undefined option of volumecell gauss points generation");
 }
 
 /*--------------------------------------------------------------------------------------*

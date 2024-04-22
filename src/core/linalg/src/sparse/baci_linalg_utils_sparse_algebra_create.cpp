@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::CreateMatrix(const Epetra_Map& rowmap, const int npr)
 {
-  if (!rowmap.UniqueGIDs()) dserror("Row map is not unique");
+  if (!rowmap.UniqueGIDs()) FOUR_C_THROW("Row map is not unique");
   return Teuchos::rcp(new Epetra_CrsMatrix(::Copy, rowmap, npr, false));
 }
 
@@ -192,7 +192,7 @@ void CORE::LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretizatio
     std::vector<int> dof = dis.Dof(0, node);
 
     if ((dof.size() % fp_dim) != 0)
-      dserror(
+      FOUR_C_THROW(
           "Vector-Scalar-Split is not unique! Mismatch between number of dofs and vector/scalar "
           "dim");
 

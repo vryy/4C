@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void CORE::LINALG::SymmetricInverse(CORE::LINALG::SerialDenseMatrix& A, const int dim)
 {
-  if (A.numRows() != A.numCols()) dserror("Matrix is not square");
-  if (A.numRows() != dim) dserror("Dimension supplied does not match matrix");
+  if (A.numRows() != A.numCols()) FOUR_C_THROW("Matrix is not square");
+  if (A.numRows() != dim) FOUR_C_THROW("Dimension supplied does not match matrix");
 
   double* a = A.values();
   char uplo[5];
@@ -33,10 +33,10 @@ void CORE::LINALG::SymmetricInverse(CORE::LINALG::SerialDenseMatrix& A, const in
   int m = dim;
 
   dsytrf(uplo, &m, a, &n, ipiv.data(), work.data(), &lwork, &info);
-  if (info) dserror("dsytrf returned info=%d", info);
+  if (info) FOUR_C_THROW("dsytrf returned info=%d", info);
 
   dsytri(uplo, &m, a, &n, ipiv.data(), work.data(), &info);
-  if (info) dserror("dsytri returned info=%d", info);
+  if (info) FOUR_C_THROW("dsytri returned info=%d", info);
 
   for (int i = 0; i < dim; ++i)
     for (int j = 0; j < i; ++j) A(j, i) = A(i, j);
@@ -69,7 +69,7 @@ CORE::LINALG::SerialDenseMatrix CORE::LINALG::InvertAndMultiplyByCholesky(
       else if (sum > 0.0)
         me(z, z) = sqrt(sum);
       else
-        dserror("matrix is not positive definite!");
+        FOUR_C_THROW("matrix is not positive definite!");
     }
 
     // get y for G*y=De

@@ -94,7 +94,7 @@ void BEAMINTERACTION::BeamLinkPinJointed::Unpack(const std::vector<char>& data)
   BeamLink::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -120,7 +120,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPinJo
   else if (type == INPAR::BEAMINTERACTION::truss)
     return Teuchos::rcp(new BEAMINTERACTION::BeamLinkTruss());
   else
-    dserror(
+    FOUR_C_THROW(
         "instantiation of new BeamLinkPinJointed object failed due to "
         "unknown type of linker");
 

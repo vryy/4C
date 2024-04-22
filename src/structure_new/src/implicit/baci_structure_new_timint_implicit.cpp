@@ -95,7 +95,7 @@ void STR::TIMINT::Implicit::SetState(const Teuchos::RCP<Epetra_Vector>& x)
 void STR::TIMINT::Implicit::PreparePartitionStep()
 {
   CheckInitSetup();
-  dserror("Not yet implemented!");
+  FOUR_C_THROW("Not yet implemented!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -120,7 +120,7 @@ void STR::TIMINT::Implicit::PrepareTimeStep()
 int STR::TIMINT::Implicit::Integrate()
 {
   CheckInitSetup();
-  dserror(
+  FOUR_C_THROW(
       "The function is unused since the ADAPTER::StructureTimeLoop "
       "wrapper gives you all the flexibility you need.");
   return 0;
@@ -162,7 +162,7 @@ void STR::TIMINT::Implicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_V
   ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  dsassert(grp_ptr != nullptr, "Dynamic cast failed!");
+  FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
 
   // cast away const-qualifier for building the Nox Vector
   Teuchos::RCP<Epetra_Vector> mutable_disiterinc =
@@ -203,7 +203,7 @@ void STR::TIMINT::Implicit::Evaluate()
   ::NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  dsassert(grp_ptr != nullptr, "Dynamic cast failed!");
+  FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
 
   // you definitely have to evaluate here. You might be called from a coupled
   // problem and the group might not be aware, that a different state than
@@ -258,8 +258,8 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       // write restart output of last converged step before stopping
       Output(true);
 
-      // we should not get here, dserror for safety
-      dserror("Nonlinear solver did not converge! ");
+      // we should not get here, FOUR_C_THROW for safety
+      FOUR_C_THROW("Nonlinear solver did not converge! ");
       return INPAR::STR::conv_nonlin_fail;
       break;
     }
@@ -301,7 +301,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       // update the number of max time steps if it does not exceed the largest possible value for
       // the type int
       if ((GetStepEnd() - GetStepNp() + 1) > std::numeric_limits<int>::max() - GetStepEnd())
-        dserror(" Your updated step number exceeds largest possible value for type int");
+        FOUR_C_THROW(" Your updated step number exceeds largest possible value for type int");
       int endstep = GetStepEnd() + (GetStepEnd() - GetStepNp()) + 1;
       SetStepEnd(endstep);
       // reset timen_ because it is set in the constructor
@@ -330,7 +330,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       // update the number of max time steps if it does not exceed the largest possible value for
       // the type int
       if ((GetStepEnd() - GetStepNp() + 1) > std::numeric_limits<int>::max() - GetStepEnd())
-        dserror(" Your updated step number exceeds largest possible value for type int");
+        FOUR_C_THROW(" Your updated step number exceeds largest possible value for type int");
       int endstep = GetStepEnd() + (GetStepEnd() - GetStepNp()) + 1;
       SetStepEnd(endstep);
       // reset timen_ because it is set in the constructor
@@ -340,7 +340,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       SetDivConNumFineStep(0);
 
       if (GetDivConRefineLevel() == GetMaxDivConRefineLevel())
-        dserror(
+        FOUR_C_THROW(
             "Maximal divercont refinement level reached. Adapt your time basic time step size!");
 
       // reset step (e.g. quantities on element level or model specific stuff)
@@ -383,7 +383,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       int endstep = (1.0 / GetRandomTimeStepFactor()) * GetStepEnd() +
                     (1.0 - (1.0 / GetRandomTimeStepFactor())) * GetStepNp() + 1;
       if (endstep > std::numeric_limits<int>::max())
-        dserror(" Your updated step number exceeds largest possible value for type int");
+        FOUR_C_THROW(" Your updated step number exceeds largest possible value for type int");
       SetStepEnd(endstep);
       // reset timen_ because it is set in the constructor
       SetTimeNp(GetTimeN() + GetDeltaTime());
@@ -398,7 +398,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
     case INPAR::STR::divcont_adapt_penaltycontact:
     {
       // adapt penalty and search parameter
-      dserror("Not yet implemented for new structure time integration");
+      FOUR_C_THROW("Not yet implemented for new structure time integration");
       break;
     }
     case INPAR::STR::divcont_repeat_simulation:
@@ -425,7 +425,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       break;
     }
     default:
-      dserror("Unknown DIVER_CONT case");
+      FOUR_C_THROW("Unknown DIVER_CONT case");
       return INPAR::STR::conv_nonlin_fail;
       break;
   }
@@ -525,7 +525,7 @@ void STR::TIMINT::Implicit::PrintJacobianInMatlabFormat(const NOX::NLN::Group& c
     }
     default:
     {
-      dserror("Unsupported NOX::NLN::LinSystem::OperatorType: \"%s\"",
+      FOUR_C_THROW("Unsupported NOX::NLN::LinSystem::OperatorType: \"%s\"",
           NOX::NLN::LinSystem::OperatorType2String(jac_type).c_str());
       exit(EXIT_FAILURE);
     }
@@ -579,7 +579,7 @@ void STR::TIMINT::Implicit::ComputeConditionNumber(const NOX::NLN::Group& grp) c
     case INPAR::STR::ConditionNumber::none:
       return;
     default:
-      dserror("Unknown ConditionNumber type!");
+      FOUR_C_THROW("Unknown ConditionNumber type!");
       exit(EXIT_FAILURE);
   }
 

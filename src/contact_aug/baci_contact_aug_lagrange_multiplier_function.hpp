@@ -64,13 +64,13 @@ namespace CONTACT
 
       inline void CheckInit() const
       {
-        if (not isinit_) dserror("Call Init() first!");
+        if (not isinit_) FOUR_C_THROW("Call Init() first!");
       }
 
       inline void CheckInitSetup() const
       {
         CheckInit();
-        if (not issetup_) dserror("Call Setup() first!");
+        if (not issetup_) FOUR_C_THROW("Call Setup() first!");
       }
 
       Teuchos::RCP<Epetra_Vector> GetStructureGradient(

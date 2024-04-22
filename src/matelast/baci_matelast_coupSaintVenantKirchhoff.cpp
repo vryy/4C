@@ -26,7 +26,7 @@ MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<MAT::PAR::Material>& matd
     mue_ = c1 / (2.0 * (1.0 + c2));  // shear modulus
   }
   else
-    dserror("Poisson's ratio must be between -1.0 and 0.5!");
+    FOUR_C_THROW("Poisson's ratio must be between -1.0 and 0.5!");
 }
 
 MAT::ELASTIC::CoupSVK::CoupSVK(MAT::ELASTIC::PAR::CoupSVK* params) : params_(params) {}

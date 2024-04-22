@@ -150,7 +150,7 @@ namespace FLD
           CORE::FE::ShapeFunctionType::hdg)
       {
         TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*>(&fluid);
-        if (hdgfluid == nullptr) dserror("this should be a hdg time integer");
+        if (hdgfluid == nullptr) FOUR_C_THROW("this should be a hdg time integer");
 
         // we want to use the interior velocity here
         myvelnp_ = hdgfluid->ReturnIntVelnp();
@@ -164,7 +164,7 @@ namespace FLD
         else
         {
           statistics_hit_ = Teuchos::null;
-          dserror("decaying hit currently not implemented for HDG");
+          FOUR_C_THROW("decaying hit currently not implemented for HDG");
         }
       }
       else
@@ -230,7 +230,7 @@ namespace FLD
 
       // statistics manager for turbulent boundary layer not available
       if (inflow_)
-        dserror(
+        FOUR_C_THROW(
             "The backward-facing step based on the geometry the DNS requires a turbulent boundary "
             "layer inflow profile which is not supported, yet!");
     }
@@ -470,7 +470,7 @@ namespace FLD
 
         if (homdir != "xy" && homdir != "xz" && homdir != "yz")
         {
-          dserror("need two homogeneous directions to do averaging in plane channel flows\n");
+          FOUR_C_THROW("need two homogeneous directions to do averaging in plane channel flows\n");
         }
 
         std::cout << "Additional output          : ";
@@ -576,7 +576,8 @@ namespace FLD
         case channel_flow_of_height_2:
         {
           if (statistics_channel_ == Teuchos::null)
-            dserror("need statistics_channel_ to do a time sample for a turbulent channel flow");
+            FOUR_C_THROW(
+                "need statistics_channel_ to do a time sample for a turbulent channel flow");
 
           statistics_channel_->DoTimeSample(myvelnp_, myforce_);
           break;
@@ -584,7 +585,7 @@ namespace FLD
         case loma_channel_flow_of_height_2:
         {
           if (statistics_channel_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_channel_ to do a time sample for a turbulent channel flow at low "
                 "Mach number");
 
@@ -594,7 +595,7 @@ namespace FLD
         case scatra_channel_flow_of_height_2:
         {
           if (statistics_channel_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_channel_ to do a time sample for a turbulent passive scalar "
                 "transport in channel");
 
@@ -605,7 +606,8 @@ namespace FLD
         case forced_homogeneous_isotropic_turbulence:
         {
           if (statistics_hit_ == Teuchos::null)
-            dserror("need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
+            FOUR_C_THROW(
+                "need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
 
           statistics_hit_->DoTimeSample(myvelnp_);
           break;
@@ -613,7 +615,8 @@ namespace FLD
         case scatra_forced_homogeneous_isotropic_turbulence:
         {
           if (statistics_hit_ == Teuchos::null)
-            dserror("need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
+            FOUR_C_THROW(
+                "need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
 
           statistics_hit_->DoScatraTimeSample(myvelnp_, myphinp_);
           break;
@@ -621,7 +624,7 @@ namespace FLD
         case lid_driven_cavity:
         {
           if (statistics_ldc_ == Teuchos::null)
-            dserror("need statistics_ldc_ to do a time sample for a cavity flow");
+            FOUR_C_THROW("need statistics_ldc_ to do a time sample for a cavity flow");
 
           statistics_ldc_->DoTimeSample(myvelnp_);
           break;
@@ -629,7 +632,7 @@ namespace FLD
         case loma_lid_driven_cavity:
         {
           if (statistics_ldc_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_ldc_ to do a time sample for a cavity flow at low Mach number");
 
           statistics_ldc_->DoLomaTimeSample(myvelnp_, myscaaf_, *myforce_, eosfac);
@@ -639,7 +642,7 @@ namespace FLD
         case backward_facing_step2:
         {
           if (statistics_bfs_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_bfs_ to do a time sample for a flow over a backward-facing step");
 
           statistics_bfs_->DoTimeSample(myvelnp_, mystressmanager_->GetStressesWOAgg(myforce_));
@@ -651,14 +654,14 @@ namespace FLD
                 "channel_flow_of_height_2")
               statistics_channel_->DoTimeSample(myvelnp_, myforce_);
             else
-              dserror("channel_flow_of_height_2 expected!");
+              FOUR_C_THROW("channel_flow_of_height_2 expected!");
           }
           break;
         }
         case periodic_hill:
         {
           if (statistics_ph_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_ph_ to do a time sample for a flow over a backward-facing step");
 
           statistics_ph_->DoTimeSample(
@@ -668,7 +671,7 @@ namespace FLD
         case loma_backward_facing_step:
         {
           if (statistics_bfs_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_bfs_ to do a time sample for a flow over a backward-facing step "
                 "at low Mach number");
 
@@ -686,7 +689,7 @@ namespace FLD
                     "channel_flow_of_height_2")
                   statistics_channel_->DoTimeSample(myvelnp_, myforce_);
                 else
-                  dserror("channel_flow_of_height_2 expected!");
+                  FOUR_C_THROW("channel_flow_of_height_2 expected!");
               }
             }
             else
@@ -698,7 +701,7 @@ namespace FLD
               {
                 if (params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW") ==
                     "scatra_channel_flow_of_height_2")
-                  dserror(
+                  FOUR_C_THROW(
                       "Use channel_flow_of_height_2 instead of scatra_channel_flow_of_height_2!");
                 // to get DoScatraTimeSample() running also for inflow problems pointswise
                 // evaluation as available for channel flow is required
@@ -709,7 +712,7 @@ namespace FLD
                              .get<std::string>("CANONICAL_INFLOW") == "channel_flow_of_height_2")
                   statistics_channel_->DoTimeSample(myvelnp_, myforce_);
                 else
-                  dserror("channel_flow_of_height_2 expected!");
+                  FOUR_C_THROW("channel_flow_of_height_2 expected!");
               }
             }
           }
@@ -738,7 +741,7 @@ namespace FLD
         case blood_fda_flow:
         {
           if (statistics_bfda_ == Teuchos::null)
-            dserror("need statistics_bfda_ to do a time sample for a blood fda flow");
+            FOUR_C_THROW("need statistics_bfda_ to do a time sample for a blood fda flow");
 
           statistics_bfda_->DoTimeSample(myvelnp_);
           break;
@@ -746,7 +749,8 @@ namespace FLD
         case square_cylinder:
         {
           if (statistics_sqc_ == Teuchos::null)
-            dserror("need statistics_sqc_ to do a time sample for a flow around a square cylinder");
+            FOUR_C_THROW(
+                "need statistics_sqc_ to do a time sample for a flow around a square cylinder");
 
           statistics_sqc_->DoTimeSample(myvelnp_);
 
@@ -762,7 +766,7 @@ namespace FLD
 
             if ((*liftdragvals).size() != 1)
             {
-              dserror(
+              FOUR_C_THROW(
                   "expecting only one liftdrag label for the sampling of a flow around a square "
                   "cylinder");
             }
@@ -776,7 +780,7 @@ namespace FLD
         case rotating_circular_cylinder_nurbs:
         {
           if (statistics_ccy_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_ccy_ to do a time sample for a flow in a rotating circular "
                 "cylinder");
 
@@ -786,7 +790,7 @@ namespace FLD
         case rotating_circular_cylinder_nurbs_scatra:
         {
           if (statistics_ccy_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_ccy_ to do a time sample for a flow in a rotating circular "
                 "cylinder");
 
@@ -822,7 +826,7 @@ namespace FLD
           case taylor_green_vortex:
           {
             if (statistics_channel_ == Teuchos::null and statistics_tgv_ == Teuchos::null)
-              dserror("No dissipation rates for this flow type!");
+              FOUR_C_THROW("No dissipation rates for this flow type!");
 
             // set vector values needed by elements
             std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs;
@@ -844,7 +848,7 @@ namespace FLD
                   std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("dispnp", mydispnp_));
               statevecs.insert(
                   std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("gridv", mygridvelaf_));
-              if (scatradis_ != Teuchos::null) dserror("Not supported!");
+              if (scatradis_ != Teuchos::null) FOUR_C_THROW("Not supported!");
             }
 
             if (CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(
@@ -886,7 +890,7 @@ namespace FLD
             {
               statevecs.insert(
                   std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("fsvelaf", myfsvelaf_));
-              if (myfsvelaf_ == Teuchos::null) dserror("Have not got fsvel!");
+              if (myfsvelaf_ == Teuchos::null) FOUR_C_THROW("Have not got fsvel!");
 
               if (CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") ==
                       INPAR::FLUID::loma and
@@ -894,7 +898,7 @@ namespace FLD
               {
                 statevecs.insert(
                     std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("fsscaaf", myfsscaaf_));
-                if (myfsscaaf_ == Teuchos::null) dserror("Have not got fssca!");
+                if (myfsscaaf_ == Teuchos::null) FOUR_C_THROW("Have not got fssca!");
               }
 
               // additional scatra vectors
@@ -902,7 +906,7 @@ namespace FLD
               {
                 scatrastatevecs.insert(
                     std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("fsphinp", myfsphi_));
-                if (myfsphi_ == Teuchos::null) dserror("Have not got fsphi!");
+                if (myfsphi_ == Teuchos::null) FOUR_C_THROW("Have not got fsphi!");
               }
             }
 
@@ -928,7 +932,7 @@ namespace FLD
                 break;
               }
               default:
-                dserror("Dissipation not supported for this flow type!");
+                FOUR_C_THROW("Dissipation not supported for this flow type!");
                 break;
             }
 
@@ -1047,7 +1051,7 @@ namespace FLD
       {
         default:
         {
-          dserror("called wrong DoTimeSample() for this kind of special flow");
+          FOUR_C_THROW("called wrong DoTimeSample() for this kind of special flow");
           break;
         }
       }
@@ -1141,7 +1145,8 @@ namespace FLD
         case channel_flow_of_height_2:
         {
           if (statistics_channel_ == Teuchos::null)
-            dserror("need statistics_channel_ to do a time sample for a turbulent channel flow");
+            FOUR_C_THROW(
+                "need statistics_channel_ to do a time sample for a turbulent channel flow");
 
 
           if (outputformat == write_multiple_records)
@@ -1156,7 +1161,7 @@ namespace FLD
         case loma_channel_flow_of_height_2:
         {
           if (statistics_channel_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_channel_ to do a time sample for a turbulent channel flow at low "
                 "Mach number");
 
@@ -1166,7 +1171,7 @@ namespace FLD
         case scatra_channel_flow_of_height_2:
         {
           if (statistics_channel_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_channel_ to do a time sample for a turbulent channel flow at low "
                 "Mach number");
 
@@ -1177,7 +1182,8 @@ namespace FLD
         case forced_homogeneous_isotropic_turbulence:
         {
           if (statistics_hit_ == Teuchos::null)
-            dserror("need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
+            FOUR_C_THROW(
+                "need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
 
           if (flow_ == forced_homogeneous_isotropic_turbulence)
           {
@@ -1202,7 +1208,8 @@ namespace FLD
         case scatra_forced_homogeneous_isotropic_turbulence:
         {
           if (statistics_hit_ == Teuchos::null)
-            dserror("need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
+            FOUR_C_THROW(
+                "need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
 
           // write statistics only during sampling period
           if (outputformat == write_single_record)
@@ -1225,7 +1232,7 @@ namespace FLD
         case lid_driven_cavity:
         {
           if (statistics_ldc_ == Teuchos::null)
-            dserror("need statistics_ldc_ to do a time sample for a lid driven cavity");
+            FOUR_C_THROW("need statistics_ldc_ to do a time sample for a lid driven cavity");
 
           if (outputformat == write_single_record) statistics_ldc_->DumpStatistics(step);
 
@@ -1235,7 +1242,7 @@ namespace FLD
         case loma_lid_driven_cavity:
         {
           if (statistics_ldc_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_ldc_ to do a time sample for a lid driven cavity at low Mach "
                 "number");
 
@@ -1246,7 +1253,7 @@ namespace FLD
         case backward_facing_step2:
         {
           if (statistics_bfs_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_bfs_ to do a time sample for a flow over a backward-facing step");
 
           if (outputformat == write_single_record) statistics_bfs_->DumpStatistics(step);
@@ -1269,7 +1276,7 @@ namespace FLD
         case periodic_hill:
         {
           if (statistics_ph_ == Teuchos::null)
-            dserror("need statistics_ph_ to do a time sample for a flow over a periodic hill");
+            FOUR_C_THROW("need statistics_ph_ to do a time sample for a flow over a periodic hill");
 
           if (outputformat == write_single_record) statistics_ph_->DumpStatistics(step);
 
@@ -1278,7 +1285,7 @@ namespace FLD
         case loma_backward_facing_step:
         {
           if (statistics_bfs_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_bfs_ to do a time sample for a flow over a backward-facing step "
                 "at low Mach number");
 
@@ -1349,7 +1356,7 @@ namespace FLD
         case blood_fda_flow:
         {
           if (statistics_bfda_ == Teuchos::null)
-            dserror("need statistics_bfda_ to do a time sample for a blood fda flow");
+            FOUR_C_THROW("need statistics_bfda_ to do a time sample for a blood fda flow");
 
           if (outputformat == write_single_record) statistics_bfda_->DumpStatistics(step);
 
@@ -1358,7 +1365,7 @@ namespace FLD
         case square_cylinder:
         {
           if (statistics_sqc_ == Teuchos::null)
-            dserror("need statistics_sqc_ to do a time sample for a square cylinder flow");
+            FOUR_C_THROW("need statistics_sqc_ to do a time sample for a square cylinder flow");
 
           if (outputformat == write_single_record) statistics_sqc_->DumpStatistics(step);
           break;
@@ -1367,7 +1374,7 @@ namespace FLD
         case rotating_circular_cylinder_nurbs_scatra:
         {
           if (statistics_ccy_ == Teuchos::null)
-            dserror(
+            FOUR_C_THROW(
                 "need statistics_ccy_ to do a time sample for a flow in a rotating circular "
                 "cylinder");
 

@@ -206,7 +206,7 @@ int STR::TimIntExplEuler::IntegrateStep()
 
   // obtain new accelerations \f$A_{n+1}\f$
   {
-    dsassert(mass_->Filled(), "Mass matrix has to be completed");
+    FOUR_C_ASSERT(mass_->Filled(), "Mass matrix has to be completed");
     // blank linear momentum zero on DOFs subjected to DBCs
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), frimpn_);
     // get accelerations

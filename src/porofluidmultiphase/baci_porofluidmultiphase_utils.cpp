@@ -55,7 +55,7 @@ namespace
         // are coupled, so coupling nodes can only belong to one element
         const int elementID = artele[0]->Id();
         // safety check if assertion is true
-        dsassert(elementID >= 0, "It is not possible to have a negative element ID!");
+        FOUR_C_ASSERT(elementID >= 0, "It is not possible to have a negative element ID!");
         artEleGIDs_help.push_back(elementID);
       }
     }
@@ -78,13 +78,13 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
     std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap =
         GLOBAL::Problem::Instance()->CloningMaterialMap();
     if (clonefieldmatmap.size() < 1)
-      dserror("At least one material pairing required in --CLONING MATERIAL MAP.");
+      FOUR_C_THROW("At least one material pairing required in --CLONING MATERIAL MAP.");
 
     // check if the current discretization is included in the material map
     std::pair<std::string, std::string> key(fluid_disname, struct_disname);
     matmap = clonefieldmatmap[key];
     if (matmap.size() < 1)
-      dserror("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP.", fluid_disname.c_str(),
+      FOUR_C_THROW("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP.", fluid_disname.c_str(),
           struct_disname.c_str());
   }
 
@@ -109,7 +109,7 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(tar_matid);
 
       // add secondary material to poro fluid element
-      if (ele->AddMaterial(mat) != 2) dserror("unexpected number of materials!");
+      if (ele->AddMaterial(mat) != 2) FOUR_C_THROW("unexpected number of materials!");
     }
     else
     {
@@ -118,7 +118,7 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
       for (mat_iter = matmap.begin(); mat_iter != matmap.end(); mat_iter++)
         std::cout << mat_iter->first << " -> " << mat_iter->second << std::endl;
 
-      dserror("no matching material ID (%d) in map", src_matid);
+      FOUR_C_THROW("no matching material ID (%d) in map", src_matid);
     }
 
   }  // end loop over column elements
@@ -179,7 +179,7 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
       break;
     }
     default:
-      dserror("Unknown time-integration scheme for multiphase poro fluid problem");
+      FOUR_C_THROW("Unknown time-integration scheme for multiphase poro fluid problem");
       break;
   }
 
@@ -415,7 +415,7 @@ CORE::LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele
   {
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =
         Teuchos::rcp_static_cast<MAT::Cnst1dArt>(ele->Material());
-    if (arterymat == Teuchos::null) dserror("Cast to artery material failed!");
+    if (arterymat == Teuchos::null) FOUR_C_THROW("Cast to artery material failed!");
     const double radius = arterymat->Diam() / 2.0;
     for (int idim = 0; idim < 3; idim++)
     {
@@ -535,7 +535,7 @@ double POROFLUIDMULTIPHASE::UTILS::CalculateVectorNorm(
   }
   else
   {
-    dserror("Cannot handle vector norm");
+    FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
 }  // CalculateVectorNorm()

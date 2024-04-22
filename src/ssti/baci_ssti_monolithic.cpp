@@ -165,7 +165,7 @@ void SSTI::SSTIMono::BuildNullSpaces()
     }
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -197,7 +197,7 @@ void SSTI::SSTIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList&
   // check input parameters for scalar transport field
   if (CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams, "VELOCITYFIELD") !=
       INPAR::SCATRA::velocity_Navier_Stokes)
-    dserror("Invalid type of velocity field for scalar-structure interaction!");
+    FOUR_C_THROW("Invalid type of velocity field for scalar-structure interaction!");
 
   // call base class routine
   SSTIAlgorithm::Init(comm, sstitimeparams, scatraparams, thermoparams, structparams);
@@ -267,7 +267,7 @@ void SSTI::SSTIMono::Setup()
   // safety checks
   if (ScaTraField()->NumScal() != 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Since the ssti_monolithic framework is only implemented for usage in combination with "
         "volume change laws 'MAT_InelasticDefgradLinScalarIso' or  "
         "'MAT_InelasticDefgradLinScalarAniso' so far and these laws are implemented for only one "
@@ -278,13 +278,13 @@ void SSTI::SSTIMono::Setup()
       (equilibration_method_.structure != CORE::LINALG::EquilibrationMethod::none or
           equilibration_method_.scatra != CORE::LINALG::EquilibrationMethod::none or
           equilibration_method_.thermo != CORE::LINALG::EquilibrationMethod::none))
-    dserror("Either global equilibration or local equilibration");
+    FOUR_C_THROW("Either global equilibration or local equilibration");
 
   if (matrixtype_ == CORE::LINALG::MatrixType::sparse and
       (equilibration_method_.structure != CORE::LINALG::EquilibrationMethod::none or
           equilibration_method_.scatra != CORE::LINALG::EquilibrationMethod::none or
           equilibration_method_.thermo != CORE::LINALG::EquilibrationMethod::none))
-    dserror("Block based equilibration only for block matrices");
+    FOUR_C_THROW("Block based equilibration only for block matrices");
 
   const bool equilibration_scatra_initial = CORE::UTILS::IntegralValue<bool>(
       GLOBAL::Problem::Instance()->SSTIControlParams().sublist("MONOLITHIC"),
@@ -295,7 +295,7 @@ void SSTI::SSTIMono::Setup()
   if (!equilibration_scatra_initial and
       ScaTraField()->EquilibrationMethod() != CORE::LINALG::EquilibrationMethod::none)
   {
-    dserror(
+    FOUR_C_THROW(
         "You are within the monolithic SSTI framework but activated a pure scatra equilibration "
         "method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set it in 'SSTI "
         "CONTROL/MONOLITHIC' instead.");
@@ -303,19 +303,19 @@ void SSTI::SSTIMono::Setup()
   if (equilibration_scatra_initial and
       ScaTraField()->EquilibrationMethod() == CORE::LINALG::EquilibrationMethod::none)
   {
-    dserror(
+    FOUR_C_THROW(
         "You selected to equilibrate equations of initial potential but did not specify any "
         "equilibration method in ScaTra.");
   }
   if (equilibration_scatra_initial and !calc_initial_pot)
   {
-    dserror(
+    FOUR_C_THROW(
         "You selected to equilibrate equations of initial potential but did not activate "
         "INITPOTCALC in ELCH CONTROL");
   }
 
   if (!ScaTraField()->IsIncremental())
-    dserror("Must have incremental solution approach for monolithic SSTI!");
+    FOUR_C_THROW("Must have incremental solution approach for monolithic SSTI!");
 }
 
 /*--------------------------------------------------------------------------*
@@ -338,7 +338,8 @@ void SSTI::SSTIMono::SetupSystem()
   if (matrixtype_ == CORE::LINALG::MatrixType::block_field)
   {
     if (!solver_->Params().isSublist("AMGnxn Parameters"))
-      dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
+      FOUR_C_THROW(
+          "Global system matrix with block structure requires AMGnxn block preconditioner!");
 
     // feed AMGnxn block preconditioner with null space information for each block of global
     // block system matrix
@@ -503,7 +504,7 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
     }
     default:
     {
-      dserror("Unknown type of subproblem in SSTI");
+      FOUR_C_THROW("Unknown type of subproblem in SSTI");
     }
   }
   return subincrement;
@@ -569,7 +570,7 @@ void SSTI::SSTIMono::LinearSolve()
   increment_->PutScalar(0.0);
 
   if (!ssti_matrices_->SystemMatrix()->Filled())
-    dserror("Complete() has not been called on global system matrix yet!");
+    FOUR_C_THROW("Complete() has not been called on global system matrix yet!");
 
   strategy_equilibration_->EquilibrateSystem(
       ssti_matrices_->SystemMatrix(), residual_, AllMaps()->BlockMapSystemMatrix());
@@ -618,7 +619,7 @@ void SSTI::SSTIMono::PrepareNewtonStep()
 std::vector<int> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
 {
   if (matrixtype_ == CORE::LINALG::MatrixType::sparse)
-    dserror("Sparse matrices have just one block");
+    FOUR_C_THROW("Sparse matrices have just one block");
 
   auto block_position = std::vector<int>(0);
 
@@ -657,7 +658,7 @@ std::vector<int> SSTI::SSTIMono::GetBlockPositions(Subproblem subproblem) const
     }
     default:
     {
-      dserror("Unknown type of subproblem");
+      FOUR_C_THROW("Unknown type of subproblem");
       break;
     }
   }
@@ -690,7 +691,7 @@ int SSTI::SSTIMono::GetProblemPosition(Subproblem subproblem) const
     }
     default:
     {
-      dserror("Unknown type of subproblem");
+      FOUR_C_THROW("Unknown type of subproblem");
       break;
     }
   }
@@ -750,7 +751,7 @@ std::vector<CORE::LINALG::EquilibrationMethod> SSTI::SSTIMono::GetBlockEquilibra
     }
     default:
     {
-      dserror("Invalid matrix type associated with system matrix field!");
+      FOUR_C_THROW("Invalid matrix type associated with system matrix field!");
       break;
     }
   }

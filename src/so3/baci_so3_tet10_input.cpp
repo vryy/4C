@@ -30,14 +30,14 @@ bool DRT::ELEMENTS::SoTet10::ReadElement(
   if (buffer == "linear")
   {
     kintype_ = INPAR::STR::KinemType::linear;
-    dserror("Reading of SO_TET10 element failed only nonlinear kinematics implemented");
+    FOUR_C_THROW("Reading of SO_TET10 element failed only nonlinear kinematics implemented");
   }
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
     kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   // geometrically non-linear with Updated Lagrangean approach
   else
-    dserror("Reading of SO_TET10 element failed KINEM unknown");
+    FOUR_C_THROW("Reading of SO_TET10 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);

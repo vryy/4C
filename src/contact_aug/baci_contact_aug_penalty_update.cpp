@@ -65,7 +65,7 @@ CONTACT::AUG::PenaltyUpdate* CONTACT::AUG::PenaltyUpdate::Create(
     }
     case INPAR::CONTACT::PenaltyUpdate::vague:
     {
-      dserror(
+      FOUR_C_THROW(
           "You specified no PENALTY_UPDATE routine. Fix you input file!\n"
           "enum = %d | \"%s\"",
           update_type, INPAR::CONTACT::PenaltyUpdate2String(update_type).c_str());
@@ -73,7 +73,7 @@ CONTACT::AUG::PenaltyUpdate* CONTACT::AUG::PenaltyUpdate::Create(
     }
     default:
     {
-      dserror("Unknown penalty update type! (enum = %d | \"%s\")", update_type,
+      FOUR_C_THROW("Unknown penalty update type! (enum = %d | \"%s\")", update_type,
           INPAR::CONTACT::PenaltyUpdate2String(update_type).c_str());
       exit(EXIT_FAILURE);
     }
@@ -94,7 +94,7 @@ void CONTACT::AUG::PenaltyUpdate::Init(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::PenaltyUpdate::ThrowIfNotInitialized() const
 {
-  if (not isinit_) dserror("Call Init() first!");
+  if (not isinit_) FOUR_C_THROW("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -182,7 +182,7 @@ void CONTACT::AUG::PenaltyUpdate::State::Reset()
  *----------------------------------------------------------------------------*/
 const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetDirection() const
 {
-  if (full_direction_.is_null()) dserror("Set the state first!");
+  if (full_direction_.is_null()) FOUR_C_THROW("Set the state first!");
 
   return *full_direction_;
 }
@@ -205,7 +205,7 @@ void CONTACT::AUG::PenaltyUpdate::State::Print(std::ostream& os) const
  *----------------------------------------------------------------------------*/
 const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetPreviouslyAcceptedState() const
 {
-  if (xold_.is_null()) dserror("Set the state first!");
+  if (xold_.is_null()) FOUR_C_THROW("Set the state first!");
 
   return *xold_;
 }
@@ -214,7 +214,7 @@ const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetPreviouslyAcceptedSt
  *----------------------------------------------------------------------------*/
 const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetWGap() const
 {
-  if (wgap_.is_null()) dserror("Set the state first!");
+  if (wgap_.is_null()) FOUR_C_THROW("Set the state first!");
 
   return *wgap_;
 }
@@ -223,7 +223,7 @@ const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetWGap() const
  *----------------------------------------------------------------------------*/
 const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetActiveTributaryArea() const
 {
-  if (tributary_area_active_.is_null()) dserror("Set the state first!");
+  if (tributary_area_active_.is_null()) FOUR_C_THROW("Set the state first!");
 
   return *tributary_area_active_;
 }
@@ -232,7 +232,7 @@ const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetActiveTributaryArea(
  *----------------------------------------------------------------------------*/
 const Epetra_Vector& CONTACT::AUG::PenaltyUpdate::State::GetInactiveTributaryArea() const
 {
-  if (tributary_area_inactive_.is_null()) dserror("Set the state first!");
+  if (tributary_area_inactive_.is_null()) FOUR_C_THROW("Set the state first!");
 
   return *tributary_area_inactive_;
 }

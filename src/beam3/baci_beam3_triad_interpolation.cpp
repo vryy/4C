@@ -54,7 +54,7 @@ Teuchos::RCP<LARGEROTATIONS::TriadInterpolation<T>> LARGEROTATIONS::TriadInterpo
     }
     default:
     {
-      dserror("%d is no valid number of nodes used for triad interpolation! choose 2,3,4 or 5",
+      FOUR_C_THROW("%d is no valid number of nodes used for triad interpolation! choose 2,3,4 or 5",
           numnodes);
       break;
     }

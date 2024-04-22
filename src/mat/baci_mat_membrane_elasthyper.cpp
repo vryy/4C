@@ -162,7 +162,7 @@ void MAT::MembraneElastHyper::EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>&
   }
   if (summandProperties_.anisomod)
   {
-    dserror("anisomod_ not implemented for membrane elasthyper materials!");
+    FOUR_C_THROW("anisomod_ not implemented for membrane elasthyper materials!");
   }
 
   return;

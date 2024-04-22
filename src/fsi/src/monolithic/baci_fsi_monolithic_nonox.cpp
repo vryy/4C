@@ -112,10 +112,10 @@ void FSI::MonolithicNoNOX::SetupSystem()
   // interface dof map for all fields and have just one transfer
   // operator from the interface map to the full field map.
   if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
-    dserror("structure interface dof maps do not match");
+    FOUR_C_THROW("structure interface dof maps do not match");
 
   if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
-    dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+    FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
@@ -181,7 +181,7 @@ void FSI::MonolithicNoNOX::Newton()
     // check whether we have a sanely filled tangent matrix
     if (not systemmatrix_->Filled())
     {
-      dserror("Effective tangent matrix must be filled here");
+      FOUR_C_THROW("Effective tangent matrix must be filled here");
     }
 
     SetupRHS(*rhs_, firstcall_);
@@ -246,10 +246,10 @@ bool FSI::MonolithicNoNOX::Converged()
               ((normflpresincInf_) < TOL_PRE_INC_INF_));
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       break;
     default:
-      dserror("Cannot check for convergence of residual values!");
+      FOUR_C_THROW("Cannot check for convergence of residual values!");
       break;
   }
 
@@ -270,10 +270,10 @@ bool FSI::MonolithicNoNOX::Converged()
               ((normflpresrhsInf_) < TOL_PRE_RES_INF_));
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }
 
@@ -282,7 +282,7 @@ bool FSI::MonolithicNoNOX::Converged()
   if (combincfres_ == INPAR::FSI::bop_and)
     conv = convinc and convfres;
   else
-    dserror("Something went wrong!");
+    FOUR_C_THROW("Something went wrong!");
 
   return conv;
 }
@@ -499,10 +499,10 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
                << "flp-rs-li|";
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -523,10 +523,10 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
                << "flp-in-li|";
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("convnorm_mix not implemented");
+      FOUR_C_THROW("convnorm_mix not implemented");
       break;
     default:
-      dserror("Unknown convergence norm.");
+      FOUR_C_THROW("Unknown convergence norm.");
       break;
   }
 
@@ -560,10 +560,10 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText()
                << "|" << (normflpresrhsInf_);
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("Mixed absolute-relative residual norm not implemented for XFFSI.");
+      FOUR_C_THROW("Mixed absolute-relative residual norm not implemented for XFFSI.");
       break;
     default:
-      dserror("Unknown type of residual norm.");
+      FOUR_C_THROW("Unknown type of residual norm.");
       break;
   }
 
@@ -579,10 +579,10 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText()
                << "|" << (normflpresincInf_) << "|" << IO::endl;
       break;
     case INPAR::FSI::convnorm_mix:
-      dserror("Mixed absolute-relative increment norm not implemented for XFFSI.");
+      FOUR_C_THROW("Mixed absolute-relative increment norm not implemented for XFFSI.");
       break;
     default:
-      dserror("Unknown type of increment norm.");
+      FOUR_C_THROW("Unknown type of increment norm.");
       break;
   }
 }

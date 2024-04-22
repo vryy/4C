@@ -83,7 +83,7 @@ namespace IO
           return "I";
           break;
         default:
-          dserror("distypeToGmshElementHeader: distype not supported for printout!");
+          FOUR_C_THROW("distypeToGmshElementHeader: distype not supported for printout!");
       }
       return "xxx";
     }
@@ -141,7 +141,7 @@ namespace IO
           return 6;
           break;
         default:
-          dserror("distypeToGmshNumNode: distype not supported for printout!");
+          FOUR_C_THROW("distypeToGmshNumNode: distype not supported for printout!");
       }
       return -1;
     }

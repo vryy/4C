@@ -165,8 +165,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupMaps()
 
   vecSpaces.push_back(FluidDofRowMap());
 
-  if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
+  if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
 
   // full Poromultiphase-elasticity-map
   fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
@@ -312,7 +312,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
   // check whether we have a sanely filled tangent matrix
   if (not systemmatrix_->Filled())
   {
-    dserror("Effective tangent matrix must be filled here");
+    FOUR_C_THROW("Effective tangent matrix must be filled here");
   }
 
   // (7) Build the monolithic system vector
@@ -336,7 +336,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
   // matrix W
   Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
 
-  if (k_ss == Teuchos::null) dserror("structure system matrix null pointer!");
+  if (k_ss == Teuchos::null) FOUR_C_THROW("structure system matrix null pointer!");
 
   // Copy from TSI
   if (locsysman_ != Teuchos::null)
@@ -409,7 +409,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
   // NOTE: DBC's have already been applied within Evaluate (PrepareSystemForNewtonSolve())
   Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ff = FluidField()->SystemMatrix();
 
-  if (k_ff == Teuchos::null) dserror("fluid system matrix null pointer!");
+  if (k_ff == Teuchos::null) FOUR_C_THROW("fluid system matrix null pointer!");
 
   /*----------------------------------------------------------------------*/
   // fluid part k_fs ( (n_phases*n_nodes)x(ndim*n_nodes) )
@@ -456,7 +456,7 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::FluidStructCouplingMatrix()
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_fs_);
-  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
+  if (sparse == Teuchos::null) FOUR_C_THROW("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }  // FluidStructCouplingMatrix()
@@ -469,7 +469,7 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::StructFluidCouplingMatrix()
 {
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_sf_);
-  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
+  if (sparse == Teuchos::null) FOUR_C_THROW("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }  // FluidStructCouplingMatrix()
@@ -591,7 +591,7 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSolver()
   const int linsolvernumber = poromultdyn.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER");
   // check if the poroelasticity solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for poromultiphaseflow. Please set LINEAR_SOLVER in "
         "POROMULTIPHASE DYNAMIC to a valid number!");
   const Teuchos::ParameterList& solverparams =
@@ -630,7 +630,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("Iterative solver expected");
+    FOUR_C_THROW("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
@@ -645,7 +645,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
     }
     break;
     default:
-      dserror("AMGnxn preconditioner expected");
+      FOUR_C_THROW("AMGnxn preconditioner expected");
       break;
   }
 
@@ -874,7 +874,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::NewtonErrorCheck()
       printf("\n");
       printf("\n");
     }
-    dserror("The monolithic solver did not converge in ITEMAX steps!");
+    FOUR_C_THROW("The monolithic solver did not converge in ITEMAX steps!");
   }
 
 
@@ -1118,7 +1118,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
                 << (*rhs_copy)[zeilennr] * (-1.0) * delta << std::endl;
       std::cout << "( rhs_disturb - rhs_old ) . (-1)/delta: " << (*rhs_copy)[zeilennr] << std::endl;
       // CORE::LINALG::PrintMatrixInMatlabFormat("../o/mymatrix.dat",*test_crs);
-      // dserror("exit here");
+      // FOUR_C_THROW("exit here");
       // std::cout << sparse_copy(4,35) << std::endl;
     }
     int* index = &i;
@@ -1291,7 +1291,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
     std::cout << "******************finite difference check done***************\n\n" << std::endl;
   }
   else
-    dserror("PoroFDCheck failed in step: %d, iter: %d", Step(), itnum_);
+    FOUR_C_THROW("PoroFDCheck failed in step: %d, iter: %d", Step(), itnum_);
 
   return;
 }
@@ -1322,9 +1322,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupMaps()
 
   vecSpaces.push_back(ArteryDofRowMap());
 
-  if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
-  if (vecSpaces[2]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
+  if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
+  if (vecSpaces[2]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid equation. Panic.");
 
   // full Poromultiphase-elasticity-map
   fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);

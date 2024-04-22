@@ -29,7 +29,7 @@ MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(const Teuchos::RCP<MAT::PAR:
       mue_ = c1 / (2.0 * (1.0 + c2));  // shear modulus
     }
     else
-      dserror("Poisson's ratio must be between -1.0 and 0.5!");
+      FOUR_C_THROW("Poisson's ratio must be between -1.0 and 0.5!");
   }
   else if (parmode == "Lame")
   {
@@ -37,7 +37,7 @@ MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(const Teuchos::RCP<MAT::PAR:
     lambda_ = c2;
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "unknown parameter set for NeoHooke material!\n Must be either YN (Young's modulus and "
         "Poisson's ratio) or Lame");
 }

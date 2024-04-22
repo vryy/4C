@@ -25,13 +25,13 @@ void DRT::UTILS::DiscretizationCreatorBase::InitialChecks(
     const DRT::Discretization& sourcedis, const DRT::Discretization& targetdis) const
 {
   // are the source and target discretizations ready?
-  if (!sourcedis.Filled()) dserror("The source discretization is not filled!");
-  if (!targetdis.Filled()) dserror("The target discretization is not filled!");
+  if (!sourcedis.Filled()) FOUR_C_THROW("The source discretization is not filled!");
+  if (!targetdis.Filled()) FOUR_C_THROW("The target discretization is not filled!");
 
   // is the target discretization really empty?
   if (targetdis.NumGlobalElements() or targetdis.NumGlobalNodes())
   {
-    dserror("There are %d elements and %d nodes in target discretization. Panic.",
+    FOUR_C_THROW("There are %d elements and %d nodes in target discretization. Panic.",
         targetdis.NumGlobalElements(), targetdis.NumGlobalNodes());
   }
   // Ok. Let's go on
@@ -139,7 +139,7 @@ DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization(
   for (int i = 0; i < sourcedis->NodeColMap()->NumMyElements(); ++i)
   {
     DRT::Node* node = sourcedis->lColNode(i);
-    if (!node) dserror("Cannot find node with lid %", i);
+    if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
     Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
     targetdis->AddNode(newnode);
   }
@@ -148,7 +148,7 @@ DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization(
   for (int i = 0; i < sourcedis->ElementColMap()->NumMyElements(); ++i)
   {
     DRT::Element* ele = sourcedis->lColElement(i);
-    if (!ele) dserror("Cannot find element with lid %", i);
+    if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
     Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
     targetdis->AddElement(newele);
   }
@@ -176,19 +176,19 @@ DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization(
   // at the end, we do several checks to ensure that we really have generated
   // an identical discretization
   if (not sourcedis->NodeRowMap()->SameAs(*(targetdis->NodeRowMap())))
-    dserror("NodeRowMaps of source and target discretization are different!");
+    FOUR_C_THROW("NodeRowMaps of source and target discretization are different!");
   if (not sourcedis->NodeColMap()->SameAs(*(targetdis->NodeColMap())))
-    dserror("NodeColMaps of source and target discretization are different!");
+    FOUR_C_THROW("NodeColMaps of source and target discretization are different!");
   if (not sourcedis->ElementRowMap()->SameAs(*(targetdis->ElementRowMap())))
-    dserror("ElementRowMaps of source and target discretization are different!");
+    FOUR_C_THROW("ElementRowMaps of source and target discretization are different!");
   if (not sourcedis->ElementColMap()->SameAs(*(targetdis->ElementColMap())))
-    dserror("ElementColMaps of source and target discretization are different!");
+    FOUR_C_THROW("ElementColMaps of source and target discretization are different!");
   if (clonedofs)
   {
     if (not sourcedis->DofRowMap()->SameAs(*(targetdis->DofRowMap())))
-      dserror("DofRowMaps of source and target discretization are different!");
+      FOUR_C_THROW("DofRowMaps of source and target discretization are different!");
     if (not sourcedis->DofColMap()->SameAs(*(targetdis->DofColMap())))
-      dserror("DofColMaps of source and target discretization are different!");
+      FOUR_C_THROW("DofColMaps of source and target discretization are different!");
   }
 
   // return identical dis
@@ -221,7 +221,7 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
 
     if (targetnurbsdis_ptr == nullptr)
     {
-      dserror("Nurbs source discretization but no nurbs target discretization\n");
+      FOUR_C_THROW("Nurbs source discretization but no nurbs target discretization\n");
     }
 
     Teuchos::RCP<DRT::NURBS::Knotvector> knots =
@@ -246,13 +246,13 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
   if (sumeleskips == 0)
   {
     if (not sourcedis.NodeRowMap()->SameAs(*(targetdis.NodeRowMap())))
-      dserror("NodeRowMaps of source and target discretization are different!");
+      FOUR_C_THROW("NodeRowMaps of source and target discretization are different!");
     if (not sourcedis.NodeColMap()->SameAs(*(targetdis.NodeColMap())))
-      dserror("NodeColMaps of source and target discretization are different!");
+      FOUR_C_THROW("NodeColMaps of source and target discretization are different!");
     if (not sourcedis.ElementRowMap()->SameAs(*(targetdis.ElementRowMap())))
-      dserror("ElementRowMaps of source and target discretization are different!");
+      FOUR_C_THROW("ElementRowMaps of source and target discretization are different!");
     if (not sourcedis.ElementColMap()->SameAs(*(targetdis.ElementColMap())))
-      dserror("ElementColMaps of source and target discretization are different!");
+      FOUR_C_THROW("ElementColMaps of source and target discretization are different!");
   }
 }  // DRT::UTILS::DiscretizationCreatorBase::Finalize
 

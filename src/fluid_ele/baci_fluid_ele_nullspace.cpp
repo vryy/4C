@@ -27,7 +27,7 @@ namespace FLD
         valid element types: fluid3, xfluid3
                 */
 
-    if (numdof > 10) dserror("Cannot define more than 10 degrees of freedom!");
+    if (numdof > 10) FOUR_C_THROW("Cannot define more than 10 degrees of freedom!");
 
     CORE::LINALG::SerialDenseMatrix nullspace(numdof, dimnsp);
     for (int i = 0; i < numdof; i++)

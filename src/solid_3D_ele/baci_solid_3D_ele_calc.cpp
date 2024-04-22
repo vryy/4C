@@ -186,7 +186,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::EvaluateNonlinea
   if (mass.has_value() && !equal_integration_mass_stiffness)
   {
     // integrate mass matrix
-    dsassert(element_mass > 0, "It looks like the element mass is 0.0");
+    FOUR_C_ASSERT(element_mass > 0, "It looks like the element mass is 0.0");
     ForEachGaussPoint<celltype>(nodal_coordinates, mass_matrix_integration_,
         [&](const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -374,7 +374,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::InitializeGaussP
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  dsassert(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
   AskAndAddQuantitiesToGaussPointDataOutput(
@@ -386,7 +386,7 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::EvaluateGaussPoi
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  dsassert(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
   CollectAndAssembleGaussPointDataOutput<celltype>(
@@ -409,7 +409,7 @@ DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::GetCauchyNDirAndDeriv
 {
   if constexpr (has_gauss_point_history<ElementFormulation>)
   {
-    dserror(
+    FOUR_C_THROW(
         "Cannot evaluate the Cauchy stress at xi with an element formulation with Gauss point "
         "history. The element formulation is %s.",
         CORE::UTILS::TryDemangle(typeid(ElementFormulation).name()).c_str());

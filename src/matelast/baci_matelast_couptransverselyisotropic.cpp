@@ -92,14 +92,14 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(int numgp, INPUT::LineDefini
       // error path
       else
       {
-        dserror("Reading of element local cosy for anisotropic materials failed");
+        FOUR_C_THROW("Reading of element local cosy for anisotropic materials failed");
       }
 
       break;
     }
     default:
     {
-      dserror("INIT mode not implemented");
+      FOUR_C_THROW("INIT mode not implemented");
       exit(EXIT_FAILURE);
     }
   }
@@ -128,7 +128,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(const double newangle
     const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   if ((params_->angle_ < -90) || (params_->angle_ > 90))
-    dserror("Fiber angle not in [-90,90]! Given angle = %d", params_->angle_);
+    FOUR_C_THROW("Fiber angle not in [-90,90]! Given angle = %d", params_->angle_);
   // convert
   const double angle = (params_->gamma_ * M_PI) / 180.;
 
@@ -339,6 +339,6 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::ErrorHandling(
     }
   }
 
-  dserror("Uncaught error detected:\n%s", msg.str().c_str());
+  FOUR_C_THROW("Uncaught error detected:\n%s", msg.str().c_str());
 }
 FOUR_C_NAMESPACE_CLOSE

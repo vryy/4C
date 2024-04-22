@@ -13,8 +13,8 @@
 
 #include "baci_adapter_str_fsiwrapper.hpp"
 #include "baci_fsi_debugwriter.hpp"
-#include "baci_global_data.hpp"  // todo remove as soon as possible, only needed for dserror
-#include "baci_io_control.hpp"   // todo remove as soon as possible, only needed for dserror
+#include "baci_global_data.hpp"  // todo remove as soon as possible, only needed for FOUR_C_THROW
+#include "baci_io_control.hpp"   // todo remove as soon as possible, only needed for FOUR_C_THROW
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -47,7 +47,7 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector& x, Epetra_Vector& F, cons
       GLOBAL::Problem::Instance()->OutputControlFile()->InputFileName().find("fs3i_ac_prestress") ==
           std::string::npos)
   {
-    dserror(
+    FOUR_C_THROW(
         "You are using the old structural time integration! Partitioned FSI is already migrated to "
         "the new structural time integration! Please update your Input file with INT_STRATEGY "
         "Standard!\n");

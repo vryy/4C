@@ -75,14 +75,14 @@ namespace MAT
     /// return material density (if provided by the specific material)
     virtual double Density() const
     {
-      dserror("The material you are using does not provide a density");
+      FOUR_C_THROW("The material you are using does not provide a density");
       return 0.0;
     }
 
     /// return internal state
     virtual double GetInternalState(int k) const
     {
-      dserror("The material you are using does not provide an internal state");
+      FOUR_C_THROW("The material you are using does not provide an internal state");
       return 0.0;
     }
   };

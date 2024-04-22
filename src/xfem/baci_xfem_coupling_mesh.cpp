@@ -124,7 +124,7 @@ void XFEM::MeshCoupling::CreateCutterDisFromCondition(std::string suffix)
 
   if (cutter_dis_->NumGlobalNodes() == 0)
   {
-    dserror("Empty cutter discretization detected. No coupling can be performed...");
+    FOUR_C_THROW("Empty cutter discretization detected. No coupling can be performed...");
   }
 
   // for parallel jobs we have to call TransparentDofSet with additional flag true
@@ -436,10 +436,10 @@ void XFEM::MeshVolCoupling::RedistributeEmbeddedDiscretization()
     {
       DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(
           cutter_dis_->gElement(cutter_dis_->ElementColMap()->GID(fele_lid)));
-      if (!fele) dserror("Cast to FaceElement failed!");
+      if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
 
       DRT::Element* ele = cond_dis_->gElement(fele->ParentElementId());
-      if (!ele) dserror("Couldn't get Parent Element!");
+      if (!ele) FOUR_C_THROW("Couldn't get Parent Element!");
 
       fele->SetParentMasterElement(ele, fele->FaceParentNumber());
     }
@@ -482,7 +482,7 @@ void XFEM::MeshVolCoupling::ResetEvaluatedTraceEstimates()
     }
     default:
     {
-      dserror("Unknown Eigenvalue update strategy!");
+      FOUR_C_THROW("Unknown Eigenvalue update strategy!");
       break;
     }
   }
@@ -631,7 +631,7 @@ void XFEM::MeshCouplingBC::DoConditionSpecificSetup()
 bool XFEM::MeshCouplingBC::HasMovingInterface()
 {
   // get the first local col(!) node
-  if (cutter_dis_->NumMyColNodes() == 0) dserror("no col node on proc %i", myrank_);
+  if (cutter_dis_->NumMyColNodes() == 0) FOUR_C_THROW("no col node on proc %i", myrank_);
 
   DRT::Node* lnode = cutter_dis_->lColNode(0);
 
@@ -660,7 +660,7 @@ void XFEM::MeshCouplingBC::EvaluateCondition(Teuchos::RCP<Epetra_Vector> ivec,
 
     const int numdof = nodedofset.size();
 
-    if (numdof == 0) dserror("node has no dofs");
+    if (numdof == 0) FOUR_C_THROW("node has no dofs");
     std::vector<DRT::Condition*> mycond;
     lnode->GetCondition(condname, mycond);
 
@@ -682,7 +682,7 @@ void XFEM::MeshCouplingBC::EvaluateCondition(Teuchos::RCP<Epetra_Vector> ivec,
       std::cout << " !!! WARNING: more than one condition for node with label " << coupling_id_
                 << ", think about implementing line and point conditions in XFEM !!!" << std::endl;
 
-    if (numconds == 0) dserror("no condition available!");
+    if (numconds == 0) FOUR_C_THROW("no condition available!");
 
     DRT::Condition* cond = mycond_by_coupid[numconds - 1];  // take the last condition
 
@@ -694,7 +694,7 @@ void XFEM::MeshCouplingBC::EvaluateCondition(Teuchos::RCP<Epetra_Vector> ivec,
     else if (condname == "XFEMSurfWeakDirichlet" or condname == "XFEMRobinDirichletSurf")
       EvaluateInterfaceVelocity(final_values, lnode, cond, time, dt);
     else
-      dserror("non supported condname for evaluation %s", condname.c_str());
+      FOUR_C_THROW("non supported condname for evaluation %s", condname.c_str());
 
 
     // set final values to vector
@@ -746,7 +746,7 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(std::vector<double>& final_
       ComputeInterfaceVelocityFromDisplacement(final_values, node, dt, evaltype);
   }
   else
-    dserror("evaltype not supported %s", evaltype->c_str());
+    FOUR_C_THROW("evaltype not supported %s", evaltype->c_str());
 }
 
 /*--------------------------------------------------------------------------*
@@ -773,7 +773,7 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceDisplacement(
     EvaluateImplementation(final_values, node->X().data(), cond, time, function_name);
   }
   else
-    dserror("evaltype not supported %s", evaltype->c_str());
+    FOUR_C_THROW("evaltype not supported %s", evaltype->c_str());
 }
 
 
@@ -783,7 +783,7 @@ void XFEM::MeshCouplingBC::ComputeInterfaceVelocityFromDisplacement(
     std::vector<double>& final_values, DRT::Node* node, const double dt,
     const std::string* evaltype)
 {
-  if (dt < 1e-14) dserror("zero or negative time step size not allowed!!!");
+  if (dt < 1e-14) FOUR_C_THROW("zero or negative time step size not allowed!!!");
 
 
   double thetaiface = 0.0;
@@ -795,7 +795,7 @@ void XFEM::MeshCouplingBC::ComputeInterfaceVelocityFromDisplacement(
            *evaltype == "displacement_2ndorder_with_initfunct")
     thetaiface = 0.5;  // for Crank Nicholson, OST(0.5)
   else
-    dserror("not supported");
+    FOUR_C_THROW("not supported");
 
 
   const std::vector<int> nodedofset = cutter_dis_->Dof(node);
@@ -822,7 +822,7 @@ void XFEM::MeshCouplingBC::EvaluateImplementation(std::vector<double>& final_val
   const int numdof = final_values.size();
 
   if (function_name != "ROTATING_BEAM")
-    dserror("currently only the rotating beam function is available!");
+    FOUR_C_THROW("currently only the rotating beam function is available!");
 
   double t_1 = 1.0;         // ramp the rotation
   double t_2 = t_1 + 1.0;   // reached the constant angle velocity
@@ -857,7 +857,7 @@ void XFEM::MeshCouplingBC::EvaluateImplementation(std::vector<double>& final_val
     arg = -angle_vel * (time - t_4) + M_PI / T * (t_2 - t_1) + 2.0 * M_PI / T * (t_3 - t_2);
   }
   else
-    dserror("for that time we did not define an implemented rotation %f", time);
+    FOUR_C_THROW("for that time we did not define an implemented rotation %f", time);
 
 
   // rotation with constant angle velocity around point
@@ -1048,7 +1048,7 @@ void XFEM::MeshCouplingNeumann::DoConditionSpecificSetup()
   XFEM::MeshCouplingBC::DoConditionSpecificSetup();
 
   // Check if Inflow Stabilisation is active
-  if (!cutterele_conds_.size()) dserror("cutterele_conds_.size = 0!");
+  if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
   DRT::Condition* cond = (cutterele_conds_[0]).second;
   auto inflow_stab = *cond->Get<bool>("InflowStab");
   for (auto& cutterele_cond : cutterele_conds_)
@@ -1056,7 +1056,7 @@ void XFEM::MeshCouplingNeumann::DoConditionSpecificSetup()
     DRT::Condition* cond = cutterele_cond.second;
     auto this_inflow = *cond->Get<bool>("InflowStab");
     if (inflow_stab != this_inflow)
-      dserror(
+      FOUR_C_THROW(
           "You want to stabilized just some of your Neumann Boundaries? - feel free to implement!");
   }
 
@@ -1247,10 +1247,11 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::Matr
           ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_);
 
 // Safety checks
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if ((conditionsmap_robin_dirch_.find(robin_id_dirch)) == conditionsmap_robin_dirch_.end())
     {
-      dserror("Key was not found in this instance!! Fatal error! (conditionsmap_robin_dirch_)");
+      FOUR_C_THROW(
+          "Key was not found in this instance!! Fatal error! (conditionsmap_robin_dirch_)");
     }
 #endif
   }
@@ -1268,7 +1269,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::Matr
     double sliplength = 0.0;
     GetSlipCoefficient(sliplength, x, cond);
 
-    if (sliplength < 0.0) dserror("The slip length can not be negative.");
+    if (sliplength < 0.0) FOUR_C_THROW("The slip length can not be negative.");
 
     if (sliplength != 0.0)
     {
@@ -1294,18 +1295,19 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::Matr
   }
 
 // Safety checks
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (!std::signbit(static_cast<double>(robin_id_dirch)))
   {
     if ((conditionsmap_robin_neumann_.find(robin_id_dirch)) == conditionsmap_robin_neumann_.end())
     {
-      dserror("Key was not found in this instance!! Fatal error! (conditionsmap_robin_neumann_)");
+      FOUR_C_THROW(
+          "Key was not found in this instance!! Fatal error! (conditionsmap_robin_neumann_)");
     }
   }
   std::map<int, bool>::iterator it_bool;
   if ((it_bool = force_tangvel_map_.find(cond->Id())) == force_tangvel_map_.end())
   {
-    dserror("Key was not found in this instance!! Fatal error! (force_tangvel_map_)");
+    FOUR_C_THROW("Key was not found in this instance!! Fatal error! (force_tangvel_map_)");
   }
 #endif
 }
@@ -1386,11 +1388,11 @@ void XFEM::MeshCouplingNavierSlip::CreateRobinIdMap(
       if (mynewcond.size() == 1)
       {
         if (!conditionsmap_robin.insert(std::make_pair(tmp_robin_id, mynewcond[0])).second)
-          dserror("ID already existing! For conditionsmap_robin.");
+          FOUR_C_THROW("ID already existing! For conditionsmap_robin.");
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "Active Robin Dirichlet/Neumann condition provided in Navier Slip condition, but not "
             "in input file!!");
       }
@@ -1402,7 +1404,7 @@ void XFEM::MeshCouplingNavierSlip::CreateRobinIdMap(
   {
     std::cout << "conditionsmap_robin.size(): " << (conditionsmap_robin).size() << std::endl;
     std::cout << "conditions_robin.size(): " << conditions_robin.size() << std::endl;
-    dserror("More Robin Dirichlet/Neumann Conditions provided than necessary!");
+    FOUR_C_THROW("More Robin Dirichlet/Neumann Conditions provided than necessary!");
   }
 }
 
@@ -1457,10 +1459,10 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters()
 
     if (!sliplength_map_.insert(std::make_pair(cond_int, std::make_pair(sliplength, slip_bool)))
              .second)
-      dserror("ID already existing! For sliplength_map_.");
+      FOUR_C_THROW("ID already existing! For sliplength_map_.");
 
     if (!force_tangvel_map_.insert(std::make_pair(cond_int, force_tangential)).second)
-      dserror("ID already existing! For force_tangvel_map_.");
+      FOUR_C_THROW("ID already existing! For force_tangvel_map_.");
   }
 
   // Check if eval-type is same in Navier slip section and
@@ -1472,7 +1474,7 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters()
     {
       if ((*conditionsmap_robin_dirch_.find(tmp_robin_id)->second->Get<std::string>("evaltype")) !=
           *(tmp_cond->Get<std::string>("evaltype")))
-        dserror("Not same function to evaluate in Dirichlet cond as in Main Cond.");
+        FOUR_C_THROW("Not same function to evaluate in Dirichlet cond as in Main Cond.");
     }
   }
 }
@@ -1538,7 +1540,7 @@ void XFEM::MeshCouplingNavierSlip::UpdateConfigurationMap_GP(
   double sliplength = 0.0;
   GetSlipCoefficient(sliplength, x, cond);
 
-  if (sliplength < 0.0) dserror("The slip length can not be negative.");
+  if (sliplength < 0.0) FOUR_C_THROW("The slip length can not be negative.");
 
   if (sliplength != 0.0)
   {
@@ -1610,7 +1612,7 @@ void XFEM::MeshCouplingFSI::CompleteStateVectors()
   Epetra_Vector iforce_tmp(itrueresidual_->Map(), true);
   Epetra_Export exporter_iforce(iforcecol_->Map(), iforce_tmp.Map());
   int err1 = iforce_tmp.Export(*iforcecol_, exporter_iforce, Add);
-  if (err1) dserror("Export using exporter returned err=%d", err1);
+  if (err1) FOUR_C_THROW("Export using exporter returned err=%d", err1);
 
   // scale the interface trueresidual with -1.0 to get the forces acting on structural side (no
   // residual-scaling!)
@@ -1654,15 +1656,15 @@ void XFEM::MeshCouplingFSI::ReadRestart(const int step)
   boundaryreader.ReadVector(idispnpi_, "idispnpi_res");
 
   if (not(cutter_dis_->DofRowMap())->SameAs(ivelnp_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(iveln_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(idispnp_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(idispn_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(idispnpi_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
 }
 
 void XFEM::MeshCouplingFSI::GetSlipCoefficient(
@@ -1790,14 +1792,14 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters()
 
     if (!sliplength_map_.insert(std::make_pair(cond_int, std::make_pair(sliplength, slip_bool)))
              .second)
-      dserror("ID already existing! For sliplength_map_.");
+      FOUR_C_THROW("ID already existing! For sliplength_map_.");
 
     INPAR::XFEM::InterfaceLaw interfacelaw =
         static_cast<INPAR::XFEM::InterfaceLaw>(*cond->Get<int>("INTLAW"));
     if (i != conditions_XFSI.begin())
     {
       if (interfacelaw_ != interfacelaw)
-        dserror(
+        FOUR_C_THROW(
             "XFEM::MeshCouplingFSI::SetConditionSpecificParameters: You defined two different FSI "
             "INTLAWS, not supported yet!");
     }
@@ -1819,7 +1821,7 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters()
         hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
       }
       else
-        dserror("Element type != hex8, add it here!");
+        FOUR_C_THROW("Element type != hex8, add it here!");
     }
     bg_dis_->Comm().MaxAll(&hmax, &h_scaling_, 1);
     std::cout << "==| XFEM::MeshCouplingFSI: Computed h_scaling for fluidele is: " << h_scaling_
@@ -2018,7 +2020,7 @@ void XFEM::MeshCouplingFSI::SetupConfigurationMap()
       configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
     }
     else
-      dserror("Intlaw not available!");
+      FOUR_C_THROW("Intlaw not available!");
   }
   else if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
   {
@@ -2059,12 +2061,13 @@ void XFEM::MeshCouplingFSI::SetupConfigurationMap()
       configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool, double>(true, 1.0);
     }
     else
-      dserror("Intlaw not available!");
+      FOUR_C_THROW("Intlaw not available!");
   }
   else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
-    dserror("XFEM::MeshCouplingFSI: Averaging Strategy not set!");
+    FOUR_C_THROW("XFEM::MeshCouplingFSI: Averaging Strategy not set!");
   else
-    dserror("XFEM::MeshCouplingFSI: You want to initialize another strategy than Xfluid_Sided?");
+    FOUR_C_THROW(
+        "XFEM::MeshCouplingFSI: You want to initialize another strategy than Xfluid_Sided?");
   return;
 }
 
@@ -2087,10 +2090,10 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if ((kappa_m != 1 && GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided) ||
       (kappa_m != 0 && GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided))
-    dserror("XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP: kappa_m == %f", kappa_m);
+    FOUR_C_THROW("XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP: kappa_m == %f", kappa_m);
 #endif
 
   if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
@@ -2121,7 +2124,7 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
       double sliplength = 0.0;
       GetSlipCoefficient(sliplength, x, cond);
 
-      if (sliplength < 0.0) dserror("The slip should not be negative!");
+      if (sliplength < 0.0) FOUR_C_THROW("The slip should not be negative!");
 
       double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
       double stabnit = 0.0;
@@ -2152,7 +2155,7 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
           full_stab, x, cond, ele, bele, funct, derxy, rst_slave, normal, vel_m, fulltraction);
     }
     else
-      dserror("Intlaw not available!");
+      FOUR_C_THROW("Intlaw not available!");
   }
   else if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
   {
@@ -2171,7 +2174,7 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
       // configuration_map_[INPAR::XFEM::XS_Adj_Row] = std::pair<bool,double>(true,-1.0);
     }
     else
-      dserror("Intlaw not available!");
+      FOUR_C_THROW("Intlaw not available!");
   }
   return;
 }
@@ -2196,8 +2199,8 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP_Contact(
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
-#ifdef BACI_DEBUG
-  dsassert(xf_c_comm_ != Teuchos::null,
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  FOUR_C_ASSERT(xf_c_comm_ != Teuchos::null,
       "UpdateConfigurationMap_GP_Contact but no Xfluid Contact Communicator assigned!");
 #endif
 
@@ -2231,7 +2234,7 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP_Contact(
     sliplength *= h_scaling_ * (h_scaling_ / (gap - MIN_h * h_scaling_) - scaling);
   }
 
-  if (sliplength < 0.0) dserror("The sliplength should not be negative!");
+  if (sliplength < 0.0) FOUR_C_THROW("The sliplength should not be negative!");
 
   double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
   double stabnit = 0.0;
@@ -2309,7 +2312,7 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
   {
     DRT::ELEMENTS::SoHex8* solid_ele = dynamic_cast<DRT::ELEMENTS::SoHex8*>(coupl_ele);
     if (solid_ele == nullptr)
-      dserror(
+      FOUR_C_THROW(
           "XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: Cast of coupl_ele to solid_ele "
           "failed!");
 
@@ -2341,11 +2344,11 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
       for (int idx = 2; idx < 5; ++idx) solid_stress[idx].scale(-timefac_ * timefac_);
     }
     else
-      dserror("XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: timefac = %f, not set!",
+      FOUR_C_THROW("XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: timefac = %f, not set!",
           timefac_);
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress:: Element type not implemented "
         "yet!");
   return;
@@ -2360,7 +2363,8 @@ void XFEM::MeshCouplingFSI::GetStressTangentSlave(DRT::Element* coup_ele,  ///< 
   //  if (coup_ele->Material()->MaterialType() == INPAR::MAT::m_elasthyper)
   //    e_s = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(coup_ele->Material())->GetYoung();
   //  else
-  //    dserror("GetCouplingSpecificAverageWeights: Slave Material not a Elasthyper material?");
+  //    FOUR_C_THROW("GetCouplingSpecificAverageWeights: Slave Material not a Elasthyper
+  //    material?");
 
   // this is a temporal hack as we calculate "E/h" directely with the generalized eigenvalue problem
   // ... need to work on the input section to clarify this ...
@@ -2375,7 +2379,7 @@ void XFEM::MeshCouplingFSI::EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele)
 {
   DRT::ELEMENTS::StructuralSurface* solidfaceele =
       dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(ele);
-  dsassert(solidfaceele != nullptr, "Cast to StructuralSurface failed!");
+  FOUR_C_ASSERT(solidfaceele != nullptr, "Cast to StructuralSurface failed!");
 
   solidfaceele->SetParentMasterElement(
       coupl_dis_->gElement(solidfaceele->ParentElementId()), solidfaceele->FaceParentNumber());
@@ -2387,7 +2391,7 @@ void XFEM::MeshCouplingFSI::EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele)
   // parent and boundary displacement at n+1
   std::vector<double> eledisp((la[0].lm_).size());
   Teuchos::RCP<const Epetra_Vector> dispnp = coupl_dis_->GetState("dispnp");
-  if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+  if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
   CORE::FE::ExtractMyValues(*dispnp, eledisp, la[0].lm_);
   (*ele_to_max_eigenvalue_)[ele->Id()] = solidfaceele->EstimateNitscheTraceMaxEigenvalueCombined(
@@ -2512,9 +2516,9 @@ void XFEM::MeshCouplingFluidFluid::SetupConfigurationMap()
     configuration_map_[INPAR::XFEM::XF_Adj_Row] = std::pair<bool, double>(true, 0.5);
   }
   else if (GetAveragingStrategy() == INPAR::XFEM::invalid)
-    dserror("XFEM::MeshCouplingFluidFluid: Averaging Strategy not set!");
+    FOUR_C_THROW("XFEM::MeshCouplingFluidFluid: Averaging Strategy not set!");
   else
-    dserror("XFEM::MeshCouplingFluidFluid: You want to initialize another strategy?");
+    FOUR_C_THROW("XFEM::MeshCouplingFluidFluid: You want to initialize another strategy?");
 
   return;
 }
@@ -2538,11 +2542,11 @@ void XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP(
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (!(GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided ||
           GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided ||
           GetAveragingStrategy() == INPAR::XFEM::Mean))
-    dserror(
+    FOUR_C_THROW(
         "XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP: Does your Averaging strategy "
         "change the weighing during the simulation or between gausspoints?");
 #endif
@@ -2563,7 +2567,7 @@ void XFEM::MeshCouplingFluidFluid::GetViscositySlave(DRT::Element* coup_ele,  //
   if (mat_s->MaterialType() == INPAR::MAT::m_fluid)
     visc_s = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_s)->Viscosity();
   else
-    dserror("GetCouplingSpecificAverageWeights: Slave Material not a fluid material?");
+    FOUR_C_THROW("GetCouplingSpecificAverageWeights: Slave Material not a fluid material?");
 
   return;
 }
@@ -2579,7 +2583,7 @@ void XFEM::MeshCouplingFluidFluid::EstimateNitscheTraceMaxEigenvalue(DRT::Elemen
   CORE::LINALG::SerialDenseMatrix dummyelemat;
   CORE::LINALG::SerialDenseVector dummyelevec;
   DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
-  if (!faceele) dserror("Cast to faceele failed!");  // todo change to dsassert
+  if (!faceele) FOUR_C_THROW("Cast to faceele failed!");  // todo change to FOUR_C_ASSERT
 
   faceele->LocationVector(*coupl_dis_, la, false);
 
@@ -2620,15 +2624,15 @@ void XFEM::MeshCouplingFluidFluid::ReadRestart(const int step)
   boundaryreader.ReadVector(idispnpi_, "idispnpi_res");
 
   if (not(cutter_dis_->DofRowMap())->SameAs(ivelnp_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(iveln_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(idispnp_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(idispn_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(idispnpi_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
 }
 
 void XFEM::MeshCouplingFluidFluid::Output(

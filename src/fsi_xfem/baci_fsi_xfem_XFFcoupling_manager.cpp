@@ -27,13 +27,14 @@ XFEM::XffCouplingManager::XffCouplingManager(Teuchos::RCP<ConditionManager> cond
       cond_name_("XFEMSurfFluidFluid"),
       idx_(idx)
 {
-  if (idx_.size() != 2) dserror("XFFCoupling_Manager required two block ( 2 != %d)", idx_.size());
+  if (idx_.size() != 2)
+    FOUR_C_THROW("XFFCoupling_Manager required two block ( 2 != %d)", idx_.size());
 
   // Coupling_Comm_Manager create all Coupling Objects now with Fluid has idx = 0, Fluid has idx =
   // 1!
   mcffi_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(
       condmanager->GetMeshCoupling(cond_name_));
-  if (mcffi_ == Teuchos::null) dserror(" Failed to get MeshCouplingFFI for embedded fluid!");
+  if (mcffi_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFFI for embedded fluid!");
 }
 
 /*-----------------------------------------------------------------------------------------*

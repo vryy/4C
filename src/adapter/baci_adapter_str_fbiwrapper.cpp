@@ -28,7 +28,7 @@ ADAPTER::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> struct
                                 "PRESTRESS") != INPAR::STR::PreStress::none;
   if (is_prestress)
   {
-    dserror("Prestressing for fluid-beam interaction not tested yet.");
+    FOUR_C_THROW("Prestressing for fluid-beam interaction not tested yet.");
   }
   eletypeextractor_ = Teuchos::rcp(new BEAMINTERACTION::UTILS::MapExtractor);
   BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(structure_->Discretization(), eletypeextractor_);
@@ -64,12 +64,12 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIStructureWrapper::PredictInterfaceVelnp(
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIStructureWrapper::RelaxationSolve(
     Teuchos::RCP<Epetra_Vector> iforce)
 {
-  dserror("RelaxationSolve not implemented for immersed fluid-beam interaction\n");
+  FOUR_C_THROW("RelaxationSolve not implemented for immersed fluid-beam interaction\n");
   return Teuchos::null;
 }
 /*------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------*/
-void ADAPTER::FBIStructureWrapper::RebuildInterface() { dserror("Not implemented yet"); }
+void ADAPTER::FBIStructureWrapper::RebuildInterface() { FOUR_C_THROW("Not implemented yet"); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

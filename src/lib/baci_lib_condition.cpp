@@ -616,7 +616,7 @@ std::string DRT::Condition::Name() const
       nameOfType += "Tagged nodes";
       break;
     default:
-      dserror("no output std::string for condition defined in DRT::Condition::Print");
+      FOUR_C_THROW("no output std::string for condition defined in DRT::Condition::Print");
       break;
   }
   return nameOfType;

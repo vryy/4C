@@ -58,7 +58,7 @@ Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> BEAMINTERACTION::B3TANGENTSMOOTHING::
   // only one neighbor element on each side of the considered element is allowed
   if ((**(element1->Nodes())).NumElement() > 2)
   {
-    dserror(
+    FOUR_C_THROW(
         "ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements "
         "per node");
   }
@@ -91,7 +91,7 @@ Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> BEAMINTERACTION::B3TANGENTSMOOTHING::
   // only one neighbor element on each side of the considered element is allowed
   if ((**(element1->Nodes() + n_right)).NumElement() > 2)
   {
-    dserror(
+    FOUR_C_THROW(
         "ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements "
         "per node");
   }

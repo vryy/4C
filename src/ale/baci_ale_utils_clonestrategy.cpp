@@ -44,7 +44,7 @@ void ALE::UTILS::AleCloneStrategy::CheckMaterialType(const int matid)
   // Here we check first, whether this material is of admissible type
   INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
   if (mtype != INPAR::MAT::m_stvenant && mtype != INPAR::MAT::m_elasthyper)
-    dserror("Material with ID %d is not admissible for ALE elements", matid);
+    FOUR_C_THROW("Material with ID %d is not admissible for ALE elements", matid);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
       }
       else
       {
-        dserror("unsupported ale element type '%s'", typeid(*newele).name());
+        FOUR_C_THROW("unsupported ale element type '%s'", typeid(*newele).name());
       }
     }
   }
@@ -91,7 +91,7 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
       }
       else
       {
-        dserror("unsupported ale element type '%s'", typeid(*newele).name());
+        FOUR_C_THROW("unsupported ale element type '%s'", typeid(*newele).name());
       }
     }
   }
@@ -125,7 +125,7 @@ bool ALE::UTILS::AleCloneStrategy::DetermineEleType(
     else if (nsd == 2)
       eletype.push_back("ALE2");
     else
-      dserror("%i D Dimension not supported", nsd);
+      FOUR_C_THROW("%i D Dimension not supported", nsd);
   }
 
   return cloneit;

@@ -41,13 +41,13 @@ CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const CORE::LINALG::SerialDen
 
     // volume of the element
     vol_ = jac.Determinant() / 6.0;
-    if (vol_ <= 0.0) dserror("Element volume %10.5e <= 0.0", vol_);
+    if (vol_ <= 0.0) FOUR_C_THROW("Element volume %10.5e <= 0.0", vol_);
   }
   else
     vol_ = 0.0;
 
   // std::cout << "SHAPE=     "<< shape_ << std::endl;
-  if (shape_ != CORE::FE::CellType::tet4) dserror("wrong shape");
+  if (shape_ != CORE::FE::CellType::tet4) FOUR_C_THROW("wrong shape");
 
   return;
 }
@@ -80,7 +80,7 @@ double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
 
   invJ.Multiply(derivs, xrefe);
   jac = invJ.Invert();
-  if (jac <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", jac);
+  if (jac <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", jac);
 
   return jac;
 }
@@ -92,8 +92,8 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
   if (shape_ == CORE::FE::CellType::tet4)
   {
     // check input
-    if (!local) dserror("ERROR: LocalToGlobal called with xi=nullptr");
-    if (!global) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
+    if (!local) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
+    if (!global) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
 
     static const int n = 4;
     static const int ndim = 3;
@@ -115,8 +115,8 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
   else if (shape_ == CORE::FE::CellType::hex8)
   {
     // check input
-    if (!local) dserror("ERROR: LocalToGlobal called with xi=nullptr");
-    if (!global) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
+    if (!local) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
+    if (!global) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
 
     static const int n = 8;
     static const int ndim = 3;
@@ -136,7 +136,7 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
     }
   }
   else
-    dserror("ERROR: Shape of integration cell not supported!");
+    FOUR_C_THROW("ERROR: Shape of integration cell not supported!");
 
   return;
 }

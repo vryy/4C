@@ -104,7 +104,7 @@ void FS3I::PartFPS3I::Init()
   double dt_poroelast = poroelastdynparams.get<double>("TIMESTEP");
   if (dt_fpsi != dt_poroelast)
   {
-    dserror(
+    FOUR_C_THROW(
         "Please set \"TIMESTEP\" in \"POROELASTICITY DYNAMIC\" to the same value as in \"FPSI "
         "DYNAMIC\"!");
   }
@@ -127,7 +127,7 @@ void FS3I::PartFPS3I::Init()
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Partitioned solution scheme not implemented for FPSI, yet. "
         "Make sure that the parameter COUPALGO is set to 'fpsi_monolithic_plain', "
         "and the parameter PARITIONED is set to 'monolithic'. ");
@@ -156,12 +156,12 @@ void FS3I::PartFPS3I::Init()
   // create discretization for fluid-based scalar transport from and
   // according to fluid discretization
   //---------------------------------------------------------------------
-  if (fluiddis->NumGlobalNodes() == 0) dserror("Fluid discretization is empty!");
+  if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
 
   // std::map<std::pair<std::string,std::string>,std::map<int,int> > clonefieldmatmap =
   // problem->CloningMaterialMap(); if (clonefieldmatmap.size() < 2)
-  //  dserror("At least two material lists required for partitioned FS3I!");
+  //  FOUR_C_THROW("At least two material lists required for partitioned FS3I!");
 
   // create fluid-based scalar transport elements if fluid-based scalar
   // transport discretization is empty
@@ -177,19 +177,19 @@ void FS3I::PartFPS3I::Init()
       DRT::ELEMENTS::Transport* element =
           dynamic_cast<DRT::ELEMENTS::Transport*>(fluidscatradis->lColElement(i));
       if (element == nullptr)
-        dserror("Invalid element type!");
+        FOUR_C_THROW("Invalid element type!");
       else
         element->SetImplType(impltype_fluid);
     }
   }
   else
-    dserror("Fluid AND ScaTra discretization present. This is not supported.");
+    FOUR_C_THROW("Fluid AND ScaTra discretization present. This is not supported.");
 
   //---------------------------------------------------------------------
   // create discretization for poro-based scalar transport from and
   // according to poro (structure) discretization
   //--------------------------------------------------------------------
-  if (fluiddis->NumGlobalNodes() == 0) dserror("Fluid discretization is empty!");
+  if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
   if (!structscatradis->Filled()) structscatradis->FillComplete();
   if (structscatradis->NumGlobalNodes() == 0)
@@ -205,7 +205,7 @@ void FS3I::PartFPS3I::Init()
     // POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,structscatradis);
   }
   else
-    dserror("Structure AND ScaTra discretization present. This is not supported.");
+    FOUR_C_THROW("Structure AND ScaTra discretization present. This is not supported.");
 
   // ##################      End of discretization       //##################
 
@@ -220,11 +220,11 @@ void FS3I::PartFPS3I::Init()
 
   // check if the linear solver has a valid solver number
   if (linsolver1number == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in "
         "FS3I DYNAMIC to a valid number!");
   if (linsolver2number == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
   fluidscatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
@@ -273,7 +273,7 @@ void FS3I::PartFPS3I::Init()
   {
     if (scatratimealgo != INPAR::SCATRA::timeint_one_step_theta or
         structtimealgo != INPAR::STR::dyna_onesteptheta)
-      dserror(
+      FOUR_C_THROW(
           "Partitioned FS3I computations should feature consistent time-integration schemes for "
           "the subproblems; in this case, a one-step-theta scheme is intended to be used for the "
           "fluid subproblem, and different schemes are intended to be used for the structure "
@@ -281,7 +281,7 @@ void FS3I::PartFPS3I::Init()
 
     if (scatradyn.get<double>("THETA") != fluiddyn.get<double>("THETA") or
         scatradyn.get<double>("THETA") != structdyn.sublist("ONESTEPTHETA").get<double>("THETA"))
-      dserror(
+      FOUR_C_THROW(
           "Parameter(s) theta for one-step-theta time-integration scheme defined in one or more of "
           "the individual fields do(es) not match for partitioned FS3I computation.");
   }
@@ -289,7 +289,7 @@ void FS3I::PartFPS3I::Init()
   {
     if (scatratimealgo != INPAR::SCATRA::timeint_gen_alpha or
         structtimealgo != INPAR::STR::dyna_genalpha)
-      dserror(
+      FOUR_C_THROW(
           "Partitioned FS3I computations should feature consistent time-integration schemes for "
           "the subproblems; in this case, a (alpha_f-based) generalized-alpha scheme is intended "
           "to be used for the fluid subproblem, and different schemes are intended to be used for "
@@ -297,14 +297,14 @@ void FS3I::PartFPS3I::Init()
   }
   else if (fluidtimealgo == INPAR::FLUID::timeint_npgenalpha)
   {
-    dserror(
+    FOUR_C_THROW(
         "Partitioned FS3I computations do not support n+1-based generalized-alpha time-integration "
         "schemes for the fluid subproblem!");
   }
   else if (fluidtimealgo == INPAR::FLUID::timeint_bdf2 or
            fluidtimealgo == INPAR::FLUID::timeint_stationary)
   {
-    dserror(
+    FOUR_C_THROW(
         "Partitioned FS3I computations do not support stationary of BDF2 time-integration schemes "
         "for the fluid subproblem!");
   }
@@ -312,7 +312,7 @@ void FS3I::PartFPS3I::Init()
   // check that incremental formulation is used for scalar transport field,
   // according to structure and fluid field
   if (scatravec_[0]->ScaTraField()->IsIncremental() == false)
-    dserror("Incremental formulation required for partitioned FS3I computations!");
+    FOUR_C_THROW("Incremental formulation required for partitioned FS3I computations!");
 
 
   return;
@@ -349,7 +349,7 @@ void FS3I::PartFPS3I::Setup()
   // conductivity is not only needed in scatracoupling but also in FPSI coupling!
   if (myconduct == 0.0)
   {
-    dserror(
+    FOUR_C_THROW(
         "conductivity of 0.0 is not allowed!!! Should be set in \"DESIGN SCATRA COUPLING SURF "
         "CONDITIONS\"");
   }
@@ -522,7 +522,7 @@ void FS3I::PartFPS3I::SetupSystem()
   const int linsolvernumber = fs3idyn.get<int>("COUPLED_LINEAR_SOLVER");
   // check if LOMA solvers has a valid number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for FS3I problems. Please set COUPLED_LINEAR_SOLVER in FS3I "
         "DYNAMIC to a valid number!");
   const Teuchos::ParameterList& coupledscatrasolvparams =
@@ -531,13 +531,13 @@ void FS3I::PartFPS3I::SetupSystem()
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
+  if (solvertype != INPAR::SOLVER::SolverType::belos) FOUR_C_THROW("Iterative solver expected");
 
   const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
       coupledscatrasolvparams, "AZPREC");
 
   if (azprectype != INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)
-    dserror("Block Gauss-Seidel preconditioner expected");
+    FOUR_C_THROW("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
   scatrasolver_ =
@@ -549,11 +549,11 @@ void FS3I::PartFPS3I::SetupSystem()
 
   // check if the linear solver has a valid solver number
   if (linsolver1number == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in "
         "FS3I DYNAMIC to a valid number!");
   if (linsolver2number == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
   scatrasolver_->PutSolverParamsToSubParams(
@@ -764,7 +764,7 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>&
 
   Teuchos::RCP<ADAPTER::FluidFSI> fluid =
       Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fpsi_->FluidField());
-  if (fluid == Teuchos::null) dserror("Dynamic cast to ADAPTER::FluidFSI failed!");
+  if (fluid == Teuchos::null) FOUR_C_THROW("Dynamic cast to ADAPTER::FluidFSI failed!");
 
   Teuchos::RCP<Epetra_Vector> WallShearStress =
       fluid->CalculateWallShearStresses();  // CalcWallShearStress();

@@ -80,7 +80,7 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
     }
     default:
     {
-      dserror("Matrix type not supported");
+      FOUR_C_THROW("Matrix type not supported");
       break;
     }
   }
@@ -98,7 +98,7 @@ Teuchos::RCP<Epetra_Map> SSTI::SSTIMaps::MapInterface(
   auto mergedInterfaceMap = CORE::LINALG::MultiMapExtractor::MergeMaps(
       {meshtyingstrategy->CouplingAdapter()->MasterDofMap(),
           meshtyingstrategy->CouplingAdapter()->SlaveDofMap()});
-  if (not mergedInterfaceMap->UniqueGIDs()) dserror("Map not unique");
+  if (not mergedInterfaceMap->UniqueGIDs()) FOUR_C_THROW("Map not unique");
   return mergedInterfaceMap;
 }
 
@@ -136,7 +136,7 @@ Teuchos::RCP<CORE::LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlock
     }
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -171,7 +171,7 @@ Teuchos::RCP<CORE::LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlock
     }
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -225,7 +225,7 @@ SSTI::SSTIMapsMono::SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm)
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -269,7 +269,7 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
 
     default:
     {
-      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      FOUR_C_THROW("Type of global system matrix for scalar-structure interaction not recognized!");
       break;
     }
   }
@@ -325,7 +325,7 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
     }
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -409,7 +409,7 @@ void SSTI::SSTIMatrices::CompleteCouplingMatrices()
 
     default:
     {
-      dserror("Invalid matrix type associated with scalar transport field!");
+      FOUR_C_THROW("Invalid matrix type associated with scalar transport field!");
       break;
     }
   }
@@ -569,13 +569,13 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
       std::isnan(structuredofnorm) or std::isnan(structureresnorm) or
       std::isnan(structureincnorm) or std::isnan(thermodofnorm) or std::isnan(thermoresnorm) or
       std::isnan(thermoincnorm))
-    dserror("Vector norm is not a number!");
+    FOUR_C_THROW("Vector norm is not a number!");
   if (std::isinf(concdofnorm) or std::isinf(concresnorm) or std::isinf(concincnorm) or
       std::isinf(potdofnorm) or std::isinf(potresnorm) or std::isinf(potincnorm) or
       std::isinf(structuredofnorm) or std::isinf(structureresnorm) or
       std::isinf(structureincnorm) or std::isnan(thermodofnorm) or std::isnan(thermoresnorm) or
       std::isnan(thermoincnorm))
-    dserror("Vector norm is infinity!");
+    FOUR_C_THROW("Vector norm is infinity!");
 
   // prevent division by zero
   if (concdofnorm < 1.e-10) concdofnorm = 1.e-10;
@@ -717,7 +717,7 @@ void SSTI::SSTIScatraStructureCloneStrategy::SetElementData(
 
     if (impltype == INPAR::SCATRA::impltype_undefined)
     {
-      dserror(
+      FOUR_C_THROW(
           "ScatraStructureCloneStrategy copies scatra discretization from structure "
           "discretization, but the STRUCTURE elements that are defined in the .dat file are either "
           "not meant to be copied to scatra elements or the ImplType is set 'Undefined' which is "
@@ -732,7 +732,7 @@ void SSTI::SSTIScatraStructureCloneStrategy::SetElementData(
       else if (impltype == INPAR::SCATRA::impltype_elch_diffcond)
         trans->SetImplType(INPAR::SCATRA::impltype_elch_diffcond_thermo);
       else
-        dserror("Something went wrong");
+        FOUR_C_THROW("Something went wrong");
     }
 
     // set material
@@ -740,7 +740,7 @@ void SSTI::SSTIScatraStructureCloneStrategy::SetElementData(
   }
   else
   {
-    dserror("unsupported element type '%s'", typeid(*newele).name());
+    FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
   }
 }
 

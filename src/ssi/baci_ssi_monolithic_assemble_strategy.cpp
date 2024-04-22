@@ -503,7 +503,7 @@ Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(
 
         default:
         {
-          dserror("unknown matrix type of ScaTra field");
+          FOUR_C_THROW("unknown matrix type of ScaTra field");
           break;
         }
       }
@@ -517,7 +517,7 @@ Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(
     }
     default:
     {
-      dserror("unknown matrix type of SSI problem");
+      FOUR_C_THROW("unknown matrix type of SSI problem");
       break;
     }
   }

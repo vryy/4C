@@ -71,7 +71,7 @@ void DRT::ELEMENTS::SoHex8::soh8_set_eas_multi(Teuchos::ParameterList& params)
 
     if (oldalpha == Teuchos::null || oldfeas == Teuchos::null || oldKaainv == Teuchos::null ||
         oldKda == Teuchos::null)
-      dserror("Cannot get EAS internal data from parameter list for multi-scale problems");
+      FOUR_C_THROW("Cannot get EAS internal data from parameter list for multi-scale problems");
 
     easdata_.alpha = *(*oldalpha)[Id()];
     easdata_.feas = *(*oldfeas)[Id()];

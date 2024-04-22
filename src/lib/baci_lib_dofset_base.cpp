@@ -208,7 +208,7 @@ void DRT::DofSetBase::NotifyReset()
  *----------------------------------------------------------------------*/
 void DRT::DofSetBase::Print(std::ostream& os) const
 {
-  dserror("Print() is not implemented in base class. Override Print() in subclass");
+  FOUR_C_THROW("Print() is not implemented in base class. Override Print() in subclass");
 }
 
 FOUR_C_NAMESPACE_CLOSE

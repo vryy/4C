@@ -96,10 +96,10 @@ void FSI::ConstrMonolithic::GeneralSetup()
   // interface dof map for all fields and have just one transfer
   // operator from the interface map to the full field map.
   if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
-    dserror("structure interface dof maps do not match");
+    FOUR_C_THROW("structure interface dof maps do not match");
 
   if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
-    dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+    FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
@@ -136,7 +136,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
   dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
   if (dbcmaps_ == Teuchos::null)
   {
-    dserror("Creation of FSI Dirichlet map extractor failed.");
+    FOUR_C_THROW("Creation of FSI Dirichlet map extractor failed.");
   }
   // ---------------------------------------------------------------------------
 
@@ -189,7 +189,7 @@ void FSI::ConstrMonolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(2, 2).EpetraMatrix();
     arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
@@ -201,13 +201,13 @@ void FSI::ConstrMonolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat
         mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
 
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -229,8 +229,8 @@ void FSI::ConstrMonolithic::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x, 0);
     Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 2);
 
-    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("structure scaling failed");
-    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sy, 0, x);
     Extractor().InsertVector(*ay, 2, x);
@@ -238,8 +238,8 @@ void FSI::ConstrMonolithic::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 2);
 
-    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*sx, 0, b);
     Extractor().InsertVector(*ax, 2, b);
@@ -254,7 +254,7 @@ void FSI::ConstrMonolithic::UnscaleSolution(
         mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(2, 0).EpetraMatrix()->RightScale(*scolsum_) or
         mat.Matrix(3, 0).EpetraMatrix()->RightScale(*scolsum_))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(2, 2).EpetraMatrix();
     arowsum_->Reciprocal(*arowsum_);
@@ -264,7 +264,7 @@ void FSI::ConstrMonolithic::UnscaleSolution(
         mat.Matrix(2, 1).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 2).EpetraMatrix()->RightScale(*acolsum_) or
         mat.Matrix(1, 2).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
   }
 
   // very simple hack just to see the linear solution
@@ -322,7 +322,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::ConstrMonolithic::CreateLinearSys
   else if (dirParams.get("Method", "User Defined") == "NonlinearCG")
     lsParams = &(dirParams.sublist("Nonlinear CG").sublist("Linear Solver"));
   else
-    dserror("Unknown nonlinear method");
+    FOUR_C_THROW("Unknown nonlinear method");
 
   ::NOX::Epetra::Interface::Jacobian* iJac = this;
   ::NOX::Epetra::Interface::Preconditioner* iPrec = this;
@@ -336,7 +336,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::ConstrMonolithic::CreateLinearSys
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
     default:
-      dserror("Unsupported type of monolithic solver/preconditioner!");
+      FOUR_C_THROW("Unsupported type of monolithic solver/preconditioner!");
       break;
   }
 
@@ -545,7 +545,7 @@ void FSI::ConstrMonolithic::CreateSystemMatrix(bool structuresplit)
 
       break;
     default:
-      dserror("Unsupported type of monolithic solver/preconditioner!");
+      FOUR_C_THROW("Unsupported type of monolithic solver/preconditioner!");
       break;
   }
 }

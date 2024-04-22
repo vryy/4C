@@ -69,7 +69,8 @@ CORE::GEO::CUT::IMPL::PointGraph::PointGraph(
     {
       std::ofstream f("graph0.txt");
       GetGraph().Print(f);
-      dserror("Pointgraph has single point.This shouldn't happen or we should understand why!");
+      FOUR_C_THROW(
+          "Pointgraph has single point.This shouldn't happen or we should understand why!");
     }
   }
 
@@ -103,7 +104,7 @@ CORE::GEO::CUT::IMPL::PointGraph::PointGraph(
            << CORE::GEO::CUT::DistanceBetweenPoints(l->BeginPoint(), l->EndPoint()) << std::endl;
     }
     file.close();
-    dserror("");
+    FOUR_C_THROW("");
   }
 }
 
@@ -409,7 +410,7 @@ bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
             << previous->Id() << std::endl;
         file.close();
 
-        dserror(err_msg.str());
+        FOUR_C_THROW(err_msg.str());
       }
 
       arcs[arc] = *ai;
@@ -487,7 +488,7 @@ bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
 
   if (erase_count > (save_first ? 2 : 1))
   {
-    dserror("more than one back facet");
+    FOUR_C_THROW("more than one back facet");
   }
 
 #if DEBUG_POINTGRAPH
@@ -628,7 +629,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(Side *side, Cycle &cycl
       {
         if (main_cycles_.size() != 0)
         {
-          dserror("one set of main cycles only");
+          FOUR_C_THROW("one set of main cycles only");
         }
         std::swap(main_cycles_, filtered_cycles);
       }
@@ -790,7 +791,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
         GnuplotDumpCycles("cycles", main_cycles_);
         boost::print_graph(g, boost::get(boost::vertex_name, g));
 
-        dserror("cycle needs to contain side edges");
+        FOUR_C_THROW("cycle needs to contain side edges");
       }
     }
     else if (num_comp > 1)
@@ -811,7 +812,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
         {
           if (main_cycles_.size() != 0)
           {
-            dserror("one set of main cycles only");
+            FOUR_C_THROW("one set of main cycles only");
           }
           std::swap(main_cycles_, filtered_cycles);
         }
@@ -824,12 +825,12 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
 
       if (location == element_side and main_cycles_.size() == 0)
       {
-        dserror("cycle needs to contain side edges");
+        FOUR_C_THROW("cycle needs to contain side edges");
       }
     }
     else
     {
-      if (location == element_side) dserror("empty graph discovered");
+      if (location == element_side) FOUR_C_THROW("empty graph discovered");
     }
   }
 
@@ -952,7 +953,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
             (ed->Nodes()[0]->point())->Coordinates(edge_vector.A());
           }
           else
-            dserror("This should not happen or not implemented");
+            FOUR_C_THROW("This should not happen or not implemented");
 
           edge_vector.Update(-1.0, cut_pointxyz, 1.0);
           for (plain_side_set::const_iterator s = ed->Sides().begin(); s != ed->Sides().end(); ++s)
@@ -986,7 +987,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
               if (out_vec.Dot(norm_vec) < 0) norm_vec.Scale(-1.0);
               if (norm_vec.Dot(edge_vector) < 0)
               {
-                dserror("Single point problem, one elements is going inside another");
+                FOUR_C_THROW("Single point problem, one elements is going inside another");
               }
             }
           }
@@ -1038,7 +1039,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
           err_msg << "The single cut point in pointgraph(Id=" << cut_point->Id() << ")"
                   << " is not a nodal point of any of the edges connected to it (Not Touching)\n\
             This can for instance happen if your cut surface is not closed, so check your geometry first!\n";
-          dserror(err_msg.str());
+          FOUR_C_THROW(err_msg.str());
         }
       }
     }
@@ -1083,7 +1084,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::SimplifyConnections(Element *eleme
           return false;
       }
       else
-        dserror("Point in pointgraph is not connected to anything. Look into it!");
+        FOUR_C_THROW("Point in pointgraph is not connected to anything. Look into it!");
     }
   }
   return false;
@@ -1138,7 +1139,7 @@ CORE::GEO::CUT::IMPL::PointGraph *CORE::GEO::CUT::IMPL::PointGraph::Create(Mesh 
       pg = new PointGraph(mesh, element, side, location, strategy);
       break;
     default:
-      dserror("Unsupported element dimension! ( dim = %d )", dim);
+      FOUR_C_THROW("Unsupported element dimension! ( dim = %d )", dim);
       break;
   }
   return pg;
@@ -1158,7 +1159,7 @@ Teuchos::RCP<CORE::GEO::CUT::IMPL::PointGraph::Graph> CORE::GEO::CUT::IMPL::Poin
     case 3:
       return Teuchos::rcp(new PointGraph::Graph());
     default:
-      dserror("Unsupported element dimension!");
+      FOUR_C_THROW("Unsupported element dimension!");
       exit(EXIT_FAILURE);
   }
 }

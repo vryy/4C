@@ -61,7 +61,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     // get the action required
     std::string action = params.get<std::string>("action", "calc_none");
     if (action == "calc_none")
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
       act = ELEMENTS::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     else if (action == "calc_struct_energy")
       act = ELEMENTS::struct_calc_energy;
     else
-      dserror("Unknown type of action for Beam3r");
+      FOUR_C_THROW("Unknown type of action for Beam3r");
   }
 
   // nnodetriad: number of nodes used for interpolation of triad field
@@ -114,7 +114,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           EvaluatePTC<5>(params, elemat1);
           break;
         default:
-          dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+          FOUR_C_THROW("Only Line2, Line3, Line4 and Line5 Elements implemented.");
       }
       break;
     }
@@ -122,7 +122,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_linstiff:
     {
       // only nonlinear case implemented!
-      dserror("linear stiffness matrix called, but not implemented");
+      FOUR_C_THROW("linear stiffness matrix called, but not implemented");
       break;
     }
 
@@ -131,7 +131,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       if (elevec1 != Teuchos::null)  // old structural time integration
       {
         if (elevec1.numRows() != 1)
-          dserror(
+          FOUR_C_THROW(
               "energy vector of invalid size %i, expected row dimension 1 (total elastic energy of "
               "element)!",
               elevec1.numRows());
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 
       // get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -212,7 +212,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       {
         // TODO there is a method 'Beam3r::lumpmass'; check generality and functionality and enable
         // action here
-        dserror("Lumped mass matrix not implemented for beam3r elements so far!");
+        FOUR_C_THROW("Lumped mass matrix not implemented for beam3r elements so far!");
       }
 
       else if (act == ELEMENTS::struct_calc_nlnstiff)
@@ -260,7 +260,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
             break;
           }
           default:
-            dserror("Only Line2, Line3, Line4, and Line5 Elements implemented.");
+            FOUR_C_THROW("Only Line2, Line3, Line4, and Line5 Elements implemented.");
         }
       }
       else if (act == ELEMENTS::struct_calc_internalforce)
@@ -308,7 +308,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
             break;
           }
           default:
-            dserror("Only Line2, Line3, Line4, and Line5 Elements implemented.");
+            FOUR_C_THROW("Only Line2, Line3, Line4, and Line5 Elements implemented.");
         }
       }
 
@@ -357,7 +357,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
             break;
           }
           default:
-            dserror("Only Line2, Line3, Line4, and Line5 Elements implemented.");
+            FOUR_C_THROW("Only Line2, Line3, Line4, and Line5 Elements implemented.");
         }
       }
 
@@ -412,13 +412,13 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     {
       // get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
-      if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+      if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
@@ -459,7 +459,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
             break;
           }
           default:
-            dserror("Only Line2, Line3, Line4, and Line5 Elements implemented.");
+            FOUR_C_THROW("Only Line2, Line3, Line4, and Line5 Elements implemented.");
         }
       }
       else if (act == ELEMENTS::struct_calc_brownianstiff)
@@ -499,11 +499,11 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
             break;
           }
           default:
-            dserror("Only Line2, Line3, Line4, and Line5 Elements implemented.");
+            FOUR_C_THROW("Only Line2, Line3, Line4, and Line5 Elements implemented.");
         }
       }
       else
-        dserror("You shouldn't be here.");
+        FOUR_C_THROW("You shouldn't be here.");
 
       break;
     }
@@ -542,7 +542,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 
     default:
       std::cout << "\ncalled element with action type " << ActionType2String(act);
-      dserror("This action type is not implemented for Beam3r");
+      FOUR_C_THROW("This action type is not implemented for Beam3r");
       break;
   }
   return 0;
@@ -2174,7 +2174,7 @@ void DRT::ELEMENTS::Beam3r::EvaluatePTC(
 {
   // apply PTC rotation damping term using a Lobatto integration rule; implemented for 2 nodes only
   if (nnode > 2 or centerline_hermite_)
-    dserror(
+    FOUR_C_THROW(
         "PTC was originally implemented for 2-noded Reissner beam element only. Check "
         "functionality for "
         "numnodes>2 and/or Hermite interpolation and extend if needed!");

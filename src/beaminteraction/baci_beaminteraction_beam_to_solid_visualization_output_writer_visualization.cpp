@@ -44,19 +44,21 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::AddDiscretizationNod
 
   // Check that the discretization is not already set, and that all data in the writer is empty.
   if (discret_ != Teuchos::null)
-    dserror(
+    FOUR_C_THROW(
         "When calling AddDiscretizationNodalReferencePosition, the discretization can not be "
         "already set. Did you forget to reset the writer?");
   if (visualization_data.GetPointCoordinates().size() != 0)
-    dserror("Point coordinate vector is not empty!");
+    FOUR_C_THROW("Point coordinate vector is not empty!");
   for (const auto& point_data_name : visualization_data.GetPointDataNames())
     if (visualization_data.GetPointDataSize(point_data_name) != 0)
-      dserror("Point data for '%s' is not empty!", point_data_name.c_str());
-  if (visualization_data.GetCellTypes().size() != 0) dserror("Cell types vector is not empty!");
-  if (visualization_data.GetCellOffsets().size() != 0) dserror("Cell offsets vector is not empty!");
+      FOUR_C_THROW("Point data for '%s' is not empty!", point_data_name.c_str());
+  if (visualization_data.GetCellTypes().size() != 0)
+    FOUR_C_THROW("Cell types vector is not empty!");
+  if (visualization_data.GetCellOffsets().size() != 0)
+    FOUR_C_THROW("Cell offsets vector is not empty!");
   for (const auto& cell_data_name : visualization_data.GetCellDataNames())
     if (visualization_data.GetCellDataSize(cell_data_name) != 0)
-      dserror("Cell data for '%s' is not empty!", cell_data_name.c_str());
+      FOUR_C_THROW("Cell data for '%s' is not empty!", cell_data_name.c_str());
 
   // Set the discretization for this writer.
   discret_ = discret;
@@ -69,7 +71,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::AddDiscretizationNod
 
   // Check that the position vector is empty.
   if (point_coordinates.size() != 0)
-    dserror("The position vector has to be empty when adding nodal reference data!");
+    FOUR_C_THROW("The position vector has to be empty when adding nodal reference data!");
 
   // Loop over the nodes on this rank.
   for (unsigned int i_node = 0; i_node < num_my_nodes; i_node++)
@@ -94,7 +96,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::AddDiscretizationNod
     const std::string& data_name, const Teuchos::RCP<const Epetra_MultiVector>& vector)
 {
   if (discret_ == Teuchos::null || node_gid_map_ == Teuchos::null)
-    dserror("Discretization or node GID map is not set!");
+    FOUR_C_THROW("Discretization or node GID map is not set!");
 
   // Extract the vector according to the GIDs needed on this rank.
   Teuchos::RCP<Epetra_Vector> vector_extract =

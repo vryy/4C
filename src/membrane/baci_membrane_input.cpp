@@ -33,7 +33,7 @@ bool DRT::ELEMENTS::Membrane<distype>::ReadElement(
 
   // read element thickness
   linedef->ExtractDouble("THICK", thickness_);
-  if (thickness_ <= 0) dserror("Membrane element thickness needs to be > 0");
+  if (thickness_ <= 0) FOUR_C_THROW("Membrane element thickness needs to be > 0");
 
   // initialize current thickness at all gp
   for (int i = 0; i < intpoints_.nquad; ++i) cur_thickness_[i] = thickness_;
@@ -51,10 +51,10 @@ bool DRT::ELEMENTS::Membrane<distype>::ReadElement(
   }
   else if (buffer == "plane_strain")
   {
-    dserror("Membrane not intended for plane strain evaluation");
+    FOUR_C_THROW("Membrane not intended for plane strain evaluation");
   }
   else
-    dserror("Reading STRESS_STRAIN state failed");
+    FOUR_C_THROW("Reading STRESS_STRAIN state failed");
 
   return true;
 }

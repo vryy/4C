@@ -92,7 +92,7 @@ namespace IO
     {
       if (vec.size() != expectedSize)
       {
-        dserror("Parsed %d values but expected %d", vec.size(), expectedSize);
+        FOUR_C_THROW("Parsed %d values but expected %d", vec.size(), expectedSize);
       }
     }
 
@@ -340,7 +340,7 @@ namespace IO
 
       if (!(is >> std::boolalpha >> d))
       {
-        dserror("String %s cannot be converted to a boolean", str.c_str());
+        FOUR_C_THROW("String %s cannot be converted to a boolean", str.c_str());
       }
 
       return d;

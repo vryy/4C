@@ -67,10 +67,10 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
 
   // for the sake of safety
   if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> firstmat =
@@ -130,7 +130,7 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::Evaluate(double gap, CONT
 {
   if (gap + params_->GetOffset() > 0.0)
   {
-    dserror("You should not be here. The Evaluate function is only tested for active nodes. ");
+    FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   if (-(gap + params_->GetOffset()) < params_->GetActiveGapTolerance())
   {
@@ -156,7 +156,7 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::EvaluateDeriv(
 {
   if (gap + params_->GetOffset() > 0.0)
   {
-    dserror("You should not be here. The Evaluate function is only tested for active nodes.");
+    FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes.");
   }
   if (-(gap + params_->GetOffset()) < params_->GetActiveGapTolerance())
   {

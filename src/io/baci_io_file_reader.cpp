@@ -28,7 +28,7 @@ std::vector<std::vector<double>> IO::ReadCsvAsColumns(
     // check if we only have #number_of_columns commas, otherwise throw an error
     if (std::count(line.begin(), line.end(), ',') != number_of_columns - 1)
     {
-      dserror(
+      FOUR_C_THROW(
           "\nInvalid csv file!\n"
           "The csv file has to consist of only %d columns separated by commas but without a "
           "trailing comma! Might also be that your columns do not have the same length!",
@@ -49,7 +49,7 @@ std::vector<std::vector<double>> IO::ReadCsvAsColumns(
     }
     catch (...)
     {
-      dserror(
+      FOUR_C_THROW(
           "\nInvalid csv file!\n"
           "Besides a recommended header line starting with '#' the csv file must only consist of "
           "numbers in %d columns separated by commas.",
@@ -65,7 +65,7 @@ std::vector<std::vector<double>> IO::ReadCsvAsColumns(
     const int number_of_columns, const std::string& csv_file_path)
 {
   std::ifstream csv_file_stream(csv_file_path);
-  if (csv_file_stream.fail()) dserror("Invalid csv file!");
+  if (csv_file_stream.fail()) FOUR_C_THROW("Invalid csv file!");
 
   return ReadCsvAsColumns(number_of_columns, csv_file_stream);
 }

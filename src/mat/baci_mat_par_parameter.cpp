@@ -55,11 +55,11 @@ void MAT::PAR::Parameter::SetParameter(int parametername, Teuchos::RCP<Epetra_Ve
   // we had elementwise matparameter and elementwise but there is  size mismatch, thats  not ok
   else if (length_old > 1 && (length_old != length_new))
   {
-    dserror("Problem setting elementwise material parameter: Size mismatch ");
+    FOUR_C_THROW("Problem setting elementwise material parameter: Size mismatch ");
   }
   else
   {
-    dserror("Can not set material parameter: Unknown Problem");
+    FOUR_C_THROW("Can not set material parameter: Unknown Problem");
   }
 }
 
@@ -68,9 +68,10 @@ void MAT::PAR::Parameter::SetParameter(int parametername, const double val, cons
   // check if we own this element
   Teuchos::RCP<Epetra_Vector> fool = matparams_.at(parametername);
   if (matparams_.at(parametername)->GlobalLength() == 1)
-    dserror("spatially constant parameters! Cannot set elementwise parameter!");
+    FOUR_C_THROW("spatially constant parameters! Cannot set elementwise parameter!");
 
-  if (!matparams_.at(parametername)->Map().MyGID(eleGID)) dserror("I do not have this element");
+  if (!matparams_.at(parametername)->Map().MyGID(eleGID))
+    FOUR_C_THROW("I do not have this element");
 
   // otherwise set parameter for element
   // calculate LID here, instead of before each call
@@ -106,7 +107,7 @@ double MAT::PAR::Parameter::GetParameter(int parametername, const int EleId)
   // error
   else if (EleId < 0 && matparams_[parametername]->GlobalLength() > 1)
   {
-    dserror("Global mat parameter requested but we have elementwise mat params");
+    FOUR_C_THROW("Global mat parameter requested but we have elementwise mat params");
     return 0.0;
   }
   // otherwise just return the element specific value
@@ -150,7 +151,7 @@ MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> 
         new MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic(params));
   }
   else
-    dserror("Unknown type of structural tensor strategy for anisotropic material chosen.");
+    FOUR_C_THROW("Unknown type of structural tensor strategy for anisotropic material chosen.");
 }
 
 

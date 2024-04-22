@@ -652,7 +652,7 @@ const CORE::LINALG::SparseMatrix& NOX::NLN::LinearSystem::getJacobianBlock(
 
       if (rbid >= static_cast<unsigned>(jac_block.Rows()) or
           cbid >= static_cast<unsigned>(jac_block.Cols()))
-        dserror(
+        FOUR_C_THROW(
             "The given row/column block ids exceed the block dimension of "
             "the jacobian matrix.");
 
@@ -661,7 +661,7 @@ const CORE::LINALG::SparseMatrix& NOX::NLN::LinearSystem::getJacobianBlock(
     case LinSystem::LinalgSparseMatrix:
     {
       if (rbid != 0 or cbid != 0)
-        dserror("There is only one block for a CORE::LINALG::SparseMatrix!");
+        FOUR_C_THROW("There is only one block for a CORE::LINALG::SparseMatrix!");
 
       const CORE::LINALG::SparseMatrix& jac_sm =
           dynamic_cast<const CORE::LINALG::SparseMatrix&>(Jacobian());
@@ -670,7 +670,7 @@ const CORE::LINALG::SparseMatrix& NOX::NLN::LinearSystem::getJacobianBlock(
     }
     default:
     {
-      dserror("Unsupported LinSystem::OperatorType: %d | %s", jacType_,
+      FOUR_C_THROW("Unsupported LinSystem::OperatorType: %d | %s", jacType_,
           NOX::NLN::LinSystem::OperatorType2String(jacType_).c_str());
       exit(EXIT_FAILURE);
     }
@@ -714,7 +714,7 @@ void NOX::NLN::LinearSystem::replaceDiagonalOfJacobian(
 double NOX::NLN::LinearSystem::computeSerialConditionNumberOfJacobian(
     const LinSystem::ConditionNumber condnum_type) const
 {
-  if (Jacobian().Comm().NumProc() > 1) dserror("Currently only one processor is supported!");
+  if (Jacobian().Comm().NumProc() > 1) FOUR_C_THROW("Currently only one processor is supported!");
 
   CORE::LINALG::SerialDenseMatrix dense_jac;
   convertJacobianToDenseMatrix(dense_jac);
@@ -738,7 +738,7 @@ double NOX::NLN::LinearSystem::computeSerialConditionNumberOfJacobian(
       ctype = 'I';
       break;
     default:
-      dserror("Unsupported");
+      FOUR_C_THROW("Unsupported");
       exit(EXIT_FAILURE);
   }
   double rcond = 0.0;
@@ -751,15 +751,15 @@ double NOX::NLN::LinearSystem::computeSerialConditionNumberOfJacobian(
   std::vector<int> ipiv(std::min(M, N));
   lapack.GETRF(M, N, A, LDA, ipiv.data(), &info);
 
-  if (info) dserror("Error detected in LAPACK::GETRF");
+  if (info) FOUR_C_THROW("Error detected in LAPACK::GETRF");
 
   // compute the condition number
   lapack.GECON(ctype, N, A, LDA, anorm, &rcond, work.data(), iwork.data(), &info);
 
-  if (info) dserror("Error detected in LAPACK::GECON");
+  if (info) FOUR_C_THROW("Error detected in LAPACK::GECON");
 
   if (rcond < std::numeric_limits<double>::min())
-    dserror(
+    FOUR_C_THROW(
         "The reciprocal condition number is zero. The jacobian"
         " seems to be singular.");
 
@@ -772,7 +772,7 @@ void NOX::NLN::LinearSystem::computeSerialEigenvaluesOfJacobian(
     CORE::LINALG::SerialDenseVector& reigenvalues,
     CORE::LINALG::SerialDenseVector& ieigenvalues) const
 {
-  if (Jacobian().Comm().NumProc() > 1) dserror("Currently only one processor is supported!");
+  if (Jacobian().Comm().NumProc() > 1) FOUR_C_THROW("Currently only one processor is supported!");
 
   CORE::LINALG::SerialDenseMatrix dense_jac;
   convertJacobianToDenseMatrix(dense_jac);
@@ -792,7 +792,7 @@ void NOX::NLN::LinearSystem::prepareBlockDenseMatrix(
 
   block_dense.reshape(grows, gcols);
   if (block_dense.numCols() != block_dense.numRows())
-    dserror("The complete block dense matrix is not quadratic!");
+    FOUR_C_THROW("The complete block dense matrix is not quadratic!");
 }
 
 /*----------------------------------------------------------------------*
@@ -805,7 +805,7 @@ void NOX::NLN::LinearSystem::throwIfZeroRow(
     double csum = 0.0;
     for (int c = 0; c < block_dense.numRows(); ++c) csum += std::abs(block_dense(r, c));
 
-    if (std::abs(csum) < std::numeric_limits<double>::epsilon()) dserror("Zero row detected!");
+    if (std::abs(csum) < std::numeric_limits<double>::epsilon()) FOUR_C_THROW("Zero row detected!");
   }
 }
 
@@ -850,7 +850,7 @@ void NOX::NLN::LinearSystem::convertJacobianToDenseMatrix(
     }
     default:
     {
-      dserror("Unsupported jacobian operator type!");
+      FOUR_C_THROW("Unsupported jacobian operator type!");
       exit(EXIT_FAILURE);
     }
   }
@@ -862,7 +862,7 @@ void NOX::NLN::LinearSystem::convertSparseToDenseMatrix(const CORE::LINALG::Spar
     CORE::LINALG::SerialDenseMatrix& dense, const Epetra_Map& full_rangemap,
     const Epetra_Map& full_domainmap) const
 {
-  if (not sparse.Filled()) dserror("The sparse matrix must be filled!");
+  if (not sparse.Filled()) FOUR_C_THROW("The sparse matrix must be filled!");
   Teuchos::RCP<const Epetra_CrsMatrix> crs_mat = sparse.EpetraMatrix();
 
   if (dense.numCols() == 0 or dense.numRows() == 0)
@@ -889,17 +889,18 @@ void NOX::NLN::LinearSystem::convertSparseToDenseMatrix(const CORE::LINALG::Spar
 
     const int rgid = rgids[rlid];
     const int full_rlid = full_rangemap.LID(rgid);
-    if (full_rlid == -1) dserror("Row/Range: Couldn't find the corresponding LID to GID %d", rgid);
+    if (full_rlid == -1)
+      FOUR_C_THROW("Row/Range: Couldn't find the corresponding LID to GID %d", rgid);
 
     for (int i = 0; i < numentries; ++i)
     {
       const int cgid = sparse.ColMap().GID(indices[i]);
       if (cgid == -1)
-        dserror("Column/Domain: Couldn't find the corresponding GID to LID %d", indices[i]);
+        FOUR_C_THROW("Column/Domain: Couldn't find the corresponding GID to LID %d", indices[i]);
 
       const int full_clid = full_domainmap.LID(cgid);
       if (full_clid == -1)
-        dserror("Column/Domain: Couldn't find the corresponding LID to GID %d", cgid);
+        FOUR_C_THROW("Column/Domain: Couldn't find the corresponding LID to GID %d", cgid);
 
       dense(full_rlid, full_clid) = rvals[i];
     }
@@ -939,7 +940,7 @@ void NOX::NLN::LinearSystem::callGGEV(CORE::LINALG::SerialDenseMatrix& mat,
   std::vector<double> work(lwork);
 
   if (mat.numCols() != mat.numRows())
-    dserror("A N-by-N real non-symmetric matrix is expected by GGEV!");
+    FOUR_C_THROW("A N-by-N real non-symmetric matrix is expected by GGEV!");
 
   // create dummy B matrix
   static bool first_execution = true;
@@ -961,14 +962,14 @@ void NOX::NLN::LinearSystem::callGGEV(CORE::LINALG::SerialDenseMatrix& mat,
   for (int i = 0; i < reigenvalues.numCols(); ++i)
   {
     if (beta(i) == 0.0)
-      dserror(
+      FOUR_C_THROW(
           "The BETA factor is equal to zero! The eigenvalues can not be"
           " computed.");
     reigenvalues(i) /= beta(i);
     ieigenvalues(i) /= beta(i);
   }
 
-  if (info) dserror("GGEV failed! (info = %d)", info);
+  if (info) FOUR_C_THROW("GGEV failed! (info = %d)", info);
 }
 
 /*----------------------------------------------------------------------*
@@ -978,7 +979,7 @@ void NOX::NLN::LinearSystem::callGEEV(CORE::LINALG::SerialDenseMatrix& mat,
     CORE::LINALG::SerialDenseVector& ieigenvalues) const
 {
   if (mat.numCols() != mat.numRows())
-    dserror("A N-by-N real non-symmetric matrix is expected by GEEV!");
+    FOUR_C_THROW("A N-by-N real non-symmetric matrix is expected by GEEV!");
 
   int info = 0;
   int lwork = 3.0 * mat.numCols();
@@ -988,7 +989,7 @@ void NOX::NLN::LinearSystem::callGEEV(CORE::LINALG::SerialDenseMatrix& mat,
   lapack.GEEV('N', 'N', mat.numCols(), mat.values(), mat.stride(), reigenvalues.values(),
       ieigenvalues.values(), nullptr, 1, nullptr, 1, work.data(), lwork, &info);
 
-  if (info) dserror("GEEV failed!");
+  if (info) FOUR_C_THROW("GEEV failed!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

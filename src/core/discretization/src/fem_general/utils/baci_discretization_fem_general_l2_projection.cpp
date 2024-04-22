@@ -64,7 +64,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::evaluate_and_solve_nodal_l2_projectio
     // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
     int err = actele->Evaluate(
         params, dis, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-    if (err) dserror("Element %d returned err=%d", actele->Id(), err);
+    if (err) FOUR_C_THROW("Element %d returned err=%d", actele->Id(), err);
 
 
     // get element location vector for nodes
@@ -119,13 +119,14 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_nodal_l2_projection(
   // check if the statename has been set
   if (!dis->HasState(statename))
   {
-    dserror(
+    FOUR_C_THROW(
         "The discretization does not know about this statename. Please "
         "review how you call this function.");
   }
 
   // check whether action type is set
-  if (params.getEntryRCP("action") == Teuchos::null) dserror("action type for element is missing");
+  if (params.getEntryRCP("action") == Teuchos::null)
+    FOUR_C_THROW("action type for element is missing");
 
   // handle pbcs if existing
   // build inverse map from slave to master nodes
@@ -230,7 +231,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::solve_nodal_l2_projection(
         else if (prectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu)
           preclist_ptr = &((solver->Params()).sublist("MueLu Parameters"));
         else
-          dserror("please add correct parameter list");
+          FOUR_C_THROW("please add correct parameter list");
 
         Teuchos::ParameterList& preclist = *preclist_ptr;
         preclist.set("PDE equations", 1);
@@ -251,7 +252,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::solve_nodal_l2_projection(
         // do nothing
         break;
       default:
-        dserror("You have to choose ML, MueLu or ILU preconditioning");
+        FOUR_C_THROW("You have to choose ML, MueLu or ILU preconditioning");
         break;
     }
   }

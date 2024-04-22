@@ -37,7 +37,7 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(Teuchos::ParameterList& params,
       impltype = "poro_p1";
       break;
     default:
-      dserror("invalid physical type for porous fluid!");
+      FOUR_C_THROW("invalid physical type for porous fluid!");
       break;
   }
 
@@ -104,7 +104,7 @@ void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(const Discretization& dis,
     }
     break;
     case FLD::ba_none:
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
       break;
     default:
       // call standard fluid boundary element

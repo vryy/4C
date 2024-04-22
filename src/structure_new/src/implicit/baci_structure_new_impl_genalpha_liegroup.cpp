@@ -265,7 +265,7 @@ bool STR::IMPLICIT::GenAlphaLieGroup::PredictConstVelConsistAcc(
 {
   CheckInitSetup();
 
-  dserror(
+  FOUR_C_THROW(
       "Predictor ConstVelConsistAcc is not supported in Lie group GenAlpha so"
       " far! Use ConstDisConsistVelAcc!");
 
@@ -279,7 +279,7 @@ bool STR::IMPLICIT::GenAlphaLieGroup::PredictConstAcc(
 {
   CheckInitSetup();
 
-  dserror(
+  FOUR_C_THROW(
       "Predictor ConstAcc is not supported in Lie group GenAlpha so far! Use "
       "ConstDisConsistVelAcc!");
 

@@ -73,7 +73,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
   }
 
   if (condIDs[0].size() != condIDs[1].size())
-    dserror("Artery coupling conditions need to be defined on both discretizations");
+    FOUR_C_THROW("Artery coupling conditions need to be defined on both discretizations");
 
   // -----------------------------------------------------------------------------------------------------------------
   // create map extractors needed for artery condition coupling --> continuous field part
@@ -300,7 +300,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::CheckDbcOnCoup
                 << std::endl;
     }
     intersect_dbc_coupled->Print(std::cout);
-    dserror("Re-think your Input file definition");
+    FOUR_C_THROW("Re-think your Input file definition");
   }
 }
 
@@ -327,7 +327,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::CheckInitialFi
 
   if (diff > 1.0e-9)
   {
-    dserror("Your initial fields apparently are different with an L2 norm of %f", diff);
+    FOUR_C_THROW("Your initial fields apparently are different with an L2 norm of %f", diff);
   }
 }
 
@@ -352,7 +352,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::DofRowMap() const
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ApplyMeshMovement()
 {
   if (!evaluate_in_ref_config_)
-    dserror("Evaluation in current configuration not possible for node-based coupling");
+    FOUR_C_THROW("Evaluation in current configuration not possible for node-based coupling");
 }
 
 /*----------------------------------------------------------------------*
@@ -360,7 +360,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::ApplyMeshMovem
 Teuchos::RCP<const Epetra_Vector>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::BloodVesselVolumeFraction()
 {
-  dserror("Output of vessel volume fraction not possible for node-based coupling");
+  FOUR_C_THROW("Output of vessel volume fraction not possible for node-based coupling");
 
   return Teuchos::null;
 }

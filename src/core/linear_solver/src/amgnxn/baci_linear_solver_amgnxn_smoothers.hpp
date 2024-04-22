@@ -69,7 +69,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
    protected:
     void CheckSingleFieldVector(const BlockedVector& V) const
     {
-      if (not V.HasOnlyOneBlock()) dserror("We need here a single field vector");
+      if (not V.HasOnlyOneBlock()) FOUR_C_THROW("We need here a single field vector");
       return;
     }
   };

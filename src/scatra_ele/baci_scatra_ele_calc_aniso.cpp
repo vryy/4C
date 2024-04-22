@@ -77,7 +77,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Materials(
   if (material->MaterialType() == INPAR::MAT::m_scatra_aniso)
     MatScaTraAniso(material, k, densn, densnp, densam, visc, iquad);
   else
-    dserror("Material type is not supported");
+    FOUR_C_THROW("Material type is not supported");
 
   return;
 }

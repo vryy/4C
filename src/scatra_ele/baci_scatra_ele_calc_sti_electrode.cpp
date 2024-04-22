@@ -558,7 +558,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(const 
   else if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
     MatFourier(material, densn[0], densnp[0], densam[0]);
   else
-    dserror("Invalid thermal material!");
+    FOUR_C_THROW("Invalid thermal material!");
 
   // get parameters of secondary, scatra material
   material = ele->Material(1);
@@ -570,7 +570,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(const 
         ele, VarManager()->Conc(), my::scatravarmanager_->Phinp(0));
   }
   else
-    dserror("Invalid scalar transport material!");
+    FOUR_C_THROW("Invalid scalar transport material!");
 }
 
 
@@ -643,7 +643,7 @@ DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ScaTraEleCalcSTIElectrode(
 {
   // safety check
   if (numscal != 1 or numdofpernode != 1)
-    dserror("Invalid number of transported scalars or degrees of freedom per node!");
+    FOUR_C_THROW("Invalid number of transported scalars or degrees of freedom per node!");
 
   // replace diffusion manager for standard scalar transport by thermo diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerSTIThermo(my::numscal_));

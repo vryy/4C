@@ -30,7 +30,7 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(
   if (Material()->Parameter()->Name() != "MAT_BeamKirchhoffElastHyper" and
       Material()->Parameter()->Name() != "MAT_BeamKirchhoffElastHyper_ByModes")
   {
-    dserror(
+    FOUR_C_THROW(
         "The material parameter definition '%s' is not supported by Beam3k element! "
         "Choose MAT_BeamKirchhoffElastHyper or MAT_BeamKirchhoffElastHyper_ByModes!",
         Material()->Parameter()->Name().c_str());
@@ -48,7 +48,7 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(
   else if (rotvec == 1)
     rotvec_ = true;
   else
-    dserror(
+    FOUR_C_THROW(
         "The variable ROTVEC can only take on the values 0 (tangent vectors as nodal DoFs) and "
         "1 (rotation vectors as nodal DoFs)!");
 
@@ -58,13 +58,13 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(
   {
     weakkirchhoff_ = true;
 #ifdef CONSISTENTSPINSK
-    dserror(
+    FOUR_C_THROW(
         "The flag CONSISTENTSPINSK is only possible for strong Kirchhoff constraint enforcement "
         "(weakkirchhoff_=false)");
 #endif
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "The variable WK can only take on the values 0 (Kirchhoff constraint enforced in a strong "
         "manner) and "
         "1 (Kirchhoff constraint enforced in a weak manner)!");

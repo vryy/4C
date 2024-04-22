@@ -38,7 +38,7 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::CheckMaterialType(const int matid)
   // Here we check first, whether this material is of admissible type
   INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
   if (mtype != INPAR::MAT::m_scatra)
-    dserror("Material with ID %d is not admissible for TRANSP elements", matid);
+    FOUR_C_THROW("Material with ID %d is not admissible for TRANSP elements", matid);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -65,7 +65,7 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::SetElementData(
     }
   }
   else
-    dserror("unsupported ale element type '%s'", typeid(*newele).name());
+    FOUR_C_THROW("unsupported ale element type '%s'", typeid(*newele).name());
 
   return;
 }

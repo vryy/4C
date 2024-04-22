@@ -24,7 +24,7 @@ int DRT::ELEMENTS::SoSh18::InitJacobianMapping()
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
     Node** nodes = Nodes();
-    if (!nodes) dserror("Nodes() returned null pointer");
+    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     xrefe(i, 0) = Nodes()[i]->X()[0];
     xrefe(i, 1) = Nodes()[i]->X()[1];
     xrefe(i, 2) = Nodes()[i]->X()[2];
@@ -244,7 +244,7 @@ void DRT::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,      ///< locatio
       {
         case INPAR::STR::strain_gl:
         {
-          if (elestrain == nullptr) dserror("strain data not available");
+          if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
           for (int i = 0; i < 3; ++i)
           {
             (*elestrain)(gp, i) = glstrain(i);
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,      ///< locatio
         case INPAR::STR::strain_none:
           break;
         default:
-          dserror("requested strain option not available");
+          FOUR_C_THROW("requested strain option not available");
           break;
       }
     }
@@ -283,7 +283,7 @@ void DRT::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,      ///< locatio
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == nullptr) dserror("stress data not available");
+          if (elestress == nullptr) FOUR_C_THROW("stress data not available");
           for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
           {
             (*elestress)(gp, i) = stress(i);
@@ -292,7 +292,7 @@ void DRT::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,      ///< locatio
         break;
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == nullptr) dserror("stress data not available");
+          if (elestress == nullptr) FOUR_C_THROW("stress data not available");
           CORE::LINALG::Matrix<3, 3> pkstress;
           pkstress(0, 0) = stress(0);
           pkstress(0, 1) = stress(3);
@@ -320,7 +320,7 @@ void DRT::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,      ///< locatio
         case INPAR::STR::stress_none:
           break;
         default:
-          dserror("requested stress option not available");
+          FOUR_C_THROW("requested stress option not available");
           break;
       }
     }
@@ -387,7 +387,7 @@ void DRT::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,      ///< locatio
     solve_for_KaaInv.SetMatrix(KaaInv_);
     int err2 = solve_for_KaaInv.Factor();
     int err = solve_for_KaaInv.Invert();
-    if ((err != 0) || (err2 != 0)) dserror("Inversion of Kaa failed");
+    if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of Kaa failed");
 
     CORE::LINALG::Matrix<NUMDOF_SOH18, num_eas> KdaKaa;
     KdaKaa.MultiplyTN(Kad_, KaaInv_);
@@ -432,7 +432,7 @@ int DRT::ELEMENTS::SoSh18Type::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh18*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex18* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
     if (actele->InitJacobianMapping() == 1) actele->FlipT();
   }
   dis.FillComplete(false, false, false);
@@ -441,8 +441,8 @@ int DRT::ELEMENTS::SoSh18Type::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh18*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex18* failed");
-    if (actele->InitJacobianMapping() == 1) dserror("why");
+    if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
+    if (actele->InitJacobianMapping() == 1) FOUR_C_THROW("why");
   }
   return 0;
 }
@@ -452,7 +452,7 @@ int DRT::ELEMENTS::SoSh18Type::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoSh18::FlipT()
 {
-  if (NodeIds() == nullptr) dserror("couldn't get node ids");
+  if (NodeIds() == nullptr) FOUR_C_THROW("couldn't get node ids");
   // reorder nodes
   int new_nodeids[NUMNOD_SOH18];
   new_nodeids[0] = NodeIds()[9];
@@ -537,7 +537,7 @@ void DRT::ELEMENTS::SoSh18::EvaluateT(const CORE::LINALG::Matrix<NUMDIM_SOH18, N
   solve_for_inverseT.SetMatrix(TinvT);
   int err2 = solve_for_inverseT.Factor();
   int err = solve_for_inverseT.Invert();
-  if ((err != 0) && (err2 != 0)) dserror("Inversion of Tinv (Jacobian) failed");
+  if ((err != 0) && (err2 != 0)) FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
   return;
 }
 

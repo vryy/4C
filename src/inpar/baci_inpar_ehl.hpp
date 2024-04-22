@@ -80,7 +80,7 @@ namespace INPAR
           return "fullnewton";
           break;
         default:
-          dserror("Cannot make std::string for solution technique %d", name);
+          FOUR_C_THROW("Cannot make std::string for solution technique %d", name);
           return "";
       }
     }

@@ -66,8 +66,8 @@ CORE::FE::ShapeValues<distype>::ShapeValues(
   // Fill support points
   nodexyzreal.shape(nsd_, ndofs_);
   polySpace_->FillUnitNodePoints(nodexyzunit);
-  dsassert(nodexyzreal.numRows() == nodexyzunit.numRows() &&
-               nodexyzreal.numCols() == nodexyzunit.numCols(),
+  FOUR_C_ASSERT(nodexyzreal.numRows() == nodexyzunit.numRows() &&
+                    nodexyzreal.numCols() == nodexyzunit.numCols(),
       "Dimension mismatch");
 }
 
@@ -80,7 +80,7 @@ template <CORE::FE::CellType distype>
 void CORE::FE::ShapeValues<distype>::Evaluate(
     const DRT::Element& ele, const std::vector<double>& aleDis)
 {
-  dsassert(ele.Shape() == distype, "Internal error");
+  FOUR_C_ASSERT(ele.Shape() == distype, "Internal error");
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
 
   // update nodal coordinates
@@ -153,7 +153,7 @@ CORE::FE::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params
   else if (nsd_ == 3)
     faceNodeOrder = CORE::FE::getEleNodeNumberingSurfaces(distype);
   else
-    dserror("Not implemented for dim != 2, 3");
+    FOUR_C_THROW("Not implemented for dim != 2, 3");
 
   PolynomialSpaceParams polyparams(
       CORE::FE::DisTypeToFaceShapeType<distype>::shape, degree_, params.completepoly_);
@@ -200,7 +200,7 @@ void CORE::FE::ShapeValuesFace<distype>::EvaluateFace(
   const CORE::FE::CellType facedis = CORE::FE::DisTypeToFaceShapeType<distype>::shape;
 
   // get face position array from element position array
-  dsassert(faceNodeOrder[face].size() == nfn_, "Internal error");
+  FOUR_C_ASSERT(faceNodeOrder[face].size() == nfn_, "Internal error");
 
   CORE::LINALG::Matrix<nsd_, nen_> xyzeElement;
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
@@ -217,8 +217,8 @@ void CORE::FE::ShapeValuesFace<distype>::EvaluateFace(
   // Fill face support points
   nodexyzreal.shape(nsd_, nfdofs_);
   polySpace_->FillUnitNodePoints(nodexyzunit);
-  dsassert(nodexyzreal.numRows() == nodexyzunit.numRows() + 1 &&
-               nodexyzreal.numCols() == nodexyzunit.numCols(),
+  FOUR_C_ASSERT(nodexyzreal.numRows() == nodexyzunit.numRows() + 1 &&
+                    nodexyzreal.numCols() == nodexyzunit.numCols(),
       "Dimension mismatch");
   for (unsigned int i = 0; i < nfdofs_; ++i)
   {
@@ -282,7 +282,7 @@ void CORE::FE::ShapeValuesFace<distype>::AdjustFaceOrientation(
   // points in the shape functions of the trace to match the orientation in the
   // transformation.
   const std::vector<int>& trafomap = ele.Faces()[face]->GetLocalTrafoMap();
-  dsassert(trafomap.size() == nfn_,
+  FOUR_C_ASSERT(trafomap.size() == nfn_,
       "Transformation map from slave face coordinate system to master coordinates has not been "
       "filled.");
 
@@ -303,7 +303,7 @@ void CORE::FE::ShapeValuesFace<distype>::AdjustFaceOrientation(
       case 2:
         // face flipped is the only case
         {
-          dsassert(trafomap[1] == 0 && trafomap[0] == 1, "Unknown face orientation in 2D");
+          FOUR_C_ASSERT(trafomap[1] == 0 && trafomap[0] == 1, "Unknown face orientation in 2D");
           for (unsigned int q = 0; q < nqpoints_; ++q)
           {
             for (unsigned int i = 0; i < nfdofs_; ++i)
@@ -380,7 +380,7 @@ void CORE::FE::ShapeValuesFace<distype>::AdjustFaceOrientation(
           }
           else
           {
-            dserror("Unknown HEX face orientation in 3D");
+            FOUR_C_THROW("Unknown HEX face orientation in 3D");
           }
         }
         else if (distype == CORE::FE::CellType::tet4 || distype == CORE::FE::CellType::tet10)
@@ -460,15 +460,15 @@ void CORE::FE::ShapeValuesFace<distype>::AdjustFaceOrientation(
             for (unsigned int i = 0; i < 3; ++i) std::cout << trafomap[i] << " ";
             std::cout << std::endl << std::flush;
             // need to transform quadrature point coordinate 0 into 1-p[0]-p[1]
-            dserror("Unknown TET face orientation in 3D");
+            FOUR_C_THROW("Unknown TET face orientation in 3D");
           }
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "Shape type %s not yet implemented", (CORE::FE::CellTypeToString(distype)).c_str());
         break;
       default:
-        dserror("Only implemented in 2D and 3D");
+        FOUR_C_THROW("Only implemented in 2D and 3D");
         break;
     }
 }
@@ -491,7 +491,7 @@ void CORE::FE::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
   {
     // This is the same that is done before for the face element but we do it from the master side
     // get face position array from element position array
-    dsassert(faceNodeOrder[face].size() == nfn_, "Internal error");
+    FOUR_C_ASSERT(faceNodeOrder[face].size() == nfn_, "Internal error");
     const std::vector<int>& trafomap = ele.Faces()[face]->GetLocalTrafoMap();
 
     // CORE::LINALG::SerialDenseMatrix nodexyzreal_master(nsd_, nfdofs_);

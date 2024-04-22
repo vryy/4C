@@ -74,7 +74,7 @@ namespace CONTACT
     All specified meshtying-related input parameters are read from the
     GLOBAL::Problem::Instance() and stored into a local variable of
     type Teuchos::ParameterList. Invalid parameter combinations are
-    sorted out and throw a dserror.
+    sorted out and throw a FOUR_C_THROW.
 
     \param mtparams Meshtying parameter list
     \param[in] discret Underlying problem discretization

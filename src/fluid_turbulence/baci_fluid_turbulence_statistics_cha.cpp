@@ -58,7 +58,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   //----------------------------------------------------------------------
   // plausibility check
   int numdim = params_.get<int>("number of velocity degrees of freedom");
-  if (numdim != 3) dserror("Evaluation of turbulence statistics only for 3d channel flow!");
+  if (numdim != 3) FOUR_C_THROW("Evaluation of turbulence statistics only for 3d channel flow!");
 
   //----------------------------------------------------------------------
   // inflow channel check
@@ -109,7 +109,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     }
     else
     {
-      dserror("homogeneuous plane for channel flow was specified incorrectly.");
+      FOUR_C_THROW("homogeneuous plane for channel flow was specified incorrectly.");
     }
   }
 
@@ -168,7 +168,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     // of ltau
     int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
     if (id == -1)
-      dserror("Could not find Newtonian fluid material");
+      FOUR_C_THROW("Could not find Newtonian fluid material");
     else
     {
       const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
@@ -184,7 +184,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     // of Temp_tau
     int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
     if (id == -1)
-      dserror("Could not find sutherland material");
+      FOUR_C_THROW("Could not find sutherland material");
     else
     {
       const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
@@ -346,7 +346,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
 
         if (tag != (myrank + numprocs - 1) % numprocs)
         {
-          dserror("received wrong message (ReceiveAny)");
+          FOUR_C_THROW("received wrong message (ReceiveAny)");
         }
 
         exporter.Wait(request);
@@ -416,7 +416,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     // by the knotvector size
     if (dim_ != 1)
     {
-      dserror("For the nurbs stuff, we require that xz is the hom. plane\n");
+      FOUR_C_THROW("For the nurbs stuff, we require that xz is the hom. plane\n");
     }
 
     // get nurbs dis' knotvector sizes
@@ -601,7 +601,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
           break;
         }
         default:
-          dserror(
+          FOUR_C_THROW(
               "Unknown element shape for a nurbs element or nurbs type not valid for turbulence "
               "calculation\n");
           break;
@@ -1443,7 +1443,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
 
         if (abs(inc) < 1e-9)
         {
-          dserror("there are no forced nodes on the boundary\n");
+          FOUR_C_THROW("there are no forced nodes on the boundary\n");
         }
 
         local_inc = 0.0;
@@ -2671,7 +2671,7 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   Teuchos::RCP<std::vector<double>> local_Cs_sum;
   global_incr_Cs_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_Cs_sum = modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Cs_sum", Teuchos::null);
-  if (local_Cs_sum == Teuchos::null) dserror("local_Cs_sum==null from parameterlist");
+  if (local_Cs_sum == Teuchos::null) FOUR_C_THROW("local_Cs_sum==null from parameterlist");
 
   Teuchos::RCP<std::vector<double>> global_incr_Cs_delta_sq_sum;
   Teuchos::RCP<std::vector<double>> local_Cs_delta_sq_sum;
@@ -2679,21 +2679,22 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   local_Cs_delta_sq_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Cs_delta_sq_sum", Teuchos::null);
   if (local_Cs_delta_sq_sum == Teuchos::null)
-    dserror("local_Cs_delta_sq_sum==null from parameterlist");
+    FOUR_C_THROW("local_Cs_delta_sq_sum==null from parameterlist");
 
   Teuchos::RCP<std::vector<double>> global_incr_visceff_sum;
   Teuchos::RCP<std::vector<double>> local_visceff_sum;
   global_incr_visceff_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_visceff_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_visceff_sum", Teuchos::null);
-  if (local_visceff_sum == Teuchos::null) dserror("local_visceff_sum==null from parameterlist");
+  if (local_visceff_sum == Teuchos::null)
+    FOUR_C_THROW("local_visceff_sum==null from parameterlist");
 
   Teuchos::RCP<std::vector<double>> global_incr_Prt_sum;
   Teuchos::RCP<std::vector<double>> local_Prt_sum;
   global_incr_Prt_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_Prt_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Prt_sum", Teuchos::null);
-  if (local_Prt_sum == Teuchos::null) dserror("local_Prt_sum==null from parameterlist");
+  if (local_Prt_sum == Teuchos::null) FOUR_C_THROW("local_Prt_sum==null from parameterlist");
 
   Teuchos::RCP<std::vector<double>> global_incr_Cs_delta_sq_Prt_sum;
   Teuchos::RCP<std::vector<double>> local_Cs_delta_sq_Prt_sum;
@@ -2702,20 +2703,21 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   local_Cs_delta_sq_Prt_sum = modelparams->get<Teuchos::RCP<std::vector<double>>>(
       "local_Cs_delta_sq_Prt_sum", Teuchos::null);
   if (local_Cs_delta_sq_Prt_sum == Teuchos::null)
-    dserror("local_Cs_delta_sq_Prt_sum==null from parameterlist");
+    FOUR_C_THROW("local_Cs_delta_sq_Prt_sum==null from parameterlist");
 
   Teuchos::RCP<std::vector<double>> global_incr_diffeff_sum;
   Teuchos::RCP<std::vector<double>> local_diffeff_sum;
   global_incr_diffeff_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_diffeff_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_diffeff_sum", Teuchos::null);
-  if (local_diffeff_sum == Teuchos::null) dserror("local_diffeff_sum==null from parameterlist");
+  if (local_diffeff_sum == Teuchos::null)
+    FOUR_C_THROW("local_diffeff_sum==null from parameterlist");
 
   Teuchos::RCP<std::vector<double>> global_incr_Ci_sum;
   Teuchos::RCP<std::vector<double>> local_Ci_sum;
   global_incr_Ci_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_Ci_sum = modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Ci_sum", Teuchos::null);
-  if (local_Ci_sum == Teuchos::null) dserror("local_Ci_sum==null from parameterlist");
+  if (local_Ci_sum == Teuchos::null) FOUR_C_THROW("local_Ci_sum==null from parameterlist");
 
   Teuchos::RCP<std::vector<double>> global_incr_Ci_delta_sq_sum;
   Teuchos::RCP<std::vector<double>> local_Ci_delta_sq_sum;
@@ -2723,7 +2725,7 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   local_Ci_delta_sq_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Ci_delta_sq_sum", Teuchos::null);
   if (local_Ci_delta_sq_sum == Teuchos::null)
-    dserror("local_Ci_delta_sq_sum==null from parameterlist");
+    FOUR_C_THROW("local_Ci_delta_sq_sum==null from parameterlist");
 
   // now add all the stuff from the different processors
   discret_->Comm().SumAll(local_Cs_sum->data(), global_incr_Cs_sum->data(), local_Cs_sum->size());
@@ -2849,7 +2851,7 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   // set state vectors for element call
   discret_->ClearState();
   discret_->SetState("velnp", velnp);
-  if (fsvelnp == Teuchos::null) dserror("Haven't got fine-scale velocity!");
+  if (fsvelnp == Teuchos::null) FOUR_C_THROW("Haven't got fine-scale velocity!");
   discret_->SetState("fsvelnp", fsvelnp);
 
   // call loop over elements to compute means
@@ -2865,45 +2867,49 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   global_incr_N_stream_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_N_stream_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_N_stream_sum", Teuchos::null);
-  if (local_N_stream_sum == Teuchos::null) dserror("local_N_stream_sum==null from parameterlist");
+  if (local_N_stream_sum == Teuchos::null)
+    FOUR_C_THROW("local_N_stream_sum==null from parameterlist");
   Teuchos::RCP<std::vector<double>> global_incr_N_normal_sum;
   global_incr_N_normal_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_N_normal_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_N_normal_sum", Teuchos::null);
-  if (local_N_normal_sum == Teuchos::null) dserror("local_N_normal_sum==null from parameterlist");
+  if (local_N_normal_sum == Teuchos::null)
+    FOUR_C_THROW("local_N_normal_sum==null from parameterlist");
   Teuchos::RCP<std::vector<double>> global_incr_N_span_sum;
   global_incr_N_span_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_N_span_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_N_span_sum", Teuchos::null);
-  if (local_N_span_sum == Teuchos::null) dserror("local_N_span_sum==null from parameterlist");
+  if (local_N_span_sum == Teuchos::null) FOUR_C_THROW("local_N_span_sum==null from parameterlist");
 
   Teuchos::RCP<std::vector<double>> global_incr_B_stream_sum;
   global_incr_B_stream_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_B_stream_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_B_stream_sum", Teuchos::null);
-  if (local_B_stream_sum == Teuchos::null) dserror("local_B_stream_sum==null from parameterlist");
+  if (local_B_stream_sum == Teuchos::null)
+    FOUR_C_THROW("local_B_stream_sum==null from parameterlist");
   Teuchos::RCP<std::vector<double>> global_incr_B_normal_sum;
   global_incr_B_normal_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_B_normal_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_B_normal_sum", Teuchos::null);
-  if (local_B_normal_sum == Teuchos::null) dserror("local_B_normal_sum==null from parameterlist");
+  if (local_B_normal_sum == Teuchos::null)
+    FOUR_C_THROW("local_B_normal_sum==null from parameterlist");
   Teuchos::RCP<std::vector<double>> global_incr_B_span_sum;
   global_incr_B_span_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_B_span_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_B_span_sum", Teuchos::null);
-  if (local_B_span_sum == Teuchos::null) dserror("local_B_span_sum==null from parameterlist");
+  if (local_B_span_sum == Teuchos::null) FOUR_C_THROW("local_B_span_sum==null from parameterlist");
 
   Teuchos::RCP<std::vector<double>> global_incr_Csgs_sum;
   global_incr_Csgs_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_Csgs_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Csgs_sum", Teuchos::null);
-  if (local_Csgs_sum == Teuchos::null) dserror("local_Csgs_sum==null from parameterlist");
+  if (local_Csgs_sum == Teuchos::null) FOUR_C_THROW("local_Csgs_sum==null from parameterlist");
 
   Teuchos::RCP<std::vector<double>> global_incr_sgvisc_sum;
   global_incr_sgvisc_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
   local_sgvisc_sum =
       modelparams->get<Teuchos::RCP<std::vector<double>>>("local_sgvisc_sum", Teuchos::null);
-  if (local_sgvisc_sum == Teuchos::null) dserror("local_sgvsic_sum==null from parameterlist");
+  if (local_sgvisc_sum == Teuchos::null) FOUR_C_THROW("local_sgvsic_sum==null from parameterlist");
 
   Teuchos::RCP<std::vector<double>> global_incr_Nphi_sum;
   global_incr_Nphi_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
@@ -2918,15 +2924,16 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   {
     local_Nphi_sum =
         modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Nphi_sum", Teuchos::null);
-    if (local_Nphi_sum == Teuchos::null) dserror("local_Nphi_sum==null from parameterlist");
+    if (local_Nphi_sum == Teuchos::null) FOUR_C_THROW("local_Nphi_sum==null from parameterlist");
 
     local_Dphi_sum =
         modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Dphi_sum", Teuchos::null);
-    if (local_Dphi_sum == Teuchos::null) dserror("local_Dphi_sum==null from parameterlist");
+    if (local_Dphi_sum == Teuchos::null) FOUR_C_THROW("local_Dphi_sum==null from parameterlist");
 
     local_Csgs_phi_sum =
         modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Csgs_phi_sum", Teuchos::null);
-    if (local_Csgs_phi_sum == Teuchos::null) dserror("local_Csgs_phi_sum==null from parameterlist");
+    if (local_Csgs_phi_sum == Teuchos::null)
+      FOUR_C_THROW("local_Csgs_phi_sum==null from parameterlist");
   }
 
   // now add all the stuff from the different processors
@@ -3745,13 +3752,13 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
 {
   if (numsamp_ == 0)
   {
-    dserror("No samples to do time average");
+    FOUR_C_THROW("No samples to do time average");
   }
 
   //----------------------------------------------------------------------
   // the sums are divided by the number of samples to get the time average
   int aux = numele_ * numsamp_;
-  if (aux < 1) dserror("Prevent division by zero.");
+  if (aux < 1) FOUR_C_THROW("Prevent division by zero.");
 
   for (unsigned i = 0; i < planecoordinates_->size(); ++i)
   {
@@ -3818,7 +3825,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
   {
     if (abs(sumforceu_) < 1.0e-12)
     {
-      dserror("zero force during computation of wall shear stress\n");
+      FOUR_C_THROW("zero force during computation of wall shear stress\n");
     }
 
     ltau = visc_ / std::sqrt(sumforceu_ / dens_ / area);
@@ -3833,9 +3840,9 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
   }
   else
   {
-    dserror("Cannot determine flow direction by traction (seems to be not unique)");
+    FOUR_C_THROW("Cannot determine flow direction by traction (seems to be not unique)");
   }
-  if (abs(ltau) < 1.0E-14) dserror("ltau is zero!");
+  if (abs(ltau) < 1.0E-14) FOUR_C_THROW("ltau is zero!");
 
   //----------------------------------------------------------------------
   // output to log-file
@@ -4248,7 +4255,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
 {
   if (numsamp_ == 0)
   {
-    dserror("No samples to do time average");
+    FOUR_C_THROW("No samples to do time average");
   }
 
   //----------------------------------------------------------------------
@@ -4287,7 +4294,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
   }
   else
   {
-    dserror("Cannot determine flow direction by traction (seems to be not unique)");
+    FOUR_C_THROW("Cannot determine flow direction by traction (seems to be not unique)");
   }
 
   //----------------------------------------------------------------------
@@ -4627,7 +4634,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
  -----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
 {
-  if (numsamp_ == 0) dserror("No samples to do time average");
+  if (numsamp_ == 0) FOUR_C_THROW("No samples to do time average");
 
   //----------------------------------------------------------------------
   // the sums are divided by the number of samples to get the time average
@@ -4667,7 +4674,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
     tauwt = sumforcetw_ / areanumsamp;
   }
   else
-    dserror("Cannot determine flow direction by traction (appears not unique)");
+    FOUR_C_THROW("Cannot determine flow direction by traction (appears not unique)");
 
   // heat flux at the wall is trueresidual of energy equation
   // multiplied by the specific heat
@@ -5122,7 +5129,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
  -----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
 {
-  if (numsamp_ == 0) dserror("No samples to do time average");
+  if (numsamp_ == 0) FOUR_C_THROW("No samples to do time average");
 
   //----------------------------------------------------------------------
   // the sums are divided by the number of samples to get the time average
@@ -5160,7 +5167,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
     tauwt = sumforcetw_ / areanumsamp;
   }
   else
-    dserror("Cannot determine flow direction by traction (appears not unique)");
+    FOUR_C_THROW("Cannot determine flow direction by traction (appears not unique)");
 
   // flux at the wall is trueresidual of conv-diff equation
   const double qwb = sumqwb_ / areanumsamp;
@@ -5861,7 +5868,7 @@ void FLD::TurbulenceStatisticsCha::StoreScatraDiscretAndParams(
     // of additional mfs-statistics
     int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra);
     if (id == -1)
-      dserror("Could not find scatra material");
+      FOUR_C_THROW("Could not find scatra material");
     else
     {
       const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
@@ -5872,7 +5879,7 @@ void FLD::TurbulenceStatisticsCha::StoreScatraDiscretAndParams(
       // calculate Schmidt number
       // visc is the kinematic viscosity here
       scnum_ = visc_ / diffus;
-      if (dens_ != 1.0) dserror("Kinematic quantities assumed!");
+      if (dens_ != 1.0) FOUR_C_THROW("Kinematic quantities assumed!");
     }
   }
   return;

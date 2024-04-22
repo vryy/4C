@@ -47,7 +47,7 @@ CORE::GEO::CUT::ConstMemoryPool::ConstMemoryPool(size_t constSize, int n)
     : size_(constSize), n_(n), free_size_(n), free_size_linear_(n), linear_(true)
 {
   const size_t alignment_of_char = std::alignment_of<char*>::value;
-  if (alignment_of_char != 8) dserror("How it this possible?");
+  if (alignment_of_char != 8) FOUR_C_THROW("How it this possible?");
 
   container_start_ = malloc(constSize * n);
   current_data_ = static_cast<char*>(container_start_);
@@ -56,10 +56,10 @@ CORE::GEO::CUT::ConstMemoryPool::ConstMemoryPool(size_t constSize, int n)
   {
     size_t adress = reinterpret_cast<size_t>(current_data_);
     offset_ = adress % alignment_of_char;
-    if (offset_ != 0) dserror("Offset should be equal to zero!");
+    if (offset_ != 0) FOUR_C_THROW("Offset should be equal to zero!");
   }
   else
-    dserror("Allocation of ConstMemoryPool failed");
+    FOUR_C_THROW("Allocation of ConstMemoryPool failed");
 }
 
 CORE::GEO::CUT::ConstMemoryPool::ConstMemoryPool(char* data, size_t constSize, int n)
@@ -97,7 +97,7 @@ void* CORE::GEO::CUT::ConstMemoryPool::Allocate()
       {
         std::stringstream msg;
         msg << "Out of memory for the const container of the size " << GetSize();
-        dserror(msg.str());
+        FOUR_C_THROW(msg.str());
       }
       freed_data_ptr_ = reinterpret_cast<char**>(*freed_data_ptr_);
       return ret;
@@ -107,7 +107,7 @@ void* CORE::GEO::CUT::ConstMemoryPool::Allocate()
   {
     std::stringstream msg;
     msg << "Out of memory for the const container of the size " << GetSize();
-    dserror(msg.str());
+    FOUR_C_THROW(msg.str());
     return nullptr;
   }
 }
@@ -205,7 +205,7 @@ void CORE::GEO::CUT::GenericMemoryPool::DeleteMissing()
   }
 
   if ((free_pointers_.size() + deleted) != free_queue_.size())
-    dserror("This should not be possible. Freed: %d , Global: %d, Totaly: %d", deleted,
+    FOUR_C_THROW("This should not be possible. Freed: %d , Global: %d, Totaly: %d", deleted,
         free_pointers_.size(), free_queue_.size());
   // erase all elements that we went though, that are either in free_pointers_ or erased. We should
   // not try again
@@ -229,7 +229,7 @@ void CORE::GEO::CUT::GenericMemoryPool::SetCurrent(size_t size)
     err_msg << "Trying to set container of size " << size
             << " but it does not exist. "
                "This should not happen";
-    dserror(err_msg.str());
+    FOUR_C_THROW(err_msg.str());
   }
 }
 
@@ -303,7 +303,7 @@ CORE::GEO::CUT::GenericMemoryPool::GenericMemoryPool(
     if (most_frequent_size != 0)
       current_ = const_memory_map_[most_frequent_size];
     else
-      dserror("This should not happen!");
+      FOUR_C_THROW("This should not happen!");
   }
   else
     AllInOneAllocation(mem_pattern);
@@ -363,7 +363,7 @@ void CORE::GEO::CUT::GenericMemoryPool::AllInOneAllocation(
 #endif
 
   main_ptr_ = (char*)malloc(total_size);
-  if (!main_ptr_) dserror("Allocation failed!");
+  if (!main_ptr_) FOUR_C_THROW("Allocation failed!");
 
   char* const_container_pointer = main_ptr_;
 
@@ -461,7 +461,7 @@ void CORE::GEO::CUT::GenericMemoryPool::Finalize()
   // simple check
   if (is_reusable_)
   {
-    if (!CheckFree()) dserror("This should not happen now");
+    if (!CheckFree()) FOUR_C_THROW("This should not happen now");
   }
   //// Used for debugging, report how much was freed
   //  else
@@ -512,7 +512,7 @@ void CORE::GEO::CUT::DebugCustomMemoryManager::SetState(
   if (prev_state != state_)
   {
     if (state_ == normal)
-      dserror("This method only works for setting memory pool allocator state");
+      FOUR_C_THROW("This method only works for setting memory pool allocator state");
     else
       prev_ = new GenericMemoryPool(memory_allocations);
     std::swap(mem_, prev_);
@@ -531,7 +531,7 @@ void CORE::GEO::CUT::DebugCustomMemoryManager::SwitchState()
     if (state_ == pool)
       prev_ = new GenericMemoryPool(memory_allocations_);
     else
-      dserror("Such case is not supported now");
+      FOUR_C_THROW("Such case is not supported now");
   }
 #if EXTENDED_CUT_DEBUG_OUTPUT
   else
@@ -591,7 +591,7 @@ CORE::GEO::CUT::CustomMemoryManager::CustomMemoryManager() : state_(normal), pre
   std::vector<int> sizes_vec(sizes, sizes + sizeof(sizes) / sizeof(sizes[0]));
   std::vector<int> numbers_vec(numbers, numbers + sizeof(numbers) / sizeof(numbers[0]));
   if (sizes_vec.size() != numbers_vec.size())
-    dserror("Vector of sizes and number of allocations should have same size!");
+    FOUR_C_THROW("Vector of sizes and number of allocations should have same size!");
 
   for (unsigned int i = 0; i < sizes_vec.size(); ++i)
   {
@@ -626,7 +626,7 @@ void CORE::GEO::CUT::CustomMemoryManager::SwitchState()
       // this cannot happen, since we should first run on the normal allocator, in
       // order to allocate all non-reusable data (such as global cln constants), some
       // other constant compile time double
-      dserror("Such case is not supported now");
+      FOUR_C_THROW("Such case is not supported now");
   }
 #if EXTENDED_CUT_DEBUG_OUTPUT
   else

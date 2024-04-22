@@ -46,7 +46,7 @@ void SCATRA::ScaTraResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, i
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1,
+    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1,
         scatratimint_->Discretization()->Name().c_str());
   }
   else
@@ -102,9 +102,9 @@ double SCATRA::ScaTraResultTest::ResultNode(
     int k = strtol(k_string.c_str(), &locator, 10) - 1;
 
     // safety checks
-    if (locator == k_string.c_str()) dserror("Couldn't read species ID!");
+    if (locator == k_string.c_str()) FOUR_C_THROW("Couldn't read species ID!");
     if (scatratimint_->Discretization()->NumDof(0, node) <= k)
-      dserror("Species ID is larger than number of DOFs of node!");
+      FOUR_C_THROW("Species ID is larger than number of DOFs of node!");
 
     // extract result
     result =
@@ -124,9 +124,9 @@ double SCATRA::ScaTraResultTest::ResultNode(
     int k = strtol(suffix.c_str(), &locator, 10) - 1;
 
     // safety checks
-    if (locator == suffix.c_str()) dserror("Couldn't read species ID!");
+    if (locator == suffix.c_str()) FOUR_C_THROW("Couldn't read species ID!");
     if (scatratimint_->Discretization()->NumDof(0, node) <= k)
-      dserror("Species ID is larger than number of DOFs of node!");
+      FOUR_C_THROW("Species ID is larger than number of DOFs of node!");
 
     // read spatial dimension
     ++locator;
@@ -138,10 +138,10 @@ double SCATRA::ScaTraResultTest::ResultNode(
     else if (*locator == 'z')
       dim = 2;
     else
-      dserror("Invalid syntax!");
+      FOUR_C_THROW("Invalid syntax!");
 
     // safety check
-    if (*(++locator) != '\0') dserror("Invalid syntax!");
+    if (*(++locator) != '\0') FOUR_C_THROW("Invalid syntax!");
 
     // extract result
     if (!quantity.compare(0, 12, "flux_domain_"))
@@ -179,7 +179,7 @@ double SCATRA::ScaTraResultTest::ResultNode(
     const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> strategy =
         Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatratimint_->Strategy());
     if (strategy == Teuchos::null)
-      dserror("Couldn't extract scatra-scatra interface meshtying strategy class!");
+      FOUR_C_THROW("Couldn't extract scatra-scatra interface meshtying strategy class!");
 
     // extract state vector of discrete scatra-scatra interface layer thicknesses
     // depending on whether monolithic or semi-implicit solution approach is used
@@ -200,14 +200,14 @@ double SCATRA::ScaTraResultTest::ResultNode(
 
       default:
       {
-        dserror("Can't test scatra-scatra interface layer thickness!");
+        FOUR_C_THROW("Can't test scatra-scatra interface layer thickness!");
         break;
       }
     }
 
     // safety check
     if (s2igrowthvec == Teuchos::null)
-      dserror(
+      FOUR_C_THROW(
           "Couldn't extract state vector of discrete scatra-scatra interface layer thicknesses!");
 
     // extract result
@@ -217,7 +217,7 @@ double SCATRA::ScaTraResultTest::ResultNode(
 
   // catch unknown quantity strings
   else
-    dserror("Quantity '%s' not supported in result test!", quantity.c_str());
+    FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
 }  // SCATRA::ScaTraResultTest::ResultNode
@@ -284,7 +284,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
     // relative L2 error, or relative H1 error of scalar with ID 0 in subdomain with ID b 4.)
     // quantity == "{{total,mean}phi,{L2,H1}error}a_b", suffix == "a_b": total value, mean value,
     // relative L2 error, or relative H1 error of scalar with ID a in subdomain with ID b other
-    // specifications are invalid and result in a dserror
+    // specifications are invalid and result in a FOUR_C_THROW
     std::string suffix;
     if (!quantity.compare(0, 8, "totalphi"))
       suffix = quantity.substr(8);
@@ -307,7 +307,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
         // cases 2 and 4 from list above
         // extract species ID
         species = strtol(index, &locator, 10) - 1;
-        if (locator == index) dserror("Couldn't read species ID!");
+        if (locator == index) FOUR_C_THROW("Couldn't read species ID!");
 
         // move index to position behind species ID
         index = locator;
@@ -326,12 +326,12 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
 
         // extract domain ID
         domain = strtol(index, &locator, 10);
-        if (locator == index) dserror("Couldn't read domain ID!");
+        if (locator == index) FOUR_C_THROW("Couldn't read domain ID!");
       }
 
       // catch invalid syntax
       else
-        dserror("Wrong syntax!");
+        FOUR_C_THROW("Wrong syntax!");
     }
 
     // total or mean value
@@ -347,7 +347,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
       // extract relevant result from map
       std::map<const int, std::vector<double>>::const_iterator iterator = map->find(domain);
       if (iterator == map->end() or species < 0 or species >= (int)iterator->second.size())
-        dserror(
+        FOUR_C_THROW(
             "Couldn't extract total or mean value of transported scalar with ID %d inside domain "
             "with ID %d from time integrator!",
             species, domain);
@@ -395,7 +395,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
 
     // check syntax
     if (suffix.compare(0, 3, "int") and suffix.find("_proc") == std::string::npos)
-      dserror("Wrong syntax!");
+      FOUR_C_THROW("Wrong syntax!");
 
     const std::string interface_string = suffix.substr(3, suffix.find('_') - 3);
     const int interface_num = std::stoi(interface_string);
@@ -405,13 +405,13 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
 
     // extract processor ID
     if (proc_num >= scatratimint_->Discretization()->Comm().NumProc())
-      dserror("Invalid processor ID!");
+      FOUR_C_THROW("Invalid processor ID!");
 
     // extract scatra-scatra interface meshtying strategy class
     const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> strategy =
         Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatratimint_->Strategy());
     if (strategy == Teuchos::null)
-      dserror("Couldn't extract scatra-scatra interface meshtying strategy class!");
+      FOUR_C_THROW("Couldn't extract scatra-scatra interface meshtying strategy class!");
 
     // extract number of degrees of freedom owned by specified processor at specified scatra-scatra
     // coupling interface
@@ -428,8 +428,8 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
     const unsigned index = strtol(index_string.c_str(), &locator, 10) - 1;
 
     // safety checks
-    if (locator == index_string.c_str()) dserror("Couldn't read parameter index!");
-    if (index >= scatratimint_->Omega().size()) dserror("Invalid parameter index!");
+    if (locator == index_string.c_str()) FOUR_C_THROW("Couldn't read parameter index!");
+    if (index >= scatratimint_->Omega().size()) FOUR_C_THROW("Invalid parameter index!");
 
     // extract result
     result = scatratimint_->Omega()[index];
@@ -448,7 +448,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
     // extract domain ID
     int domain = strtol(index, &locator, 10);
     if (domain < 0 || domain > (int)(scatratimint_->DomainIntegrals().size() - 1))
-      dserror("Value for domain integral has to lie between 0 and %i",
+      FOUR_C_THROW("Value for domain integral has to lie between 0 and %i",
           (int)(scatratimint_->DomainIntegrals().size() - 1));
     result = scatratimint_->DomainIntegrals()[domain];
   }
@@ -462,14 +462,14 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
     // extract boundary ID
     int boundary = strtol(index, &locator, 10);
     if (boundary < 0 || boundary > (int)(scatratimint_->BoundaryIntegrals().size() - 1))
-      dserror("Value for boundary integral has to lie between 0 and %i",
+      FOUR_C_THROW("Value for boundary integral has to lie between 0 and %i",
           (int)(scatratimint_->DomainIntegrals().size() - 1));
     result = scatratimint_->BoundaryIntegrals()[boundary];
   }
 
   // catch unknown quantity strings
   else
-    dserror("Quantity '%s' not supported in result test!", quantity.c_str());
+    FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
 }  // SCATRA::ScaTraResultTest::ResultSpecial

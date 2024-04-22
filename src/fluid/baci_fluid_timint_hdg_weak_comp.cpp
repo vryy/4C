@@ -43,7 +43,7 @@ FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const Teuchos::RCP<DRT::Discretization
 void FLD::TimIntHDGWeakComp::Init()
 {
   DRT::DiscretizationHDG* hdgdis = dynamic_cast<DRT::DiscretizationHDG*>(discret_.get());
-  if (hdgdis == nullptr) dserror("Did not receive an HDG discretization");
+  if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // get number of spatial dimensions
   const unsigned int nsd = params_->get<int>("number of velocity degrees of freedom");
@@ -202,7 +202,7 @@ void FLD::TimIntHDGWeakComp::ExplicitPredictor()
     intvelnp_->Update(1.0, *intvelnm_, 2.0 * dta_, *intaccn_, 0.0);
   }
   else
-    dserror("Unknown fluid predictor %s", predictor_.c_str());
+    FOUR_C_THROW("Unknown fluid predictor %s", predictor_.c_str());
 }
 
 /*----------------------------------------------------------------------*
@@ -462,7 +462,8 @@ void FLD::TimIntHDGWeakComp::SetInitialFlowField(
     if (ele->Owner() == discret_->Comm().MyPID())
     {
       std::vector<int> localDofs = discret_->Dof(1, ele);
-      dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.numRows()), "Internal error");
+      FOUR_C_ASSERT(
+          localDofs.size() == static_cast<std::size_t>(elevec2.numRows()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);
       intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.values(), localDofs.data());
@@ -611,7 +612,7 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDGWeakComp::EvaluateErrorComparedT
     }
     break;
     default:
-      dserror("Cannot calculate error. Unknown type of analytical test problem");
+      FOUR_C_THROW("Cannot calculate error. Unknown type of analytical test problem");
       break;
   }
 

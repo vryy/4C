@@ -95,7 +95,7 @@ void MORTAR::BaseBinaryTree::Init()
     }
     break;
     default:
-      dserror("ERROR: Problem dimension must be 2D or 3D!");
+      FOUR_C_THROW("ERROR: Problem dimension must be 2D or 3D!");
       break;
   }
 
@@ -126,7 +126,7 @@ MORTAR::BaseBinaryTreeNode::BaseBinaryTreeNode(DRT::Discretization& discret,
     }
     break;
     default:
-      dserror("ERROR: Problem dimension must be 2D or 3D!");
+      FOUR_C_THROW("ERROR: Problem dimension must be 2D or 3D!");
       break;
   }
 
@@ -150,16 +150,16 @@ void MORTAR::BaseBinaryTreeNode::CalculateSlabsDop()
   {
     int gid = Elelist()[i];
     DRT::Element* element = Discret().gElement(gid);
-    if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
+    if (!element) FOUR_C_THROW("ERROR: Cannot find element with gid %\n", gid);
     MORTAR::Element* mrtrelement = dynamic_cast<MORTAR::Element*>(element);
     DRT::Node** nodes = mrtrelement->Points();
-    if (!nodes) dserror("ERROR: Null pointer!");
+    if (!nodes) FOUR_C_THROW("ERROR: Null pointer!");
 
     // calculate slabs for every node on every element
     for (int k = 0; k < mrtrelement->NumPoint(); ++k)
     {
       Node* mrtrnode = dynamic_cast<Node*>(nodes[k]);
-      if (!mrtrnode) dserror("ERROR: Null pointer!");
+      if (!mrtrnode) FOUR_C_THROW("ERROR: Null pointer!");
 
       // get current node position
       std::array<double, 3> pos = {0.0, 0.0, 0.0};

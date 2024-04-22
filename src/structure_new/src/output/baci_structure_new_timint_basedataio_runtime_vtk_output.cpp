@@ -68,7 +68,7 @@ void STR::TIMINT::ParamsRuntimeOutput::Init(
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeOutput::Setup()
 {
-  dsassert(IsInit(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -79,7 +79,7 @@ void STR::TIMINT::ParamsRuntimeOutput::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeOutput::CheckInitSetup() const
 {
-  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

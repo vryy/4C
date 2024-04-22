@@ -46,7 +46,7 @@ CONTACT::LagrangeStrategyPoro::LagrangeStrategyPoro(
       poromaster_(poromaster)
 {
   if (!poroslave_ and !poromaster_)
-    dserror(
+    FOUR_C_THROW(
         "you called a poroelastic meshtying method without participating poroelastic domains on "
         "your interface");
   return;
@@ -59,7 +59,7 @@ void CONTACT::LagrangeStrategyPoro::DoReadRestart(IO::DiscretizationReader& read
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   Teuchos::RCP<DRT::Discretization> discret = GLOBAL::Problem::Instance()->GetDis("structure");
-  if (discret == Teuchos::null) dserror("didn't get my discretization");
+  if (discret == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
 
   Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*discret->DofColMap(), true));
   // it's clear that we get some zeros here ... but poroelast monolithic fixes this a little bit
@@ -91,7 +91,7 @@ void CONTACT::LagrangeStrategyPoro::SetupNoPenetrationCondition()
   lambda_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
   lambdaold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
   if (!poroslave_ and poromaster_)
-    dserror("poroelastic meshtying/contact method needs the slave side to be poroelastic");
+    FOUR_C_THROW("poroelastic meshtying/contact method needs the slave side to be poroelastic");
   /*
    *  The first error may also occur when there is no single element on the interface (it is empty)
    * but POROELASTICITY DYNAMIC coupling algorithmus (COUPALGO) is chosen as
@@ -457,7 +457,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateMatPoroNoPen(
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-    dserror("Condensation only for dual LM");
+    FOUR_C_THROW("Condensation only for dual LM");
 
   /**********************************************************************/
   /* (2) Add contact stiffness terms to kteff                           */
@@ -466,7 +466,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateMatPoroNoPen(
   // transform if necessary
   if (ParRedist())
   {
-    dserror("CHECK ME!!!");
+    FOUR_C_THROW("CHECK ME!!!");
     lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
     linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
   }
@@ -503,7 +503,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateMatPoroNoPen(
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_fseff);
   if (ParRedist())
   {
-    dserror("CHECK ME!");
+    FOUR_C_THROW("CHECK ME!");
     // split and transform to redistributed maps
     //        CORE::LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
     //        ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
@@ -538,7 +538,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateMatPoroNoPen(
   // do the vector splitting smn -> sm+n
   if (ParRedist())
   {
-    dserror("CHECK ME!");
+    FOUR_C_THROW("CHECK ME!");
     // split and transform to redistributed maps
     CORE::LINALG::SplitVector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
@@ -751,7 +751,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateMatPoroNoPen(
   // thus we have to export the product Mold^T * zold to fit
   if (IsSelfContact())
   {
-    dserror("CHECK ME!");
+    FOUR_C_THROW("CHECK ME!");
     //        Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
     //        Teuchos::RCP<Epetra_Vector> tempvecm2  = Teuchos::rcp(new
     //        Epetra_Vector(mold_->DomainMap())); Teuchos::RCP<Epetra_Vector> zoldexp  =
@@ -776,7 +776,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateMatPoroNoPen(
   // thus we have to export the product Dold^T * zold to fit
   if (IsSelfContact())
   {
-    dserror("CHECK ME!");
+    FOUR_C_THROW("CHECK ME!");
     //        Teuchos::RCP<Epetra_Vector> tempvec  = Teuchos::rcp(new
     //        Epetra_Vector(dold_->DomainMap())); Teuchos::RCP<Epetra_Vector> zoldexp  =
     //        Teuchos::rcp(new Epetra_Vector(dold_->RowMap())); if
@@ -843,7 +843,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateMatPoroNoPen(
 
   if (ParRedist())
   {
-    dserror("CHECK ME!");
+    FOUR_C_THROW("CHECK ME!");
     //        //----------------------------------------------------------- FIRST LINE
     //        // nothing to do (ndof-map independent of redistribution)
     //
@@ -1009,7 +1009,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateOtherMatPoroNoPen(
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-    dserror("Condensation only for dual LM");
+    FOUR_C_THROW("Condensation only for dual LM");
 
   /**********************************************************************/
   /* (3) Split k_fseff and Feff into 3x3 matrix blocks                             */
@@ -1035,7 +1035,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateOtherMatPoroNoPen(
       Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(Feff);
   if (ParRedist())
   {
-    dserror("CHECK ME!");
+    FOUR_C_THROW("CHECK ME!");
     // split and transform to redistributed maps
     //        CORE::LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
     //        ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
@@ -1140,7 +1140,7 @@ void CONTACT::LagrangeStrategyPoro::EvaluateOtherMatPoroNoPen(
 
   if (ParRedist())
   {
-    dserror("CHECK ME!");
+    FOUR_C_THROW("CHECK ME!");
     //        //----------------------------------------------------------- FIRST LINE
     //        // nothing to do (ndof-map independent of redistribution)
     //
@@ -1241,7 +1241,7 @@ void CONTACT::LagrangeStrategyPoro::RecoverPoroNoPen(
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-      dserror("Condensation only for dual LM");
+      FOUR_C_THROW("Condensation only for dual LM");
 
     // extract slave displacements from disi
     Teuchos::RCP<Epetra_Vector> disis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -1291,7 +1291,7 @@ void CONTACT::LagrangeStrategyPoro::RecoverPoroNoPen(
       {
         inciter = inc.find(matiter->first);
         if (inciter == inc.end())
-          dserror(
+          FOUR_C_THROW(
               "CONTACT::LagrangeStrategyPoro::RecoverPoroNoPen: Couldn't find increment block %d "
               "for recovery of the lagrange multiplier!",
               matiter->first);
@@ -1450,7 +1450,7 @@ void CONTACT::LagrangeStrategyPoro::SetState(
           }
           default:
           {
-            dserror("Shouldn't happen!");
+            FOUR_C_THROW("Shouldn't happen!");
             break;
           }
         }  // end inner switch statement
@@ -1618,7 +1618,7 @@ void CONTACT::LagrangeStrategyPoro::PoroMtSetCouplingMatrices()
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  if (err > 0) FOUR_C_THROW("ERROR: Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd_->ReplaceDiagonalValues(*diag);

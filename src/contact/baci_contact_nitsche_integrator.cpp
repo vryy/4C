@@ -73,16 +73,16 @@ void CONTACT::IntegratorNitsche::GPTSForces(MORTAR::Element& sele, MORTAR::Eleme
 {
   if (sele.Owner() != Comm_.MyPID()) return;
 
-  if (dim != Dim()) dserror("dimension inconsistency");
+  if (dim != Dim()) FOUR_C_THROW("dimension inconsistency");
 
-  if (frtype_ != INPAR::CONTACT::friction_none && dim != 3) dserror("only 3D friction");
+  if (frtype_ != INPAR::CONTACT::friction_none && dim != 3) FOUR_C_THROW("only 3D friction");
   if (frtype_ != INPAR::CONTACT::friction_none && frtype_ != INPAR::CONTACT::friction_coulomb &&
       frtype_ != INPAR::CONTACT::friction_tresca)
-    dserror("only coulomb or tresca friction");
+    FOUR_C_THROW("only coulomb or tresca friction");
   if (frtype_ == INPAR::CONTACT::friction_coulomb && frcoeff_ < 0.)
-    dserror("negative coulomb friction coefficient");
+    FOUR_C_THROW("negative coulomb friction coefficient");
   if (frtype_ == INPAR::CONTACT::friction_tresca && frbound_ < 0.)
-    dserror("negative tresca friction bound");
+    FOUR_C_THROW("negative tresca friction bound");
 
   CORE::LINALG::Matrix<dim, 1> slave_normal, master_normal;
   std::vector<CORE::GEN::Pairedvector<int, double>> deriv_slave_normal(0, 0);
@@ -294,7 +294,7 @@ void CONTACT::IntegratorNitsche::GPTSForces(MORTAR::Element& sele, MORTAR::Eleme
             fr = frbound_;
             break;
           default:
-            dserror("why are you here???");
+            FOUR_C_THROW("why are you here???");
             break;
         }
 
@@ -395,7 +395,7 @@ void CONTACT::IntegratorNitsche::GPTSForces(MORTAR::Element& sele, MORTAR::Eleme
     }
   }
   else
-    dserror("unknown algorithm");
+    FOUR_C_THROW("unknown algorithm");
 }
 
 /*----------------------------------------------------------------------*
@@ -453,7 +453,7 @@ void CONTACT::UTILS::MapGPtoParent(MORTAR::Element& moEle, double* boundary_gpco
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     default:
-      dserror("Nitsche contact not implemented for used (bulk) elements");
+      FOUR_C_THROW("Nitsche contact not implemented for used (bulk) elements");
   }
 }
 
@@ -500,7 +500,7 @@ void CONTACT::IntegratorNitsche::SoEleCauchy(MORTAR::Element& moEle, double* bou
         }
         else
         {
-          dserror("Unknown solid element type");
+          FOUR_C_THROW("Unknown solid element type");
         }
       });
 
@@ -639,7 +639,7 @@ void CONTACT::IntegratorNitsche::BuildAdjointTest(MORTAR::Element& moEle, const 
   CORE::LINALG::SerialDenseMatrix tmp(moEle.ParentElement()->NumNode() * dim, dim, false);
   CORE::LINALG::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.A(),
       derivtravo_slave.numRows(), derivtravo_slave.numRows(), derivtravo_slave.numCols());
-  if (CORE::LINALG::multiply(tmp, d2sntDdDpxi, deriv_trafo)) dserror("multiply failed");
+  if (CORE::LINALG::multiply(tmp, d2sntDdDpxi, deriv_trafo)) FOUR_C_THROW("multiply failed");
   for (int d = 0; d < dim - 1; ++d)
   {
     for (const auto& p : boundary_gpcoord_lin[d])
@@ -722,7 +722,7 @@ void CONTACT::UTILS::NitscheWeightsAndScaling(MORTAR::Element& sele, MORTAR::Ele
 
       break;
     default:
-      dserror("unknown Nitsche weighting");
+      FOUR_C_THROW("unknown Nitsche weighting");
       break;
   }
 }
@@ -868,7 +868,7 @@ void CONTACT::UTILS::BuildTangentVectors3D(const double* np,
   }
 
   t2.CrossProduct(n, t1);
-  if (abs(t2.Norm2() - 1.) > 1.e-10) dserror("this should already form an orthonormal basis");
+  if (abs(t2.Norm2() - 1.) > 1.e-10) FOUR_C_THROW("this should already form an orthonormal basis");
 
   for (const auto& i : dn[0])
   {
@@ -911,7 +911,7 @@ void CONTACT::UTILS::BuildTangentVectors(const double* np,
   if (dim == 3)
     BuildTangentVectors3D(np, dn, t1p, dt1, t2p, dt2);
   else
-    dserror("not implemented");
+    FOUR_C_THROW("not implemented");
 }
 
 template void CONTACT::UTILS::BuildTangentVectors<2>(const double*,

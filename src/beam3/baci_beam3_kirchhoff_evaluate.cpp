@@ -61,7 +61,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
     // get the action required
     std::string action = params.get<std::string>("action", "calc_none");
     if (action == "calc_none")
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
       act = ELEMENTS::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
@@ -89,21 +89,21 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
     else if (action == "calc_struct_energy")
       act = ELEMENTS::struct_calc_energy;
     else
-      dserror("Unknown type of action for Beam3k");
+      FOUR_C_THROW("Unknown type of action for Beam3k");
   }
 
   switch (act)
   {
     case ELEMENTS::struct_calc_ptcstiff:
     {
-      dserror("no ptc implemented for Beam3k element");
+      FOUR_C_THROW("no ptc implemented for Beam3k element");
       break;
     }
 
     case ELEMENTS::struct_calc_linstiff:
     {
       // only nonlinear case implemented!
-      dserror("linear stiffness matrix called, but not implemented");
+      FOUR_C_THROW("linear stiffness matrix called, but not implemented");
       break;
     }
 
@@ -120,7 +120,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       // values for each degree of freedom get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
 
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -132,7 +132,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       }
       else if (act == ELEMENTS::struct_calc_nlnstifflmass)
       {
-        dserror("The action calc_struct_nlnstifflmass is not implemented yet!");
+        FOUR_C_THROW("The action calc_struct_nlnstifflmass is not implemented yet!");
       }
       else if (act == ELEMENTS::struct_calc_nlnstiff)
       {
@@ -161,13 +161,13 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
     {
       // get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
-      if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+      if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
@@ -176,7 +176,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       else if (act == ELEMENTS::struct_calc_brownianstiff)
         CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, &elemat1, &elevec1);
       else
-        dserror("You shouldn't be here.");
+        FOUR_C_THROW("You shouldn't be here.");
 
       break;
     }
@@ -186,7 +186,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       if (elevec1 != Teuchos::null)  // old structural time integration
       {
         if (elevec1.numRows() != 1)
-          dserror(
+          FOUR_C_THROW(
               "energy vector of invalid size %i, expected row dimension 1 (total elastic energy of "
               "element)!",
               elevec1.numRows());
@@ -271,7 +271,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
     default:
     {
       std::cout << "\ncalled element with action type " << ActionType2String(act);
-      dserror("This action type is not implemented for Beam3k");
+      FOUR_C_THROW("This action type is not implemented for Beam3k");
       break;
     }
   }
@@ -284,7 +284,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
  *------------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3k::Lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
 {
-  dserror("Lumped mass matrix not implemented yet!!!");
+  FOUR_C_THROW("Lumped mass matrix not implemented yet!!!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -300,7 +300,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 
 
   if (disp.size() != numdofelement)
-    dserror(
+    FOUR_C_THROW(
         "size mismatch: Number of BEAM3K_COLLOCATION_POINTS does not match number of nodes "
         "defined in the input file!");
 
@@ -330,7 +330,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
   {
     if (rotvec_ == true)
     {
-      dserror(
+      FOUR_C_THROW(
           "Beam3k: analytic linearization of internal forces only implemented for "
           "tangent-based variant so far! activate FAD!");
     }
@@ -385,7 +385,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "Beam3k: analytic linearization only implemented for variant WK so far! "
           "activate FAD!");
     }
@@ -572,7 +572,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
 
   if (BEAM3K_COLLOCATION_POINTS != 2 and BEAM3K_COLLOCATION_POINTS != 3 and
       BEAM3K_COLLOCATION_POINTS != 4)
-    dserror("Only the values 2,3 and 4 are valid for BEAM3K_COLLOCATION_POINTS!!!");
+    FOUR_C_THROW("Only the values 2,3 and 4 are valid for BEAM3K_COLLOCATION_POINTS!!!");
 
   // number of nodes fixed for this element
   const unsigned int nnode = 2;
@@ -1150,7 +1150,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
   if (BEAM3K_COLLOCATION_POINTS != 2 and BEAM3K_COLLOCATION_POINTS != 3 and
       BEAM3K_COLLOCATION_POINTS != 4)
   {
-    dserror("Only the values 2,3 and 4 are valid for BEAM3K_COLLOCATION_POINTS!!!");
+    FOUR_C_THROW("Only the values 2,3 and 4 are valid for BEAM3K_COLLOCATION_POINTS!!!");
   }
 
   // internal force vector
@@ -1846,7 +1846,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "you tried to calculate the analytic contributions to mass matrix which is not "
             "implemented yet in case of SK!");
       }
@@ -2071,7 +2071,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   if (BEAM3K_COLLOCATION_POINTS != 2 and BEAM3K_COLLOCATION_POINTS != 3 and
       BEAM3K_COLLOCATION_POINTS != 4)
   {
-    dserror("Only the values 2,3 and 4 are valid for BEAM3K_COLLOCATION_POINTS!!!");
+    FOUR_C_THROW("Only the values 2,3 and 4 are valid for BEAM3K_COLLOCATION_POINTS!!!");
   }
 
   // number of nodes used for centerline interpolation
@@ -2079,7 +2079,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // get element displacements
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
-  if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement new'");
+  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -2135,7 +2135,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
 
     // find out at which node the condition is applied
     const std::vector<int>* nodeids = condition.GetNodes();
-    if (nodeids == nullptr) dserror("failed to retrieve node IDs from condition!");
+    if (nodeids == nullptr) FOUR_C_THROW("failed to retrieve node IDs from condition!");
 
     /* find out local node number --> this is done since the first element of a Neumann point
      * condition is used for this function in this case we do not know whether it is the left
@@ -2152,7 +2152,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
       node = 1;
     }
 
-    if (node == -1) dserror("Node could not be found on nodemap!");
+    if (node == -1) FOUR_C_THROW("Node could not be found on nodemap!");
 
 
     EvaluatePointNeumannEB<nnodecl>(elevec1, elemat1, disp_totlag, load_vector_neumann, node);
@@ -2170,7 +2170,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
       for (unsigned int idof = 3; idof < 6; ++idof)
       {
         if ((*function_numbers)[idof] > 0)
-          dserror(
+          FOUR_C_THROW(
               "Line Neumann conditions for distributed moments are not implemented for beam3k"
               " so far! Only the function flag 1, 2 and 3 can be set!");
       }
@@ -2385,7 +2385,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateStiffMatrixAnalyticFromPointNeumannMoment(
   }
   else
   {
-    dserror("%d is an invalid value for element local node ID! Expected 0 or 1", node);
+    FOUR_C_THROW("%d is an invalid value for element local node ID! Expected 0 or 1", node);
   }
 
   // matrices storing the assembled shape functions or s-derivative
@@ -2465,7 +2465,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumann(CORE::LINALG::SerialDenseVector&
 
     // safety check for rotation-vector based formulation
     if (rotvec_ == true)
-      dserror(
+      FOUR_C_THROW(
           "Beam3k: analytic linearization of LineNeumann condition (distributed forces) "
           "not implemented yet for ROTVEC variant! Activate automatic linearization via FAD");
   }
@@ -2611,12 +2611,12 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
     CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force)
 {
   if (weakkirchhoff_ == false)
-    dserror(
+    FOUR_C_THROW(
         "calculation of viscous damping moments not implemented for"
         "WK=0 ('strong' Kirchhoff) yet. Use BEAM3WK elements (set WK=1)!");
 
   if (rotvec_ == true)
-    dserror(
+    FOUR_C_THROW(
         "Beam3k: Calculation of Brownian forces not tested yet for ROTVEC, "
         "i.e. nodal rotation vectors as primary variables. Use ROTVEC=0 (tangent based "
         "formulation)");
@@ -3514,7 +3514,7 @@ void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsL(
       0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 2, 3, 4};
 
 #else
-  dserror(
+  FOUR_C_THROW(
       "BEAM3K_COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are valid for "
       "BEAM3K_COLLOCATION_POINTS!!!");
 #endif
@@ -3591,7 +3591,7 @@ void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsN(CORE::LINALG::Matrix<1, 4, T
       {0, 0, 1, 0, 0, 2, 0, 0, 0, 3, 0, 0, 4, 0, 0, 0}};
 
 #else
-  dserror(
+  FOUR_C_THROW(
       "BEAM3K_COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are valid for "
       "BEAM3K_COLLOCATION_POINTS!!!");
 #endif

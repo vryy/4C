@@ -120,7 +120,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateService(DRT::ELEMENTS::Flu
       break;
     }
     default:
-      dserror("unknown action for EvaluateService() in poro fluid element");
+      FOUR_C_THROW("unknown action for EvaluateService() in poro fluid element");
       break;
   }
   return -1;
@@ -535,7 +535,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(Teuchos::ParameterList&
 
   // stationary formulation does not support ALE formulation
   // if (isale and Base::fldparatimint_->IsStationary())
-  //  dserror("No ALE support within stationary fluid solver.");
+  //  FOUR_C_THROW("No ALE support within stationary fluid solver.");
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -1531,7 +1531,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
     // 9) stabilization of continuity equation
     if (Base::fldpara_->CStab())
     {
-      dserror("continuity stabilization not implemented for poroelasticity");
+      FOUR_C_THROW("continuity stabilization not implemented for poroelasticity");
 
       // In the case no continuity stabilization and no LOMA:
       // the factors 'conti_stab_and_vol_visc_fac' and 'conti_stab_and_vol_visc_rhs' are zero
@@ -1906,7 +1906,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(const double
   if (Base::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
   {
     if (Base::fldpara_->Tds() != INPAR::FLUID::subscales_quasistatic)
-      dserror("Is this factor correct? Check for bugs!");
+      FOUR_C_THROW("Is this factor correct? Check for bugs!");
     const double reac_tau = Base::fldpara_->ViscReaStabFac() * Base::reacoeff_ * Base::tau_(1);
 
     for (int vi = 0; vi < nen_; ++vi)
@@ -1971,7 +1971,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(const double
   }
   else
   {
-    dserror("Linearization of the mesh motion is only available in 2D and 3D");
+    FOUR_C_THROW("Linearization of the mesh motion is only available in 2D and 3D");
   }
 }
 
@@ -2295,7 +2295,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& t
   else if (nsd_ == 2)
     LinMeshMotion_2D_Pres_OD(ecoupl_p, dphi_dp, dphi_dJ, refporositydot, timefacfacpre);
   else
-    dserror("Linearization of the mesh motion is only available in 2D and 3D");
+    FOUR_C_THROW("Linearization of the mesh motion is only available in 2D and 3D");
 }
 
 template <CORE::FE::CellType distype>
@@ -2311,7 +2311,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin3DMeshMotionOD(
       addstab = Base::fldpara_->ViscReaStabFac() * Base::reacoeff_ * Base::tau_(1);
     else
     {
-      dserror("Is this factor correct? Check for bugs!");
+      FOUR_C_THROW("Is this factor correct? Check for bugs!");
     }
   }
   //*************************** linearisation of mesh motion in momentum
@@ -3815,7 +3815,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin2DMeshMotionOD(
       addstab = Base::fldpara_->ViscReaStabFac() * Base::reacoeff_ * Base::tau_(1);
     else
     {
-      dserror("Is this factor correct? Check for bugs!");
+      FOUR_C_THROW("Is this factor correct? Check for bugs!");
       // addstab = Base::fldpara_->ViscReaStabFac()*Base::reacoeff_*Base::fldpara_->AlphaF()*fac3;
     }
   }
@@ -4929,10 +4929,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetStructMaterial(DRT::ELEMENTS::
       if (struct_mat_->MaterialType() != INPAR::MAT::m_structporo and
           struct_mat_->MaterialType() != INPAR::MAT::m_structpororeaction and
           struct_mat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
-        dserror("invalid structure material for poroelasticity");
+        FOUR_C_THROW("invalid structure material for poroelasticity");
     }
     else
-      dserror("no second material defined for element %i", Base::eid_);
+      FOUR_C_THROW("no second material defined for element %i", Base::eid_);
   }
 }
 
@@ -4959,7 +4959,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ReacStab(
     reac_tau = Base::fldpara_->ViscReaStabFac() * Base::reacoeff_ * Base::tau_(1);
   else
   {
-    dserror("Is this factor correct? Check for bugs!");
+    FOUR_C_THROW("Is this factor correct? Check for bugs!");
     reac_tau =
         Base::fldpara_->ViscReaStabFac() * Base::reacoeff_ * Base::fldparatimint_->AlphaF() * fac3;
   }
@@ -5111,7 +5111,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetMaterialParamters(
     Teuchos::RCP<const MAT::FluidPoro> actmat =
         Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
     if (actmat->MaterialType() != INPAR::MAT::m_fluidporo)
-      dserror("invalid fluid material for poroelasticity");
+      FOUR_C_THROW("invalid fluid material for poroelasticity");
 
     // set density at n+alpha_F/n+1 and n+alpha_M/n+1
     Base::densaf_ = actmat->Density();
@@ -5124,7 +5124,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetMaterialParamters(
     Base::visceff_ = actmat->EffectiveViscosity();
   }
   else
-    dserror("Fluid material parameters have to be evaluated at gauss point for porous flow!");
+    FOUR_C_THROW("Fluid material parameters have to be evaluated at gauss point for porous flow!");
 }
 
 template <CORE::FE::CellType distype>
@@ -5183,7 +5183,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
 {
   Teuchos::RCP<const MAT::FluidPoro> actmat =
       Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
-  if (actmat->VaryingPermeability()) dserror("varying material permeability not yet supported!");
+  if (actmat->VaryingPermeability())
+    FOUR_C_THROW("varying material permeability not yet supported!");
 
   const double porosity_inv = 1.0 / porosity_;
   const double J_inv = 1.0 / J_;
@@ -5388,9 +5389,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
                 INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt or
             Base::fldpara_->WhichTau() == INPAR::FLUID::tau_not_defined or
             Base::fldpara_->WhichTau() == INPAR::FLUID::tau_taylor_hughes_zarins))
-      dserror("incorrect definition of stabilization parameter for porous flow");
+      FOUR_C_THROW("incorrect definition of stabilization parameter for porous flow");
 
-    if (porosity_ < 1e-15) dserror("zero porosity!");
+    if (porosity_ < 1e-15) FOUR_C_THROW("zero porosity!");
 
     /*
     This stabilization parameter is only intended to be used for
@@ -5491,7 +5492,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
     }
   }
   else
-    dserror("Fluid stabilization parameters have to be evaluated at gauss point for porous flow!");
+    FOUR_C_THROW(
+        "Fluid stabilization parameters have to be evaluated at gauss point for porous flow!");
 }
 
 template <CORE::FE::CellType distype>
@@ -5763,7 +5765,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::CalcDivEps(
     }
   }
   else
-    dserror("Epsilon(N) is not implemented for the 1D case");
+    FOUR_C_THROW("Epsilon(N) is not implemented for the 1D case");
 }
 
 template <CORE::FE::CellType distype>
@@ -6216,7 +6218,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeDefGradient(
     for (int i = 0; i < nsd_; i++) defgrd(i, i) = 1.0;
   }
   else
-    dserror("invalid kinematic type! %d", kintype_);
+    FOUR_C_THROW("invalid kinematic type! %d", kintype_);
 }
 
 template <CORE::FE::CellType distype>
@@ -6347,7 +6349,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
           position[2] = xyzint(2);
         }
         else
-          dserror("invalid nsd %d", nsd_);
+          FOUR_C_THROW("invalid nsd %d", nsd_);
 
         if (nsd_ == 2)
         {
@@ -6386,11 +6388,11 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
           p = p_exact;
         }
         else
-          dserror("invalid dimension");
+          FOUR_C_THROW("invalid dimension");
       }
       break;
       default:
-        dserror("analytical solution is not defined");
+        FOUR_C_THROW("analytical solution is not defined");
         break;
     }
 
@@ -6580,7 +6582,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
     {
       if (nsd_ == 3)
       {
-        dserror("not implemented");
+        FOUR_C_THROW("not implemented");
       }
       else if (nsd_ == 2)
       {
@@ -6789,7 +6791,7 @@ double DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeEffectiveStiffness()
       break;
     }
     default:
-      dserror(
+      FOUR_C_THROW(
           "calculation of effective stiffness for biot stabilization not implemented for Material "
           "Type %i",
           struct_mat_->GetMaterial()->MaterialType());
@@ -6798,7 +6800,7 @@ double DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeEffectiveStiffness()
 
   if (effective_stiffness < 1e-14)
   {
-    dserror(
+    FOUR_C_THROW(
         "Effective stiffness is very small (%f). ShearMod() method not implemented in material?",
         effective_stiffness);
   }
@@ -6835,7 +6837,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeJacobianDeterminantVolumeC
     for (int i = 0; i < nsd_; ++i) volchange += dispgrad(i, i);
   }
   else
-    dserror("invalid kinematic type!");
+    FOUR_C_THROW("invalid kinematic type!");
 }
 
 template <CORE::FE::CellType distype>

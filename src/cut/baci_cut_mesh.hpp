@@ -21,7 +21,7 @@ mesh
 
 #include <list>
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
 
 #include "baci_cut_edge.hpp"
 #include "baci_cut_node.hpp"

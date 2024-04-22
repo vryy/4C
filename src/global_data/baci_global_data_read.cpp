@@ -140,7 +140,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       {
         case CORE::FE::ShapeFunctionType::nurbs:
         {
-          dserror("Nurbs discretization not possible for fs3i!");
+          FOUR_C_THROW("Nurbs discretization not possible for fs3i!");
           break;
         }
         default:
@@ -191,7 +191,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       {
         case CORE::FE::ShapeFunctionType::nurbs:
         {
-          dserror("Nurbs discretization not possible for biofilm problems!");
+          FOUR_C_THROW("Nurbs discretization not possible for biofilm problems!");
           break;
         }
         default:
@@ -457,7 +457,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
     {
       // safety checks
       if (distype == CORE::FE::ShapeFunctionType::nurbs)
-        dserror("Scatra-thermo interaction does not work for nurbs discretizations yet!");
+        FOUR_C_THROW("Scatra-thermo interaction does not work for nurbs discretizations yet!");
 
       // create empty discretizations for scalar and thermo fields
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra", reader.Comm()));
@@ -764,7 +764,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       {
         case CORE::FE::ShapeFunctionType::nurbs:
         {
-          dserror("Nurbs Discretization not possible for artery");
+          FOUR_C_THROW("Nurbs Discretization not possible for artery");
           break;
         }
         default:
@@ -1238,7 +1238,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
     }
     break;
     default:
-      dserror("Unknown problem type: %d", problem.GetProblemType());
+      FOUR_C_THROW("Unknown problem type: %d", problem.GetProblemType());
       break;
   }
 
@@ -1322,7 +1322,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
   // safety check
   if ((id_struct != -1 and id_scatra != -1) or (id_struct != -1 and id_elch != -1) or
       (id_scatra != -1 and id_elch != -1))
-    dserror("Cannot have more than one multi-scale material!");
+    FOUR_C_THROW("Cannot have more than one multi-scale material!");
 
   // store name of macro-scale discretization in string
   std::string macro_dis_name("");
@@ -1488,7 +1488,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
           else if (id_elch != -1)
             micromat = dynamic_cast<MAT::NewmanMultiScale*>(mat.get());
           else
-            dserror("How the heck did you get here?!");
+            FOUR_C_THROW("How the heck did you get here?!");
 
           // extract and broadcast number of micro-scale discretization
           microdisnum = micromat->MicroDisNum();
@@ -1960,7 +1960,7 @@ void GLOBAL::ReadParameter(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
     // The RESTART flag in the input file should be zero or have the same value!
     const int restartflaginfile = type.get<int>("RESTART");
     if ((restartflaginfile > 0) and (restartflaginfile != restart_step))
-      dserror("Restart flags in input file and command line are non-zero and different!");
+      FOUR_C_THROW("Restart flags in input file and command line are non-zero and different!");
   }
 
   // Set restart time based on walltime
@@ -2014,7 +2014,7 @@ void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
       std::string name;
       (*condline) >> mat >> number >> name;
       if ((not(*condline)) or (mat != "MAT"))
-        dserror("invalid material line in '%s'", name.c_str());
+        FOUR_C_THROW("invalid material line in '%s'", name.c_str());
 
       // extract material ID
       int matid = -1;
@@ -2022,12 +2022,13 @@ void GLOBAL::ReadMaterials(GLOBAL::Problem& problem, INPUT::DatFileReader& reade
         char* ptr;
         matid = static_cast<int>(strtol(number.c_str(), &ptr, 10));
         if (ptr == number.c_str())
-          dserror("failed to read material object number '%s'", number.c_str());
+          FOUR_C_THROW("failed to read material object number '%s'", number.c_str());
       }
 
       // processed?
       if (problem.Materials()->Find(matid) == -1)
-        dserror("Material 'MAT %d' with name '%s' could not be identified", matid, name.c_str());
+        FOUR_C_THROW(
+            "Material 'MAT %d' with name '%s' could not be identified", matid, name.c_str());
     }
   }
 
@@ -2066,7 +2067,7 @@ void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, INPUT::DatFil
       std::string name;
       (*condline) >> coconstlaw >> number >> name;
       if ((not(*condline)) or (coconstlaw != "LAW"))
-        dserror("invalid contact constitutive law line in '%s'", name.c_str());
+        FOUR_C_THROW("invalid contact constitutive law line in '%s'", name.c_str());
 
       // extract contact constitutive law ID
       int coconstlawid = -1;
@@ -2074,12 +2075,13 @@ void GLOBAL::ReadContactConstitutiveLaws(GLOBAL::Problem& problem, INPUT::DatFil
         char* ptr;
         coconstlawid = static_cast<int>(strtol(number.c_str(), &ptr, 10));
         if (ptr == number.c_str())
-          dserror("failed to read contact constitutive law object number '%s'", number.c_str());
+          FOUR_C_THROW(
+              "failed to read contact constitutive law object number '%s'", number.c_str());
       }
 
       // processed?
       if (problem.ContactConstitutiveLaws()->Find(coconstlawid) == -1)
-        dserror("Contact constitutive law 'LAW %d' with name '%s' could not be identified",
+        FOUR_C_THROW("Contact constitutive law 'LAW %d' with name '%s' could not be identified",
             coconstlawid, name.c_str());
     }
   }
@@ -2186,7 +2188,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
         case DRT::Condition::Point:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dnode_fenode.size())
           {
-            dserror(
+            FOUR_C_THROW(
                 "DPoint %d not in range [0:%d[\n"
                 "DPoint condition on non existent DPoint?",
                 curr->first, dnode_fenode.size());
@@ -2196,7 +2198,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
         case DRT::Condition::Line:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dline_fenode.size())
           {
-            dserror(
+            FOUR_C_THROW(
                 "DLine %d not in range [0:%d[\n"
                 "DLine condition on non existent DLine?",
                 curr->first, dline_fenode.size());
@@ -2206,7 +2208,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
         case DRT::Condition::Surface:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dsurf_fenode.size())
           {
-            dserror(
+            FOUR_C_THROW(
                 "DSurface %d not in range [0:%d[\n"
                 "DSurface condition on non existent DSurface?",
                 curr->first, dsurf_fenode.size());
@@ -2216,7 +2218,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
         case DRT::Condition::Volume:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dvol_fenode.size())
           {
-            dserror(
+            FOUR_C_THROW(
                 "DVolume %d not in range [0:%d[\n"
                 "DVolume condition on non existent DVolume?",
                 curr->first, dvol_fenode.size());
@@ -2224,7 +2226,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
           curr->second->SetNodes(dvol_fenode[curr->first]);
           break;
         default:
-          dserror("geometry type unspecified");
+          FOUR_C_THROW("geometry type unspecified");
           break;
       }
 
@@ -2235,7 +2237,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
       {
         const std::vector<int>* nodes = curr->second->GetNodes();
         if (nodes->size() == 0)
-          dserror("%s condition %d has no nodal cloud", condition->Description().c_str(),
+          FOUR_C_THROW("%s condition %d has no nodal cloud", condition->Description().c_str(),
               curr->second->Id());
 
         int foundit = 0;
@@ -2282,7 +2284,7 @@ void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
       auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
 
       if (nurbsdis == nullptr)
-        dserror("Discretization %s is not a NurbsDiscretization! Panic.", dis->Name().c_str());
+        FOUR_C_THROW("Discretization %s is not a NurbsDiscretization! Panic.", dis->Name().c_str());
 
       // define an empty knot vector object
       Teuchos::RCP<DRT::NURBS::Knotvector> disknots = Teuchos::null;
@@ -2292,7 +2294,7 @@ void GLOBAL::ReadKnots(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 
       if (disknots == Teuchos::null)
       {
-        dserror("Knotvector read failed in Nurbs discretisation\n");
+        FOUR_C_THROW("Knotvector read failed in Nurbs discretisation\n");
       }
 
       // make sure atdis is fillcompleted, to be able to call

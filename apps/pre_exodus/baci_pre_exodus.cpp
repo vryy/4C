@@ -56,7 +56,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
 
   // open default bc specification file
   std::ofstream defaultbc(defaultbcfilename.c_str());
-  if (!defaultbc) dserror("failed to open file: %s", defaultbcfilename.c_str());
+  if (!defaultbc) FOUR_C_THROW("failed to open file: %s", defaultbcfilename.c_str());
 
   // write mesh verbosely
   defaultbc << "----------- Mesh contents -----------" << std::endl << std::endl;
@@ -177,7 +177,7 @@ int main(int argc, char** argv)
 
   try
   {
-    if ((comm->NumProc() > 1)) dserror("Using more than one processor is not supported.");
+    if ((comm->NumProc() > 1)) FOUR_C_THROW("Using more than one processor is not supported.");
 
     std::string exofile;
     std::string bcfile;
@@ -249,7 +249,7 @@ int main(int argc, char** argv)
     }
     if (parseReturn != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL)
     {
-      dserror("CommandLineProcessor reported an error");
+      FOUR_C_THROW("CommandLineProcessor reported an error");
     }
 
     if (datfile != "")
@@ -283,7 +283,7 @@ int main(int argc, char** argv)
       else
       {
         My_CLP.printHelpMessage(argv[0], std::cout);
-        dserror("No Exodus II file was found");
+        FOUR_C_THROW("No Exodus II file was found");
       }
     }
 
@@ -299,9 +299,9 @@ int main(int argc, char** argv)
     // generate solid shell extrusion based on exodus file
     if (soshthickness != 0.0)
     {
-      if (exofile == "") dserror("no exofile specified for extrusion");
+      if (exofile == "") FOUR_C_THROW("no exofile specified for extrusion");
       if (soshnumlayer <= diveblocks)
-        dserror(
+        FOUR_C_THROW(
             "number of layers and inner-layer elements mismatch, check if numlayer>diveblocks!");
       EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer,
           soshseedid, soshgmsh, concat2loose, diveblocks, cline, cline_coordcorr);
@@ -335,7 +335,7 @@ int main(int argc, char** argv)
     if (bcfile == "")
     {
       int error = EXODUS::CreateDefaultBCFile(mymesh);
-      if (error != 0) dserror("Creation of default bc-file not successful.");
+      if (error != 0) FOUR_C_THROW("Creation of default bc-file not successful.");
     }
     else
     {
@@ -364,7 +364,7 @@ int main(int argc, char** argv)
 
       // open default header file
       std::ofstream defaulthead(defaultheadfilename.c_str());
-      if (!defaulthead) dserror("failed to open file: %s", defaultheadfilename.c_str());
+      if (!defaulthead) FOUR_C_THROW("failed to open file: %s", defaultheadfilename.c_str());
 
       // get valid input parameters
       Teuchos::RCP<const Teuchos::ParameterList> list = INPUT::ValidParameters();

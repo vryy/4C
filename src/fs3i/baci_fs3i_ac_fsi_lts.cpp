@@ -319,7 +319,7 @@ void FS3I::ACFSI::DoStructScatraStep()
  *--------------------------------------------------------------------------------*/
 void FS3I::ACFSI::StructScatraEvaluateSolveIterUpdate()
 {
-  if (infperm_) dserror("This not a valid option!");  // just for safety
+  if (infperm_) FOUR_C_THROW("This not a valid option!");  // just for safety
 
   const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra =
       scatravec_[1]->ScaTraField();  // structure scatra
@@ -436,7 +436,7 @@ bool FS3I::ACFSI::StructScatraConvergenceCheck(const int itnum)
       printf("+---------------------------------------------------------------+\n");
     }
     // yes, we stop!
-    //    dserror("Structure scatra not converged in itemax steps!");
+    //    FOUR_C_THROW("Structure scatra not converged in itemax steps!");
     return true;
   }
   else
@@ -461,7 +461,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
 
   if (structurematerial->MaterialType() != INPAR::MAT::m_growth_volumetric)
   {
-    dserror("In AC-FS3I we want growth, so use a growth material like MAT_GrowthVolumetric!");
+    FOUR_C_THROW("In AC-FS3I we want growth, so use a growth material like MAT_GrowthVolumetric!");
   }
   else
   {
@@ -474,7 +474,8 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
     Teuchos::RCP<MAT::GrowthVolumetric> growthmaterial =
         Teuchos::rcp_dynamic_cast<MAT::GrowthVolumetric>(structurematerial);
 
-    if (growthmaterial == Teuchos::null) dserror("Dynamic cast to MAT::GrowthVolumetric failed!");
+    if (growthmaterial == Teuchos::null)
+      FOUR_C_THROW("Dynamic cast to MAT::GrowthVolumetric failed!");
 
     Teuchos::RCP<MAT::GrowthLaw> growthlaw = growthmaterial->Parameter()->growthlaw_;
 
@@ -484,7 +485,8 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
       {
         Teuchos::RCP<MAT::GrowthLawAC> growthlawac =
             Teuchos::rcp_dynamic_cast<MAT::GrowthLawAC>(growthlaw);
-        if (growthmaterial == Teuchos::null) dserror("Dynamic cast to MAT::GrowthLawAC failed!");
+        if (growthmaterial == Teuchos::null)
+          FOUR_C_THROW("Dynamic cast to MAT::GrowthLawAC failed!");
         alpha = growthlawac->Parameter()->alpha_;
         sc1 = growthlawac->Parameter()->Sc1_;
         break;
@@ -494,7 +496,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
         Teuchos::RCP<MAT::GrowthLawACRadial> growthlawacradial =
             Teuchos::rcp_dynamic_cast<MAT::GrowthLawACRadial>(growthlaw);
         if (growthlawacradial == Teuchos::null)
-          dserror("Dynamic cast to MAT::GrowthLawACRadial failed!");
+          FOUR_C_THROW("Dynamic cast to MAT::GrowthLawACRadial failed!");
         alpha = growthlawacradial->Parameter()->alpha_;
         sc1 = growthlawacradial->Parameter()->Sc1_;
         break;
@@ -504,14 +506,14 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
         Teuchos::RCP<MAT::GrowthLawACRadialRefConc> growthlawacradialrefconc =
             Teuchos::rcp_dynamic_cast<MAT::GrowthLawACRadialRefConc>(growthlaw);
         if (growthlawacradialrefconc == Teuchos::null)
-          dserror("Dynamic cast to MAT::GrowthLawACRadialRefConc failed!");
+          FOUR_C_THROW("Dynamic cast to MAT::GrowthLawACRadialRefConc failed!");
         alpha = growthlawacradialrefconc->Parameter()->alpha_;
         sc1 = growthlawacradialrefconc->Parameter()->Sc1_;
         break;
       }
       default:
       {
-        dserror("Growth law not supported in AC-FS3I!");
+        FOUR_C_THROW("Growth law not supported in AC-FS3I!");
         break;
       }
     }
@@ -557,7 +559,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
 
     // some safety check
     if (growth_updates_counter_ > growth_updates)
-      dserror("It should not be possible to have done so much growth updates. Sorry!");
+      FOUR_C_THROW("It should not be possible to have done so much growth updates. Sorry!");
 
     //----------------------------------------------------------------------------------------------------
     // now the actual comparison
@@ -787,7 +789,7 @@ std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> FS3I::ACFSI::BuildMapExtra
 
       std::vector<int> dof = dis->Dof(0, node);
       if (dof.size() != (unsigned)scatravec_[1]->ScaTraField()->NumScal())
-        dserror("There was some error building the Map Extractor!");
+        FOUR_C_THROW("There was some error building the Map Extractor!");
       for (unsigned j = 0; j < dof.size(); ++j)
       {
         // test for dof position
@@ -864,11 +866,11 @@ void FS3I::MeanManager::AddValue(
 {
   if (type == "wss")
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // check, whether maps are the same
     if (not value->Map().PointSameAs(SumWss_->Map()))
     {
-      dserror("Maps do not match, but they have to.");
+      FOUR_C_THROW("Maps do not match, but they have to.");
     }
 #endif
 
@@ -877,11 +879,11 @@ void FS3I::MeanManager::AddValue(
   }
   else if (type == "phi")
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // check, whether maps are the same
     if (not value->Map().PointSameAs(SumPhi_->Map()))
     {
-      dserror("Maps do not match, but they have to.");
+      FOUR_C_THROW("Maps do not match, but they have to.");
     }
 #endif
 
@@ -890,11 +892,11 @@ void FS3I::MeanManager::AddValue(
   }
   else if (type == "pressure")
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // check, whether maps are the same
     if (not value->Map().PointSameAs(SumPres_->Map()))
     {
-      dserror("Maps do not match, but they have to.");
+      FOUR_C_THROW("Maps do not match, but they have to.");
     }
 #endif
 
@@ -902,7 +904,7 @@ void FS3I::MeanManager::AddValue(
     SumDtPres_ += dt;
   }
   else
-    dserror("Mean Manager does not support the given value '%s'.", type.c_str());
+    FOUR_C_THROW("Mean Manager does not support the given value '%s'.", type.c_str());
 
   return;
 }
@@ -914,7 +916,7 @@ void FS3I::MeanManager::Reset()
 {
   // first some checking
   if (abs(SumDtWss_ - SumDtPhi_) > 1e-14 or abs(SumDtWss_ - SumDtPres_) > 1e-14)
-    dserror("The time ranges you did mean over do not match!");
+    FOUR_C_THROW("The time ranges you did mean over do not match!");
 
   SumWss_->PutScalar(0.0);
   SumDtWss_ = 0.0;
@@ -942,12 +944,12 @@ Teuchos::RCP<const Epetra_Vector> FS3I::MeanManager::GetMeanValue(const std::str
       double norm = 0.0;
       meanvector->NormInf(&norm);
       if (norm > 1e-12)
-        dserror("SumDtWss_ is zero, but SumWss_ not.. Something is terribly wrong!");
+        FOUR_C_THROW("SumDtWss_ is zero, but SumWss_ not.. Something is terribly wrong!");
     }
   }
   else if (type == "osi")
   {
-    dserror("Oscillatory shear index is yet not supported!");
+    FOUR_C_THROW("Oscillatory shear index is yet not supported!");
   }
   else if (type == "mean_phi")
   {
@@ -960,7 +962,7 @@ Teuchos::RCP<const Epetra_Vector> FS3I::MeanManager::GetMeanValue(const std::str
       double norm = 0.0;
       meanvector->NormInf(&norm);
       if (norm > 1e-12)
-        dserror("SumDtPhi_ is zero, but SumPhi_ not.. Something is terribly wrong!");
+        FOUR_C_THROW("SumDtPhi_ is zero, but SumPhi_ not.. Something is terribly wrong!");
     }
   }
   else if (type == "mean_pressure")
@@ -974,11 +976,11 @@ Teuchos::RCP<const Epetra_Vector> FS3I::MeanManager::GetMeanValue(const std::str
       double norm = 0.0;
       meanvector->NormInf(&norm);
       if (norm > 1e-12)
-        dserror("SumDtPres_ is zero, but SumPres_ not.. Something is terribly wrong!");
+        FOUR_C_THROW("SumDtPres_ is zero, but SumPres_ not.. Something is terribly wrong!");
     }
   }
   else
-    dserror("Mean Manager does not support the given value '%s'.", type.c_str());
+    FOUR_C_THROW("Mean Manager does not support the given value '%s'.", type.c_str());
 
   return meanvector;
 }
@@ -990,7 +992,7 @@ void FS3I::MeanManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> flui
 {
   // first some checking
   if (abs(SumDtWss_ - SumDtPhi_) > 1e-14 or abs(SumDtWss_ - SumDtPres_) > 1e-14)
-    dserror("The time ranges you did mean over do not match!");
+    FOUR_C_THROW("The time ranges you did mean over do not match!");
 
   // write all values
   fluidwriter->WriteVector("SumWss", SumWss_);

@@ -75,7 +75,8 @@ void ADAPTER::StructureBaseAlgorithm::CreateStructure(const Teuchos::ParameterLi
       CreateTimInt(prbdyn, sdyn, actdis);  // <-- here is the show
       break;
     default:
-      dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+      FOUR_C_THROW(
+          "unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
       break;
   }
 }
@@ -140,11 +141,11 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   {
     if (sdyn.get<double>("K_DAMP") < 0.0)
     {
-      dserror("Rayleigh damping parameter K_DAMP not explicitly given.");
+      FOUR_C_THROW("Rayleigh damping parameter K_DAMP not explicitly given.");
     }
     if (sdyn.get<double>("M_DAMP") < 0.0)
     {
-      dserror("Rayleigh damping parameter M_DAMP not explicitly given.");
+      FOUR_C_THROW("Rayleigh damping parameter M_DAMP not explicitly given.");
     }
   }
 
@@ -250,10 +251,10 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       {
         if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
             INPAR::STR::dyna_genalpha)
-          dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
+          FOUR_C_THROW("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
         else if (CORE::UTILS::IntegralValue<INPAR::STR::MidAverageEnum>(
                      sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_trlike)
-          dserror(
+          FOUR_C_THROW(
               "In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=TrLike");
         break;
       }
@@ -361,7 +362,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       }
       default:
       {
-        dserror(
+        FOUR_C_THROW(
             "Adaptive time integration for the structure not implemented for desired problem "
             "type.");
         break;
@@ -465,7 +466,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   }
   else
   {
-    dserror("no proper time integration found");
+    FOUR_C_THROW("no proper time integration found");
   }
   // see you
   return;
@@ -483,7 +484,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinear
   const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
   // check if the structural solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
@@ -521,7 +522,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
   // check if the meshtying/contact solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "No linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in "
         "CONTACT DYNAMIC to a valid number!");
 
@@ -543,7 +544,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
         // if an iterative solver is chosen we need a block preconditioner
         if (prec != INPAR::SOLVER::PreconditionerType::cheap_simple &&
             prec != INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)
-          dserror(
+          FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar meshtying/contact problems "
               "in saddle-point formulation, a block preconditioner is required. Choose an "
               "appropriate block preconditioner such as CheapSIMPLE or MueLu_contactSP "
@@ -563,7 +564,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
       else if (onlymeshtying)
         solver->Params().set<bool>("MESHTYING", true);
       else
-        dserror(
+        FOUR_C_THROW(
             "Saddle-point formulations are only supported for solid CONTACT or MESHTYING problems. "
             "Problems like beamcontact or pure structure problem w/o contact do not support a "
             "saddle-point formulation.");
@@ -576,7 +577,7 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
         const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
         // check if the structural solver has a valid solver number
         if (linsolvernumber == (-1))
-          dserror(
+          FOUR_C_THROW(
               "No linear solver defined for structural field. Please set LINEAR_SOLVER in "
               "STRUCTURAL DYNAMIC to a valid number!");
 

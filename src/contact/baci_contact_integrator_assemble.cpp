@@ -36,7 +36,7 @@ bool CONTACT::Integrator::AssembleG(
 {
   // get adjacent slave nodes to assemble to
   DRT::Node** snodes = sele.Nodes();
-  if (!snodes) dserror("AssembleG: Null pointer for snodes!");
+  if (!snodes) FOUR_C_THROW("AssembleG: Null pointer for snodes!");
 
   // loop over all slave nodes
   for (int slave = 0; slave < sele.NumNode(); ++slave)
@@ -54,7 +54,7 @@ bool CONTACT::Integrator::AssembleG(
     snode->AddgValue(val);
 
     /*
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     std::cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << std::endl;
     std::cout << "Weighted gap: " << snode->Getg() << std::endl;
 #endif
@@ -74,7 +74,7 @@ bool CONTACT::Integrator::AssembleG(
 {
   // get adjacent slave int nodes to assemble to
   DRT::Node** snodes = sintele.Nodes();
-  if (!snodes) dserror("AssembleG: Null pointer for sintnodes!");
+  if (!snodes) FOUR_C_THROW("AssembleG: Null pointer for sintnodes!");
 
   // loop over all slave nodes
   for (int slave = 0; slave < sintele.NumNode(); ++slave)

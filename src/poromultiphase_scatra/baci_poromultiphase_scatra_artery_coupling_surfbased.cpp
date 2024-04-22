@@ -105,7 +105,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
 
       // if one entry is equal to zero, this GP could not be projected
       if (*std::min_element(sumgpvec.data(), sumgpvec.data() + numgp_per_artele) < 1)
-        dserror("It seems as if one GP could not be projected");
+        FOUR_C_THROW("It seems as if one GP could not be projected");
 
       // find number of duplicates
       int sum = 0;
@@ -119,7 +119,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
         for (int igp = 0; igp < numgp_per_artele; igp++)
         {
           int err = gp_vector->ReplaceMyValue(mylid, igp, static_cast<double>(sumgpvec[igp]));
-          if (err != 0) dserror("ReplaceMyValue failed with error code %d!", err);
+          if (err != 0) FOUR_C_THROW("ReplaceMyValue failed with error code %d!", err);
         }
       }
     }
@@ -140,7 +140,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
   // safety check
   Comm().SumAll(&numgp, &total_num_gp, 1);
   if (numgp_desired != total_num_gp - duplicates)
-    dserror("It seems as if some GPs could not be projected");
+    FOUR_C_THROW("It seems as if some GPs could not be projected");
 
   // output
   int total_numactive_pairs = 0;
@@ -180,9 +180,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Setup()
   POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Setup();
 
   // error-checks
-  if (has_varying_diam_) dserror("Varying diameter not yet possible for surface-based coupling");
+  if (has_varying_diam_)
+    FOUR_C_THROW("Varying diameter not yet possible for surface-based coupling");
   if (!evaluate_in_ref_config_)
-    dserror("Evaluation in current configuration not yet possible for surface-based coupling");
+    FOUR_C_THROW("Evaluation in current configuration not yet possible for surface-based coupling");
 
   issetup_ = true;
 }
@@ -192,7 +193,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Setup()
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Evaluate(
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
-  if (!issetup_) dserror("Setup() has not been called");
+  if (!issetup_) FOUR_C_THROW("Setup() has not been called");
 
   if (!porofluidmanagersset_)
   {
@@ -225,7 +226,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::SetupSystem(
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::ApplyMeshMovement()
 {
   if (!evaluate_in_ref_config_)
-    dserror("Evaluation in current configuration not possible for surface-based coupling");
+    FOUR_C_THROW("Evaluation in current configuration not possible for surface-based coupling");
 }
 
 /*----------------------------------------------------------------------*
@@ -233,7 +234,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::ApplyMeshMovem
 Teuchos::RCP<const Epetra_Vector>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::BloodVesselVolumeFraction()
 {
-  dserror("Output of vessel volume fraction not possible for surface-based coupling");
+  FOUR_C_THROW("Output of vessel volume fraction not possible for surface-based coupling");
 
   return Teuchos::null;
 }

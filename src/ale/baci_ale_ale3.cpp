@@ -152,7 +152,7 @@ CORE::FE::CellType DRT::ELEMENTS::Ale3::Shape() const
     case 27:
       return CORE::FE::CellType::hex27;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
       break;
   }
 }
@@ -185,7 +185,7 @@ void DRT::ELEMENTS::Ale3::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 /*----------------------------------------------------------------------------*/

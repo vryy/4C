@@ -69,7 +69,7 @@ DRT::ELEMENTS::Ale3ImplInterface* DRT::ELEMENTS::Ale3ImplInterface::Impl(DRT::EL
       return Ale3Impl<CORE::FE::CellType::nurbs27>::Instance(CORE::UTILS::SingletonAction::create);
     }
     default:
-      dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
+      FOUR_C_THROW("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
       break;
   }
   return nullptr;
@@ -103,7 +103,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
   // get the action required
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_ale_laplace_material")
     act = Ale3::calc_ale_laplace_material;
   else if (action == "calc_ale_laplace_spatial")
@@ -123,7 +123,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_jacobian_determinant")
     act = Ale3::calc_det_jac;
   else
-    dserror("Unknown type of action for Ale3");
+    FOUR_C_THROW("Unknown type of action for Ale3");
 
   // get the material
   Teuchos::RCP<MAT::Material> mat = Material();
@@ -216,7 +216,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
           so3mat->MaterialType() !=
               INPAR::MAT::m_stvenant)  // ToDo (mayr): allow only materials without history
       {
-        dserror(
+        FOUR_C_THROW(
             "Illegal material type for ALE. Only materials allowed that do "
             "not store Gauss point data and do not need additional data from the "
             "element line definition.");
@@ -231,11 +231,11 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     }
     case calc_det_jac:
     {
-      dserror("Not implement for 3D, yet.");
+      FOUR_C_THROW("Not implement for 3D, yet.");
       break;
     }
     default:
-      dserror("Unknown type of action for Ale3");
+      FOUR_C_THROW("Unknown type of action for Ale3");
       break;
   }
   return 0;
@@ -258,7 +258,7 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
 {
   if (distype == CORE::FE::CellType::nurbs8 or distype == CORE::FE::CellType::nurbs27)
   {
-    dserror("not implemented!");
+    FOUR_C_THROW("not implemented!");
   }
 
   CORE::LINALG::Matrix<3, iel> xyze;
@@ -336,8 +336,8 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_edge_geometry(int i, int j,
   dz = xyze(2, j) - xyze(2, i);
   /*------------------------------- determine distance between i and j ---*/
   length = sqrt(dx * dx + dy * dy + dz * dz);
-#ifdef BACI_DEBUG
-  if (length < (1.0E-14)) dserror("edge or diagonal of element has zero length");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (length < (1.0E-14)) FOUR_C_THROW("edge or diagonal of element has zero length");
 #endif
 }
 
@@ -542,10 +542,10 @@ void DRT::ELEMENTS::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, int n
     const double area_double_sqare = area_double * area_double;
 
 
-#ifdef BACI_DEBUG /*---------------------------------- check edge lengths ---*/
-    if (l_ij_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");
-    if (l_jk_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");
-    if (l_ki_sq < (1.0E-7)) dserror("edge or diagonal of element has zero length");
+#ifdef FOUR_C_ENABLE_ASSERTIONS /*---------------------------------- check edge lengths ---*/
+    if (l_ij_sq < (1.0E-7)) FOUR_C_THROW("edge or diagonal of element has zero length");
+    if (l_jk_sq < (1.0E-7)) FOUR_C_THROW("edge or diagonal of element has zero length");
+    if (l_ki_sq < (1.0E-7)) FOUR_C_THROW("edge or diagonal of element has zero length");
 #endif
 
     /*---------------------------------- determine torsional stiffnesses ---*/
@@ -1334,7 +1334,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
       break;
 
     default:
-      dserror("unknown distype in ale spring dynamic");
+      FOUR_C_THROW("unknown distype in ale spring dynamic");
       break;
   }
 
@@ -1448,9 +1448,9 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discr
     const double detJ = jac.Invert();
 
     if (abs(detJ) < 1E-16)
-      dserror("ZERO JACOBIAN DETERMINANT");
+      FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
+      FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
     /* compute derivatives N_XYZ at gp w.r.t. material coordinates
     ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
@@ -1575,7 +1575,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discret
     std::vector<double>& my_dispnp, Teuchos::RCP<MAT::Material> material,
     const bool spatialconfiguration)
 {
-  //  dserror("We don't know what is really done in the element evaluation"
+  //  FOUR_C_THROW("We don't know what is really done in the element evaluation"
   //      "of the Laplace smoothing strategy. Check this CAREFULLY before"
   //      "using it.");
 
@@ -1585,7 +1585,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discret
 
   //  get material using class StVenantKirchhoff
   //  if (material->MaterialType()!=INPAR::MAT::m_stvenant)
-  //    dserror("stvenant material expected but got type %d", material->MaterialType());
+  //    FOUR_C_THROW("stvenant material expected but got type %d", material->MaterialType());
   //  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
 
   CORE::LINALG::Matrix<3, iel> xyze;
@@ -1743,7 +1743,7 @@ inline CORE::FE::GaussRule3D DRT::ELEMENTS::Ale3Impl<distype>::getOptimalGaussru
     case CORE::FE::CellType::pyramid5:
       return CORE::FE::GaussRule3D::pyramid_8point;
     default:
-      dserror("unknown number of nodes for gaussrule initialization");
+      FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
       return CORE::FE::GaussRule3D::undefined;
   }
 }

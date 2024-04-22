@@ -107,7 +107,7 @@ std::string GLOBAL::Problem::ProblemName() const
   {
     if (i->second == probtype_) return i->first;
   }
-  dserror("Could not determine valid problem name");
+  FOUR_C_THROW("Could not determine valid problem name");
   return "Undefined";
 }
 
@@ -163,7 +163,7 @@ const Teuchos::ParameterList& GLOBAL::Problem::UMFPACKSolverParams()
 /*----------------------------------------------------------------------*/
 void GLOBAL::Problem::SetCommunicators(Teuchos::RCP<CORE::COMM::Communicators> communicators)
 {
-  if (communicators_ != Teuchos::null) dserror("Communicators were already set.");
+  if (communicators_ != Teuchos::null) FOUR_C_THROW("Communicators were already set.");
   communicators_ = communicators;
 }
 
@@ -171,7 +171,7 @@ void GLOBAL::Problem::SetCommunicators(Teuchos::RCP<CORE::COMM::Communicators> c
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<CORE::COMM::Communicators> GLOBAL::Problem::GetCommunicators() const
 {
-  if (communicators_ == Teuchos::null) dserror("No communicators allocated yet.");
+  if (communicators_ == Teuchos::null) FOUR_C_THROW("No communicators allocated yet.");
   return communicators_;
 }
 
@@ -234,7 +234,7 @@ void GLOBAL::Problem::setParameterList(Teuchos::RCP<Teuchos::ParameterList> cons
   catch (Teuchos::Exceptions::InvalidParameter& err)
   {
     std::cerr << "\n\n" << err.what();
-    dserror("Input parameter validation failed. Fix your input file.");
+    FOUR_C_THROW("Input parameter validation failed. Fix your input file.");
   }
 
   parameters_ = parameter_list;
@@ -262,15 +262,15 @@ Teuchos::RCP<const Teuchos::ParameterList> GLOBAL::Problem::getParameterList() c
 void GLOBAL::Problem::AddDis(const std::string& name, Teuchos::RCP<DRT::Discretization> dis)
 {
   // safety checks
-  if (dis == Teuchos::null) dserror("Received Teuchos::null.");
-  if (dis->Name().empty()) dserror("Discretization has empty name string.");
+  if (dis == Teuchos::null) FOUR_C_THROW("Received Teuchos::null.");
+  if (dis->Name().empty()) FOUR_C_THROW("Discretization has empty name string.");
 
   if (!discretizationmap_.insert(std::make_pair(name, dis)).second)
   {
     // if the same key already exists we have to inform the user since
     // the insert statement did not work in this case
-    dserror("Could not insert discretization '%s' under (duplicate) key '%s'.", dis->Name().c_str(),
-        name.c_str());
+    FOUR_C_THROW("Could not insert discretization '%s' under (duplicate) key '%s'.",
+        dis->Name().c_str(), name.c_str());
   }
 }
 
@@ -287,7 +287,7 @@ Teuchos::RCP<DRT::Discretization> GLOBAL::Problem::GetDis(const std::string& nam
   }
   else
   {
-    dserror("Could not find discretization '%s'.", name.c_str());
+    FOUR_C_THROW("Could not find discretization '%s'.", name.c_str());
     return Teuchos::null;
   }
 }

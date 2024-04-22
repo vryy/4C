@@ -31,7 +31,8 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
   const int myrank = dis.Comm().MyPID();
 
   // check whether action type is set
-  if (params.getEntryRCP("action") == Teuchos::null) dserror("action type for element is missing");
+  if (params.getEntryRCP("action") == Teuchos::null)
+    FOUR_C_THROW("action type for element is missing");
 
   // decide whether a dof or an element based map is given
   bool dofmaptoreconstruct = false;
@@ -41,11 +42,11 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
   {
     dofmaptoreconstruct = false;
     if (numvec != state.NumVectors())
-      dserror("numvec and number of vectors of state vector must match");
+      FOUR_C_THROW("numvec and number of vectors of state vector must match");
   }
   else
   {
-    dserror("input map is neither a dof row map nor an element row map of the given discret");
+    FOUR_C_THROW("input map is neither a dof row map nor an element row map of the given discret");
   }
 
   // handle pbcs if existing
@@ -152,14 +153,14 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
         val = (*state(j))[i];
 
       int err = elevec_toberecovered->ReplaceMyValue(i, j, val);
-      if (err < 0) dserror("multi vector insertion failed");
+      if (err < 0) FOUR_C_THROW("multi vector insertion failed");
     }
 
     // store corresponding element centroid
     for (int d = 0; d < dim; ++d)
     {
       int err = centercoords->ReplaceMyValue(i, d, elevector2(d));
-      if (err < 0) dserror("multi vector insertion failed");
+      if (err < 0) FOUR_C_THROW("multi vector insertion failed");
     }
   }  // end element loop
 
@@ -179,17 +180,18 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
 
   // SPR boundary condition must be set for all boundaries except pbc
   if (conds.size() != 1 && conds.size() != 0)
-    dserror("exactly one boundary including all outer nodes expected");
+    FOUR_C_THROW("exactly one boundary including all outer nodes expected");
 
   if (allcoupledcolnodes->begin() == allcoupledcolnodes->end() && conds.size() == 0)
-    dserror("Neither periodic boundary conditions nor an SPRboundary is specified! Missing bc?");
+    FOUR_C_THROW(
+        "Neither periodic boundary conditions nor an SPRboundary is specified! Missing bc?");
 
   // loop all nodes
   for (int i = 0; i < nodecolmap.NumMyElements(); ++i)
   {
     const int nodegid = nodecolmap.GID(i);
     const DRT::Node* node = dis.gNode(nodegid);
-    if (!node) dserror("Cannot find with gid: %d", nodegid);
+    if (!node) FOUR_C_THROW("Cannot find with gid: %d", nodegid);
 
     // distinction between inner nodes and boundary nodes
     if (conds.size() == 0 || !conds[0]->ContainsNode(nodegid))
@@ -234,7 +236,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
 
           // solve for coefficients of interpolation
           const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
-          if (det < 1.0e-14) dserror("system singular, at inner node");
+          if (det < 1.0e-14) FOUR_C_THROW("system singular, at inner node");
 
           // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
           const double recoveredgradient = p(0) * x(0);
@@ -305,7 +307,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
 
           // solve for coefficients of interpolation
           const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
-          if (det < 1.0e-14) dserror("system singular, at pbc inner node");
+          if (det < 1.0e-14) FOUR_C_THROW("system singular, at pbc inner node");
 
           // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
           const double recoveredgradient = p(0) * x(0);
@@ -353,7 +355,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
         }
 
         if (closestnodeid == -1)
-          dserror(
+          FOUR_C_THROW(
               "no closest node not lying on a boundary could be found. The problem seems very "
               "small (at least in one direction)");
 
@@ -394,7 +396,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
 
           // solve for coefficients of interpolation
           const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
-          if (det < 1.0e-14) dserror("system singular, at boundary node");
+          if (det < 1.0e-14) FOUR_C_THROW("system singular, at boundary node");
 
           // patch-recovery interpolation for boundary point
           double recoveredgradient = p(0) * x(0);
@@ -447,7 +449,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
         }
 
         if (closestnodeid == -1)
-          dserror(
+          FOUR_C_THROW(
               "no closest node _not_ lying on a boundary could be found. The problem seems very "
               "small (at least in one direction)");
 
@@ -535,7 +537,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
 
           // solve for coefficients of interpolation
           const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
-          if (det < 1.0e-14) dserror("system singular, at pbc boundary node");
+          if (det < 1.0e-14) FOUR_C_THROW("system singular, at pbc boundary node");
 
           // patch-recovery interpolation for boundary point
           double recoveredgradient = p(0) * x(0);
@@ -555,7 +557,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::ComputeSuperconvergentPatchRecovery(
 
   // call global assemble
   const int err = nodevec->GlobalAssemble(Insert, false);
-  if (err < 0) dserror("global assemble into nodevec failed");
+  if (err < 0) FOUR_C_THROW("global assemble into nodevec failed");
 
   // if no pbc are involved leave here
   if (noderowmap.PointSameAs(*fullnoderowmap)) return nodevec;

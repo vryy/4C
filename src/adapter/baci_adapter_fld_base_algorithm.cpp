@@ -156,16 +156,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");           // fluid solver
       const int fluidpressuresolver = fdyn.get<int>("SIMPLER_SOLVER");  // fluid pressure solver
       if (mshsolver == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
             "CONTACT DYNAMIC to a valid number!");
       if (fluidsolver == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
             "FLUID DYNAMIC to a valid number! This solver is used within block preconditioner "
             "(e.g. BGS2x2) as \"Inverse 1\".");
       if (fluidpressuresolver == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for fluid meshtying problem. Please set SIMPLER_SOLVER in "
             "FLUID DYNAMIC to a valid number! This solver is used within block preconditioner "
             "(e.g. BGS2x2) as \"Inverse 2\".");
@@ -183,7 +183,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                                                                          // BACI
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Block Gauss-Seidel BGS2x2 preconditioner expected for fluid meshtying problem. "
               "Please set AZPREC to BGS2x2 in solver block %i",
               mshsolver);
@@ -214,7 +214,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         }
         break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Block Gauss-Seidel BGS2x2 preconditioner expected for fluid meshtying problem. "
               "Please set AZPREC to BGS2x2 in solver block %i",
               mshsolver);
@@ -232,7 +232,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       const int mshsolver = mshparams.get<int>(
           "LINEAR_SOLVER");  // meshtying solver (with block preconditioner, e.g. BGS 2x2)
       if (mshsolver == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
             "CONTACT DYNAMIC to a valid number!");
 
@@ -248,7 +248,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       // get the solver number used for linear fluid solver
       const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
       if (linsolvernumber == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC "
             "to a valid number!");
       solver = Teuchos::rcp(new CORE::LINALG::Solver(
@@ -329,7 +329,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
               INPAR::FLUID::loma and
           CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
               INPAR::FLUID::tempdepwater))
-    dserror(
+    FOUR_C_THROW(
         "Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' or "
         "'Temp_dep_water' for low-Mach-number flow!");
   if ((probtype == GLOBAL::ProblemType::thermo_fsi) and
@@ -337,7 +337,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
               INPAR::FLUID::loma and
           CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
               INPAR::FLUID::tempdepwater))
-    dserror(
+    FOUR_C_THROW(
         "Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' or "
         "'Temp_dep_water' for Thermo-fluid-structure interaction!");
   if ((probtype == GLOBAL::ProblemType::poroelast or probtype == GLOBAL::ProblemType::poroscatra or
@@ -350,7 +350,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         CORE::UTILS::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE"));
     if (fluidtimeparams->get<int>("Physical Type") != INPAR::FLUID::poro and
         fluidtimeparams->get<int>("Physical Type") != INPAR::FLUID::poro_p1)
-      dserror(
+      FOUR_C_THROW(
           "Input parameter PHYSICAL_TYPE in section POROELASTICITY DYNAMIC needs to be 'Poro' or "
           "'Poro_P1' for poro-elasticity!");
 
@@ -431,7 +431,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     // in case of FSI calculations we do not want a stationary fluid solver
     if (timeint == INPAR::FLUID::timeint_stationary)
-      dserror("Stationary fluid solver not allowed for FSI.");
+      FOUR_C_THROW("Stationary fluid solver not allowed for FSI.");
 
     const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -452,7 +452,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
       // an error.
       if (fluidtimeparams->get<std::string>("predictor") != "steady_state")
-        dserror(
+        FOUR_C_THROW(
             "No fluid predictor allowed for current monolithic FSI scheme, yet. Use "
             "'steady_state', instead!");
     }
@@ -461,7 +461,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     // in case of FSI calculations we do not want a stationary fluid solver
     if (timeint == INPAR::FLUID::timeint_stationary)
-      dserror("Stationary fluid solver not allowed for free surface problem.");
+      FOUR_C_THROW("Stationary fluid solver not allowed for free surface problem.");
 
     const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -478,7 +478,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
       // an error.
       if (fluidtimeparams->get<std::string>("predictor") != "steady_state")
-        dserror(
+        FOUR_C_THROW(
             "No fluid predictor allowed for current monolithic free surface scheme, yet. Use "
             "'steady_state', instead!");
     }
@@ -503,7 +503,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     if (coupling == fsi_iter_monolithicfluidsplit or coupling == fsi_iter_monolithicstructuresplit)
     {
       // there are a couple of restrictions in monolithic FSI
-      dserror(
+      FOUR_C_THROW(
           "for XFSI there is no monolithicfluidsplit or monolithicstructuresplit, use "
           "monolithicxfem or any partitioned algorithm instead");
     }
@@ -544,7 +544,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
            (probtype == GLOBAL::ProblemType::fps3i and disname == "fluid"))
   {
     if (timeint == INPAR::FLUID::timeint_stationary)
-      dserror("Stationary fluid solver not allowed for FPSI.");
+      FOUR_C_THROW("Stationary fluid solver not allowed for FPSI.");
 
     fluidtimeparams->set<bool>(
         "interface second order", CORE::UTILS::IntegralValue<int>(prbdyn, "SECONDORDER"));
@@ -560,7 +560,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     if (not(GLOBAL::ProblemType::fluid_redmodels == probtype or
             GLOBAL::ProblemType::fsi_redmodels == probtype))
     {
-      dserror(
+      FOUR_C_THROW(
           "ERROR: Given Volumetric Womersly infow condition only works with Problemtyp "
           "Fluid_RedModels or Fluid_Structure_Interaction_RedModels. \n"
           " --> If you want to use this conditions change Problemtyp to Fluid_RedModels or "
@@ -601,8 +601,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // input file
     if (timeint != INPAR::FLUID::timeint_one_step_theta and ostnew)
     {
-#ifdef BACI_DEBUG
-      dserror(
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_THROW(
           "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
           "but you set the flag NEW_OST to use the new implementation of the One Step Theta "
           "Strategy. \n"
@@ -701,7 +701,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           fluid_ =
               Teuchos::rcp(new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
         else
-          dserror("Unknown time integration for this fluid problem type\n");
+          FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
       }
       break;
       case GLOBAL::ProblemType::fluid_redmodels:
@@ -720,7 +720,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           fluid_ = Teuchos::rcp(
               new FLD::TimIntRedModelsBDF2(actdis, solver, fluidtimeparams, output, isale));
         else
-          dserror("Unknown time integration for this fluid problem type\n");
+          FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
       }
       break;
       case GLOBAL::ProblemType::loma:
@@ -739,7 +739,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             fluid_ =
                 Teuchos::rcp(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
           else
-            dserror("Unknown time integration for this fluid problem type\n");
+            FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         }
         else
         {
@@ -754,7 +754,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             fluid_ = Teuchos::rcp(
                 new FLD::TimIntLomaBDF2(actdis, solver, fluidtimeparams, output, isale));
           else
-            dserror("Unknown time integration for this fluid problem type\n");
+            FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         }
       }
       break;
@@ -783,7 +783,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             tmpfluid = Teuchos::rcp(
                 new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
           else
-            dserror("Unknown time integration for this fluid problem type\n");
+            FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
 
           fluid_ = Teuchos::rcp(
               new FLD::XFluidFluid(tmpfluid, xfluiddis, solver, fluidtimeparams, isale));
@@ -837,7 +837,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           condition_name = "XFEMSurfFSIPart";
         }
         else
-          dserror("non supported COUPALGO for FSI");
+          FOUR_C_THROW("non supported COUPALGO for FSI");
 
         Teuchos::RCP<DRT::Discretization> soliddis =
             GLOBAL::Problem::Instance()->GetDis("structure");
@@ -846,7 +846,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                 GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),
                 "XFLUIDFLUID"))
         {
-          dserror(
+          FOUR_C_THROW(
               "XFLUIDFLUID with XFSI framework not supported via FLD::XFluidFluid but via "
               "FLD::XFluid");
 
@@ -869,7 +869,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             tmpfluid_emb = Teuchos::rcp(
                 new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
           else
-            dserror("Unknown time integration for this fluid problem type\n");
+            FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
 
           tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(
               tmpfluid_emb, xfluiddis, soliddis, solver, fluidtimeparams, isale));
@@ -936,7 +936,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           tmpfluid =
               Teuchos::rcp(new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
         else
-          dserror("Unknown time integration for this fluid problem type\n");
+          FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
 
         const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
         int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
@@ -983,7 +983,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             tmpfluid =
                 Teuchos::rcp(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
           else
-            dserror("Unknown time integration for this fluid problem type\n");
+            FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         }
         else
         {
@@ -998,7 +998,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             tmpfluid = Teuchos::rcp(
                 new FLD::TimIntLomaBDF2(actdis, solver, fluidtimeparams, output, isale));
           else
-            dserror("Unknown time integration for this fluid problem type\n");
+            FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         }
 
         const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
@@ -1020,7 +1020,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           tmpfluid =
               Teuchos::rcp(new FLD::TimIntACOst(actdis, solver, fluidtimeparams, output, isale));
         else
-          dserror("Unknown time integration for this fluid problem type\n");
+          FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
 
         fluid_ = Teuchos::rcp(new FluidACFSI(
             tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
@@ -1047,7 +1047,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           tmpfluid = Teuchos::rcp(
               new FLD::TimIntRedModelsBDF2(actdis, solver, fluidtimeparams, output, isale));
         else
-          dserror("Unknown time integration for this fluid problem type\n");
+          FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         fluid_ = Teuchos::rcp(
             new FluidFSI(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
       }
@@ -1069,7 +1069,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           tmpfluid = Teuchos::rcp(
               new FLD::TimIntRedModelsBDF2(actdis, solver, fluidtimeparams, output, isale));
         else
-          dserror("Unknown time integration for this fluid problem type\n");
+          FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         fluid_ = Teuchos::rcp(
             new FluidLung(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
       }
@@ -1094,7 +1094,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             tmpfluid = Teuchos::rcp(
                 new FLD::TimIntPoroGenAlpha(actdis, solver, fluidtimeparams, output, isale));
           else
-            dserror("Unknown time integration for this fluid problem type\n");
+            FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
           fluid_ = Teuchos::rcp(new FluidPoro(
               tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
         }
@@ -1109,7 +1109,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
               tmpfluid = Teuchos::rcp(
                   new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
             else
-              dserror("Unknown time integration for this fluid problem type\n");
+              FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
             fluid_ = Teuchos::rcp(new FluidFPSI(
                 tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
           }
@@ -1154,7 +1154,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             tmpfluid = Teuchos::rcp(
                 new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
           else
-            dserror("Unknown time integration for this fluid problem type\n");
+            FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
           fluid_ = Teuchos::rcp(new FluidFSI(
               tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
         }
@@ -1174,20 +1174,20 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             fluid_ = Teuchos::rcp(
                 new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
           else
-            dserror("Unknown time integration for this fluid problem type\n");
+            FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         }
       }
       break;
       default:
       {
-        dserror("Undefined problem type.");
+        FOUR_C_THROW("Undefined problem type.");
       }
       break;
     }  // end switch (probtype)
   }
   else
   {
-    dserror("Unknown time integration for fluid\n");
+    FOUR_C_THROW("Unknown time integration for fluid\n");
   }
 
   // initialize algorithm for specific time-integration scheme
@@ -1261,14 +1261,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // they should not pose any additional problem
   // meshtying or xfem related parameters are not supported, yet
   if (probtype != GLOBAL::ProblemType::fluid)
-    dserror("Only fluid problems supported! Read comment and add your problem type!");
+    FOUR_C_THROW("Only fluid problems supported! Read comment and add your problem type!");
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
   if (!discret->HaveDofs())
   {
-    dserror("FillComplete shouldn't be necessary!");
+    FOUR_C_THROW("FillComplete shouldn't be necessary!");
   }
 
   // -------------------------------------------------------------------
@@ -1289,7 +1289,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // get the solver number used for linear fluid solver
   const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to "
         "a valid number!");
   Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
@@ -1371,8 +1371,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     // input file
     if (timeint != INPAR::FLUID::timeint_one_step_theta and ostnew)
     {
-#ifdef BACI_DEBUG
-      dserror(
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_THROW(
           "You are not using the One Step Theta Integration Strategy in the Fluid solver,\n"
           "but you set the flag NEW_OST to use the new implementation of the One Step Theta "
           "Strategy. \n"
@@ -1411,7 +1411,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   }
   else
   {
-    dserror("Unknown time integration for fluid\n");
+    FOUR_C_THROW("Unknown time integration for fluid\n");
   }
 
   // initialize algorithm for specific time-integration scheme
@@ -1655,7 +1655,7 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
       }
       break;
       default:
-        dserror(
+        FOUR_C_THROW(
             "If SIMPLER flag is set to YES you can only use CheapSIMPLE as preconditioners in your "
             "fluid solver. Choose CheapSIMPLE in the SOLVER %i block in your dat file. "
             "Alternatively you can also try a multigrid block preconditioner. Use then "

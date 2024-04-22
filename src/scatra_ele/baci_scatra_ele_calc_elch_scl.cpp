@@ -63,13 +63,13 @@ DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::ScaTraEleCalcElchScl(
   if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization or
       my::scatrapara_->TauDef() != INPAR::SCATRA::tau_zero)
   {
-    dserror(
+    FOUR_C_THROW(
         "No stabilization available for the diffusion-conduction formulation, since we had no "
         "problems so far.");
   }
   if (not my::scatrapara_->MatGP() or not my::scatrapara_->TauGP())
   {
-    dserror(
+    FOUR_C_THROW(
         "Since most of the materials of the Diffusion-conduction formulation depend on the "
         "concentration, an evaluation of the material and the stabilization parameter at the "
         "element center is disabled.");
@@ -174,7 +174,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsDiffCur(
     const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi)
 {
   if (diffcondmat_ != INPAR::ELCH::diffcondmat_scl)
-    dserror("Diffusion-Conduction material has to be SCL material");
+    FOUR_C_THROW("Diffusion-Conduction material has to be SCL material");
 
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -420,7 +420,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::GetMaterialParams(
         material, VarManager()->Phinp(), VarManager()->Temperature(), DiffManager(), diffcondmat_);
   }
   else
-    dserror("Invalid material type!");
+    FOUR_C_THROW("Invalid material type!");
 }
 
 // template classes

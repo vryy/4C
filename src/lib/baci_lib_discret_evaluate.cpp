@@ -52,7 +52,7 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
         const int err =
             ele.Evaluate(params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
                 strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
-        if (err) dserror("Proc %d: Element %d returned err=%d", Comm().MyPID(), ele.Id(), err);
+        if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", Comm().MyPID(), ele.Id(), err);
       });
 }
 
@@ -66,8 +66,8 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate");
 
-  if (!Filled()) dserror("FillComplete() was not called");
-  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   int row = strategy.FirstDofSet();
   int col = strategy.SecondDofSet();
@@ -119,7 +119,7 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
 void DRT::Discretization::Evaluate(const std::function<void(DRT::Element&)>& element_action)
 {
   // test only for Filled()!Dof information is not required
-  if (!Filled()) dserror("FillComplete() was not called");
+  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
 
   for (Element* actele : MyColElementRange())
   {
@@ -148,7 +148,7 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params)
       {
         const int err = ele.Evaluate(
             params, *this, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-        if (err) dserror("Proc %d: Element %d returned err=%d", Comm().MyPID(), ele.Id(), err);
+        if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", Comm().MyPID(), ele.Id(), err);
       });
 }
 
@@ -159,8 +159,8 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params)
 void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
     Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix)
 {
-  if (!Filled()) dserror("FillComplete() was not called");
-  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   bool assemblemat = (systemmatrix != nullptr);
 
@@ -185,7 +185,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
                    "accidentally?\n";
     }
     const std::vector<int>* nodeids = cond->GetNodes();
-    if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
+    if (!nodeids) FOUR_C_THROW("PointNeumann condition does not have nodal cloud");
     const auto* tmp_funct = cond->GetIf<std::vector<int>>("funct");
     const auto& onoff = *cond->Get<std::vector<int>>("onoff");
     const auto& val = *cond->Get<std::vector<double>>("val");
@@ -195,7 +195,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
       // do only nodes in my row map
       if (!NodeRowMap()->MyGID(nodeid)) continue;
       DRT::Node* actnode = gNode(nodeid);
-      if (!actnode) dserror("Cannot find global node %d", nodeid);
+      if (!actnode) FOUR_C_THROW("Cannot find global node %d", nodeid);
       // call explicitly the main dofset, nodeid.e. the first column
       std::vector<int> dofs = Dof(0, actnode);
       const unsigned numdf = dofs.size();
@@ -220,7 +220,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
 
         value *= functfac;
         const int lid = systemvector.Map().LID(gid);
-        if (lid < 0) dserror("Global id %d not on this proc in system vector", gid);
+        if (lid < 0) FOUR_C_THROW("Global id %d not on this proc in system vector", gid);
         systemvector[lid] += value;
       }
     }
@@ -272,7 +272,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   {
     if (name != (std::string) "PointNeumannEB") continue;
     const std::vector<int>* nodeids = cond->GetNodes();
-    if (!nodeids) dserror("Point Moment condition does not have nodal cloud");
+    if (!nodeids) FOUR_C_THROW("Point Moment condition does not have nodal cloud");
 
     for (const int nodeid : *nodeids)
     {
@@ -289,7 +289,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
 
       // get global node
       DRT::Node* actnode = gNode(nodeid);
-      if (!actnode) dserror("Cannot find global node %d", nodeid);
+      if (!actnode) FOUR_C_THROW("Cannot find global node %d", nodeid);
 
       // get elements attached to global node
       DRT::Element** curreleptr = actnode->Elements();
@@ -360,8 +360,8 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
 void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
     DRT::AssembleStrategy& strategy, const std::string& condstring, const int condid)
 {
-  if (!Filled()) dserror("FillComplete() was not called");
-  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   int row = strategy.FirstDofSet();
   int col = strategy.SecondDofSet();
@@ -381,7 +381,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
       if (condid == -1 || condid == *cond->Get<int>("ConditionID"))
       {
         std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
-        // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+        // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
         // no check for empty geometry here since in parallel computations
         // can exist processors which do not own a portion of the elements belonging
         // to the condition geometry
@@ -428,7 +428,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
           // call the element specific evaluate method
           int err = ele->Evaluate(params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
               strategy.Elevector1(), strategy.Elevector2(), strategy.Elevector3());
-          if (err) dserror("error while evaluating elements");
+          if (err) FOUR_C_THROW("error while evaluating elements");
 
           // assembly
           /* If BlockMatrixes are used, the decision which assemble strategy is
@@ -462,12 +462,12 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
 void DRT::Discretization::EvaluateScalars(
     Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars)
 {
-  if (!Filled()) dserror("FillComplete() was not called");
-  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   // number of scalars
   const int numscalars = scalars->length();
-  if (numscalars <= 0) dserror("scalars vector of interest has size <=0");
+  if (numscalars <= 0) FOUR_C_THROW("scalars vector of interest has size <=0");
   // intermediate sum of each scalar on each processor
   CORE::LINALG::SerialDenseVector cpuscalars(numscalars);
 
@@ -492,7 +492,8 @@ void DRT::Discretization::EvaluateScalars(
     {
       int err = actele->Evaluate(
           params, *this, la, elematrix1, elematrix2, elescalars, elevector2, elevector3);
-      if (err) dserror("Proc %d: Element %d returned err=%d", Comm().MyPID(), actele->Id(), err);
+      if (err)
+        FOUR_C_THROW("Proc %d: Element %d returned err=%d", Comm().MyPID(), actele->Id(), err);
     }
 
     // sum up (on each processor)
@@ -516,15 +517,15 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
 )
 {
   // safety checks
-  if (!Filled()) dserror("FillComplete() has not been called on discretization!");
-  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() has not been called on discretization!");
+  if (!Filled()) FOUR_C_THROW("FillComplete() has not been called on discretization!");
+  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() has not been called on discretization!");
 
   // determine number of scalar quantities to be computed
   const int numscalars = scalars->length();
 
   // safety check
   if (numscalars <= 0)
-    dserror("Result vector for EvaluateScalars routine must have positive length!");
+    FOUR_C_THROW("Result vector for EvaluateScalars routine must have positive length!");
 
   // initialize vector for intermediate results of scalar quantities on single processor
   CORE::LINALG::SerialDenseVector cpuscalars(numscalars);
@@ -570,7 +571,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
             // safety check
             if (error)
             {
-              dserror(
+              FOUR_C_THROW(
                   "Element evaluation failed for element %d on processor %d with error code %d!",
                   element->Id(), Comm().MyPID(), error);
             }
@@ -594,14 +595,14 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
 void DRT::Discretization::EvaluateScalars(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_MultiVector> scalars)
 {
-  if (!Filled()) dserror("FillComplete() was not called");
-  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   Epetra_MultiVector& sca = *(scalars.get());
 
   // number of scalars
   const int numscalars = scalars->NumVectors();
-  if (numscalars <= 0) dserror("scalars vector of interest has size <=0");
+  if (numscalars <= 0) FOUR_C_THROW("scalars vector of interest has size <=0");
 
   // define element matrices and vectors
   // -- which are empty and unused, just to satisfy element Evaluate()
@@ -618,7 +619,7 @@ void DRT::Discretization::EvaluateScalars(
     DRT::Element* actele = lRowElement(i);
 
     if (!scalars->Map().MyGID(actele->Id()))
-      dserror("Proc does not have global element %d", actele->Id());
+      FOUR_C_THROW("Proc does not have global element %d", actele->Id());
 
     // get element location vector
     Element::LocationArray la(dofsets_.size());
@@ -631,7 +632,8 @@ void DRT::Discretization::EvaluateScalars(
     {
       int err = actele->Evaluate(
           params, *this, la, elematrix1, elematrix2, elescalars, elevector2, elevector3);
-      if (err) dserror("Proc %d: Element %d returned err=%d", Comm().MyPID(), actele->Id(), err);
+      if (err)
+        FOUR_C_THROW("Proc %d: Element %d returned err=%d", Comm().MyPID(), actele->Id(), err);
     }
 
     for (int j = 0; j < numscalars; ++j)

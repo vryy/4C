@@ -70,7 +70,7 @@ namespace DRT::ELEMENTS
         return DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(CORE::FE::CellType::hex27);
         break;
       default:
-        dserror("The VTK cell type for the NURBS element %s is not implemented",
+        FOUR_C_THROW("The VTK cell type for the NURBS element %s is not implemented",
             CORE::FE::CellTypeToString(celltype).c_str());
         break;
     }
@@ -96,7 +96,7 @@ namespace DRT::ELEMENTS
     else if (n_dim_nurbs == 2)
       CORE::FE::NURBS::nurbs_get_2D_funct(N, xi, knots, weights, distype);
     else
-      dserror("Unable to compute the shape functions for this nurbs element case");
+      FOUR_C_THROW("Unable to compute the shape functions for this nurbs element case");
 
     for (unsigned int i_node_nurbs = 0; i_node_nurbs < n_points; i_node_nurbs++)
     {
@@ -138,7 +138,7 @@ namespace DRT::ELEMENTS
       CORE::LINALG::Matrix<number_of_output_points, 1, double> weights(true);
       std::vector<CORE::LINALG::SerialDenseVector> knots(true);
       const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discret, &ele, knots, weights);
-      if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+      if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
       // Get the position of the control points in the reference configuration.
       CORE::LINALG::Matrix<number_of_output_points * dim_output, 1, double> pos_controlpoints;
@@ -169,7 +169,7 @@ namespace DRT::ELEMENTS
                                                                   [i_dim_nurbs];
               break;
             default:
-              dserror("The node numbering for the nurbs element shape %s is not implemented",
+              FOUR_C_THROW("The node numbering for the nurbs element shape %s is not implemented",
                   CORE::FE::CellTypeToString(ele.Shape()).c_str());
               break;
           }
@@ -247,7 +247,7 @@ namespace DRT::ELEMENTS
         if (lid > -1)
           vtu_point_result_data.push_back((*result_data_dofbased)[lid]);
         else
-          dserror("received illegal dof local id: %d", lid);
+          FOUR_C_THROW("received illegal dof local id: %d", lid);
       }
     }
 
@@ -272,7 +272,7 @@ namespace DRT::ELEMENTS
       const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
   {
     if (read_result_data_from_dofindex != 0)
-      dserror("Nurbs output is only implemented for read_result_data_from_dofindex == 0");
+      FOUR_C_THROW("Nurbs output is only implemented for read_result_data_from_dofindex == 0");
 
     constexpr int number_of_output_points = CORE::FE::num_nodes<celltype>;
     constexpr int dim_nurbs = CORE::FE::dim<celltype>;
@@ -287,7 +287,7 @@ namespace DRT::ELEMENTS
       CORE::LINALG::Matrix<number_of_output_points, 1, double> weights(true);
       std::vector<CORE::LINALG::SerialDenseVector> knots(true);
       const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discret, &ele, knots, weights);
-      if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+      if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
       // Get the element result vector.
       CORE::LINALG::Matrix<number_of_output_points * result_num_dofs_per_node, 1, double>
@@ -314,7 +314,7 @@ namespace DRT::ELEMENTS
               xi(i) = CORE::FE::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_nurbs]][i];
               break;
             default:
-              dserror("The node numbering for the nurbs element shape %s is not implemented",
+              FOUR_C_THROW("The node numbering for the nurbs element shape %s is not implemented",
                   CORE::FE::CellTypeToString(ele.Shape()).c_str());
           }
         }
@@ -367,7 +367,7 @@ namespace DRT::ELEMENTS
               return AppendVisualizationDofBasedResultDataVectorNURBS<celltype_t(), 3>(ele, discret,
                   result_data_dofbased, read_result_data_from_dofindex, vtu_point_result_data);
             default:
-              dserror("The case of result_num_dofs_per_node = %d is not implemented",
+              FOUR_C_THROW("The case of result_num_dofs_per_node = %d is not implemented",
                   result_num_dofs_per_node);
           }
         });

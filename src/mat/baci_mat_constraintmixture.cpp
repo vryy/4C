@@ -199,7 +199,7 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ConstraintMixture*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -209,7 +209,7 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
   {  // no history data to unpack
     isinit_ = false;
     if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
     return;
   }
 
@@ -277,7 +277,8 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
     history_->at(idpast).Unpack(datahistory);
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   /*
   double oldesttime = 0.0;
@@ -336,17 +337,17 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
 void MAT::ConstraintMixture::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   if (*params_->integration_ != "Implicit" && *params_->integration_ != "Explicit")
-    dserror("unknown option for integration");
+    FOUR_C_THROW("unknown option for integration");
   if (*params_->growthforce_ != "Single" && *params_->growthforce_ != "All" &&
       *params_->growthforce_ != "ElaCol")
-    dserror("unknown driving force for growth");
+    FOUR_C_THROW("unknown driving force for growth");
   if (*params_->elastindegrad_ != "None" && *params_->elastindegrad_ != "Rectangle" &&
       *params_->elastindegrad_ != "Time" && *params_->elastindegrad_ != "RectanglePlate" &&
       *params_->elastindegrad_ != "Wedge" && *params_->elastindegrad_ != "Circles" &&
       *params_->elastindegrad_ != "InvEla")
-    dserror("unknown option for elastin degradation");
+    FOUR_C_THROW("unknown option for elastin degradation");
   if (*params_->massprodfunc_ != "Lin" && *params_->massprodfunc_ != "CosCos")
-    dserror("unknown option for mass production function");
+    FOUR_C_THROW("unknown option for mass production function");
 
   // visualization
   vismassstress_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 1>>(numgp));
@@ -459,7 +460,7 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
       localhomstress_->at(gp)(3) = params_->homstress_[2];
     }
     else
-      dserror("wrong number of homeostatic variables");
+      FOUR_C_THROW("wrong number of homeostatic variables");
   }
   homradius_ = params_->homradius_;
 
@@ -494,7 +495,7 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
     // prestress time
     if (pstype == INPAR::STR::PreStress::mulf && currentTime <= pstime + 1.0e-15)
     {
-      dserror("MULF is only working for PRESTRESSTIME smaller than STARTTIME!");
+      FOUR_C_THROW("MULF is only working for PRESTRESSTIME smaller than STARTTIME!");
     }
   }
 
@@ -716,7 +717,8 @@ void MAT::ConstraintMixture::Update()
     }
     else
     {
-      dserror("You should not change your timestep size in the case time < starttime! %f", deptime);
+      FOUR_C_THROW(
+          "You should not change your timestep size in the case time < starttime! %f", deptime);
     }
   }  // time < starttime
 }
@@ -728,7 +730,7 @@ void MAT::ConstraintMixture::ResetStep()
 {
   history_->back().SetTime(0.0, 0.0);
   if (params_->degoption_ == "ExpVar")
-    dserror("variable degradation not combinable with adaptive time stepping");
+    FOUR_C_THROW("variable degradation not combinable with adaptive time stepping");
 }
 
 /*----------------------------------------------------------------------*
@@ -859,7 +861,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         if (params_->degoption_ == "ExpVar")
         {
           if (*params_->integration_ == "Implicit")
-            dserror("ExpVar not implemented for implicit time integration");
+            FOUR_C_THROW("ExpVar not implemented for implicit time integration");
           int sizehistory = history_->size();
           // stretch of previous time step
           CORE::LINALG::Matrix<4, 1> actstretch(true);
@@ -984,7 +986,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
                        ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum - 1)
                        .Evaluate(time);
       if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
-        dserror("correct your time curve for prestretch, just values in [0,1] are allowed %f",
+        FOUR_C_THROW("correct your time curve for prestretch, just values in [0,1] are allowed %f",
             curvefac);
       if (params_->numhom_ == 1)
       {
@@ -1125,7 +1127,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       {
         if (*params_->massprodfunc_ != "Lin" || *params_->initstretch_ == "SetConstantHistory" ||
             *params_->initstretch_ == "SetLinearHistory")
-          dserror(
+          FOUR_C_THROW(
               "Your desired option of elastin degradation, mass production function or "
               "initstretch\n is not implemented in implicit time integration");
         if (*params_->growthforce_ == "All")
@@ -1140,7 +1142,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         }
         else if (*params_->growthforce_ == "ElaCol")
         {
-          dserror("GROWTHFORCE ElaCol not implemented for implicit integration");
+          FOUR_C_THROW("GROWTHFORCE ElaCol not implemented for implicit integration");
         }
       }
     }
@@ -1172,10 +1174,10 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         int size = history_->size();
         history_->at(size - 2).GetTime(&temptime, &tempdt);
         EvaluateStress(glstrain, gp, cmat, stress, firstiter, temptime, elastin_survival);
-        dserror("has to be checked, update called before output");
+        FOUR_C_THROW("has to be checked, update called before output");
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "times do not match: %f actual time, %f deposition time of last fiber", time, temptime);
     }
     else
@@ -1326,7 +1328,7 @@ void MAT::ConstraintMixture::EvaluateFiberFamily(const CORE::LINALG::Matrix<NUM_
       CORE::LINALG::Matrix<4, 1> tempstretch(true);
       history_->at(idpast).GetStretches(gp, &tempstretch);
       if (abs(tempstretch(idfiber) - 1.0) > 1.0e-12)
-        dserror("linear stretch when stretch history has been modified");
+        FOUR_C_THROW("linear stretch when stretch history has been modified");
     }
 
     I4_loc = I4_loc * stretch * stretch;  // account for prestretch and stretch at deposition time
@@ -1421,7 +1423,7 @@ void MAT::ConstraintMixture::EvaluateSingleFiberScalars(
 
   // stress
   const double exp1 = std::exp(k2 * (I4 - 1.) * (I4 - 1.));
-  if (std::isinf(exp1)) dserror("stretch in fiber direction is too high %e", sqrt(I4));
+  if (std::isinf(exp1)) FOUR_C_THROW("stretch in fiber direction is too high %e", sqrt(I4));
   fac_stress = 2. * (k1 * (I4 - 1.) * exp1);  // 2 dW/dI4
 
   // cmat
@@ -1446,7 +1448,7 @@ void MAT::ConstraintMixture::EvaluateElastin(const CORE::LINALG::Matrix<NUM_STRE
   double prestretchelastin = params_->prestretchelastin_;
   double refmassdenselastin = params_->phielastin_ * density;
   if (refmassdenselastin < 0.0 || refmassdenselastin > density)
-    dserror("mass fraction of elastin not in [0;1]");
+    FOUR_C_THROW("mass fraction of elastin not in [0;1]");
 
   if (time < params_->starttime_ - 1.0e-11 && params_->timecurve_ != 0)
   {
@@ -1459,7 +1461,7 @@ void MAT::ConstraintMixture::EvaluateElastin(const CORE::LINALG::Matrix<NUM_STRE
                      ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum - 1)
                      .Evaluate(time);
     if (curvefac > 1.0 || curvefac < 0.0)
-      dserror(
+      FOUR_C_THROW(
           "correct your time curve for prestretch, just values in [0,1] are allowed %f", curvefac);
     prestretchelastin = 1.0 + (params_->prestretchelastin_ - 1.0) * curvefac;
   }
@@ -1550,7 +1552,7 @@ void MAT::ConstraintMixture::EvaluateMuscle(const CORE::LINALG::Matrix<NUM_STRES
     double preI4 = I4 * prestretchmuscle * prestretchmuscle;
     CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Saniso(A);  // first compute S = 2 dW/dI4 A
     const double exp1 = std::exp(k2 * (preI4 - 1.) * (preI4 - 1.));
-    if (std::isinf(exp1)) dserror("stretch in fiber direction is too high");
+    if (std::isinf(exp1)) FOUR_C_THROW("stretch in fiber direction is too high");
     const double fib1 = 2. * (k1 * (preI4 - 1.) * exp1);  // 2 dW/dI4
     Saniso.Scale(fib1);                                   // S
 
@@ -1628,7 +1630,7 @@ void MAT::ConstraintMixture::EvaluateVolumetric(const CORE::LINALG::Matrix<NUM_S
   const double I3 = C(0) * C(1) * C(2) + 0.25 * C(3) * C(4) * C(5) - 0.25 * C(1) * C(5) * C(5) -
                     0.25 * C(2) * C(3) * C(3) -
                     0.25 * C(0) * C(4) * C(4);  // 3rd invariant, determinant
-  if (I3 < 0.0) dserror("fatal failure in constraint mixture artery wall material");
+  if (I3 < 0.0) FOUR_C_THROW("fatal failure in constraint mixture artery wall material");
 
   const double J = sqrt(I3);                                  // determinant of F
   const double p = kappa * (J - currMassDens / refMassDens);  // dW_vol/dJ
@@ -2057,7 +2059,8 @@ void MAT::ConstraintMixture::Degradation(double t, double& degr)
     }
   }
   else
-    dserror("Degradation option not implemented! Valid options are Lin, Exp, ExpVar and Cos !");
+    FOUR_C_THROW(
+        "Degradation option not implemented! Valid options are Lin, Exp, ExpVar and Cos !");
 }
 
 /*----------------------------------------------------------------------*
@@ -2354,7 +2357,8 @@ void MAT::ConstraintMixture::EvaluateImplicitAll(CORE::LINALG::Matrix<3, 3> defg
     int err2 = solver.Factor();              // ?
     int err = solver.Solve();                // X = A^-1 B
     if ((err != 0) || (err2 != 0))
-      dserror("solving linear system in Newton-Raphson method for implicit integration failed");
+      FOUR_C_THROW(
+          "solving linear system in Newton-Raphson method for implicit integration failed");
 
     // damping strategy
     double omega = 2.0;
@@ -2375,7 +2379,7 @@ void MAT::ConstraintMixture::EvaluateImplicitAll(CORE::LINALG::Matrix<3, 3> defg
       Residualtemp.Update(1.0, stepstress, -1.0, stressresidual);
     }
     // if (omega <= omegamin && Residualtemp.Norm2() > (1.0-0.5*omega)*Residual.Norm2())
-    //  dserror("no damping coefficient found");
+    //  FOUR_C_THROW("no damping coefficient found");
 
     *stress = stepstress;
     Residual = Residualtemp;
@@ -2396,12 +2400,12 @@ void MAT::ConstraintMixture::EvaluateImplicitAll(CORE::LINALG::Matrix<3, 3> defg
       std::cout << "2: " << massprod(1) << std::endl;
       std::cout << "3: " << massprod(2) << std::endl;
       std::cout << "4: " << massprod(3) << std::endl;
-      dserror("negative mass production computed for at least one collagen fiber family!");
+      FOUR_C_THROW("negative mass production computed for at least one collagen fiber family!");
     }
 
   }  // while loop
   if (localistep == maxstep && Residual.Norm2() > params_->abstol_ * (*stress).NormInf())
-    dserror("local Newton iteration did not converge %e", Residual.Norm2());
+    FOUR_C_THROW("local Newton iteration did not converge %e", Residual.Norm2());
 
   CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelastic(true);
   EvaluateStress(glstrain, gp, &cmatelastic, stress, firstiter, time, elastin_survival);
@@ -2467,7 +2471,7 @@ void MAT::ConstraintMixture::EvaluateImplicitAll(CORE::LINALG::Matrix<3, 3> defg
   solver.FactorWithEquilibration(true);  // "some easy type of preconditioning" (Michael)
   int err2 = solver.Factor();            // ?
   int err = solver.Solve();              // X = A^-1 B
-  if ((err != 0) || (err2 != 0)) dserror("solving linear system for cmat failed");
+  if ((err != 0) || (err2 != 0)) FOUR_C_THROW("solving linear system for cmat failed");
 
   vismassstress_->at(gp)(0) = massstress(0);
   vismassstress_->at(gp)(1) = massstress(1);
@@ -2629,7 +2633,8 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
       int err2 = solver.Factor();              // ?
       int err = solver.Solve();                // X = A^-1 B
       if ((err != 0) || (err2 != 0))
-        dserror("solving linear system in Newton-Raphson method for implicit integration failed");
+        FOUR_C_THROW(
+            "solving linear system in Newton-Raphson method for implicit integration failed");
 
       // damping strategy
       double omega = 2.0;
@@ -2656,7 +2661,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
         Residualtemp.Update(1.0, stepstress, -1.0, stressresidual);
       }
       if (omega <= omegamin && Residualtemp.Norm2() > (1.0 - 0.5 * omega) * Residual.Norm2())
-        dserror("no damping coefficient found");
+        FOUR_C_THROW("no damping coefficient found");
 
       stressfiber = stepstress;
       Residual = Residualtemp;
@@ -2674,12 +2679,12 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
       if ((massprod(idfiber) < 0.0))
       {
         std::cout << idfiber + 1 << ": " << massprod(idfiber) << std::endl;
-        dserror("negative mass production computed for one collagen fiber family!");
+        FOUR_C_THROW("negative mass production computed for one collagen fiber family!");
       }
 
     }  // while loop
     if (localistep == maxstep && Residual.Norm2() > params_->abstol_ * stressfiber.NormInf())
-      dserror("local Newton iteration did not converge %e", Residual.Norm2());
+      FOUR_C_THROW("local Newton iteration did not converge %e", Residual.Norm2());
 
     currmassdensfiber = 0.0;
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelastic(true);
@@ -2716,7 +2721,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
     solver.FactorWithEquilibration(true);  // "some easy type of preconditioning" (Michael)
     int err2 = solver.Factor();            // ?
     int err = solver.Solve();              // X = A^-1 B
-    if ((err != 0) || (err2 != 0)) dserror("solving linear system for cmat failed");
+    if ((err != 0) || (err2 != 0)) FOUR_C_THROW("solving linear system for cmat failed");
 
     (*stress) += stressfiber;
     (*cmat) += cmatfiber;
@@ -2969,7 +2974,7 @@ bool MAT::ConstraintMixture::VisData(
 {
   if (name == "MassStress")
   {
-    if ((int)data.size() != 3) dserror("size mismatch");
+    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
     CORE::LINALG::Matrix<3, 1> temp(true);
     for (int iter = 0; iter < numgp; iter++) temp.Update(1.0, vismassstress_->at(iter), 1.0);
     data[0] = temp(0) / numgp;
@@ -2978,7 +2983,7 @@ bool MAT::ConstraintMixture::VisData(
   }
   else if (name == "Fiber1")
   {
-    if ((int)data.size() != 3) dserror("size mismatch");
+    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
     CORE::LINALG::Matrix<3, 1> a1 = a1_->at(0);  // get a1 of first gp
     data[0] = a1(0);
     data[1] = a1(1);
@@ -2986,7 +2991,7 @@ bool MAT::ConstraintMixture::VisData(
   }
   else if (name == "Fiber2")
   {
-    if ((int)data.size() != 3) dserror("size mismatch");
+    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
     CORE::LINALG::Matrix<3, 1> a2 = a2_->at(0);  // get a2 of first gp
     data[0] = a2(0);
     data[1] = a2(1);
@@ -2994,14 +2999,14 @@ bool MAT::ConstraintMixture::VisData(
   }
   else if (name == "referentialMassDensity")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int iter = 0; iter < numgp; iter++) temp += refmassdens_->at(iter);
     data[0] = temp / numgp;
   }
   else if (name == "CollagenMassDensity")
   {
-    if ((int)data.size() != 3) dserror("size mismatch");
+    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
     CORE::LINALG::Matrix<3, 1> temp(true);
     for (int iter = 0; iter < numgp; iter++) temp.Update(1.0, visrefmassdens_->at(iter), 1.0);
     data[0] = temp(0) / numgp;
@@ -3010,7 +3015,7 @@ bool MAT::ConstraintMixture::VisData(
   }
   else if (name == "Prestretch")
   {
-    if ((int)data.size() != 3) dserror("size mismatch");
+    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
     CORE::LINALG::Matrix<3, 1> temp(true);
     for (int iter = 0; iter < numgp; iter++) temp.Update(1.0, GetPrestretch(iter), 1.0);
     data[0] = temp(0) / numgp;
@@ -3019,7 +3024,7 @@ bool MAT::ConstraintMixture::VisData(
   }
   else if (name == "Homstress")
   {
-    if ((int)data.size() != 3) dserror("size mismatch");
+    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
     CORE::LINALG::Matrix<3, 1> temp(true);
     for (int iter = 0; iter < numgp; iter++) temp.Update(1.0, GetHomstress(iter), 1.0);
     data[0] = temp(0) / numgp;
@@ -3028,7 +3033,7 @@ bool MAT::ConstraintMixture::VisData(
   }
   else if (name == "MassProd")
   {
-    if ((int)data.size() != 3) dserror("size mismatch");
+    if ((int)data.size() != 3) FOUR_C_THROW("size mismatch");
     CORE::LINALG::Matrix<4, 1> temp(true);
     int sizehistory = history_->size();
     for (int iter = 0; iter < numgp; iter++)
@@ -3045,14 +3050,14 @@ bool MAT::ConstraintMixture::VisData(
   }
   else if (name == "growthfactor")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
     // int eleLID = GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
     data[0] = params_->GetParameter(params_->growthfactor, eleID);
   }
   else if (name == "elastin_survival")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
     // int eleLID = GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
     if (*params_->elastindegrad_ == "InvEla")
@@ -3158,23 +3163,23 @@ void MAT::ConstraintMixtureOutputToGmsh(
       case CORE::FE::CellType::hex8:
       {
         gaussrule_ = CORE::FE::GaussRule3D::hex_8point;
-        if (ngp != 8) dserror("hex8 has not 8 gauss points: %d", ngp);
+        if (ngp != 8) FOUR_C_THROW("hex8 has not 8 gauss points: %d", ngp);
         break;
       }
       case CORE::FE::CellType::wedge6:
       {
         gaussrule_ = CORE::FE::GaussRule3D::wedge_6point;
-        if (ngp != 6) dserror("wedge6 has not 6 gauss points: %d", ngp);
+        if (ngp != 6) FOUR_C_THROW("wedge6 has not 6 gauss points: %d", ngp);
         break;
       }
       case CORE::FE::CellType::tet4:
       {
         gaussrule_ = CORE::FE::GaussRule3D::tet_1point;
-        if (ngp != 1) dserror("tet4 has not 1 gauss point: %d", ngp);
+        if (ngp != 1) FOUR_C_THROW("tet4 has not 1 gauss point: %d", ngp);
         break;
       }
       default:
-        dserror("unknown element in ConstraintMixtureOutputToGmsh");
+        FOUR_C_THROW("unknown element in ConstraintMixtureOutputToGmsh");
         break;
     }
 

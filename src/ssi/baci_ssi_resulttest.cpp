@@ -54,7 +54,7 @@ double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
   // catch unknown quantity strings
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Quantity '%s' not supported by result testing functionality for scalar-structure "
         "interaction!",
         quantity.c_str());
@@ -69,7 +69,7 @@ const SSI::SSIMono& SSI::SSIResultTest::SSIMono() const
 {
   const auto* const ssi_mono = dynamic_cast<const SSI::SSIMono* const>(ssi_base_.get());
   if (ssi_mono == nullptr)
-    dserror("Couldn't access time integrator for monolithic scalar-structure interaction!");
+    FOUR_C_THROW("Couldn't access time integrator for monolithic scalar-structure interaction!");
   return *ssi_mono;
 }
 

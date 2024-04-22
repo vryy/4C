@@ -29,7 +29,8 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ExtractElementAndNodeValues(
 {
   // extract thermo state vector from discretization
   Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(2, "thermo");
-  if (tempnp == Teuchos::null) dserror("Cannot extract thermo state vector from discretization!");
+  if (tempnp == Teuchos::null)
+    FOUR_C_THROW("Cannot extract thermo state vector from discretization!");
 
   // extract local nodal temperature values from global state vector
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*tempnp, etempnp_, la[2].lm_);
@@ -180,7 +181,7 @@ DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ScaTraEleSTIThermo(
   // safety check
   if (numscal != 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Thermodynamic scalar transport only works for exactly one transported scalar at the "
         "moment!");
   }

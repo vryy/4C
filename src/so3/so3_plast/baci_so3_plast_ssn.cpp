@@ -210,7 +210,7 @@ int DRT::ELEMENTS::So3Plast<distype>::NumVolume() const
       return 0;
       break;
     default:
-      dserror("unknown distpye for So3Plast");
+      FOUR_C_THROW("unknown distpye for So3Plast");
       break;
       return 0;
   }
@@ -234,7 +234,7 @@ int DRT::ELEMENTS::So3Plast<distype>::NumSurface() const
       return 4;
       break;
     default:
-      dserror("unknown distpye for So3Plast");
+      FOUR_C_THROW("unknown distpye for So3Plast");
       break;
       return 0;
   }
@@ -258,7 +258,7 @@ int DRT::ELEMENTS::So3Plast<distype>::NumLine() const
       return 6;
       break;
     default:
-      dserror("unknown distpye for So3Plast");
+      FOUR_C_THROW("unknown distpye for So3Plast");
       break;
       return 0;
   }
@@ -471,7 +471,7 @@ void DRT::ELEMENTS::So3Plast<distype>::Unpack(const std::vector<char>& data)
   }
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 
 }  // Unpack()
@@ -501,7 +501,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
   // geometrically linear
   if (buffer == "linear")
   {
-    dserror("no linear kinematics");
+    FOUR_C_THROW("no linear kinematics");
   }
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
@@ -510,7 +510,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
     // everything ok
   }
   else
-    dserror("Reading of SO3_PLAST element failed! KINEM unknown");
+    FOUR_C_THROW("Reading of SO3_PLAST element failed! KINEM unknown");
 
   // fbar
   if (linedef->HaveNamed("FBAR"))
@@ -522,16 +522,16 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
     else if (fb == "no")
       fbar_ = false;
     else
-      dserror("unknown fbar option (valid: yes/no)");
+      FOUR_C_THROW("unknown fbar option (valid: yes/no)");
   }
 
   // quadrature
   if (linedef->HaveNamed("NUMGP"))
   {
     if (distype != CORE::FE::CellType::hex8)
-      dserror("You may only choose the Gauss point number for SOLIDH8PLAST");
+      FOUR_C_THROW("You may only choose the Gauss point number for SOLIDH8PLAST");
     if (GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::tsi)
-      dserror("You may not choose the Gauss point number in TSI problems");
+      FOUR_C_THROW("You may not choose the Gauss point number in TSI problems");
 
     int ngp = 0;
     linedef->ExtractInt("NUMGP", ngp);
@@ -586,7 +586,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
         break;
       }
       default:
-        dserror("so3_plast doesn't know what to do with %i Gauss points", ngp);
+        FOUR_C_THROW("so3_plast doesn't know what to do with %i Gauss points", ngp);
         break;
     }
   }
@@ -617,7 +617,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
 
   // Validate that materials doesn't use extended update call.
   if (SolidMaterial()->UsesExtendedUpdate())
-    dserror("This element currently does not support the extended update call.");
+    FOUR_C_THROW("This element currently does not support the extended update call.");
 
   if (so3mat->MaterialType() != INPAR::MAT::m_plelasthyper)
     std::cout << "*** warning *** so3plast used w/o PlasticElastHyper material. Better use "
@@ -631,7 +631,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
   if (linedef->HaveNamed("EAS"))
   {
     if (distype != CORE::FE::CellType::hex8)
-      dserror("EAS in so3 plast currently only for HEX8 elements");
+      FOUR_C_THROW("EAS in so3 plast currently only for HEX8 elements");
 
     linedef->ExtractString("EAS", buffer);
 
@@ -642,9 +642,9 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
     else if (buffer == "full")
       eastype_ = soh8p_easfull;
     else
-      dserror("unknown EAS type for so3_plast");
+      FOUR_C_THROW("unknown EAS type for so3_plast");
 
-    if (fbar_ && eastype_ != soh8p_easnone) dserror("no combination of Fbar and EAS");
+    if (fbar_ && eastype_ != soh8p_easnone) FOUR_C_THROW("no combination of Fbar and EAS");
   }
   else
     eastype_ = soh8p_easnone;
@@ -692,7 +692,7 @@ int DRT::ELEMENTS::So3Plast<distype>::UniqueParObjectId() const
       return SoNurbs27PlastType::Instance().UniqueParObjectId();
       break;
     default:
-      dserror("unknown element type!");
+      FOUR_C_THROW("unknown element type!");
       break;
   }
   // Intel compiler needs a return
@@ -724,7 +724,7 @@ DRT::ElementType& DRT::ELEMENTS::So3Plast<distype>::ElementType() const
       return SoNurbs27PlastType::Instance();
       break;
     default:
-      dserror("unknown element type!");
+      FOUR_C_THROW("unknown element type!");
       break;
   }
   // Intel compiler needs a return
@@ -783,7 +783,7 @@ void DRT::ELEMENTS::So3Plast<distype>::ReadParameterList(
     if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
       plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
     else
-      dserror("so3_ssn_plast elements only with PlasticElastHyper material");
+      FOUR_C_THROW("so3_ssn_plast elements only with PlasticElastHyper material");
 
     // get dissipation mode
     auto mode =
@@ -820,7 +820,7 @@ template <unsigned int num_cols>
 void DRT::ELEMENTS::So3Plast<distype>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, num_cols>& data, Epetra_MultiVector& expolData)
 {
-  if (distype != CORE::FE::CellType::hex8) dserror("soh8_expol called from non-hex8 element");
+  if (distype != CORE::FE::CellType::hex8) FOUR_C_THROW("soh8_expol called from non-hex8 element");
 
   // static variables, that are the same for every element
   static CORE::LINALG::Matrix<nen_, numgpt_post> expolOperator;
@@ -938,7 +938,7 @@ int DRT::ELEMENTS::PlastEasTypeToNumEasV(DRT::ELEMENTS::So3PlastEasType et)
       return PlastEasTypeToNumEas<soh18p_eassosh18>::neas;
       break;
     default:
-      dserror("EAS type not implemented");
+      FOUR_C_THROW("EAS type not implemented");
   }
   return -1;
 }

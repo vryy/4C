@@ -118,7 +118,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
       // do nothing for now
       return 0;
     default:
-      dserror("The element action %s is not yet implemented for the new solid-scatra elements",
+      FOUR_C_THROW("The element action %s is not yet implemented for the new solid-scatra elements",
           ActionType2String(action).c_str());
   }
 

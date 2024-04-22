@@ -99,7 +99,7 @@ void MAT::ScatraMultiScaleGP::Init()
     // preliminary safety check
     if (GLOBAL::Problem::Instance(microdisnum_)->NDim() != 1)
     {
-      dserror(
+      FOUR_C_THROW(
           "Must have one-dimensional micro scale in multi-scale simulations of scalar transport "
           "problems!");
     }
@@ -108,25 +108,25 @@ void MAT::ScatraMultiScaleGP::Init()
         CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(
             *sdyn_micro, "TIMEINTEGR") != INPAR::SCATRA::timeint_one_step_theta)
     {
-      dserror(
+      FOUR_C_THROW(
           "Multi-scale calculations for scalar transport only implemented for one-step-theta time "
           "integration scheme!");
     }
     if (CORE::UTILS::IntegralValue<bool>(sdyn_macro, "SKIPINITDER") !=
         CORE::UTILS::IntegralValue<bool>(*sdyn_micro, "SKIPINITDER"))
-      dserror("Flag SKIPINITDER in input file must be equal on macro and micro scales!");
+      FOUR_C_THROW("Flag SKIPINITDER in input file must be equal on macro and micro scales!");
     if (sdyn_macro.get<double>("TIMESTEP") != sdyn_micro->get<double>("TIMESTEP"))
-      dserror("Must have identical time step size on macro and micro scales!");
+      FOUR_C_THROW("Must have identical time step size on macro and micro scales!");
     if (sdyn_macro.get<int>("NUMSTEP") != sdyn_micro->get<int>("NUMSTEP"))
-      dserror("Must have identical number of time steps on macro and micro scales!");
+      FOUR_C_THROW("Must have identical number of time steps on macro and micro scales!");
     if (sdyn_macro.get<double>("THETA") != sdyn_micro->get<double>("THETA"))
-      dserror(
+      FOUR_C_THROW(
           "Must have identical one-step-theta time integration factor on macro and micro scales!");
     if (microdis->NumGlobalElements() == 0)
-      dserror("No elements in TRANSPORT ELEMENTS section of micro-scale input file!");
+      FOUR_C_THROW("No elements in TRANSPORT ELEMENTS section of micro-scale input file!");
     if (microdis->gNode(0)->X()[0] != 0.0)
     {
-      dserror(
+      FOUR_C_THROW(
           "Micro-scale domain must have one end at coordinate 0 and the other end at a coordinate "
           "> 0!");
     }
@@ -137,14 +137,16 @@ void MAT::ScatraMultiScaleGP::Init()
 
     // safety check
     if (conditions.size() == 0)
-      dserror("Couldn't extract multi-scale coupling condition from micro-scale discretization!");
+      FOUR_C_THROW(
+          "Couldn't extract multi-scale coupling condition from micro-scale discretization!");
 
     // loop over all multi-scale coupling conditions
     for (auto& condition : conditions)
     {
       // extract nodal cloud
       const std::vector<int>* const nodeids = condition->GetNodes();
-      if (nodeids == nullptr) dserror("Multi-scale coupling condition does not have nodal cloud!");
+      if (nodeids == nullptr)
+        FOUR_C_THROW("Multi-scale coupling condition does not have nodal cloud!");
 
       // loop over all nodes in nodal cloud
       for (int inode : *nodeids)
@@ -157,11 +159,11 @@ void MAT::ScatraMultiScaleGP::Init()
           // safety checks
           if (node == nullptr)
           {
-            dserror(
+            FOUR_C_THROW(
                 "Cannot extract node with global ID %d from micro-scale discretization!", inode);
           }
           else if (node->X()[0] <= 0.0)
-            dserror(
+            FOUR_C_THROW(
                 "Multi-scale coupling condition must be enforced on a node with coordinate > 0!");
         }
       }
@@ -171,7 +173,7 @@ void MAT::ScatraMultiScaleGP::Init()
     Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(
         GLOBAL::Problem::Instance(microdisnum_)->NDim() + 1, 0, 0, true));
     if (microdis->AddDofSet(dofsetaux) != 1)
-      dserror("Micro-scale discretization has illegal number of dofsets!");
+      FOUR_C_THROW("Micro-scale discretization has illegal number of dofsets!");
 
     // finalize discretization
     microdis->FillComplete(true, false, false);
@@ -182,7 +184,7 @@ void MAT::ScatraMultiScaleGP::Init()
     // check solver number
     if (linsolvernumber < 0)
     {
-      dserror(
+      FOUR_C_THROW(
           "No linear solver defined for scalar field in input file for micro scale! Please set "
           "LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
     }
@@ -524,7 +526,7 @@ void MAT::ScatraMultiScaleGP::ReadRestart()
   microtimint->ReadRestart(step_, inputcontrol);
 
   // safety check
-  if (microtimint->Step() != step_) dserror("Time step mismatch!");
+  if (microtimint->Step() != step_) FOUR_C_THROW("Time step mismatch!");
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (inputcontrol == Teuchos::null)
@@ -564,7 +566,7 @@ void MAT::ScatraMultiScaleGP::CalculateDdetFDt(Teuchos::RCP<SCATRA::TimIntOneSte
     }
     default:
     {
-      dserror("time integration scheme not supported to calculate d detF / d t.");
+      FOUR_C_THROW("time integration scheme not supported to calculate d detF / d t.");
       break;
     }
   }
@@ -574,10 +576,10 @@ void MAT::ScatraMultiScaleGP::CalculateDdetFDt(Teuchos::RCP<SCATRA::TimIntOneSte
  *--------------------------------------------------------------------*/
 void MAT::ScatraMultiScaleGP::SetTimeStepping(const double dt, const double time, const int step)
 {
-#ifdef BACI_DEBUG
-  dsassert(dt > 0.0, "Time step for micro scale must be positive.");
-  dsassert(time >= 0.0, "Time for micro scale must be positive.");
-  dsassert(step >= 0, "Number of step for micro scale must be positive.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  FOUR_C_ASSERT(dt > 0.0, "Time step for micro scale must be positive.");
+  FOUR_C_ASSERT(time >= 0.0, "Time for micro scale must be positive.");
+  FOUR_C_ASSERT(step >= 0, "Number of step for micro scale must be positive.");
 #endif
 
   Teuchos::RCP<SCATRA::TimIntOneStepTheta> microtimint = microdisnum_microtimint_map_[microdisnum_];

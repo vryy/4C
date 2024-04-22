@@ -47,7 +47,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     {
       if (!NodeColMap()->MyGID(node)) continue;
       DRT::Node* actnode = gNode(node);
-      if (!actnode) dserror("Cannot find global node");
+      if (!actnode) FOUR_C_THROW("Cannot find global node");
       actnode->SetCondition(name, condition);
     }
   }
@@ -79,16 +79,16 @@ void DRT::Discretization::BoundaryConditionsGeometry()
       havenewelements = BuildVolumesinCondition(name, condition);
     // dimension of condition must not larger than the one of the problem itself
     else if ((int)(condition->GType()) > GLOBAL::Problem::Instance()->NDim())
-      dserror("Dimension of condition is larger than the problem dimension.");
+      FOUR_C_THROW("Dimension of condition is larger than the problem dimension.");
     // build a line element geometry description
     else if (condition->GType() == DRT::Condition::Line)
       havenewelements = BuildLinesinCondition(name, condition);
     // build a surface element geometry description
     else if (condition->GType() == DRT::Condition::Surface)
       havenewelements = BuildSurfacesinCondition(name, condition);
-    // this should be it. if not: dserror.
+    // this should be it. if not: FOUR_C_THROW.
     else
-      dserror("Somehow the condition geometry does not fit to the problem dimension.");
+      FOUR_C_THROW("Somehow the condition geometry does not fit to the problem dimension.");
 
     if (havenewelements)
     {
@@ -237,7 +237,7 @@ bool DRT::Discretization::BuildLinesinCondition(
 
   // get ptrs to all node ids that have this condition
   const std::vector<int>* nodeids = cond->GetNodes();
-  if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
+  if (!nodeids) FOUR_C_THROW("Cannot find array 'Node Ids' in condition");
 
   // ptrs to my row/column nodes of those
   std::map<int, DRT::Node*> colnodes;
@@ -247,7 +247,7 @@ bool DRT::Discretization::BuildLinesinCondition(
     if (NodeColMap()->MyGID(nodeid))
     {
       DRT::Node* actnode = gNode(nodeid);
-      if (!actnode) dserror("Cannot find global node");
+      if (!actnode) FOUR_C_THROW("Cannot find global node");
       colnodes[actnode->Id()] = actnode;
     }
   }
@@ -265,14 +265,14 @@ bool DRT::Discretization::BuildLinesinCondition(
       const int numlines = elements[i]->NumLine();
       if (!numlines) continue;
       std::vector<Teuchos::RCP<DRT::Element>> lines = elements[i]->Lines();
-      if (lines.size() == 0) dserror("Element returned no lines");
+      if (lines.size() == 0) FOUR_C_THROW("Element returned no lines");
       for (int j = 0; j < numlines; ++j)
       {
         Teuchos::RCP<DRT::Element> actline = lines[j];
         // find lines that are attached to actnode
         const int nnodeperline = actline->NumNode();
         DRT::Node** nodesperline = actline->Nodes();
-        if (!nodesperline) dserror("Line returned no nodes");
+        if (!nodesperline) FOUR_C_THROW("Line returned no nodes");
         for (int k = 0; k < nnodeperline; ++k)
         {
           if (nodesperline[k]->Id() == actnode->Id())
@@ -356,7 +356,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
 
   // get ptrs to all node ids that have this condition
   const std::vector<int>* nodeids = cond->GetNodes();
-  if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
+  if (!nodeids) FOUR_C_THROW("Cannot find array 'Node Ids' in condition");
 
   // ptrs to my row/column nodes of those
   std::map<int, DRT::Node*> myrownodes;
@@ -366,13 +366,13 @@ bool DRT::Discretization::BuildSurfacesinCondition(
     if (NodeColMap()->MyGID(nodeid))
     {
       DRT::Node* actnode = gNode(nodeid);
-      if (!actnode) dserror("Cannot find global node");
+      if (!actnode) FOUR_C_THROW("Cannot find global node");
       mycolnodes[actnode->Id()] = actnode;
     }
     if (NodeRowMap()->MyGID(nodeid))
     {
       DRT::Node* actnode = gNode(nodeid);
-      if (!actnode) dserror("Cannot find global node");
+      if (!actnode) FOUR_C_THROW("Cannot find global node");
       myrownodes[actnode->Id()] = actnode;
     }
   }
@@ -405,7 +405,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
       const int numsurfs = elements[i]->NumSurface();
       if (!numsurfs) continue;
       std::vector<Teuchos::RCP<DRT::Element>> surfs = elements[i]->Surfaces();
-      if (surfs.size() == 0) dserror("Element does not return any surfaces");
+      if (surfs.size() == 0) FOUR_C_THROW("Element does not return any surfaces");
 
       // loop all surfaces of all elements attached to actnode
       for (int j = 0; j < numsurfs; ++j)
@@ -414,7 +414,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
         // find surfs attached to actnode
         const int nnodepersurf = actsurf->NumNode();
         DRT::Node** nodespersurf = actsurf->Nodes();
-        if (!nodespersurf) dserror("Surface returned no nodes");
+        if (!nodespersurf) FOUR_C_THROW("Surface returned no nodes");
         for (int k = 0; k < nnodepersurf; ++k)
         {
           if (nodespersurf[k]->Id() == actnode->Id())
@@ -502,7 +502,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
                   }        // loop over all adjacent volume elements
 
                   if (identical == 0)
-                    dserror("surface found with missing underlying volume element");
+                    FOUR_C_THROW("surface found with missing underlying volume element");
                   else if (identical > 1)
                   {
                     // do nothing
@@ -566,7 +566,7 @@ bool DRT::Discretization::BuildVolumesinCondition(
 {
   // get ptrs to all node ids that have this condition
   const std::vector<int>* nodeids = cond->GetNodes();
-  if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
+  if (!nodeids) FOUR_C_THROW("Cannot find array 'Node Ids' in condition");
 
   // extract colnodes on this proc from condition
   const Epetra_Map* colmap = NodeColMap();
@@ -626,7 +626,7 @@ void DRT::Discretization::FindAssociatedEleIDs(
     {
       // get ptrs to all node ids that have this condition
       const std::vector<int>* nodeids = actvolcond->GetNodes();
-      if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
+      if (!nodeids) FOUR_C_THROW("Cannot find array 'Node Ids' in condition");
 
       // extract colnodes on this proc from condition
       const Epetra_Map* colmap = NodeColMap();

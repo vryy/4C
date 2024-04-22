@@ -30,7 +30,7 @@ std::vector<double> ADAPTER::FluidACFSI::GetWindkesselErrors()
 {
   if (fluidimpl_->ImpedanceBC_() == Teuchos::null)  // iff there is no windkessel condition
   {
-    // dserror("fluid field has no Windkessel!");
+    // FOUR_C_THROW("fluid field has no Windkessel!");
     std::vector<double> tmp(1, true);
     tmp[0] = 1000.0;
     return tmp;

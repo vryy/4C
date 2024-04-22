@@ -96,7 +96,7 @@ void PrintValidParameters()
 /*----------------------------------------------------------------------*/
 void PrintHelpMessage()
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   char baci_build[] = "baci-debug";
 #else
   char baci_build[] = "baci-release";

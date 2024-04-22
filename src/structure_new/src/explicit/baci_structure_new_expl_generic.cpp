@@ -120,7 +120,7 @@ bool STR::EXPLICIT::Generic::ApplyForceStiff(
 double STR::EXPLICIT::Generic::CalcRefNormForce(
     const enum ::NOX::Abstract::Vector::NormType& type) const
 {
-  dserror("%s is not yet implemented", __FUNCTION__);
+  FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
   return 0.0;
 }
 
@@ -129,7 +129,7 @@ double STR::EXPLICIT::Generic::CalcRefNormForce(
 void STR::EXPLICIT::Generic::ComputeJacobianContributionsFromElementLevelForPTC(
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr)
 {
-  dserror("%s is not yet implemented", __FUNCTION__);
+  FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
 }
 
 /*----------------------------------------------------------------------------*
@@ -137,7 +137,7 @@ void STR::EXPLICIT::Generic::ComputeJacobianContributionsFromElementLevelForPTC(
 bool STR::EXPLICIT::Generic::AssembleForce(
     Epetra_Vector& f, const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
-  dserror("%s is not yet implemented", __FUNCTION__);
+  FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
   return false;
 }
 

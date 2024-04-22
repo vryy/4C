@@ -36,7 +36,7 @@ void SCATRA::SCATRAUTILS::CheckConsistencyOfS2IConditions(
   if ((s2ikinetics_conditions.size() + s2isclcoupling_condition.size()) !=
       (s2imeshtying_conditions.size() + s2inoevaluation_conditions.size()))
   {
-    dserror(
+    FOUR_C_THROW(
         "For each 'S2IKinetics' or 'S2ISCLCoupling' condition a corresponding 'S2IMeshtying' or "
         "'S2INoEvaluation' condition has to be defined!");
   }
@@ -55,7 +55,7 @@ void SCATRA::SCATRAUTILS::CheckConsistencyOfS2IConditions(
 
   if (s2iphysics_nodes != s2ievaluation_nodes)
   {
-    dserror(
+    FOUR_C_THROW(
         "Definition of 'S2IKinetics' or 'S2ISCLCoupling' conditions and corresponding "
         "'S2IMeshtying' or 'S2INoEvaluation' conditions is inconsistent! The nodes the conditions "
         "are defined on do not match!");
@@ -98,7 +98,7 @@ void SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
       }
       default:
       {
-        dserror("interface side of %s has to be either 'Slave' or 'Master'",
+        FOUR_C_THROW("interface side of %s has to be either 'Slave' or 'Master'",
             condition_to_be_tested.c_str());
         break;
       }
@@ -128,7 +128,8 @@ void SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
         }
         default:
         {
-          dserror("interface side of 'S2IKinetics' condition has to be either 'Slave' or 'Master'");
+          FOUR_C_THROW(
+              "interface side of 'S2IKinetics' condition has to be either 'Slave' or 'Master'");
           break;
         }
       }
@@ -147,7 +148,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
   const size_t nsd = dim;
   // const int scatra_dofid = 0; //<  this is the first DoFSet (i.e. the scalar one!!)
 
-  if (nsd != 3) dserror("Only implemented for 3D elements. Should be simple enough to extend...");
+  if (nsd != 3)
+    FOUR_C_THROW("Only implemented for 3D elements. Should be simple enough to extend...");
 
   // DOF-COL-MAP
   const Teuchos::RCP<Epetra_Vector> phinp_col =
@@ -223,7 +225,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     for (int iele = 0; iele < ptToNode->NumElement(); iele++)
     {
       if (DISTYPE != adjelements[iele]->Shape())
-        dserror("Discretization not with same elements!!!");
+        FOUR_C_THROW("Discretization not with same elements!!!");
 
       elements.push_back(adjelements[iele]);
     }
@@ -304,7 +306,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
               discret, elements, phinp_col, nodegid, scatra_dofid);
     }
     else
-      dserror("Element type not supported yet!");
+      FOUR_C_THROW("Element type not supported yet!");
 
     //----------------------------------------------------------------------------------------------------
     // set the global vector gradphirow holding the new reconstructed values of gradient of phi in
@@ -312,17 +314,18 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     //----------------------------------------------------------------------------------------------------
 
     const std::vector<int> lm = discret->Dof(scatra_dofid, (it_node.second));
-    if (lm.size() != 1) dserror("assume a unique level-set dof in ScaTra DoFset");
+    if (lm.size() != 1) FOUR_C_THROW("assume a unique level-set dof in ScaTra DoFset");
 
     int GID = lm[0];  // Global ID of DoF Map
     // get local processor id according to global node id
     const int lid = (*gradphirow).Map().LID(GID);
     if (lid < 0)
-      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector", (*gradphirow).Comm().MyPID(), GID);
+      FOUR_C_THROW(
+          "Proc %d: Cannot find gid=%d in Epetra_Vector", (*gradphirow).Comm().MyPID(), GID);
 
     const int numcol = (*gradphirow).NumVectors();
     if (numcol != (int)nsd)
-      dserror("number of columns in Epetra_MultiVector is not identically to nsd");
+      FOUR_C_THROW("number of columns in Epetra_MultiVector is not identically to nsd");
 
     // loop over dimensions (= number of columns in multivector)
     for (int col = 0; col < numcol; col++)
@@ -383,13 +386,13 @@ CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementG
         nodeID_adj[inode] = ptToNodeIds_adj[inode];
 
         const std::vector<int> lm = discret->Dof(scatra_dofid, (ele_adj->Nodes()[inode]));
-        if (lm.size() != 1) dserror("assume a unique level-set dof in cutterdis-Dofset");
+        if (lm.size() != 1) FOUR_C_THROW("assume a unique level-set dof in cutterdis-Dofset");
         nodeDOFID_adj[inode] = lm[0];
 
         // get local number of node actnode in ele_adj
         if (nodegid == ptToNodeIds_adj[inode]) ID_param_space = inode;
       }
-      if (ID_param_space < 0) dserror("node not found in element");
+      if (ID_param_space < 0) FOUR_C_THROW("node not found in element");
 
       // extract the phi-values of adjacent element with local ids from global vector *phinp
       // get pointer to vector holding G-function values at the fluid nodes
@@ -435,7 +438,7 @@ CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementG
           break;
         }
         default:
-          dserror("Only spacial dimension 1,2,3 are allowed!");
+          FOUR_C_THROW("Only spacial dimension 1,2,3 are allowed!");
       }
 
       // reconstruct XYZ-gradient

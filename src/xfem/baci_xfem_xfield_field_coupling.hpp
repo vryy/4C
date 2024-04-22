@@ -160,7 +160,7 @@ namespace XFEM
       /// check the isinit_ flag
       inline void CheckInit() const
       {
-        if (not isinit_) dserror("Call Init first!");
+        if (not isinit_) FOUR_C_THROW("Call Init first!");
       }
 
       /** \brief build dof maps from node maps

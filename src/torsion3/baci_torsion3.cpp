@@ -140,7 +140,7 @@ void DRT::ELEMENTS::Torsion3::Unpack(const std::vector<char>& data)
   bendingpotential_ = static_cast<BendingPotential>(ExtractInt(position, data));
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 /*----------------------------------------------------------------------*

@@ -57,13 +57,13 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::SetupDiscretizations(const Epetra_Comm
 
   // 1.-Initialization.
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
-  if (structdis == Teuchos::null) dserror(" !!! structdis empty !!! Awwww MAAAAN !!!");
+  if (structdis == Teuchos::null) FOUR_C_THROW(" !!! structdis empty !!! Awwww MAAAAN !!!");
   Teuchos::RCP<DRT::Discretization> porofluiddis = problem->GetDis("porofluid");
-  if (porofluiddis == Teuchos::null) dserror(" !!! porofluiddis empty !!! Awwww MAAAAN !!!");
+  if (porofluiddis == Teuchos::null) FOUR_C_THROW(" !!! porofluiddis empty !!! Awwww MAAAAN !!!");
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
-  if (fluiddis == Teuchos::null) dserror(" !!! fluiddis empty !!! Awwww MAAAAN !!!");
+  if (fluiddis == Teuchos::null) FOUR_C_THROW(" !!! fluiddis empty !!! Awwww MAAAAN !!!");
   Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
-  if (aledis == Teuchos::null) dserror(" !!! aledis empty !!! Awwww MAAAAN !!!");
+  if (aledis == Teuchos::null) FOUR_C_THROW(" !!! aledis empty !!! Awwww MAAAAN !!!");
 
   /*
    Ok Dude, listen carefully for the following is very important. The stuff below is
@@ -141,7 +141,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::SetupDiscretizations(const Epetra_Comm
   else  // ALE discretization already filled
   {
     if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
-      dserror(
+      FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use the ALE cloning functionality or ensure non-overlapping node numbering!");
@@ -161,7 +161,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::SetupDiscretizations(const Epetra_Comm
     }  // case monolithic
     case partitioned:
     {
-      dserror(
+      FOUR_C_THROW(
           "Partitioned solution scheme not implemented for FPSI, yet. "
           "Make sure that the parameter COUPALGO is set to 'fpsi_monolithic_plain', "
           "and the parameter PARITIONED is set to 'monolithic'. ");
@@ -174,7 +174,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::SetupDiscretizations(const Epetra_Comm
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "Only RobinNeumann algorithm available for partitioned FPSI !!!\n"
             "Set 'PARTITIONED' to 'RobinNeumann' in input file.");
       }
@@ -245,7 +245,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
 
     if (slavedis.HaveDofs() == false)
     {
-      dserror("No degrees of freedom have been assigned to discretization");
+      FOUR_C_THROW("No degrees of freedom have been assigned to discretization");
     }
 
     // do for every interface slave node
@@ -338,7 +338,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
 
       if (masterdis.HaveDofs() == false)
       {
-        dserror("No degrees of freedom have been assigned to discretization, DaFUQ?!?!?");
+        FOUR_C_THROW("No degrees of freedom have been assigned to discretization, DaFUQ?!?!?");
       }
 
       // do for every master node
@@ -365,9 +365,9 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
         Teuchos::RCP<DRT::FaceElement> bele =
             Teuchos::rcp_dynamic_cast<DRT::FaceElement>(curr->second);
         parenteleid = bele->ParentElement()->Id();
-        if (parenteleid == -1) dserror("Couldn't get master parent element Id() ...");
+        if (parenteleid == -1) FOUR_C_THROW("Couldn't get master parent element Id() ...");
         parenteleowner = bele->ParentElement()->Owner();
-        if (parenteleowner == -1) dserror("Couldn't get master parent element Owner() ...");
+        if (parenteleowner == -1) FOUR_C_THROW("Couldn't get master parent element Owner() ...");
       }
 
       mastercomm.Broadcast(&parenteleid, 1, proc);
@@ -433,7 +433,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
       if (counter == sizelist[proc])
         done = true;  // true on every proc
       else if (counter > sizelist[proc])
-        dserror("tried to match more master elements as are on proc ... ");
+        FOUR_C_THROW("tried to match more master elements as are on proc ... ");
 
     }  // while iterating master elements on proc
     mastercomm.Barrier();
@@ -456,7 +456,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
   }
   else if (abs(globalslavegeomsize - globalmatchedelements) > 1e-3 and mastercomm.MyPID() == 0)
   {
-    dserror("ERROR: globalslavegeomsize != globalmatchedelements (%d,%d)", globalslavegeomsize,
+    FOUR_C_THROW("ERROR: globalslavegeomsize != globalmatchedelements (%d,%d)", globalslavegeomsize,
         globalmatchedelements);
   }
 
@@ -499,7 +499,7 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
     else if (mapsizearray[proc] == 0)
       done = 1;
     else
-      dserror("weird size of processor local interfacefacingelementmap ... ");
+      FOUR_C_THROW("weird size of processor local interfacefacingelementmap ... ");
 
     int HasMasterEle = 0;
 
@@ -592,7 +592,7 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
           // "<<masterdis->HaveGlobalElement(mastereleid)<<" on proc "<<slaveeleowner<<endl;
           after = masterdis->HaveGlobalElement(mastereleid);
           if (after == 0 and before == 0)
-            dserror("Element with gid=%d has not been redistributed ! ", mastereleid);
+            FOUR_C_THROW("Element with gid=%d has not been redistributed ! ", mastereleid);
         }
       }
 
@@ -659,7 +659,7 @@ void FPSI::UTILS::MapExtractor::Setup(
   othermaps.push_back(extractor.OtherMap());
 
   if (CORE::LINALG::MultiMapExtractor::IntersectMaps(othermaps)->NumGlobalElements() > 0)
-    dserror("Failed to add dofmap of foreign discretization to OtherMap. Detected overlap.");
+    FOUR_C_THROW("Failed to add dofmap of foreign discretization to OtherMap. Detected overlap.");
 
   Teuchos::RCP<const Epetra_Map> mergedothermap =
       CORE::LINALG::MultiMapExtractor::MergeMaps(othermaps);

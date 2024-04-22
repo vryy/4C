@@ -129,13 +129,13 @@ namespace CONTACT
       void Init(CONTACT::ParamsInterface* cparams, CONTACT::Integrator* wrapper)
       {
         if (not cparams or not wrapper)
-          dserror(
+          FOUR_C_THROW(
               "The initialization list is not properly filled. No new"
               "instance can be created.");
 
         cparams_ = cparams;
         wrapper_ = dynamic_cast<IntegrationWrapper*>(wrapper);
-        if (not wrapper_) dserror("dynamic cast failed!");
+        if (not wrapper_) FOUR_C_THROW("dynamic cast failed!");
       }
 
      public:
@@ -167,21 +167,21 @@ namespace CONTACT
 
       CONTACT::ParamsInterface& CParams()
       {
-        if (not cparams_) dserror("cparams_ seems no longer valid!");
+        if (not cparams_) FOUR_C_THROW("cparams_ seems no longer valid!");
 
         return *cparams_;
       }
 
       const CONTACT::ParamsInterface& CParams() const
       {
-        if (not cparams_) dserror("cparams_ seems no longer valid!");
+        if (not cparams_) FOUR_C_THROW("cparams_ seems no longer valid!");
 
         return *cparams_;
       }
 
       IntegrationWrapper& Wrapper()
       {
-        if (not wrapper_) dserror("wrapper_ seems no longer valid!");
+        if (not wrapper_) FOUR_C_THROW("wrapper_ seems no longer valid!");
 
         return *wrapper_;
       }

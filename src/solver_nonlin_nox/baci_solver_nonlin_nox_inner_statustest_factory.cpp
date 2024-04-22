@@ -50,7 +50,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(Teuchos::ParameterLi
     test_type = Teuchos::get<std::string>(p, "Test Type");
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Error - The \"Test Type\" is a required parameter in the NOX::NLN::StatusTest::Factory!");
   }
 
@@ -181,20 +181,20 @@ NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
   // blocking parameters
   {
     int tmp = p.get<int>("Consecutive Blocking Iterates", 3);
-    if (tmp < 1) dserror("The Consecutive Blocking Iterates must be greater or equal to 1.");
+    if (tmp < 1) FOUR_C_THROW("The Consecutive Blocking Iterates must be greater or equal to 1.");
     fparams.consecutive_blocking_iterates_ = tmp;
 
     tmp = p.get<int>("Consecutive Blocking LS Steps", 7);
-    if (tmp < 1) dserror("The Consecutive Blocking LS Steps must be greater or equal to 1.");
+    if (tmp < 1) FOUR_C_THROW("The Consecutive Blocking LS Steps must be greater or equal to 1.");
     fparams.consecutive_blocking_ls_steps_ = tmp;
 
     fparams.max_theta_blocking_red_ = p.get<double>("Max Theta Blocking Reduction", 0.25);
     if (fparams.max_theta_blocking_red_ > 1.0 or fparams.max_theta_blocking_red_ < 0.0)
-      dserror("The Max Theta Blocking Reduction must be between 0.0 and 1.0.");
+      FOUR_C_THROW("The Max Theta Blocking Reduction must be between 0.0 and 1.0.");
 
     fparams.init_max_theta_blocking_scaling_ = p.get<double>("Init Max Theta Blocking Scale", 2.0);
     if (fparams.init_max_theta_blocking_scaling_ < 0.0)
-      dserror("The Initial Max Theta Blocking Scaling must be greater than 0.0.");
+      FOUR_C_THROW("The Initial Max Theta Blocking Scaling must be greater than 0.0.");
   }
 
   Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter> status_test_ptr =
@@ -225,7 +225,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildUpperBoundTest(
   if (qtype == NOX::NLN::StatusTest::quantity_unknown)
   {
     std::ostringstream msg;
-    dserror(
+    FOUR_C_THROW(
         "The \"Quantity Type\" is a required parameter "
         "and the chosen option \"%s\" is invalid!",
         quantity_type_string.c_str());
@@ -259,7 +259,7 @@ NOX::NLN::INNER::StatusTest::Factory::BuildComboTest(Teuchos::ParameterList& p,
     const ::NOX::Utils& u,
     std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
 {
-  if (not p.isParameter("Combo Type")) dserror("You have to specify a \"Combo Type\".");
+  if (not p.isParameter("Combo Type")) FOUR_C_THROW("You have to specify a \"Combo Type\".");
 
 
   ::NOX::StatusTest::Combo::ComboType combo_type =
@@ -317,7 +317,7 @@ void NOX::NLN::INNER::StatusTest::Factory::throwError(
   std::ostringstream msg;
   msg << "ERROR - NOX::NLN::INNER::StatusTest::Factory::" << functionName << " - " << errorMsg
       << std::endl;
-  dserror(msg.str());
+  FOUR_C_THROW(msg.str());
 }
 
 /*----------------------------------------------------------------------------*

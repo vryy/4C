@@ -139,7 +139,7 @@ void MyocardFitzhughNagumo::SetInternalState(const int k, const double val, int 
     }
     default:
     {
-      dserror("There are only 1 internal variables in this material!");
+      FOUR_C_THROW("There are only 1 internal variables in this material!");
       break;
     }
   }

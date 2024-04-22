@@ -133,7 +133,7 @@ bool CORE::GEO::CUT::Cmp::Compare(VolumeCell* vc1, VolumeCell* vc2) const
     }
   }
 
-  dserror(
+  FOUR_C_THROW(
       "sorting failed: one volume-cell is completely contained in the other volume-cell or both "
       "vcs are equal!");
 
@@ -435,14 +435,14 @@ int CORE::GEO::CUT::Node::DofSetNumber(VolumeCell* cell)
       }
       else
       {
-        dserror("volume dofset not unique");
+        FOUR_C_THROW("volume dofset not unique");
       }
     }
   }
   if (dofset == -1)
   {
     std::cout << "dofset not found for node " << this->Id() << std::endl;
-    dserror("volume dofset not found");
+    FOUR_C_THROW("volume dofset not found");
   }
   return dofset;
 }
@@ -463,7 +463,7 @@ int CORE::GEO::CUT::Node::DofSetNumberNEW(const plain_volumecell_set& cells)
   int dofset = -1;
 
   // find the first cell of cells, this is only a volume cell of a subelement
-  if (cells.size() == 0) dserror("cells is empty");
+  if (cells.size() == 0) FOUR_C_THROW("cells is empty");
 
   //  VolumeCell* cell = cells[0];
   VolumeCell* cell = *(cells.begin());
@@ -488,7 +488,7 @@ int CORE::GEO::CUT::Node::DofSetNumberNEW(const plain_volumecell_set& cells)
           std::cout << "first dofset id: " << dofset << std::endl;
           std::cout << "new dofset id: " << i << std::endl;
           cell->Print(std::cout);
-          dserror("volume dofset not unique");
+          FOUR_C_THROW("volume dofset not unique");
         }
       }
     }
@@ -496,7 +496,7 @@ int CORE::GEO::CUT::Node::DofSetNumberNEW(const plain_volumecell_set& cells)
   if (dofset == -1)
   {
     std::cout << "dofset not found for node " << this->Id() << std::endl;
-    //    dserror( "volume dofset not found" );
+    //    FOUR_C_THROW( "volume dofset not found" );
   }
   return dofset;
 }
@@ -582,7 +582,8 @@ void CORE::GEO::CUT::Node::CollectNodalDofSets(bool connect_ghost_with_standard_
         // then we potentially combine the current nodal dofset with the last CompositeNodalDofSet
         // at most
         Teuchos::RCP<CompositeNodalDofSet> cnds_last = collected_nodaldofsets.back();
-        if (cnds_last == Teuchos::null) dserror("there should be a valid CompositeNodalDofSet");
+        if (cnds_last == Teuchos::null)
+          FOUR_C_THROW("there should be a valid CompositeNodalDofSet");
 
         if (connect_ghost_with_standard_nds)  // classical std-FEM based cut approximation --
                                               // combine ghost and std sets with same position
@@ -721,7 +722,7 @@ void CORE::GEO::CUT::Node::SelfCutPosition(Point::PointPosition pos)
 {
   if (selfcutposition_ != pos)
   {
-    dsassert(IsCutPositionUnchanged(selfcutposition_, pos),
+    FOUR_C_ASSERT(IsCutPositionUnchanged(selfcutposition_, pos),
         "Are you sure that you want to change the selfcut-node-position from inside to outside "
         "or vice versa?");
 
@@ -796,7 +797,8 @@ void CORE::GEO::CUT::Node::RemoveNonStandardNodalDofSets()
     else
     {
       if (nodaldofset.strong_count() > 1)
-        dserror("nodaldofset cannot be destroyed! (strong_count = %d)", nodaldofset.strong_count());
+        FOUR_C_THROW(
+            "nodaldofset cannot be destroyed! (strong_count = %d)", nodaldofset.strong_count());
       nodaldofset = Teuchos::null;
     }
   }

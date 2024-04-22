@@ -50,10 +50,10 @@ namespace IO::GRIDGENERATOR
     for (int i = 0; i < 3; ++i)
     {
       if (inputData.bottom_corner_point_[i] >= inputData.top_corner_point_[i])
-        dserror("lower bound in domain reader must be smaller than upper bound");
+        FOUR_C_THROW("lower bound in domain reader must be smaller than upper bound");
 
       if (inputData.interval_[i] <= 0)
-        dserror("intervals in domain reader must be greater than zero");
+        FOUR_C_THROW("intervals in domain reader must be greater than zero");
     }
 
     Teuchos::RCP<Epetra_Map> nodeRowMap;
@@ -79,7 +79,7 @@ namespace IO::GRIDGENERATOR
       if (distype_enum != CORE::FE::CellType::hex8 and distype_enum != CORE::FE::CellType::hex20 and
           distype_enum != CORE::FE::CellType::hex27)
       {
-        dserror("This map-partition is only available for HEX-elements!");
+        FOUR_C_THROW("This map-partition is only available for HEX-elements!");
       }
 
       std::vector<int> factors;
@@ -96,7 +96,7 @@ namespace IO::GRIDGENERATOR
           fac++;
         }
       }
-      if (nproc != 1) dserror("Could not split numproc.");
+      if (nproc != 1) FOUR_C_THROW("Could not split numproc.");
 
       unsigned int subdivisions[] = {1, 1, 1};
       const double dinterval[] = {static_cast<double>(inputData.interval_[0]),
@@ -154,14 +154,14 @@ namespace IO::GRIDGENERATOR
     for (int lid = 0; lid < elementRowMap->NumMyElements(); ++lid)
     {
       int eleid = elementRowMap->GID(lid);
-      dsassert(eleid >= 0, "Missing gid");
+      FOUR_C_ASSERT(eleid >= 0, "Missing gid");
 
       // For the time being we support old and new input facilities. To
       // smooth transition.
       INPUT::LineDefinition* linedef = ed.ElementLines(inputData.elementtype_, inputData.distype_);
       if (linedef == nullptr)
-        dserror("a matching line definition is needed for %s %s", inputData.elementtype_.c_str(),
-            inputData.distype_.c_str());
+        FOUR_C_THROW("a matching line definition is needed for %s %s",
+            inputData.elementtype_.c_str(), inputData.distype_.c_str());
 
       std::istringstream eleargstream(inputData.elearguments_);
       if (not linedef->Read(eleargstream, &inputData.distype_))
@@ -170,7 +170,7 @@ namespace IO::GRIDGENERATOR
                  << eleid << " " << inputData.elementtype_ << " " << inputData.distype_ << " ";
         linedef->Print(IO::cout.cout_replacement());
         IO::cout << "\n";
-        dserror("failed to read element %d %s %s", eleid, inputData.elementtype_.c_str(),
+        FOUR_C_THROW("failed to read element %d %s %s", eleid, inputData.elementtype_.c_str(),
             inputData.distype_.c_str());
       }
 
@@ -198,7 +198,7 @@ namespace IO::GRIDGENERATOR
           break;
         }
         default:
-          dserror(
+          FOUR_C_THROW(
               "The discretization type %s, is not implemented. Currently only HEX(8,20,27) and "
               "WEDGE(6,15) are implemented for the box geometry generation.",
               inputData.distype_.c_str());
@@ -265,7 +265,7 @@ namespace IO::GRIDGENERATOR
       maxgid = std::max(gid, maxgid);
 
       const int posid = gid - inputData.node_gid_of_first_new_node_;
-      dsassert(posid >= 0, "Tried to access a node gid that was not on this proc");
+      FOUR_C_ASSERT(posid >= 0, "Tried to access a node gid that was not on this proc");
       size_t i = posid % nx;
       size_t j = (posid / nx) % ny;
       size_t k = posid / (nx * ny);
@@ -369,7 +369,7 @@ namespace IO::GRIDGENERATOR
         nodeids[7] = nodeOffset + ((ez + 2) * ny + ey + 2) * nx + ex;
         break;
       default:
-        dserror("The number of nodeids: %d, does not correspond to a supported HEX-element.",
+        FOUR_C_THROW("The number of nodeids: %d, does not correspond to a supported HEX-element.",
             nodeids.size());
         break;
     }
@@ -432,7 +432,8 @@ namespace IO::GRIDGENERATOR
           break;
           //---------------------
         default:
-          dserror("The number of nodeids: %d, does not correspond to a supported WEDGE-element.",
+          FOUR_C_THROW(
+              "The number of nodeids: %d, does not correspond to a supported WEDGE-element.",
               nodeids.size());
           break;
       }
@@ -462,7 +463,8 @@ namespace IO::GRIDGENERATOR
           break;
           //---------------------
         default:
-          dserror("The number of nodeids: %d, does not correspond to a supported WEDGE-element.",
+          FOUR_C_THROW(
+              "The number of nodeids: %d, does not correspond to a supported WEDGE-element.",
               nodeids.size());
           break;
       }

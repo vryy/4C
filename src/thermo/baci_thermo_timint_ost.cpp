@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 void THR::TimIntOneStepTheta::VerifyCoeff()
 {
   // theta
-  if ((theta_ <= 0.0) or (theta_ > 1.0)) dserror("theta out of range (0.0,1.0]");
+  if ((theta_ <= 0.0) or (theta_ > 1.0)) FOUR_C_THROW("theta out of range (0.0,1.0]");
 
   // done
   return;

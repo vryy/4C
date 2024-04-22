@@ -210,7 +210,7 @@ namespace CORE::GEO
       /// Reset the point with local index lid
       void ResetPos(int lid, CORE::LINALG::Matrix<3, 1> newpos)
       {
-        if (lid > xyz_.numCols()) dserror("Index out of range! %d > %d", lid, xyz_.numCols());
+        if (lid > xyz_.numCols()) FOUR_C_THROW("Index out of range! %d > %d", lid, xyz_.numCols());
 
         xyz_(0, lid) = newpos(0, 0);
         xyz_(1, lid) = newpos(1, 0);

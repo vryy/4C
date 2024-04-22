@@ -24,8 +24,8 @@ MAT::PAR::LinElast1D::LinElast1D(Teuchos::RCP<MAT::PAR::Material> matdata)
       youngs_(*matdata->Get<double>("YOUNG")),
       density_(*matdata->Get<double>("DENS"))
 {
-  if (youngs_ <= 0.) dserror("Young's modulus must be greater zero");
-  if (density_ <= 0.) dserror("Density must be greater zero");
+  if (youngs_ <= 0.) FOUR_C_THROW("Young's modulus must be greater zero");
+  if (density_ <= 0.) FOUR_C_THROW("Density must be greater zero");
 }
 
 /*----------------------------------------------------------------------*
@@ -89,12 +89,13 @@ void MAT::LinElast1D::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::LinElast1D*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -106,8 +107,8 @@ MAT::PAR::LinElast1DGrowth::LinElast1DGrowth(Teuchos::RCP<MAT::PAR::Material> ma
       poly_params_(*matdata->Get<std::vector<double>>("POLY_PARAMS")),
       amount_prop_growth_(*matdata->Get<bool>("AOS_PROP_GROWTH"))
 {
-  if (c0_ <= 0.0) dserror("Reference concentration must be greater than zero");
-  if (poly_num_ <= 0) dserror("Polynomial order must be greater than zero");
+  if (c0_ <= 0.0) FOUR_C_THROW("Reference concentration must be greater than zero");
+  if (poly_num_ <= 0) FOUR_C_THROW("Polynomial order must be greater than zero");
 }
 
 /*----------------------------------------------------------------------*
@@ -183,12 +184,13 @@ void MAT::LinElast1DGrowth::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         growth_params_ = static_cast<MAT::PAR::LinElast1DGrowth*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*

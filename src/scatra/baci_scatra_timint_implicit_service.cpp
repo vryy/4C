@@ -66,7 +66,7 @@ void SCATRA::ScaTraTimIntImpl::CalcFlux(const bool writetofile)
 
     default:
     {
-      dserror("Invalid option for flux calculation inside domain!");
+      FOUR_C_THROW("Invalid option for flux calculation inside domain!");
       break;
     }
   }
@@ -91,7 +91,7 @@ void SCATRA::ScaTraTimIntImpl::CalcFlux(const bool writetofile)
 
     default:
     {
-      dserror("Invalid option for flux calculation on boundary!");
+      FOUR_C_THROW("Invalid option for flux calculation on boundary!");
       break;
     }
   }
@@ -148,7 +148,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
     // consistency), but perform mass matrix lumping, i.e., we divide by the values of the
     // integrated shape functions
     if (flux_projected->ReciprocalMultiply(1., *integratedshapefcts, *flux, 0.))
-      dserror("ReciprocalMultiply failed!");
+      FOUR_C_THROW("ReciprocalMultiply failed!");
   }
 
   else
@@ -301,7 +301,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
   // safety check
   if (!cond.size())
-    dserror("Flux output requested without corresponding boundary condition specification!");
+    FOUR_C_THROW("Flux output requested without corresponding boundary condition specification!");
 
   if (myrank_ == 0)
   {
@@ -323,7 +323,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     const auto* CondID = cond[condid]->GetIf<int>("ConditionID");
     if (CondID)
     {
-      if ((*CondID) != condid) dserror("Condition 'ScaTraFluxCalc' has non-matching ConditionID!");
+      if ((*CondID) != condid)
+        FOUR_C_THROW("Condition 'ScaTraFluxCalc' has non-matching ConditionID!");
     }
     else
     {
@@ -451,7 +452,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
               double normalveccomp = (*normalcomp)[lnodid];
               int err =
                   flux->ReplaceGlobalValue(dofgid, idim, (*normalfluxes)[doflid] * normalveccomp);
-              if (err != 0) dserror("Detected error in ReplaceMyValue");
+              if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
             }
           }
         }
@@ -713,7 +714,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
       // global and local dof ID
       const int globaldofid = nodedofs[k];
       const int localdofid = Phiafnp()->Map().LID(globaldofid);
-      if (localdofid < 0) dserror("Local dof ID not found in dof map!");
+      if (localdofid < 0) FOUR_C_THROW("Local dof ID not found in dof map!");
 
       // add contribution of scalar k to nodal density value
       density += densific_[k] * ((*(Phiafnp()))[localdofid] - c0_[k]);
@@ -726,11 +727,11 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
     // the fluid algorithm
     const int globaldofid = nodedofs[numdof - 1];
     const int localdofid = Phiafnp()->Map().LID(globaldofid);
-    if (localdofid < 0) dserror("Local dof ID not found in dof map!");
+    if (localdofid < 0) FOUR_C_THROW("Local dof ID not found in dof map!");
 
     int err = densafnp_->ReplaceMyValue(localdofid, 0, density);
 
-    if (err) dserror("Error while inserting nodal density value into global density vector!");
+    if (err) FOUR_C_THROW("Error while inserting nodal density value into global density vector!");
   }  // loop over all local nodes
 }  // SCATRA::ScaTraTimIntImpl::ComputeDensity
 
@@ -752,7 +753,8 @@ void SCATRA::ScaTraTimIntImpl::OutputTotalAndMeanScalars(const int num)
 {
   if (outputscalars_ != INPAR::SCATRA::outputscalars_none)
   {
-    if (outputscalarstrategy_ == Teuchos::null) dserror("output strategy was not initialized!");
+    if (outputscalarstrategy_ == Teuchos::null)
+      FOUR_C_THROW("output strategy was not initialized!");
     outputscalarstrategy_->OutputTotalAndMeanScalars(this, num);
   }  // if(outputscalars_)
 }  // SCATRA::ScaTraTimIntImpl::OutputTotalAndMeanScalars
@@ -769,7 +771,7 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
       computeintegrals_ == INPAR::SCATRA::computeintegrals_repeated)
   {
     if (outputdomainintegralstrategy_ == Teuchos::null)
-      dserror("output strategy was not initialized!");
+      FOUR_C_THROW("output strategy was not initialized!");
 
     outputdomainintegralstrategy_->EvaluateIntegralsAndPrintResults(this, condstring);
   }  // check whether output is applicable
@@ -809,12 +811,12 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   }
 
   if (membrane_conc_ == Teuchos::null)
-    dserror("Membrane concentration must already been saved before calling this function!");
+    FOUR_C_THROW("Membrane concentration must already been saved before calling this function!");
   discret_->SetState("MembraneConcentration", membrane_conc_);
 
   // test if all necessary ingredients had been set
   if (not discret_->HasState(NdsWallShearStress(), "WallShearStress"))
-    dserror(
+    FOUR_C_THROW(
         "WSS must already been set into one of the secondary dofset before calling this function!");
 
   // Evaluate condition
@@ -847,18 +849,18 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
 
   // test if all necessary ingredients for the second Kedem-Katchalsky equations had been set
   if (not discret_->HasState(NdsWallShearStress(), "WallShearStress"))
-    dserror(
+    FOUR_C_THROW(
         "WSS must already been set into one of the secondary dofset before calling this function!");
 
   if (not discret_->HasState(NdsPressure(), "Pressure"))
   {
-    dserror(
+    FOUR_C_THROW(
         "Pressure must already been set into one of the secondary dofset before calling this "
         "function!");
   }
 
   if (membrane_conc_ == Teuchos::null)
-    dserror("Membrane concentration must already been saved before calling this function!");
+    FOUR_C_THROW("Membrane concentration must already been saved before calling this function!");
   discret_->SetState("MembraneConcentration", membrane_conc_);
 
   // Evaluate condition
@@ -991,7 +993,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeNullSpaceIfNecessary() const
 
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "Point-based null space calculation currently only implemented for MueLu "
           "preconditioner!");
     }
@@ -1183,7 +1185,7 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(const int step, const double time) c
     Teuchos::RCP<const Epetra_Vector> convel =
         discret_->GetState(NdsVel(), "convective velocity field");
     if (convel == Teuchos::null)
-      dserror("Cannot extract convective velocity field from discretization");
+      FOUR_C_THROW("Cannot extract convective velocity field from discretization");
 
     // draw vector field 'Convective Velocity' for every element
     IO::GMSH::VectorFieldDofBasedToGmsh(discret_, convel, gmshfilecontent, NdsVel());
@@ -1212,9 +1214,9 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,
 {
   // safety checks
   if (flux == Teuchos::null)
-    dserror("Null pointer for flux vector output. Output() called before Update() ??");
+    FOUR_C_THROW("Null pointer for flux vector output. Output() called before Update() ??");
   if (fluxtype != "domain" and fluxtype != "boundary")
-    dserror("Unknown flux type. Must be either 'domain' or 'boundary'!");
+    FOUR_C_THROW("Unknown flux type. Must be either 'domain' or 'boundary'!");
 
   // WORK-AROUND FOR NURBS DISCRETIZATIONS
   // using noderowmap is problematic. Thus, we do not add normal vectors
@@ -1261,7 +1263,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,
       int err = fluxk->ReplaceMyValue(i, 0, xvalue);
       err += fluxk->ReplaceMyValue(i, 1, yvalue);
       err += fluxk->ReplaceMyValue(i, 2, zvalue);
-      if (err != 0) dserror("Detected error in ReplaceMyValue");
+      if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
     }
     output_->WriteVector(name, fluxk, IO::nodevector);
   }
@@ -1278,8 +1280,8 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
 {
   if (outintegrreac_)
   {
-    if (!discret_->Filled()) dserror("FillComplete() was not called");
-    if (!discret_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+    if (!discret_->Filled()) FOUR_C_THROW("FillComplete() was not called");
+    if (!discret_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
     // set scalar values needed by elements
     discret_->SetState("phinp", phinp_);
@@ -1410,7 +1412,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 
     // get nullspace parameters
     double* nullspace = mlparams.get("null space: vectors", (double*)nullptr);
-    if (!nullspace) dserror("No nullspace supplied in parameter list");
+    if (!nullspace) FOUR_C_THROW("No nullspace supplied in parameter list");
     int nsdim = mlparams.get("null space: dimension", 1);
 
     // modify nullspace to ensure that DBC are fully taken into account
@@ -1439,9 +1441,9 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 
     // complete scale-separation matrix and check maps
     Sep_->Complete(Sep_->DomainMap(), Sep_->RangeMap());
-    if (!Sep_->RowMap().SameAs(sysmat_sd_->RowMap())) dserror("rowmap not equal");
-    if (!Sep_->RangeMap().SameAs(sysmat_sd_->RangeMap())) dserror("rangemap not equal");
-    if (!Sep_->DomainMap().SameAs(sysmat_sd_->DomainMap())) dserror("domainmap not equal");
+    if (!Sep_->RowMap().SameAs(sysmat_sd_->RowMap())) FOUR_C_THROW("rowmap not equal");
+    if (!Sep_->RangeMap().SameAs(sysmat_sd_->RangeMap())) FOUR_C_THROW("rangemap not equal");
+    if (!Sep_->DomainMap().SameAs(sysmat_sd_->DomainMap())) FOUR_C_THROW("domainmap not equal");
 
     // precomputation of unscaled diffusivity matrix:
     // either two-sided S^T*M*S: multiply M by S from left- and right-hand side
@@ -1473,7 +1475,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
   {
     sgvsqrt[i] = sqrt(sgvsqrt[i]);
     int err = subgrdiff_->ReplaceMyValues(1, &sgvsqrt[i], &i);
-    if (err != 0) dserror("index not found");
+    if (err != 0) FOUR_C_THROW("index not found");
   }
 
   // get unscaled S^T*M*S from Sep
@@ -1481,9 +1483,9 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
 
   // left and right scaling of normalized fine-scale subgrid-viscosity matrix
   ierr = sysmat_sd_->LeftScale(*subgrdiff_);
-  if (ierr) dserror("Epetra_CrsMatrix::LeftScale returned err=%d", ierr);
+  if (ierr) FOUR_C_THROW("Epetra_CrsMatrix::LeftScale returned err=%d", ierr);
   ierr = sysmat_sd_->RightScale(*subgrdiff_);
-  if (ierr) dserror("Epetra_CrsMatrix::RightScale returned err=%d", ierr);
+  if (ierr) FOUR_C_THROW("Epetra_CrsMatrix::RightScale returned err=%d", ierr);
 
   // add the subgrid-viscosity-scaled fine-scale matrix to obtain complete matrix
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat = SystemMatrix();
@@ -1499,7 +1501,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggle()
 {
-  if (dbcmaps_ == Teuchos::null) dserror("Dirichlet map has not been allocated");
+  if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones =
       CORE::LINALG::CreateVector(*(dbcmaps_->CondMap()), false);
   dirichones->PutScalar(1.0);
@@ -1622,7 +1624,7 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
 
       // call the element evaluate method to integrate functions
       int err = ele->Evaluate(myparams, *discret_, la, emat1, emat2, evec1, evec2, evec2);
-      if (err) dserror("Proc %d: Element %d returned err=%d", myrank_, ele->Id(), err);
+      if (err) FOUR_C_THROW("Proc %d: Element %d returned err=%d", myrank_, ele->Id(), err);
 
       // get contributions of this element and add it up
       local_sumCai += myparams.get<double>("Cai_int");
@@ -1679,7 +1681,7 @@ void SCATRA::ScaTraTimIntImpl::CalcIntermediateSolution()
 
     if (activate)
     {
-      if (homisoturb_forcing_ == Teuchos::null) dserror("Forcing expected!");
+      if (homisoturb_forcing_ == Teuchos::null) FOUR_C_THROW("Forcing expected!");
 
       if (myrank_ == 0)
       {
@@ -1758,7 +1760,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeSuperconvergen
 
   // dependent on the desired projection, just remove this line
   if (not state->Map().SameAs(*discret_->DofRowMap()))
-    dserror("input map is not a dof row map of the fluid");
+    FOUR_C_THROW("input map is not a dof row map of the fluid");
 
   // set given state for element evaluation
   discret_->SetState(statename, state);
@@ -1778,7 +1780,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeSuperconvergen
           *discret_, *state, statename, numvec, eleparams);
       break;
     default:
-      dserror("only 1/2/3D implementation available for superconvergent patch recovery");
+      FOUR_C_THROW("only 1/2/3D implementation available for superconvergent patch recovery");
       break;
   }
 
@@ -1822,11 +1824,11 @@ bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int itnum, int itmax, const doub
     // check for any INF's and NaN's
     if (std::isnan(res1norm_L2) or std::isnan(phi1incnorm_L2) or std::isnan(phi1norm_L2) or
         std::isnan(res2norm_L2) or std::isnan(phi2incnorm_L2) or std::isnan(phi2norm_L2))
-      dserror("At least one of the calculated vector norms is NaN.");
+      FOUR_C_THROW("At least one of the calculated vector norms is NaN.");
 
     if (std::isinf(res1norm_L2) or std::isinf(phi1incnorm_L2) or std::isinf(phi1norm_L2) or
         std::isinf(res2norm_L2) or std::isinf(phi2incnorm_L2) or std::isinf(phi2norm_L2))
-      dserror("At least one of the calculated vector norms is INF.");
+      FOUR_C_THROW("At least one of the calculated vector norms is INF.");
 
     // for scalar norm being (close to) zero, set to one
     if (phi1norm_L2 < 1e-5) phi1norm_L2 = 1.0;
@@ -1874,10 +1876,10 @@ bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int itnum, int itmax, const doub
 
     // check for any INF's and NaN's
     if (std::isnan(res1norm_L2) or std::isnan(phi1incnorm_L2) or std::isnan(phi1norm_L2))
-      dserror("At least one of the calculated vector norms is NaN.");
+      FOUR_C_THROW("At least one of the calculated vector norms is NaN.");
 
     if (std::isinf(res1norm_L2) or std::isinf(phi1incnorm_L2) or std::isinf(phi1norm_L2))
-      dserror("At least one of the calculated vector norms is INF.");
+      FOUR_C_THROW("At least one of the calculated vector norms is INF.");
 
     // for scalar norm being (close to) zero, set to one
     if (phi1norm_L2 < 1e-5) phi1norm_L2 = 1.0;
@@ -1906,7 +1908,7 @@ bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int itnum, int itmax, const doub
     }
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "ScaTra convergence check for number of scalars other than one or two not yet supported!");
 
   return stopnonliniter;
@@ -1941,7 +1943,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
             ->EpetraMatrix();
   }
   else
-    dserror("Type of system matrix unknown!");
+    FOUR_C_THROW("Type of system matrix unknown!");
   sysmat_original->FillComplete();
 
   // make a copy of system right-hand side vector
@@ -1968,7 +1970,8 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
     // impose perturbation
     if (phinp_->Map().MyGID(colgid))
       if (phinp_->SumIntoGlobalValue(colgid, 0, fdcheckeps_))
-        dserror("Perturbation could not be imposed on state vector for finite difference check!");
+        FOUR_C_THROW(
+            "Perturbation could not be imposed on state vector for finite difference check!");
 
     // carry perturbation over to state vectors at intermediate time stages if necessary
     ComputeIntermediateValues();
@@ -1992,7 +1995,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
     {
       // get global index of current matrix row
       const int rowgid = sysmat_original->RowMap().GID(rowlid);
-      if (rowgid < 0) dserror("Invalid global ID of matrix row!");
+      if (rowgid < 0) FOUR_C_THROW("Invalid global ID of matrix row!");
 
       // get relevant entry in current row of original system matrix
       double entry(0.);
@@ -2016,7 +2019,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
 
       // confirm accuracy of first comparison
       if (abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
-        dserror("Finite difference check involves values too close to numerical zero!");
+        FOUR_C_THROW("Finite difference check involves values too close to numerical zero!");
 
       // absolute and relative errors in first comparison
       const double abserr1 = entry - fdval;
@@ -2050,7 +2053,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
 
         // confirm accuracy of second comparison
         if (abs(right) > 1.e-17 and abs(right) < 1.e-15)
-          dserror("Finite difference check involves values too close to numerical zero!");
+          FOUR_C_THROW("Finite difference check involves values too close to numerical zero!");
 
         // absolute and relative errors in second comparison
         const double abserr2 = left - right;
@@ -2092,7 +2095,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
     {
       printf(
           "--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n", counterglobal);
-      dserror("Finite difference check failed for scalar transport system matrix!");
+      FOUR_C_THROW("Finite difference check failed for scalar transport system matrix!");
     }
     else
     {
@@ -2130,7 +2133,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
       {
         const int errorfunctnumber = params_->get<int>("CALCERRORNO");
         if (errorfunctnumber < 1)
-          dserror("invalid value of paramter CALCERRORNO for error function evaluation!");
+          FOUR_C_THROW("invalid value of paramter CALCERRORNO for error function evaluation!");
 
         eleparams.set<int>("error function number", errorfunctnumber);
       }
@@ -2148,11 +2151,11 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
         if (std::abs((*errors)[k * 4 + 2]) > 1e-14)
           (*relerrors_)[k * 2] = sqrt((*errors)[k * 4]) / sqrt((*errors)[k * 4 + 2]);
         else
-          dserror("Can't compute relative L2 error due to numerical roundoff sensitivity!");
+          FOUR_C_THROW("Can't compute relative L2 error due to numerical roundoff sensitivity!");
         if (std::abs((*errors)[k * 4 + 3]) > 1e-14)
           (*relerrors_)[k * 2 + 1] = sqrt((*errors)[k * 4 + 1]) / sqrt((*errors)[k * 4 + 3]);
         else
-          dserror("Can't compute relative H1 error due to numerical roundoff sensitivity!");
+          FOUR_C_THROW("Can't compute relative H1 error due to numerical roundoff sensitivity!");
 
         if (myrank_ == 0)
         {
@@ -2219,7 +2222,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
             "action", SCATRA::Action::calc_error, eleparams);
         eleparams.set<int>("calcerrorflag", INPAR::SCATRA::calcerror_byfunction);
         const int errorfunctnumber = *relerrorconditions[icond]->Get<int>("FunctionID");
-        if (errorfunctnumber < 1) dserror("Invalid function number for error calculation!");
+        if (errorfunctnumber < 1) FOUR_C_THROW("Invalid function number for error calculation!");
         eleparams.set<int>("error function number", errorfunctnumber);
 
         // set state vector needed by elements
@@ -2240,7 +2243,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
           if (std::abs((*errors)[k * 4 + 2]) > 1e-14)
             (*relerrors_)[offset + k * 2] = sqrt((*errors)[k * 4]) / sqrt((*errors)[k * 4 + 2]);
           else
-            dserror("Can't compute relative L2 error due to numerical roundoff sensitivity!");
+            FOUR_C_THROW("Can't compute relative L2 error due to numerical roundoff sensitivity!");
 
           // compute relative H1 error
           if (std::abs((*errors)[k * 4 + 3]) > 1e-14)
@@ -2249,7 +2252,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
                 sqrt((*errors)[k * 4 + 1]) / sqrt((*errors)[k * 4 + 3]);
           }
           else
-            dserror("Can't compute relative H1 error due to numerical roundoff sensitivity!");
+            FOUR_C_THROW("Can't compute relative H1 error due to numerical roundoff sensitivity!");
         }
       }
 
@@ -2325,7 +2328,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
     default:
     {
-      dserror("Cannot calculate error. Unknown type of analytical test problem!");
+      FOUR_C_THROW("Cannot calculate error. Unknown type of analytical test problem!");
       break;
     }
   }
@@ -2363,7 +2366,7 @@ void SCATRA::ScaTraTimIntImpl::PerformAitkenRelaxation(
     // current and previous increments of macro-scale state vector
     double phinp_inc_dot_phinp_inc_diff(0.);
     if (phinp_inc_diff.Dot(*phinp_inc_, &phinp_inc_dot_phinp_inc_diff))
-      dserror("Couldn't compute dot product!");
+      FOUR_C_THROW("Couldn't compute dot product!");
 
     // compute Aitken relaxation factor
     if (iternum_outer_ > 1 and phinp_inc_diff_L2 > 1.e-12)
@@ -2374,7 +2377,7 @@ void SCATRA::ScaTraTimIntImpl::PerformAitkenRelaxation(
   }
 
   else
-    dserror("Invalid Aitken method!");
+    FOUR_C_THROW("Invalid Aitken method!");
 }
 
 /*--------------------------------------------------------------------------*
@@ -2506,7 +2509,7 @@ void SCATRA::OutputScalarsStrategyDomain::InitStrategySpecific(
 {
   if (not scatratimint->scalarhandler_->EqualNumDof())
   {
-    dserror(
+    FOUR_C_THROW(
         "Output of scalars for entire domain not valid for different numbers of DOFs per node in "
         "ScaTra discretization. \n"
         "Use option `by_condition' for the parameter 'OUTPUTSCALARS' in the SCALAR TRANSPORT "
@@ -2522,7 +2525,7 @@ void SCATRA::OutputScalarsStrategyDomain::InitStrategySpecific(
   meangradients_[dummy_domain_id_].resize(numscal_, 0.0);
   domainintegral_[dummy_domain_id_] = 0.0;
 
-  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+  FOUR_C_ASSERT(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
   // register output in csv writer
   runtime_csvwriter_->RegisterDataVector("Integral of entire domain", 1, 16);
@@ -2576,7 +2579,7 @@ void SCATRA::OutputScalarsStrategyDomain::PrintToScreen()
  *----------------------------------------------------------------------------------*/
 std::map<std::string, std::vector<double>> SCATRA::OutputScalarsStrategyDomain::PrepareCSVOutput()
 {
-  dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+  FOUR_C_ASSERT(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
   std::map<std::string, std::vector<double>> output_data;
   output_data["Integral of entire domain"] = {domainintegral_[dummy_domain_id_]};
 
@@ -2648,7 +2651,7 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
 
   if (conditions_.empty())
   {
-    dserror(
+    FOUR_C_THROW(
         "No 'TotalAndMeanScalar' conditions defined for scalar output by condition!\n"
         "Change the parameter 'OUTPUTSCALARS' in the SCALAR TRANSPORT DYNAMIC section \n"
         "or include 'DESIGN TOTAL AND MEAN SCALAR' conditions!");
@@ -2681,7 +2684,8 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
     // micro dis has only one dof
     if (output_micro_dis_) micromeanscalars_[condid].resize(1, 0.0);
 
-    dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+    FOUR_C_ASSERT(
+        runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
     // register all data vectors
     runtime_csvwriter_->RegisterDataVector("Integral of domain " + std::to_string(condid), 1, 16);
@@ -2723,7 +2727,7 @@ void SCATRA::OutputDomainIntegralStrategy::Init(const ScaTraTimIntImpl* const sc
 
   if (conditionsdomain_.empty() && conditionsboundary_.empty())
   {
-    dserror(
+    FOUR_C_THROW(
         "No 'DomainIntegral' or 'BoundaryIntegral' conditions defined for scalar output by "
         "condition!\n"
         "Change the parameter 'COMPUTEINTEGRALS' in the SCALAR TRANSPORT DYNAMIC section \n"
@@ -2782,7 +2786,8 @@ SCATRA::OutputScalarsStrategyCondition::PrepareCSVOutput()
     // extract condition ID
     const int condid = *condition->Get<int>("ConditionID");
 
-    dsassert(runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
+    FOUR_C_ASSERT(
+        runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
 
     output_data["Integral of domain " + std::to_string(condid)] = {domainintegral_[condid]};
 
@@ -2837,7 +2842,7 @@ void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
         "action", SCATRA::Action::calc_domain_integral, condparams);
   }
   else
-    dserror("Invalid condition name!");
+    FOUR_C_THROW("Invalid condition name!");
 
   // extract conditions for computation of domain or boundary integrals
   std::vector<DRT::Condition*> conditions;
@@ -2897,7 +2902,7 @@ void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
     else if (condstring == "DomainIntegral")
       domainintegralvalues_[condid] = (*integralvalue)(0);
     else
-      dserror("Invalid condition name!");
+      FOUR_C_THROW("Invalid condition name!");
   }  // loop over all conditions
 
   // print finish line to screen
@@ -3105,7 +3110,7 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
 
   if (numdofpernode.size() != 1)
   {
-    dserror(
+    FOUR_C_THROW(
         "Different number of DOFs within condition. This is not supported. Split the condition "
         "in your input file!");
   }
@@ -3122,7 +3127,7 @@ int SCATRA::ScalarHandler::NumDofPerNode() const
 
   if (not equalnumdof_)
   {
-    dserror(
+    FOUR_C_THROW(
         "Number of DOFs per node is not equal for all nodes within the ScaTra discretization!\n"
         "Calling this method is not valid in this case!");
   }
@@ -3134,7 +3139,7 @@ int SCATRA::ScalarHandler::NumDofPerNode() const
  *-----------------------------------------------------------------------------*/
 void SCATRA::ScalarHandler::CheckIsSetup() const
 {
-  if (not issetup_) dserror("ScalarHanlder is not set up. Call Setup() first.");
+  if (not issetup_) FOUR_C_THROW("ScalarHanlder is not set up. Call Setup() first.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -45,7 +45,8 @@ void wear_dyn_drt(int restart)
   if (sdyn.get<std::string>("DYNAMICTYP") != "Statics")
   {
     std::cout << "WARNING: wear without dynamic effects!!!" << std::endl;
-    // dserror ("ERROR: Structure with ale only for quasistatic analysis so in new sti so far.");
+    // FOUR_C_THROW ("ERROR: Structure with ale only for quasistatic analysis so in new sti so
+    // far.");
   }
 
   // access the structure discretization, make sure it is filled
@@ -60,7 +61,7 @@ void wear_dyn_drt(int restart)
   if (!aledis->Filled()) aledis->FillComplete();
 
   // we use the structure discretization as layout for the ale discretization
-  if (structdis->NumGlobalNodes() == 0) dserror("Structure discretization is empty!");
+  if (structdis->NumGlobalNodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
 
   // clone ale mesh from structure discretization
   if (aledis->NumGlobalNodes() == 0)
@@ -103,7 +104,7 @@ void wear_dyn_drt(int restart)
   }
   else
   {
-    dserror("Chosen algorithm not supported");
+    FOUR_C_THROW("Chosen algorithm not supported");
   }
 
   // read restart before joining the time loop

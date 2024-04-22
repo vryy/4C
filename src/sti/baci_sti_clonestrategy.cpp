@@ -30,7 +30,7 @@ void STI::ScatraThermoCloneStrategy::CheckMaterialType(const int matid)
     default:
     {
       // throw error in case of incompatible material
-      dserror("Material with ID %d is not compatible with cloned transport element!", matid);
+      FOUR_C_THROW("Material with ID %d is not compatible with cloned transport element!", matid);
       break;
     }
   }
@@ -73,7 +73,7 @@ void STI::ScatraThermoCloneStrategy::SetElementData(
 
   // safety check
   if (oldele_transport == nullptr or newele_transport == Teuchos::null)
-    dserror(
+    FOUR_C_THROW(
         "Expected transport element, but received element of type '%s'!", typeid(*newele).name());
 
   // provide cloned element with material
@@ -99,7 +99,7 @@ void STI::ScatraThermoCloneStrategy::SetElementData(
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Scatra-thermo interaction not yet implemented for given element implementation type!");
       break;
     }

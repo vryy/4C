@@ -81,7 +81,7 @@ namespace STR
           return "CentralDifference";
           break;
         default:
-          dserror("Cannot cope with name enum %d", term);
+          FOUR_C_THROW("Cannot cope with name enum %d", term);
           return "";
           break;
       }

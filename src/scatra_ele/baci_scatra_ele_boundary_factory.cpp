@@ -46,7 +46,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
         return DefineProblemType<CORE::FE::CellType::quad4, 3>(
             impltype, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension!");
+        FOUR_C_THROW("invalid problem dimension!");
     }
     case CORE::FE::CellType::quad8:
     {
@@ -54,7 +54,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
         return DefineProblemType<CORE::FE::CellType::quad8, 3>(
             impltype, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension!");
+        FOUR_C_THROW("invalid problem dimension!");
     }
     case CORE::FE::CellType::quad9:
     {
@@ -62,7 +62,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
         return DefineProblemType<CORE::FE::CellType::quad9, 3>(
             impltype, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension!");
+        FOUR_C_THROW("invalid problem dimension!");
     }
     case CORE::FE::CellType::tri3:
     {
@@ -70,7 +70,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
         return DefineProblemType<CORE::FE::CellType::tri3, 3>(
             impltype, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension!");
+        FOUR_C_THROW("invalid problem dimension!");
     }
     case CORE::FE::CellType::tri6:
     {
@@ -78,7 +78,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
         return DefineProblemType<CORE::FE::CellType::tri6, 3>(
             impltype, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension!");
+        FOUR_C_THROW("invalid problem dimension!");
     }
     case CORE::FE::CellType::line2:
     {
@@ -89,7 +89,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
         return DefineProblemType<CORE::FE::CellType::line2, 3>(
             impltype, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension!");
+        FOUR_C_THROW("invalid problem dimension!");
     }
     case CORE::FE::CellType::line3:
     {
@@ -97,7 +97,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
         return DefineProblemType<CORE::FE::CellType::line3, 2>(
             impltype, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension!");
+        FOUR_C_THROW("invalid problem dimension!");
     }
     case CORE::FE::CellType::nurbs3:  // 1D nurbs boundary element
     {
@@ -111,7 +111,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
       break;
     }
@@ -203,7 +203,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
     }
     default:
     {
-      dserror("Defined implementation type does not exist!");
+      FOUR_C_THROW("Defined implementation type does not exist!");
       break;
     }
   }  // switch(impltype)

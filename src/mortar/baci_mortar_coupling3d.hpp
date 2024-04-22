@@ -381,7 +381,7 @@ namespace MORTAR
      Returns a vector of vertices defining the clipped polygon.
 
      In some cases, projection of the master element may lead to a non-convex
-     input polygon poly2list, which leads to a dserror. Before the error is
+     input polygon poly2list, which leads to a FOUR_C_THROW. Before the error is
      thrown, this method (similarly to RoughCheck()) again checks if the two
      elements to tbe clipped are close to each other at all and returns a
      boolean flag. If they are not close, then coupling is stopped for the pair.

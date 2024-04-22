@@ -101,7 +101,8 @@ namespace MIXTURE
     [[nodiscard]] std::array<ValueType, size> GetBaseIndices(
         const std::array<ValueType, size>& indices) const
     {
-      dsassert(std::is_sorted(indices.begin(), indices.end()), "The input array must be sorted!");
+      FOUR_C_ASSERT(
+          std::is_sorted(indices.begin(), indices.end()), "The input array must be sorted!");
 
       std::array<ValueType, size> base_indices{};
 
@@ -158,7 +159,7 @@ namespace MIXTURE
     [[nodiscard]] std::array<std::optional<ValueType>, size> GetIndicesFromBase(
         const std::array<ValueType, size>& base_indices) const
     {
-      dsassert(std::is_sorted(base_indices.begin(), base_indices.end()),
+      FOUR_C_ASSERT(std::is_sorted(base_indices.begin(), base_indices.end()),
           "The input array must be sorted!");
 
       std::array<std::optional<ValueType>, size> indices{};

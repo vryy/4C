@@ -535,7 +535,7 @@ namespace CORE::COMM
           T* ptr = curr->second.get();
           auto* tester = dynamic_cast<ParObject*>(ptr);
           if (!tester)
-            dserror(
+            FOUR_C_THROW(
                 "typename T in template does not implement class ParObject (dynamic_cast failed)");
         }
       }
@@ -560,7 +560,7 @@ namespace CORE::COMM
         ParObject* o = Factory(data);
         T* ptr = dynamic_cast<T*>(o);
         if (!ptr)
-          dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
+          FOUR_C_THROW("typename T in template does not implement ParObject (dynamic_cast failed)");
         Teuchos::RCP<T> refptr = Teuchos::rcp(ptr);
         // add object to my map
         parobjects_[gid] = refptr;

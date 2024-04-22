@@ -114,7 +114,7 @@ void PARTICLEINTERACTION::DEMContact::Setup(
 
     if (normalcontacttype != INPAR::PARTICLE::NormalLinSpring and
         normalcontacttype != INPAR::PARTICLE::NormalLinSpringDamp)
-      dserror("tangential contact law only valid with linear normal contact law!");
+      FOUR_C_THROW("tangential contact law only valid with linear normal contact law!");
   }
 }
 
@@ -257,7 +257,7 @@ void PARTICLEINTERACTION::DEMContact::InitNormalContactHandler()
     }
     default:
     {
-      dserror("unknown normal contact law type!");
+      FOUR_C_THROW("unknown normal contact law type!");
       break;
     }
   }
@@ -290,7 +290,7 @@ void PARTICLEINTERACTION::DEMContact::InitTangentialContactHandler()
     }
     default:
     {
-      dserror("unknown tangential contact law type!");
+      FOUR_C_THROW("unknown tangential contact law type!");
       break;
     }
   }
@@ -327,7 +327,7 @@ void PARTICLEINTERACTION::DEMContact::InitRollingContactHandler()
     }
     default:
     {
-      dserror("unknown rolling contact law type!");
+      FOUR_C_THROW("unknown rolling contact law type!");
       break;
     }
   }
@@ -681,7 +681,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
       const Teuchos::RCP<const MAT::ParticleWallMaterialDEM>& particlewallmaterial =
           Teuchos::rcp_dynamic_cast<const MAT::ParticleWallMaterialDEM>(ele->Material());
       if (particlewallmaterial == Teuchos::null)
-        dserror("cast to MAT::ParticleWallMaterialDEM failed!");
+        FOUR_C_THROW("cast to MAT::ParticleWallMaterialDEM failed!");
 
       // get tangential contact friction coefficient
       if (contacttangential_) mu_tangential = particlewallmaterial->MuTangential();
@@ -836,7 +836,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
       // assemble nodal forces
       const int err = walldatastate->GetForceCol()->SumIntoGlobalValues(
           numnodes * 3, nodal_force.data(), lmele.data());
-      if (err < 0) dserror("sum into Epetra_Vector failed!");
+      if (err < 0) FOUR_C_THROW("sum into Epetra_Vector failed!");
     }
   }
 

@@ -65,7 +65,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoSh8p8Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented!");
+  FOUR_C_THROW("method ComputeNullSpace not implemented!");
   return nullspace;
 }
 
@@ -193,7 +193,7 @@ void DRT::ELEMENTS::SoSh8p8::Unpack(const std::vector<char>& data)
   iso_ = static_cast<IsochoricType>(ExtractInt(position, data));
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

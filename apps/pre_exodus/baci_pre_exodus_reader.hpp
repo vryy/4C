@@ -380,7 +380,7 @@ namespace EXODUS
     else
     {
       std::cout << "Unknown Exodus Element Shape Name: " << shape;
-      dserror("Unknown Exodus Element Shape Name!");
+      FOUR_C_THROW("Unknown Exodus Element Shape Name!");
       return ElementBlock::dis_none;
     }
   }
@@ -447,7 +447,7 @@ namespace EXODUS
         return "BAR3";
         break;
       default:
-        dserror("Unknown ElementBlock::Shape");
+        FOUR_C_THROW("Unknown ElementBlock::Shape");
     }
     return "xxx";
   }
@@ -514,7 +514,7 @@ namespace EXODUS
         return CORE::FE::CellType::line3;
         break;
       default:
-        dserror("Unknown ElementBlock::Shape");
+        FOUR_C_THROW("Unknown ElementBlock::Shape");
     }
     return CORE::FE::CellType::max_distype;
   }

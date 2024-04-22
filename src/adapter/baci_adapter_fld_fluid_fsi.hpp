@@ -110,7 +110,7 @@ namespace ADAPTER
 
     void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc) override
     {
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
     };
 
     void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel) override;

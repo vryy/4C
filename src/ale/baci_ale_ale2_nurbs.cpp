@@ -87,7 +87,7 @@ CORE::FE::CellType DRT::ELEMENTS::NURBS::Ale2Nurbs::Shape() const
     case 9:
       return CORE::FE::CellType::nurbs9;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
       break;
   }
 }

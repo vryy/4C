@@ -148,7 +148,7 @@ namespace DRT::ELEMENTS
       case INPAR::STR::strain_none:
         return;
       default:
-        dserror("strain type not supported");
+        FOUR_C_THROW("strain type not supported");
         break;
     }
   }
@@ -188,7 +188,7 @@ namespace DRT::ELEMENTS
 
         return;
       default:
-        dserror("stress type not supported");
+        FOUR_C_THROW("stress type not supported");
         break;
     }
   }
@@ -298,11 +298,11 @@ namespace DRT::ELEMENTS
             break;
           }
           case INPAR::STR::GaussPointDataOutputType::none:
-            dserror(
+            FOUR_C_THROW(
                 "You specified a Gauss point data output type of none, so you should not end up "
                 "here.");
           default:
-            dserror("Unknown Gauss point data output type.");
+            FOUR_C_THROW("Unknown Gauss point data output type.");
         }
       }
     }

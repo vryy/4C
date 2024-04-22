@@ -75,7 +75,7 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
     // check whether cast was successfull
     if (crsA == Teuchos::null)
     {
-      dserror("Could not cast system matrix to Epetra_CrsMatrix.");
+      FOUR_C_THROW("Could not cast system matrix to Epetra_CrsMatrix.");
     }
     // get view on systemmatrix as CORE::LINALG::SparseMatrix - this is no copy!
     CORE::LINALG::SparseMatrix A_view(crsA, CORE::LINALG::View);
@@ -146,7 +146,8 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
 #ifdef HAVE_AMESOS_UMFPACK
       amesos_ = Teuchos::rcp(new Amesos_Umfpack((*reindexer_)(*lp_)));
 #else
-      dserror("UMFPACK was chosen as linear solver, but is not available in the configuration!");
+      FOUR_C_THROW(
+          "UMFPACK was chosen as linear solver, but is not available in the configuration!");
 #endif
     }
     else if (solvertype_ == "superlu")
@@ -154,12 +155,13 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
 #ifdef HAVE_AMESOS_SUPERLUDIST
       amesos_ = Teuchos::rcp(new Amesos_Superludist((*reindexer_)(*lp_)));
 #else
-      dserror("Superlu was chosen as linear solver, but is not available in the configuration!");
+      FOUR_C_THROW(
+          "Superlu was chosen as linear solver, but is not available in the configuration!");
 #endif
     }
     else
     {
-      dserror("UMFPACK or Superlu have to be available to use a direct linear solver.");
+      FOUR_C_THROW("UMFPACK or Superlu have to be available to use a direct linear solver.");
     }
 
     factored_ = false;
@@ -171,22 +173,22 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
 template <class MatrixType, class VectorType>
 int CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Solve()
 {
-  if (amesos_ == Teuchos::null) dserror("No solver allocated");
+  if (amesos_ == Teuchos::null) FOUR_C_THROW("No solver allocated");
 
   // Problem has not been factorized before
   if (not IsFactored())
   {
     int err = amesos_->SymbolicFactorization();
-    if (err) dserror("Amesos::SymbolicFactorization returned an err");
+    if (err) FOUR_C_THROW("Amesos::SymbolicFactorization returned an err");
     err = amesos_->NumericFactorization();
-    if (err) dserror("Amesos::NumericFactorization returned an err");
+    if (err) FOUR_C_THROW("Amesos::NumericFactorization returned an err");
 
     factored_ = true;
   }
 
   int err = amesos_->Solve();
 
-  if (err) dserror("Amesos::Solve returned an err");
+  if (err) FOUR_C_THROW("Amesos::Solve returned an err");
 
   if (projector_ != Teuchos::null)
   {

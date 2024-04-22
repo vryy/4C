@@ -63,7 +63,7 @@ namespace BINSTRATEGY
       // fillcomplete discret with extended ghosting
       discret->FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // print distribution after standard ghosting
       if (discret->Comm().MyPID() == 0)
         std::cout << "parallel distribution with extended ghosting" << std::endl;
@@ -107,7 +107,7 @@ namespace BINSTRATEGY
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             " Element you are about to assign to a bin could not be converted"
             " to a valid bin content type. ");
         exit(EXIT_FAILURE);
@@ -155,7 +155,7 @@ namespace BINSTRATEGY
             (int)(p->second).size(), 1234, request[tag]);
         ++tag;
       }
-      if (tag != length) dserror("Number of messages is mixed up");
+      if (tag != length) FOUR_C_THROW("Number of messages is mixed up");
 
       // -----------------------------------------------------------------------
       // receive
@@ -173,8 +173,8 @@ namespace BINSTRATEGY
         int from = -1;
         exporter.ReceiveAny(from, tag, rdata, length);
         if (tag != 1234)
-          dserror("Received on proc %i data with wrong tag from proc %i", discret->Comm().MyPID(),
-              from);
+          FOUR_C_THROW("Received on proc %i data with wrong tag from proc %i",
+              discret->Comm().MyPID(), from);
 
         // ---- unpack ----
         {
@@ -188,11 +188,11 @@ namespace BINSTRATEGY
             Teuchos::RCP<CORE::COMM::ParObject> object =
                 Teuchos::rcp(CORE::COMM::Factory(data), true);
             Teuchos::RCP<DRT::Element> element = Teuchos::rcp_dynamic_cast<DRT::Element>(object);
-            if (element == Teuchos::null) dserror("Received object is not a element");
+            if (element == Teuchos::null) FOUR_C_THROW("Received object is not a element");
 
             // safety check
             if (discret->HaveGlobalElement(element->Id()) != true)
-              dserror(
+              FOUR_C_THROW(
                   "%i is getting owner of element %i without having it ghosted before, "
                   "this is not intended.",
                   discret->Comm().MyPID(), element->Id());
@@ -203,7 +203,8 @@ namespace BINSTRATEGY
             discret->AddElement(element);
           }
           if (index != rdata.size())
-            dserror("Mismatch in size of data %d <-> %d", static_cast<int>(rdata.size()), index);
+            FOUR_C_THROW(
+                "Mismatch in size of data %d <-> %d", static_cast<int>(rdata.size()), index);
         }
       }
 
@@ -256,7 +257,7 @@ namespace BINSTRATEGY
             (int)(p->second).size(), 1234, request[tag]);
         ++tag;
       }
-      if (tag != length) dserror("Number of messages is mixed up");
+      if (tag != length) FOUR_C_THROW("Number of messages is mixed up");
 
       // -----------------------------------------------------------------------
       // receive
@@ -274,8 +275,8 @@ namespace BINSTRATEGY
         int from = -1;
         exporter.ReceiveAny(from, tag, rdata, length);
         if (tag != 1234)
-          dserror("Received on proc %i data with wrong tag from proc %i", discret->Comm().MyPID(),
-              from);
+          FOUR_C_THROW("Received on proc %i data with wrong tag from proc %i",
+              discret->Comm().MyPID(), from);
 
         // ---- unpack ----
         {
@@ -290,7 +291,8 @@ namespace BINSTRATEGY
               bintorowelemap[*j].insert(pair.first);
           }
           if (index != rdata.size())
-            dserror("Mismatch in size of data %d <-> %d", static_cast<int>(rdata.size()), index);
+            FOUR_C_THROW(
+                "Mismatch in size of data %d <-> %d", static_cast<int>(rdata.size()), index);
         }
       }
 
@@ -333,7 +335,7 @@ namespace BINSTRATEGY
         const int gid = discret->Dof(node_with_position_Dofs, 0);
         const int lid = disnp->Map().LID(gid);
         if (lid < 0)
-          dserror(
+          FOUR_C_THROW(
               "Your displacement is incomplete (need to be based on a column map"
               " as this function is also called from a loop over elements and "
               "each proc does (usually) not own all nodes of his row elements ");

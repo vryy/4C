@@ -70,7 +70,7 @@ DRT::ELEMENTS::ElemagBoundaryImplInterface* DRT::ELEMENTS::ElemagBoundaryImplInt
       return ElemagBoundaryImpl<CORE::FE::CellType::nurbs9>::Instance();
     }
     default:
-      dserror(
+      FOUR_C_THROW(
           "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
       break;
   }
@@ -179,7 +179,8 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
         int elenode = ele->NumNode();
         int face = -1;
         if (elenode != 2)
-          dserror("absorbing line in 3d not implemented for higher order geometry approximation");
+          FOUR_C_THROW(
+              "absorbing line in 3d not implemented for higher order geometry approximation");
         // find the first face which contains the line!
         for (int i = 0; i < parent->NumFace(); ++i)
         {
@@ -211,15 +212,15 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
                 elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
           }
         }
-        if (same == false) dserror("no face contains absorbing line");
+        if (same == false) FOUR_C_THROW("no face contains absorbing line");
         // now, we know which face contains the line, but we have to tell the element, which nodes
         // we are talking about! therefore, we create a vector of ints and this vector stores the
         // relevant nodes, for example: the line has two nodes, we store which position these nodes
         // have in the face element
       }
       // if (same == false)
-      //  dserror("either nodeids are sorted differently or a boundary element does not know to whom
-      //  it belongs");
+      //  FOUR_C_THROW("either nodeids are sorted differently or a boundary element does not know to
+      //  whom it belongs");
       break;
     }
     case ELEMAG::bd_integrate:
@@ -270,7 +271,7 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBo
       break;
     }
     default:
-      dserror("unknown action %d provided to ElemagBoundaryImpl", action);
+      FOUR_C_THROW("unknown action %d provided to ElemagBoundaryImpl", action);
       break;
   }
   return 0;

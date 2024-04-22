@@ -33,7 +33,7 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
       return CreateSolidPoroCalculationInterface<CORE::FE::CellType::tet10>(porotype);
       break;
     default:
-      dserror("unknown celltype provided");
+      FOUR_C_THROW("unknown celltype provided");
       break;
   }
   return {};
@@ -47,7 +47,7 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
   switch (porotype)
   {
     case INPAR::PORO::PoroType::pressure_velocity_based:
-      dserror("POROTYPE: 'pressure_velocity_based' not yet implemented!");
+      FOUR_C_THROW("POROTYPE: 'pressure_velocity_based' not yet implemented!");
       return {};
       break;
     case INPAR::PORO::PoroType::pressure_based:
@@ -56,7 +56,7 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
       break;
     }
     default:
-      dserror("Wrong POROTYPE for evaluation in SolidPoro elements!");
+      FOUR_C_THROW("Wrong POROTYPE for evaluation in SolidPoro elements!");
   }
   return {};
 }

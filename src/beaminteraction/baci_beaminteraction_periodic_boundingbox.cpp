@@ -71,7 +71,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Init()
         box_(row, col) = doublevalue;
       }
       else
-        dserror(
+        FOUR_C_THROW(
             " Specify six values for bounding box in three dimensional problem."
             " Fix your input file.");
     }
@@ -102,7 +102,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Init()
     }
     else
     {
-      dserror(
+      FOUR_C_THROW(
           "Enter three values to specify each direction as periodic or non periodic."
           "Fix your input file ...");
     }
@@ -311,7 +311,7 @@ void CORE::GEO::MESHFREE::BoundingBox::GetXiOfIntersection3D(CORE::LINALG::Matri
       }
       else
       {
-        dserror("Your true/false logic is wrong.");
+        FOUR_C_THROW("Your true/false logic is wrong.");
       }
     }
     else if (x1_in)
@@ -326,12 +326,12 @@ void CORE::GEO::MESHFREE::BoundingBox::GetXiOfIntersection3D(CORE::LINALG::Matri
       }
       else
       {
-        dserror("Your true/false logic is wrong.");
+        FOUR_C_THROW("Your true/false logic is wrong.");
       }
     }
     else
     {
-      dserror("Your true/false logic is wrong.");
+      FOUR_C_THROW("Your true/false logic is wrong.");
     }
   }
 }
@@ -487,7 +487,7 @@ void CORE::GEO::MESHFREE::BoundingBox::RandomPosWithin(CORE::LINALG::Matrix<3, 1
  *----------------------------------------------------------------------------*/
 void CORE::GEO::MESHFREE::BoundingBox::AddPoint(const double* x)
 {
-  dserror("Check before use.");
+  FOUR_C_THROW("Check before use.");
   if (empty_)
   {
     empty_ = false;
@@ -510,7 +510,7 @@ void CORE::GEO::MESHFREE::BoundingBox::AddPoint(const double* x)
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::MESHFREE::BoundingBox::Within(BoundingBox const& b) const
 {
-  dserror("Check before use.");
+  FOUR_C_THROW("Check before use.");
   if (empty_) return true;
   return (InBetween(box_min(0), box_max(0), b.box_min(0), b.box_max(0)) and
           InBetween(box_min(1), box_max(1), b.box_min(1), b.box_max(1)) and
@@ -566,7 +566,7 @@ bool CORE::GEO::MESHFREE::BoundingBox::Within(CORE::LINALG::Matrix<3, 2> const& 
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::MESHFREE::BoundingBox::Within(const CORE::LINALG::SerialDenseMatrix& xyz) const
 {
-  dserror("Check before use.");
+  FOUR_C_THROW("Check before use.");
   BoundingBox bb;
   int numnode = xyz.numCols();
   for (int i = 0; i < numnode; ++i)
@@ -756,7 +756,7 @@ void CORE::GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemT
   ThrowIfNotInitOrSetup();
 
   DRT::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
-  if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
   // reset globcoord variable
   for (unsigned int dim = 0; dim < 3; ++dim) x[dim] = 0.0;
@@ -854,14 +854,14 @@ bool CORE::GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBo
                 << std::endl;
       std::cout << "JAC= " << xjm.Determinant() << std::endl;
       std::cout << "CONVERGED= " << converged << std::endl;
-      dserror("*** WARNING: jacobi singular ***");
+      FOUR_C_THROW("*** WARNING: jacobi singular ***");
       converged = false;
       break;
     }
 
     // solve equation
     double xjm_invert = xjm.Invert();
-    if (abs(xjm_invert) < 1e-15) dserror("ERROR: Singular Jacobian");
+    if (abs(xjm_invert) < 1e-15) FOUR_C_THROW("ERROR: Singular Jacobian");
 
     // compute increment
     CORE::LINALG::Matrix<ndim, 1> deltaxi(true);
@@ -903,10 +903,10 @@ void CORE::GEO::MESHFREE::BoundingBox::
 {
   ThrowIfNotInit();
   // safety check
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   for (int dim = 0; dim < 3; ++dim)
     if (abs(edgelength_[dim]) < 1e-12)
-      dserror(" you are about to devide by zero, edgelength not correctly initialized.");
+      FOUR_C_THROW(" you are about to devide by zero, edgelength not correctly initialized.");
 #endif
 
   const double Q = 1.0 / (edgelength_[0] * edgelength_[1] * edgelength_[2]);
@@ -938,10 +938,10 @@ void CORE::GEO::MESHFREE::BoundingBox::
 {
   ThrowIfNotInit();
   // safety check
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   for (int dim = 0; dim < 3; ++dim)
     if (abs(edgelength_[dim]) < 1e-12)
-      dserror(" you are about to devide by zero, edgelength not correctly initialized.");
+      FOUR_C_THROW(" you are about to devide by zero, edgelength not correctly initialized.");
 #endif
 
   const double Q = 1.0 / (edgelength_[0] * edgelength_[1] * edgelength_[2]);

@@ -167,7 +167,7 @@ void DRT::MESHFREE::MeshfreeMultiBin::DeleteAssociatedEle(
       return;
     }
   }
-  dserror("Connectivity issues: No element with specified gid to delete in bin. ");
+  FOUR_C_THROW("Connectivity issues: No element with specified gid to delete in bin. ");
   return;
 }
 

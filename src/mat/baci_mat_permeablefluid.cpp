@@ -98,11 +98,12 @@ void MAT::PermeableFluid::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::PermeableFluid*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*/
@@ -110,10 +111,10 @@ void MAT::PermeableFluid::Unpack(const std::vector<char>& data)
 double MAT::PermeableFluid::ComputeReactionCoeff() const
 {
   // check for zero or negative viscosity
-  if (Viscosity() < 1e-15) dserror("zero or negative viscosity");
+  if (Viscosity() < 1e-15) FOUR_C_THROW("zero or negative viscosity");
 
   // check for zero or negative permeability
-  if (Permeability() < 1e-15) dserror("zero or negative permeability");
+  if (Permeability() < 1e-15) FOUR_C_THROW("zero or negative permeability");
 
   // viscosity divided by permeability
   double reacoeff = Viscosity() / Permeability();

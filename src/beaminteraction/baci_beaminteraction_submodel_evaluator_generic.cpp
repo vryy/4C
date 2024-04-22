@@ -72,14 +72,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::CheckInitSetup() const
 {
-  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+  if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::CheckInit() const
 {
-  if (not IsInit()) dserror("Call Init() first!");
+  if (not IsInit()) FOUR_C_THROW("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*

@@ -38,7 +38,7 @@ void STRUMULTI::MicroStatic::DetermineToggle()
       // do only nodes in my row map
       if (!discret_->NodeRowMap()->MyGID(i)) continue;
       DRT::Node* actnode = discret_->gNode(i);
-      if (!actnode) dserror("Cannot find global node %d", i);
+      if (!actnode) FOUR_C_THROW("Cannot find global node %d", i);
       std::vector<int> dofs = discret_->Dof(actnode);
       const unsigned numdf = dofs.size();
 
@@ -47,7 +47,7 @@ void STRUMULTI::MicroStatic::DetermineToggle()
         const int gid = dofs[j];
 
         const int lid = disn_->Map().LID(gid);
-        if (lid < 0) dserror("Global id %d not on this proc in system vector", gid);
+        if (lid < 0) FOUR_C_THROW("Global id %d not on this proc in system vector", gid);
 
         if ((*dirichtoggle_)[lid] != 1.0)  // be careful not to count dofs more
                                            // than once since nodes belong to
@@ -114,7 +114,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
       // do only nodes in my row map
       if (!discret_->NodeRowMap()->MyGID(i)) continue;
       DRT::Node* actnode = discret_->gNode(i);
-      if (!actnode) dserror("Cannot find global node %d", i);
+      if (!actnode) FOUR_C_THROW("Cannot find global node %d", i);
 
       // nodal coordinates
       const auto& x = actnode->X();
@@ -126,7 +126,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
         const int gid = dofs[k];
 
         const int lid = disn_->Map().LID(gid);
-        if (lid < 0) dserror("Global id %d not on this proc in system vector", gid);
+        if (lid < 0) FOUR_C_THROW("Global id %d not on this proc in system vector", gid);
 
         for (int l = 0; l < np_; ++l)
         {
@@ -205,7 +205,7 @@ bool STRUMULTI::MicroStatic::Converged()
       convdis = ((normdisi_ < toldisi_) or (normdisi_ / normchardis_ < toldisi_));
       break;
     default:
-      dserror("Cannot check for convergence of residual displacements!");
+      FOUR_C_THROW("Cannot check for convergence of residual displacements!");
       break;
   }
 
@@ -222,7 +222,7 @@ bool STRUMULTI::MicroStatic::Converged()
       convfres = ((normfres_ < tolfres_) or (normfres_ / normcharforce_ < tolfres_));
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }
 
@@ -233,7 +233,7 @@ bool STRUMULTI::MicroStatic::Converged()
   else if (combdisifres_ == INPAR::STR::bop_or)
     conv = convdis or convfres;
   else
-    dserror("Something went terribly wrong with binary operator!");
+    FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
   return conv;
 }

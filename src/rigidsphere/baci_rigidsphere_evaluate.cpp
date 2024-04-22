@@ -57,7 +57,7 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
 
       // get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -94,13 +94,13 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
     {
       // get element displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
-      if (vel == Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+      if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       CORE::FE::ExtractMyValues(*vel, myvel, lm);
 
@@ -109,14 +109,14 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       else if (act == ELEMENTS::struct_calc_brownianstiff)
         CalcBrownianForcesAndStiff(params, myvel, mydisp, &elemat1, &elevec1);
       else
-        dserror("You shouldn't be here.");
+        FOUR_C_THROW("You shouldn't be here.");
 
       break;
     }
 
     case ELEMENTS::struct_calc_stress:
     {
-      dserror("No stress output implemented for beam3 elements");
+      FOUR_C_THROW("No stress output implemented for beam3 elements");
       break;
     }
     case ELEMENTS::struct_calc_update_istep:
@@ -148,7 +148,7 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
 
     default:
     {
-      dserror("Unknown type of action for Rigidsphere %d", act);
+      FOUR_C_THROW("Unknown type of action for Rigidsphere %d", act);
       break;
     }
   }
@@ -281,14 +281,14 @@ void DRT::ELEMENTS::Rigidsphere::GetBackgroundVelocity(
   //     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
   //  {
   //    shearflow = true;
-  //    dserror("Shear flow not implemented yet for rigid spherical particles!");
+  //    FOUR_C_THROW("Shear flow not implemented yet for rigid spherical particles!");
   //  }
   //
   //  // constant background velocity specified in input file?
   //  Teuchos::RCP<std::vector<double> > constbackgroundvel = params.get("CONSTBACKGROUNDVEL",
   //  defvalues);
   //
-  //  if (constbackgroundvel->size() != 3) dserror("\nSpecified vector for constant background
+  //  if (constbackgroundvel->size() != 3) FOUR_C_THROW("\nSpecified vector for constant background
   //  velocity has wrong dimension! Check input file!"); bool constflow = false; for (int i=0; i<3;
   //  ++i)
   //  {
@@ -302,8 +302,8 @@ void DRT::ELEMENTS::Rigidsphere::GetBackgroundVelocity(
   //      for (int i=0; i<3; ++i) velbackground(i) = constbackgroundvel->at(i);
   //
   //      // shear flow AND constant background flow not implemented
-  //      if(shearflow) dserror("Conflict in input parameters: shearflow AND constant background
-  //      velocity specified. Not implemented!\n");
+  //      if(shearflow) FOUR_C_THROW("Conflict in input parameters: shearflow AND constant
+  //      background velocity specified. Not implemented!\n");
   //    }
   //  }
 }
@@ -344,7 +344,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVol
 
   // Add reference position.
   if (mydisp.size() != 3)
-    dserror("Got unexpected number of DOFs. Expected 3, but received %d", mydisp.size());
+    FOUR_C_THROW("Got unexpected number of DOFs. Expected 3, but received %d", mydisp.size());
   CORE::LINALG::Matrix<3, 1, double> sphere_center;
   for (unsigned int i_dof = 0; i_dof < 3; i_dof++)
     sphere_center(i_dof) = mydisp[i_dof] + Nodes()[0]->X()[i_dof];

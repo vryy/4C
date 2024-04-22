@@ -81,71 +81,71 @@ FPSI::MonolithicPlain::MonolithicPlain(const Epetra_Comm& comm,
   fggprev_ = Teuchos::null;
   fggcur_ = Teuchos::null;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether allocation was successful
   if (fggtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fggtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fggtransform_' failed.");
   }
   if (fggtransform2_ == Teuchos::null)
   {
-    dserror("Allocation of 'fggtransform2_' failed.");
+    FOUR_C_THROW("Allocation of 'fggtransform2_' failed.");
   }
   if (fmgitransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'fmgitransform_' failed.");
+    FOUR_C_THROW("Allocation of 'fmgitransform_' failed.");
   }
 
   if (fgitransform1_ == Teuchos::null)
   {
-    dserror("Allocation of 'fgitransform1_' failed.");
+    FOUR_C_THROW("Allocation of 'fgitransform1_' failed.");
   }
   if (fgitransform2_ == Teuchos::null)
   {
-    dserror("Allocation of 'fgitransform2_' failed.");
+    FOUR_C_THROW("Allocation of 'fgitransform2_' failed.");
   }
   if (Cfgtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'Cfgtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'Cfgtransform_' failed.");
   }
 
   if (figtransform1_ == Teuchos::null)
   {
-    dserror("Allocation of 'figtransform1_' failed.");
+    FOUR_C_THROW("Allocation of 'figtransform1_' failed.");
   }
   if (figtransform2_ == Teuchos::null)
   {
-    dserror("Allocation of 'figtransform2_' failed.");
+    FOUR_C_THROW("Allocation of 'figtransform2_' failed.");
   }
   if (figtransform3_ == Teuchos::null)
   {
-    dserror("Allocation of 'figtransform3_' failed.");
+    FOUR_C_THROW("Allocation of 'figtransform3_' failed.");
   }
   if (figtransform4_ == Teuchos::null)
   {
-    dserror("Allocation of 'figtransform4_' failed.");
+    FOUR_C_THROW("Allocation of 'figtransform4_' failed.");
   }
   if (aigtransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'aigtransform_' failed.");
+    FOUR_C_THROW("Allocation of 'aigtransform_' failed.");
   }
   if (aigtransform2_ == Teuchos::null)
   {
-    dserror("Allocation of 'aigtransform2_' failed.");
+    FOUR_C_THROW("Allocation of 'aigtransform2_' failed.");
   }
 
   if (couplingcoltransform_ == Teuchos::null)
   {
-    dserror("Allocation of 'couplingcoltransform_' failed.");
+    FOUR_C_THROW("Allocation of 'couplingcoltransform_' failed.");
   }
   if (couplingcoltransformfs_ == Teuchos::null)
   {
-    dserror("Allocation of 'couplingcoltransformfs_' failed.");
+    FOUR_C_THROW("Allocation of 'couplingcoltransformfs_' failed.");
   }
 
   if (lambda_ == Teuchos::null)
   {
-    dserror("Allocation of 'lambda_' failed.");
+    FOUR_C_THROW("Allocation of 'lambda_' failed.");
   }
 #endif
 }
@@ -180,13 +180,13 @@ void FPSI::MonolithicPlain::SetupSystem()
   ale_i_block_ = 3;
 
   if (vecSpaces[structure_block_]->NumGlobalElements() == 0)
-    dserror("No inner poro structure equations. Splitting not possible.");
+    FOUR_C_THROW("No inner poro structure equations. Splitting not possible.");
   if (vecSpaces[porofluid_block_]->NumGlobalElements() == 0)
-    dserror("No inner poro fluid equations. Splitting not possible.");
+    FOUR_C_THROW("No inner poro fluid equations. Splitting not possible.");
   if (vecSpaces[fluid_block_]->NumGlobalElements() == 0)
-    dserror("No inner fluid equations. Splitting not possible.");
+    FOUR_C_THROW("No inner fluid equations. Splitting not possible.");
   if (vecSpaces[ale_i_block_]->NumGlobalElements() == 0)
-    dserror("No inner ale equations. Splitting not possible.");
+    FOUR_C_THROW("No inner ale equations. Splitting not possible.");
   // merge maps and create full monolithic FPSI-DofRowMap
   SetDofRowMaps(vecSpaces);
 
@@ -661,14 +661,14 @@ void FPSI::MonolithicPlain::SetupRHSFirstIter(Epetra_Vector& f)
   // get ale matrix
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocka = AleField()->BlockSystemMatrix();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (blockf == Teuchos::null)
   {
-    dserror("Expected Teuchos::rcp to fluid block matrix.");
+    FOUR_C_THROW("Expected Teuchos::rcp to fluid block matrix.");
   }
   if (blocka == Teuchos::null)
   {
-    dserror("Expected Teuchos::rcp to ale block matrix.");
+    FOUR_C_THROW("Expected Teuchos::rcp to ale block matrix.");
   }
 #endif
 

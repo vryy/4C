@@ -176,7 +176,7 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
     {
       std::cout << gp << ": Theta " << thetatemp << " residual " << residualtemp << " stress "
                 << growthtrigger << std::endl;
-      // dserror("no damping coefficient found");
+      // FOUR_C_THROW("no damping coefficient found");
     }
 
   }  // end of local Newton iteration
@@ -184,7 +184,7 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
 
   if (localistep == maxstep && abs(residual) > Parameter()->abstol_)
   {
-    dserror(
+    FOUR_C_THROW(
         "local Newton iteration did not converge after %i steps: residual: %e, thetaold: %f,"
         " theta:  %f, growthtrigger: %e",
         maxstep, residual, thetaold, theta, growthtrigger);
@@ -223,7 +223,7 @@ void MAT::GrowthLawDyn::EvaluatePDeriv(double* thetainit, const double& thetaold
     Teuchos::RCP<MAT::So3Material> matelastic, const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params, const int eleGID)
 {
-  dserror("This must still be implemented for dynamic type growth laws.");
+  FOUR_C_THROW("This must still be implemented for dynamic type growth laws.");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -249,7 +249,7 @@ void MAT::GrowthLawStatic::EvaluatePDeriv(double* thetainit, const double& theta
     Teuchos::RCP<MAT::So3Material> matelastic, const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params, const int eleGID)
 {
-  dserror("Use implementation of a specific growth law overriding this function.");
+  FOUR_C_THROW("Use implementation of a specific growth law overriding this function.");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1049,11 +1049,11 @@ MAT::PAR::GrowthLawAC::GrowthLawAC(Teuchos::RCP<MAT::PAR::Material> matdata)
       Sc2_(*matdata->Get<int>("SCALAR2")),
       beta_(*matdata->Get<double>("BETA"))
 {
-  if (Sc1_ < 1) dserror("At least on scalar field must induce growth");
-  if (alpha_ < 0) dserror("The influence of scalar field SCALAR1 to growth can't be negativ");
+  if (Sc1_ < 1) FOUR_C_THROW("At least on scalar field must induce growth");
+  if (alpha_ < 0) FOUR_C_THROW("The influence of scalar field SCALAR1 to growth can't be negativ");
   if (Sc2_ < 1)
-    dserror("If you choose a second scalar field to induce growth, choose a existing one!!");
-  if (beta_ < 0) dserror("The influence of scalar field SCALAR2 to growth can't be negativ");
+    FOUR_C_THROW("If you choose a second scalar field to induce growth, choose a existing one!!");
+  if (beta_ < 0) FOUR_C_THROW("The influence of scalar field SCALAR2 to growth can't be negativ");
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::GrowthLawAC::CreateMaterial() { return Teuchos::null; }
@@ -1439,7 +1439,7 @@ void MAT::GrowthLawConst::EvaluatePDeriv(double* theta, const double& thetaold,
     *theta = dt;
   }
   else if (deriv == -1)
-    dserror("you should only end up here with a valid matparderiv flag!");
+    FOUR_C_THROW("you should only end up here with a valid matparderiv flag!");
 }
 
 ///*----------------------------------------------------------------------*

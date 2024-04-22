@@ -54,7 +54,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
   //--------------------------------------------------------------------
   if (num_of_wom_conds != num_of_borders)
   {
-    dserror("Each Womersley surface condition must have one and only one border condition");
+    FOUR_C_THROW("Each Womersley surface condition must have one and only one border condition");
     exit(0);
   }
   // Check if each surface has it's corresponding border
@@ -78,7 +78,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
         bool inserted = fvsf_map_.insert(std::make_pair(surfID, fvsf_bc)).second;
         if (!inserted)
         {
-          dserror(
+          FOUR_C_THROW(
               "There are more than one Womersley condition lines with the same ID. This can not "
               "yet be handled.");
           exit(0);
@@ -91,7 +91,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
     // if a surface womersley doesn't have a correspondiong border defined!
     if (ConditionIsWrong)
     {
-      dserror("Each Womersley surface condition must have one and only one border condition");
+      FOUR_C_THROW("Each Womersley surface condition must have one and only one border condition");
       exit(1);
     }
   }
@@ -268,7 +268,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   }
   else
   {
-    dserror("[%s]: is not a defined normal evaluation type", normal_info.c_str());
+    FOUR_C_THROW("[%s]: is not a defined normal evaluation type", normal_info.c_str());
     exit(1);
   }
 
@@ -295,7 +295,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   }
   else
   {
-    dserror("[%s]: is not a defined center-of-mass evaluation type", normal_info.c_str());
+    FOUR_C_THROW("[%s]: is not a defined center-of-mass evaluation type", normal_info.c_str());
     exit(1);
   }
 
@@ -312,7 +312,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   }
   else
   {
-    dserror("[%s]: is not a defined flow-direction-type", normal_info.c_str());
+    FOUR_C_THROW("[%s]: is not a defined flow-direction-type", normal_info.c_str());
     exit(1);
   }
 
@@ -496,7 +496,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
     bool inserted = border_nodes_coords.insert(std::make_pair(node_num, coords)).second;
     if (!inserted)
     {
-      dserror("There are more than one node of the same number. something went wrong");
+      FOUR_C_THROW("There are more than one node of the same number. something went wrong");
       exit(0);
     }
   }
@@ -1057,7 +1057,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate(
   const double val = *condition->Get<double>("Val");
 
   //  if ( val < 1e-14 )
-  //    dserror("Val must be positive!");
+  //    FOUR_C_THROW("Val must be positive!");
 
   // evaluate the current flowrate value
   double functfac = 0.0;
@@ -1147,7 +1147,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(Teuchos::RCP<DRT::Disc
   {
     if (n_harmonics < 1)
     {
-      dserror("The number of Womersley harmonics is %d (less than 1)", n_harmonics);
+      FOUR_C_THROW("The number of Womersley harmonics is %d (less than 1)", n_harmonics);
     }
 
     this->DFT(velocities, Vn, flowratespos_);
@@ -1242,7 +1242,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(Teuchos::RCP<DRT::Disc
         }
         else
         {
-          dserror("[%s] in cond (%d): No such profile is defined. Please correct the input file ",
+          FOUR_C_THROW(
+              "[%s] in cond (%d): No such profile is defined. Please correct the input file ",
               flowType.c_str(), condid);
         }
         velocity *= flow_dir_;
@@ -1736,7 +1737,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::Area(
       theproc = i;
       break;
     }
-  if (theproc < 0) dserror("Something parallel went terribly wrong!");
+  if (theproc < 0) FOUR_C_THROW("Something parallel went terribly wrong!");
 
   // do the actual communication of density ...
   discret_->Comm().Broadcast(&density, 1, theproc);
@@ -1952,7 +1953,7 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
   //--------------------------------------------------------------------
   if (num_of_tr_conds != num_of_borders)
   {
-    dserror("Each Womersley surface condition must have one and only one border condition");
+    FOUR_C_THROW("Each Womersley surface condition must have one and only one border condition");
     exit(0);
   }
   // Check if each surface has it's corresponding border
@@ -1976,7 +1977,7 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
         bool inserted = fvsf_map_.insert(std::make_pair(surfID, fvsf_bc)).second;
         if (!inserted)
         {
-          dserror(
+          FOUR_C_THROW(
               "There are more than one impedance condition lines with the same ID. This can not "
               "yet be handled.");
           exit(0);
@@ -1990,7 +1991,7 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
     // if a surface traction doesn't have a correspondiong border defined!
     if (ConditionIsWrong)
     {
-      dserror(
+      FOUR_C_THROW(
           "Each Total traction correction surface condition must have one and only one border "
           "condition");
       exit(1);
@@ -2134,7 +2135,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ExportAndSetBoundaryValues(
   // Export source vector to target vector
   int err = target->Export(*source, exporter, Zero);
   // check if the exporting was successful
-  if (err) dserror("Export using exporter returned err=%d", err);
+  if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
   // Set state
   discret_->SetState(name, target);
 }
@@ -2158,7 +2159,7 @@ void FLD::UTILS::TotalTractionCorrector::ExportAndSetBoundaryValues(
   // Export source vector to target vector
   int err = target->Export(*source, exporter, Zero);
   // check if the exporting was successful
-  if (err) dserror("Export using exporter returned err=%d", err);
+  if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
   // Set state
   discret_->SetState(name, target);
 }

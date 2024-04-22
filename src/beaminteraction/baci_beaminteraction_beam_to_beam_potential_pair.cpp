@@ -85,7 +85,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Setu
   radius2_ = BeamElement2()->GetCircularCrossSectionRadiusForInteractions();
 
   if (Element1()->ElementType() != Element2()->ElementType())
-    dserror(
+    FOUR_C_THROW(
         "The class BeamToBeamPotentialPair currently only supports element "
         "pairs of the same beam element type!");
 
@@ -118,13 +118,13 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
       if (linechargeconds[i]->Type() == DRT::Condition::BeamPotential_LineChargeDensity)
         linechargeconds_[i] = linechargeconds[i];
       else
-        dserror(
+        FOUR_C_THROW(
             "Provided line charge condition is not of correct type"
             "BeamPotential_LineChargeDensity!");
     }
   }
   else
-    dserror("Expected TWO dline charge conditions!");
+    FOUR_C_THROW("Expected TWO dline charge conditions!");
 
   k_ = k;
   m_ = m;
@@ -170,7 +170,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
     }
 
     default:
-      dserror("Invalid strategy to evaluate beam interaction potential!");
+      FOUR_C_THROW("Invalid strategy to evaluate beam interaction potential!");
   }
 
 
@@ -269,7 +269,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
       prefactor *= radius1_ * radius1_ * radius2_ * radius2_ * M_PI * M_PI;
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "No valid BEAMPOTENTIAL_TYPE specified. Choose either Surface or Volume in input file!");
   }
 
@@ -368,7 +368,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
           }
           else
           {
-            dserror(
+            FOUR_C_THROW(
                 "\n|r1-r2|=0 ! Interacting points are identical! Potential law not defined in this"
                 " case! Think about shifting nodes in unconverged state?!");
           }
@@ -570,7 +570,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 {
   // safety check
   if (m_ < 3.5)
-    dserror(
+    FOUR_C_THROW(
         "This strategy to evaluate the interaction potential is not applicable for exponents "
         "of the point potential law smaller than 3.5!");
 
@@ -642,7 +642,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // safety check via split of exponent m in integer and fractional part
   double integerpart;
   if (std::modf(m_, &integerpart) != 0.0)
-    dserror("You specified a non-integer exponent of the point potential law!");
+    FOUR_C_THROW("You specified a non-integer exponent of the point potential law!");
 
   switch ((int)m_)
   {
@@ -674,7 +674,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       C = 0.084348345447154;
       break;
     default:
-      dserror("Gamma-Function values not known for this exponent m of potential law");
+      FOUR_C_THROW("Gamma-Function values not known for this exponent m of potential law");
       break;
   }
 
@@ -775,7 +775,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             std::cout << "\nGP pair: igp1_total=" << igp1_total << " & igp2_total=" << igp2_total
                       << ": |r1-r2|=" << norm_dist;
 
-            dserror("centerline separation |r1-r2|=0! Fatal error.");
+            FOUR_C_THROW("centerline separation |r1-r2|=0! Fatal error.");
           }
 
           // check cutoff criterion: if specified, contributions are neglected at larger separation
@@ -792,7 +792,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             std::cout << "\nGP pair: igp1_total=" << igp1_total << " & igp2_total=" << igp2_total
                       << ": gap=" << gap;
 
-            dserror(
+            FOUR_C_THROW(
                 "gap<=0! Force law resulting from specified interaction potential law is "
                 "not defined for zero/negative gaps! Use/implement a regularization!");
           }
@@ -807,7 +807,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           }
 
           if (gap_regularized <= 0)
-            dserror(
+            FOUR_C_THROW(
                 "regularized gap <= 0! Fatal error since force law is not defined for "
                 "zero/negative gaps! Use positive regularization separation!");
 
@@ -1055,7 +1055,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 {
   // safety checks
   if (m_ < 6.0)
-    dserror(
+    FOUR_C_THROW(
         "Invalid exponent m=%f. The strategy 'SingleLengthSpecific_SmallSepApprox' to evaluate the "
         "interaction potential is only applicable for exponents m>=6 of the point potential law, "
         "e.g. van der Waals (m=6) or the repulsive part of Lennard-Jones (m=12)!",
@@ -1064,13 +1064,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   if (not Params()->UseFAD() and
       Params()->Strategy() == INPAR::BEAMPOTENTIAL::strategy_singlelengthspec_smallsepapprox)
   {
-    dserror(
+    FOUR_C_THROW(
         "The strategy 'SingleLengthSpecific_SmallSepApprox' to evaluate the interaction "
         "potential requires automatic differentiation via FAD!");
   }
 
   if (radius1_ != radius2_)
-    dserror(
+    FOUR_C_THROW(
         "The strategy 'SingleLengthSpecific_SmallSepApprox' to evaluate the interaction "
         "potential requires the beam radii to be identical!");
 
@@ -1260,7 +1260,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       prefactor *= 286.0 / 15.0;
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "Please implement the prefactor of the analytical disk-cylinder potential law for "
           "exponent m=%f. So far, only exponent 6 and 12 is supported.",
           m_);
@@ -1398,7 +1398,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       }
       else if (CORE::FADUTILS::Norm(xi_master) >= 1.0 - 1.0e-10)
       {
-        dserror(
+        FOUR_C_THROW(
             "Point-to-curve projection yields xi_master= %f. This is a critical case "
             "since it is very close to the element boundary!",
             CORE::FADUTILS::CastToDouble(xi_master));
@@ -1442,7 +1442,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       if (CORE::FADUTILS::CastToDouble(norm_dist_ul) == 0.0)
       {
         this->Print(std::cout);
-        dserror("centerline separation |r1-r2|=0! Fatal error.");
+        FOUR_C_THROW("centerline separation |r1-r2|=0! Fatal error.");
       }
 
       //************************** DEBUG ******************************************
@@ -1476,7 +1476,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       //************************** DEBUG ******************************************
       if (alpha < 0.0 or alpha > M_PI_2)
-        dserror("alpha=%f, should be in [0,pi/2]", CORE::FADUTILS::CastToDouble(alpha));
+        FOUR_C_THROW("alpha=%f, should be in [0,pi/2]", CORE::FADUTILS::CastToDouble(alpha));
       //*********************** END DEBUG *****************************************
 
 
@@ -1545,7 +1545,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           std::cout << "\ngap_ul: " << CORE::FADUTILS::CastToDouble(gap_ul);
           std::cout << "\nalpha: " << CORE::FADUTILS::CastToDouble(alpha * 180 / M_PI) << "degrees";
 
-          dserror(
+          FOUR_C_THROW(
               "gap_ul=%f is negative or very close to zero! Fatal error. Use regularization to"
               " handle this!",
               CORE::FADUTILS::CastToDouble(gap_ul));
@@ -1563,7 +1563,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         if (CORE::FADUTILS::CastToDouble(a) <= 0.0)
         {
           this->Print(std::cout);
-          dserror("auxiliary quantity a<=0! Fatal error.");
+          FOUR_C_THROW("auxiliary quantity a<=0! Fatal error.");
         }
 
         // interaction potential
@@ -2787,7 +2787,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
     if (CORE::FADUTILS::Norm(x) < 20 * radius2_)
     {
-      dserror(
+      FOUR_C_THROW(
           "Ignoring this GP with negative gap_bl in the non-parallel case "
           "violates the assumption that this GP is far from the bilateral CP");
     }
@@ -2798,7 +2798,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   }
 
   if (std::norm(CORE::FADUTILS::CastToDouble(gap_bl) + radius2_) < 1e-14)
-    dserror(
+    FOUR_C_THROW(
         "bilateral gap=%f is close to negative radius and thus the interaction potential is "
         "close to singular! Fatal error. Take care of this case!",
         CORE::FADUTILS::CastToDouble(gap_bl));
@@ -2815,7 +2815,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
       (gap_bl + radius2_) * (gap_bl + radius2_) + x * x * sin_alpha * sin_alpha);
 
   if (beta < 1e-14)
-    dserror("beta=%f is negative or very close to zero! Fatal error. Take care of this case!",
+    FOUR_C_THROW("beta=%f is negative or very close to zero! Fatal error. Take care of this case!",
         CORE::FADUTILS::CastToDouble(beta));
 
   beta_exp2 = beta * beta;
@@ -2865,7 +2865,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     std::cout << "\nbeta: " << CORE::FADUTILS::CastToDouble(beta);
     std::cout << "\na: " << CORE::FADUTILS::CastToDouble(a);
 
-    dserror("Delta=%f is negative or very close to zero! Use a regularization to handle this!",
+    FOUR_C_THROW("Delta=%f is negative or very close to zero! Use a regularization to handle this!",
         CORE::FADUTILS::CastToDouble(Delta));
   }
 
@@ -2894,7 +2894,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   }
 
   if (Delta_regularized <= 0)
-    dserror(
+    FOUR_C_THROW(
         "regularized Delta <= 0! Fatal error since force law is not defined for "
         "zero/negative Delta! Use positive regularization separation!");
 

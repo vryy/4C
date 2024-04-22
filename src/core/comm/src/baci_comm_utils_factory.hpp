@@ -110,13 +110,13 @@ namespace CORE::COMM
         break;
       }
       default:
-        dserror("buildNothing case not handled in ElementBoundaryFactory");
+        FOUR_C_THROW("buildNothing case not handled in ElementBoundaryFactory");
     }
     // create vectors that will contain the volume, surface or line elements
     std::vector<Teuchos::RCP<DRT::Element>> boundaryeles(nele);
 
     // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
-    if (nele != connectivity.size()) dserror("number of surfaces or lines does not match!");
+    if (nele != connectivity.size()) FOUR_C_THROW("number of surfaces or lines does not match!");
 
     // now, build the new surface/line elements
     for (unsigned int iele = 0; iele < nele; iele++)
@@ -192,7 +192,7 @@ namespace CORE::COMM
       //  -> we return the element itself
       return {Teuchos::rcpFromRef(ele)};
     }
-    dserror("Lines  does not exist for points.");
+    FOUR_C_THROW("Lines  does not exist for points.");
   }
 
   template <class BoundaryEle, class ParentEle>
@@ -210,7 +210,7 @@ namespace CORE::COMM
       return {Teuchos::rcpFromRef(ele)};
     }
 
-    dserror("Surfaces do not exist for 1D-elements.");
+    FOUR_C_THROW("Surfaces do not exist for 1D-elements.");
   }
 
 }  // namespace CORE::COMM

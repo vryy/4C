@@ -57,7 +57,7 @@ void FS3I::BIOFILM::UTILS::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> 
       const int lid = gvector.Map().LID(nodedofs[i]);
 
       if (lid < 0)
-        dserror(
+        FOUR_C_THROW(
             "Proc %d: Cannot find gid=%d in Epetra_Vector", gvector.Comm().MyPID(), nodedofs[i]);
       nvector[i] += gvector[lid];
     }

@@ -40,7 +40,7 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "you should not turn up in penalty controlled constraint without penalty parameter and "
             "rho!");
       }
@@ -70,7 +70,7 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
 void CONSTRAINTS::ConstraintPenalty::Initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  dserror("method not used for penalty formulation!");
+  FOUR_C_THROW("method not used for penalty formulation!");
 }
 
 /*------------------------------------------------------------------------*
@@ -92,7 +92,7 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(Teuchos::ParameterList& params)
     case none:
       return;
     default:
-      dserror("Unknown constraint/monitor type to be evaluated in Constraint class!");
+      FOUR_C_THROW("Unknown constraint/monitor type to be evaluated in Constraint class!");
   }
   // start computing
   EvaluateError(params, initerror_);
@@ -143,7 +143,7 @@ void CONSTRAINTS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
     case none:
       return;
     default:
-      dserror("Unknown constraint/monitor type to be evaluated in Constraint class!");
+      FOUR_C_THROW("Unknown constraint/monitor type to be evaluated in Constraint class!");
   }
   // start computing
   acterror_->PutScalar(0.0);
@@ -163,7 +163,7 @@ void CONSTRAINTS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
     case none:
       return;
     default:
-      dserror("Wrong constraint type to evaluate systemvector!");
+      FOUR_C_THROW("Wrong constraint type to evaluate systemvector!");
   }
   EvaluateConstraint(
       params, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
@@ -178,8 +178,8 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
   // get the current time
   const double time = params.get("total time", -1.0);
 
@@ -239,7 +239,7 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
       CORE::LINALG::SerialDenseVector elevector3;
 
       std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
-      // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+      // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
@@ -263,7 +263,7 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
         // call the element specific evaluate method
         int err = curr->second->Evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-        if (err) dserror("error while evaluating elements");
+        if (err) FOUR_C_THROW("error while evaluating elements");
 
         elematrix2 = elematrix1;
         elevector2 = elevector1;
@@ -305,8 +305,8 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
 void CONSTRAINTS::ConstraintPenalty::EvaluateError(
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
 {
-  if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
-  if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!(actdisc_->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!actdisc_->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
   // get the current time
   const double time = params.get("total time", -1.0);
 
@@ -352,7 +352,7 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateError(
         // call the element specific evaluate method
         int err = curr->second->Evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-        if (err) dserror("error while evaluating elements");
+        if (err) FOUR_C_THROW("error while evaluating elements");
 
         // assembly
 

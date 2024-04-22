@@ -145,7 +145,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::UpdateElasticPart(
 
   if (!params_->inelastic_external_deformation_)
   {
-    dserror(
+    FOUR_C_THROW(
         "You specified that there is no inelastic external deformation in the input file, but this "
         "method is only called if there is one. Probably, you are using a mixture rule with "
         "inelastic growth. You have to set INELASTIC_GROWTH to true or use a different growth "
@@ -264,7 +264,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::Evaluate(const CORE::LINALG::M
 {
   if (params_->inelastic_external_deformation_)
   {
-    dserror(
+    FOUR_C_THROW(
         "You specified that there is inelastic external deformation in the input file, but this "
         "method is only called if there is none. Probably, you are using a mixture rule without "
         "inelastic growth. You have to set INELASTIC_GROWTH to false or use a different growth "
@@ -287,7 +287,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::EvaluateElasticPart(
 {
   if (!params_->inelastic_external_deformation_)
   {
-    dserror(
+    FOUR_C_THROW(
         "You specified that there is no inelastic external deformation in the input file, but this "
         "method is only called if there is one. Probably, you are using a mixture rule with "
         "inelastic growth. You have to set INELASTIC_GROWTH to true or use a different growth "

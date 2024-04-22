@@ -71,12 +71,12 @@ namespace CORE::COMM
    {
    std::vector<char>::size_type position = 0;                      // used to mark current reading
    position in data int tmp; ExtractfromPack(position,data,tmp);    // unpack the unique id if (tmp
-   != UniqueParObjectId()) dserror("data does not belong to this class");
+   != UniqueParObjectId()) FOUR_C_THROW("data does not belong to this class");
    ExtractfromPack(position,data,i);      // extract i
    ExtractfromPack(position,data,b);      // extract b
    ExtractfromPack(position,data,bla);    // extract bla
    ExtractfromPack(position,data,matrix); // extract matrix
-   if (position != data.size()) dserror("Mismatch in size of data");
+   if (position != data.size()) FOUR_C_THROW("Mismatch in size of data");
    return;
    }
    \endcode
@@ -330,7 +330,7 @@ namespace CORE::COMM
         ++i;
       }
 
-      if (i != numentries) dserror("Something wrong with number of elements");
+      if (i != numentries) FOUR_C_THROW("Something wrong with number of elements");
     }
 
     /*!
@@ -354,7 +354,7 @@ namespace CORE::COMM
         ++i;
       }
 
-      if (i != numentries) dserror("Something wrong with number of elements");
+      if (i != numentries) FOUR_C_THROW("Something wrong with number of elements");
     }
 
     /*!
@@ -378,7 +378,7 @@ namespace CORE::COMM
         ++i;
       }
 
-      if (i != numentries) dserror("Something wrong with number of elements");
+      if (i != numentries) FOUR_C_THROW("Something wrong with number of elements");
     }
 
     /*!
@@ -404,7 +404,7 @@ namespace CORE::COMM
         ++i;
       }
 
-      if (i != numentries) dserror("Something wrong with number of elements");
+      if (i != numentries) FOUR_C_THROW("Something wrong with number of elements");
     }
 
     /*!
@@ -870,10 +870,10 @@ namespace CORE::COMM
     {
       int m = 0;
       ExtractfromPack(position, data, m);
-      if (m != i) dserror("first dimension mismatch");
+      if (m != i) FOUR_C_THROW("first dimension mismatch");
       int n = 0;
       ExtractfromPack(position, data, n);
-      if (n != j) dserror("second dimension mismatch");
+      if (n != j) FOUR_C_THROW("second dimension mismatch");
       ExtractfromPack(position, data, stuff.A(), stuff.M() * stuff.N() * sizeof(double));
     }
 

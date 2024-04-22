@@ -77,7 +77,7 @@ void MAT::ELASTIC::AnisoActiveStressEvolution::Setup(int numgp, INPUT::LineDefin
   {
     if (params_->lambda_lower_ >= params_->lambda_upper_)
     {
-      dserror(
+      FOUR_C_THROW(
           "LAMBDA_LOWER should be lower than LAMBDA_UPPER. Seems reasonable, doesn't it? Dude...");
     }
   }
@@ -99,7 +99,7 @@ void MAT::ELASTIC::AnisoActiveStressEvolution::AddStressAnisoPrincipal(
   double dt = params.get("delta time", -1.0);
   if (dt < 0.0)
   {
-    dserror("Parameter 'delta time' could not be read!");
+    FOUR_C_THROW("Parameter 'delta time' could not be read!");
   }
 
   double activationFunction = 0.0;
@@ -118,12 +118,12 @@ void MAT::ELASTIC::AnisoActiveStressEvolution::AddStressAnisoPrincipal(
       // safety check
       if (conc == Teuchos::null)
       {
-        dserror("No concentration from scatra provided for the activation");
+        FOUR_C_THROW("No concentration from scatra provided for the activation");
       }
       // safety check
       if (gp == -1)
       {
-        dserror("No Gauss point number provided in material");
+        FOUR_C_THROW("No Gauss point number provided in material");
       }
       // check if activation is above the given threshold
       if (conc->at(gp)[0] >= params_->activationthreshold_)
@@ -137,7 +137,7 @@ void MAT::ELASTIC::AnisoActiveStressEvolution::AddStressAnisoPrincipal(
     double totaltime = params.get<double>("total time", -1.0);
     if (totaltime < 0.0)
     {
-      dserror("Parameter 'total time' could not be read!");
+      FOUR_C_THROW("Parameter 'total time' could not be read!");
     }
     const auto& element_center_coordinates_ref =
         params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");

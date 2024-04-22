@@ -162,7 +162,7 @@ namespace
   /*!
    * \brief FPE signal handle
    *
-   * A function to handle floating point exceptions by raising a dserror.
+   * A function to handle floating point exceptions by raising a FOUR_C_THROW.
    * So we get a stack-trace also on systems where this is not provided
    * through core-dumps from MPI_Abort() (e.g. OpenMPI does whereas
    * Intel MPI doesn't).
@@ -188,10 +188,10 @@ namespace
         exception_string = "FE_INEXACT";
         break;
       default:
-        dserror("Baci produced an unknown floating point exception.");
+        FOUR_C_THROW("Baci produced an unknown floating point exception.");
         break;
     }
-    dserror("Baci produced a %s floating point exception.", exception_string.c_str());
+    FOUR_C_THROW("Baci produced a %s floating point exception.", exception_string.c_str());
   }
 #endif
 
@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
       char go = ' ';
       if (scanf("%c", &go) == EOF)
       {
-        dserror("Error while reading input.\n");
+        FOUR_C_THROW("Error while reading input.\n");
       }
     }
   }
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
         "*  %s  *\n"
         "*                                            *\n"
         "*              parallel version              *\n"
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         "*               debug version                *\n"
 #else
         "*                fast version                *\n"

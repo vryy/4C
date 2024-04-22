@@ -73,7 +73,7 @@ void NOX::NLN::MeritFunction::Infeasibility::SetType(const std::string& type_nam
       std::cout << supported_pair.first << " [= " << MeritFuncName2String(supported_pair.second)
                 << "]\n";
 
-    dserror("Unknown type name: \"%s\"", type_name.c_str());
+    FOUR_C_THROW("Unknown type name: \"%s\"", type_name.c_str());
   }
 }
 
@@ -82,14 +82,14 @@ void NOX::NLN::MeritFunction::Infeasibility::SetType(const std::string& type_nam
 double NOX::NLN::MeritFunction::Infeasibility::computef(const ::NOX::Abstract::Group& grp) const
 {
   if (not grp.isF())
-    dserror(
+    FOUR_C_THROW(
         "The current function value was not computed yet. "
         "Please call computeF() on the group passed into this function.");
 
   // cast the nox-group to the constraint group
   const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-  if (not constr_grp_ptr) dserror("Dynamic cast to NOX::NLN::Constraint::Group failed!");
+  if (not constr_grp_ptr) FOUR_C_THROW("Dynamic cast to NOX::NLN::Constraint::Group failed!");
 
   return constr_grp_ptr->GetModelValue(Type());
 }
@@ -99,7 +99,7 @@ double NOX::NLN::MeritFunction::Infeasibility::computef(const ::NOX::Abstract::G
 void NOX::NLN::MeritFunction::Infeasibility::computeGradient(
     const ::NOX::Abstract::Group& group, ::NOX::Abstract::Vector& result) const
 {
-  dserror("Currently unsupported.");
+  FOUR_C_THROW("Currently unsupported.");
   exit(EXIT_FAILURE);
 }
 
@@ -110,7 +110,7 @@ double NOX::NLN::MeritFunction::Infeasibility::computeSlope(
 {
   if (!grp.isF())
   {
-    dserror(
+    FOUR_C_THROW(
         "The current function value was not computed yet. Please call "
         "computeF() on the group passed into this function.");
   }
@@ -118,7 +118,7 @@ double NOX::NLN::MeritFunction::Infeasibility::computeSlope(
   // cast the underlying nox-group to the constraint group
   const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-  if (not constr_grp_ptr) dserror("Dynamic cast to NOX::NLN::Constraint::Group failed!");
+  if (not constr_grp_ptr) FOUR_C_THROW("Dynamic cast to NOX::NLN::Constraint::Group failed!");
 
   // compute the slope
   return constr_grp_ptr->GetLinearizedModelTerms(dir, Type(), linorder_first, lin_wrt_all_dofs);
@@ -129,7 +129,7 @@ double NOX::NLN::MeritFunction::Infeasibility::computeSlope(
 double NOX::NLN::MeritFunction::Infeasibility::computeQuadraticModel(
     const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const
 {
-  dserror("Currently unsupported.");
+  FOUR_C_THROW("Currently unsupported.");
   exit(EXIT_FAILURE);
 }
 
@@ -138,7 +138,7 @@ double NOX::NLN::MeritFunction::Infeasibility::computeQuadraticModel(
 void NOX::NLN::MeritFunction::Infeasibility::computeQuadraticMinimizer(
     const ::NOX::Abstract::Group& grp, ::NOX::Abstract::Vector& result) const
 {
-  dserror("Currently unsupported.");
+  FOUR_C_THROW("Currently unsupported.");
   exit(EXIT_FAILURE);
 }
 

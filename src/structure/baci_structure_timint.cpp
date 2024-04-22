@@ -166,7 +166,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
 
   if (sdynparams.get<int>("OUTPUT_STEP_OFFSET") != 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "Output step offset (\"OUTPUT_STEP_OFFSET\" != 0) is not supported in the old structural "
         "time integration");
   }
@@ -191,7 +191,7 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
   // check whether discretisation has been completed
   if (not discret_->Filled() || not actdis->HaveDofs())
   {
-    dserror("Discretisation is not complete or has no dofs!");
+    FOUR_C_THROW("Discretisation is not complete or has no dofs!");
   }
 
   // time state
@@ -396,7 +396,7 @@ void STR::TimInt::CreateFields()
       // Since our element evaluate routine is only designed for two input matrices
       //(stiffness and damping or stiffness and mass) its not possible, to have nonlinear
       // inertia forces AND material damping.
-      dserror("So far its not possible to model nonlinear inertia forces and damping!");
+      FOUR_C_THROW("So far its not possible to model nonlinear inertia forces and damping!");
     }
   }
 }
@@ -516,7 +516,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
   // contact and constraints together not yet implemented
   if (conman_->HaveConstraint())
-    dserror("Constraints and contact cannot be treated at the same time yet");
+    FOUR_C_THROW("Constraints and contact cannot be treated at the same time yet");
 
   // print messages for multifield problems (e.g FSI)
   const GLOBAL::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
@@ -556,7 +556,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     }
     else if (mesh_relocation_parameter == INPAR::MORTAR::relocation_timestep)
     {
-      dserror(
+      FOUR_C_THROW(
           "Meshtying with MESH_RELOCATION every_timestep not permitted. Change to MESH_RELOCATION "
           "initial or MESH_RELOCATION no.");
     }
@@ -587,7 +587,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   {
     // only plausibility check, that a contact solver is available
     if (contactsolver_ == Teuchos::null)
-      dserror("No contact solver in STR::TimInt::PrepareContactMeshtying? Cannot be!");
+      FOUR_C_THROW("No contact solver in STR::TimInt::PrepareContactMeshtying? Cannot be!");
   }
 
   // output of strategy / shapefcn / system type to screen
@@ -734,7 +734,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
                       << std::endl;
           }
           else
-            dserror("Invalid strategy or shape function type for contact/meshtying");
+            FOUR_C_THROW("Invalid strategy or shape function type for contact/meshtying");
         }
 
         // condensed formulation
@@ -850,7 +850,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
                       << std::endl;
           }
           else
-            dserror("Invalid strategy or shape function type for contact/meshtying");
+            FOUR_C_THROW("Invalid strategy or shape function type for contact/meshtying");
         }
       }
       else if (algorithm == INPAR::MORTAR::algorithm_nts)
@@ -900,7 +900,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       }
       // invalid system type
       else
-        dserror("Invalid system type for contact/meshtying");
+        FOUR_C_THROW("Invalid system type for contact/meshtying");
     }
   }
 }
@@ -947,7 +947,7 @@ void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xsla
       const int lid = gvector.Map().LID(nodedofs[i]);
 
       if (lid < 0)
-        dserror(
+        FOUR_C_THROW(
             "Proc %d: Cannot find gid=%d in Epetra_Vector", gvector.Comm().MyPID(), nodedofs[i]);
 
       nvector[i] += gvector[lid];
@@ -1173,7 +1173,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 /*----------------------------------------------------------------------*/
 void STR::TimInt::DetermineMass()
 {
-  dserror(
+  FOUR_C_THROW(
       "(Re-)Evaluation of only the mass matrix and intertial forces is "
       "not implemented in the base class.\n Set 'MASSLIN' to 'No' in "
       "--STRUCTURAL DYNAMIC if you want to use the chosen timint scheme.");
@@ -1279,7 +1279,7 @@ void STR::TimInt::UpdateStepContactVUM()
           cmtbridge_->GetStrategy().Params(), "CONTACTFORCE_ENDTIME");
       if (do_end == false)
       {
-        dserror(
+        FOUR_C_THROW(
             "***** WARNING: VelUpdate ONLY for contact force evaluated at the end time -> skipping "
             "****");
         return;
@@ -1310,7 +1310,7 @@ void STR::TimInt::UpdateStepContactVUM()
       }
       else
       {
-        dserror("***** WARNING: VelUpdate ONLY for Gen-alpha and GEMM -> skipping ****");
+        FOUR_C_THROW("***** WARNING: VelUpdate ONLY for Gen-alpha and GEMM -> skipping ****");
         return;
       }
 
@@ -1334,7 +1334,7 @@ void STR::TimInt::UpdateStepContactVUM()
       // the lumped mass matrix and its inverse
       if (lumpmass_ == false)
       {
-        dserror("***** WARNING: VelUpdate ONLY for lumped mass matrix -> skipping ****");
+        FOUR_C_THROW("***** WARNING: VelUpdate ONLY for lumped mass matrix -> skipping ****");
         return;
       }
       Teuchos::RCP<CORE::LINALG::SparseMatrix> Mass =
@@ -1345,7 +1345,7 @@ void STR::TimInt::UpdateStepContactVUM()
       int err = 0;
       Minv->ExtractDiagonalCopy(*diag);
       err = diag->Reciprocal(*diag);
-      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
       err = Minv->ReplaceDiagonalValues(*diag);
       Minv->Complete(*dofmap, *dofmap);
 
@@ -1703,7 +1703,7 @@ void STR::TimInt::ResetStep()
 void STR::TimInt::ReadRestart(const int step)
 {
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
-  if (step != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
+  if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
 
   step_ = step;
   stepn_ = step_ + 1;
@@ -1740,20 +1740,20 @@ void STR::TimInt::SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> 
   // hence we put some security measures in place
 
   // constraints
-  if (conman_->HaveConstraint()) dserror("Set restart not implemented for constraints");
+  if (conman_->HaveConstraint()) FOUR_C_THROW("Set restart not implemented for constraints");
 
   // Cardiovascular0D
   if (cardvasc0dman_->HaveCardiovascular0D())
-    dserror("Set restart not implemented for Cardiovascular0D");
+    FOUR_C_THROW("Set restart not implemented for Cardiovascular0D");
 
   // contact / meshtying
-  if (HaveContactMeshtying()) dserror("Set restart not implemented for contact / meshtying");
+  if (HaveContactMeshtying()) FOUR_C_THROW("Set restart not implemented for contact / meshtying");
 
   // beam contact
-  if (HaveBeamContact()) dserror("Set restart not implemented for beam contact");
+  if (HaveBeamContact()) FOUR_C_THROW("Set restart not implemented for beam contact");
 
   // biofilm growth
-  if (HaveBiofilmGrowth()) dserror("Set restart not implemented for biofilm growth");
+  if (HaveBiofilmGrowth()) FOUR_C_THROW("Set restart not implemented for biofilm growth");
 }
 
 /*----------------------------------------------------------------------*/
@@ -2083,16 +2083,17 @@ void STR::TimInt::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> ti
   // hence
 
   // constraints
-  if (conman_->HaveConstraint()) dserror("Get restart data not implemented for constraints");
+  if (conman_->HaveConstraint()) FOUR_C_THROW("Get restart data not implemented for constraints");
 
   // contact / meshtying
-  if (HaveContactMeshtying()) dserror("Get restart data not implemented for contact / meshtying");
+  if (HaveContactMeshtying())
+    FOUR_C_THROW("Get restart data not implemented for contact / meshtying");
 
   // beam contact
-  if (HaveBeamContact()) dserror("Get restart data not implemented for beam contact");
+  if (HaveBeamContact()) FOUR_C_THROW("Get restart data not implemented for beam contact");
 
   // biofilm growth
-  if (HaveBiofilmGrowth()) dserror("Get restart data not implemented for biofilm growth");
+  if (HaveBiofilmGrowth()) FOUR_C_THROW("Get restart data not implemented for biofilm growth");
 }
 /*----------------------------------------------------------------------*/
 /* write restart
@@ -2409,7 +2410,7 @@ void STR::TimInt::DetermineOptionalQuantity()
     if (writeoptquantity_ == INPAR::STR::optquantity_membranethickness)
       p.set("action", "calc_struct_thickness");
     else
-      dserror("requested optional quantity type not supported");
+      FOUR_C_THROW("requested optional quantity type not supported");
 
     // other parameters that might be needed by the elements
     p.set("total time", timen_);
@@ -2458,7 +2459,7 @@ void STR::TimInt::OutputStressStrain(bool& datawritten)
     }
     else
     {
-      dserror("requested stress type not supported");
+      FOUR_C_THROW("requested stress type not supported");
     }
     output_->WriteVector(stresstext, *stressdata_, *(discret_->ElementRowMap()));
     // we don't need this anymore
@@ -2479,7 +2480,7 @@ void STR::TimInt::OutputStressStrain(bool& datawritten)
     }
     else
     {
-      dserror("requested stress type not supported");
+      FOUR_C_THROW("requested stress type not supported");
     }
     output_->WriteVector(couplstresstext, *couplstressdata_, *(discret_->ElementRowMap()));
     // we don't need this anymore
@@ -2504,7 +2505,7 @@ void STR::TimInt::OutputStressStrain(bool& datawritten)
     }
     else
     {
-      dserror("requested strain type not supported");
+      FOUR_C_THROW("requested strain type not supported");
     }
     output_->WriteVector(straintext, *straindata_, *(discret_->ElementRowMap()));
     // we don't need this anymore
@@ -2525,7 +2526,7 @@ void STR::TimInt::OutputStressStrain(bool& datawritten)
     }
     else
     {
-      dserror("requested plastic strain type not supported");
+      FOUR_C_THROW("requested plastic strain type not supported");
     }
     output_->WriteVector(plstraintext, *plstraindata_, *(discret_->ElementRowMap()));
     // we don't need this anymore
@@ -2570,7 +2571,7 @@ void STR::TimInt::OutputOptQuantity(bool& datawritten)
     if (writeoptquantity_ == INPAR::STR::optquantity_membranethickness)
       optquantitytext = "gauss_membrane_thickness";
     else
-      dserror("requested optional quantity type not supported");
+      FOUR_C_THROW("requested optional quantity type not supported");
 
     output_->WriteVector(optquantitytext, *optquantitydata_, *(discret_->ElementRowMap()));
     // we don't need this anymore
@@ -2702,7 +2703,8 @@ void STR::TimInt::OutputContact()
           if (MyConForce != nullptr)
             fclose(MyConForce);
           else
-            dserror("File for writing contact interface forces/moments could not be generated.");
+            FOUR_C_THROW(
+                "File for writing contact interface forces/moments could not be generated.");
         }
         else
           MyFile = fopen(filename.str().c_str(), "at+");
@@ -2718,7 +2720,7 @@ void STR::TimInt::OutputContact()
           fclose(MyFile);
         }
         else
-          dserror("File for writing momentum and energy data could not be opened.");
+          FOUR_C_THROW("File for writing momentum and energy data could not be opened.");
       }
     }
 
@@ -2838,7 +2840,7 @@ void STR::TimInt::OutputNodalPositions()
   /////////////////////////////////////////////////////////////////
 
   if (discret_->Comm().NumProc() != 1)
-    dserror("The flag PRINTSTRUCTDEFORMEDNODECOORDS is on and only works with 1 processor");
+    FOUR_C_THROW("The flag PRINTSTRUCTDEFORMEDNODECOORDS is on and only works with 1 processor");
 
   std::cout << "STRUCT DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << std::endl;
   // does discret_ exist here?
@@ -2948,14 +2950,14 @@ void STR::TimInt::NonlinearMassSanityCheck(Teuchos::RCP<const Epetra_Vector> fex
 
   if (fextnorm > 1.0e-14)
   {
-    dserror(
+    FOUR_C_THROW(
         "Initial configuration does not fulfill equilibrium, check your "
         "initial external forces, velocities and accelerations!!!");
   }
 
   if ((dispnorm > 1.0e-14) or (velnorm > 1.0e-14) or (accnorm > 1.0e-14))
   {
-    dserror(
+    FOUR_C_THROW(
         "Nonlinear inertia terms (input flag 'MASSLIN' not set to 'none') "
         "are only possible for vanishing initial displacements, velocities and "
         "accelerations so far!!!\n"
@@ -2969,7 +2971,7 @@ void STR::TimInt::NonlinearMassSanityCheck(Teuchos::RCP<const Epetra_Vector> fex
       CORE::UTILS::IntegralValue<INPAR::STR::PredEnum>(*sdynparams, "PREDICT") !=
           INPAR::STR::pred_constdis)
   {
-    dserror(
+    FOUR_C_THROW(
         "Only constant displacement consistent velocity and acceleration "
         "predictor possible for multiplicative Genalpha time integration!");
   }
@@ -2979,7 +2981,7 @@ void STR::TimInt::NonlinearMassSanityCheck(Teuchos::RCP<const Epetra_Vector> fex
     if (HaveNonlinearMass() == INPAR::STR::ml_rotations and
         CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(*sdynparams, "DYNAMICTYP") !=
             INPAR::STR::dyna_genalpha)
-      dserror(
+      FOUR_C_THROW(
           "Nonlinear inertia forces for rotational DoFs only implemented "
           "for GenAlpha time integration so far!");
   }
@@ -3026,14 +3028,14 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
       // write restart output of last converged step before stopping
       Output(true);
 
-      // we should not get here, dserror for safety
-      dserror("Nonlinear solver did not converge! ");
+      // we should not get here, FOUR_C_THROW for safety
+      FOUR_C_THROW("Nonlinear solver did not converge! ");
       return INPAR::STR::conv_nonlin_fail;
     }
     case INPAR::STR::divcont_continue:
     {
-      // we should not get here, dserror for safety
-      dserror("Nonlinear solver did not converge! ");
+      // we should not get here, FOUR_C_THROW for safety
+      FOUR_C_THROW("Nonlinear solver did not converge! ");
       return INPAR::STR::conv_nonlin_fail;
     }
     break;
@@ -3090,10 +3092,10 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
       divconnumfinestep_ = 0;
 
       if (divconrefinementlevel_ == maxdivconrefinementlevel)
-        dserror(
+        FOUR_C_THROW(
             "Maximal divercont refinement level reached. Adapt your time basic time step size!");
 
-      if (stepmax_ > maxstepmax) dserror("Upper level for stepmax_ reached!");
+      if (stepmax_ > maxstepmax) FOUR_C_THROW("Upper level for stepmax_ reached!");
 
       // reset step (e.g. quantities on element level)
       ResetStep();
@@ -3211,7 +3213,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
       }
 
       else
-        dserror(
+        FOUR_C_THROW(
             "Maximal divercont refinement level reached. Finally nonlinear solver did not "
             "converge. :-(");
 
@@ -3222,7 +3224,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
     }
 
     default:
-      dserror("Unknown DIVER_CONT case");
+      FOUR_C_THROW("Unknown DIVER_CONT case");
       return INPAR::STR::conv_nonlin_fail;
       break;
   }

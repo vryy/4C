@@ -31,7 +31,7 @@ bool DRT::ELEMENTS::NURBS::SoNurbs27::ReadElement(
   std::vector<int> ngp;
   linedef->ExtractIntVector("GP", ngp);
   for (int i = 0; i < 3; ++i)
-    if (ngp[i] != 3) dserror("Only version with 3 GP for So_N27 implemented");
+    if (ngp[i] != 3) FOUR_C_THROW("Only version with 3 GP for So_N27 implemented");
 
   // we expect kintype to be total lagrangian
   kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
@@ -41,7 +41,7 @@ bool DRT::ELEMENTS::NURBS::SoNurbs27::ReadElement(
 
   // Validate that materials doesn't use extended update call.
   if (SolidMaterial()->UsesExtendedUpdate())
-    dserror("This element currently does not support the extended update call.");
+    FOUR_C_THROW("This element currently does not support the extended update call.");
 
   return true;
 }

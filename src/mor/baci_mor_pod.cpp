@@ -57,14 +57,14 @@ MOR::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
   projmatrix_ =
       Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->DofRowMap()), tmpmat->NumVectors(), true));
   int err = projmatrix_->Import(*tmpmat, *dofrowimporter, Insert, nullptr);
-  if (err != 0) dserror("POD projection matrix could not be mapped onto the dof map");
+  if (err != 0) FOUR_C_THROW("POD projection matrix could not be mapped onto the dof map");
 
   // check row dimension
   if (projmatrix_->GlobalLength() != actdisc_->DofRowMap()->NumGlobalElements())
-    if (myrank_ == 0) dserror("Projection matrix does not match discretization.");
+    if (myrank_ == 0) FOUR_C_THROW("Projection matrix does not match discretization.");
 
   // check orthogonality
-  if (not IsOrthogonal(projmatrix_)) dserror("Projection matrix is not orthogonal.");
+  if (not IsOrthogonal(projmatrix_)) FOUR_C_THROW("Projection matrix is not orthogonal.");
 
   // maps for reduced system
   structmapr_ = Teuchos::rcp(new Epetra_Map(projmatrix_->NumVectors(), 0, actdisc_->Comm()));
@@ -90,7 +90,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MOR::ProperOrthogonalDecomposition::Red
   Teuchos::RCP<Epetra_MultiVector> M_tmp =
       Teuchos::rcp(new Epetra_MultiVector(M->RowMap(), projmatrix_->NumVectors(), true));
   int err = M->Multiply(false, *projmatrix_, *M_tmp);
-  if (err) dserror("Multiplication M * V failed.");
+  if (err) FOUR_C_THROW("Multiplication M * V failed.");
 
   // left multiply V^T * (M * V)
   Teuchos::RCP<Epetra_MultiVector> M_red_mvec =
@@ -116,7 +116,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MOR::ProperOrthogonalDecomposition::Red
   Teuchos::RCP<Epetra_MultiVector> M_tmp =
       Teuchos::rcp(new Epetra_MultiVector(M->DomainMap(), projmatrix_->NumVectors(), true));
   int err = M->Multiply(true, *projmatrix_, *M_tmp);
-  if (err) dserror("Multiplication V^T * M failed.");
+  if (err) FOUR_C_THROW("Multiplication V^T * M failed.");
 
   // convert Epetra_MultiVector to CORE::LINALG::SparseMatrix
   Teuchos::RCP<Epetra_Map> rangemap = Teuchos::rcp(new Epetra_Map(M->DomainMap()));
@@ -147,7 +147,7 @@ Teuchos::RCP<Epetra_Vector> MOR::ProperOrthogonalDecomposition::ReduceResidual(
 {
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_));
   int err = v_tmp->Multiply('T', 'N', 1.0, *projmatrix_, *v, 0.0);
-  if (err) dserror("Multiplication V^T * v failed.");
+  if (err) FOUR_C_THROW("Multiplication V^T * v failed.");
 
   Teuchos::RCP<Epetra_Vector> v_red = Teuchos::rcp(new Epetra_Vector(*structmapr_));
   v_red->Import(*v_tmp, *structrimpo_, Insert, nullptr);
@@ -165,7 +165,7 @@ Teuchos::RCP<Epetra_Vector> MOR::ProperOrthogonalDecomposition::ExtendSolution(
   v_tmp->Import(*v_red, *structrinvimpo_, Insert, nullptr);
   Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
   int err = v->Multiply('N', 'N', 1.0, *projmatrix_, *v_tmp, 0.0);
-  if (err) dserror("Multiplication V * v_red failed.");
+  if (err) FOUR_C_THROW("Multiplication V * v_red failed.");
 
   return v;
 }
@@ -186,7 +186,7 @@ void MOR::ProperOrthogonalDecomposition::MultiplyEpetraMultiVectors(
   // do the multiplication: (all procs hold the full result)
   int err = multivect_temp->Multiply(
       multivect1Trans, multivect2Trans, 1.0, *multivect1, *multivect2, 0.0);
-  if (err) dserror("Multiplication failed.");
+  if (err) FOUR_C_THROW("Multiplication failed.");
 
   // import the result to a Epetra_MultiVector whose elements/rows are distributed over all procs
   result->Import(*multivect_temp, *impo, Insert, nullptr);
@@ -259,7 +259,8 @@ void MOR::ProperOrthogonalDecomposition::ReadMatrix(
   std::ifstream file1(
       filename.c_str(), std::ifstream::in | std::ifstream::binary | std::ifstream::ate);
 
-  if (!file1.good()) dserror("File containing the matrix could not be opened. Check Input-File.");
+  if (!file1.good())
+    FOUR_C_THROW("File containing the matrix could not be opened. Check Input-File.");
 
   // allocation of a memory-block to read the data
   char *sizeblock = new char[8];

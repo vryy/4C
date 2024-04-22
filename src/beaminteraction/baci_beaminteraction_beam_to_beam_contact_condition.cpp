@@ -113,7 +113,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::CreateContactPair(
         }
         default:
         {
-          dserror(
+          FOUR_C_THROW(
               "%d and %d is no valid template parameter combination for the "
               "number of nodes and number of types of nodal DoFs used for centerline "
               "interpolation!",
@@ -133,7 +133,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::CreateContactPair(
         }
         default:
         {
-          dserror(
+          FOUR_C_THROW(
               "%d and %d is no valid template parameter combination for the "
               "number of nodes and number of types of nodal DoFs used for centerline "
               "interpolation!",
@@ -145,7 +145,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::CreateContactPair(
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "%d and %d is no valid template parameter combination for the "
           "number of nodes and number of types of nodal DoFs used for centerline "
           "interpolation!",

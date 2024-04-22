@@ -34,10 +34,10 @@ void PARTICLEINTERACTION::DEMContactRollingBase::Init()
 {
   // safety checks for contact parameters
   if (nue_ <= -1.0 or nue_ > 0.5)
-    dserror("invalid input parameter POISSON_RATIO (expected in range ]-1.0; 0.5])!");
+    FOUR_C_THROW("invalid input parameter POISSON_RATIO (expected in range ]-1.0; 0.5])!");
 
   if (params_dem_.get<double>("FRICT_COEFF_ROLL") <= 0.0)
-    dserror("invalid input parameter FRICT_COEFF_ROLL for this kind of contact law!");
+    FOUR_C_THROW("invalid input parameter FRICT_COEFF_ROLL for this kind of contact law!");
 }
 
 void PARTICLEINTERACTION::DEMContactRollingBase::Setup(const double& k_normal)
@@ -65,9 +65,11 @@ void PARTICLEINTERACTION::DEMContactRollingViscous::Init()
   DEMContactRollingBase::Init();
 
   // safety checks for contact parameters
-  if (young_ <= 0.0) dserror("invalid input parameter YOUNG_MODULUS (expected to be positive)!");
+  if (young_ <= 0.0)
+    FOUR_C_THROW("invalid input parameter YOUNG_MODULUS (expected to be positive)!");
 
-  if (v_max_ <= 0.0) dserror("invalid input parameter MAX_VELOCITY (expected to be positive)!");
+  if (v_max_ <= 0.0)
+    FOUR_C_THROW("invalid input parameter MAX_VELOCITY (expected to be positive)!");
 }
 
 void PARTICLEINTERACTION::DEMContactRollingViscous::Setup(const double& k_normal)

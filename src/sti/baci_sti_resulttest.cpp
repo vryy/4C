@@ -79,7 +79,7 @@ double STI::STIResultTest::ResultSpecial(
 
   // catch unknown quantity strings
   else
-    dserror(
+    FOUR_C_THROW(
         "Quantity '%s' not supported by result testing functionality for scatra-thermo "
         "interaction!",
         quantity.c_str());
@@ -96,7 +96,7 @@ const STI::Monolithic& STI::STIResultTest::STIMonolithic() const
   const STI::Monolithic* const sti_monolithic =
       dynamic_cast<const STI::Monolithic* const>(sti_algorithm_.get());
   if (sti_monolithic == nullptr)
-    dserror("Couldn't access time integrator for monolithic scatra-thermo interaction!");
+    FOUR_C_THROW("Couldn't access time integrator for monolithic scatra-thermo interaction!");
   return *sti_monolithic;
 }
 

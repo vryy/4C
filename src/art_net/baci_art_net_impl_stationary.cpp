@@ -67,7 +67,7 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
 
   if (coupledTo3D_)
-    dserror("this type of coupling is only available for explicit time integration");
+    FOUR_C_THROW("this type of coupling is only available for explicit time integration");
 
   // call base class
   TimInt::Init(globaltimeparams, arteryparams, scatra_disname);
@@ -136,7 +136,7 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
         GLOBAL::Problem::Instance()->ScalarTransportDynamicParams();
     if (CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
         INPAR::SCATRA::velocity_zero)
-      dserror("set your velocity field to zero!");
+      FOUR_C_THROW("set your velocity field to zero!");
     // construct the scatra problem
     scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
         GLOBAL::Problem::Instance()->SolverParams(linsolvernumber_), scatra_disname, false));
@@ -168,7 +168,7 @@ void ART::ArtNetImplStationary::Solve(Teuchos::RCP<Teuchos::ParameterList> Coupl
   TEUCHOS_FUNC_TIME_MONITOR(" + solve");
 
   if (coupledTo3D_)
-    dserror("this type of coupling is only available for implicit time integration");
+    FOUR_C_THROW("this type of coupling is only available for implicit time integration");
 
   // call elements to calculate system matrix and rhs and assemble
   AssembleMatAndRHS();
@@ -204,7 +204,7 @@ void ART::ArtNetImplStationary::SolveScatra()
   TEUCHOS_FUNC_TIME_MONITOR(" + solve scatra");
 
   if (coupledTo3D_)
-    dserror("this type of coupling is only available for explicit time integration");
+    FOUR_C_THROW("this type of coupling is only available for explicit time integration");
 
   // provide scatra discretization with fluid primary variable field
   scatra_->ScaTraField()->Discretization()->SetState(1, "one_d_artery_pressure", pressurenp_);
@@ -368,7 +368,7 @@ void ART::ArtNetImplStationary::ResetArteryDiamPreviousTimeStep()
     // get the artery-material
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =
         Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(actele->Material());
-    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+    if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
 
     const double diam = arterymat->Diam();
     arterymat->SetDiamPreviousTimeStep(diam);
@@ -515,7 +515,7 @@ void ART::ArtNetImplStationary::OutputRadius()
     const Teuchos::RCP<const MAT::Cnst1dArt>& arterymat =
         Teuchos::rcp_dynamic_cast<const MAT::Cnst1dArt>(actele->Material());
     if (arterymat == Teuchos::null)
-      dserror("cast to MAT::Cnst1dArt failed during output of radius!");
+      FOUR_C_THROW("cast to MAT::Cnst1dArt failed during output of radius!");
     const double radius = arterymat->Diam() / 2.0;
     ele_radius_->ReplaceGlobalValue(actele->Id(), 0, radius);
   }
@@ -561,7 +561,7 @@ void ART::ArtNetImplStationary::OutputFlow()
     actele->Evaluate(p, *discret_, la, dummyMat, dummyMat, flowVec, dummyVec, dummyVec);
 
     int err = ele_volflow_->ReplaceMyValue(i, 0, flowVec(0));
-    if (err != 0) dserror("ReplaceMyValue failed with error code %d!", err);
+    if (err != 0) FOUR_C_THROW("ReplaceMyValue failed with error code %d!", err);
   }
 
   // write the output
@@ -612,7 +612,7 @@ void ART::ArtNetImplStationary::ReadRestart(int step, bool coupledTo3D)
   coupledTo3D_ = coupledTo3D;
   IO::DiscretizationReader reader(discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
 
-  if (step != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
+  if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
 
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
@@ -634,7 +634,7 @@ void ART::ArtNetImplStationary::ReadRestart(int step, bool coupledTo3D)
     // get the artery-material
     Teuchos::RCP<MAT::Cnst1dArt> arterymat =
         Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(actele->Material());
-    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+    if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
 
     const double diam = 2.0 * (*ele_radius_col)[i];
 
@@ -684,7 +684,7 @@ void ART::ArtNetImplStationary::SetInitialField(
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X().data(), time_, k);
           int err = pressurenp_->ReplaceMyValues(1, &initialval, &doflid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
 
@@ -701,7 +701,7 @@ void ART::ArtNetImplStationary::SetInitialField(
       break;
     }
     default:
-      dserror("Unknown option for initial field: %d", init);
+      FOUR_C_THROW("Unknown option for initial field: %d", init);
       break;
   }  // switch(init)
 

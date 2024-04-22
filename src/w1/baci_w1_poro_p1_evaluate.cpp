@@ -28,7 +28,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::ComputePorosityAndLinearization(
     CORE::LINALG::Matrix<1, Base::numdof_>& dphi_dus)
 {
   if (myporosity == nullptr)
-    dserror("no porosity values given!");
+    FOUR_C_THROW("no porosity values given!");
   else
     porosity = shapfct.Dot(*myporosity);
 
@@ -44,7 +44,7 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::ComputePorosityAndLinearizationOD(
   dphi_dp = 0.0;
 
   if (myporosity == nullptr)
-    dserror("no porosity values given!");
+    FOUR_C_THROW("no porosity values given!");
   else
     porosity = shapfct.Dot(*myporosity);
 }
@@ -70,7 +70,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::Evaluate(Teuchos::ParameterList& params
     // get the required action
     std::string action = params.get<std::string>("action", "none");
     if (action == "none")
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
     else if (action == "struct_poro_calc_fluidcoupling")
       act = ELEMENTS::struct_poro_calc_fluidcoupling;
     else if (action == "calc_struct_energy")
@@ -213,7 +213,7 @@ int DRT::ELEMENTS::Wall1PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& para
     // get the required action
     std::string action = params.get<std::string>("action", "none");
     if (action == "none")
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_internalforce")
       act = ELEMENTS::struct_calc_internalforce;
     else if (action == "calc_struct_nlnstiff")

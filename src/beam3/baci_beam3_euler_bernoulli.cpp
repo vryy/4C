@@ -72,13 +72,13 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   if (numdof != 6)
-    dserror(
+    FOUR_C_THROW(
         "The computation of the euler-bernoulli beam nullspace in three dimensions requires six"
         "DOFs per node, however the current node carries %d DOFs.",
         numdof);
 
   if (dimnsp != 5)
-    dserror(
+    FOUR_C_THROW(
         "The computation of the euler-bernoulli beam nullspace in three dimensions requires five"
         " nullspace vectors per node, however the current node carries %d vectors.",
         dimnsp);
@@ -90,7 +90,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
 
   // getting pointer at current element
   const auto* beam3eb = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node.Elements()[0]);
-  if (!beam3eb) dserror("Cannot cast to Beam3eb");
+  if (!beam3eb) FOUR_C_THROW("Cannot cast to Beam3eb");
 
   // Compute tangent vector with unit length from nodal coordinates.
   // Note: Tangent vector is the same at both nodes due to straight initial configuration.
@@ -141,9 +141,9 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
   omegaTwo.CrossProduct(tangent, omegaOne);
 
   if (std::abs(omegaOne.Dot(tangent)) > 1.0e-12)
-    dserror("omegaOne not orthogonal to tangent vector.");
+    FOUR_C_THROW("omegaOne not orthogonal to tangent vector.");
   if (std::abs(omegaTwo.Dot(tangent)) > 1.0e-12)
-    dserror("omegaTwo not orthogonal to tangent vector.");
+    FOUR_C_THROW("omegaTwo not orthogonal to tangent vector.");
 
   CORE::LINALG::Matrix<3, 1> nodeCoords(true);
   for (std::size_t dim = 0; dim < 3; ++dim) nodeCoords(dim) = x[dim] - x0[dim];
@@ -223,7 +223,7 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 
     // if we get so far current element is a beam3eb element and  we get a pointer at it
     DRT::ELEMENTS::Beam3eb* currele = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(dis.lColElement(num));
-    if (!currele) dserror("cast to Beam3eb* failed");
+    if (!currele) FOUR_C_THROW("cast to Beam3eb* failed");
 
     // reference node position
     std::vector<double> xrefe;
@@ -248,7 +248,7 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 
     // getting element's nodal coordinates and treating them as reference configuration
     if (currele->Nodes()[0] == nullptr || currele->Nodes()[1] == nullptr)
-      dserror("Cannot get nodes in order to compute reference configuration'");
+      FOUR_C_THROW("Cannot get nodes in order to compute reference configuration'");
     else
     {
       constexpr int numDim = 3;
@@ -290,7 +290,8 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner)
 {
 #if defined(INEXTENSIBLE)
   if (ANSVALUES != 3 or NODALDOFS != 2)
-    dserror("Flag INEXTENSIBLE only possible in combination with ANSVALUES=3 and NODALDOFS=2!");
+    FOUR_C_THROW(
+        "Flag INEXTENSIBLE only possible in combination with ANSVALUES=3 and NODALDOFS=2!");
 #endif
 }
 
@@ -397,7 +398,7 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, bending_moment_GP_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -529,7 +530,7 @@ void DRT::ELEMENTS::Beam3eb::GetPosAtXi(
     CORE::LINALG::Matrix<3, 1>& pos, const double& xi, const std::vector<double>& disp) const
 {
   if (disp.size() != 12)
-    dserror(
+    FOUR_C_THROW(
         "size mismatch: expected 12 values for element displacement vector "
         "and got %d",
         disp.size());
@@ -547,7 +548,7 @@ void DRT::ELEMENTS::Beam3eb::GetTriadAtXi(
     CORE::LINALG::Matrix<3, 3>& triad, const double& xi, const std::vector<double>& disp) const
 {
   if (disp.size() != 12)
-    dserror(
+    FOUR_C_THROW(
         "size mismatch: expected 12 values for element displacement vector "
         "and got %d",
         disp.size());
@@ -567,7 +568,7 @@ void DRT::ELEMENTS::Beam3eb::GetTriadAtXi(
    *
    */
 
-  dserror(
+  FOUR_C_THROW(
       "\nBeam3eb::GetTriadAtXi(): by definition, this element can not return "
       "a full triad; think about replacing it by GetTangentAtXi or another solution.");
 }

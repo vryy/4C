@@ -279,63 +279,64 @@ namespace SCATRA
     //! set number of dofset to write displacement values on
     void SetNumberOfDofSetDisplacement(int nds_disp)
     {
-      dsassert(nds_disp_ == -1, "Don't set 'nds_disp_' twice!");
+      FOUR_C_ASSERT(nds_disp_ == -1, "Don't set 'nds_disp_' twice!");
       nds_disp_ = nds_disp;
     }
 
     //! set number of dofset to write interface growth values on
     void SetNumberOfDofSetGrowth(int nds_growth)
     {
-      dsassert(nds_growth_ == -1, "Don't set 'nds_growth_' twice!");
+      FOUR_C_ASSERT(nds_growth_ == -1, "Don't set 'nds_growth_' twice!");
       nds_growth_ = nds_growth;
     }
 
     //! set number of dofset to write micro scale values on
     void SetNumberOfDofSetMicroScale(int nds_micro)
     {
-      dsassert(nds_micro_ == -1, "Don't set 'nds_micro_' twice!");
+      FOUR_C_ASSERT(nds_micro_ == -1, "Don't set 'nds_micro_' twice!");
       nds_micro_ = nds_micro;
     }
 
     //! set number of dofset to write pressure values on
     void SetNumberOfDofSetPressure(int nds_pressure)
     {
-      dsassert(nds_pres_ == -1, "Don't set 'nds_pres_' twice!");
+      FOUR_C_ASSERT(nds_pres_ == -1, "Don't set 'nds_pres_' twice!");
       nds_pres_ = nds_pressure;
     }
 
     //! set number of dofset to write scalar transport values on
     void SetNumberOfDofSetScaTra(int nds_scatra)
     {
-      dsassert(nds_scatra_ == -1, "Don't set 'nds_scatra_' twice!");
+      FOUR_C_ASSERT(nds_scatra_ == -1, "Don't set 'nds_scatra_' twice!");
       nds_scatra_ = nds_scatra;
     }
 
     //! set number of dofset to write thermo values on
     void SetNumberOfDofSetThermo(int nds_thermo)
     {
-      dsassert(nds_thermo_ == -1, "Don't set 'nds_thermo_' twice!");
+      FOUR_C_ASSERT(nds_thermo_ == -1, "Don't set 'nds_thermo_' twice!");
       nds_thermo_ = nds_thermo;
     }
 
     //! set number of dofset to write two-tensor quantities on, e.g. stresses, strains
     void SetNumberOfDofSetTwoTensorQuantity(int nds_two_tensor_quantitiy)
     {
-      dsassert(nds_two_tensor_quantitiy_ == -1, "Don't set 'nds_two_tensor_quantitiy_' twice!");
+      FOUR_C_ASSERT(
+          nds_two_tensor_quantitiy_ == -1, "Don't set 'nds_two_tensor_quantitiy_' twice!");
       nds_two_tensor_quantitiy_ = nds_two_tensor_quantitiy;
     }
 
     //! set number of dofset to write velocity values on
     void SetNumberOfDofSetVelocity(int nds_velocity)
     {
-      dsassert(nds_vel_ == -1, "Don't set 'nds_vel_' twice!");
+      FOUR_C_ASSERT(nds_vel_ == -1, "Don't set 'nds_vel_' twice!");
       nds_vel_ = nds_velocity;
     }
 
     //! set number of dofset to write wall shear stress values on
     void SetNumberOfDofSetWallShearStress(int nds_wall_shear_stress)
     {
-      dsassert(nds_wss_ == -1, "Don't set 'nds_wss_' twice!");
+      FOUR_C_ASSERT(nds_wss_ == -1, "Don't set 'nds_wss_' twice!");
       nds_wss_ = nds_wall_shear_stress;
     }
 

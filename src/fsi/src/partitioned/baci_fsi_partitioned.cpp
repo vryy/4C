@@ -100,7 +100,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
         MBFluidField()->Interface()->FSICondMap(), "FSICoupling", ndim);
 
     if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
-      dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+      FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
   else if ((CORE::UTILS::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
                1)  // matching meshes coupled via XFEM
@@ -119,7 +119,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
         x_movingboundary->StructInterface()->FSICondMap(), "FSICoupling", ndim);
 
     if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
-      dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+      FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
   else if ((GLOBAL::Problem::Instance()->GetProblemType() == GLOBAL::ProblemType::fbi))
   {
@@ -142,7 +142,7 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn, const
   }
   else
   {
-    dserror("You should not arrive here");
+    FOUR_C_THROW("You should not arrive here");
   }
 
   // enable debugging
@@ -359,7 +359,8 @@ void FSI::Partitioned::SetDefaultParameters(
     }
     default:
     {
-      dserror("coupling method type '%s' unsupported", fsidyn.get<std::string>("COUPALGO").c_str());
+      FOUR_C_THROW(
+          "coupling method type '%s' unsupported", fsidyn.get<std::string>("COUPALGO").c_str());
       break;
     }
   }
@@ -473,7 +474,8 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
     // solve the whole thing
     ::NOX::StatusTest::StatusType status = solver->solve();
 
-    if (status != ::NOX::StatusTest::Converged) dserror("Nonlinear solver failed to converge!");
+    if (status != ::NOX::StatusTest::Converged)
+      FOUR_C_THROW("Nonlinear solver failed to converge!");
 
     // End Nonlinear Solver **************************************
 
@@ -630,7 +632,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
     else if (dt == "Centered")
       dtype = ::NOX::Epetra::FiniteDifference::Centered;
     else
-      dserror("unsupported difference type '%s'", dt.c_str());
+      FOUR_C_THROW("unsupported difference type '%s'", dt.c_str());
 
     FD = Teuchos::rcp(new ::NOX::Epetra::FiniteDifference(
         printParams, interface, noxSoln, rawGraph_, beta, alpha));
@@ -642,7 +644,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
 
   else
   {
-    dserror("unsupported Jacobian '%s'", jacobian.c_str());
+    FOUR_C_THROW("unsupported Jacobian '%s'", jacobian.c_str());
   }
 
   // ==================================================================
@@ -695,7 +697,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
 
   else
   {
-    dserror("unsupported preconditioner '%s'", preconditioner.c_str());
+    FOUR_C_THROW("unsupported preconditioner '%s'", preconditioner.c_str());
   }
 
   return linSys;
@@ -803,7 +805,7 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
   // we count the number of times the residuum is build
   counter_[fillFlag] += 1;
 
-  if (!x.Map().UniqueGIDs()) dserror("source map not unique");
+  if (!x.Map().UniqueGIDs()) FOUR_C_THROW("source map not unique");
 
   if (debugwriter_ != Teuchos::null) debugwriter_->NewIteration();
 
@@ -904,7 +906,8 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidToStruct(Teuchos::RCP<Epetra_
     const Teuchos::RCP<Epetra_Vector> ishape = MBFluidField()->IntegrateInterfaceShape();
     const Teuchos::RCP<Epetra_Vector> iforce = Teuchos::rcp(new Epetra_Vector(iv->Map()));
 
-    if (iforce->ReciprocalMultiply(1.0, *ishape, *iv, 0.0)) dserror("ReciprocalMultiply failed");
+    if (iforce->ReciprocalMultiply(1.0, *ishape, *iv, 0.0))
+      FOUR_C_THROW("ReciprocalMultiply failed");
 
     return coupsfm_->SlaveToMaster(iforce);
   }
@@ -950,7 +953,7 @@ void FSI::Partitioned::Output()
               .get<Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory>>(
                   "User Defined Line Search Factory");
       if (linesearchfactory == Teuchos::null)
-        dserror("Could not get UserDefinedFactory from noxparameterlist_");
+        FOUR_C_THROW("Could not get UserDefinedFactory from noxparameterlist_");
       Teuchos::RCP<NOX::FSI::AitkenFactory> aitkenfactory =
           Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(linesearchfactory, true);
 
@@ -996,7 +999,7 @@ void FSI::Partitioned::ReadRestart(int step)
         omega = reader.ReadDouble("omega");
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "You want to restart a partitioned FSI scheme with AITKEN relaxation.\n"
             "This is only tested for standard ALE FSI and Immersed FSI.\n"
             "Check the implementation of FSI::Partitioned::ReadRestart.");

@@ -125,7 +125,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
   }
   else
   {
-    dserror("Norm %s is not available", INPAR::STR::VectorNormString(iternorm_).c_str());
+    FOUR_C_THROW("Norm %s is not available", INPAR::STR::VectorNormString(iternorm_).c_str());
   }
 
   // combined residual force and displacement test
@@ -140,7 +140,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
   }
   else
   {
-    dserror("Cannot handle convergence check");
+    FOUR_C_THROW("Cannot handle convergence check");
   }
 
 
@@ -176,7 +176,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
   }
   else
   {
-    dserror("Type of convergence control is not available");
+    FOUR_C_THROW("Type of convergence control is not available");
   }
 
   // convergence tests for residual displacements
@@ -191,7 +191,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
   {
     // relative test
     // NOT AVAILABLE
-    dserror("Not available");
+    FOUR_C_THROW("Not available");
   }
   else if (normtypedisi_ == INPAR::STR::convnorm_mix)
   {
@@ -208,7 +208,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
   }
   else
   {
-    dserror("Type of convergence control is not available");
+    FOUR_C_THROW("Type of convergence control is not available");
   }
 
 
@@ -418,7 +418,7 @@ int STR::TimIntImpl::NoxErrorCheck(
     }
     else
     {
-      dserror("Nonlinear solver failed to converge!");
+      FOUR_C_THROW("Nonlinear solver failed to converge!");
       return 1;  // make compiler happy
     }
   }

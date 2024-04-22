@@ -65,7 +65,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
         return DefineProblemType<CORE::FE::CellType::hex8, 3>(
             problem, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension for HEX8 transport element!");
+        FOUR_C_THROW("invalid problem dimension for HEX8 transport element!");
       break;
     }
     case CORE::FE::CellType::hex27:
@@ -74,7 +74,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
         return DefineProblemType<CORE::FE::CellType::hex27, 3>(
             problem, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension for HEX27 transport element!");
+        FOUR_C_THROW("invalid problem dimension for HEX27 transport element!");
       break;
     }
     case CORE::FE::CellType::tet4:
@@ -83,7 +83,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
         return DefineProblemType<CORE::FE::CellType::tet4, 3>(
             problem, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension for TET4 transport element!");
+        FOUR_C_THROW("invalid problem dimension for TET4 transport element!");
       break;
     }
     case CORE::FE::CellType::tet10:
@@ -92,7 +92,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
         return DefineProblemType<CORE::FE::CellType::tet10, 3>(
             problem, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension for TET10 transport element!");
+        FOUR_C_THROW("invalid problem dimension for TET10 transport element!");
       break;
     }
     case CORE::FE::CellType::pyramid5:
@@ -103,7 +103,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
             problem, numdofpernode, numscal, disname);
       }
       else
-        dserror("invalid problem dimension for PYRAMID5 transport element!");
+        FOUR_C_THROW("invalid problem dimension for PYRAMID5 transport element!");
       break;
     }
     case CORE::FE::CellType::quad4:
@@ -115,7 +115,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
         return DefineProblemType<CORE::FE::CellType::quad4, 3>(
             problem, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension for quad4 transport element!");
+        FOUR_C_THROW("invalid problem dimension for quad4 transport element!");
       break;
     }
     case CORE::FE::CellType::quad9:
@@ -125,7 +125,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
             problem, numdofpernode, numscal, disname);
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "QUAD9 transport element not implemented as part of %i-dimensional problem. Just do it",
             ndim);
       }
@@ -138,7 +138,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
             problem, numdofpernode, numscal, disname);
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "NURBS9 transport element not implemented as part of %i-dimensional problem. Just do "
             "it",
             ndim);
@@ -154,7 +154,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
         return DefineProblemType<CORE::FE::CellType::tri3, 3>(
             problem, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension for tri3 transport element!");
+        FOUR_C_THROW("invalid problem dimension for tri3 transport element!");
       break;
     }
     case CORE::FE::CellType::tri6:
@@ -164,7 +164,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
             problem, numdofpernode, numscal, disname);
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "TRI6 transport element not implemented as part of %i-dimensional problem. Just do it",
             ndim);
       }
@@ -182,14 +182,14 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
         return DefineProblemType<CORE::FE::CellType::line2, 3>(
             problem, numdofpernode, numscal, disname);
       else
-        dserror("invalid problem dimension for LINE2 transport element!");
+        FOUR_C_THROW("invalid problem dimension for LINE2 transport element!");
       break;
     }
     case CORE::FE::CellType::line3:
     {
       if (ndim != 1)
       {
-        dserror(
+        FOUR_C_THROW(
             "LINE3 transport element not implemented as part of %i-dimensional problem. Just do it",
             ndim);
       }
@@ -199,7 +199,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
       break;
     }
     default:
-      dserror("Element shape %s not activated. Just do it.",
+      FOUR_C_THROW("Element shape %s not activated. Just do it.",
           CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
@@ -226,7 +226,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
             problem, numdofpernode, numscal, disname);
       }
       else
-        dserror("invalid problem dimension for HEX8 transport element!");
+        FOUR_C_THROW("invalid problem dimension for HEX8 transport element!");
       break;
     }
     case CORE::FE::CellType::tet4:
@@ -237,7 +237,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
             problem, numdofpernode, numscal, disname);
       }
       else
-        dserror("invalid problem dimension for TET4 transport element!");
+        FOUR_C_THROW("invalid problem dimension for TET4 transport element!");
       break;
     }
     case CORE::FE::CellType::tet10:
@@ -248,7 +248,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
             problem, numdofpernode, numscal, disname);
       }
       else
-        dserror("invalid problem dimension for TET10 transport element!");
+        FOUR_C_THROW("invalid problem dimension for TET10 transport element!");
       break;
     }
     case CORE::FE::CellType::pyramid5:
@@ -259,7 +259,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
             problem, numdofpernode, numscal, disname);
       }
       else
-        dserror("invalid problem dimension for PYRAMID5 transport element!");
+        FOUR_C_THROW("invalid problem dimension for PYRAMID5 transport element!");
       break;
     }
     case CORE::FE::CellType::quad4:
@@ -275,7 +275,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
             problem, numdofpernode, numscal, disname);
       }
       else
-        dserror("invalid problem dimension for quad4 transport element!");
+        FOUR_C_THROW("invalid problem dimension for quad4 transport element!");
       break;
     }
     case CORE::FE::CellType::tri3:
@@ -284,7 +284,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
           problem, numdofpernode, numscal, disname);
     }
     default:
-      dserror("Element shape %s not activated. Just do it.",
+      FOUR_C_THROW("Element shape %s not activated. Just do it.",
           CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
@@ -308,7 +308,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
         problem != INPAR::SCATRA::impltype_no_physics and
         problem != INPAR::SCATRA::impltype_elch_electrode and
         problem != INPAR::SCATRA::impltype_elch_diffcond)
-      dserror("ImplType '%s' not implemented for transport on manifolds!",
+      FOUR_C_THROW("ImplType '%s' not implemented for transport on manifolds!",
           SCATRA::ImplTypeToString(problem).c_str());
   }
 
@@ -436,7 +436,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
 
     default:
     {
-      dserror("Defined problem type does not exist!!");
+      FOUR_C_THROW("Defined problem type does not exist!!");
       break;
     }
   }
@@ -455,7 +455,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   {
     if (problem != INPAR::SCATRA::impltype_std and
         problem != INPAR::SCATRA::impltype_cardiac_monodomain)
-      dserror("ImplType '%s' not implemented for transport on manifolds!",
+      FOUR_C_THROW("ImplType '%s' not implemented for transport on manifolds!",
           SCATRA::ImplTypeToString(problem).c_str());
   }
 
@@ -473,7 +473,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     }
     default:
     {
-      dserror("Defined problem type does not exist!!");
+      FOUR_C_THROW("Defined problem type does not exist!!");
       break;
     }
   }

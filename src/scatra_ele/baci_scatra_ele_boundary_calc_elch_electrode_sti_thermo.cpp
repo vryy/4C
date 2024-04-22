@@ -61,16 +61,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     CORE::LINALG::SerialDenseMatrix& eslavematrix)
 {
   // safety checks
-  if (my::numscal_ != 1) dserror("Invalid number of transported scalars!");
-  if (my::numdofpernode_ != 2) dserror("Invalid number of degrees of freedom per node!");
+  if (my::numscal_ != 1) FOUR_C_THROW("Invalid number of transported scalars!");
+  if (my::numdofpernode_ != 2) FOUR_C_THROW("Invalid number of degrees of freedom per node!");
   if (myelch::elchparams_->EquPot() != INPAR::ELCH::equpot_divi)
-    dserror("Invalid closing equation for electric potential!");
+    FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
   if (matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   const auto differentiationtype =
@@ -127,10 +127,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
 
     // evaluate overall integration factor
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
-    if (timefacfac < 0.0) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
-    if (timefacwgt < 0.0) dserror("Integration factor is negative!");
+    if (timefacwgt < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     EvaluateS2ICouplingODAtIntegrationPoint<distype>(matelectrode, my::ephinp_, etempnp_,
         emastertempnp, emasterphinp, pseudo_contact_fac, my::funct_, my::funct_, my::funct_,
@@ -263,7 +263,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
         }
         default:
         {
-          dserror("Unknown primary quantity to calculate derivative");
+          FOUR_C_THROW("Unknown primary quantity to calculate derivative");
         }
       }
       break;
@@ -368,7 +368,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
         }
         default:
         {
-          dserror("Unknown differentiation type");
+          FOUR_C_THROW("Unknown differentiation type");
         }
       }
       break;
@@ -379,7 +379,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
 
     default:
     {
-      dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
+      FOUR_C_THROW("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
     }
   }  // select kinetic model
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
@@ -440,7 +440,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probd
   const double temperature = my::funct_.Dot(etempnp_);
 
   // safety check
-  if (temperature <= 0.) dserror("Temperature is non-positive!");
+  if (temperature <= 0.) FOUR_C_THROW("Temperature is non-positive!");
 
   const double faraday = myelch::elchparams_->Faraday();
   const double gasconstant = myelch::elchparams_->GasConstant();

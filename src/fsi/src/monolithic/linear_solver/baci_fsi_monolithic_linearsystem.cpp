@@ -91,7 +91,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(Teuchos::ParameterList& l
   // things if you rebuild the prec.  Also, you MUST set Jac operator
   // before Prec Operator in AztecOO object.
   this->setAztecOOJacobian();
-  if (solvePrecOpPtr == Teuchos::null) dserror("Preconditioner is zero");
+  if (solvePrecOpPtr == Teuchos::null) FOUR_C_THROW("Preconditioner is zero");
   aztecSolverPtr->SetPrecOperator(solvePrecOpPtr.get());
   // this->setAztecOOPreconditioner();
   aztecSolverPtr->SetLHS(&(result.getEpetraVector()));
@@ -144,7 +144,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(Teuchos::ParameterList& l
     Epetra_Operator* op = jacPtr.get();
     Epetra_Vector* rhs = &(nonConstInput.getEpetraVector());
     Epetra_Vector* lhs = &(result.getEpetraVector());
-    if (!op || !rhs || !lhs) dserror("One of the objects in linear system is nullptr");
+    if (!op || !rhs || !lhs) FOUR_C_THROW("One of the objects in linear system is nullptr");
 
     // max iterations
     aztest_maxiter_ = Teuchos::rcp(new AztecOO_StatusTestMaxIters(maxit));

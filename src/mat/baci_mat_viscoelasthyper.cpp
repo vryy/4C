@@ -35,7 +35,7 @@ MAT::PAR::ViscoElastHyper::ViscoElastHyper(Teuchos::RCP<MAT::PAR::Material> matd
 {
   // polyconvexity check is just implemented for isotropic hyperlastic materials
   if (polyconvex_)
-    dserror(
+    FOUR_C_THROW(
         "This polyconvexity-check is just implemented for isotropic "
         "hyperelastic-materials (do not use for viscoelastic materials).");
 }
@@ -171,7 +171,7 @@ void MAT::ViscoElastHyper::Pack(CORE::COMM::PackBuffer& data) const
     // check if history exists
     AddtoPack(data, (int)(histfractartstresslastall_ != Teuchos::null));
     if (!(int)(histfractartstresslastall_ != Teuchos::null))
-      dserror("Something got wrong with your history data.");
+      FOUR_C_THROW("Something got wrong with your history data.");
 
     // pack stepsize
     AddtoPack(data, (int)histfractartstresslastall_->at(0).size());
@@ -214,7 +214,7 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ViscoElastHyper*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -235,7 +235,7 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
     {
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-      if (sum == Teuchos::null) dserror("Failed to allocate");
+      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
 
@@ -303,7 +303,7 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
     {
       // check if history data is saved
       bool have_historyalldata = (bool)ExtractInt(position, data);
-      if (!have_historyalldata) dserror("Something got wrong with your history data.");
+      if (!have_historyalldata) FOUR_C_THROW("Something got wrong with your history data.");
 
       histfractartstresscurr_ =
           Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>(histsize));
@@ -319,7 +319,7 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
     if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
   }
 }
 
@@ -929,7 +929,7 @@ void MAT::ViscoElastHyper::EvaluateViscoGenMax(CORE::LINALG::Matrix<6, 1>* stres
     cmatq.Update(xiscalar2, *cmat, 1.0);
   }
   else
-    dserror("Invalid input. Try valid input OST or CONVOL");
+    FOUR_C_THROW("Invalid input. Try valid input OST or CONVOL");
   return;
 }  // end EvaluateViscoGenMax
 
@@ -1005,11 +1005,11 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6
     ElastHyperProperties(branchpotsum, branchProperties);
 
     if (isovisco_)
-      dserror("case isovisco for branch in generalized Maxwell model not yet considered!");
+      FOUR_C_THROW("case isovisco for branch in generalized Maxwell model not yet considered!");
     if (branchProperties.anisoprinc)
-      dserror("case anisoprinc for branch in generalized Maxwell model not yet considered!");
+      FOUR_C_THROW("case anisoprinc for branch in generalized Maxwell model not yet considered!");
     if (branchProperties.anisomod)
-      dserror("case anisomod for branch in generalized Maxwell model not yet considered!");
+      FOUR_C_THROW("case anisomod for branch in generalized Maxwell model not yet considered!");
 
     CORE::LINALG::Matrix<6, 1> C_strain(true);
     CORE::LINALG::Matrix<6, 1> iC_strain(true);
@@ -1105,7 +1105,7 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6
       Qbranch.at(i).Update(-xiscalar2, S_n.at(i), 1.0);
     }
     else
-      dserror("Invalid input. Try valid input THETA or CONVOL");
+      FOUR_C_THROW("Invalid input. Try valid input THETA or CONVOL");
 
     // sum up branches
     Q.Update(1.0, Qbranch.at(i), 1.0);
@@ -1139,9 +1139,10 @@ void MAT::ViscoElastHyper::EvaluateViscoFract(CORE::LINALG::Matrix<6, 1> stress,
   }
 
   // safety checks for alpha
-  if (alpha == 1) dserror("Alpha cannot be 1 in fractional viscoelasticity. Use Genmax instead.");
+  if (alpha == 1)
+    FOUR_C_THROW("Alpha cannot be 1 in fractional viscoelasticity. Use Genmax instead.");
 
-  if (alpha < 0) dserror("Alpha has to be between 0 and 1 in fractional viscoelasticity.");
+  if (alpha < 0) FOUR_C_THROW("Alpha has to be between 0 and 1 in fractional viscoelasticity.");
 
   // get time algorithmic parameters
   // NOTE: dt can be zero (in restart of STI) for this model

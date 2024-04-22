@@ -106,7 +106,7 @@ namespace DRT
           return 2 * nsd + 2;  // The enrichment dofs have to be a multiple of the usual dofs for
                                // the nullspace
         else
-          dserror("1D Fluid elements are not supported");
+          FOUR_C_THROW("1D Fluid elements are not supported");
 
         return 0;
       }

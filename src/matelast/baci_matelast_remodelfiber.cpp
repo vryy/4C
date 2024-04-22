@@ -30,11 +30,11 @@ MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Mater
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())
-    dserror("number of materials %d does not fit to size of material vector %d", nummat_,
+    FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
         matids_->size());
 
   // check decay time validity
-  if (t_decay_ <= 0.) dserror("decay time must be positive");
+  if (t_decay_ <= 0.) FOUR_C_THROW("decay time must be positive");
 }
 
 MAT::ELASTIC::RemodelFiber::RemodelFiber(MAT::ELASTIC::PAR::RemodelFiber* params)
@@ -46,7 +46,7 @@ MAT::ELASTIC::RemodelFiber::RemodelFiber(MAT::ELASTIC::PAR::RemodelFiber* params
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-    if (sum == Teuchos::null) dserror("Failed to allocate");
+    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsumfiber_.push_back(Teuchos::rcp(new FiberData(sum)));
   }
 }
@@ -218,7 +218,7 @@ void MAT::ELASTIC::RemodelFiber::Setup(int numgp, double rho_tot, INPUT::LineDef
           Teuchos::rcp(new RemodelEvolution(params_->k_growth_, sig_pre, params_->t_decay_));
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "So far, you can only use Elast_CoupAnisoExpo and Elast_CoupAnisoExpoActive in "
           "Elast_Remodelfiber!");
   }
@@ -1470,7 +1470,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
 {
   if ((name == "lambda_r_0_0") || (name == "lambda_r_1_0"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double gp : potsumfiber_[0]->last_lambr)
     {
       data[0] += gp;
@@ -1481,7 +1481,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   }
   if ((name == "lambda_r_0_1") || (name == "lambda_r_1_1"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double gp : potsumfiber_[1]->last_lambr)
     {
       data[0] += gp;
@@ -1492,7 +1492,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   }
   if ((name == "lambda_r_0_2") || (name == "lambda_r_1_2"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double gp : potsumfiber_[2]->last_lambr)
     {
       data[0] += gp;
@@ -1503,7 +1503,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   }
   if ((name == "lambda_r_0_3") || (name == "lambda_r_1_3"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double gp : potsumfiber_[3]->last_lambr)
     {
       data[0] += gp;
@@ -1516,7 +1516,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
 
   if ((name == "fiber_cauchy_stress_0_0") || (name == "fiber_cauchy_stress_1_0"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double gp : cauchystress_[0])
     {
       data[0] += gp;
@@ -1527,7 +1527,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   }
   if ((name == "fiber_cauchy_stress_0_1") || (name == "fiber_cauchy_stress_1_1"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double gp : cauchystress_[1])
     {
       data[0] += gp;
@@ -1538,7 +1538,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   }
   if ((name == "fiber_cauchy_stress_0_2") || (name == "fiber_cauchy_stress_1_2"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double gp : cauchystress_[2])
     {
       data[0] += gp;
@@ -1549,7 +1549,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   }
   if ((name == "fiber_cauchy_stress_0_3") || (name == "fiber_cauchy_stress_1_3"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double gp : cauchystress_[3])
     {
       data[0] += gp;
@@ -1562,7 +1562,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
 
   if ((name == "cur_rho_col_0_0") || (name == "cur_rho_col_1_0"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double i : potsumfiber_[0]->cur_rho)
     {
       data[0] += i;
@@ -1574,7 +1574,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   }
   if ((name == "cur_rho_col_0_1") || (name == "cur_rho_col_1_1"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double i : potsumfiber_[1]->cur_rho)
     {
       data[0] += i;
@@ -1586,7 +1586,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   }
   if ((name == "cur_rho_col_0_2") || (name == "cur_rho_col_1_2"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double i : potsumfiber_[2]->cur_rho)
     {
       data[0] += i;
@@ -1598,7 +1598,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   }
   if ((name == "cur_rho_col_0_3") || (name == "cur_rho_col_1_3"))
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double i : potsumfiber_[3]->cur_rho)
     {
       data[0] += i;
@@ -1609,7 +1609,7 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
     return true;
   }
 
-  dserror("The output is only implemented for four different fiber directions!!!");
+  FOUR_C_THROW("The output is only implemented for four different fiber directions!!!");
   return false;
 }  // VisData()
 

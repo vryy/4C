@@ -64,7 +64,7 @@ namespace XFEM
             std::stringstream msg;
             msg << "The given CORE::LINALG::SparseOperator type is not supported! ( "
                 << NOX::NLN::LinSystem::OperatorType2String(optype) << " )";
-            dserror(msg.str());
+            FOUR_C_THROW(msg.str());
             break;
           }
         }
@@ -76,7 +76,7 @@ namespace XFEM
         {
           std::stringstream msg;
           msg << "Could not destroy matrix object: " << mat.strong_count() << "!=1 pointers";
-          dserror(msg.str());
+          FOUR_C_THROW(msg.str());
         }
         else
           mat = Teuchos::null;  // decrement the strong reference counter
@@ -92,7 +92,7 @@ namespace XFEM
       std::stringstream msg;
       msg << "invalid strength of RCP: "
           << Teuchos::ToStringTraits<Teuchos::ERCPStrength>::toString(mat.strength());
-      dserror(msg.str());
+      FOUR_C_THROW(msg.str());
     }
   }
 
@@ -120,7 +120,7 @@ namespace XFEM
         {
           std::ostringstream msg;
           msg << "Could not destroy matrix object: " << mat.strong_count() << "!=1 pointers";
-          dserror(msg.str());
+          FOUR_C_THROW(msg.str());
         }
         else
           mat = Teuchos::null;  // decrement the strong reference counter
@@ -132,7 +132,7 @@ namespace XFEM
                             // weak pointer
     }
     else
-      dserror("invalid strength of RCP");
+      FOUR_C_THROW("invalid strength of RCP");
   }
 
 
@@ -162,7 +162,7 @@ namespace XFEM
           std::ostringstream msg;
           msg << "Could not destroy reference-counted object! strong_count() = "
               << obj_rcp.strong_count() << " (!=1 pointers)";
-          dserror(msg.str());
+          FOUR_C_THROW(msg.str());
         }
         else
           obj_rcp = Teuchos::null;  // decrement the strong reference counter
@@ -174,7 +174,7 @@ namespace XFEM
                                 // this weak pointer
     }
     else
-      dserror("invalid strength of RCP");
+      FOUR_C_THROW("invalid strength of RCP");
   }
 
 

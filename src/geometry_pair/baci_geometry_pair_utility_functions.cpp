@@ -32,7 +32,7 @@ std::string GEOMETRYPAIR::DiscretizationTypeGeometryToString(
     case DiscretizationTypeGeometry::tetraeder:
       return "tetraeder";
     default:
-      dserror(
+      FOUR_C_THROW(
           "GEOMETRYPAIR::DiscretizationTypeGeometryToString: Got unexpected discretization "
           "type.");
       return "";

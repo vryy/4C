@@ -90,7 +90,7 @@ namespace IO
     template <typename CharT>
     Pstream& stream(const CharT& s)  ///< text to be added
     {
-      if (not is_initialized_) dserror("Setup the output before you use it!");
+      if (not is_initialized_) FOUR_C_THROW("Setup the output before you use it!");
 
       // are we on a proc that is allowed to output
       if (OnPid())
@@ -106,8 +106,8 @@ namespace IO
         // write to file
         if (writetofile_)
         {
-#ifdef BACI_DEBUG
-          if (!outfile_) dserror("outputfile does not exist - file handle lost");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+          if (!outfile_) FOUR_C_THROW("outputfile does not exist - file handle lost");
 #endif
           (*outfile_) << str;
         }

@@ -142,11 +142,12 @@ void MAT::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
           mat->Type() == INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes)
         params_ = static_cast<MAT::PAR::BeamElastHyperMaterialParameterGeneric*>(mat);
       else
-        dserror("Type of material parameter %d does not fit to type of material law %d",
+        FOUR_C_THROW("Type of material parameter %d does not fit to type of material law %d",
             mat->Type(), MaterialType());
     }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -163,7 +164,7 @@ template <typename T>
 const MAT::PAR::BeamElastHyperMaterialParameterGeneric& MAT::BeamElastHyperMaterial<T>::Params()
     const
 {
-  if (params_ == nullptr) dserror("pointer to parameter class is not set!");
+  if (params_ == nullptr) FOUR_C_THROW("pointer to parameter class is not set!");
 
   return *params_;
 }

@@ -90,7 +90,7 @@ void DRT::ELEMENTS::SoHex8::soh8_reiniteas(const DRT::ELEMENTS::SoHex8::EASType 
   Kdao = &easdata_.Kdao;
   eas_inc = &easdata_.eas_inc;
 
-  if (!alpha || !Kaainv || !Kda || !feas || !eas_inc) dserror("Missing EAS history-data");
+  if (!alpha || !Kaainv || !Kda || !feas || !eas_inc) FOUR_C_THROW("Missing EAS history-data");
 
   alpha->reshape(neas_, 1);
   alphao->reshape(neas_, 1);
@@ -179,7 +179,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
   solve_for_inverseT0.SetMatrix(T0invT);
   int err2 = solve_for_inverseT0.Factor();
   int err = solve_for_inverseT0.Invert();
-  if ((err != 0) || (err2 != 0)) dserror("Inversion of T0inv (Jacobian0) failed");
+  if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of T0inv (Jacobian0) failed");
 
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
 
@@ -353,7 +353,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
         // M_sosh8[i](4,e++) = s[i]; M_sosh8[i](4,e++) = t[i];
         // M_sosh8[i](5,e++) = r[i]; M_sosh8[i](5,e++) = t[i];
 
-        if (e != neas_) dserror("Too many/few EAS shape functions: %d != %d", e, neas_);
+        if (e != neas_) FOUR_C_THROW("Too many/few EAS shape functions: %d != %d", e, neas_);
       }
       M_sosh8_eval = true;  // now the array is filled statically
     }
@@ -362,7 +362,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eassetup(
   }
   else
   {
-    dserror("eastype not implemented");
+    FOUR_C_THROW("eastype not implemented");
   }
 }  // end of soh8_eassetup
 
@@ -398,7 +398,7 @@ void DRT::ELEMENTS::SoHex8::soh8_easupdate()
     case DRT::ELEMENTS::SoHex8::soh8_easnone:
       break;
     default:
-      dserror("Don't know what to do with EAS type %d", eastype_);
+      FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
       break;
   }
 }
@@ -435,7 +435,7 @@ void DRT::ELEMENTS::SoHex8::soh8_easrestore()
     case DRT::ELEMENTS::SoHex8::soh8_easnone:
       break;
     default:
-      dserror("Don't know what to do with EAS type %d", eastype_);
+      FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
       break;
   }
 }

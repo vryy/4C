@@ -102,7 +102,7 @@ namespace FLD
       }
       default:
       {
-        dserror("Set problem size! %i", discret_->NumGlobalElements());
+        FOUR_C_THROW("Set problem size! %i", discret_->NumGlobalElements());
         break;
       }
     }
@@ -169,7 +169,7 @@ namespace FLD
 
         if (tag != (myrank + numprocs - 1) % numprocs)
         {
-          dserror("received wrong message (ReceiveAny)");
+          FOUR_C_THROW("received wrong message (ReceiveAny)");
         }
 
         exporter.Wait(request);
@@ -266,7 +266,7 @@ namespace FLD
     // get fluid viscosity from material definition
     int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
     if (id == -1)
-      dserror("Could not find Newtonian fluid material");
+      FOUR_C_THROW("Could not find Newtonian fluid material");
     else
     {
       const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
@@ -476,7 +476,7 @@ namespace FLD
     fftw_destroy_plan(fft_3);
     fftw_cleanup();
 #else
-    dserror("FFTW required for HIT!");
+    FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
     // scale solution (not done in the fftw routine)
@@ -548,7 +548,7 @@ namespace FLD
               else
               {
                 if (not(k_conj_3 >= 0 and k_conj_3 <= (nummodes_ - 1)))
-                  dserror("k_3 in fftw domain expected!");
+                  FOUR_C_THROW("k_3 in fftw domain expected!");
 
                 // shift k_1 and k_2 into fftw domain
                 if (k_conj_1 < 0) k_conj_1 += nummodes_;
@@ -563,7 +563,7 @@ namespace FLD
                   pos_fftw_k_3 = k_conj_3;
                 }
                 else
-                  dserror("Position in fftw domain expected!");
+                  FOUR_C_THROW("Position in fftw domain expected!");
               }
             }
             else
@@ -573,7 +573,7 @@ namespace FLD
               int k_shift_3 = k_3;
 
               if (not(k_shift_3 >= 0 and k_shift_3 <= (nummodes_ - 1)))
-                dserror("k_3 in fftw domain expected!");
+                FOUR_C_THROW("k_3 in fftw domain expected!");
 
               // shift k_1 and k_2 into fftw domain
               if (k_shift_1 < 0) k_shift_1 += nummodes_;
@@ -588,7 +588,7 @@ namespace FLD
                 pos_fftw_k_3 = k_shift_3;
               }
               else
-                dserror("Position in fftw domain expected!");
+                FOUR_C_THROW("Position in fftw domain expected!");
             }
           }
 
@@ -701,7 +701,7 @@ namespace FLD
 
     return;
 #else
-    dserror("FFTW required");
+    FOUR_C_THROW("FFTW required");
 #endif
   }
 
@@ -813,7 +813,7 @@ namespace FLD
 
       // get global ids of all dofs of the node
       std::vector<int> dofs = scatradiscret_->Dof(0, node);
-      if (dofs.size() > 1) dserror("Only one scatra dof per node expected!");
+      if (dofs.size() > 1) FOUR_C_THROW("Only one scatra dof per node expected!");
 
       // determine position
       std::vector<int> loc(3);
@@ -893,7 +893,7 @@ namespace FLD
     fftw_destroy_plan(fft_4);
     fftw_cleanup();
 #else
-    dserror("FFTW required for HIT!");
+    FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
     // scale solution (not done in the fftw routine)
@@ -966,7 +966,7 @@ namespace FLD
               else
               {
                 if (not(k_conj_3 >= 0 and k_conj_3 <= (nummodes_ - 1)))
-                  dserror("k_3 in fftw domain expected!");
+                  FOUR_C_THROW("k_3 in fftw domain expected!");
 
                 // shift k_1 and k_2 into fftw domain
                 if (k_conj_1 < 0) k_conj_1 += nummodes_;
@@ -981,7 +981,7 @@ namespace FLD
                   pos_fftw_k_3 = k_conj_3;
                 }
                 else
-                  dserror("Position in fftw domain expected!");
+                  FOUR_C_THROW("Position in fftw domain expected!");
               }
             }
             else
@@ -991,7 +991,7 @@ namespace FLD
               int k_shift_3 = k_3;
 
               if (not(k_shift_3 >= 0 and k_shift_3 <= (nummodes_ - 1)))
-                dserror("k_3 in fftw domain expected!");
+                FOUR_C_THROW("k_3 in fftw domain expected!");
 
               // shift k_1 and k_2 into fftw domain
               if (k_shift_1 < 0) k_shift_1 += nummodes_;
@@ -1006,7 +1006,7 @@ namespace FLD
                 pos_fftw_k_3 = k_shift_3;
               }
               else
-                dserror("Position in fftw domain expected!");
+                FOUR_C_THROW("Position in fftw domain expected!");
             }
           }
 
@@ -1121,7 +1121,7 @@ namespace FLD
 
     return;
 #else
-    dserror("FFTW required");
+    FOUR_C_THROW("FFTW required");
 #endif
   }
 
@@ -1133,7 +1133,7 @@ namespace FLD
   void TurbulenceStatisticsHit::EvaluateResiduals(
       std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs)
   {
-    dserror("EvaluateResiduals() not yet implemented for hit!");
+    FOUR_C_THROW("EvaluateResiduals() not yet implemented for hit!");
     return;
   }
 
@@ -1907,7 +1907,7 @@ namespace FLD
               if ((int)rr < nummodes_)
                 loc[idim] = rr;
               else
-                dserror("I think that this should not happen");
+                FOUR_C_THROW("I think that this should not happen");
 
               break;
             }
@@ -1962,7 +1962,7 @@ namespace FLD
     fftw_destroy_plan(fft_3);
     fftw_cleanup();
 #else
-    dserror("FFTW required for HIT!");
+    FOUR_C_THROW("FFTW required for HIT!");
 #endif
 
     // scale solution (not done in the fftw routine)
@@ -2034,7 +2034,7 @@ namespace FLD
               else
               {
                 if (not(k_conj_3 >= 0 and k_conj_3 <= (nummodes_ - 1)))
-                  dserror("k_3 in fftw domain expected!");
+                  FOUR_C_THROW("k_3 in fftw domain expected!");
 
                 // shift k_1 and k_2 into fftw domain
                 if (k_conj_1 < 0) k_conj_1 += nummodes_;
@@ -2049,7 +2049,7 @@ namespace FLD
                   pos_fftw_k_3 = k_conj_3;
                 }
                 else
-                  dserror("Position in fftw domain expected!");
+                  FOUR_C_THROW("Position in fftw domain expected!");
               }
             }
             else
@@ -2059,7 +2059,7 @@ namespace FLD
               int k_shift_3 = k_3;
 
               if (not(k_shift_3 >= 0 and k_shift_3 <= (nummodes_ - 1)))
-                dserror("k_3 in fftw domain expected!");
+                FOUR_C_THROW("k_3 in fftw domain expected!");
 
               // shift k_1 and k_2 into fftw domain
               if (k_shift_1 < 0) k_shift_1 += nummodes_;
@@ -2074,7 +2074,7 @@ namespace FLD
                 pos_fftw_k_3 = k_shift_3;
               }
               else
-                dserror("Position in fftw domain expected!");
+                FOUR_C_THROW("Position in fftw domain expected!");
             }
           }
 
@@ -2189,7 +2189,7 @@ namespace FLD
     discret_->ClearState(true);
     return;
 #else
-    dserror("FFTW required");
+    FOUR_C_THROW("FFTW required");
 #endif
   }
 

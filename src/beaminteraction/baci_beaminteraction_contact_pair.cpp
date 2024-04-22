@@ -120,7 +120,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
           }
           default:
           {
-            dserror(
+            FOUR_C_THROW(
                 "%d and %d is no valid template parameter combination for the "
                 "number of nodes and number of types of nodal DoFs used for centerline "
                 "interpolation!",
@@ -140,7 +140,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
           }
           default:
           {
-            dserror(
+            FOUR_C_THROW(
                 "%d and %d is no valid template parameter combination for the "
                 "number of nodes and number of types of nodal DoFs used for centerline "
                 "interpolation!",
@@ -152,7 +152,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
       }
       default:
       {
-        dserror(
+        FOUR_C_THROW(
             "%d and %d is no valid template parameter combination for the "
             "number of nodes and number of types of nodal DoFs used for centerline "
             "interpolation!",
@@ -163,7 +163,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
   }
   else
   {
-    dserror("Unknown type of second element in creation of beam contact pair.");
+    FOUR_C_THROW("Unknown type of second element in creation of beam contact pair.");
   }
   return Teuchos::null;
 }
@@ -172,14 +172,14 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::CheckInit() const
 {
-  if (not IsInit()) dserror("Call Init() first!");
+  if (not IsInit()) FOUR_C_THROW("Call Init() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+  if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

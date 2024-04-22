@@ -42,8 +42,8 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
     const double& time                      //!< current time
 )
 {
-#ifdef BACI_DEBUG
-  if (condition_manager_ == Teuchos::null) dserror("no condition manager available!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (condition_manager_ == Teuchos::null) FOUR_C_THROW("no condition manager available!");
 #endif
 
   //--------------------------------------------------------------------------------------
@@ -85,8 +85,8 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
     const double& time                      //!< current time
 )
 {
-#ifdef BACI_DEBUG
-  if (condition_manager_ == Teuchos::null) dserror("no condition manager available!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (condition_manager_ == Teuchos::null) FOUR_C_THROW("no condition manager available!");
 #endif
 
   //--------------------------------------------------------------------------------------

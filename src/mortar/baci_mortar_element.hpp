@@ -542,7 +542,7 @@ namespace MORTAR
           break;
         }
         default:
-          dserror("Unknown mortar element type identifier");
+          FOUR_C_THROW("Unknown mortar element type identifier");
       }
       return isquad;
     }
@@ -577,7 +577,7 @@ namespace MORTAR
         }
         default:
         {
-          dserror("Unknown mortar element type identifier");
+          FOUR_C_THROW("Unknown mortar element type identifier");
           return 0;
         }
       }
@@ -598,7 +598,7 @@ namespace MORTAR
     */
     inline MORTAR::MortarEleDataContainer& MoData()
     {
-      dsassert(modata_ != Teuchos::null, "Mortar data container not set");
+      FOUR_C_ASSERT(modata_ != Teuchos::null, "Mortar data container not set");
       return *modata_;
     }
 
@@ -613,7 +613,7 @@ namespace MORTAR
     and parameters from some control routine in params and evaluates element matrices and
     vectors accoring to the command in params.
 
-    \note This class implements a dummy of this method that prints a dserror and
+    \note This class implements a dummy of this method that prints a FOUR_C_THROW and
           returns false.
 
     \param params (in/out)    : ParameterList for communication between control routine
@@ -726,9 +726,9 @@ namespace MORTAR
 
     double inline GetNodalCoords(const int direction, const int node)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       Node* mymrtrnode = dynamic_cast<Node*>(Points()[node]);
-      if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
+      if (!mymrtrnode) FOUR_C_THROW("GetNodalCoords: Null pointer!");
       return mymrtrnode->xspatial()[direction];
 #else
       return static_cast<Node*>(Points()[node])->xspatial()[direction];
@@ -744,9 +744,9 @@ namespace MORTAR
 
     double inline GetNodalCoordsOld(const int direction, const int node)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       Node* mymrtrnode = dynamic_cast<Node*>(Points()[node]);
-      if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
+      if (!mymrtrnode) FOUR_C_THROW("GetNodalCoords: Null pointer!");
       return mymrtrnode->X()[direction] + mymrtrnode->uold()[direction];
 #else
       return (static_cast<Node*>(Points()[node])->X()[direction] +

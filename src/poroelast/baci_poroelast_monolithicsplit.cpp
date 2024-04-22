@@ -129,7 +129,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
       CORE::LINALG::MultiMapExtractor::IntersectMaps(fluidmaps);
 
   if (fluidfsibcmap->NumMyElements())
-    dserror("Dirichlet boundary conditions on fluid and FSI interface not supported!!");
+    FOUR_C_THROW("Dirichlet boundary conditions on fluid and FSI interface not supported!!");
 
   // get interface map and DBC map of structure
   std::vector<Teuchos::RCP<const Epetra_Map>> structmaps;
@@ -151,9 +151,9 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
   for (int i = 0; i < mylength; ++i)
   {
     int gid = mygids[i];
-    // dsassert(slavemastermap.count(gid),"master gid not found on slave side");
+    // FOUR_C_ASSERT(slavemastermap.count(gid),"master gid not found on slave side");
     int err = gidmarker_struct->ReplaceGlobalValue(gid, 0, 1.0);
-    if (err) dserror("ReplaceMyValue failed for gid %i error code %d", gid, err);
+    if (err) FOUR_C_THROW("ReplaceMyValue failed for gid %i error code %d", gid, err);
   }
 
   // transfer to fluid side
@@ -171,7 +171,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
 
   Teuchos::RCP<Epetra_Map> structfsidbcmap = Teuchos::rcp(
       new Epetra_Map(-1, structfsidbcvector.size(), structfsidbcvector.data(), 0, Comm()));
-  // dsassert(fluidfsidbcmap->UniqueGIDs(),"fsidbcmap is not unique!");
+  // FOUR_C_ASSERT(fluidfsidbcmap->UniqueGIDs(),"fsidbcmap is not unique!");
 
   return structfsidbcmap;
 }

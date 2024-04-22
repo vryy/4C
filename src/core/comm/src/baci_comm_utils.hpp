@@ -104,11 +104,11 @@ namespace CORE::COMM
     }
     catch (std::bad_cast& b)
     {
-      dserror(
+      FOUR_C_THROW(
           "Cannot convert an Epetra_Comm to a Teuchos::Comm: The exact type of the Epetra_Comm "
           "object is unknown");
     }
-    dserror(
+    FOUR_C_THROW(
         "Something went wrong with converting an Epetra_Comm to a Teuchos communicator! You should "
         "not be here!");
     return Teuchos::null;

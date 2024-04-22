@@ -62,7 +62,7 @@ Teuchos::RCP<Epetra_MultiVector> IO::DiscretizationReader::ReadVector(std::strin
   int columns;
   if (map_find_int(result, "columns", &columns))
   {
-    if (columns != 1) dserror("got multivector with name '%s', vector expected", name.c_str());
+    if (columns != 1) FOUR_C_THROW("got multivector with name '%s', vector expected", name.c_str());
   }
   return ReadMultiVector(name);
 }
@@ -76,7 +76,7 @@ void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_MultiVector> vec, 
   int columns;
   if (map_find_int(result, "columns", &columns))
   {
-    if (columns != 1) dserror("got multivector with name '%s', vector expected", name.c_str());
+    if (columns != 1) FOUR_C_THROW("got multivector with name '%s', vector expected", name.c_str());
   }
   ReadMultiVector(vec, name);
 }
@@ -106,13 +106,13 @@ void IO::DiscretizationReader::ReadMultiVector(
   // check if vec is a null pointer
   if (vec == Teuchos::null)
   {
-    dserror("vec is a null pointer. You need to allocate memory before calling this function");
+    FOUR_C_THROW("vec is a null pointer. You need to allocate memory before calling this function");
   }
 
   Teuchos::RCP<Epetra_MultiVector> nv = ReadMultiVector(name);
 
   if (nv->GlobalLength() > vec->GlobalLength())
-    dserror(
+    FOUR_C_THROW(
         "Reading vector \"%s\": Global length of source exceeds target "
         "(Multi-) Vector length! This case is not supported ! "
         "Source size: %d Target size: %d",
@@ -137,7 +137,7 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(
     columns = 1;
   }
   if (columns != 1)
-    dserror("got multivector with name '%s', std::vector<char> expected", name.c_str());
+    FOUR_C_THROW("got multivector with name '%s', std::vector<char> expected", name.c_str());
 
   Teuchos::RCP<Epetra_Map> elemap;
   Teuchos::RCP<std::vector<char>> data =
@@ -357,7 +357,7 @@ void IO::DiscretizationReader::FindGroup(int step, MAP* file, const char* captio
   }
   if (symbol == nullptr)
   {
-    dserror(
+    FOUR_C_THROW(
         "No restart entry for discretization '%s' step %d in symbol table. "
         "Control file corrupt?\n\nLooking for control file at: %s",
         name.c_str(), step, input_->FileName().c_str());
@@ -394,7 +394,7 @@ void IO::DiscretizationReader::FindGroup(int step, MAP* file, const char* captio
   /* No restart files defined? */
   if (symbol == nullptr)
   {
-    dserror("no restart file definitions found in control file");
+    FOUR_C_THROW("no restart file definitions found in control file");
   }
 }
 
@@ -573,7 +573,7 @@ IO::DiscretizationWriter::~DiscretizationWriter()
     const herr_t status = H5Fclose(meshfile_);
     if (status < 0)
     {
-      dserror("Failed to close HDF file %s", meshfilename_.c_str());
+      FOUR_C_THROW("Failed to close HDF file %s", meshfilename_.c_str());
     }
   }
   if (resultfile_ != -1)
@@ -588,19 +588,19 @@ IO::DiscretizationWriter::~DiscretizationWriter()
     std::vector<hid_t> oid_list(num_og, -1);
 
     herr_t status = H5Fget_obj_ids(resultfile_, H5F_OBJ_GROUP, num_og, oid_list.data());
-    if (status < 0) dserror("Failed to get id's of open groups in resultfile");
+    if (status < 0) FOUR_C_THROW("Failed to get id's of open groups in resultfile");
 
     // loop over open groups
     for (int i = 0; i < num_og; i++)
     {
       const herr_t status_g = H5Gclose(oid_list[i]);
-      if (status_g < 0) dserror("Failed to close HDF-group in resultfile");
+      if (status_g < 0) FOUR_C_THROW("Failed to close HDF-group in resultfile");
     }
     // now close the result file
     const herr_t status_c = H5Fclose(resultfile_);
     if (status_c < 0)
     {
-      dserror("Failed to close HDF file %s", resultfilename_.c_str());
+      FOUR_C_THROW("Failed to close HDF file %s", resultfilename_.c_str());
     }
   }
 }
@@ -629,12 +629,12 @@ void IO::DiscretizationWriter::CreateMeshFile(const int step)
       const herr_t status = H5Fclose(meshfile_);
       if (status < 0)
       {
-        dserror("Failed to close HDF file %s", meshfilename_.c_str());
+        FOUR_C_THROW("Failed to close HDF file %s", meshfilename_.c_str());
       }
     }
 
     meshfile_ = H5Fcreate(meshname.str().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    if (meshfile_ < 0) dserror("Failed to open file %s", meshname.str().c_str());
+    if (meshfile_ < 0) FOUR_C_THROW("Failed to open file %s", meshname.str().c_str());
     meshfile_changed_ = step;
   }
 }
@@ -659,7 +659,7 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
       herr_t status = H5Fclose(resultfile_);
       if (status < 0)
       {
-        dserror("Failed to close HDF file %s", resultfilename_.c_str());
+        FOUR_C_THROW("Failed to close HDF file %s", resultfilename_.c_str());
       }
     }
 
@@ -668,7 +668,7 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
     mapstack_.clear();
 
     resultfile_ = H5Fcreate(resultname.str().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    if (resultfile_ < 0) dserror("Failed to open file %s", resultname.str().c_str());
+    if (resultfile_ < 0) FOUR_C_THROW("Failed to open file %s", resultname.str().c_str());
     resultfile_changed_ = step;
   }
 }
@@ -747,7 +747,7 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
       const herr_t status = H5Gclose(resultgroup_);
       if (status < 0)
       {
-        dserror("Failed to close HDF group in file %s", resultfilename_.c_str());
+        FOUR_C_THROW("Failed to close HDF group in file %s", resultfilename_.c_str());
       }
     }
 
@@ -758,7 +758,7 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
     }
 
     resultgroup_ = H5Gcreate(resultfile_, groupname.str().c_str(), 0);
-    if (resultgroup_ < 0) dserror("Failed to write HDF-group in resultfile");
+    if (resultgroup_ < 0) FOUR_C_THROW("Failed to write HDF-group in resultfile");
 
     if (Comm().MyPID() == 0)
     {
@@ -786,7 +786,7 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
     const herr_t status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
     if (status < 0)
     {
-      dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+      FOUR_C_THROW("Failed to flush HDF file %s", resultfilename_.c_str());
     }
   }
 }
@@ -839,14 +839,14 @@ void IO::DiscretizationWriter::WriteVector(
       const herr_t make_status =
           H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 1, &size, data);
       if (make_status < 0)
-        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+        FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
     else
     {
       const herr_t make_status =
           H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 0, &size, data);
       if (make_status < 0)
-        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+        FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
 
     std::string idname;
@@ -879,13 +879,13 @@ void IO::DiscretizationWriter::WriteVector(
       {
         const herr_t make_status =
             H5LTmake_dataset_int(resultgroup_, idname.c_str(), 1, &mapsize, ids);
-        if (make_status < 0) dserror("Failed to create dataset in HDF-resultfile");
+        if (make_status < 0) FOUR_C_THROW("Failed to create dataset in HDF-resultfile");
       }
       else
       {
         const herr_t make_status =
             H5LTmake_dataset_int(resultgroup_, idname.c_str(), 0, &mapsize, ids);
-        if (make_status < 0) dserror("Failed to create dataset in HDF-resultfile");
+        if (make_status < 0) FOUR_C_THROW("Failed to create dataset in HDF-resultfile");
       }
 
       idname = groupname.str() + idname;
@@ -907,7 +907,7 @@ void IO::DiscretizationWriter::WriteVector(
        * elerow) per field involved in the problem plus some more in case mapstack_
        * is not cleared after each time step */
       if (mapstack_.size() > 20)
-        dserror(
+        FOUR_C_THROW(
             "Careful! Due to repeated FillComplete()-calls many maps are stored in the output "
             "process.");
     }
@@ -927,7 +927,7 @@ void IO::DiscretizationWriter::WriteVector(
           vectortype = "element";
           break;
         default:
-          dserror("unknown vector type %d", vt);
+          FOUR_C_THROW("unknown vector type %d", vt);
           break;
       }
       output_->ControlFile() << "    " << name << ":\n"
@@ -941,7 +941,7 @@ void IO::DiscretizationWriter::WriteVector(
     const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
     if (flush_status < 0)
     {
-      dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+      FOUR_C_THROW("Failed to flush HDF file %s", resultfilename_.c_str());
     }
   }
 }
@@ -962,14 +962,14 @@ void IO::DiscretizationWriter::WriteVector(const std::string name, const std::ve
       const herr_t make_status =
           H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 1, &size, data);
       if (make_status < 0)
-        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+        FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
     else
     {
       const herr_t make_status =
           H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 0, &size, data);
       if (make_status < 0)
-        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+        FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
 
     std::string idname;
@@ -1000,7 +1000,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name, const std::ve
       int* ids = elemap.MyGlobalElements();
       const herr_t make_status =
           H5LTmake_dataset_int(resultgroup_, idname.c_str(), 1, &mapsize, ids);
-      if (make_status < 0) dserror("Failed to create dataset in HDF-resultfile");
+      if (make_status < 0) FOUR_C_THROW("Failed to create dataset in HDF-resultfile");
 
       idname = groupname.str() + idname;
 
@@ -1021,7 +1021,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name, const std::ve
        * elerow) per field involved in the problem plus some more in case mapstack_
        * is not cleared after each time step */
       if (mapstack_.size() > 20)
-        dserror(
+        FOUR_C_THROW(
             "Careful! Due to repeated FillComplete()-calls many maps are "
             "stored in the output process.");
     }
@@ -1041,7 +1041,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name, const std::ve
           vectortype = "element";
           break;
         default:
-          dserror("unknown vector type %d", vt);
+          FOUR_C_THROW("unknown vector type %d", vt);
           break;
       }
       output_->ControlFile() << "    " << name << ":\n"
@@ -1055,7 +1055,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name, const std::ve
     const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
     if (flush_status < 0)
     {
-      dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+      FOUR_C_THROW("Failed to flush HDF file %s", resultfilename_.c_str());
     }
   }
 }
@@ -1073,7 +1073,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
     std::ostringstream name;
     name << "step" << step;
     meshgroup_ = H5Gcreate(meshfile_, name.str().c_str(), 0);
-    if (meshgroup_ < 0) dserror("Failed to write group in HDF-meshfile");
+    if (meshgroup_ < 0) FOUR_C_THROW("Failed to write group in HDF-meshfile");
 
     // only procs with row elements need to write data
     Teuchos::RCP<std::vector<char>> elementdata = dis_->PackMyElements();
@@ -1082,14 +1082,14 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
     {
       const herr_t element_status =
           H5LTmake_dataset_char(meshgroup_, "elements", 1, &dim, elementdata->data());
-      if (element_status < 0) dserror("Failed to create dataset in HDF-meshfile");
+      if (element_status < 0) FOUR_C_THROW("Failed to create dataset in HDF-meshfile");
     }
     else
     {
       const herr_t element_status =
           H5LTmake_dataset_char(meshgroup_, "elements", 0, &dim, elementdata->data());
       if (element_status < 0)
-        dserror(
+        FOUR_C_THROW(
             "Failed to create dataset in HDF-meshfile on proc %d which does"
             " not have row elements",
             Comm().MyPID());
@@ -1102,14 +1102,14 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
     {
       const herr_t node_status =
           H5LTmake_dataset_char(meshgroup_, "nodes", 1, &dim, nodedata->data());
-      if (node_status < 0) dserror("Failed to create dataset in HDF-meshfile");
+      if (node_status < 0) FOUR_C_THROW("Failed to create dataset in HDF-meshfile");
     }
     else
     {
       const herr_t node_status =
           H5LTmake_dataset_char(meshgroup_, "nodes", 0, &dim, nodedata->data());
       if (node_status < 0)
-        dserror(
+        FOUR_C_THROW(
             "Failed to create dataset in HDF-meshfile on proc %d which"
             " does not have row nodes",
             Comm().MyPID());
@@ -1149,12 +1149,12 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
     const herr_t flush_status = H5Fflush(meshgroup_, H5F_SCOPE_LOCAL);
     if (flush_status < 0)
     {
-      dserror("Failed to flush HDF file %s", meshfilename_.c_str());
+      FOUR_C_THROW("Failed to flush HDF file %s", meshfilename_.c_str());
     }
     const herr_t close_status = H5Gclose(meshgroup_);
     if (close_status < 0)
     {
-      dserror("Failed to close HDF group in file %s", meshfilename_.c_str());
+      FOUR_C_THROW("Failed to close HDF group in file %s", meshfilename_.c_str());
     }
   }
 }
@@ -1218,7 +1218,7 @@ void IO::DiscretizationWriter::WriteOnlyNodesInNewFieldGroupToControlFile(
     std::ostringstream name;
     name << "step" << step;
     meshgroup_ = H5Gcreate(meshfile_, name.str().c_str(), 0);
-    if (meshgroup_ < 0) dserror("Failed to write group in HDF-meshfile");
+    if (meshgroup_ < 0) FOUR_C_THROW("Failed to write group in HDF-meshfile");
 
     if (writerestart)
     {
@@ -1229,14 +1229,14 @@ void IO::DiscretizationWriter::WriteOnlyNodesInNewFieldGroupToControlFile(
       {
         const herr_t node_status =
             H5LTmake_dataset_char(meshgroup_, "nodes", 1, &dim, nodedata->data());
-        if (node_status < 0) dserror("Failed to create dataset in HDF-meshfile");
+        if (node_status < 0) FOUR_C_THROW("Failed to create dataset in HDF-meshfile");
       }
       else
       {
         const herr_t node_status =
             H5LTmake_dataset_char(meshgroup_, "nodes", 0, &dim, nodedata->data());
         if (node_status < 0)
-          dserror(
+          FOUR_C_THROW(
               "Failed to create dataset in HDF-meshfile on proc %d which "
               "does not have row nodes",
               Comm().MyPID());
@@ -1283,12 +1283,12 @@ void IO::DiscretizationWriter::WriteOnlyNodesInNewFieldGroupToControlFile(
     const herr_t flush_status = H5Fflush(meshgroup_, H5F_SCOPE_LOCAL);
     if (flush_status < 0)
     {
-      dserror("Failed to flush HDF file %s", meshfilename_.c_str());
+      FOUR_C_THROW("Failed to flush HDF file %s", meshfilename_.c_str());
     }
     const herr_t close_status = H5Gclose(meshgroup_);
     if (close_status < 0)
     {
-      dserror("Failed to close HDF group in file %s", meshfilename_.c_str());
+      FOUR_C_THROW("Failed to close HDF group in file %s", meshfilename_.c_str());
     }
   }
 }
@@ -1343,7 +1343,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
 
     // make sure there's no name with a dimension of less than 1
     for (fool = names.begin(); fool != names.end(); ++fool)
-      if (fool->second < 1) dserror("Dimension of data must be at least 1");
+      if (fool->second < 1) FOUR_C_THROW("Dimension of data must be at least 1");
 
     // loop all names aquired form the elements and fill data vectors
     for (fool = names.begin(); fool != names.end(); ++fool)
@@ -1362,7 +1362,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
         // get data for a given name from element & put in sysdata
         dis_->lRowElement(i)->VisData(fool->first, eledata);
         if ((int)eledata.size() != dimension)
-          dserror("element manipulated size of visualization data");
+          FOUR_C_THROW("element manipulated size of visualization data");
         for (int j = 0; j < dimension; ++j) (*sysdata(j))[i] = eledata[j];
       }
 
@@ -1406,7 +1406,7 @@ void IO::DiscretizationWriter::WriteNodeData(bool writeowner)
 
     // make sure there's no name with a dimension of less than 1
     for (fool = names.begin(); fool != names.end(); ++fool)
-      if (fool->second < 1) dserror("Dimension of data must be at least 1");
+      if (fool->second < 1) FOUR_C_THROW("Dimension of data must be at least 1");
 
     // loop all names aquired form the nodes and fill data vectors
     for (fool = names.begin(); fool != names.end(); ++fool)
@@ -1425,7 +1425,7 @@ void IO::DiscretizationWriter::WriteNodeData(bool writeowner)
         // get data for a given name from node and put in sysdata
         dis_->lRowNode(i)->VisData(fool->first, nodedata);
         if ((int)nodedata.size() != dimension)
-          dserror("element manipulated size of visualization data");
+          FOUR_C_THROW("element manipulated size of visualization data");
 
         for (int j = 0; j < dimension; ++j) (*sysdata(j))[i] = nodedata[j];
       }
@@ -1464,11 +1464,11 @@ void IO::DiscretizationWriter::WriteKnotvector() const
         hsize_t dim = static_cast<hsize_t>(block().size());
         const herr_t status =
             H5LTmake_dataset_char(meshgroup_, "knotvector", 1, &dim, block().data());
-        if (status < 0) dserror("Failed to create dataset in HDF-meshfile");
+        if (status < 0) FOUR_C_THROW("Failed to create dataset in HDF-meshfile");
       }
       else
       {
-        dserror("block empty --- couldn't write knots\n");
+        FOUR_C_THROW("block empty --- couldn't write knots\n");
       }
     }
   }
@@ -1493,14 +1493,14 @@ void IO::DiscretizationWriter::WriteCharVector(
       const herr_t make_status =
           H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 1, &size, charvec->data());
       if (make_status < 0)
-        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+        FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
     else
     {
       const herr_t make_status =
           H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 0, &size, charvec->data());
       if (make_status < 0)
-        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+        FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
 
     // ... write other mesh informations
@@ -1520,7 +1520,7 @@ void IO::DiscretizationWriter::WriteCharVector(
     }
 
     const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
-    if (flush_status < 0) dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+    if (flush_status < 0) FOUR_C_THROW("Failed to flush HDF file %s", resultfilename_.c_str());
   }
 }
 
@@ -1543,14 +1543,14 @@ void IO::DiscretizationWriter::WriteRedundantDoubleVector(
         const herr_t make_status =
             H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 1, &size, doublevec->data());
         if (make_status < 0)
-          dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+          FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
       else
       {
         const herr_t make_status =
             H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 0, &size, doublevec->data());
         if (make_status < 0)
-          dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+          FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
 
       // do I need the following naming stuff?
@@ -1566,7 +1566,7 @@ void IO::DiscretizationWriter::WriteRedundantDoubleVector(
                              << std::flush;
 
       const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
-      if (flush_status < 0) dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+      if (flush_status < 0) FOUR_C_THROW("Failed to flush HDF file %s", resultfilename_.c_str());
     }  // endif proc0
   }
 }
@@ -1590,14 +1590,14 @@ void IO::DiscretizationWriter::WriteRedundantIntVector(
         const herr_t make_status =
             H5LTmake_dataset_int(resultgroup_, valuename.c_str(), 1, &size, vectorint->data());
         if (make_status < 0)
-          dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+          FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
       else
       {
         const herr_t make_status =
             H5LTmake_dataset_int(resultgroup_, valuename.c_str(), 0, &size, vectorint->data());
         if (make_status < 0)
-          dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+          FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
 
       // do I need the following naming stuff?
@@ -1613,7 +1613,7 @@ void IO::DiscretizationWriter::WriteRedundantIntVector(
                              << std::flush;
 
       const herr_t flush_status = H5Fflush(resultgroup_, H5F_SCOPE_LOCAL);
-      if (flush_status < 0) dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+      if (flush_status < 0) FOUR_C_THROW("Failed to flush HDF file %s", resultfilename_.c_str());
     }  // endif proc0
   }
 }
@@ -1641,7 +1641,7 @@ void IO::DiscretizationWriter::ClearMapCache()
  *----------------------------------------------------------------------------*/
 const DRT::Discretization& IO::DiscretizationWriter::GetDiscret() const
 {
-  if (dis_.is_null()) dserror("The discretization pointer has not been initialized!");
+  if (dis_.is_null()) FOUR_C_THROW("The discretization pointer has not been initialized!");
   return *dis_;
 }
 

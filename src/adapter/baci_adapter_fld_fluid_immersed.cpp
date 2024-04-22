@@ -101,7 +101,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::ExtractInterfaceForces()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::ExtractInterfaceVelnp()
 {
-  dserror("Robin stuff");
+  FOUR_C_THROW("Robin stuff");
   return FluidField()->ExtractInterfaceVelnp();
 }
 

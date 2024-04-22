@@ -68,7 +68,7 @@ double BEAMINTERACTION::CalcEleRadius(const DRT::Element* ele)
   else if (thissphere != nullptr)
     eleradius = thissphere->Radius();
   else
-    dserror(
+    FOUR_C_THROW(
         "BEAMCONTACT::CalcEleRadius: unknown element type; cannot determine cross-section radius");
 
   return eleradius;
@@ -252,7 +252,7 @@ double BEAMINTERACTION::CalcAngle(
     CORE::LINALG::Matrix<3, 1, double> a, CORE::LINALG::Matrix<3, 1, double> b)
 {
   if (CORE::FADUTILS::VectorNorm<3>(a) < 1.0e-12 or CORE::FADUTILS::VectorNorm<3>(b) < 1.0e-12)
-    dserror("Can not determine angle for zero vector!");
+    FOUR_C_THROW("Can not determine angle for zero vector!");
 
   double scalarproduct =
       std::fabs(CORE::FADUTILS::ScalarProduct(a, b) /
@@ -268,7 +268,7 @@ double BEAMINTERACTION::CalcAngle(
 
   // We want an angle \in [0;pi/2] in each case:
   if (angle > M_PI / 2.0)
-    dserror("Something went wrong here, angle should be in the interval [0;pi/2]!");
+    FOUR_C_THROW("Something went wrong here, angle should be in the interval [0;pi/2]!");
 
   return angle;
 }
@@ -311,7 +311,7 @@ double BEAMINTERACTION::DetermineSearchboxInc(Teuchos::ParameterList& beamcontac
   char* input;
   while (PL >> word) extval.push_back(std::strtod(word.c_str(), &input));
   if ((int)extval.size() > 2)
-    dserror("BEAMS_EXTVAL should contain no more than two values. Check your input file.");
+    FOUR_C_THROW("BEAMS_EXTVAL should contain no more than two values. Check your input file.");
   if (extval.size() == 1)
     searchboxinc = extval.at(0);
   else

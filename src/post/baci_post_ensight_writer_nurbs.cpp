@@ -54,7 +54,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
 
   if (nurbsdis == nullptr)
   {
-    dserror("This probably isn't a NurbsDiscretization\n");
+    FOUR_C_THROW("This probably isn't a NurbsDiscretization\n");
   }
 
   // get dimension
@@ -1320,7 +1320,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
       }
       default:
         std::cout << *actele;
-        dserror("Unknown distype for nurbs element output\n");
+        FOUR_C_THROW("Unknown distype for nurbs element output\n");
         break;
     }
   }
@@ -1368,7 +1368,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
   Teuchos::RCP<Epetra_MultiVector> allnodecoords =
       Teuchos::rcp(new Epetra_MultiVector(*proc0map, 3));
   int err = allnodecoords->Import(*nodecoords, proc0importer, Insert);
-  if (err > 0) dserror("Importing everything to proc 0 went wrong. Import returns %d", err);
+  if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   // write the node coordinates (only proc 0)
   // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
@@ -1417,7 +1417,7 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
 
   if (nurbsdis == nullptr)
   {
-    dserror("This probably isn't a NurbsDiscretization\n");
+    FOUR_C_THROW("This probably isn't a NurbsDiscretization\n");
   }
 
   // get the knotvector itself
@@ -1663,7 +1663,7 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
 
       if (cellnodes.size() != 64)
       {
-        dserror("something went wrong with the construction of cellnode connectivity\n");
+        FOUR_C_THROW("something went wrong with the construction of cellnode connectivity\n");
       }
 
       if (myrank_ == 0)  // proc0 can write its elements immediately
@@ -1684,7 +1684,7 @@ void EnsightWriter::WriteNurbsCell(const CORE::FE::CellType distype, const int g
     break;
     default:
     {
-      dserror("unknown nurbs discretisation type\n");
+      FOUR_C_THROW("unknown nurbs discretisation type\n");
       break;
     }
   }  // end switch distype
@@ -1728,7 +1728,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
 
   if (nurbsdis == nullptr)
   {
-    dserror("This probably isn't a NurbsDiscretization\n");
+    FOUR_C_THROW("This probably isn't a NurbsDiscretization\n");
   }
 
   // get number of patches
@@ -1809,7 +1809,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
       {
         if (dim != numdf)
         {
-          dserror("dim and numdf not matching for field %s", name.c_str());
+          FOUR_C_THROW("dim and numdf not matching for field %s", name.c_str());
         }
 
         for (int rr = 0; rr < dim; ++rr)
@@ -1821,7 +1821,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
       {
         if (dim != numdf)
         {
-          dserror("dim and numdf not matching for field %s", name.c_str());
+          FOUR_C_THROW("dim and numdf not matching for field %s", name.c_str());
         }
         for (int rr = 0; rr < dim; ++rr)
         {
@@ -1861,7 +1861,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
         else if ((name == "c_5") or (name == "averaged_c_5"))
           k = 4;
         else
-          dserror("Up to now, I'm not able to write a field named %s\n", name.c_str());
+          FOUR_C_THROW("Up to now, I'm not able to write a field named %s\n", name.c_str());
 
         DRT::Node* n = nurbsdis->lRowNode(inode);
         int numdofpernode = actele->NumDofPerNode(*n);
@@ -1883,7 +1883,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
       {
         if (dim != numdf)
         {
-          dserror("dim and numdf not matching for field %s", name.c_str());
+          FOUR_C_THROW("dim and numdf not matching for field %s", name.c_str());
         }
         for (int rr = 0; rr < dim; ++rr)
         {
@@ -1896,7 +1896,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
       }
       else
       {
-        dserror("Up to now, I'm not able to write a field named %s\n", name.c_str());
+        FOUR_C_THROW("Up to now, I'm not able to write a field named %s\n", name.c_str());
       }
     }
   }
@@ -1917,7 +1917,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
   int imerr = (*coldata).Import((*data), importer, Insert);
   if (imerr)
   {
-    dserror("import failed\n");
+    FOUR_C_THROW("import failed\n");
   }
 
   // loop all available elements
@@ -2061,7 +2061,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
       else if ((name == "c_5") or (name == "averaged_c_5"))
         k = 4;
       else
-        dserror("Up to now, I'm not able to write a field named %s\n", name.c_str());
+        FOUR_C_THROW("Up to now, I'm not able to write a field named %s\n", name.c_str());
 
       for (int inode = 0; inode < numnp; ++inode)
       {
@@ -2107,7 +2107,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
     }
     else
     {
-      dserror("Up to now, I'm not able to write a field named %s\n", name.c_str());
+      FOUR_C_THROW("Up to now, I'm not able to write a field named %s\n", name.c_str());
     }
 
     InterpolateNurbsResultToVizPoints(idata, dim, npatch, vpoff, ele_cart_id, actele, nurbsdis,
@@ -2120,7 +2120,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
   Teuchos::RCP<Epetra_MultiVector> allsols =
       Teuchos::rcp(new Epetra_MultiVector(*proc0map_, numdf));
   int err = allsols->Import(*idata, proc0importer, Insert);
-  if (err > 0) dserror("Importing everything to proc 0 went wrong. Import returns %d", err);
+  if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   // write the node results (only proc 0)
   // ensight format requires u_1 .. u_n, v_1 .. v_n, w_1 ... w_n, as for nodes
@@ -3329,7 +3329,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
       break;
     }
     default:
-      dserror("unable to visualise this as a nurbs discretisation\n");
+      FOUR_C_THROW("unable to visualise this as a nurbs discretisation\n");
   }
 
   return;
@@ -3351,7 +3351,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
 
   if (nurbsdis == nullptr)
   {
-    dserror("This probably isn't a NurbsDiscretization\n");
+    FOUR_C_THROW("This probably isn't a NurbsDiscretization\n");
   }
 
   // get number of patches
@@ -3439,7 +3439,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
   int imerr = (*coldata).Import((*data), importer, Insert);
   if (imerr)
   {
-    dserror("import failed\n");
+    FOUR_C_THROW("import failed\n");
   }
 
   // loop all available elements
@@ -3520,7 +3520,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
   Teuchos::RCP<Epetra_MultiVector> allsols =
       Teuchos::rcp(new Epetra_MultiVector(*proc0map_, numdf));
   int err = allsols->Import(*idata, proc0importer, Insert);
-  if (err > 0) dserror("Importing everything to proc 0 went wrong. Import returns %d", err);
+  if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   //---------------
   // write results

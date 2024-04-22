@@ -161,7 +161,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(dou
       }
     }
     else
-      dserror("Vreman model only for nsd_==3");
+      FOUR_C_THROW("Vreman model only for nsd_==3");
   }
   // add additional scalar quantities
   // i.e., filtered density, filtered density times scalar (i.e., temperature) and scalar
@@ -190,18 +190,18 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetDensity(const DRT::Ele
     fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
     // get corresponding fluid element (it has the same global ID as the scatra element)
     DRT::Element* fluidele = fluiddis->gElement(ele->Id());
-    if (fluidele == nullptr) dserror("Fluid element %i not on local processor", ele->Id());
+    if (fluidele == nullptr) FOUR_C_THROW("Fluid element %i not on local processor", ele->Id());
     // get fluid material
     Teuchos::RCP<MAT::Material> fluidmat = fluidele->Material();
     if (fluidmat->MaterialType() != INPAR::MAT::m_fluid)
-      dserror("Invalid fluid material for passive scalar transport in turbulent flow!");
+      FOUR_C_THROW("Invalid fluid material for passive scalar transport in turbulent flow!");
 
     density = Teuchos::rcp_dynamic_cast<const MAT::NewtonianFluid>(fluidmat)->Density();
-    if (density != 1.0) dserror("Check your diffusivity! Dynamic diffusivity required!");
+    if (density != 1.0) FOUR_C_THROW("Check your diffusivity! Dynamic diffusivity required!");
   }
 
   else
-    dserror("Invalid material type!");
+    FOUR_C_THROW("Invalid material type!");
 
   return density;
 }  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetDensity
@@ -479,7 +479,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMeanPrtOfHomogenousDirec
 {
   // NOTE: we calculate the inverse of the turbulent Prandtl number here (i.e., (Cs*h)^2 / Pr_t)
 
-  if (nsd_ != 3) dserror("turbulence and 3D flow !");
+  if (nsd_ != 3) FOUR_C_THROW("turbulence and 3D flow !");
 
   if (turbmodelparams.get<std::string>("HOMDIR", "not_specified") != "not_specified")
   {
@@ -536,7 +536,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMeanPrtOfHomogenousDirec
       }
       if (found == false)
       {
-        dserror("could not determine element layer");
+        FOUR_C_THROW("could not determine element layer");
       }
     }
     else if (homdir == "x" or homdir == "y" or homdir == "z")
@@ -579,7 +579,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMeanPrtOfHomogenousDirec
       }
       if (dir1found == false)
       {
-        dserror("could not determine element layer");
+        FOUR_C_THROW("could not determine element layer");
       }
       for (n2layer = 0; n2layer < (int)(*dir2coords).size() - 1;)
       {
@@ -592,14 +592,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMeanPrtOfHomogenousDirec
       }
       if (dir2found == false)
       {
-        dserror("could not determine element layer");
+        FOUR_C_THROW("could not determine element layer");
       }
 
       const int numdir1layer = (int)(*dir1coords).size() - 1;
       nlayer = numdir1layer * n2layer + n1layer;
     }
     else
-      dserror("Homogeneous directions not supported!");
+      FOUR_C_THROW("Homogeneous directions not supported!");
 
     // (Cs*Delta)^2/Prt is set by the averaged quantities
     if ((*averaged_MkMk)[nlayer] < 1E-16)
@@ -761,7 +761,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrDiff(
         sgdiff = densnp * sgviscwocv / turbparams_->Cs();
     }
     else
-      dserror("Vreman model only for nsd_==3");
+      FOUR_C_THROW("Vreman model only for nsd_==3");
   }
 
   // update diffusivity
@@ -944,10 +944,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBAndDForMultifracSubgri
         break;
       }
       default:
-        dserror("Unknown velocity!");
+        FOUR_C_THROW("Unknown velocity!");
         break;
     }
-    if (Re_ele < 0.0) dserror("Something went wrong!");
+    if (Re_ele < 0.0) FOUR_C_THROW("Something went wrong!");
     // clip Re to prevent negative N
     if (Re_ele < 1.0) Re_ele = 1.0;
 
@@ -965,7 +965,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBAndDForMultifracSubgri
     //  N =log | ----------- |
     //        2|  lambda_nu  |
     double N_re = log(scale_ratio) / log(2.0);
-    if (N_re < 0.0) dserror("Something went wrong when calculating N!");
+    if (N_re < 0.0) FOUR_C_THROW("Something went wrong when calculating N!");
 
     // store calculated N
     for (unsigned i = 0; i < nsd_; i++) Nvel[i] = N_re;
@@ -986,7 +986,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBAndDForMultifracSubgri
 
     // get Re from strain rate
     double Re_ele_str = strainnorm * hk * hk * densnp / visc;
-    if (Re_ele_str < 0.0) dserror("Something went wrong!");
+    if (Re_ele_str < 0.0) FOUR_C_THROW("Something went wrong!");
     // ensure positive values
     if (Re_ele_str < 1.0) Re_ele_str = 1.0;
 
@@ -1063,10 +1063,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBAndDForMultifracSubgri
     //  N =log | ----------- |
     //        2|  lambda_nu  |
     Nphi = log(scale_ratio_phi) / log(2.0);
-    if (Nphi < 0.0) dserror("Something went wrong when calculating N!");
+    if (Nphi < 0.0) FOUR_C_THROW("Something went wrong when calculating N!");
   }
   else
-    dserror("Multifractal subgrid-scales for loma with calculation of N, only!");
+    FOUR_C_THROW("Multifractal subgrid-scales for loma with calculation of N, only!");
 
   // STEP 2: calculate D
 
@@ -1103,7 +1103,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBAndDForMultifracSubgri
       {
         std::cout << "Nvel   " << Nvel[0] << std::endl;
         std::cout << "Nphi   " << Nphi << std::endl;
-        dserror("Nvel < Nphi expected!");
+        FOUR_C_THROW("Nvel < Nphi expected!");
       }
       // here different options are possible
       // we assume k^(-4/3) for the complete range
@@ -1212,7 +1212,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
     }
     case INPAR::FLUID::metric_tensor:
     {
-      if (nsd_ != 3) dserror("Turbulence is 3d!");
+      if (nsd_ != 3) FOUR_C_THROW("Turbulence is 3d!");
       /*          +-           -+   +-           -+   +-           -+
                 |             |   |             |   |             |
                 |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
@@ -1258,7 +1258,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
     {
       CORE::LINALG::Matrix<nsd_, nsd_> convderxy;
       convderxy.MultiplyNT(econvelnp_, derxy_);
-      if (nsd_ != 3) dserror("Turbulence is 3d!");
+      if (nsd_ != 3) FOUR_C_THROW("Turbulence is 3d!");
       CORE::LINALG::Matrix<nsd_, 1> normed_velgrad;
 
       for (unsigned rr = 0; rr < nsd_; ++rr)
@@ -1313,10 +1313,10 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
       break;
     }
     default:
-      dserror("Unknown length");
+      FOUR_C_THROW("Unknown length");
       break;
   }  // switch reflength
-  if (hk == 1.0e+10) dserror("Something went wrong!");
+  if (hk == 1.0e+10) FOUR_C_THROW("Something went wrong!");
 
   return hk;
 }
@@ -1361,7 +1361,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::StoreModelParametersForOutp
           // set (Cs*h)^2/Prt and diffeff for output
           (*(turbulencelist.get<Teuchos::RCP<std::vector<double>>>(
               "local_Cs_delta_sq_Prt_sum")))[nlayer] += tpn_;
-          if (numscal_ > 1) dserror("One scalar assumed for dynamic Smagorinsky model!");
+          if (numscal_ > 1) FOUR_C_THROW("One scalar assumed for dynamic Smagorinsky model!");
 
           // calculation of effective diffusion coefficient
           const double vol = EvalShapeFuncAndDerivsAtEleCenter();
@@ -1407,7 +1407,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
 )
 {
   // do some checks first
-  if (numscal_ != 1 or numdofpernode_ != 1) dserror("CalcDissipation only for one scalar field!");
+  if (numscal_ != 1 or numdofpernode_ != 1)
+    FOUR_C_THROW("CalcDissipation only for one scalar field!");
 
   //----------------------------------------------------------------------
   // preliminary set-up of parameters
@@ -1416,7 +1417,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
   // as the scalar field is constant in the turbulent inflow section
   // we do not need any turbulence model
   if (turbparams_->TurbInflow())
-    dserror("CalcDissipation in combination with inflow generation not supported!");
+    FOUR_C_THROW("CalcDissipation in combination with inflow generation not supported!");
   //    if (params.get<bool>("turbulent inflow",false))
   //    {
   //      if (SCATRA::InflowElement(ele))
@@ -1424,7 +1425,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
   //    }
 
   // set time integration
-  if (scatraparatimint_->IsStationary()) dserror("Turbulence is instationary!");
+  if (scatraparatimint_->IsStationary()) FOUR_C_THROW("Turbulence is instationary!");
 
   // set turbulent Prandt number to value given in parameterlist
   tpn_ = turbparams_->TPN();
@@ -1457,7 +1458,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
       discretization.GetState(ndsvel, "convective velocity field");
 
   // safety check
-  if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
+  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -1483,7 +1484,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
     // get acceleration values at nodes
     const Teuchos::RCP<const Epetra_Vector> acc =
         discretization.GetState(ndsvel, "acceleration field");
-    if (acc == Teuchos::null) dserror("Cannot get state vector acceleration field");
+    if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vector acceleration field");
 
     // extract local values of acceleration field from global state vector
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*acc, eaccnp_, lmvel);
@@ -1504,7 +1505,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
   Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (hist == Teuchos::null || phinp == Teuchos::null)
-    dserror("Cannot get state vector 'hist' and/or 'phinp'");
+    FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, ehist_, la[0].lm_);
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, la[0].lm_);
 
@@ -1518,7 +1519,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
   {
     // get fine scale scalar field
     Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
-    if (gfsphinp == Teuchos::null) dserror("Cannot get state vector 'fsphinp'");
+    if (gfsphinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fsphinp'");
 
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*gfsphinp, fsphinp_, la[0].lm_);
 
@@ -1526,7 +1527,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
     const Teuchos::RCP<const Epetra_Vector> fsvelocity =
         discretization.GetState(ndsvel, "fine-scale velocity field");
     if (fsvelocity == Teuchos::null)
-      dserror("Cannot get fine-scale velocity field from scatra discretization!");
+      FOUR_C_THROW("Cannot get fine-scale velocity field from scatra discretization!");
 
     // extract local values of fine-scale velocity field from global state vector
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*fsvelocity, efsvel_, lmvel);
@@ -1544,7 +1545,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
   Teuchos::RCP<std::vector<double>> planecoords =
       params.get<Teuchos::RCP<std::vector<double>>>("planecoords_", Teuchos::null);
   if (planecoords == Teuchos::null)
-    dserror("planecoords is null, but need channel_flow_of_height_2\n");
+    FOUR_C_THROW("planecoords is null, but need channel_flow_of_height_2\n");
 
   // this will be the y-coordinate of a point in the element interior
   double center = 0.0;
@@ -1733,7 +1734,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
     if (scatrapara_->TauGP())
     {
       // artificial diffusion / shock capturing: adaption of diffusion coefficient
-      if (scatrapara_->ASSGD()) dserror("Not supported");
+      if (scatrapara_->ASSGD()) FOUR_C_THROW("Not supported");
 
       // calculation of all-scale subgrid diffusivity (by, e.g.,
       // Smagorinsky model) at element center
@@ -1871,7 +1872,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
       // nothing to do
     }
     else
-      dserror("Stabtype not yet supported!");
+      FOUR_C_THROW("Stabtype not yet supported!");
 
     // dissipation by cross-stress-stabilization
     // dissipation by reynolds-stress-stabilization
@@ -2001,7 +2002,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
   }
   if (found == false)
   {
-    dserror("could not determine element layer");
+    FOUR_C_THROW("could not determine element layer");
   }
 
   // collect layer volume

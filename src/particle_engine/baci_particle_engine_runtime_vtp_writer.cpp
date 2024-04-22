@@ -102,10 +102,10 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
       // get particle states stored in container
       const std::set<ParticleState>& states = container->GetStoredStates();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // safety check
       if (not container->HaveStoredState(Position))
-        dserror("particle state '%s' not found!", EnumToStateName(Position).c_str());
+        FOUR_C_THROW("particle state '%s' not found!", EnumToStateName(Position).c_str());
 #endif
 
       // iterate over particle states
@@ -134,10 +134,10 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
           for (int i = 0; i < (statedim * particlestored); ++i)
             positiondata.push_back(state_ptr[i]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
           // safety check
           if (static_cast<int>(positiondata.size()) != statedim * particlestored)
-            dserror("ParticleRuntimeVtpWriter expected %d coordinate values, but got %d!",
+            FOUR_C_THROW("ParticleRuntimeVtpWriter expected %d coordinate values, but got %d!",
                 statedim * particlestored, positiondata.size());
 #endif
         }

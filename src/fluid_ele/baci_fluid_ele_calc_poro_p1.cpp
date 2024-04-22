@@ -210,7 +210,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosity(Teuchos::Parame
     double* dphi_dpp, bool save)
 {
   if (myporosity == nullptr)
-    dserror("no porosity values given!!");
+    FOUR_C_THROW("no porosity values given!!");
   else
     porosity = shapfct.Dot(*myporosity);
 }
@@ -222,7 +222,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosityGradient(const d
     CORE::LINALG::Matrix<nsd_, 1>& grad_porosity, CORE::LINALG::Matrix<nsd_, 1>& refgrad_porosity)
 {
   if (eporositynp == nullptr)
-    dserror("no porosity values given for calculation of porosity gradient!!");
+    FOUR_C_THROW("no porosity values given for calculation of porosity gradient!!");
 
   //--------------------- current porosity gradient
   grad_porosity.Multiply(Base::derxy_, *eporositynp);
@@ -273,7 +273,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluatePressureEquation(
       Base::conres_old_ += porositydot - Base::rhscon_;
     }
     else
-      dserror("no porosity time derivative given for poro_p1 element!");
+      FOUR_C_THROW("no porosity time derivative given for poro_p1 element!");
   }
 }
 
@@ -995,7 +995,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(Teuchos::Par
         reac_tau = Base::fldpara_->ViscReaStabFac() * Base::reacoeff_ * Base::tau_(1);
       else
       {
-        dserror("Is this factor correct? Check for bugs!");
+        FOUR_C_THROW("Is this factor correct? Check for bugs!");
         reac_tau = 0.0;
       }
 

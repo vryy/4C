@@ -43,7 +43,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phiref");
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
-        dserror("Cannot get state vector 'phizero' and/ or 'phinp'!");
+        FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
 
       std::vector<CORE::LINALG::Matrix<nen_, 1>> ephizero(my::numscal_);
 
@@ -51,7 +51,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero, lm);
 
       // check if length suffices
-      if (elevec1_epetra.length() < 1) dserror("Result vector too short");
+      if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
 
       CalErrorComparedToAnalytSolution(ele, ephizero, params, elevec1_epetra);
 
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
     }
     break;
     default:
-      dserror("Unknown analytical solution!");
+      FOUR_C_THROW("Unknown analytical solution!");
       break;
   }  // switch(errortype)
 

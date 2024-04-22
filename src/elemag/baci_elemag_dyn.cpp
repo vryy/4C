@@ -45,7 +45,7 @@ void electromagnetics_drt()
   // problems)
   if (problem->NDim() != 3)
   {
-    dserror(
+    FOUR_C_THROW(
         "The implementation of electromagnetic propagation only supports 3D problems.\n"
         "It is necessary to change the spatial dimension of your problem.");
   }
@@ -57,9 +57,9 @@ void electromagnetics_drt()
   Teuchos::RCP<DRT::DiscretizationHDG> elemagdishdg =
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationHDG>(problem->GetDis("elemag"));
   if (elemagdishdg == Teuchos::null)
-    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationHDG.");
+    FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationHDG.");
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   elemagdishdg->PrintFaces(std::cout);
 #endif
 
@@ -91,7 +91,7 @@ void electromagnetics_drt()
   // create solver
   const int linsolvernumber_elemag = elemagparams.get<int>("LINEAR_SOLVER");
   if (linsolvernumber_elemag == (-1))
-    dserror(
+    FOUR_C_THROW(
         "There is not any linear solver defined for electromagnetic problem. Please set "
         "LINEAR_SOLVER in ELECTROMAGNETIC DYNAMIC to a valid number!");
 
@@ -117,7 +117,7 @@ void electromagnetics_drt()
   {
     case INPAR::ELEMAG::elemag_ost:
     {
-      dserror("One step theta not yet implemented.");
+      FOUR_C_THROW("One step theta not yet implemented.");
       // elemagalgo = Teuchos::rcp(new ELEMAG::TimIntOST(elemagdishdg,solver,params,output));
       break;
     }
@@ -130,31 +130,31 @@ void electromagnetics_drt()
     }
     case INPAR::ELEMAG::elemag_genAlpha:
     {
-      dserror("Generalized-alpha method not yet implemented.");
+      FOUR_C_THROW("Generalized-alpha method not yet implemented.");
       // elemagalgo = Teuchos::rcp(new ELEMAG::ElemagGenAlpha(elemagdishdg, solver, params,
       // output));
       break;
     }
     case INPAR::ELEMAG::elemag_explicit_euler:
     {
-      dserror("Explicit euler method not yet implemented.");
+      FOUR_C_THROW("Explicit euler method not yet implemented.");
       // elemagalgo = Teuchos::rcp(new ELEMAG::TimeIntExplEuler(elemagdishdg,solver,params,output));
       break;
     }
     case INPAR::ELEMAG::elemag_rk:
     {
-      dserror("Runge-Kutta methods not yet implemented.");
+      FOUR_C_THROW("Runge-Kutta methods not yet implemented.");
       // elemagalgo = Teuchos::rcp(new ELEMAG::TimeIntRK(elemagdishdg,solver,params,output));
       break;
     }
     case INPAR::ELEMAG::elemag_cn:
     {
-      dserror("Crank-Nicolson method not yet implemented.");
+      FOUR_C_THROW("Crank-Nicolson method not yet implemented.");
       // elemagalgo = Teuchos::rcp(new ELEMAG::TimeIntCN(elemagdishdg,solver,params,output));
       break;
     }
     default:
-      dserror("Unknown time-integration scheme for problem type electromagnetics");
+      FOUR_C_THROW("Unknown time-integration scheme for problem type electromagnetics");
       break;
   }
 
@@ -225,14 +225,14 @@ void electromagnetics_drt()
           {
             // we directly use the elements from the scalar transport elements section
             if (scatradis->NumGlobalNodes() == 0)
-              dserror("No elements in the ---TRANSPORT ELEMENTS section");
+              FOUR_C_THROW("No elements in the ---TRANSPORT ELEMENTS section");
 
             // add proxy of velocity related degrees of freedom to scatra discretization
             Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
                 Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(
                     GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
             if (scatradis->AddDofSet(dofsetaux) != 1)
-              dserror("Scatra discretization has illegal number of dofsets!");
+              FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
             // finalize discretization
             scatradis->FillComplete(true, true, true);
@@ -341,7 +341,7 @@ void electromagnetics_drt()
             break;
           }
           default:
-            dserror(
+            FOUR_C_THROW(
                 "Does not make sense to have a velocity field to initialize the electric potential "
                 "field.\nCheck your input file.");
             break;

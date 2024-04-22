@@ -28,7 +28,7 @@ void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<doub
   // spatial dimension
   const int nsd = CORE::FE::dim<distype>;
 
-  if (disp.size() != nsd * nen) dserror("mismatch in dimensions");
+  if (disp.size() != nsd * nen) FOUR_C_THROW("mismatch in dimensions");
 
   CORE::LINALG::Matrix<nsd, 1> xi_ele_center =
       CORE::FE::getLocalCenterPosition<nsd>(distype);  // depending on distype
@@ -240,7 +240,7 @@ void DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
   bool doFDCheck = static_cast<bool>(CORE::UTILS::IntegralValue<int>(sdyn, "MATERIALTANGENT"));
   if (doFDCheck)
   {
-    dserror(
+    FOUR_C_THROW(
         "Approximation of material tangent by finite differences not implemented by %s elements. "
         "Set parameter MATERIALTANGENT to analytical.",
         eletype.c_str());

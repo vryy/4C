@@ -123,7 +123,7 @@ namespace
       num_eas = 0;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "Unrecognized EAS type for quad4 to alleviate membrane locking. Only none, N_1, N_2, "
           "N_3, N_4, N_5, N_7 are allowed. Given: %s",
           type.c_str());
@@ -152,7 +152,7 @@ namespace
       num_eas = 0;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "Unrecognized EAS type for quad4 to alleviate bending locking. Only none, N_4, N_5, N_6, "
           "N_7 are allowed. Given: %s",
           type.c_str());
@@ -189,7 +189,7 @@ namespace
       num_eas = 0;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "Unrecognized EAS type for quad4 to alleviate thickness locking. Only none, N_1, N_3, "
           "N_4, "
           "N_6, N_8, N_9 are allowed. Given: %s",
@@ -211,7 +211,7 @@ namespace
       num_eas = 0;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "Unrecognized EAS type for quad4 to alleviate transverse shear strain locking: Only "
           "none, N_2, N_4 are allowed. Given: %s",
           type.c_str());
@@ -232,7 +232,7 @@ namespace
       num_eas = 0;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "Unrecognized EAS type for quad9 to alleviate membrane locking. Only none, N_7, N_9 are "
           "allowed. Given: %s",
           type.c_str());
@@ -253,7 +253,7 @@ namespace
       num_eas = 0;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "Unrecognized EAS type for quad9 to alleviate bending locking. Only none, N_9, N_11 are "
           "allowed. Given: %s",
           type.c_str());
@@ -290,7 +290,7 @@ namespace
       num_eas = 0;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "Unrecognized EAS type for quad9 to alleviate thickness locking. Only none, N_1, N_3, "
           "N_4, N_6, N_8, N_9 are allowed. Given: %s",
           type.c_str());
@@ -315,7 +315,7 @@ namespace
       num_eas = 0;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "Unrecognized EAS type for quad9 to alleviate transverse shear strain locking. Only "
           "none, N_2, N_4, N_6 are allowed. Given: %s",
           type.c_str());
@@ -461,7 +461,7 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirector(const CORE::LINALG::Matrix<3, 
           2. * averdir(2) * averdir(0) * dir_list(2, i) * dir_list(0, i) +
           (SquareValue(dir_list(0, i)) + SquareValue(dir_list(1, i))) * SquareValue(averdir(2));
 
-      if (std::abs(denom) <= 1.e-13) dserror("Making of modified directors failed");
+      if (std::abs(denom) <= 1.e-13) FOUR_C_THROW("Making of modified directors failed");
 
       const double alpha = (averdir(2) * dir_list(2, i) - SquareValue(dir_list(0, i)) +
                                averdir(0) * dir_list(0, i) - SquareValue(dir_list(1, i)) +
@@ -504,7 +504,7 @@ void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(const DRT::El
   for (const auto& actnode : dis.MyColNodeRange())
   {
     auto curr = director_map.find(actnode->Id());
-    dsassert(curr != director_map.end(), "Cannot find director map entry");
+    FOUR_C_ASSERT(curr != director_map.end(), "Cannot find director map entry");
     for (int j = 0; j < actnode->NumElement(); ++j)
     {
       DRT::Element* tmpele = actnode->Elements()[j];
@@ -533,7 +533,7 @@ void STR::UTILS::SHELL::DIRECTOR::ExportDirectorMapFromRowToColMap(const DRT::El
         }
       }
       else
-        dserror("Element is not a shell element");
+        FOUR_C_THROW("Element is not a shell element");
     }
   }
 }
@@ -564,7 +564,7 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(const DRT::ElementType
             for (int dim = 0; dim < num_dim; ++dim)
               collaverdir(dim, num_directors) = nodal_directors(k, dim);
             ++num_directors;
-            dsassert(num_directors <= max_ele, "max_ele too small");
+            FOUR_C_ASSERT(num_directors <= max_ele, "max_ele too small");
             break;
           }
         }
@@ -579,15 +579,15 @@ void STR::UTILS::SHELL::DIRECTOR::AverageDirectorsAtNodes(const DRT::ElementType
             for (int dim = 0; dim < num_dim; ++dim)
               collaverdir(dim, num_directors) = nodal_directors(k, dim);
             ++num_directors;
-            dsassert(num_directors <= max_ele, "max_ele too small");
+            FOUR_C_ASSERT(num_directors <= max_ele, "max_ele too small");
             break;
           }
         }
       }
       else
-        dserror("Element is not a shell element");
+        FOUR_C_THROW("Element is not a shell element");
     }
-    dsassert(num_directors, "Number of neighboring nodes to a node is zero");
+    FOUR_C_ASSERT(num_directors, "Number of neighboring nodes to a node is zero");
 
     if (num_directors == 1)  // no averaging if number of neighboring elements to a node is one
     {
@@ -633,7 +633,7 @@ void STR::UTILS::SHELL::DIRECTOR::SetupShellElementDirectors(
       shell_ele->SetAllNodalDirectors(nodal_directors);
     }
     else
-      dserror("Element is not a shell element");
+      FOUR_C_THROW("Element is not a shell element");
   }
 
   std::map<int, std::vector<double>> director_map;
@@ -647,7 +647,7 @@ void STR::UTILS::SHELL::DIRECTOR::SetupShellElementDirectors(
 void STR::UTILS::SHELL::LumpMassMatrix(CORE::LINALG::SerialDenseMatrix& mass_matrix)
 {
   // lump mass matrix
-  dsassert(mass_matrix.numRows() == mass_matrix.numCols(),
+  FOUR_C_ASSERT(mass_matrix.numRows() == mass_matrix.numCols(),
       "The provided mass matrix is not a square matrix!");
 
   // we assume mass is a square matrix
@@ -699,7 +699,7 @@ void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(const CORE::FE::Cell
       break;
     }
     default:
-      dserror("EAS is not supported with %s", distype);
+      FOUR_C_THROW("EAS is not supported with %s", distype);
   }
   locking_types.total = locking_types.membrane + locking_types.bending + locking_types.thickness +
                         locking_types.transverse_shear_strain_const +
@@ -726,7 +726,7 @@ int STR::UTILS::SHELL::READELEMENT::ReadAndSetNumANS(const CORE::FE::CellType& d
       return 6;
     }
     default:
-      dserror("ANS is not supported with %s", distype);
+      FOUR_C_THROW("ANS is not supported with %s", distype);
   }
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -65,12 +65,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
   if (this->line_to_3D_segments_.size() == 0)
     return;
   else if (this->line_to_3D_segments_.size() > 1)
-    dserror("There can be a maximum of one segment!");
+    FOUR_C_THROW("There can be a maximum of one segment!");
 
   // Check that the beam element is a Simo--Reissner beam.
   auto beam_ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(this->Element1());
   if (beam_ele == nullptr)
-    dserror("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
+    FOUR_C_THROW("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
 
   // Get the vector with the projection points for this pair.
   const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& projection_points =

@@ -405,7 +405,7 @@ namespace DRT
             break;
           }
           default:
-            dserror("Element shape not supported.");
+            FOUR_C_THROW("Element shape not supported.");
             break;
         }
       };
@@ -428,7 +428,7 @@ namespace DRT
             else if (piel == 4 or piel == 10)
               numnodes_to_check = 4;  // 3D tetrahedral elements
             else
-              dserror("unknown element type");
+              FOUR_C_THROW("unknown element type");
           }
           else if (nsd_ == 2)
           {
@@ -437,10 +437,10 @@ namespace DRT
             else if (piel == 3 or piel == 6)
               numnodes_to_check = 3;  // 2D triangle elements
             else
-              dserror("unknown element type");
+              FOUR_C_THROW("unknown element type");
           }
           else
-            dserror("invalid nsd");
+            FOUR_C_THROW("invalid nsd");
 
           for (int i = 0; i < numnodes_to_check; i++)
           {
@@ -467,7 +467,7 @@ namespace DRT
             else if (niel == 4 or niel == 10)
               numnodes_to_check = 4;  // 3D tetrahedral elements
             else
-              dserror("unknown element type");
+              FOUR_C_THROW("unknown element type");
           }
           else if (nsd_ == 2)
           {
@@ -476,10 +476,10 @@ namespace DRT
             else if (niel == 3 or niel == 6)
               numnodes_to_check = 3;  // 2D triangle elements
             else
-              dserror("unknown element type");
+              FOUR_C_THROW("unknown element type");
           }
           else
-            dserror("invalid nsd");
+            FOUR_C_THROW("invalid nsd");
 
 
           for (int i = 0; i < numnodes_to_check; i++)
@@ -499,7 +499,7 @@ namespace DRT
           }
         }
 
-        if (h_k <= 0.0) dserror("negative or zero diameter for current element!");
+        if (h_k <= 0.0) FOUR_C_THROW("negative or zero diameter for current element!");
 
         return;
       };
@@ -515,7 +515,8 @@ namespace DRT
         static CORE::LINALG::Matrix<nsd_, numnode> xyz_surf(true);
         xyz_surf.Clear();
 
-        if (connectivity.size() != numnode) dserror("wrong number of nodes for parent's surface");
+        if (connectivity.size() != numnode)
+          FOUR_C_THROW("wrong number of nodes for parent's surface");
 
         if (master == true)  // is parent element the master element?
         {
@@ -599,9 +600,9 @@ namespace DRT
           h_e = std::max(line0, std::max(line1, line2));
         }
         else
-          dserror("unknown number of nodes");
+          FOUR_C_THROW("unknown number of nodes");
 
-        if (h_e <= 0.0) dserror("negative or zero diameter for current face!");
+        if (h_e <= 0.0) FOUR_C_THROW("negative or zero diameter for current face!");
 
         return;
       }
@@ -617,7 +618,8 @@ namespace DRT
         static CORE::LINALG::Matrix<nsd_, numnode> xyz_surf(true);
         xyz_surf.Clear();
 
-        if (connectivity.size() != numnode) dserror("wrong number of nodes for parent's surface");
+        if (connectivity.size() != numnode)
+          FOUR_C_THROW("wrong number of nodes for parent's surface");
 
         if (master == true)  // is parent element the master element?
         {
@@ -655,9 +657,9 @@ namespace DRT
           h_e = diam1;
         }
         else
-          dserror("unknown number of nodes");
+          FOUR_C_THROW("unknown number of nodes");
 
-        if (h_e <= 0.0) dserror("negative or zero diameter for current face!");
+        if (h_e <= 0.0) FOUR_C_THROW("negative or zero diameter for current face!");
 
         return;
       }
@@ -755,7 +757,7 @@ namespace DRT
           h_e = std::max(line0, line1);
         }
         else
-          dserror("call not reasonable for non-quadrilateral or line intface elements");
+          FOUR_C_THROW("call not reasonable for non-quadrilateral or line intface elements");
       }
 
 
@@ -788,7 +790,7 @@ namespace DRT
               return 0;
               break;
             default:
-              dserror("wrong number!!");
+              FOUR_C_THROW("wrong number!!");
               break;
           }
         }
@@ -811,7 +813,7 @@ namespace DRT
               return 1;
               break;
             default:
-              dserror("wrong number!!");
+              FOUR_C_THROW("wrong number!!");
               break;
           }
         }
@@ -823,7 +825,7 @@ namespace DRT
           return -1;
         }
         else
-          dserror("opposite sides not implemented yet for wedge elements yet!");
+          FOUR_C_THROW("opposite sides not implemented yet for wedge elements yet!");
 
         return -1;
       }
@@ -866,7 +868,7 @@ namespace DRT
           }
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "The implementation of FindHEXConnectingLines is not available for non-hexahedral "
               "elements!");
       }
@@ -905,7 +907,7 @@ namespace DRT
           }
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "The implementation of FindQUADConnectingLines is not available for non-line2/3 "
               "elements!");
       }

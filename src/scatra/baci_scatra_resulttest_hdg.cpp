@@ -54,7 +54,7 @@ double SCATRA::HDGResultTest::ResultNode(
     result = std::sqrt((*errors_)[2] / (*errors_)[3]);
   // catch unknown quantity strings
   else
-    dserror("Quantity '%s' not supported in result test!", quantity.c_str());
+    FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
 }  // SCATRA::HDGResultTest::ResultNode

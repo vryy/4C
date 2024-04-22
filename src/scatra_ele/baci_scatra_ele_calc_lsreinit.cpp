@@ -61,11 +61,12 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::ScaTraEleCalcLsReinit(
       Teuchos::rcp(new ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>(my::numscal_));
 
   // safety checks
-  if (my::scatrapara_->RBSubGrVel()) dserror("CalcSubgrVelocityLevelSet not available anymore");
+  if (my::scatrapara_->RBSubGrVel())
+    FOUR_C_THROW("CalcSubgrVelocityLevelSet not available anymore");
   if (lsreinitparams_->ArtDiff() != INPAR::SCATRA::artdiff_none)
   {
     if (not my::scatrapara_->MatGP() or not my::scatrapara_->TauGP())
-      dserror(
+      FOUR_C_THROW(
           "Evaluation of material and stabilization parameters need to be done at the integration "
           "points for reinitialization due to artificial diff!");
   }
@@ -93,7 +94,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(DRT::Elemen
   const std::vector<int>& lm = la[0].lm_;
 
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
   EvalReinitialization(*phinp, lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
@@ -143,11 +144,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       // define empty list
       CORE::GEO::BoundaryIntCellPtrs boundaryIntCells = CORE::GEO::BoundaryIntCellPtrs(0);
 
-      // check the type: ToDo change to dsassert
+      // check the type: ToDo change to FOUR_C_ASSERT
       if (not params.INVALID_TEMPLATE_QUALIFIER
                   isType<Teuchos::RCP<const std::map<int, CORE::GEO::BoundaryIntCellPtrs>>>(
                       "boundary cells"))
-        dserror("The given boundary cells have the wrong type!");
+        FOUR_C_THROW("The given boundary cells have the wrong type!");
 
       const Teuchos::RCP<const std::map<int, CORE::GEO::BoundaryIntCellPtrs>>& allcells =
           params.get<Teuchos::RCP<const std::map<int, CORE::GEO::BoundaryIntCellPtrs>>>(
@@ -162,7 +163,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       CORE::LINALG::Matrix<nen_, 1> el2sysmat_diag_inv(false);
       if (lsreinitparams_->Project())
       {
-        dserror(
+        FOUR_C_THROW(
             "Currently unsupported, since the variation of the "
             "l2-projected gradient is missing. -- hiermeier 12/2016");
         const Teuchos::RCP<Epetra_MultiVector>& gradphi =
@@ -171,7 +172,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
         Teuchos::RCP<const Epetra_Vector> l2_proj_sys_diag =
             discretization.GetState("l2_proj_system_mat_diag");
         if (l2_proj_sys_diag.is_null())
-          dserror("Could not find the l2 projection system diagonal!");
+          FOUR_C_THROW("Could not find the l2 projection system diagonal!");
         CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
             *l2_proj_sys_diag, el2sysmat_diag_inv, lm);
         el2sysmat_diag_inv.Reciprocal(el2sysmat_diag_inv);
@@ -205,13 +206,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
           break;
         }
         default:
-          dserror("Unsupported action!");
+          FOUR_C_THROW("Unsupported action!");
           exit(EXIT_FAILURE);
       }
       break;
     }
     default:
-      dserror("Unsupported reinitialization equation for the embedded case!");
+      FOUR_C_THROW("Unsupported reinitialization equation for the embedded case!");
       exit(EXIT_FAILURE);
   }
 }
@@ -261,7 +262,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSyste
         // the basic form: goes to -infinity, if norm(grad)=1
         // yields directly desired signed-distance field
         if (normgradphi < 1.0e-8)
-          dserror(
+          FOUR_C_THROW(
               " The gradient l2-norm is smaller than 1.0e-8! "
               "( value = %e )",
               normgradphi);
@@ -274,7 +275,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSyste
       }
       default:
       {
-        dserror("Unsupported diffusivity function!");
+        FOUR_C_THROW("Unsupported diffusivity function!");
         break;
       }
     }
@@ -359,7 +360,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
       if (hist == Teuchos::null || phin == Teuchos::null || phizero == Teuchos::null)
-        dserror("Cannot get state vector 'hist' and/or 'phin' and/or 'phizero'");
+        FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phin' and/or 'phizero'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
@@ -409,7 +410,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
       break;
     }
     default:
-      dserror("Unknown reinitialization equation");
+      FOUR_C_THROW("Unknown reinitialization equation");
       break;
   }
 }
@@ -811,7 +812,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
     //    if (std::abs(gradphinp(2,0))>1.0e-8)
     //    {
     //        std::cout << gradphinp << std::setprecision(8) << my::ephinp_[0] << std::endl;
-    //        dserror("ENDE");
+    //        FOUR_C_THROW("ENDE");
     //    }
 
     double normgradphi = gradphinp.Norm2();
@@ -866,7 +867,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
       }
       default:
       {
-        dserror("Unknown diffusivity function!");
+        FOUR_C_THROW("Unknown diffusivity function!");
         break;
       }
     }
@@ -939,7 +940,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SignFunction(double
   }
   else if (lsreinitparams_->SignType() == INPAR::SCATRA::signtype_SussmanFatemi1999)
   {
-    if (fabs(epsilon) < 1e-15) dserror("divide by zero in evaluate for smoothed sign function");
+    if (fabs(epsilon) < 1e-15)
+      FOUR_C_THROW("divide by zero in evaluate for smoothed sign function");
 
     if (phizero < -epsilon)
       sign_phi = -1.0;
@@ -949,7 +951,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SignFunction(double
       sign_phi = phizero / epsilon + 1.0 / M_PI * sin(M_PI * phizero / epsilon);
   }
   else
-    dserror("unknown type of sign function!");
+    FOUR_C_THROW("unknown type of sign function!");
   return;
 }
 
@@ -1001,7 +1003,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcCharEleLength
       else
       {
         // TODO: clearify this
-        dserror("gradphi_norm=0: cannot compute characteristic element length");
+        FOUR_C_THROW("gradphi_norm=0: cannot compute characteristic element length");
         gradphi_scaled.Update(1.0, gradphizero);
         // gradphi_scaled.Clear();
         // gradphi_scaled(0,0) = 1.0;
@@ -1037,7 +1039,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcCharEleLength
     break;
 
     default:
-      dserror("unknown characteristic element length\n");
+      FOUR_C_THROW("unknown characteristic element length\n");
       break;
   }
 
@@ -1167,7 +1169,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateInterfaceTe
         break;
       }
       default:
-        dserror("cell distype not implemented yet ( cellType = %s )",
+        FOUR_C_THROW("cell distype not implemented yet ( cellType = %s )",
             CORE::FE::CellTypeToString(celldistype).c_str());
         break;
     }
@@ -1226,7 +1228,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
   // get number of vertices of cell
   const unsigned numvertices = CORE::FE::num_nodes<celldistype>;
   const unsigned nsd = 3;
-  if (nsd_ != 3) dserror("Extend for other dimensions");
+  if (nsd_ != 3) FOUR_C_THROW("Extend for other dimensions");
   const size_t nsd_cell = 2;  // nsd_-1;
   // get coordinates of vertices of boundary integration cell in element coordinates \xi^domain
   CORE::LINALG::SerialDenseMatrix cellXiDomaintmp = cell.CellNodalPosXiDomain();
@@ -1298,7 +1300,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
     Jac_tmp.MultiplyTN(dx3Ddeta2D, dx3Ddeta2D);
 
     if (Jac_tmp.Determinant() == 0.0)
-      dserror("deformation factor for boundary integration is zero");
+      FOUR_C_THROW("deformation factor for boundary integration is zero");
     const double deform_factor = sqrt(Jac_tmp.Determinant());  // sqrt(det(J^T*J))
 
     const double fac = intpoints.qwgt[iquad] * deform_factor;

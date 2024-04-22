@@ -49,7 +49,7 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discret
       methodadapt_(ada_none)
 {
   // make sure
-  if (fluid_ == Teuchos::null) dserror("Failed to create the underlying fluid adapter");
+  if (fluid_ == Teuchos::null) FOUR_C_THROW("Failed to create the underlying fluid adapter");
   return;
 }
 
@@ -66,7 +66,7 @@ void ADAPTER::FluidFSI::Init()
     fluidimpl_ = Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_);
 
   if (fluidimpl_ == Teuchos::null)
-    dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
+    FOUR_C_THROW("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
 
   // default dofset for coupling
   int nds_master = 0;
@@ -249,7 +249,7 @@ void ADAPTER::FluidFSI::ApplyInitialMeshDisplacement(
     fluidimpl_ = Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_);
 
   if (fluidimpl_ == Teuchos::null)
-    dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
+    FOUR_C_THROW("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
 
   meshmap_->InsertCondVector(initfluiddisp, fluidimpl_->CreateDispn());
   meshmap_->InsertCondVector(initfluiddisp, fluidimpl_->CreateDispnp());
@@ -296,11 +296,11 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
   // get interface velocity at t(n)
   const Teuchos::RCP<const Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check, whether maps are the same
   if (!fcx->Map().PointSameAs(veln->Map()))
   {
-    dserror("Maps do not match, but they have to.");
+    FOUR_C_THROW("Maps do not match, but they have to.");
   }
 #endif
 
@@ -322,11 +322,11 @@ void ADAPTER::FluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
   // get interface velocity at t(n)
   const Teuchos::RCP<const Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check, whether maps are the same
   if (!fcx->Map().PointSameAs(veln->Map()))
   {
-    dserror("Maps do not match, but they have to.");
+    FOUR_C_THROW("Maps do not match, but they have to.");
   }
 #endif
 
@@ -498,7 +498,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
   const int simplersolvernumber = fdyn.get<int>("LINEAR_SOLVER");
   if (simplersolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no simpler solver, that is used to solve this system, defined for fluid pressure problem. "
         "\nPlease set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
 
@@ -595,7 +595,7 @@ void ADAPTER::FluidFSI::TimeStepAuxiliar()
     }
     default:
     {
-      dserror("Unknown auxiliary time integration scheme for fluid field.");
+      FOUR_C_THROW("Unknown auxiliary time integration scheme for fluid field.");
       break;
     }
   }
@@ -698,8 +698,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::CalculateWallShearStresses()
 
   // Since the WSS Manager cannot be initialized in the FluidImplicitTimeInt::Init()
   // it is not so sure if the WSSManager is jet initialized. So let's be safe here..
-  if (stressmanager == Teuchos::null) dserror("Call of StressManager failed!");
-  if (not stressmanager->IsInit()) dserror("StressManager has not been initialized jet!");
+  if (stressmanager == Teuchos::null) FOUR_C_THROW("Call of StressManager failed!");
+  if (not stressmanager->IsInit()) FOUR_C_THROW("StressManager has not been initialized jet!");
 
   // Call StressManager to calculate WSS from residual
   Teuchos::RCP<Epetra_Vector> wss = stressmanager->GetWallShearStresses(trueresidual, dt);
@@ -735,7 +735,7 @@ int ADAPTER::FluidFSI::AuxMethodOrderOfAccuracy() const
     return 2;
   else
   {
-    dserror("Unknown auxiliary time integration scheme for fluid field.");
+    FOUR_C_THROW("Unknown auxiliary time integration scheme for fluid field.");
     return 0;
   }
 }
@@ -759,7 +759,7 @@ double ADAPTER::FluidFSI::AuxMethodLinErrCoeffVel() const
   }
   else
   {
-    dserror("Unknown auxiliary time integration scheme for fluid field.");
+    FOUR_C_THROW("Unknown auxiliary time integration scheme for fluid field.");
     return 0;
   }
 }
@@ -777,7 +777,7 @@ double ADAPTER::FluidFSI::GetTimAdaErrOrder() const
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Cannot return error order for adaptive time integration, since"
         "no auxiliary scheme has been chosen for the fluid field.");
     return 0.0;
@@ -807,7 +807,7 @@ std::string ADAPTER::FluidFSI::GetTimAdaMethodName() const
     }
     default:
     {
-      dserror("Unknown auxiliary time integration scheme for fluid field.");
+      FOUR_C_THROW("Unknown auxiliary time integration scheme for fluid field.");
       return "";
       break;
     }

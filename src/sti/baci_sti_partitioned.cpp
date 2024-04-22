@@ -83,7 +83,7 @@ STI::Partitioned::Partitioned(const Epetra_Comm& comm,  //! communicator
 
     default:
     {
-      dserror("What the hell?!");
+      FOUR_C_THROW("What the hell?!");
       break;
     }
   }
@@ -147,7 +147,7 @@ bool STI::Partitioned::ExitOuterCoupling() const
       std::cout << "+------------+-------------------+--------------+--------------+" << std::endl;
     }
 
-    dserror("Outer iteration did not converge within maximum number of iteration steps!");
+    FOUR_C_THROW("Outer iteration did not converge within maximum number of iteration steps!");
 
     return true;
   }
@@ -183,7 +183,7 @@ void STI::Partitioned::Solve()
 
     default:
     {
-      dserror("Dude... what's wrong with you?!");
+      FOUR_C_THROW("Dude... what's wrong with you?!");
       break;
     }
   }
@@ -235,7 +235,7 @@ void STI::Partitioned::SolveOneWay() const
 
     default:
     {
-      dserror("No, no, noooooooo...!");
+      FOUR_C_THROW("No, no, noooooooo...!");
       break;
     }
   }
@@ -271,27 +271,28 @@ void STI::Partitioned::SolveTwoWay()
 
         // store current thermo state vector
         if (ThermoField()->PhinpInc()->Update(1., *ThermoField()->Phiafnp(), 0.))
-          dserror("Update failed!");
+          FOUR_C_THROW("Update failed!");
 
         // solve thermo field
         ThermoField()->Solve();
 
         // compute increment of thermo state vector
         if (ThermoField()->PhinpInc()->Update(1., *ThermoField()->Phiafnp(), -1.))
-          dserror("Update failed!");
+          FOUR_C_THROW("Update failed!");
 
         // pass thermo degrees of freedom to scatra discretization
         TransferThermoToScatra(ThermoField()->Phiafnp());
 
         // store current scatra state vector
-        if (ScaTraField()->PhinpInc()->Update(1., *scatra_relaxed, 0.)) dserror("Update failed!");
+        if (ScaTraField()->PhinpInc()->Update(1., *scatra_relaxed, 0.))
+          FOUR_C_THROW("Update failed!");
 
         // solve scatra field
         ScaTraField()->Solve();
 
         // compute increment of scatra state vector
         if (ScaTraField()->PhinpInc()->Update(1., *ScaTraField()->Phiafnp(), -1.))
-          dserror("Update failed!");
+          FOUR_C_THROW("Update failed!");
 
         // convergence check
         if (ExitOuterCoupling()) break;
@@ -300,7 +301,7 @@ void STI::Partitioned::SolveTwoWay()
         if (couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo)
         {
           if (scatra_relaxed->Update(ScaTraField()->Omega()[0], *ScaTraField()->PhinpInc(), 1.))
-            dserror("Update failed!");
+            FOUR_C_THROW("Update failed!");
         }
 
         // perform dynamic relaxation
@@ -309,7 +310,7 @@ void STI::Partitioned::SolveTwoWay()
           // compute difference between current and previous increments of scatra state vector
           Epetra_Vector scatra_inc_diff(*ScaTraField()->PhinpInc());
           if (scatra_inc_diff.Update(-1., *ScaTraField()->PhinpIncOld(), 1.))
-            dserror("Update failed!");
+            FOUR_C_THROW("Update failed!");
 
           if (couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo_aitken)
           {
@@ -322,7 +323,7 @@ void STI::Partitioned::SolveTwoWay()
             // current and previous increments of scatra state vector
             double scatra_inc_dot_scatra_inc_diff(0.);
             if (scatra_inc_diff.Dot(*ScaTraField()->PhinpInc(), &scatra_inc_dot_scatra_inc_diff))
-              dserror("Couldn't compute dot product!");
+              FOUR_C_THROW("Couldn't compute dot product!");
 
             // compute Aitken relaxation factor
             if (iter_ > 1 and scatra_inc_diff_L2 > 1.e-12)
@@ -335,14 +336,14 @@ void STI::Partitioned::SolveTwoWay()
 
             // perform Aitken relaxation
             if (scatra_relaxed->Update(ScaTraField()->Omega()[0], *ScaTraField()->PhinpInc(), 1.))
-              dserror("Update failed!");
+              FOUR_C_THROW("Update failed!");
           }
 
           else
           {
             // safety check
             if (ScaTraField()->Splitter() == Teuchos::null)
-              dserror("Map extractor was not initialized!");
+              FOUR_C_THROW("Map extractor was not initialized!");
 
             // loop over all degrees of freedom
             for (int idof = 0; idof < ScaTraField()->Splitter()->NumMaps(); ++idof)
@@ -362,7 +363,7 @@ void STI::Partitioned::SolveTwoWay()
               // between current and previous increments of current degree of freedom
               double scatra_inc_dot_scatra_inc_diff(0.);
               if (scatra_inc_diff_dof->Dot(*scatra_inc_dof, &scatra_inc_dot_scatra_inc_diff))
-                dserror("Couldn't compute dot product!");
+                FOUR_C_THROW("Couldn't compute dot product!");
 
               // compute Aitken relaxation factor for current degree of freedom
               if (iter_ > 1 and scatra_inc_diff_L2 > 1.e-12)
@@ -381,7 +382,7 @@ void STI::Partitioned::SolveTwoWay()
 
           // update increment of scatra state vector
           if (ScaTraField()->PhinpIncOld()->Update(1., *ScaTraField()->PhinpInc(), 0.))
-            dserror("Update failed!");
+            FOUR_C_THROW("Update failed!");
         }
       }
 
@@ -406,27 +407,28 @@ void STI::Partitioned::SolveTwoWay()
 
         // store current scatra state vector
         if (ScaTraField()->PhinpInc()->Update(1., *ScaTraField()->Phiafnp(), 0.))
-          dserror("Update failed!");
+          FOUR_C_THROW("Update failed!");
 
         // solve scatra field
         ScaTraField()->Solve();
 
         // compute increment of scatra state vector
         if (ScaTraField()->PhinpInc()->Update(1., *ScaTraField()->Phiafnp(), -1.))
-          dserror("Update failed!");
+          FOUR_C_THROW("Update failed!");
 
         // pass scatra degrees of freedom to thermo discretization
         TransferScatraToThermo(ScaTraField()->Phiafnp());
 
         // store current thermo state vector
-        if (ThermoField()->PhinpInc()->Update(1., *thermo_relaxed, 0.)) dserror("Update failed!");
+        if (ThermoField()->PhinpInc()->Update(1., *thermo_relaxed, 0.))
+          FOUR_C_THROW("Update failed!");
 
         // solve thermo field
         ThermoField()->Solve();
 
         // compute increment of thermo state vector
         if (ThermoField()->PhinpInc()->Update(1., *ThermoField()->Phiafnp(), -1.))
-          dserror("Update failed!");
+          FOUR_C_THROW("Update failed!");
 
         // convergence check
         if (ExitOuterCoupling()) break;
@@ -436,7 +438,7 @@ void STI::Partitioned::SolveTwoWay()
           // compute difference between current and previous increments of thermo state vector
           Epetra_Vector thermo_inc_diff(*ThermoField()->PhinpInc());
           if (thermo_inc_diff.Update(-1., *ThermoField()->PhinpIncOld(), 1.))
-            dserror("Update failed!");
+            FOUR_C_THROW("Update failed!");
 
           // compute L2 norm of difference between current and previous increments of thermo state
           // vector
@@ -447,7 +449,7 @@ void STI::Partitioned::SolveTwoWay()
           // current and previous increments of thermo state vector
           double thermo_inc_dot_thermo_inc_diff(0.);
           if (thermo_inc_diff.Dot(*ThermoField()->PhinpInc(), &thermo_inc_dot_thermo_inc_diff))
-            dserror("Couldn't compute dot product!");
+            FOUR_C_THROW("Couldn't compute dot product!");
 
           // compute Aitken relaxation factor
           if (iter_ > 1 and thermo_inc_diff_L2 > 1.e-12)
@@ -460,12 +462,12 @@ void STI::Partitioned::SolveTwoWay()
 
           // update increment of thermo state vector
           if (ThermoField()->PhinpIncOld()->Update(1., *ThermoField()->PhinpInc(), 0.))
-            dserror("Update failed!");
+            FOUR_C_THROW("Update failed!");
         }
 
         // perform relaxation
         if (thermo_relaxed->Update(ThermoField()->Omega()[0], *ThermoField()->PhinpInc(), 1.))
-          dserror("Update failed!");
+          FOUR_C_THROW("Update failed!");
       }
 
       break;
@@ -473,7 +475,7 @@ void STI::Partitioned::SolveTwoWay()
 
     default:
     {
-      dserror("Please stop coding a bunch of crap...");
+      FOUR_C_THROW("Please stop coding a bunch of crap...");
       break;
     }
   }

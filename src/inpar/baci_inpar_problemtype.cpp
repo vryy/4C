@@ -126,7 +126,7 @@ GLOBAL::ProblemType INPAR::PROBLEMTYPE::StringToProblemType(std::string name)
   std::map<std::string, GLOBAL::ProblemType> map = StringToProblemTypeMap();
   std::map<std::string, GLOBAL::ProblemType>::const_iterator i = map.find(name);
   if (i != map.end()) return i->second;
-  dserror("unsupported problem name '%s'", name.c_str());
+  FOUR_C_THROW("unsupported problem name '%s'", name.c_str());
 
   return GLOBAL::ProblemType::none;
 }

@@ -93,7 +93,7 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   const int linsolvernumber = artdyn.get<int>("LINEAR_SOLVER");
   // check if the solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined. Please set LINEAR_SOLVER in ARTERIAL DYNAMIC to a valid "
         "number!");
 
@@ -117,7 +117,8 @@ Teuchos::RCP<ADAPTER::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
     Teuchos::RCP<DRT::DofSetInterface> arterydofset = actdis->GetDofSetProxy();
 
     // check if ScatraField has 2 discretizations, so that coupling is possible
-    if (scatradis->AddDofSet(arterydofset) != 1) dserror("unexpected dof sets in scatra field");
+    if (scatradis->AddDofSet(arterydofset) != 1)
+      FOUR_C_THROW("unexpected dof sets in scatra field");
 
     scatradis->FillComplete(true, false, false);
   }

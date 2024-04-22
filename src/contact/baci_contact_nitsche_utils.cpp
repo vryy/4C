@@ -25,7 +25,7 @@ void MORTAR::ElementNitscheData<parent_distype>::AssembleRHS(MORTAR::Element* me
   const int nen = CORE::FE::num_nodes<parent_distype>;
 
   if (num_dof_per_node * nen > dofs.size())
-    dserror("num_dof_per_node*nen>dofs.size() %d > %d", num_dof_per_node * nen, dofs.size());
+    FOUR_C_THROW("num_dof_per_node*nen>dofs.size() %d > %d", num_dof_per_node * nen, dofs.size());
 
   if (fc != Teuchos::null)
   {
@@ -91,7 +91,7 @@ void MORTAR::ElementNitscheData<parent_distype>::AssembleRHS(
         AssembleRHS<2>(mele, ssi_elch_data_.rhs_e_, mele->MoData().ParentScalarDof(), fc);
       break;
     default:
-      dserror("unknown row");
+      FOUR_C_THROW("unknown row");
   }
 }
 
@@ -155,7 +155,7 @@ void MORTAR::ElementNitscheData<parent_distype>::AssembleMatrix(
         AssembleMatrix<2>(mele, ssi_elch_data_.k_ee_, mele->MoData().ParentScalarDof(), kc);
       break;
     default:
-      dserror("unknown matrix block");
+      FOUR_C_THROW("unknown matrix block");
       break;
   }
 }

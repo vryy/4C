@@ -28,7 +28,7 @@ namespace CORE::FE
   {
     const auto it = string2shapefuntype.find(name);
     if (it != string2shapefuntype.end()) return it->second;
-    dserror(
+    FOUR_C_THROW(
         "'%s' does not name a shape function type. Check for typos or consider adding the shape "
         "function type to the map.",
         name.c_str());
@@ -43,7 +43,7 @@ namespace CORE::FE
 
 
     if (it != string2shapefuntype.end()) return it->first;
-    dserror(
+    FOUR_C_THROW(
         "Could not find the name of the given shape function type or the shapefunction is "
         "undefined.");
   }

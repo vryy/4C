@@ -130,7 +130,7 @@ void PostVtuWriter::WriteGeo()
       celloffset.push_back(outNodeId);
     }
   }
-  dsassert((int)coordinates.size() == 3 * outNodeId, "internal error");
+  FOUR_C_ASSERT((int)coordinates.size() == 3 * outNodeId, "internal error");
 
   // step 1: write node coordinates into file
   currentout_ << "<Piece NumberOfPoints=\"" << outNodeId << "\" NumberOfCells=\"" << nelements
@@ -323,7 +323,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
             if (fillzeros)
               solution.push_back(0.);
             else
-              dserror("received illegal dof local id: %d", lid);
+              FOUR_C_THROW("received illegal dof local id: %d", lid);
           }
         }
         for (int d = numdf; d < ncomponents; ++d) solution.push_back(0.);
@@ -331,7 +331,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     }
 
   }  // loop over all elements
-     //  dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
+     //  FOUR_C_ASSERT((int)solution.size() == ncomponents*nnodes, "internal error");
 
   // start the scalar fields that will later be written
   if (currentPhase_ == INIT)
@@ -345,7 +345,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
   }
 
   if (currentPhase_ != POINTS)
-    dserror(
+    FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
   this->WriteSolutionVector(solution, ncomponents, name, file);
@@ -369,7 +369,8 @@ void PostVtuWriter::WriteNodalResultStep(std::ofstream& file,
   const Epetra_Map* colmap = dis->NodeColMap();
   const Epetra_BlockMap& vecmap = data->Map();
 
-  dsassert(colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
+  FOUR_C_ASSERT(
+      colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
       "Given data vector does not seem to match discretization node map");
 
   Teuchos::RCP<Epetra_MultiVector> ghostedData;
@@ -416,14 +417,14 @@ void PostVtuWriter::WriteNodalResultStep(std::ofstream& file,
             solution.push_back((*column)[lid]);
           else
           {
-            dserror("received illegal node local id: %d", lid);
+            FOUR_C_THROW("received illegal node local id: %d", lid);
           }
         }
         for (int d = numdf; d < ncomponents; ++d) solution.push_back(0.);
       }
     }
   }  // loop over all elements
-     //  dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
+     //  FOUR_C_ASSERT((int)solution.size() == ncomponents*nnodes, "internal error");
 
 
   // start the scalar fields that will later be written
@@ -438,7 +439,7 @@ void PostVtuWriter::WriteNodalResultStep(std::ofstream& file,
   }
 
   if (currentPhase_ != POINTS)
-    dserror(
+    FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
   this->WriteSolutionVector(solution, ncomponents, name, file);
@@ -466,7 +467,8 @@ void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
   solution.reserve(ncomponents * neles);
 
   const int numcol = data->NumVectors();
-  if (numdf + from > numcol) dserror("violated column range of Epetra_MultiVector: %d", numcol);
+  if (numdf + from > numcol)
+    FOUR_C_THROW("violated column range of Epetra_MultiVector: %d", numcol);
 
   Teuchos::RCP<Epetra_MultiVector> importedData;
   if (dis->ElementRowMap()->SameAs(data->Map()))
@@ -487,7 +489,7 @@ void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
     }
     for (int d = numdf; d < ncomponents; ++d) solution.push_back(0.0);
   }
-  dsassert((int)solution.size() == ncomponents * neles, "internal error");
+  FOUR_C_ASSERT((int)solution.size() == ncomponents * neles, "internal error");
 
   // start the scalar fields that will later be written
   if (currentPhase_ == POINTS)
@@ -511,7 +513,7 @@ void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
   }
 
   if (currentPhase_ != CELLS)
-    dserror(
+    FOUR_C_THROW(
         "Cannot write cell data at this stage. Most likely cell and point data fields are mixed.");
 
   this->WriteSolutionVector(solution, ncomponents, name, file);
@@ -563,7 +565,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
       break;
     }
     default:
-      dserror("VTK output not yet implemented for given NURBS element");
+      FOUR_C_THROW("VTK output not yet implemented for given NURBS element");
       exit(EXIT_FAILURE);
   }
 
@@ -602,7 +604,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
   const DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(dis.get());
 
-  if (not nurbsdis) dserror("Cast to NURBS discretization failed.\n");
+  if (not nurbsdis) FOUR_C_THROW("Cast to NURBS discretization failed.\n");
 
   std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
 
@@ -652,7 +654,7 @@ CORE::FE::CellType PostVtuWriter::MapNurbsDisTypeToLagrangeDisType(
     case CORE::FE::CellType::nurbs27:
       return CORE::FE::CellType::hex27;
     default:
-      dserror("No known mapping from NURBS to Lagrange.");
+      FOUR_C_THROW("No known mapping from NURBS to Lagrange.");
       exit(EXIT_FAILURE);
   }
 }
@@ -731,7 +733,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
       break;
     }
     default:
-      dserror("VTK output not yet implemented for given NURBS element");
+      FOUR_C_THROW("VTK output not yet implemented for given NURBS element");
       break;
   }  // end switch shape
 
@@ -770,7 +772,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
   const DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(dis.get());
 
-  if (not nurbsdis) dserror("Cast to NURBS discretization failed.\n");
+  if (not nurbsdis) FOUR_C_THROW("Cast to NURBS discretization failed.\n");
 
   std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
   const bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
@@ -803,7 +805,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
           if (fillzeros)
             val[d] += 0.;
           else
-            dserror("received illegal dof local id: %d", lid);
+            FOUR_C_THROW("received illegal dof local id: %d", lid);
         }
       }
     }
@@ -823,7 +825,7 @@ void PostVtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* be
 
   if (numdf != ncomponents or numdf != 3)
   {
-    dserror(
+    FOUR_C_THROW(
         "writing of dof-based result for beams with Hermite centerline interpolation is "
         "restricted to centerline displacements where numdof = ncomponents = 3");
   }
@@ -849,7 +851,7 @@ void PostVtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* be
         if (fillzeros)
           elementdofvals.push_back(0.);
         else
-          dserror("received illegal dof local id: %d", lid);
+          FOUR_C_THROW("received illegal dof local id: %d", lid);
       }
     }
   }
@@ -920,7 +922,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
       break;
     }
     default:
-      dserror("VTK output not yet implemented for given NURBS element");
+      FOUR_C_THROW("VTK output not yet implemented for given NURBS element");
       break;
   }  // end switch ele shape
   return;
@@ -959,7 +961,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
   const DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(dis.get());
 
-  if (not nurbsdis) dserror("Cast to NURBS discretization failed.\n");
+  if (not nurbsdis) FOUR_C_THROW("Cast to NURBS discretization failed.\n");
 
   std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
   bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
@@ -987,7 +989,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
         if (lid > -1)
           val[idf] += funct(m) * (*column)[lid];
         else
-          dserror("received illegal node local id: %d", lid);
+          FOUR_C_THROW("received illegal node local id: %d", lid);
       }
     }
 

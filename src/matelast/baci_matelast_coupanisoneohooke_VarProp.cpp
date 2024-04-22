@@ -77,7 +77,7 @@ void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::Setup(int numgp, INPUT::LineDefinit
       double gamma = (params_->gamma_);
       if (gamma < 0.0 || gamma > 180.0 || abs(theta) > 180.0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Wrong choice of sherical coodinates. Correct domain is gamma in [0,180], theta in "
             "[-180, 180]");
       }
@@ -118,11 +118,11 @@ void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::Setup(int numgp, INPUT::LineDefinit
     // error path
     else
     {
-      dserror("Reading of element local cosy for anisotropic materials failed");
+      FOUR_C_THROW("Reading of element local cosy for anisotropic materials failed");
     }
   }
   else
-    dserror("INIT mode not implemented");
+    FOUR_C_THROW("INIT mode not implemented");
 }
 
 void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::AddStressAnisoPrincipal(
@@ -157,7 +157,8 @@ void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::GetFiberVecs(
 void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::SetFiberVecs(const double newgamma,
     const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
-  if ((params_->gamma_ < -90) || (params_->gamma_ > 90)) dserror("Fiber angle not in [-90,90]");
+  if ((params_->gamma_ < -90) || (params_->gamma_ > 90))
+    FOUR_C_THROW("Fiber angle not in [-90,90]");
   // convert
   double gamma = (params_->gamma_ * M_PI) / 180.;
 

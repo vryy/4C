@@ -149,7 +149,7 @@ namespace GEOMETRYPAIR
      */
     inline CORE::LINALG::Matrix<2, 1, scalar_type> GetEtaCrossSection() const
     {
-      if (!is_cross_section_point_) dserror("The cross section coordinate has not been set!");
+      if (!is_cross_section_point_) FOUR_C_THROW("The cross section coordinate has not been set!");
       return eta_cross_section_;
     };
 
@@ -184,7 +184,7 @@ namespace GEOMETRYPAIR
     inline double GetGaussWeight() const
     {
       if (gauss_weight_ < 0.)
-        dserror(
+        FOUR_C_THROW(
             "Negative Gauss weight not possible. Probably the default value was not overwritten!");
       return gauss_weight_;
     }
@@ -285,7 +285,7 @@ namespace GEOMETRYPAIR
     {
       // Sanity check that eta_a is larger than eta_b.
       if (!(GetEtaA() < GetEtaB()))
-        dserror(
+        FOUR_C_THROW(
             "The segment is created with eta_a=%f and eta_b=%f, this is not possible, as eta_a "
             "has "
             "to be smaller than eta_b!",
@@ -384,7 +384,7 @@ namespace GEOMETRYPAIR
         // The segments are equal.
       }
       else
-        dserror("The two segments are overlapping. This is fatal!");
+        FOUR_C_THROW("The two segments are overlapping. This is fatal!");
 
       return false;
     };
@@ -409,7 +409,7 @@ namespace GEOMETRYPAIR
         // The segments are equal.
       }
       else
-        dserror("The two segments are overlapping. This is fatal!");
+        FOUR_C_THROW("The two segments are overlapping. This is fatal!");
 
       return false;
     };

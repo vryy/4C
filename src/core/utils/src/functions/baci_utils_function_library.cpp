@@ -53,7 +53,7 @@ namespace
 
       // safety check
       if (csv_file.empty())
-        dserror("You forgot to specify the *.csv file for cubic spline interpolation!");
+        FOUR_C_THROW("You forgot to specify the *.csv file for cubic spline interpolation!");
 
       // csv file needs to be placed in same folder as input file
       std::filesystem::path input_file_path =

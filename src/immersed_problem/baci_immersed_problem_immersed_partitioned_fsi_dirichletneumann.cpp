@@ -138,11 +138,11 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
     if (myrank_ == 0) std::cout << "\n Using AITKEN relaxation parameter. " << std::endl;
   }
   else
-    dserror("Unknown definition of COUPALGO in FSI DYNAMIC section for Immersed FSI.");
+    FOUR_C_THROW("Unknown definition of COUPALGO in FSI DYNAMIC section for Immersed FSI.");
 
   // check for unfeasible combination
   if (correct_boundary_velocities_ and displacementcoupling_ and is_relaxation_)
-    dserror(
+    FOUR_C_THROW(
         "Interface velocity correction is not possible with displacement coupled Immersed FSI in "
         "combination with relaxation.");
 
@@ -161,7 +161,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
   else if (num_gp_fluid_bound == 1000)
     degree_gp_fluid_bound_ = 19;
   else
-    dserror(
+    FOUR_C_THROW(
         "Invalid value for parameter NUM_GP_FLUID_BOUND (valid parameters are 8, 64, 125, 343, "
         "729, and 1000).");
 
@@ -291,7 +291,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(
                                    //!< information
 
     int err = CalcResidual(F, artificial_velocity_np, artificial_velocity_n);
-    if (err != 0) dserror("Vector update of FSI-residual returned err=%d", err);
+    if (err != 0) FOUR_C_THROW("Vector update of FSI-residual returned err=%d", err);
   }
   else if (!displacementcoupling_)  // FORCE COUPLING
   {
@@ -314,7 +314,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(
                                       //!< surface
 
     int err = CalcResidual(F, struct_bdry_traction_, iforcen);
-    if (err != 0) dserror("Vector update of FSI-residual returned err=%d", err);
+    if (err != 0) FOUR_C_THROW("Vector update of FSI-residual returned err=%d", err);
   }
 
   // write output after every solve of fluid and structure
@@ -370,7 +370,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Fl
 
   if (fillFlag == User)
   {
-    dserror("fillFlag == User : not yet implemented");
+    FOUR_C_THROW("fillFlag == User : not yet implemented");
   }
   else
   {
@@ -410,7 +410,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumann::St
 
   if (fillFlag == User)
   {
-    dserror("fillFlag == User : not yet implemented");
+    FOUR_C_THROW("fillFlag == User : not yet implemented");
     return Teuchos::null;
   }
   else
@@ -504,16 +504,16 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::DoImmersedDirichletCond(
   {
     int gid = dbcmap->GID(i);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     int err = -2;
     int lid = dirichvals->Map().LID(gid);
     err = statevector->ReplaceGlobalValue(gid, 0, myvals[lid]);
     if (err == -1)
-      dserror("VectorIndex >= NumVectors()");
+      FOUR_C_THROW("VectorIndex >= NumVectors()");
     else if (err == 1)
-      dserror("GlobalRow not associated with calling processor");
+      FOUR_C_THROW("GlobalRow not associated with calling processor");
     else if (err != -1 and err != 1 and err != 0)
-      dserror("Trouble using ReplaceGlobalValue on fluid state vector. ErrorCode = %d", err);
+      FOUR_C_THROW("Trouble using ReplaceGlobalValue on fluid state vector. ErrorCode = %d", err);
 #else
     int lid = dirichvals->Map().LID(gid);
     statevector->ReplaceGlobalValue(gid, 0, myvals[lid]);
@@ -671,7 +671,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
     boundingboxcenter(1) = structBox(1, 0) + (structBox(1, 1) - structBox(1, 0)) * 0.5;
     boundingboxcenter(2) = structBox(2, 0) + (structBox(2, 1) - structBox(2, 0)) * 0.5;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     std::cout << "Bounding Box of Structure: " << structBox << " on PROC " << myrank_ << std::endl;
     std::cout << "Bounding Box Center of Structure: " << boundingboxcenter << " on PROC " << myrank_
               << std::endl;
@@ -820,7 +820,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::CalcFluidTractionsOnStruc
 {
   // sanity check
   if (boundary_traction_isvalid_)
-    dserror(
+    FOUR_C_THROW(
         "Boundary traction from fluid onto immersed structure is still valid!\n"
         "If you really need to calc them anew, invalidate flag boundary_traction_isvalid_ at the "
         "proper position.");
@@ -1049,7 +1049,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::CorrectInterfaceVelocity(
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ResetImmersedInformation()
 {
   if (immersed_info_isvalid_)
-    dserror(
+    FOUR_C_THROW(
         "Immersed information are valid! Reconsider your call to ResetImmersedInformation().\n"
         "Did you forget to invalidate the flag immersed_info_isvalid_?");
 

@@ -176,7 +176,7 @@ namespace FSI
         Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
         const INPAR::FSI::Redistribute domain) override
     {
-      dserror("Not implemented!");
+      FOUR_C_THROW("Not implemented!");
     }
 
    protected:

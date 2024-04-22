@@ -28,7 +28,7 @@ bool DRT::ELEMENTS::Beam3eb::ReadElement(
   if (Material()->Parameter()->Name() != "MAT_BeamKirchhoffTorsionFreeElastHyper" and
       Material()->Parameter()->Name() != "MAT_BeamKirchhoffTorsionFreeElastHyper_ByModes")
   {
-    dserror(
+    FOUR_C_THROW(
         "The material parameter definition '%s' is not supported by "
         "Beam3eb element! "
         "Choose MAT_BeamKirchhoffTorsionFreeElastHyper or "

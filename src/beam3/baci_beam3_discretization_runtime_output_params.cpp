@@ -97,7 +97,7 @@ void DRT::ELEMENTS::BeamRuntimeOutputParams::Init(
 
   n_subsegments_ = IO_vtk_structure_beams_paramslist.get<int>("NUMBER_SUBSEGMENTS");
   if (n_subsegments_ < 1)
-    dserror("The number of subsegments has to be at least 1. Got %d", n_subsegments_);
+    FOUR_C_THROW("The number of subsegments has to be at least 1. Got %d", n_subsegments_);
 
   isinit_ = true;
 }
@@ -106,7 +106,7 @@ void DRT::ELEMENTS::BeamRuntimeOutputParams::Init(
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::BeamRuntimeOutputParams::Setup()
 {
-  if (not IsInit()) dserror("Init() has not been called, yet!");
+  if (not IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -117,7 +117,7 @@ void DRT::ELEMENTS::BeamRuntimeOutputParams::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::BeamRuntimeOutputParams::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+  if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

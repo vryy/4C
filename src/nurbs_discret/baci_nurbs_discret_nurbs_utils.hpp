@@ -41,7 +41,7 @@ namespace DRT
       // try to cast dis to a nurbs discretisation
       const DRT::NURBS::NurbsDiscretization* nurbsdis =
           dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(dis));
-      if (nurbsdis == nullptr) dserror("Received discretization which is not Nurbs!");
+      if (nurbsdis == nullptr) FOUR_C_THROW("Received discretization which is not Nurbs!");
 
       // get local knot vector entries and check for zero sized elements
       const bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());

@@ -47,7 +47,7 @@ void INPAR::BEAMTOSOLID::BeamToSolidInteractionGetString(
     condition_names[1] = "BeamToSolidSurfaceContactSurface";
   }
   else
-    dserror("Got unexpected beam-to-solid interaction type.");
+    FOUR_C_THROW("Got unexpected beam-to-solid interaction type.");
 }
 
 /**

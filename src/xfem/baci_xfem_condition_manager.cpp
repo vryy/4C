@@ -349,7 +349,7 @@ void XFEM::ConditionManager::Create()
   for (int mc = 0; mc < (int)mesh_coupl_.size(); mc++)
   {
     Teuchos::RCP<DRT::Discretization> mc_cutdis = mesh_coupl_[mc]->GetCutterDis();
-    if (mc_cutdis == Teuchos::null) dserror("cutter dis is Teuchos::null");
+    if (mc_cutdis == Teuchos::null) FOUR_C_THROW("cutter dis is Teuchos::null");
 
     // set current number of global coupling sides as start index for global id this coupling object
     mesh_coupl_start_gid_[mc] = numglobal_coupling_sides;
@@ -386,7 +386,7 @@ void XFEM::ConditionManager::Create()
 void XFEM::ConditionManager::SetLevelSetField(const double time)
 {
   if (levelset_coupl_.size() != 1)
-    dserror("level-set field is not unique, which level-set field to be set?");
+    FOUR_C_THROW("level-set field is not unique, which level-set field to be set?");
 
   is_levelset_uptodate_ = false;
 
@@ -406,7 +406,7 @@ void XFEM::ConditionManager::WriteAccess_GeometricQuantities(Teuchos::RCP<Epetra
   // coupling twophase coupling object?
   // TODO: safety check, that there is a unique two-phase coupling object!?
   if (levelset_coupl_.size() != 1)
-    dserror("level-set field is not unique, which level-set field to be set by given vector?");
+    FOUR_C_THROW("level-set field is not unique, which level-set field to be set by given vector?");
 
   is_levelset_uptodate_ = false;
 }
@@ -465,18 +465,18 @@ void XFEM::ConditionManager::UpdateLevelSetField()
     if (lsc == 0)  // initialize with the first coupling!
     {
       if (coupling->GetBooleanCombination() != CouplingBase::ls_none)
-        dserror(
+        FOUR_C_THROW(
             "the first Boundary-Condition level-set coupling (WDBC or NEUMANN) should always use "
             "BOOLEANTYPE=none ! Check your boolean operations");
 
       Teuchos::RCP<Epetra_Vector> tmp = coupling->GetLevelSetFieldAsNodeRowVector();
       const int err = bg_phinp_->Update(1.0, *tmp, 0.0);
-      if (err) dserror("update did not work - vectors based on wrong maps?");
+      if (err) FOUR_C_THROW("update did not work - vectors based on wrong maps?");
     }
     else  // apply boolean combinations for the further level-set fields
     {
       if (ls_boolean_type == CouplingBase::ls_none)
-        dserror(
+        FOUR_C_THROW(
             "there is a level-set coupling for which you did not specify the the BOOLEANTYPE! "
             "Check your boolean operations");
 
@@ -549,7 +549,7 @@ void XFEM::ConditionManager::CombineLevelSetField(Teuchos::RCP<Epetra_Vector>& v
       SetSymmetricDifference(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     default:
-      dserror("unsupported type of boolean operation between two level-sets");
+      FOUR_C_THROW("unsupported type of boolean operation between two level-sets");
       break;
   }
 }
@@ -558,7 +558,7 @@ void XFEM::ConditionManager::CombineLevelSetField(Teuchos::RCP<Epetra_Vector>& v
 void XFEM::ConditionManager::CheckForEqualMaps(
     const Teuchos::RCP<Epetra_Vector>& vec1, const Teuchos::RCP<Epetra_Vector>& vec2)
 {
-  if (not vec1->Map().PointSameAs(vec2->Map())) dserror("maps do not match!");
+  if (not vec1->Map().PointSameAs(vec2->Map())) FOUR_C_THROW("maps do not match!");
 }
 
 
@@ -585,7 +585,7 @@ void XFEM::ConditionManager::SetMinimum(Teuchos::RCP<Epetra_Vector>& vec1,
 
     // now copy the values
     err = vec1->ReplaceMyValue(lnodeid, 0, final_val);
-    if (err != 0) dserror("error while inserting value into phinp_");
+    if (err != 0) FOUR_C_THROW("error while inserting value into phinp_");
   }
 }
 
@@ -612,7 +612,7 @@ void XFEM::ConditionManager::SetMaximum(Teuchos::RCP<Epetra_Vector>& vec1,
 
     // now copy the values
     err = vec1->ReplaceMyValue(lnodeid, 0, final_val);
-    if (err != 0) dserror("error while inserting value into phinp_");
+    if (err != 0) FOUR_C_THROW("error while inserting value into phinp_");
   }
 }
 
@@ -639,7 +639,7 @@ void XFEM::ConditionManager::SetDifference(Teuchos::RCP<Epetra_Vector>& vec1,
 
     // now copy the values
     err = vec1->ReplaceMyValue(lnodeid, 0, final_val);
-    if (err != 0) dserror("error while inserting value into phinp_");
+    if (err != 0) FOUR_C_THROW("error while inserting value into phinp_");
   }
 }
 
@@ -676,7 +676,7 @@ void XFEM::ConditionManager::SetSymmetricDifference(Teuchos::RCP<Epetra_Vector>&
 
     // now copy the values
     err = vec1->ReplaceMyValue(lnodeid, 0, final_val);
-    if (err != 0) dserror("error while inserting value into phinp_");
+    if (err != 0) FOUR_C_THROW("error while inserting value into phinp_");
   }
 }
 
@@ -904,7 +904,8 @@ void XFEM::ConditionManager::GetInterfaceSlaveMaterial(
     levelset_coupl_[lc]->GetInterfaceSlaveMaterial(actele, mat);
   }
   else
-    dserror("The coupling-side id: %d does not correspond to a mesh or levelset coupling object.",
+    FOUR_C_THROW(
+        "The coupling-side id: %d does not correspond to a mesh or levelset coupling object.",
         coup_sid);
 }
 
@@ -959,13 +960,13 @@ std::vector<std::pair<int, int>> XFEM::ConditionManager::GetBCCloneInformation(
         return BCCloneInformationvector;
       }
       else
-        dserror("GetBCCloneInformation: Try to clone from FPI MC != PoroStructure?");
+        FOUR_C_THROW("GetBCCloneInformation: Try to clone from FPI MC != PoroStructure?");
     }
     else
       return BCCloneInformationvector;
   }
   else
-    dserror("GetBCCloneInformation: Coupling is empty!");
+    FOUR_C_THROW("GetBCCloneInformation: Coupling is empty!");
   return BCCloneInformationvector;
 }
 
@@ -995,7 +996,8 @@ DRT::Element* XFEM::ConditionManager::GetCouplingElement(
     return levelset_coupl_[lsc_idx]->GetCouplingElement(coupldis_eid);
   }
   else
-    dserror("there is no valid mesh-/levelset-coupling condition object for side: %i", coup_sid);
+    FOUR_C_THROW(
+        "there is no valid mesh-/levelset-coupling condition object for side: %i", coup_sid);
 
 
   return nullptr;
@@ -1071,7 +1073,7 @@ double XFEM::ConditionManager::Get_TraceEstimate_MaxEigenvalue(
   // get the boundary discretization, the side belongs to
   Teuchos::RCP<MeshVolCoupling> mvolcoupling =
       Teuchos::rcp_dynamic_cast<MeshVolCoupling>(mesh_coupl_[mc_idx]);
-  if (mvolcoupling == Teuchos::null) dserror("Cast to MeshVolCoupling failed!");
+  if (mvolcoupling == Teuchos::null) FOUR_C_THROW("Cast to MeshVolCoupling failed!");
 
   return mvolcoupling->Get_EstimateNitscheTraceMaxEigenvalue(mvolcoupling->GetSide(cutterdis_sid));
 }

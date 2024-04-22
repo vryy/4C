@@ -346,7 +346,7 @@ namespace CORE::GEO
         }
         else
         {
-          dserror("Following cut_pair does not exist!");
+          FOUR_C_THROW("Following cut_pair does not exist!");
         }
         return false;
       }
@@ -361,7 +361,7 @@ namespace CORE::GEO
         }
         else
         {
-          dserror("Following cut pair does not exists!");
+          FOUR_C_THROW("Following cut pair does not exists!");
         }
         // should not reach here, just to make compiler happy
         return cut_pairs_info_.begin()->second.first;
@@ -505,7 +505,7 @@ namespace CORE::GEO
             point = Teuchos::rcp(new ConcretePoint<3>(pid, x, cut_edge, cut_side, tolerance));
             break;
           default:
-            dserror("Unsupported problem dimension! (probdim=%d)", probdim);
+            FOUR_C_THROW("Unsupported problem dimension! (probdim=%d)", probdim);
             break;
         }
         return point;
@@ -544,14 +544,14 @@ namespace CORE::GEO
       bool operator()(Point& p1, Point& p2) const
       {
         if (not p1.IsCut(edge_) or not p2.IsCut(edge_))
-          dserror("point position compare only on cut edges");
+          FOUR_C_THROW("point position compare only on cut edges");
         return p1.t(edge_) < p2.t(edge_);
       }
 
       bool operator()(Point* p1, Point* p2) const
       {
         if (not p1->IsCut(edge_) or not p2->IsCut(edge_))
-          dserror("point position compare only on cut edges");
+          FOUR_C_THROW("point position compare only on cut edges");
         return p1->t(edge_) < p2->t(edge_);
       }
 

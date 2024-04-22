@@ -73,7 +73,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
       splitter_macro_(Teuchos::null)
 {
   // safety check
-  if (fr_ <= 0.0) dserror("Factor F/R is non-positive!");
+  if (fr_ <= 0.0) FOUR_C_THROW("Factor F/R is non-positive!");
 }
 
 /*----------------------------------------------------------------------*
@@ -90,13 +90,13 @@ void SCATRA::ScaTraTimIntElch::Init()
   {
     if (not discret_->GetCondition("CCCVCycling"))
     {
-      dserror(
+      FOUR_C_THROW(
           "Adaptive time stepping for CCCV cell cycling requires corresponding boundary "
           "condition!");
     }
     if (cycling_timestep_ >= dta_)
     {
-      dserror(
+      FOUR_C_THROW(
           "Adaptive time stepping for CCCV cell cycling requires that the modified time step size "
           "is smaller than the original time step size!");
     }
@@ -104,7 +104,7 @@ void SCATRA::ScaTraTimIntElch::Init()
 
   if ((elchparams_->get<double>("TEMPERATURE") != 298.0) and (temperature_funct_num_ != -1))
   {
-    dserror(
+    FOUR_C_THROW(
         "You set two methods to calculate the temperature in your Input-File. This is not "
         "reasonable! It is only allowed to set either 'TEMPERATURE' or 'TEMPERATURE_FROM_FUNCT'");
   }
@@ -144,7 +144,7 @@ void SCATRA::ScaTraTimIntElch::Setup()
   // screen output (has to come after SetInitialField)
   // a safety check for the solver type
   if ((NumScal() > 1) && (solvtype_ != INPAR::SCATRA::solvertype_nonlinear))
-    dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
+    FOUR_C_THROW("Solver type has to be set to >>nonlinear<< for ion transport.");
 
   if (myrank_ == 0)
   {
@@ -171,11 +171,11 @@ void SCATRA::ScaTraTimIntElch::Setup()
 
       // safety checks
       const double one_hour = *electrodeSocCondition->Get<double>("one_hour");
-      if (one_hour <= 0.0) dserror("One hour must not be negative");
+      if (one_hour <= 0.0) FOUR_C_THROW("One hour must not be negative");
       if (std::fmod(std::log10(one_hour / 3600.0), 1.0) != 0)
-        dserror("This is not one hour in SI units");
+        FOUR_C_THROW("This is not one hour in SI units");
       if (*electrode_soc_conditions[0]->Get<double>("one_hour") != one_hour)
-        dserror("Different definitions of one hour in Electrode STATE OF CHARGE CONDITIONS.");
+        FOUR_C_THROW("Different definitions of one hour in Electrode STATE OF CHARGE CONDITIONS.");
     }
   }
 
@@ -187,7 +187,7 @@ void SCATRA::ScaTraTimIntElch::Setup()
     discret_->GetCondition("CellVoltagePoint", conditionspoint);
     if (!conditions.empty() and !conditionspoint.empty())
     {
-      dserror(
+      FOUR_C_THROW(
           "Cannot have cell voltage line/surface conditions and cell voltage point conditions at "
           "the same time!");
     }
@@ -199,7 +199,8 @@ void SCATRA::ScaTraTimIntElch::Setup()
     {
       // safety check
       if (conditions.size() != 2)
-        dserror("Must have exactly two boundary conditions for cell voltage, one per electrode!");
+        FOUR_C_THROW(
+            "Must have exactly two boundary conditions for cell voltage, one per electrode!");
 
       // loop over both conditions for cell voltage
       for (const auto& condition : conditions)
@@ -225,13 +226,13 @@ void SCATRA::ScaTraTimIntElch::Setup()
   if (!electrodedomainconditions.empty() and
       (!electrodeboundaryconditions.empty() or !electrodeboundarypointconditions.empty()))
   {
-    dserror(
+    FOUR_C_THROW(
         "At the moment, we cannot have electrode domain kinetics conditions and electrode boundary "
         "kinetics conditions at the same time!");
   }
   else if (!electrodeboundaryconditions.empty() and !electrodeboundarypointconditions.empty())
   {
-    dserror(
+    FOUR_C_THROW(
         "At the moment, we cannot have electrode boundary kinetics line/surface conditions and "
         "electrode boundary kinetics point conditions at the same time!");
   }
@@ -269,7 +270,7 @@ void SCATRA::ScaTraTimIntElch::Setup()
       // safety check
       if (!cccvhalfcycleconditions.empty())
       {
-        dserror(
+        FOUR_C_THROW(
             "Found constant-current constant-voltage (CCCV) half-cycle boundary conditions, but no "
             "CCCV cell cycling condition!");
       }
@@ -285,7 +286,7 @@ void SCATRA::ScaTraTimIntElch::Setup()
       discret_->GetCondition("CellVoltage", cell_voltage_conditions);
       discret_->GetCondition("CellVoltagePoint", cell_voltage_point_conditions);
       if (cell_voltage_conditions.size() == 0 and cell_voltage_point_conditions.size() == 0)
-        dserror(
+        FOUR_C_THROW(
             "Definition of 'cell voltage' condition required for 'CCCV cell cycling' condition.");
 
       // extract constant-current constant-voltage (CCCV) cell cycling boundary condition
@@ -294,20 +295,20 @@ void SCATRA::ScaTraTimIntElch::Setup()
       // safety checks
       if (NumDofPerNode() != 2 and NumDofPerNode() != 3)
       {
-        dserror(
+        FOUR_C_THROW(
             "Must have exactly two (concentration and potential) or three (concentration and "
             "potential, micro potential) degrees of freedom per node .");
       }
       if (cccvhalfcycleconditions.empty())
       {
-        dserror(
+        FOUR_C_THROW(
             "Found constant-current constant-voltage (CCCV) cell cycling boundary condition, but "
             "no CCCV half-cycle boundary conditions!");
       }
       if (*cccvcyclingcondition.Get<int>("ConditionIDForCharge") < 0 or
           *cccvcyclingcondition.Get<int>("ConditionIDForDischarge") < 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Invalid ID of constant-current constant-voltage (CCCV) half-cycle boundary condition "
             "specified in CCCV cell cycling boundary condition!");
       }
@@ -323,7 +324,7 @@ void SCATRA::ScaTraTimIntElch::Setup()
     // safety check
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "More than one constant-current constant-voltage (CCCV) cell cycling boundary "
           "condition is not allowed!");
       break;
@@ -543,7 +544,7 @@ double SCATRA::ScaTraTimIntElch::ExtrapolateStateAdaptTimeStep(double dt)
     }
     default:
     {
-      dserror("Unknown phase of half cycle.");
+      FOUR_C_THROW("Unknown phase of half cycle.");
       break;
     }
   }
@@ -714,7 +715,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
         conerr2 = 0.0;
       }
       else
-        dserror("The analytical solution of Kwok and Wu is only defined for two species");
+        FOUR_C_THROW("The analytical solution of Kwok and Wu is only defined for two species");
 
       double poterr = sqrt((*errors)[2]);
 
@@ -861,7 +862,7 @@ void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(
       reader.ReadRedundantIntVector(conditionid_vec, "electrodeconditionids");
       reader.ReadRedundantDoubleVector(electrodeinitvol_vec, "electrodeinitvols");
       if (conditionid_vec->size() != electrodeinitvol_vec->size())
-        dserror("something went wrong with reading initial volumes of electrodes");
+        FOUR_C_THROW("something went wrong with reading initial volumes of electrodes");
       electrodeinitvols_.clear();
       for (unsigned i = 0; i < conditionid_vec->size(); ++i)
       {
@@ -917,7 +918,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
   // safety check
   if (!cond.empty() and !pointcond.empty())
   {
-    dserror(
+    FOUR_C_THROW(
         "Cannot have electrode boundary kinetics point conditions and electrode boundary "
         "kinetics line/surface conditions at the same time!");
   }
@@ -1002,7 +1003,7 @@ Teuchos::RCP<CORE::LINALG::SerialDenseVector> SCATRA::ScaTraTimIntElch::Evaluate
     CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_elch_boundary_kinetics, eleparams);
   else
-    dserror("Invalid action " + condstring + " for output of electrode status information!");
+    FOUR_C_THROW("Invalid action " + condstring + " for output of electrode status information!");
 
   eleparams.set("calc_status", true);  // just want to have a status output!
 
@@ -1058,9 +1059,10 @@ SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfoPoint(Teuchos::RCP<DRT::Con
   const std::vector<int>* nodeids = condition->GetNodes();
 
   // safety checks
-  if (!nodeids) dserror("Electrode kinetics point boundary condition doesn't have nodal cloud!");
+  if (!nodeids)
+    FOUR_C_THROW("Electrode kinetics point boundary condition doesn't have nodal cloud!");
   if (nodeids->size() != 1)
-    dserror(
+    FOUR_C_THROW(
         "Electrode kinetics point boundary condition must be associated with exactly one node!");
 
   // extract global ID of conditioned node
@@ -1092,10 +1094,11 @@ SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfoPoint(Teuchos::RCP<DRT::Con
     DRT::Node* node = discret_->gNode(nodeid);
 
     // safety checks
-    if (node == nullptr) dserror("Cannot find node with global ID %d on discretization!", nodeid);
+    if (node == nullptr)
+      FOUR_C_THROW("Cannot find node with global ID %d on discretization!", nodeid);
     if (node->NumElement() != 1)
     {
-      dserror(
+      FOUR_C_THROW(
           "Electrode kinetics point boundary condition must be specified on boundary node with "
           "exactly one attached element!");
     }
@@ -1117,8 +1120,8 @@ SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfoPoint(Teuchos::RCP<DRT::Con
 
     // safety check
     if (error)
-      dserror("Element with global ID %d returned error code %d on processor %d!", element->Id(),
-          error, discret_->Comm().MyPID());
+      FOUR_C_THROW("Element with global ID %d returned error code %d on processor %d!",
+          element->Id(), error, discret_->Comm().MyPID());
   }
 
   // communicate number of processor owning conditioned node
@@ -1322,7 +1325,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
                   << std::endl;
       }
 
-      dsassert(runtime_csvwriter_soc_[cond_id].has_value(),
+      FOUR_C_ASSERT(runtime_csvwriter_soc_[cond_id].has_value(),
           "internal error: runtime csv writer not created.");
       std::map<std::string, std::vector<double>> output_data;
       output_data["SOC"] = {soc};
@@ -1444,7 +1447,7 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
       std::cout << "+----+-------------------------+" << std::endl;
     }
 
-    dsassert(runtime_csvwriter_cell_voltage_.has_value(),
+    FOUR_C_ASSERT(runtime_csvwriter_cell_voltage_.has_value(),
         "internal error: runtime csv writer not created.");
     std::map<std::string, std::vector<double>> output_data;
     output_data["CellVoltage"] = {cellvoltage_};
@@ -1509,9 +1512,10 @@ void SCATRA::ScaTraTimIntElch::EvaluateCellVoltage()
 
         // extract nodal cloud
         const std::vector<int>* const nodeids = condition->GetNodes();
-        if (nodeids == nullptr) dserror("Cell voltage point condition does not have nodal cloud!");
+        if (nodeids == nullptr)
+          FOUR_C_THROW("Cell voltage point condition does not have nodal cloud!");
         if (nodeids->size() != 1)
-          dserror("Nodal cloud of cell voltage point condition must have exactly one node!");
+          FOUR_C_THROW("Nodal cloud of cell voltage point condition must have exactly one node!");
 
         // extract node ID
         const int nodeid = (*nodeids)[0];
@@ -1522,7 +1526,8 @@ void SCATRA::ScaTraTimIntElch::EvaluateCellVoltage()
           // extract node
           DRT::Node* node = discret_->gNode(nodeid);
           if (node == nullptr)
-            dserror("Cannot extract node with global ID %d from scalar transport discretization!",
+            FOUR_C_THROW(
+                "Cannot extract node with global ID %d from scalar transport discretization!",
                 nodeid);
 
           // extract degrees of freedom from node
@@ -1531,7 +1536,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateCellVoltage()
           // extract local ID of degree of freedom associated with electrode potential
           const int lid = discret_->DofRowMap()->LID(*dofs.rbegin());
           if (lid < 0)
-            dserror("Cannot extract degree of freedom with global ID %d!", *dofs.rbegin());
+            FOUR_C_THROW("Cannot extract degree of freedom with global ID %d!", *dofs.rbegin());
 
           // extract electrode potential
           potential = (*phinp_)[lid];
@@ -1632,7 +1637,7 @@ void SCATRA::ScaTraTimIntElch::WriteRestart() const
 void SCATRA::ScaTraTimIntElch::SetupNatConv()
 {
   // calculate the initial mean concentration value
-  if (NumScal() < 1) dserror("Error since numscal = %d. Not allowed since < 1", NumScal());
+  if (NumScal() < 1) FOUR_C_THROW("Error since numscal = %d. Not allowed since < 1", NumScal());
   c0_.resize(NumScal());
 
   discret_->SetState("phinp", phinp_);
@@ -1652,7 +1657,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   // calculate mean concentration
   const double domint = (*scalars)[NumDofPerNode()];
 
-  if (std::abs(domint) < 1e-15) dserror("Division by zero!");
+  if (std::abs(domint) < 1e-15) FOUR_C_THROW("Division by zero!");
 
   for (int k = 0; k < NumScal(); k++) c0_[k] = (*scalars)[k] / domint;
 
@@ -1677,10 +1682,10 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
 
         densific_[k] = actsinglemat->Densification();
 
-        if (densific_[k] < 0.0) dserror("received negative densification value");
+        if (densific_[k] < 0.0) FOUR_C_THROW("received negative densification value");
       }
       else
-        dserror("Material type is not allowed!");
+        FOUR_C_THROW("Material type is not allowed!");
     }
   }
 
@@ -1691,11 +1696,11 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
 
     densific_[0] = actmat->Densification();
 
-    if (densific_[0] < 0.0) dserror("received negative densification value");
-    if (NumScal() > 1) dserror("Single species calculation but numscal = %d > 1", NumScal());
+    if (densific_[0] < 0.0) FOUR_C_THROW("received negative densification value");
+    if (NumScal() > 1) FOUR_C_THROW("Single species calculation but numscal = %d > 1", NumScal());
   }
   else
-    dserror("Material type is not allowed!");
+    FOUR_C_THROW("Material type is not allowed!");
 }
 
 /*-------------------------------------------------------------------------*
@@ -1706,10 +1711,12 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
   {
     if (CORE::UTILS::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(
             *elchparams_, "MOVINGBOUNDARY") != INPAR::ELCH::elch_mov_bndry_no)
-      dserror("Moving boundaries are not supported in the ELCH diffusion-conduction framework!!");
+      FOUR_C_THROW(
+          "Moving boundaries are not supported in the ELCH diffusion-conduction framework!!");
 
     if (CORE::UTILS::IntegralValue<int>(*params_, "NATURAL_CONVECTION"))
-      dserror("Natural convection is not supported in the ELCH diffusion-conduction framework!!");
+      FOUR_C_THROW(
+          "Natural convection is not supported in the ELCH diffusion-conduction framework!!");
 
     if (CORE::UTILS::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
             INPAR::SCATRA::solvertype_nonlinear and
@@ -1722,7 +1729,7 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
         CORE::UTILS::IntegralValue<INPAR::SCATRA::SolverType>(*params_, "SOLVERTYPE") !=
             INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro)
     {
-      dserror(
+      FOUR_C_THROW(
           "The only solvertype supported by the ELCH diffusion-conduction framework is the "
           "non-linear solver!!");
     }
@@ -1731,55 +1738,58 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
         problem_->GetProblemType() != GLOBAL::ProblemType::ssti and
         CORE::UTILS::IntegralValue<INPAR::SCATRA::ConvForm>(*params_, "CONVFORM") !=
             INPAR::SCATRA::convform_convective)
-      dserror("Only the convective formulation is supported so far!!");
+      FOUR_C_THROW("Only the convective formulation is supported so far!!");
 
     if ((static_cast<bool>(CORE::UTILS::IntegralValue<int>(*params_, "NEUMANNINFLOW"))))
-      dserror("Neuman inflow BC's are not supported by the ELCH diffusion-conduction framework!!");
+      FOUR_C_THROW(
+          "Neuman inflow BC's are not supported by the ELCH diffusion-conduction framework!!");
 
     if ((static_cast<bool>(CORE::UTILS::IntegralValue<int>(*params_, "CONV_HEAT_TRANS"))))
     {
-      dserror(
+      FOUR_C_THROW(
           "Convective heat transfer BC's are not supported by the ELCH diffusion-conduction "
           "framework!!");
     }
 
     if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params_, "FSSUGRDIFF")) !=
         INPAR::SCATRA::fssugrdiff_no)
-      dserror("Subgrid diffusivity is not supported by the ELCH diffusion-conduction framework!!");
+      FOUR_C_THROW(
+          "Subgrid diffusivity is not supported by the ELCH diffusion-conduction framework!!");
 
     if ((static_cast<bool>(CORE::UTILS::IntegralValue<int>(*elchparams_, "BLOCKPRECOND"))))
-      dserror("Block preconditioner is not supported so far!!");
+      FOUR_C_THROW("Block preconditioner is not supported so far!!");
 
     // Parameters defined in "SCALAR TRANSPORT DYNAMIC"
     Teuchos::ParameterList& scatrastabparams = params_->sublist("STABILIZATION");
 
     if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::StabType>(scatrastabparams, "STABTYPE")) !=
         INPAR::SCATRA::stabtype_no_stabilization)
-      dserror(
+      FOUR_C_THROW(
           "No stabilization is necessary for solving the ELCH diffusion-conduction framework!!");
 
     if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::TauType>(scatrastabparams, "DEFINITION_TAU")) !=
         INPAR::SCATRA::tau_zero)
-      dserror(
+      FOUR_C_THROW(
           "No stabilization is necessary for solving the ELCH diffusion-conduction framework!!");
 
     if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::EvalTau>(scatrastabparams, "EVALUATION_TAU")) !=
         INPAR::SCATRA::evaltau_integration_point)
-      dserror("Evaluation of stabilization parameter only at Gauss points!!");
+      FOUR_C_THROW("Evaluation of stabilization parameter only at Gauss points!!");
 
     if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::EvalMat>(scatrastabparams, "EVALUATION_MAT")) !=
         INPAR::SCATRA::evalmat_integration_point)
-      dserror("Evaluation of material only at Gauss points!!");
+      FOUR_C_THROW("Evaluation of material only at Gauss points!!");
 
     if ((CORE::UTILS::IntegralValue<INPAR::SCATRA::Consistency>(scatrastabparams, "CONSISTENCY")) !=
         INPAR::SCATRA::consistency_no)
-      dserror("Consistence formulation is not in the ELCH diffusion-conduction framework!!");
+      FOUR_C_THROW("Consistence formulation is not in the ELCH diffusion-conduction framework!!");
 
     if (static_cast<bool>(CORE::UTILS::IntegralValue<int>(scatrastabparams, "SUGRVEL")))
-      dserror("Subgrid velocity is not incorporated in the ELCH diffusion-conduction framework!!");
+      FOUR_C_THROW(
+          "Subgrid velocity is not incorporated in the ELCH diffusion-conduction framework!!");
 
     if (static_cast<bool>(CORE::UTILS::IntegralValue<int>(scatrastabparams, "ASSUGRDIFF")))
-      dserror(
+      FOUR_C_THROW(
           "Subgrid diffusivity is not incorporated in the ELCH diffusion-conduction framework!!");
   }
 }
@@ -1800,7 +1810,7 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
     {
       // safety check
       if (!Elchcond[icond]->GeometryDescription())
-        dserror("Nernst boundary conditions not implemented for one-dimensional domains yet!");
+        FOUR_C_THROW("Nernst boundary conditions not implemented for one-dimensional domains yet!");
 
       if (CORE::UTILS::IntegralValue<int>(*elchparams_, "DIFFCOND_FORMULATION"))
       {
@@ -1830,7 +1840,7 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
         }
       }
       else
-        dserror("Nernst BC is only available for diffusion-conduction formulation!");
+        FOUR_C_THROW("Nernst BC is only available for diffusion-conduction formulation!");
     }
   }
 
@@ -1874,7 +1884,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
 
   // safety checks
-  dsassert(step_ == 0, "Step counter is not zero!");
+  FOUR_C_ASSERT(step_ == 0, "Step counter is not zero!");
   switch (equpot_)
   {
     case INPAR::ELCH::equpot_divi:
@@ -1894,7 +1904,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
       // makes the entire global system matrix singular! In this case, it would be possible to
       // temporarily change the type of closing equation used, e.g., from INPAR::ELCH::equpot_enc
       // to INPAR::ELCH::equpot_enc_pde. This should work, but has not been implemented yet.
-      dserror(
+      FOUR_C_THROW(
           "Initial potential field cannot be computed for chosen closing equation for electric "
           "potential!");
       break;
@@ -2039,9 +2049,9 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 
     // safety checks
     if (std::isnan(pot_inc_L2) or std::isnan(pot_state_L2) or std::isnan(pot_res_L2))
-      dserror("calculated vector norm is NaN.");
+      FOUR_C_THROW("calculated vector norm is NaN.");
     if (std::isinf(pot_inc_L2) or std::isinf(pot_state_L2) or std::isinf(pot_res_L2))
-      dserror("calculated vector norm is INF.");
+      FOUR_C_THROW("calculated vector norm is INF.");
 
     // zero out increment vector
     increment_->PutScalar(0.);
@@ -2139,13 +2149,13 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
     if (!electrodedomainconditions.empty() and
         (!electrodeboundaryconditions.empty() or !electrodeboundarypointconditions.empty()))
     {
-      dserror(
+      FOUR_C_THROW(
           "At the moment, we cannot have electrode domain kinetics conditions and electrode "
           "boundary kinetics conditions at the same time!");
     }
     else if (!electrodeboundaryconditions.empty() and !electrodeboundarypointconditions.empty())
     {
-      dserror(
+      FOUR_C_THROW(
           "At the moment, we cannot have electrode boundary kinetics line/surface conditions and "
           "electrode boundary kinetics point conditions at the same time!");
     }
@@ -2169,7 +2179,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       condstring = "ElchBoundaryPointKinetics";
     }
     else
-      dserror("Must have electrode kinetics conditions for galvanostatics!");
+      FOUR_C_THROW("Must have electrode kinetics conditions for galvanostatics!");
 
     // evaluate electrode kinetics conditions if applicable
     if (!conditions.empty())
@@ -2181,7 +2191,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       const int curvenum = elchparams_->get<int>("GSTATFUNCTNO");
       const double tol = elchparams_->get<double>("GSTATCONVTOL");
       const double effective_length = elchparams_->get<double>("GSTAT_LENGTH_CURRENTPATH");
-      if (effective_length < 0.0) dserror("A negative effective length is not possible!");
+      if (effective_length < 0.0) FOUR_C_THROW("A negative effective length is not possible!");
       const auto approxelctresist = CORE::UTILS::IntegralValue<INPAR::ELCH::ApproxElectResist>(
           *elchparams_, "GSTAT_APPROX_ELECT_RESIST");
 
@@ -2221,7 +2231,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 
       if (conditions.size() > 2)
       {
-        dserror(
+        FOUR_C_THROW(
             "The framework may not work for geometric setups containing more than two "
             "electrodes! \n If you need it, check the framework exactly!!");
       }
@@ -2258,13 +2268,13 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
           // cathode
           if ((*actualcurrent)[condid] < 0.0 and condid_cathode != condid)
           {
-            dserror(
+            FOUR_C_THROW(
                 "The defined GSTATCONDID_CATHODE does not match the actual current flow "
                 "situation!!");
           }
           else if ((*actualcurrent)[condid] > 0.0 and condid_anode != condid)
           {
-            dserror(
+            FOUR_C_THROW(
                 "The defined GSTATCONDID_ANODE does not match the actual current flow "
                 "situation!!");
           }
@@ -2275,7 +2285,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       {
         if (condid_cathode != 0 or condid_anode != 1)
         {
-          dserror(
+          FOUR_C_THROW(
               "The defined GSTATCONDID_CATHODE and GSTATCONDID_ANODE is wrong for a setup with "
               "only one electrode!!\n Choose: GSTATCONDID_CATHODE=0 and GSTATCONDID_ANODE=1");
         }
@@ -2389,7 +2399,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 
         // safety check
         if (abs((*currtangent)[condid_cathode]) < 1e-13)
-          dserror(
+          FOUR_C_THROW(
               "Tangent in galvanostatic control is near zero: %lf", (*currtangent)[condid_cathode]);
       }
 
@@ -2475,7 +2485,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "The combination of the parameter GSTAT_APPROX_ELECT_RESIST %i and the number of "
             "electrodes %i\n is not valid!",
             approxelctresist, conditions.size());
@@ -2608,7 +2618,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
     CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
         "action", SCATRA::BoundaryAction::calc_elch_boundary_kinetics, condparams);
   else
-    dserror("Illegal action for electrode kinetics evaluation!");
+    FOUR_C_THROW("Illegal action for electrode kinetics evaluation!");
 
   // add element parameters and set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
@@ -2650,9 +2660,10 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
     const std::vector<int>* nodeids = condition->GetNodes();
 
     // safety checks
-    if (!nodeids) dserror("Electrode kinetics point boundary condition doesn't have nodal cloud!");
+    if (!nodeids)
+      FOUR_C_THROW("Electrode kinetics point boundary condition doesn't have nodal cloud!");
     if (nodeids->size() != 1)
-      dserror(
+      FOUR_C_THROW(
           "Electrode kinetics point boundary condition must be associated with exactly one node!");
 
     // extract global ID of conditioned node
@@ -2668,10 +2679,11 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
       DRT::Node* node = discret_->gNode(nodeid);
 
       // safety checks
-      if (node == nullptr) dserror("Cannot find node with global ID %d on discretization!", nodeid);
+      if (node == nullptr)
+        FOUR_C_THROW("Cannot find node with global ID %d on discretization!", nodeid);
       if (node->NumElement() != 1)
       {
-        dserror(
+        FOUR_C_THROW(
             "Electrode kinetics point boundary condition must be specified on boundary node with "
             "exactly one attached element!");
       }
@@ -2708,8 +2720,8 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
 
       // safety check
       if (error)
-        dserror("Element with global ID %d returned error code %d on processor %d!", element->Id(),
-            error, discret_->Comm().MyPID());
+        FOUR_C_THROW("Element with global ID %d returned error code %d on processor %d!",
+            element->Id(), error, discret_->Comm().MyPID());
 
       // assemble element matrix and right-hand side vector into global system of equations
       sysmat_->Assemble(element->Id(), la[0].stride_, elematrix, la[0].lm_, la[0].lmowner_);
@@ -2851,7 +2863,7 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
           const double cutoff_voltage = *cccvhalfcyclecondition->Get<double>("CutoffVoltage");
           if (cutoff_voltage < 0.)
           {
-            dserror(
+            FOUR_C_THROW(
                 "Cutoff voltage for constant-current constant-voltage (CCCV) cell cycling must "
                 "not be negative!");
           }
@@ -2860,7 +2872,7 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
           const auto nodegids = cccvhalfcyclecondition->GetNodes();
           if (nodegids->empty())
           {
-            dserror(
+            FOUR_C_THROW(
                 "Constant-current constant-voltage (CCCV) cell cycling boundary condition does "
                 "not have a nodal cloud!");
           }
@@ -3026,7 +3038,7 @@ void SCATRA::ScaTraTimIntElch::PerformAitkenRelaxation(
   {
     // safety checks
     if (splitter_macro_ == Teuchos::null)
-      dserror("Map extractor for macro scale has not been initialized yet!");
+      FOUR_C_THROW("Map extractor for macro scale has not been initialized yet!");
 
     // loop over all degrees of freedom
     for (int idof = 0; idof < splitter_macro_->NumMaps(); ++idof)
@@ -3046,7 +3058,7 @@ void SCATRA::ScaTraTimIntElch::PerformAitkenRelaxation(
       // current and previous increments of current degree of freedom
       double phinp_inc_dot_phinp_inc_diff(0.);
       if (phinp_inc_diff_dof->Dot(*phinp_inc_dof, &phinp_inc_dot_phinp_inc_diff))
-        dserror("Couldn't compute dot product!");
+        FOUR_C_THROW("Couldn't compute dot product!");
 
       // compute Aitken relaxation factor for current degree of freedom
       if (iternum_outer_ > 1 and phinp_inc_diff_L2 > 1.e-12)
@@ -3068,7 +3080,7 @@ void SCATRA::ScaTraTimIntElch::OutputFlux(
     Teuchos::RCP<Epetra_MultiVector> flux, const std::string& fluxtype)
 {
   // safety check
-  if (flux == Teuchos::null) dserror("Invalid flux vector!");
+  if (flux == Teuchos::null) FOUR_C_THROW("Invalid flux vector!");
 
   if (fluxtype == "domain")
   {
@@ -3087,7 +3099,7 @@ void SCATRA::ScaTraTimIntElch::OutputFlux(
   }
 
   else
-    dserror("Unknown flux type! Must be either 'domain' or 'boundary'!");
+    FOUR_C_THROW("Unknown flux type! Must be either 'domain' or 'boundary'!");
 
   // perform actual flux output by calling base class routine
   ScaTraTimIntImpl::OutputFlux(flux, fluxtype);
@@ -3106,7 +3118,7 @@ void SCATRA::ScalarHandlerElch::Setup(const ScaTraTimIntImpl* const scatratimint
 
   // cast to electrochemistry time integrator
   const auto* const elchtimint = dynamic_cast<const ScaTraTimIntElch* const>(scatratimint);
-  if (elchtimint == nullptr) dserror("cast to ScaTraTimIntElch failed!");
+  if (elchtimint == nullptr) FOUR_C_THROW("cast to ScaTraTimIntElch failed!");
 
   // adapt number of transported scalars if necessary
   // current is a solution variable
@@ -3146,7 +3158,7 @@ int SCATRA::ScalarHandlerElch::NumScalInCondition(
   // for now only equal dof numbers are supported
   if (not equalnumdof_)
   {
-    dserror(
+    FOUR_C_THROW(
         "Different number of DOFs per node within ScaTra discretization! This is not supported for "
         "Elch!");
   }
@@ -3166,7 +3178,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
     if (CORE::UTILS::IntegralValue<int>(
             ElchParameterList()->sublist("DIFFCOND"), "CURRENT_SOLUTION_VAR"))
     {
-      dserror(
+      FOUR_C_THROW(
           "For chosen type of global block system matrix, current must not constitute solution "
           "variable!");
     }
@@ -3182,7 +3194,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
             discret_->gNode(node_gid)->Owner() == discret_->Comm().MyPID())
         {
           const std::vector<int> nodedofs = discret_->Dof(0, discret_->gNode(node_gid));
-          dsassert(NumDofPerNode() == static_cast<int>(nodedofs.size()),
+          FOUR_C_ASSERT(NumDofPerNode() == static_cast<int>(nodedofs.size()),
               "Global number of dofs per node is not equal the number of dofs of this node.");
 
           for (unsigned dof = 0; dof < nodedofs.size(); ++dof)
@@ -3192,9 +3204,9 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
 
       for (const auto& dofs : partitioned_dofs)
       {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         std::unordered_set<int> dof_set(dofs.begin(), dofs.end());
-        dsassert(dof_set.size() == dofs.size(), "The dofs are not unique");
+        FOUR_C_ASSERT(dof_set.size() == dofs.size(), "The dofs are not unique");
 #endif
         blockmaps.emplace_back(Teuchos::rcp(
             new Epetra_Map(-1, static_cast<int>(dofs.size()), dofs.data(), 0, discret_->Comm())));

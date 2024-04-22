@@ -55,7 +55,7 @@ void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
         CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP");
     if (structtimealgo == INPAR::STR::dyna_statics)
     {
-      dserror(
+      FOUR_C_THROW(
           "If you use statics as the structural time integrator no velocities will be calculated "
           "and hence"
           "the deformations will not be applied to the scalar transport problem!");
@@ -74,7 +74,7 @@ void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
         if ((dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i)))->ImplType() !=
             INPAR::SCATRA::impltype_refconcreac)
         {
-          dserror(
+          FOUR_C_THROW(
               "If the scalar transport problem is solved on the deforming domain, the conservative "
               "form must be "
               "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR "
@@ -86,7 +86,7 @@ void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
 
   if (DiffTimeStepSize())
   {
-    dserror("Different time stepping for two way coupling not implemented yet.");
+    FOUR_C_THROW("Different time stepping for two way coupling not implemented yet.");
   }
 
   // Get the parameters for the ConvergenceCheck
@@ -416,7 +416,7 @@ bool SSI::SSIPart2WC::ConvergenceCheck(int itnum)
       printf("\n");
       printf("\n");
     }
-    dserror("The partitioned SSI solver did not converge in ITEMAX steps!");
+    FOUR_C_THROW("The partitioned SSI solver did not converge in ITEMAX steps!");
   }
 
   return stopnonliniter;

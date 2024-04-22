@@ -188,7 +188,7 @@ namespace CORE::LARGEROTATIONS
      * PI, i.e. for which the fourth component of the quaternion is unequal zero; if this is not
      * satisfied for the quaternion passed into this method an error is thrown*/
     if (q(3) == 0)
-      dserror("cannot compute Rodrigues parameters for angles with absolute valued PI !!!");
+      FOUR_C_THROW("cannot compute Rodrigues parameters for angles with absolute valued PI !!!");
 
     // in any case except for the one dealt with above the angle can be computed from a
     // quaternion via Crisfield, Vol. 2, eq. (16.79)
@@ -258,8 +258,8 @@ namespace CORE::LARGEROTATIONS
   template <class T1, class T2, class T3>
   void quaternionproduct(const T1& q1, const T2& q2, T3& q12)
   {
-    dsassert(q12.M() == 4 and q12.N() == 1 and q1.M() == 4 and q1.N() == 1 and q2.M() == 4 and
-                 q2.N() == 1,
+    FOUR_C_ASSERT(q12.M() == 4 and q12.N() == 1 and q1.M() == 4 and q1.N() == 1 and q2.M() == 4 and
+                      q2.N() == 1,
         "size mismatch: expected 4x1 vector for quaternion");
 
     q12(0) = q2(3) * q1(0) + q1(3) * q2(0) + q2(1) * q1(2) - q1(1) * q2(2);

@@ -282,7 +282,7 @@ namespace DRT
             CORE::LINALG::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
         ) const
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
 
        protected:
@@ -295,7 +295,7 @@ namespace DRT
         //! get nodal shape function derivatives
         void GetSlaveFunctDeriv(CORE::LINALG::Matrix<nsd_, slave_nen_>& slave_derxy) const
         {
-          dserror("There is no concrete slave element available.");
+          FOUR_C_THROW("There is no concrete slave element available.");
         };
       };
 
@@ -732,9 +732,9 @@ namespace DRT
         static unsigned mIndex(unsigned inod, unsigned idof)
         {
           //          if (idof >= master_numdof_)
-          //            dserror("Coupling master element has only %d dof!", master_numdof_);
+          //            FOUR_C_THROW("Coupling master element has only %d dof!", master_numdof_);
           //          if (inod >= nen_)
-          //            dserror("Coupling master element has only %d nodes!", nen_);
+          //            FOUR_C_THROW("Coupling master element has only %d nodes!", nen_);
           return inod * master_numdof_ + idof;
         }
 
@@ -743,9 +743,9 @@ namespace DRT
         static unsigned sIndex(unsigned inod, unsigned idof)
         {
           //          if (idof >= slave_numdof)
-          //            dserror("Coupling slave element has only %d dof!", slave_numdof);
+          //            FOUR_C_THROW("Coupling slave element has only %d dof!", slave_numdof);
           //          if (inod >= slave_nen_)
-          //            dserror("Coupling slave element has only %d nodes!", slave_nen_);
+          //            FOUR_C_THROW("Coupling slave element has only %d nodes!", slave_nen_);
           return inod * slave_numdof + idof;
         }
 
@@ -1012,7 +1012,7 @@ namespace DRT
         static unsigned stressIndex(unsigned xi, unsigned xj)
         {
           if (xi > 2 || xj > 2)
-            dserror("Invalid index combination (%d,%d) for stress tensor!", xi, xj);
+            FOUR_C_THROW("Invalid index combination (%d,%d) for stress tensor!", xi, xj);
 
           return (xi * xj > 0) ? xi + xj + 1 : xi + xj;
         }
@@ -1022,9 +1022,9 @@ namespace DRT
         static unsigned mIndex(unsigned inod, unsigned idof)
         {
           //          if (idof >= master_numdof_)
-          //            dserror("Coupling master element has only %d dof!", master_numdof_);
+          //            FOUR_C_THROW("Coupling master element has only %d dof!", master_numdof_);
           //          if (inod >= nen_)
-          //            dserror("Coupling master element has only %d nodes!", nen_);
+          //            FOUR_C_THROW("Coupling master element has only %d nodes!", nen_);
           return inod * master_numdof_ + idof;
         }
 
@@ -1033,9 +1033,9 @@ namespace DRT
         static unsigned sIndex(unsigned inod, unsigned idof)
         {
           //          if (idof >= slave_numdof)
-          //            dserror("Coupling slave element has only %d dof!", slave_numdof);
+          //            FOUR_C_THROW("Coupling slave element has only %d dof!", slave_numdof);
           //          if (inod >= slave_nen_)
-          //            dserror("Coupling slave element has only %d nodes!", slave_nen_);
+          //            FOUR_C_THROW("Coupling slave element has only %d nodes!", slave_nen_);
           return inod * slave_numdof + idof;
         }
 

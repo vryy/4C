@@ -65,7 +65,7 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
       impltype = "poro_p1";
       break;
     default:
-      dserror("invalid physical type for porous fluid!");
+      FOUR_C_THROW("invalid physical type for porous fluid!");
       break;
   }
 
@@ -108,7 +108,8 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
           return 0;
         }
         default:
-          dserror("Invalid physical type for monolithic poroelasticity with scalar transport\n");
+          FOUR_C_THROW(
+              "Invalid physical type for monolithic poroelasticity with scalar transport\n");
           break;
       }
     }

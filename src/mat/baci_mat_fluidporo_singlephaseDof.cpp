@@ -33,10 +33,10 @@ MAT::PAR::FluidPoroPhaseDof* MAT::PAR::FluidPoroPhaseDof::CreatePhaseDof(int pha
 
   // for the sake of safety
   if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
@@ -69,7 +69,7 @@ MAT::PAR::FluidPoroPhaseDof* MAT::PAR::FluidPoroPhaseDof::CreatePhaseDof(int pha
       break;
     }
     default:
-      dserror("invalid pressure-saturation law for material %d", curmat->Type());
+      FOUR_C_THROW("invalid pressure-saturation law for material %d", curmat->Type());
       break;
   }
 
@@ -116,7 +116,7 @@ void MAT::PAR::FluidPoroPhaseDofDiffPressure::FillDoFMatrix(
 {
   // safety check
   if ((int)diffpresCoeffs_->size() != dofmat.numCols())
-    dserror(
+    FOUR_C_THROW(
         "Number of phases given by the poro singlephase material %i "
         "does not match number of DOFs (%i phases and %i DOFs)!",
         phaselaw_->Id(), diffpresCoeffs_->size(), dofmat.numCols());
@@ -321,7 +321,7 @@ void MAT::PAR::FluidPoroPhaseDofSaturation::FillDoFMatrix(
 
   // safety check
   if ((int)presIDs->size() != dofmat.numCols())
-    dserror(
+    FOUR_C_THROW(
         "Number of phases given by the poro phase law material %i "
         "does not match number of DOFs (%i phases and %i DOFs)!",
         phaselaw_->Id(), presIDs->size(), dofmat.numCols());

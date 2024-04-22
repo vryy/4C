@@ -173,7 +173,7 @@ namespace CORE::FE
         }
         point -= numpoints;
       }
-      dserror("gauss point not available");
+      FOUR_C_THROW("gauss point not available");
     }
 
     std::vector<Teuchos::RCP<GaussPoints>> gp_;
@@ -361,7 +361,7 @@ namespace CORE::FE
         bool insideele = CORE::GEO::currentToVolumeElementCoordinates(distype, xie, glo, xi);
         if (not insideele && throw_error)
         {
-          dserror("Given Gauss points not inside the element?");
+          FOUR_C_THROW("Given Gauss points not inside the element?");
         }
 
         // cell shape functions and their first derivatives

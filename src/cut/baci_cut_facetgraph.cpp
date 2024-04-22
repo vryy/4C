@@ -71,7 +71,7 @@ CORE::GEO::CUT::FacetGraph::FacetGraph(
     if (fs.size() < 2)
     {
       // for some unknown reason this does not lead to anything critical.., so error is left out
-      // dserror("Removing this error will most probably lead to error is facetgraph later on
+      // FOUR_C_THROW("Removing this error will most probably lead to error is facetgraph later on
       // anyway. Consider analyzing your case!");
       for (plain_facet_set::iterator i = fs.begin(); i != fs.end(); ++i)
       {
@@ -221,7 +221,7 @@ void CORE::GEO::CUT::FacetGraph::CreateVolumeCells(
     int p = *i;
     if (p > 2)
     {
-      dserror("Check the case!");
+      FOUR_C_THROW("Check the case!");
       // assume this is a degenerated cell we do not need to build
       return;
     }
@@ -254,7 +254,7 @@ void CORE::GEO::CUT::FacetGraph::AddToVolumeCells(Mesh &mesh, Element *element,
       CORE::GEO::CUT::OUTPUT::GmshElementDump(file_element, element, false);
       file_element.close();
 
-      dserror(
+      FOUR_C_THROW(
           "The facet number is too small to represent a volume cell! \n"
           "If this happens, it is an indication for missing internal facets.");
     }
@@ -300,7 +300,7 @@ Teuchos::RCP<CORE::GEO::CUT::FacetGraph> CORE::GEO::CUT::FacetGraph::Create(
       fg = Teuchos::rcp(new FacetGraph(sides, facets));
       break;
     default:
-      dserror("Unsupported element dimension!");
+      FOUR_C_THROW("Unsupported element dimension!");
       break;
   }
 

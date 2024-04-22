@@ -90,7 +90,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
 
     if (numofcond == 1)
     {
-      dserror("An arterial junction is supposed to have at least two nodes!");
+      FOUR_C_THROW("An arterial junction is supposed to have at least two nodes!");
     }
     else if (numofcond > 1)  // if there is atleast two arteries connected to each other
     {
@@ -107,7 +107,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
 
         // The junction condition must be connected to one and only one node
         if (nodes->size() != 1)
-          dserror("Artery Connection BC should have only one node connected to it!");
+          FOUR_C_THROW("Artery Connection BC should have only one node connected to it!");
 
         int local_id = discret_->NodeRowMap()->LID((*nodes)[0]);
         // Get the actual node connected to the condition
@@ -121,7 +121,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
         else if (terminalType == "outlet")
           IOart[i] = 1;
         else
-          dserror(
+          FOUR_C_THROW(
               "Something is severely wrong! In/Out terminal condition should be either \"outlet\" "
               "or \"inlet\"");
       }
@@ -217,7 +217,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
 
           int local_id = discret_->NodeRowMap()->LID((*nodes)[0]);
           inserted = nodalParams->insert(std::make_pair(local_id, nodeparams)).second;
-          if (!inserted) dserror("Node %d has more than one condition", (*nodes)[0] + 1);
+          if (!inserted) FOUR_C_THROW("Node %d has more than one condition", (*nodes)[0] + 1);
         }
       }
 
@@ -283,10 +283,10 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdi
   if (!IOartFlags_are_fine)
   {
     if (IOartFlag == 1)
-      dserror("Junction (%d) has all of its nodes defined as outlets",
+      FOUR_C_THROW("Junction (%d) has all of its nodes defined as outlets",
           *conds[0]->Get<int>("ConditionID"));
     else
-      dserror("Junction (%d) has all of its nodes defined as inlets",
+      FOUR_C_THROW("Junction (%d) has all of its nodes defined as inlets",
           *conds[0]->Get<int>("ConditionID"));
   }
 
@@ -474,7 +474,8 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
 
     if (err != 0 || err2 != 0)
     {
-      dserror("Unable to solve for the jacobian in junction %d, error number %d", condid_, err);
+      FOUR_C_THROW(
+          "Unable to solve for the jacobian in junction %d, error number %d", condid_, err);
     }
 
     //--------------------------------------------------------------------
@@ -494,7 +495,7 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
     if (itr++ >= 20)
     {
       delete[] pivot;
-      dserror("Junction [%d] is not converging!", condid_);
+      FOUR_C_THROW("Junction [%d] is not converging!", condid_);
     }
 
     //--------------------------------------------------------------------
@@ -620,10 +621,10 @@ void ART::UTILS::ArtJunctionBc::Residual_Eval(CORE::LINALG::SerialDenseVector &f
 void ART::UTILS::ArtJunctionBc::Update_Result(
     CORE::LINALG::SerialDenseVector &xn, CORE::LINALG::SerialDenseVector &dx)
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (xn.length() != dx.length())
   {
-    dserror("Both, the result and the result change, must have similar size");
+    FOUR_C_THROW("Both, the result and the result change, must have similar size");
   }
 #endif
 

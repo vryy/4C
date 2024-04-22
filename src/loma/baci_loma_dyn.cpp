@@ -74,12 +74,12 @@ void loma_dyn(int restart)
     {
       // directly use elements from input section 'transport elements'
       if (scatradis->NumGlobalNodes() == 0)
-        dserror("No elements in input section ---TRANSPORT ELEMENTS!");
+        FOUR_C_THROW("No elements in input section ---TRANSPORT ELEMENTS!");
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
       if (linsolvernumber == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for LOMA problem. Please set LINEAR_SOLVER in SCALAR "
             "TRANSPORT DYNAMIC to a valid number!");
 
@@ -92,7 +92,7 @@ void loma_dyn(int restart)
       Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
           new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
-        dserror("Scatra discretization has illegal number of dofsets!");
+        FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       // now we can call Init() on base algo
@@ -125,7 +125,7 @@ void loma_dyn(int restart)
     case INPAR::SCATRA::velocity_Navier_Stokes:  // Navier_Stokes
     {
       // use fluid discretization as layout for scatra discretization
-      if (fluiddis->NumGlobalNodes() == 0) dserror("Fluid discretization is empty!");
+      if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
       // to generate turbulent flow in the inflow section only, it is not necessary to
       // solve the transport equation for the temperature
@@ -133,7 +133,7 @@ void loma_dyn(int restart)
       if ((CORE::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
               true) and
           (restart < fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
-        dserror("Choose problem type fluid to generate turbulent flow in the inflow section!");
+        FOUR_C_THROW("Choose problem type fluid to generate turbulent flow in the inflow section!");
 
       // create scatra elements if scatra discretization is empty (typical case)
       if (scatradis->NumGlobalNodes() == 0)
@@ -147,18 +147,18 @@ void loma_dyn(int restart)
           DRT::ELEMENTS::Transport* element =
               dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
           if (element == nullptr)
-            dserror("Invalid element type!");
+            FOUR_C_THROW("Invalid element type!");
           else
             element->SetImplType(INPAR::SCATRA::impltype_loma);
         }
       }
       else
-        dserror("Fluid AND ScaTra discretization present. This is not supported.");
+        FOUR_C_THROW("Fluid AND ScaTra discretization present. This is not supported.");
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
       if (linsolvernumber == (-1))
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for LOMA problem. Please set LINEAR_SOLVER in SCALAR "
             "TRANSPORT DYNAMIC to a valid number!");
 
@@ -168,7 +168,7 @@ void loma_dyn(int restart)
 
       // add proxy of fluid transport degrees of freedom to scatra discretization
       if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
-        dserror("Scatra discretization has illegal number of dofsets!");
+        FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       loma->ScaTraField()->SetNumberOfDofSetVelocity(1);
 
       loma->Init();
@@ -202,7 +202,7 @@ void loma_dyn(int restart)
       break;
     }
     default:
-      dserror("Unknown velocity field type for low-Mach-number flow: %d", veltype);
+      FOUR_C_THROW("Unknown velocity field type for low-Mach-number flow: %d", veltype);
       break;
   }
 

@@ -328,7 +328,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ScaTraEleCalcElchDif
 {
   // safety check
   if (numscal != 1 or numdofpernode != 2)
-    dserror("Invalid number of transported scalars or degrees of freedom per node!");
+    FOUR_C_THROW("Invalid number of transported scalars or degrees of freedom per node!");
 
   // replace internal variable manager for isothermal diffusion-conduction formulation by internal
   // variable manager for thermodynamic diffusion-conduction formulation

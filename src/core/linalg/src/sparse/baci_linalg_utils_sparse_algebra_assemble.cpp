@@ -25,14 +25,14 @@ void CORE::LINALG::Assemble(Epetra_CrsMatrix& A, const CORE::LINALG::SerialDense
   // allow Aele to provide entries past the end of lmrow and lmcol that are
   // not used here, therefore check only for ">" rather than "!="
   if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.numRows() || lcoldim > Aele.numCols())
-    dserror("Mismatch in dimensions");
+    FOUR_C_THROW("Mismatch in dimensions");
 
   const int myrank = A.Comm().MyPID();
   const Epetra_Map& rowmap = A.RowMap();
 
   // this 'Assemble' is not implemented for a Filled() matrix A
   if (A.Filled())
-    dserror("Sparse matrix A is already Filled()");
+    FOUR_C_THROW("Sparse matrix A is already Filled()");
 
   else
   {
@@ -44,7 +44,7 @@ void CORE::LINALG::Assemble(Epetra_CrsMatrix& A, const CORE::LINALG::SerialDense
 
       // check whether I have that global row
       int rgid = lmrow[lrow];
-      if (!(rowmap.MyGID(rgid))) dserror("Sparse matrix A does not have global row %d", rgid);
+      if (!(rowmap.MyGID(rgid))) FOUR_C_THROW("Sparse matrix A does not have global row %d", rgid);
 
       for (int lcol = 0; lcol < lcoldim; ++lcol)
       {
@@ -58,10 +58,10 @@ void CORE::LINALG::Assemble(Epetra_CrsMatrix& A, const CORE::LINALG::SerialDense
         {
           int errtwo = A.InsertGlobalValues(rgid, 1, &val, &cgid);
           if (errtwo < 0)
-            dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d", errtwo);
+            FOUR_C_THROW("Epetra_CrsMatrix::InsertGlobalValues returned error code %d", errtwo);
         }
         else if (errone)
-          dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d", errone);
+          FOUR_C_THROW("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d", errone);
       }  // for (int lcol=0; lcol<lcoldim; ++lcol)
     }    // for (int lrow=0; lrow<lrowdim; ++lrow)
   }
@@ -76,7 +76,7 @@ void CORE::LINALG::Assemble(Epetra_Vector& V, const CORE::LINALG::SerialDenseVec
   const int ldim = (int)lm.size();
   // allow Vele to provide entries past the end of lm that are not used here,
   // therefore check only for ">" rather than "!="
-  if (ldim != (int)lmowner.size() || ldim > Vele.length()) dserror("Mismatch in dimensions");
+  if (ldim != (int)lmowner.size() || ldim > Vele.length()) FOUR_C_THROW("Mismatch in dimensions");
 
   const int myrank = V.Comm().MyPID();
 
@@ -84,7 +84,7 @@ void CORE::LINALG::Assemble(Epetra_Vector& V, const CORE::LINALG::SerialDenseVec
   {
     if (lmowner[lrow] != myrank) continue;
     int rgid = lm[lrow];
-    if (!V.Map().MyGID(rgid)) dserror("Sparse vector V does not have global row %d", rgid);
+    if (!V.Map().MyGID(rgid)) FOUR_C_THROW("Sparse vector V does not have global row %d", rgid);
     int rlid = V.Map().LID(rgid);
     V[rlid] += Vele[lrow];
   }  // for (int lrow=0; lrow<ldim; ++lrow)
@@ -100,7 +100,7 @@ void CORE::LINALG::AssembleMyVector(
     const int sgid = source.Map().GID(slid);
     const int tlid = target.Map().LID(sgid);
     if (tlid == -1)
-      dserror(
+      FOUR_C_THROW(
           "The target vector has no global row %i"
           " on processor %i!",
           sgid, target.Comm().MyPID());
@@ -173,7 +173,7 @@ void CORE::LINALG::ApplyDirichletToSystem(
 void CORE::LINALG::ApplyDirichletToSystem(
     Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
 {
-  if (not dbcmap.UniqueGIDs()) dserror("unique map required");
+  if (not dbcmap.UniqueGIDs()) FOUR_C_THROW("unique map required");
 
   // We use two maps since we want to allow dbcv and X to be independent of
   // each other. So we are slow and flexible...
@@ -187,10 +187,10 @@ void CORE::LINALG::ApplyDirichletToSystem(
     int gid = mygids[i];
 
     int dbcvlid = dbcvmap.LID(gid);
-    if (dbcvlid < 0) dserror("illegal Dirichlet map");
+    if (dbcvlid < 0) FOUR_C_THROW("illegal Dirichlet map");
 
     int xlid = xmap.LID(gid);
-    if (xlid < 0) dserror("illegal Dirichlet map");
+    if (xlid < 0) FOUR_C_THROW("illegal Dirichlet map");
 
     x[xlid] = dbcval[dbcvlid];
     b[xlid] = dbcval[dbcvlid];
@@ -202,7 +202,7 @@ void CORE::LINALG::ApplyDirichletToSystem(
 void CORE::LINALG::ApplyDirichletToSystem(
     Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
 {
-  if (not dbcmap.UniqueGIDs()) dserror("unique map required");
+  if (not dbcmap.UniqueGIDs()) FOUR_C_THROW("unique map required");
 
   const int mylength = dbcmap.NumMyElements();
   const int* mygids = dbcmap.MyGlobalElements();
@@ -219,7 +219,7 @@ void CORE::LINALG::ApplyDirichletToSystem(
     if (blid >= 0)
     {
       if (dbcvlid < 0)
-        dserror("illegal Dirichlet map");
+        FOUR_C_THROW("illegal Dirichlet map");
       else
         b[blid] = dbcval[dbcvlid];
     }
@@ -279,7 +279,7 @@ Teuchos::RCP<CORE::LINALG::MapExtractor> CORE::LINALG::ConvertDirichletToggleVec
     else if (compo == 1)
       dbcgids.push_back(gid);
     else
-      dserror("Unexpected component %f. It is neither 1.0 nor 0.0.", (*dbctoggle)[i]);
+      FOUR_C_THROW("Unexpected component %f. It is neither 1.0 nor 0.0.", (*dbctoggle)[i]);
   }
   // build map of Dirichlet DOFs
   Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::null;

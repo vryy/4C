@@ -172,7 +172,7 @@ namespace FLD
     //! store scatra discretization if passive scalar is included
     void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis) override
     {
-      dserror("not implemented for hdg");
+      FOUR_C_THROW("not implemented for hdg");
       return;
     };
 
@@ -183,28 +183,28 @@ namespace FLD
     void DoScatraTimeSample(
         Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> phinp) override
     {
-      dserror("not implemented for hdg");
+      FOUR_C_THROW("not implemented for hdg");
       return;
     }
 
     // evaluation of dissipation rate and rbvmm-related quantities
     void EvaluateResiduals(std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs) override
     {
-      dserror("not implemented for hdg");
+      FOUR_C_THROW("not implemented for hdg");
       return;
     };
 
     //! version with scalar field
     void DumpScatraStatistics(int step, bool multiple_records = false) override
     {
-      dserror("not implemented for hdg");
+      FOUR_C_THROW("not implemented for hdg");
       return;
     };
 
     //! version with scalar field
     void ClearScatraStatistics() override
     {
-      dserror("not implemented for hdg");
+      FOUR_C_THROW("not implemented for hdg");
       return;
     };
 
@@ -214,7 +214,7 @@ namespace FLD
     //! and write to statistics file
     void CalculateResolvedEnergyDecayingTurbulence() override
     {
-      dserror("not implemented for hdg");
+      FOUR_C_THROW("not implemented for hdg");
       return;
     }
   };

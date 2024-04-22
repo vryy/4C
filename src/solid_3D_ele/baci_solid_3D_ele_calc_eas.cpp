@@ -68,7 +68,7 @@ namespace
     solve_for_inverse.SetMatrix(matrix);
 
     int err_inv = solve_for_inverse.Invert();
-    if (err_inv != 0) dserror("Inversion of matrix failed with LAPACK error code %d", err_inv);
+    if (err_inv != 0) FOUR_C_THROW("Inversion of matrix failed with LAPACK error code %d", err_inv);
   }
 
   template <CORE::FE::CellType celltype>
@@ -377,7 +377,7 @@ namespace
       }
 
       default:
-        dserror("unknown EAS type");
+        FOUR_C_THROW("unknown EAS type");
         break;
     }
     return M;
@@ -509,7 +509,7 @@ namespace
     CORE::LINALG::Matrix<dim, dim> tmp2;    // temporary matrix for matrix matrix matrix products
 
     // calculate modified right stretch tensor
-    if (dim != 3) dserror("stop: this currently only works for 3D");
+    if (dim != 3) FOUR_C_THROW("stop: this currently only works for 3D");
     for (unsigned i = 0; i < dim; i++) U_enh(i, i) = 2. * enhanced_gl_strain(i) + 1.;
     U_enh(0, 1) = enhanced_gl_strain(dim);
     U_enh(1, 0) = enhanced_gl_strain(dim);
@@ -769,7 +769,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateNonlinearForceSt
   if (mass.has_value() && !equal_integration_mass_stiffness)
   {
     // integrate mass matrix
-    dsassert(element_mass > 0, "It looks like the element mass is 0.0");
+    FOUR_C_ASSERT(element_mass > 0, "It looks like the element mass is 0.0");
     ForEachGaussPoint<celltype>(nodal_coordinates, mass_matrix_integration_,
         [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -973,7 +973,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::InitializeGaussPointData
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  dsassert(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
   AskAndAddQuantitiesToGaussPointDataOutput(
@@ -985,7 +985,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::EvaluateGaussPointDataOu
     const DRT::Element& ele, const MAT::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
-  dsassert(ele.IsParamsInterface(),
+  FOUR_C_ASSERT(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
   CollectAndAssembleGaussPointDataOutput<celltype>(

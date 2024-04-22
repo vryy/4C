@@ -24,7 +24,7 @@ size_t IO::VisualizationData::GetPointCoordinatesNumberOfPoints() const
   // Check if number of entries is consistent
   if (point_coordinates_.size() % n_dim_ != 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "The size of the point coordinate vector (%d) is not a multiple of the spatial "
         "dimension (%d)!",
         point_coordinates_.size(), n_dim_);
@@ -80,19 +80,20 @@ void IO::VisualizationData::ConsistencyCheck() const
   // Check basic cell consistency
   const auto n_cells = cell_types_.size();
   if (cell_offsets_.size() != n_cells)
-    dserror("The cell offset data array length (%d) does not match the number of cells (%d)",
+    FOUR_C_THROW("The cell offset data array length (%d) does not match the number of cells (%d)",
         cell_offsets_.size(), n_cells);
   if (cell_connectivity_.size() < n_cells)
-    dserror("The number of cells is %d, however, there are fewer connectivity entries (%d)",
+    FOUR_C_THROW("The number of cells is %d, however, there are fewer connectivity entries (%d)",
         n_cells, cell_connectivity_.size());
   if (n_cells == 0 && cell_connectivity_.size() > 0)
-    dserror("There are no cells, but there are %d connectivity entries", cell_connectivity_.size());
+    FOUR_C_THROW(
+        "There are no cells, but there are %d connectivity entries", cell_connectivity_.size());
 
   // Check basic face consistency. Only check if the number of entries makes sense, a more
   // sophisticated check (but also more expensive) is performed in CompleteFaceData
   if (face_offsets_.size() != 0 && face_offsets_.size() != cell_offsets_.size())
   {
-    dserror(
+    FOUR_C_THROW(
         "Error in the consistency check for the face connectivity and offsets. Did you call "
         "CompleteFaceConnectivity?");
   }
@@ -105,11 +106,11 @@ void IO::VisualizationData::ConsistencyCheck() const
     const auto size = GetDataVectorSize(GetDataVectorFromMapItem(map_item));
     const auto n_dim = GetDataDimension(map_item);
     if (size % n_dim != 0)
-      dserror("The size of the data vector %s (%d) is not a multiple of the dimension (%d)!",
+      FOUR_C_THROW("The size of the data vector %s (%d) is not a multiple of the dimension (%d)!",
           data_name.c_str(), size, n_dim);
     if (size / n_dim != n_items)
     {
-      dserror(
+      FOUR_C_THROW(
           "The size of the data vector %s (%d) does not match the total number of point/cells "
           "(%d with dimension = %d)!",
           data_name.c_str(), size, n_items, n_dim);
@@ -176,7 +177,7 @@ void IO::VisualizationData::CompleteFaceConnectivity()
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Error in the consistency of the face connectivity and offsets. Number of polyhedrons "
         "(%d), cell size (%d), face "
         "connectivity size (%d), face offsets size (%d)",
@@ -192,7 +193,7 @@ std::string IO::VisualizationData::GetDataType(
 {
   if (&point_data_ == &data) return "point data";
   if (&cell_data_ == &data) return "cell data";
-  dserror("Could not determine the data type");
+  FOUR_C_THROW("Could not determine the data type");
 }
 
 /**
@@ -202,7 +203,7 @@ std::string IO::VisualizationData::GetDataType(
     const std::map<std::string, visualization_vector_type_variant>& data) const
 {
   if (&field_data_ == &data) return "field data";
-  dserror("Could not determine the data type");
+  FOUR_C_THROW("Could not determine the data type");
 }
 
 FOUR_C_NAMESPACE_CLOSE

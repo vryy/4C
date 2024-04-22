@@ -63,7 +63,7 @@ int DRT::DofSetProxy::AssignDegreesOfFreedom(
 void DRT::DofSetProxy::NotifyAssigned()
 {
   if (dofset_ == nullptr)
-    dserror("dofset_ pointer is nullptr");
+    FOUR_C_THROW("dofset_ pointer is nullptr");
   else
     isassigned_ = dofset_->Filled();
 
@@ -86,7 +86,7 @@ void DRT::DofSetProxy::Disconnect(DofSetInterface* dofset)
   if (dofset == dofset_)
     dofset_ = nullptr;
   else
-    dserror("cannot disconnect from non-connected DofSet");
+    FOUR_C_THROW("cannot disconnect from non-connected DofSet");
 
   // clear my Teuchos::rcps.
   Reset();
@@ -108,10 +108,10 @@ bool DRT::DofSetProxy::Filled() const
 void DRT::DofSetProxy::CheckIsAssigned() const
 {
   // checks in debug mode only
-  dsassert(isassigned_,
+  FOUR_C_ASSERT(isassigned_,
       "AssignDegreesOfFreedom was not called on parent dofset of this proxy,\n"
       "and/or this proxy was not notified.");
-  dsassert(dofset_ != nullptr, "dofset_ pointer is nullptr");
+  FOUR_C_ASSERT(dofset_ != nullptr, "dofset_ pointer is nullptr");
 
   return;
 }

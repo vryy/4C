@@ -83,7 +83,7 @@ namespace STR
     else if (type == "beam_to_sphere_link_kinetic_energy")
       return beam_to_sphere_link_kinetic_energy;
     else
-      dserror("Unknown type of energy %s", type.c_str());
+      FOUR_C_THROW("Unknown type of energy %s", type.c_str());
     exit(EXIT_FAILURE);
   };
 

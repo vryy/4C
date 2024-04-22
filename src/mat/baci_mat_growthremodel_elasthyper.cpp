@@ -59,37 +59,39 @@ MAT::PAR::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Teuchos::RCP<MAT::PAR
 {
   // check if sizes fit
   if (nummat_remodelfiber_ != (int)matids_remodelfiber_->size())
-    dserror(
+    FOUR_C_THROW(
         "number of remodelfiber materials %d does not fit to size of remodelfiber material vector "
         "%d",
         nummat_remodelfiber_, matids_remodelfiber_->size());
 
   if (nummat_elastinmem_ != (int)matids_elastinmem_->size())
-    dserror("number of elastin materials %d does not fit to size of elastin material vector %d",
+    FOUR_C_THROW(
+        "number of elastin materials %d does not fit to size of elastin material vector %d",
         nummat_elastinmem_, matids_elastinmem_->size());
 
   if (membrane_ == 1)
   {
     if ((growthtype_ != 1) || (loctimeint_ != 0))
-      dserror(
+      FOUR_C_THROW(
           "using membrane elements you can only simulate anisotropic growth in thickness direction"
           "and solve the local evolution equations with a Forward Euler Method");
   }
   else
   {
     if (nummat_elastiniso_ != (int)matids_elastiniso_->size())
-      dserror("number of elastin materials %d does not fit to size of elastin material vector %d",
+      FOUR_C_THROW(
+          "number of elastin materials %d does not fit to size of elastin material vector %d",
           nummat_elastiniso_, matids_elastiniso_->size());
-    if (nummat_elastiniso_ == 0) dserror("you have to set a 3D elastin material");
-    if (matid_penalty_ == -1) dserror("you have to set a volumetric penalty material");
+    if (nummat_elastiniso_ == 0) FOUR_C_THROW("you have to set a 3D elastin material");
+    if (matid_penalty_ == -1) FOUR_C_THROW("you have to set a volumetric penalty material");
     if ((p_mean_ == -1) || (ri_ == -1) || (t_ref_ == -1))
-      dserror(
+      FOUR_C_THROW(
           "you have to set the mean blood pressure, the inner radius of the vessel and thickness "
           "of the vessel wall");
   }
 
   if (cylinder_ != -1 && cylinder_ != 1 && cylinder_ != 2 && cylinder_ != 3)
-    dserror(
+    FOUR_C_THROW(
         "The parameter CYLINDER has to be either 1, 2 or 3. If you have defined a fiber direction "
         "in your"
         ".dat file then just skip this parameter");
@@ -151,7 +153,7 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::RemodelFiber> sum =
         Teuchos::rcp_static_cast<MAT::ELASTIC::RemodelFiber>(MAT::ELASTIC::Summand::Factory(matid));
-    if (sum == Teuchos::null) dserror("Failed to allocate");
+    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsumrf_.push_back(sum);
     sum->RegisterAnisotropyExtensions(anisotropy_);
   }
@@ -161,9 +163,9 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-    if (sum == Teuchos::null) dserror("Failed to allocate");
+    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     if (sum->MaterialType() != INPAR::MAT::mes_isoneohooke)
-      dserror(
+      FOUR_C_THROW(
           "2D Elastin Material: So far, you have to use a IsoNeoHooke material as the "
           "prestretching algorithm needs it. "
           "The prestretching algorithm can easily be expanded to other materials!");
@@ -178,9 +180,9 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
     {
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-      if (sum == Teuchos::null) dserror("Failed to allocate");
+      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       if (sum->MaterialType() != INPAR::MAT::mes_isoneohooke)
-        dserror(
+        FOUR_C_THROW(
             "3D Elastin Material: So far, you have to use an IsoNeoHooke material as the "
             "prestretching algorithm needs it"
             "The prestretching algorithm can easily be expanded to other materials!");
@@ -191,9 +193,9 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
     // VolPenalty
     Teuchos::RCP<MAT::ELASTIC::Summand> sum =
         MAT::ELASTIC::Summand::Factory(params_->matid_penalty_);
-    if (sum == Teuchos::null) dserror("Failed to allocate");
+    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     if (sum->MaterialType() != INPAR::MAT::mes_volsussmanbathe)
-      dserror(
+      FOUR_C_THROW(
           "Volumetric Penalty Material: So far, you have to use a CoupNeoHooke material as the "
           "prestretching algorithm needs it. "
           "This can easily be expanded to other materials!");
@@ -289,7 +291,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::GrowthRemodelElastHyper*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -328,7 +330,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
       Teuchos::RCP<MAT::ELASTIC::RemodelFiber> sum =
           Teuchos::rcp_static_cast<MAT::ELASTIC::RemodelFiber>(
               MAT::ELASTIC::Summand::Factory(matid));
-      if (sum == Teuchos::null) dserror("Failed to allocate");
+      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsumrf_.push_back(sum);
     }
     // loop map of associated potential summands
@@ -343,9 +345,9 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
     {
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-      if (sum == Teuchos::null) dserror("Failed to allocate");
+      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       if (sum->MaterialType() != INPAR::MAT::mes_isoneohooke)
-        dserror(
+        FOUR_C_THROW(
             "2D Elastin Material: So far, you have to use a IsoNeoHooke material as the "
             "prestretching algorithm needs it. "
             "This can easily be expanded to other materials!");
@@ -365,9 +367,9 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
       {
         const int matid = *m;
         Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-        if (sum == Teuchos::null) dserror("Failed to allocate");
+        if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
         if (sum->MaterialType() != INPAR::MAT::mes_isoneohooke)
-          dserror(
+          FOUR_C_THROW(
               "3D Elastin Material: So far, you have to use an IsoNeoHooke material as the "
               "prestretching algorithm needs it"
               "This can easily be expanded to other materials!");
@@ -383,9 +385,9 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
       // VolPenalty
       Teuchos::RCP<MAT::ELASTIC::Summand> sum =
           MAT::ELASTIC::Summand::Factory(params_->matid_penalty_);
-      if (sum == Teuchos::null) dserror("Failed to allocate");
+      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       if (sum->MaterialType() != INPAR::MAT::mes_volsussmanbathe)
-        dserror(
+        FOUR_C_THROW(
             "Volumetric Penalty Material: So far, you have to use a CoupNeoHooke material as the "
             "prestretching algorithm needs it. "
             "This can easily be expanded to other materials!");
@@ -395,7 +397,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
       // in the postprocessing mode, we do not unpack everything we have packed
       // -> position check cannot be done in this case
       if (position != data.size())
-        dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+        FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
     }
   }
 }
@@ -499,7 +501,7 @@ void MAT::GrowthRemodelElastHyper::SetupAxiCirRadStructuralTensor(INPUT::LineDef
   }
   // No AXI CIR RAD-direction defined in .dat file and additionally no cylinder flag was set
   else
-    dserror(
+    FOUR_C_THROW(
         "Homogenized Constrained Mixture Model can so far only be used by defining AXI-, CIR- and "
         "RAD-direction in the .dat file or by defining the Cylinder flag!");
 }
@@ -616,7 +618,7 @@ void MAT::GrowthRemodelElastHyper::Update(CORE::LINALG::Matrix<3, 3> const& defg
     case 1:  // do nothing
       break;
     default:
-      dserror("LOCTIMEINT has to be either 1 (Backward Euler) or 0 (Forward Euler)");
+      FOUR_C_THROW("LOCTIMEINT has to be either 1 (Backward Euler) or 0 (Forward Euler)");
       break;
   }
 }
@@ -633,7 +635,7 @@ void MAT::GrowthRemodelElastHyper::EvaluatePrestretch(
 
   // safety check
   if (potsumeliso_.size() != 1)
-    dserror(
+    FOUR_C_THROW(
         "So far, the prestretching routine does only work with ONE 3D isochoric elastin material");
 
   Teuchos::RCP<MAT::ELASTIC::IsoNeoHooke> matiso;
@@ -721,7 +723,8 @@ void MAT::GrowthRemodelElastHyper::EvaluatePrestretch(
 
   // safety check
   if (potsumelmem_.size() != 1)
-    dserror("So far, only ONE CoupNeoHooke material can be chosen for the membrane \"material\"");
+    FOUR_C_THROW(
+        "So far, only ONE CoupNeoHooke material can be chosen for the membrane \"material\"");
 
   // build stress response and elasticity tensor of membrane material
   CORE::LINALG::Matrix<6, 1> stressmem(true);
@@ -917,7 +920,7 @@ void MAT::GrowthRemodelElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
         break;
       }
       default:
-        dserror("LOCTIMEINT has to be 1 (Backward Euler Method) or 0 (Forward Euler Method)");
+        FOUR_C_THROW("LOCTIMEINT has to be 1 (Backward Euler Method) or 0 (Forward Euler Method)");
         break;
     }
   }
@@ -1011,7 +1014,7 @@ void MAT::GrowthRemodelElastHyper::SolveForRhoLambr(CORE::LINALG::SerialDenseMat
                 << K_T;
       std::cout << "=================================================================" << std::endl
                 << std::endl;
-      if (iter > 100) dserror("Internal Newton (at Gauss-Point) does not converge!");
+      if (iter > 100) FOUR_C_THROW("Internal Newton (at Gauss-Point) does not converge!");
     }
     ++iter;
   }
@@ -1555,7 +1558,7 @@ void MAT::GrowthRemodelElastHyper::EvaluateGrowthDefGrad(CORE::LINALG::Matrix<3,
       dFgdrhoM.Update(1. / 3. * std::pow(v_[gp], -2. / 3.) * (1. / params_->density_), AaxM_, 1.0);
       break;
     default:
-      dserror("growthtype has to be either 1: anisotropic growth or 0: isotropic growth");
+      FOUR_C_THROW("growthtype has to be either 1: anisotropic growth or 0: isotropic growth");
       break;
   }
 }
@@ -1728,7 +1731,7 @@ bool MAT::GrowthRemodelElastHyper::VisData(
 
   if (name == "mass_fraction_el")
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double i : cur_rho_el_)
     {
       data[0] += i;
@@ -1740,7 +1743,7 @@ bool MAT::GrowthRemodelElastHyper::VisData(
 
   if (name == "v_growth")
   {
-    if (data.size() != 1) dserror("size mismatch");
+    if (data.size() != 1) FOUR_C_THROW("size mismatch");
     for (double i : v_)
     {
       data[0] += i;

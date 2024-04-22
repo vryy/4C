@@ -58,7 +58,7 @@ namespace THR
     TimIntExplEuler(const TimIntExplEuler& old) : TimIntExpl(old) { ; }
 
     //! Resize #TimIntMStep<T> multi-step quantities
-    void ResizeMStep() override { dserror("not a multistep method"); }
+    void ResizeMStep() override { FOUR_C_THROW("not a multistep method"); }
 
     //@}
 
@@ -95,7 +95,7 @@ namespace THR
     //! Return linear error coefficient of temperatures
     double MethodLinErrCoeff() override
     {
-      dserror("no time adaptivity possible.");
+      FOUR_C_THROW("no time adaptivity possible.");
       return 0.0;
     }
 
@@ -110,7 +110,7 @@ namespace THR
     //! Return external force \f$F_{ext,n+1}\f$
     Teuchos::RCP<Epetra_Vector> FextNew()
     {
-      dserror("FextNew() not available in ExplEuler");
+      FOUR_C_THROW("FextNew() not available in ExplEuler");
       return Teuchos::null;
     }
 

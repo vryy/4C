@@ -57,7 +57,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
     // config = config_material;
   }
   else
-    dserror("Unknown type of LineNeumann condition");
+    FOUR_C_THROW("Unknown type of LineNeumann condition");
 
   // get values and switches from the condition
   const auto* onoff = condition.Get<std::vector<int>>("onoff");
@@ -78,12 +78,13 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < numdim)
-    dserror("Fewer functions or curves defined than the element has dofs.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   for (int checkdof = numdim; checkdof < int(onoff->size()); ++checkdof)
   {
     if ((*onoff)[checkdof] != 0)
-      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+      FOUR_C_THROW(
+          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
   }
 
   // element geometry update - currently only material configuration
@@ -150,7 +151,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
       }
 
       default:
-        dserror("Unknown type of LineNeumann load");
+        FOUR_C_THROW("Unknown type of LineNeumann load");
         break;
     }
   }

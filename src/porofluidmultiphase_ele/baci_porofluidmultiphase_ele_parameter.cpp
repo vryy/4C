@@ -67,7 +67,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetTimeStepParameters(
 )
 {
   if (not isset_generalparams_)
-    dserror("General parameters have to be set before time step parameters!");
+    FOUR_C_THROW("General parameters have to be set before time step parameters!");
 
   // get current time and time-step length
   time_ = parameters.get<double>("total time");
@@ -102,7 +102,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetTimeStepParameters(
       alphaF_ = parameters.get<double>("alpha_F");
       timefac_ *= alphaF_;
     }
-    if (timefac_ < 0.0) dserror("time factor is negative.");
+    if (timefac_ < 0.0) FOUR_C_THROW("time factor is negative.");
   }
 
   if (not is_stationary_)

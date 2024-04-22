@@ -79,7 +79,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::RigidsphereType::ComputeNullSpace
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented!");
+  FOUR_C_THROW("method ComputeNullSpace not implemented!");
   return nullspace;
 }
 
@@ -120,7 +120,7 @@ DRT::ELEMENTS::Rigidsphere::Rigidsphere(const DRT::ELEMENTS::Rigidsphere& old)
         mybondstobeams_[iter.first] =
             Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(iter.second->Clone());
       else
-        dserror("something went wrong, I am sorry. Please go debugging.");
+        FOUR_C_THROW("something went wrong, I am sorry. Please go debugging.");
     }
   }
   return;
@@ -206,12 +206,12 @@ void DRT::ELEMENTS::Rigidsphere::Unpack(const std::vector<char>& data)
     Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(tmp), true);
     Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> link =
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(object);
-    if (link == Teuchos::null) dserror("Received object is not a beam to beam linkage");
+    if (link == Teuchos::null) FOUR_C_THROW("Received object is not a beam to beam linkage");
     mybondstobeams_[link->Id()] = link;
   }
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
   return;
 }
 

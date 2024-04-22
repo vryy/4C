@@ -76,7 +76,7 @@ CORE::FE::CellType LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnod
     }
     default:
     {
-      dserror("only 2...5 nodes allowed here! got %d", numnodes);
+      FOUR_C_THROW("only 2...5 nodes allowed here! got %d", numnodes);
       return CORE::FE::CellType::max_distype;
     }
   }
@@ -89,7 +89,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Reset(
     std::vector<CORE::LINALG::Matrix<4, 1, T>> const& nodal_quaternions)
 {
   if (nodal_quaternions.size() != numnodes)
-    dserror("size mismatch: expected %d nodal quaternions but got %d!", numnodes,
+    FOUR_C_THROW("size mismatch: expected %d nodal quaternions but got %d!", numnodes,
         nodal_quaternions.size());
 
   // set new nodal triads
@@ -116,7 +116,8 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Reset(
     std::vector<CORE::LINALG::Matrix<3, 3, T>> const& nodal_triads)
 {
   if (nodal_triads.size() != numnodes)
-    dserror("size mismatch: expected %d nodal triads but got %d!", numnodes, nodal_triads.size());
+    FOUR_C_THROW(
+        "size mismatch: expected %d nodal triads but got %d!", numnodes, nodal_triads.size());
 
   std::vector<CORE::LINALG::Matrix<4, 1, T>> nodal_quaternions(numnodes);
 

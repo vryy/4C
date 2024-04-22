@@ -836,7 +836,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("no_model", "Smagorinsky", "Smagorinsky_with_van_Driest_damping",
           "Dynamic_Smagorinsky", "Multifractal_Subgrid_Scales", "Vreman", "Dynamic_Vreman"),
       tuple<std::string>("If classical LES is our turbulence approach, this is a contradiction and "
-                         "should cause a dserror.",
+                         "should cause a FOUR_C_THROW.",
           "Classical constant coefficient Smagorinsky model. Be careful if you \nhave a wall "
           "bounded flow domain!",
           "Use an exponential damping function for the turbulent viscosity \nclose to the wall. "

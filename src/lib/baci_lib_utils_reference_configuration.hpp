@@ -50,11 +50,11 @@ namespace DRT
 
       if (!nodes)
       {
-        dserror("ERROR: Did not get nodes of element!");
+        FOUR_C_THROW("ERROR: Did not get nodes of element!");
       }
       if (probdim != nodedim)
       {
-        dserror(
+        FOUR_C_THROW(
             "Problem dimension: %i and dimension of nodes: %i does not match!", probdim, nodedim);
       }
 
@@ -95,11 +95,11 @@ namespace DRT
 
       if (!nodes)
       {
-        dserror("ERROR: Did not get nodes of element!");
+        FOUR_C_THROW("ERROR: Did not get nodes of element!");
       }
       if (nodedim != 3)
       {
-        dserror("ERROR: Only implemented for 3D cases so far!");
+        FOUR_C_THROW("ERROR: Only implemented for 3D cases so far!");
       }
 
       for (int i = 0; i < CORE::FE::num_nodes<distype>; ++i)

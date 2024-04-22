@@ -48,14 +48,14 @@ namespace MAT
 
           if (m == mat_.end())
           {
-            dserror("Material %d could not be found", id);
+            FOUR_C_THROW("Material %d could not be found", id);
             return Teuchos::null;
           }
           else
             return m->second;
         }
         else
-          dserror("This is not allowed");
+          FOUR_C_THROW("This is not allowed");
 
         return Teuchos::null;
       }
@@ -170,7 +170,7 @@ namespace MAT
         return params_->matids_.at(index);
       else
       {
-        dserror("Index too large");
+        FOUR_C_THROW("Index too large");
         return -1;
       }
     }
@@ -183,7 +183,7 @@ namespace MAT
         std::map<int, Teuchos::RCP<MAT::Material>>::const_iterator m = mat_.find(id);
         if (m == mat_.end())
         {
-          dserror("Material %d could not be found", id);
+          FOUR_C_THROW("Material %d could not be found", id);
           return Teuchos::null;
         }
         else

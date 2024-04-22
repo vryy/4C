@@ -130,9 +130,9 @@ namespace CORE::GEO
       void Coordinates(T& xyze_lineElement)
       {
         if (static_cast<unsigned>(xyze_lineElement.numRows()) != ProbDim())
-          dserror("xyze_lineElement has the wrong number of rows! (probdim = %d)", ProbDim());
+          FOUR_C_THROW("xyze_lineElement has the wrong number of rows! (probdim = %d)", ProbDim());
         if (static_cast<unsigned>(xyze_lineElement.numCols()) != NumNodes())
-          dserror("xyze_lineElement has the wrong number of columns! (dim = %d)", NumNodes());
+          FOUR_C_THROW("xyze_lineElement has the wrong number of columns! (dim = %d)", NumNodes());
 
         Coordinates(xyze_lineElement.values());
       }
@@ -194,7 +194,7 @@ namespace CORE::GEO
 
       Node* MiddleNode()
       {
-        if (nodes_.size() != 3) dserror("middle node in line3 only");
+        if (nodes_.size() != 3) FOUR_C_THROW("middle node in line3 only");
         return nodes_[2];
       }
 
@@ -390,7 +390,7 @@ namespace CORE::GEO
         }
 
         //      std::cout <<"LS cut found? --> " << (cutfound ? "TRUE" : "FALSE") << std::endl;
-        //      dserror("CORE::GEO::CUT::Edge::LevelSetCut -- STOP -- hiermeier 08/16");
+        //      FOUR_C_THROW("CORE::GEO::CUT::Edge::LevelSetCut -- STOP -- hiermeier 08/16");
 
         return cutfound;
       }
@@ -429,7 +429,7 @@ namespace CORE::GEO
             e = new ConcreteEdge<3, edgetype>(nodes);
             break;
           default:
-            dserror("Unsupported problem dimension! (probdim=%d)", probdim);
+            FOUR_C_THROW("Unsupported problem dimension! (probdim=%d)", probdim);
             break;
         }
         return e;

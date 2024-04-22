@@ -44,7 +44,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
-        dserror("Cannot get state vector 'phizero' and/ or 'phinp'!");
+        FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
 
@@ -81,7 +81,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
-        dserror("Cannot get state vector 'phizero' and/ or 'phinp'!");
+        FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
 
@@ -202,7 +202,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
 
     // predictor for phinp
     // caution: this function can be used here, since gen-alpha is excluded
-    if (my::scatraparatimint_->IsGenAlpha()) dserror("Not supported by this implementation!");
+    if (my::scatraparatimint_->IsGenAlpha()) FOUR_C_THROW("Not supported by this implementation!");
     // note: this function computes phinp at integration point
     my::CalcRHSLinMass(erhs, 0, 0.0, -fac, 1.0, 1.0);  // sign has to be changed!!!!
 
@@ -224,7 +224,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
 {
   // safety check
   if (lsreinitparams_->SignType() != INPAR::SCATRA::signtype_SussmanFatemi1999)
-    dserror("Penalty method only for smoothed sign function: SussmanFatemi1999!");
+    FOUR_C_THROW("Penalty method only for smoothed sign function: SussmanFatemi1999!");
 
   // denominator
   double ele_dom = 0.0;
@@ -394,7 +394,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
     //        std::abs(my::ephinp_[0](6,0)-my::ephinp_[0](7,0))>1.0e-10)
     //    {
     //        std::cout << my::ephinp_[0] << std::endl;
-    //        dserror("ENDE");
+    //        FOUR_C_THROW("ENDE");
     //    }
 
     // get velocity at element center
@@ -417,7 +417,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
     // add dissipation for smooth fields
     //------------------------------------------------
     // should not be used together with lumping
-    // prevented by dserror in lsreinit parameters
+    // prevented by FOUR_C_THROW in lsreinit parameters
     if (lsreinitparams_->ProjectDiff() > 0.0)
     {
       const double diff = (lsreinitparams_->ProjectDiff()) * charelelength * charelelength;

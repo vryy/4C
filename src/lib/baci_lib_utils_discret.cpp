@@ -65,7 +65,7 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Conditi
     Epetra_Vector& fieldvector, const std::vector<int>& locids)
 {
   const std::vector<int> cond_nodeids = *cond.GetNodes();
-  if (cond_nodeids.empty()) dserror("Initfield condition does not have nodal cloud.");
+  if (cond_nodeids.empty()) FOUR_C_THROW("Initfield condition does not have nodal cloud.");
 
   // loop nodes to identify and evaluate spatial distributions
   // of Initfield boundary conditions
@@ -90,7 +90,7 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Conditi
         [&](Element* a, Element* b) { return a->NumDofPerNode(*node) < b->NumDofPerNode(*node); });
     const int numdof = (*ele_with_max_dof)->NumDofPerNode(*node);
 
-    if ((total_numdof % numdof) != 0) dserror("illegal dof set number");
+    if ((total_numdof % numdof) != 0) FOUR_C_THROW("illegal dof set number");
 
     // now loop over all relevant DOFs
     for (int j = 0; j < total_numdof; ++j)
@@ -113,7 +113,7 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Conditi
           // assign value
           const int gid = node_dofs[j];
           const int lid = fieldvector.Map().LID(gid);
-          if (lid < 0) dserror("Global id %d not on this proc in system vector", gid);
+          if (lid < 0) FOUR_C_THROW("Global id %d not on this proc in system vector", gid);
           fieldvector[lid] = functfac;
         }
       }

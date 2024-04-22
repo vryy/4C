@@ -170,7 +170,7 @@ bool DRT::ELEMENTS::Wall1Scatra::ReadElement(
   else if (impltype == "Std")
     impltype_ = INPAR::SCATRA::impltype_std;
   else
-    dserror("Invalid implementation type for Wall1_Scatra elements!");
+    FOUR_C_THROW("Invalid implementation type for Wall1_Scatra elements!");
 
   return true;
 }

@@ -59,7 +59,7 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
     case INPAR::RVE_MPC::RveReferenceDeformationDefinition::manual:
     {
       if (rveDim_ != INPAR::RVE_MPC::RveDimension::rve2d)
-        dserror("Manual Edge node definition is not implemented for 3D RVEs");
+        FOUR_C_THROW("Manual Edge node definition is not implemented for 3D RVEs");
 
       // Read the reference points
       for (const auto& entry : pointPeriodicRveRefConditions_)
@@ -69,7 +69,7 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
 
         if (nodeInSet->size() > 1)
         {
-          dserror("There can only be a single node defined as a reference node");
+          FOUR_C_THROW("There can only be a single node defined as a reference node");
         }
         rveRefNodeMap_[str_id->c_str()] = discret_ptr_->gNode(nodeInSet->data()[0]);
 
@@ -118,7 +118,7 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
 void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::CheckInput()
 {
   if (discret_ptr_->Comm().NumProc() > 1)
-    dserror("periodic boundary conditions for RVEs are not implemented in parallel.");
+    FOUR_C_THROW("periodic boundary conditions for RVEs are not implemented in parallel.");
 
 
   mpcParameterList_ = GLOBAL::Problem::Instance()->RveMultiPointConstraintParams();
@@ -134,7 +134,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::CheckInput(
   switch (strategy_)
   {
     case INPAR::RVE_MPC::EnforcementStrategy::lagrangeMultiplier:
-      dserror("Constraint Enforcement via Lagrange Multiplier Methode is not impl.");
+      FOUR_C_THROW("Constraint Enforcement via Lagrange Multiplier Methode is not impl.");
 
     case INPAR::RVE_MPC::EnforcementStrategy::penalty:
     {
@@ -165,7 +165,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::CheckInput(
   }
   else
   {
-    dserror("Periodic rve edge condition cannot be combinded with peridodic rve surf cond. ");
+    FOUR_C_THROW("Periodic rve edge condition cannot be combinded with peridodic rve surf cond. ");
   }
 
   // Input Checks
@@ -177,7 +177,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::CheckInput(
     {
       IO::cout(IO::verbose) << "Number of Conditions: " << linePeriodicRveConditions_.size()
                             << IO::endl;
-      dserror("For a 2D RVE either all or two opposing edges must be used for PBCs");
+      FOUR_C_THROW("For a 2D RVE either all or two opposing edges must be used for PBCs");
     }
   }
 
@@ -190,7 +190,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::CheckInput(
   if (pointPeriodicRveRefConditions_.size() == 0 &&
       rveRefType_ == INPAR::RVE_MPC::RveReferenceDeformationDefinition::manual)
   {
-    dserror(
+    FOUR_C_THROW(
         "A DESIGN POINT PERIODIC RVE 2D BOUNDARY REFERENCE CONDITIONS is req. for manual ref. "
         "point "
         "definition");
@@ -198,7 +198,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::CheckInput(
 
   if (pointPeriodicRveRefConditions_.size() != 0 &&
       rveRefType_ == INPAR::RVE_MPC::RveReferenceDeformationDefinition::automatic)
-    dserror("Set the RVE_REFERENCE_POINTS to manual");
+    FOUR_C_THROW("Set the RVE_REFERENCE_POINTS to manual");
 }
 
 /*----------------------------------------------------------------------------*
@@ -233,7 +233,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::FindOpposite
     }
     default:
     {
-      dserror("Specifiy the negative edge, 3D not implemented");
+      FOUR_C_THROW("Specifiy the negative edge, 3D not implemented");
     }
   }
 
@@ -260,7 +260,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::FindOpposite
       }
     }
   }
-  dserror("No matching node found! - Is the mesh perodic?");
+  FOUR_C_THROW("No matching node found! - Is the mesh perodic?");
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -435,7 +435,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildPeriod
       break;
     }
     default:
-      dserror("No ref def type defined");
+      FOUR_C_THROW("No ref def type defined");
   }
 
   // Ensure no constraint is enforced twice:
@@ -574,7 +574,8 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildLinearM
     }
     else
     {
-      dserror("Linear coupled equations (MPCs) are only implemented for 2D (dispx or dispy DOFs)");
+      FOUR_C_THROW(
+          "Linear coupled equations (MPCs) are only implemented for 2D (dispx or dispy DOFs)");
     }
     auto dofID = discret_ptr_->Dof(node)[dofPos];
 
@@ -645,12 +646,12 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::FindPeriodic
 
   if (commonNodeIds123.size() < 1)
   {
-    dserror("No common node found");
+    FOUR_C_THROW("No common node found");
   }
 
   else if (commonNodeIds123.size() > 1)
   {
-    dserror("More than one common node found");
+    FOUR_C_THROW("More than one common node found");
   }
   return commonNodeIds123[0];
 }

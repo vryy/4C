@@ -83,7 +83,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
-    if (actmat->NumMat() < my::numdofpernode_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() < my::numdofpernode_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numdofpernode_; ++k)
     {
@@ -100,7 +100,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
           // smaller zero or greater equal numfluidphases
           if (poromat->PhaseID() < 0 or
               poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases())
-            dserror(
+            FOUR_C_THROW(
                 "Invalid phase ID %i for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)",
                 poromat->PhaseID(), k);
 
@@ -109,7 +109,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
               VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
           if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
-            dserror(
+            FOUR_C_THROW(
                 "Invalid phase ID for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)",
                 k);
 
@@ -134,7 +134,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
           if (poromat->PhaseID() < VarManager()->MultiphaseMat()->NumFluidPhases() or
               poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases() +
                                         VarManager()->MultiphaseMat()->NumVolFrac())
-            dserror(
+            FOUR_C_THROW(
                 "Invalid phase ID %i for scalar %i (species in volume fraction = "
                 "MAT_scatra_multiporo_volfrac)",
                 poromat->PhaseID(), k);
@@ -144,7 +144,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
               VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
           if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
-            dserror(
+            FOUR_C_THROW(
                 "Invalid phase ID for scalar %i (species in volume fraction = "
                 "MAT_scatra_multiporo_volfrac)",
                 k);
@@ -212,7 +212,8 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
         default:
         {
-          dserror("Material type %i is not supported for multiphase flow through porous media!",
+          FOUR_C_THROW(
+              "Material type %i is not supported for multiphase flow through porous media!",
               singlemat->MaterialType());
           break;
         }
@@ -231,7 +232,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
         // smaller zero or greater equal numfluidphases
         if (poromat->PhaseID() < 0 or
             poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases())
-          dserror(
+          FOUR_C_THROW(
               "Invalid phase ID %i for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)",
               poromat->PhaseID(), 0);
 
@@ -240,7 +241,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
             VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
         if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
-          dserror(
+          FOUR_C_THROW(
               "Invalid phase ID for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)", 0);
 
         VarManager()->SetPhaseIDAndSpeciesType(
@@ -264,7 +265,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
         if (poromat->PhaseID() < 0 or
             poromat->PhaseID() >= VarManager()->MultiphaseMat()->NumFluidPhases() +
                                       VarManager()->MultiphaseMat()->NumVolFrac())
-          dserror(
+          FOUR_C_THROW(
               "Invalid phase ID %i for scalar %i (species in volume fraction = "
               "MAT_scatra_multiporo_volfrac)",
               poromat->PhaseID(), 0);
@@ -274,7 +275,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
             VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
         if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
-          dserror(
+          FOUR_C_THROW(
               "Invalid phase ID for scalar %i (species in volume fraction = "
               "MAT_scatra_multiporo_volfrac)",
               0);
@@ -340,7 +341,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
       default:
       {
-        dserror("Material type %i is not supported for multiphase flow through porous media!",
+        FOUR_C_THROW("Material type %i is not supported for multiphase flow through porous media!",
             material->MaterialType());
         break;
       }
@@ -373,7 +374,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
     const int ndsdisp = my::scatrapara_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -403,7 +404,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
   Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (hist == Teuchos::null || phinp == Teuchos::null)
-    dserror("Cannot get state vector 'hist' and/or 'phinp'");
+    FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
 
   // values of scatra field are always in first dofset
   const std::vector<int>& lm = la[0].lm_;
@@ -414,7 +415,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
-    if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
+    if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
 
@@ -462,7 +463,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
     }
   }
   else
-    dserror("Something went wrong here, scatra-dis does not have fluid primary variable");
+    FOUR_C_THROW("Something went wrong here, scatra-dis does not have fluid primary variable");
 
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
@@ -500,7 +501,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractNodalFlux(DRT::E
 
     // get convective (velocity - mesh displacement) velocity at nodes
     Teuchos::RCP<const Epetra_Vector> convel = discretization.GetState(ndsvel, statename.str());
-    if (convel == Teuchos::null) dserror("Cannot get state vector %s", statename.str().c_str());
+    if (convel == Teuchos::null)
+      FOUR_C_THROW("Cannot get state vector %s", statename.str().c_str());
 
     // extract local values of convective velocity field from global state vector
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(
@@ -561,7 +563,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Materials(
 
     default:
     {
-      dserror("Material type %i is not supported for multiphase flow through porous media!",
+      FOUR_C_THROW("Material type %i is not supported for multiphase flow through porous media!",
           material->MaterialType());
       break;
     }
@@ -585,7 +587,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroFluid(
 )
 {
   if (iquad == -1)
-    dserror("no gauss point given for evaluation of MatMultiPoro material. Check your input file.");
+    FOUR_C_THROW(
+        "no gauss point given for evaluation of MatMultiPoro material. Check your input file.");
 
   const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroFluid>(material);
@@ -629,7 +632,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroVolFrac(
 )
 {
   if (iquad == -1)
-    dserror("no gauss point given for evaluation of MatMultiPoro material. Check your input file.");
+    FOUR_C_THROW(
+        "no gauss point given for evaluation of MatMultiPoro material. Check your input file.");
 
   const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(material);
@@ -671,7 +675,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroSolid(
 )
 {
   if (iquad == -1)
-    dserror(
+    FOUR_C_THROW(
         "no gauss point given for evaluation of MatMultiPoro material. "
         "Check your input file.");
 
@@ -718,7 +722,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroTemperature
 )
 {
   if (iquad == -1)
-    dserror(
+    FOUR_C_THROW(
         "no gauss point given for evaluation of MatMultiPoro material. "
         "Check your input file.");
 
@@ -845,7 +849,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetAdvancedReactionTerm
     }
     default:
     {
-      dserror("Wrong action type in VarManager(), action type is %d", act);
+      FOUR_C_THROW("Wrong action type in VarManager(), action type is %d", act);
       break;
     }
   }  // switch(act)
@@ -1141,7 +1145,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
       pororeac::ApplyShapeDerivsConv(emat, k, rhsfac, 1.0, J, gradphi, convelint);
     }
     else
-      dserror("Species type no valid!");
+      FOUR_C_THROW("Species type no valid!");
   }
   return;
 }
@@ -1412,7 +1416,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvAddConsODFlu
     const double phinp        //!< scalar at time_(n+1)
 )
 {
-  dserror("CalcMatConvAddConsODFluid not yet available for scatre ele calc multiporo");
+  FOUR_C_THROW("CalcMatConvAddConsODFluid not yet available for scatre ele calc multiporo");
 }
 
 /*-------------------------------------------------------------------- *
@@ -1440,7 +1444,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODFluid(
     double vtrans = 0.0;
 
     if (my::scatraparatimint_->IsGenAlpha())
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
     else
     {
       // compute scalar at integration point
@@ -1751,7 +1755,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ApplyShapeDerivsPressur
     }
   }
   else
-    dserror("shapederivatives not implemented for 1D!");
+    FOUR_C_THROW("shapederivatives not implemented for 1D!");
 
   return;
 }

@@ -105,19 +105,21 @@ namespace IO
     // safety checks
     if (point_coordinates.size() != num_spatial_dimensions * pointcounter)
     {
-      dserror("DiscretizationVisualizationWriterMesh expected %d coordinate values, but got %d",
+      FOUR_C_THROW(
+          "DiscretizationVisualizationWriterMesh expected %d coordinate values, but got %d",
           num_spatial_dimensions * pointcounter, point_coordinates.size());
     }
 
     if (cell_types.size() != num_row_elements - num_skipped_eles)
     {
-      dserror("DiscretizationVisualizationWriterMesh expected %d cell type values, but got %d",
+      FOUR_C_THROW("DiscretizationVisualizationWriterMesh expected %d cell type values, but got %d",
           num_row_elements, cell_types.size());
     }
 
     if (cell_offsets.size() != num_row_elements - num_skipped_eles)
     {
-      dserror("DiscretizationVisualizationWriterMesh expected %d cell offset values, but got %d",
+      FOUR_C_THROW(
+          "DiscretizationVisualizationWriterMesh expected %d cell offset values, but got %d",
           num_row_elements, cell_offsets.size());
     }
 
@@ -154,7 +156,7 @@ namespace IO
     // safety checks
     if (!discretization_->DofColMap()->SameAs(result_data_dofbased->Map()))
     {
-      dserror(
+      FOUR_C_THROW(
           "DiscretizationVisualizationWriterMesh: Received DofBasedResult's map does not match the "
           "discretization's dof col map.");
     }
@@ -191,7 +193,7 @@ namespace IO
     // sanity check
     if (point_result_data.size() != result_num_dofs_per_node * pointcounter)
     {
-      dserror("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
+      FOUR_C_THROW("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
           result_num_dofs_per_node * pointcounter, point_result_data.size());
     }
 
@@ -210,14 +212,14 @@ namespace IO
 
     // safety checks
     if ((unsigned int)result_data_nodebased->NumVectors() != result_num_components_per_node)
-      dserror(
+      FOUR_C_THROW(
           "DiscretizationVisualizationWriterMesh: expected Epetra_MultiVector with %d columns but "
           "got %d",
           result_num_components_per_node, result_data_nodebased->NumVectors());
 
     if (!discretization_->NodeColMap()->SameAs(result_data_nodebased->Map()))
     {
-      dserror(
+      FOUR_C_THROW(
           "DiscretizationVisualizationWriterMesh: Received NodeBasedResult's map does not match "
           "the "
           "discretization's node col map.");
@@ -260,7 +262,7 @@ namespace IO
           if (lid > -1)
             point_result_data.push_back((*column)[lid]);
           else
-            dserror("received illegal node local id: %d", lid);
+            FOUR_C_THROW("received illegal node local id: %d", lid);
         }
       }
 
@@ -270,7 +272,7 @@ namespace IO
     // sanity check
     if (point_result_data.size() != result_num_components_per_node * pointcounter)
     {
-      dserror("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
+      FOUR_C_THROW("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
           result_num_components_per_node * pointcounter, point_result_data.size());
     }
 
@@ -289,14 +291,14 @@ namespace IO
 
     // safety check
     if ((unsigned int)result_data_elementbased->NumVectors() != result_num_components_per_element)
-      dserror(
+      FOUR_C_THROW(
           "DiscretizationVisualizationWriterMesh: expected Epetra_MultiVector with %d columns but "
           "got %d",
           result_num_components_per_element, result_data_elementbased->NumVectors());
 
     if (!discretization_->ElementRowMap()->SameAs(result_data_elementbased->Map()))
     {
-      dserror(
+      FOUR_C_THROW(
           "DiscretizationVisualizationWriterMesh: Received ElementBasedResult's map does not match "
           "the "
           "discretization's element row map.");
@@ -334,7 +336,7 @@ namespace IO
     // sanity check
     if (cell_result_data.size() != result_num_components_per_element * cellcounter)
     {
-      dserror("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
+      FOUR_C_THROW("DiscretizationVisualizationWriterMesh expected %d result values, but got %d",
           result_num_components_per_element * cellcounter, cell_result_data.size());
     }
 
@@ -483,7 +485,7 @@ namespace IO
       if ((is_beam_element and is_beam) or ((not is_beam_element) and (not is_beam)))
       {
         const int local_row = ghosting_information.Map().LID(ele->Id());
-        if (local_row == -1) dserror("The element has to exist in the row map.");
+        if (local_row == -1) FOUR_C_THROW("The element has to exist in the row map.");
         for (int i_proc = 0; i_proc < n_proc; i_proc++)
           ghosted_elements.push_back(ghosting_information[i_proc][local_row]);
       }

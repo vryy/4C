@@ -70,7 +70,7 @@ namespace DRT
       /// access the penalty parameter for the elliptical reinitialization
       double PenaltyPara() const
       {
-        dsassert(alphapen_ > 0.0, "The penalty parameter have to be larger than zero!");
+        FOUR_C_ASSERT(alphapen_ > 0.0, "The penalty parameter have to be larger than zero!");
         return alphapen_;
       };
 

@@ -232,7 +232,8 @@ namespace DRT
     //! get the master node to a corresponding slave node (given by LID)
     const DRT::Node* GetMasterNode(int slaveLid) const
     {
-      dsassert(slaveLid < master_nodegids_col_layout_->MyLength(), "Slave node Lid out of range!");
+      FOUR_C_ASSERT(
+          slaveLid < master_nodegids_col_layout_->MyLength(), "Slave node Lid out of range!");
       int mastergid = (*master_nodegids_col_layout_)[slaveLid];
       // std::cout<<"master gid = "<<mastergid<<" <-> slave lid ="<<slaveLid<<"  size of map =
       // "<<master_nodegids_col_layout_->MyLength()<<std::endl;
@@ -242,7 +243,8 @@ namespace DRT
     //! get the slave node to a corresponding master node (given by LID)
     const DRT::Node* GetSlaveNode(int masterLid) const
     {
-      dsassert(masterLid < slave_nodegids_col_layout_->MyLength(), "Master node Lid out of range!");
+      FOUR_C_ASSERT(
+          masterLid < slave_nodegids_col_layout_->MyLength(), "Master node Lid out of range!");
       int slavegid = (*slave_nodegids_col_layout_)[masterLid];
       return sourcedis_->gNode(slavegid);
     }

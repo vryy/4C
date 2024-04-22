@@ -101,7 +101,7 @@ void LUBRICATION::TimIntImpl::Init()
 
   // ensure that degrees of freedom in the discretization have been set
   if ((not discret_->Filled()) or (not discret_->HaveDofs()))
-    dserror("discretization not completed");
+    FOUR_C_THROW("discretization not completed");
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -299,9 +299,9 @@ void LUBRICATION::TimIntImpl::SetHeightFieldPureLub(const int nds)
       const int gid = nodedofs[index];
       const int lid = height->Map().LID(gid);
 
-      if (lid < 0) dserror("Local ID not found in map for given global ID!");
+      if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
       err = height->ReplaceMyValue(lid, 0, heightfuncvalue);
-      if (err != 0) dserror("error while inserting a value into height");
+      if (err != 0) FOUR_C_THROW("error while inserting a value into height");
     }
   }
   // provide lubrication discretization with height
@@ -342,9 +342,9 @@ void LUBRICATION::TimIntImpl::SetAverageVelocityFieldPureLub(const int nds)
       const int gid = nodedofs[index];
       const int lid = vel->Map().LID(gid);
 
-      if (lid < 0) dserror("Local ID not found in map for given global ID!");
+      if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
       err = vel->ReplaceMyValue(lid, 0, velfuncvalue);
-      if (err != 0) dserror("error while inserting a value into vel");
+      if (err != 0) FOUR_C_THROW("error while inserting a value into vel");
     }
   }
   // provide lubrication discretization with velocity
@@ -436,7 +436,7 @@ void LUBRICATION::TimIntImpl::ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector
     TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION: apply mesh movement");
 
     // check existence of displacement vector
-    if (dispnp == Teuchos::null) dserror("Got null pointer for displacements!");
+    if (dispnp == Teuchos::null) FOUR_C_THROW("Got null pointer for displacements!");
 
     // store number of dofset associated with displacement related dofs
     nds_disp_ = nds;
@@ -833,10 +833,10 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
 
   // check for INF's and NaN's before going on...
   if (std::isnan(incprenorm_L2) or std::isnan(prenorm_L2) or std::isnan(preresnorm))
-    dserror("calculated vector norm is NaN.");
+    FOUR_C_THROW("calculated vector norm is NaN.");
 
   if (std::isinf(incprenorm_L2) or std::isinf(prenorm_L2) or std::isinf(preresnorm))
-    dserror("calculated vector norm is INF.");
+    FOUR_C_THROW("calculated vector norm is INF.");
 
   return false;
 }  // TimIntImpl::AbortNonlinIter
@@ -846,7 +846,7 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::SetHeightField(const int nds, Teuchos::RCP<const Epetra_Vector> gap)
 {
-  if (gap == Teuchos::null) dserror("Gap vector is empty.");
+  if (gap == Teuchos::null) FOUR_C_THROW("Gap vector is empty.");
   discret_->SetState(nds, "height", gap);
 
   return;
@@ -859,7 +859,7 @@ void LUBRICATION::TimIntImpl::SetHeightField(const int nds, Teuchos::RCP<const E
 void LUBRICATION::TimIntImpl::SetHeightDotField(
     const int nds, Teuchos::RCP<const Epetra_Vector> heightdot)
 {
-  if (heightdot == Teuchos::null) dserror("hdot vector is empty.");
+  if (heightdot == Teuchos::null) FOUR_C_THROW("hdot vector is empty.");
   discret_->SetState(nds, "heightdot", heightdot);
 
   return;
@@ -871,8 +871,8 @@ void LUBRICATION::TimIntImpl::SetHeightDotField(
 void LUBRICATION::TimIntImpl::SetRelativeVelocityField(
     const int nds, Teuchos::RCP<const Epetra_Vector> rel_vel)
 {
-  if (nds >= discret_->NumDofSets()) dserror("Too few dofsets on lubrication discretization!");
-  if (rel_vel == Teuchos::null) dserror("no velocity provided.");
+  if (nds >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on lubrication discretization!");
+  if (rel_vel == Teuchos::null) FOUR_C_THROW("no velocity provided.");
   discret_->SetState(nds, "rel_tang_vel", rel_vel);
 }
 
@@ -882,8 +882,8 @@ void LUBRICATION::TimIntImpl::SetRelativeVelocityField(
 void LUBRICATION::TimIntImpl::SetAverageVelocityField(
     const int nds, Teuchos::RCP<const Epetra_Vector> av_vel)
 {
-  if (nds >= discret_->NumDofSets()) dserror("Too few dofsets on lubrication discretization!");
-  if (av_vel == Teuchos::null) dserror("no velocity provided");
+  if (nds >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on lubrication discretization!");
+  if (av_vel == Teuchos::null) FOUR_C_THROW("no velocity provided");
 
   discret_->SetState(nds, "av_tang_vel", av_vel);
 }
@@ -995,7 +995,8 @@ void LUBRICATION::TimIntImpl::OutputState()
   if (isale_)
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discret_->GetState(nds_disp_, "dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot extract displacement field from discretization");
+    if (dispnp == Teuchos::null)
+      FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
@@ -1048,13 +1049,13 @@ void LUBRICATION::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     {
       const int errorfunctnumber = params_->get<int>("CALCERRORNO");
       if (errorfunctnumber < 1)
-        dserror("invalid value of paramter CALCERRORNO for error function evaluation!");
+        FOUR_C_THROW("invalid value of paramter CALCERRORNO for error function evaluation!");
 
       eleparams.set<int>("error function number", errorfunctnumber);
       break;
     }
     default:
-      dserror("Cannot calculate error. Unknown type of analytical test problem");
+      FOUR_C_THROW("Cannot calculate error. Unknown type of analytical test problem");
       break;
   }
 

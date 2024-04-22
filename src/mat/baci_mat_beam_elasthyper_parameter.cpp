@@ -42,13 +42,13 @@ double MAT::PAR::DetermineShearModulus(const Teuchos::RCP<MAT::PAR::Material>& m
   }
   else if (shearmodulus != -1.0 and poissonratio != -1.0)
   {
-    dserror(
+    FOUR_C_THROW(
         "You specified both of the redundant material parameters SHEARMOD and POISSONRATIO! "
         "Specify exactly one of them in the material definition of your input file!");
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "You specified none of the material parameters SHEARMOD and POISSONRATIO! "
         "Specify exactly one of them in the material definition of your input file!");
   }
@@ -134,28 +134,29 @@ MAT::PAR::BeamReissnerElastHyperMaterialParams::BeamReissnerElastHyperMaterialPa
       area_moment_inertia_3_(*matdata->Get<double>("MOMIN3")),
       radius_interaction_(DetermineDefaultInteractionRadius(matdata))
 {
-  if (youngs_modulus_ <= 0.0) dserror("Young's modulus must be positive value");
+  if (youngs_modulus_ <= 0.0) FOUR_C_THROW("Young's modulus must be positive value");
 
-  if (shear_modulus_ <= 0.0) dserror("shear modulus must be positive value");
+  if (shear_modulus_ <= 0.0) FOUR_C_THROW("shear modulus must be positive value");
 
-  if (density_ < 0.0) dserror("density must not be negative value");
+  if (density_ < 0.0) FOUR_C_THROW("density must not be negative value");
 
-  if (cross_section_area_ <= 0.0) dserror("cross-section area must be positive value");
+  if (cross_section_area_ <= 0.0) FOUR_C_THROW("cross-section area must be positive value");
 
-  if (shear_correction_factor_ <= 0.0) dserror("shear correction factor must be positive value");
+  if (shear_correction_factor_ <= 0.0)
+    FOUR_C_THROW("shear correction factor must be positive value");
 
   if (area_moment_inertia_polar_ <= 0.0)
-    dserror("polar/axial area moment of inertia must be positive value");
+    FOUR_C_THROW("polar/axial area moment of inertia must be positive value");
 
-  if (area_moment_inertia_2_ <= 0.0) dserror("area moment of inertia must be positive value");
+  if (area_moment_inertia_2_ <= 0.0) FOUR_C_THROW("area moment of inertia must be positive value");
 
-  if (area_moment_inertia_3_ <= 0.0) dserror("area moment of inertia must be positive value");
+  if (area_moment_inertia_3_ <= 0.0) FOUR_C_THROW("area moment of inertia must be positive value");
 
 
   /* the radius of an assumed circular cross-section is only used for the evaluation
    * of all kinds of interactions. it can hence be ignored if no interaction are considered. */
   if (radius_interaction_ != -1.0 and radius_interaction_ <= 0.0)
-    dserror(
+    FOUR_C_THROW(
         "if specified (only required if any kind of beam interactions are considered and you "
         "don't want to use the default radius computed from the area moment of inertia), the "
         "given interaction radius must be a positive value");
@@ -180,30 +181,30 @@ MAT::PAR::BeamReissnerElastHyperMaterialParamsByMode::BeamReissnerElastHyperMate
       mass_moment_inertia_3_(*matdata->Get<double>("MASSMOMIN3")),
       radius_interaction_(*matdata->Get<double>("INTERACTIONRADIUS"))
 {
-  if (axial_rigidity_ <= 0.0) dserror("axial rigidity must be positive value");
+  if (axial_rigidity_ <= 0.0) FOUR_C_THROW("axial rigidity must be positive value");
 
   if (shear_rigidity_2_ <= 0.0 or shear_rigidity_3_ <= 0.0)
-    dserror("shear rigidity must be positive value");
+    FOUR_C_THROW("shear rigidity must be positive value");
 
-  if (torsional_rigidity_ <= 0.0) dserror("torsional rigidity must be positive value");
+  if (torsional_rigidity_ <= 0.0) FOUR_C_THROW("torsional rigidity must be positive value");
 
   if (bending_rigidity_2_ <= 0.0 or bending_rigidity_3_ <= 0.0)
-    dserror("bending rigidity must be positive value");
+    FOUR_C_THROW("bending rigidity must be positive value");
 
   if (translational_mass_inertia_ < 0.0)
-    dserror("translational mass inertia must not be negative value");
+    FOUR_C_THROW("translational mass inertia must not be negative value");
 
   if (mass_moment_inertia_polar_ < 0.0)
-    dserror("polar mass moment of inertia must not be negative value");
+    FOUR_C_THROW("polar mass moment of inertia must not be negative value");
 
   if (mass_moment_inertia_2_ < 0.0 or mass_moment_inertia_3_ < 0.0)
-    dserror("mass moment of inertia must not be negative value");
+    FOUR_C_THROW("mass moment of inertia must not be negative value");
 
 
   /* the radius of an assumed circular cross-section is only used for the evaluation
    * of all kinds of interactions. it can hence be ignored if no interaction are considered. */
   if (radius_interaction_ != -1.0 and radius_interaction_ <= 0.0)
-    dserror(
+    FOUR_C_THROW(
         "if specified (only required if any kind of beam interactions are considered), the "
         "given interaction radius must be a positive value");
 }
@@ -224,26 +225,26 @@ MAT::PAR::BeamKirchhoffElastHyperMaterialParams::BeamKirchhoffElastHyperMaterial
       area_moment_inertia_3_(*matdata->Get<double>("MOMIN3")),
       radius_interaction_(DetermineDefaultInteractionRadius(matdata))
 {
-  if (youngs_modulus_ <= 0.0) dserror("Young's modulus must be positive value");
+  if (youngs_modulus_ <= 0.0) FOUR_C_THROW("Young's modulus must be positive value");
 
-  if (shear_modulus_ <= 0.0) dserror("shear modulus must be positive value");
+  if (shear_modulus_ <= 0.0) FOUR_C_THROW("shear modulus must be positive value");
 
-  if (density_ < 0.0) dserror("density must not be negative value");
+  if (density_ < 0.0) FOUR_C_THROW("density must not be negative value");
 
-  if (cross_section_area_ <= 0.0) dserror("cross-section area must be positive value");
+  if (cross_section_area_ <= 0.0) FOUR_C_THROW("cross-section area must be positive value");
 
   if (area_moment_inertia_polar_ <= 0.0)
-    dserror("polar/axial area moment of inertia must be positive value");
+    FOUR_C_THROW("polar/axial area moment of inertia must be positive value");
 
-  if (area_moment_inertia_2_ <= 0.0) dserror("area moment of inertia must be positive value");
+  if (area_moment_inertia_2_ <= 0.0) FOUR_C_THROW("area moment of inertia must be positive value");
 
-  if (area_moment_inertia_3_ <= 0.0) dserror("area moment of inertia must be positive value");
+  if (area_moment_inertia_3_ <= 0.0) FOUR_C_THROW("area moment of inertia must be positive value");
 
 
   /* the radius of an assumed circular cross-section is only used for the evaluation
    * of all kinds of interactions. it can hence be ignored if no interaction are considered. */
   if (radius_interaction_ != -1.0 and radius_interaction_ <= 0.0)
-    dserror(
+    FOUR_C_THROW(
         "if specified (only required if any kind of beam interactions are considered and you "
         "don't want to use the default radius computed from the area moment of inertia), the "
         "given interaction radius must be a positive value");
@@ -266,27 +267,27 @@ MAT::PAR::BeamKirchhoffElastHyperMaterialParamsByMode::BeamKirchhoffElastHyperMa
       mass_moment_inertia_3_(*matdata->Get<double>("MASSMOMIN3")),
       radius_interaction_(*matdata->Get<double>("INTERACTIONRADIUS"))
 {
-  if (axial_rigidity_ <= 0.0) dserror("axial rigidity must be positive value");
+  if (axial_rigidity_ <= 0.0) FOUR_C_THROW("axial rigidity must be positive value");
 
-  if (torsional_rigidity_ <= 0.0) dserror("torsional rigidity must be positive value");
+  if (torsional_rigidity_ <= 0.0) FOUR_C_THROW("torsional rigidity must be positive value");
 
   if (bending_rigidity_2_ <= 0.0 or bending_rigidity_3_ <= 0.0)
-    dserror("bending rigidity must be positive value");
+    FOUR_C_THROW("bending rigidity must be positive value");
 
   if (translational_mass_inertia_ < 0.0)
-    dserror("translational mass inertia must not be negative value");
+    FOUR_C_THROW("translational mass inertia must not be negative value");
 
   if (mass_moment_inertia_polar_ < 0.0)
-    dserror("polar mass moment of inertia must not be negative value");
+    FOUR_C_THROW("polar mass moment of inertia must not be negative value");
 
   if (mass_moment_inertia_2_ < 0.0 or mass_moment_inertia_3_ < 0.0)
-    dserror("mass moment of inertia must not be negative value");
+    FOUR_C_THROW("mass moment of inertia must not be negative value");
 
 
   /* the radius of an assumed circular cross-section is only used for the evaluation
    * of all kinds of interactions. it can hence be ignored if no interaction are considered. */
   if (radius_interaction_ != -1.0 and radius_interaction_ <= 0.0)
-    dserror(
+    FOUR_C_THROW(
         "if specified (only required if any kind of beam interactions are considered), the "
         "given interaction radius must be a positive value");
 }
@@ -304,19 +305,19 @@ MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParams::
       area_moment_inertia_(*matdata->Get<double>("MOMIN")),
       radius_interaction_(DetermineDefaultInteractionRadiusIsotropic(matdata))
 {
-  if (youngs_modulus_ <= 0.0) dserror("Young's modulus must be positive value");
+  if (youngs_modulus_ <= 0.0) FOUR_C_THROW("Young's modulus must be positive value");
 
-  if (density_ < 0.0) dserror("density must not be negative value");
+  if (density_ < 0.0) FOUR_C_THROW("density must not be negative value");
 
-  if (cross_section_area_ <= 0.0) dserror("cross-section area must be positive value");
+  if (cross_section_area_ <= 0.0) FOUR_C_THROW("cross-section area must be positive value");
 
-  if (area_moment_inertia_ <= 0.0) dserror("area moment of inertia must be positive value");
+  if (area_moment_inertia_ <= 0.0) FOUR_C_THROW("area moment of inertia must be positive value");
 
 
   /* the radius of an assumed circular cross-section is only used for the evaluation
    * of all kinds of interactions. it can hence be ignored if no interaction are considered. */
   if (radius_interaction_ != -1.0 and radius_interaction_ <= 0.0)
-    dserror(
+    FOUR_C_THROW(
         "if specified (only required if any kind of beam interactions are considered and you "
         "don't want to use the default radius computed from the area moment of inertia), the "
         "given interaction radius must be a positive value");
@@ -334,18 +335,18 @@ MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode::
       translational_mass_inertia_(*matdata->Get<double>("RhoA")),
       radius_interaction_(*matdata->Get<double>("INTERACTIONRADIUS"))
 {
-  if (axial_rigidity_ <= 0.0) dserror("axial rigidity must be positive value");
+  if (axial_rigidity_ <= 0.0) FOUR_C_THROW("axial rigidity must be positive value");
 
-  if (bending_rigidity_ <= 0.0) dserror("bending rigidity must be positive value");
+  if (bending_rigidity_ <= 0.0) FOUR_C_THROW("bending rigidity must be positive value");
 
   if (translational_mass_inertia_ < 0.0)
-    dserror("translational mass inertia must not be negative value");
+    FOUR_C_THROW("translational mass inertia must not be negative value");
 
 
   /* the radius of an assumed circular cross-section is only used for the evaluation
    * of all kinds of interactions. it can hence be ignored if no interaction are considered. */
   if (radius_interaction_ != -1.0 and radius_interaction_ <= 0.0)
-    dserror(
+    FOUR_C_THROW(
         "if specified (only required if any kind of beam interactions are considered), the "
         "given interaction radius must be a positive value");
 }

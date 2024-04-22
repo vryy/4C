@@ -121,7 +121,7 @@ namespace
     std::vector<CORE::LINALG::SerialDenseVector> myknots(true);
 
     const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(dis, &ele, myknots, weights);
-    if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+    if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
 
     for (int gp = 0; gp < intpoints.NumPoints(); ++gp)
@@ -154,14 +154,15 @@ namespace
 
       if (error_code != 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Failed to invert the matrix of the shapefunctions evaluated at the Gauss points. It "
             "looks like this element does not support the default way to extrapolate quantities "
             "from Gauss points to nodes. Error code: %d",
             error_code);
       }
 
-      dsassert(shapefunctions_at_gps_copy.values() == matrixInverter.getFactoredMatrix()->values(),
+      FOUR_C_ASSERT(
+          shapefunctions_at_gps_copy.values() == matrixInverter.getFactoredMatrix()->values(),
           "Inverse of the matrix was not computed in place, but we expect that. Unfortunately, the "
           "Trilinos documentation is ambiguous here.");
 
@@ -181,14 +182,14 @@ namespace
 
       if (error_code != 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "Failed to invert the matrix of the shapefunctions evaluated at the Gauss points. It "
             "looks like this element does not support the default way to extrapolate quantities "
             "from Gauss points to nodes. Error code %d",
             error_code);
       }
 
-      dsassert(matTmat.values() == matrixInverter.getFactoredMatrix()->values(),
+      FOUR_C_ASSERT(matTmat.values() == matrixInverter.getFactoredMatrix()->values(),
           "Inverse of the matrix was not computed in place, but we expect that. Unfortunately, the "
           "Trilinos documentation is ambiguous here.");
     }
@@ -239,7 +240,7 @@ namespace
         }
         break;
         default:
-          dserror("This function is not implemented for space dimension %d.", nsd);
+          FOUR_C_THROW("This function is not implemented for space dimension %d.", nsd);
       }
       for (int basedis_inode = 0; basedis_inode < base_numnod; ++basedis_inode)
       {
@@ -287,7 +288,7 @@ CORE::LINALG::SerialDenseMatrix CORE::FE::EvaluateGaussPointsToNodesExtrapolatio
     CORE::FE::CellType base_distype =
         GetGaussPointExtrapolationBaseDistype<distype>(intpoints.NumPoints());
 
-    dsassert(CORE::FE::getNumberOfElementNodes(base_distype) <= intpoints.NumPoints(),
+    FOUR_C_ASSERT(CORE::FE::getNumberOfElementNodes(base_distype) <= intpoints.NumPoints(),
         "The base discretization has more nodes than Gauss points. The extrapolation is not "
         "unique! "
         "This should not happen. The evaluation of the base extrapolation type for the number of "
@@ -318,7 +319,7 @@ CORE::FE::EvaluateGaussPointsToNodesExtrapolationMatrix<CORE::FE::CellType::pyra
 {
   if (intpoints.NumPoints() != 8)
   {
-    dserror(
+    FOUR_C_THROW(
         "Gauss point extrapolation is not yet implemented for Pyramid5 elements with %d Gauss "
         "points. Currently, only 8 are supported",
         intpoints.NumPoints());
@@ -385,7 +386,7 @@ CORE::LINALG::SerialDenseMatrix CORE::FE::EvaluateGaussPointsToNURBSKnotsExtrapo
     CORE::FE::CellType base_distype =
         GetGaussPointExtrapolationBaseDistype<distype>(intpoints.NumPoints());
 
-    dsassert(CORE::FE::getNumberOfElementNodes(base_distype) <= intpoints.NumPoints(),
+    FOUR_C_ASSERT(CORE::FE::getNumberOfElementNodes(base_distype) <= intpoints.NumPoints(),
         "The base discretization has more nodes than Gauss points. The extrapolation is not "
         "unique! "
         "This should not happen. The evaluation of the base extrapolation type for the number of "

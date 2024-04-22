@@ -61,7 +61,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented!");
+        FOUR_C_THROW("method ComputeNullSpace not implemented!");
         return nullspace;
       }
 

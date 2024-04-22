@@ -65,7 +65,7 @@ void MAT::PAR::Bundle::MakeParameters()
     }
 
     // trials failed
-    dserror("Allocation of quick access parameters failed for material MAT %d", matid);
+    FOUR_C_THROW("Allocation of quick access parameters failed for material MAT %d", matid);
   }
 }
 
@@ -74,10 +74,10 @@ Teuchos::RCP<MAT::PAR::Material> MAT::PAR::Bundle::ById(const int num) const
 {
   std::map<int, Teuchos::RCP<MAT::PAR::Material>>::const_iterator m = matmap_.find(num);
 
-  if (matmap_.size() == 0) dserror("No materials available, num=%d", num);
+  if (matmap_.size() == 0) FOUR_C_THROW("No materials available, num=%d", num);
 
   if (m == matmap_.end())
-    dserror("Material 'MAT %d' could not be found", num);
+    FOUR_C_THROW("Material 'MAT %d' could not be found", num);
   else
     return m->second;
 

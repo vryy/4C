@@ -212,7 +212,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
 
         // Set the global Lagrange multiplier id for this node.
         error_code = node_gid_to_lambda_gid_->ReplaceMyValue(i_node, i_lambda, lagrange_gid);
-        if (error_code != 0) dserror("Got error code %d!", error_code);
+        if (error_code != 0) FOUR_C_THROW("Got error code %d!", error_code);
       }
   }
   if (element_gid_to_lambda_gid_ != Teuchos::null)
@@ -226,7 +226,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
 
         // Set the global Lagrange multiplier id for this element.
         error_code = element_gid_to_lambda_gid_->ReplaceMyValue(i_element, i_lambda, lagrange_gid);
-        if (error_code != 0) dserror("Got error code %d!", error_code);
+        if (error_code != 0) FOUR_C_THROW("Got error code %d!", error_code);
       }
   }
 
@@ -308,7 +308,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::SetLocalMaps(
 
     // The first (beam) element should always be on the same processor as the pair.
     if (pair->Element1()->Owner() != discret_->Comm().MyPID())
-      dserror(
+      FOUR_C_THROW(
           "The current implementation need the first element of a beam contact pair to be on the "
           "same processor as the pair!");
 
@@ -419,7 +419,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
         // Check if the id is in the map. If it is, add it to the output vector.
         auto search_key_in_map = node_gid_to_lambda_gid_map_.find(node_id);
         if (search_key_in_map == node_gid_to_lambda_gid_map_.end())
-          dserror("Global node id %d not in map!", node_id);
+          FOUR_C_THROW("Global node id %d not in map!", node_id);
         for (auto const& lambda_gid : search_key_in_map->second) lambda_row.push_back(lambda_gid);
       }
     }
@@ -436,7 +436,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
       // Check if the id is in the map. If it is, add it to the output vector.
       auto search_key_in_map = element_gid_to_lambda_gid_map_.find(element_id);
       if (search_key_in_map == element_gid_to_lambda_gid_map_.end())
-        dserror("Global element id %d not in map!", element_id);
+        FOUR_C_THROW("Global element id %d not in map!", element_id);
       for (auto const& lambda_gid : search_key_in_map->second) lambda_row.push_back(lambda_gid);
     }
   }
@@ -476,9 +476,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalCouplingContributi
   global_FS_L_->Complete(*lambda_dof_rowmap_, *solid_dof_rowmap_);
 
   // Complete the global scaling vector.
-  if (0 != global_kappa_->GlobalAssemble(Add, false)) dserror("Error in GlobalAssemble!");
-  if (0 != global_active_lambda_->GlobalAssemble(Add, false)) dserror("Error in GlobalAssemble!");
-  if (0 != global_constraint_->GlobalAssemble(Add, false)) dserror("Error in GlobalAssemble!");
+  if (0 != global_kappa_->GlobalAssemble(Add, false)) FOUR_C_THROW("Error in GlobalAssemble!");
+  if (0 != global_active_lambda_->GlobalAssemble(Add, false))
+    FOUR_C_THROW("Error in GlobalAssemble!");
+  if (0 != global_constraint_->GlobalAssemble(Add, false)) FOUR_C_THROW("Error in GlobalAssemble!");
 }
 
 /**
@@ -539,9 +540,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
     beam_force->PutScalar(0.);
     solid_force->PutScalar(0.);
     linalg_error = global_FB_L_->Multiply(false, *lambda, *beam_force);
-    if (linalg_error != 0) dserror("Error in Multiply!");
+    if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
     linalg_error = global_FS_L_->Multiply(false, *lambda, *solid_force);
-    if (linalg_error != 0) dserror("Error in Multiply!");
+    if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
     Teuchos::RCP<Epetra_Vector> global_temp =
         Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
     CORE::LINALG::Export(*beam_force, *global_temp);
@@ -549,7 +550,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
 
     // Add force contributions to global vector.
     linalg_error = force->Update(-1.0 * rhs_factor, *global_temp, 1.0);
-    if (linalg_error != 0) dserror("Error in Update");
+    if (linalg_error != 0) FOUR_C_THROW("Error in Update");
   }
 
   // Add the force and stiffness contributions that are assembled directly by the pairs.
@@ -577,7 +578,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobal
   // penalty parameter.
   Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
   int linalg_error = penalty_kappa_inv_mat->Multiply(false, *global_constraint_, *lambda);
-  if (linalg_error != 0) dserror("Error in Multiply!");
+  if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
 
   return lambda;
 }
@@ -638,7 +639,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::PenaltyIn
   else if (beam_to_surface_params != Teuchos::null)
     penalty_rotation = beam_to_surface_params->GetRotationalCouplingPenaltyParameter();
   else if (lambda_dof_rowmap_rotations_->NumGlobalElements() > 0)
-    dserror(
+    FOUR_C_THROW(
         "Rotational penalty coupling only implemented for beam-to-volume and beam-to-surface "
         "case.");
 
@@ -655,7 +656,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::PenaltyIn
       else if (lambda_dof_rowmap_rotations_->LID(gid) != -1)
         penalty = penalty_rotation;
       else
-        dserror("Could not find the GID %d in translation or rotation map", gid);
+        FOUR_C_THROW("Could not find the GID %d in translation or rotation map", gid);
 
       local_kappa_inv_value = penalty / global_kappa_->Values()[lid];
     }

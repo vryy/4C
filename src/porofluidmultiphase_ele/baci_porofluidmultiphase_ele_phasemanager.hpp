@@ -452,33 +452,33 @@ namespace DRT
         //! check if EvaluateGPState() was called
         void CheckIsEvaluated() const override
         {
-          if (not isevaluated_) dserror("Gauss point states have not been set!");
+          if (not isevaluated_) FOUR_C_THROW("Gauss point states have not been set!");
         }
 
         //! check if EvaluateGPState() was called
         void CheckIsSetup() const override
         {
-          if (not issetup_) dserror("Setup() was not called!");
+          if (not issetup_) FOUR_C_THROW("Setup() was not called!");
         }
 
         //! get porosity
         double Porosity() const override
         {
-          dserror("Porosity not available for this phase manager!");
+          FOUR_C_THROW("Porosity not available for this phase manager!");
           return 0.0;
         };
 
         //! get porosity
         double JacobianDefGrad() const override
         {
-          dserror("JacobianDefGrad not available for this phase manager!");
+          FOUR_C_THROW("JacobianDefGrad not available for this phase manager!");
           return 0.0;
         };
 
         //! get derivative of porosity wrt JacobianDefGrad
         double PorosityDerivWrtJacobianDefGrad() const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Derivative of Porosity w.r.t. JacobianDefGrad not available for this phase "
               "manager!");
           return 0.0;
@@ -487,28 +487,28 @@ namespace DRT
         //! get derivative of porosity w.r.t. DOF 'doftoderive'
         double PorosityDeriv(int doftoderive) const override
         {
-          dserror("Derivative of porosity not available for this phase manager!");
+          FOUR_C_THROW("Derivative of porosity not available for this phase manager!");
           return 0.0;
         };
 
         //! check if porosity depends on fluid (pressure)
         bool PorosityDependsOnFluid() const override
         {
-          dserror("PorosityDependsOnFluid() not available for this phase manager!");
+          FOUR_C_THROW("PorosityDependsOnFluid() not available for this phase manager!");
           return false;
         };
 
         //! check if porosity depends on structure (basically Jacobian of def. gradient)
         bool PorosityDependsOnStruct() const override
         {
-          dserror("PorosityDependsOnStruct() not available for this phase manager!");
+          FOUR_C_THROW("PorosityDependsOnStruct() not available for this phase manager!");
           return false;
         };
 
         //! get derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
         double SaturationDeriv(int phasenum, int doftoderive) const override
         {
-          dserror("Derivative of saturation not available for this phase manager!");
+          FOUR_C_THROW("Derivative of saturation not available for this phase manager!");
           return 0.0;
         };
 
@@ -516,21 +516,21 @@ namespace DRT
         double SaturationDerivDeriv(
             int phasenum, int firstdoftoderive, int seconddoftoderive) const override
         {
-          dserror("2nd Derivative of saturation not available for this phase manager!");
+          FOUR_C_THROW("2nd Derivative of saturation not available for this phase manager!");
           return 0.0;
         };
 
         //! get derivative of pressure of phase 'phasenum' w.r.t. DOF 'doftoderive'
         double PressureDeriv(int phasenum, int doftoderive) const override
         {
-          dserror("Derivative of pressure not available for this phase manager!");
+          FOUR_C_THROW("Derivative of pressure not available for this phase manager!");
           return 0.0;
         };
 
         //! get derivative of solid pressure  w.r.t. DOF 'doftoderive'
         double SolidPressureDeriv(int doftoderive) const override
         {
-          dserror("Derivative of solid pressure not available for this phase manager!");
+          FOUR_C_THROW("Derivative of solid pressure not available for this phase manager!");
           return 0.0;
         };
 
@@ -539,42 +539,42 @@ namespace DRT
         //! and w.r.t. DOF 'doftoderive2' (second derivative)
         double SolidPressureDerivDeriv(int doftoderive, int doftoderive2) const override
         {
-          dserror("Second derivative of solid pressure not available for this phase manager!");
+          FOUR_C_THROW("Second derivative of solid pressure not available for this phase manager!");
           return 0.0;
         };
 
         //! get the reaction term
         double ReacTerm(int phasenum) const override
         {
-          dserror("Reaction term not available for this phase manager!");
+          FOUR_C_THROW("Reaction term not available for this phase manager!");
           return 0.0;
         };
 
         //! get total number of scalars in system
         int NumScal() const override
         {
-          dserror("Number of scalars not available for this phase manager");
+          FOUR_C_THROW("Number of scalars not available for this phase manager");
           return 0;
         };
 
         //! get the derivative of the reaction term
         double ReacDeriv(int phasenum, int doftoderive) const override
         {
-          dserror("Reaction term derivative not available for this phase manager!");
+          FOUR_C_THROW("Reaction term derivative not available for this phase manager!");
           return 0.0;
         };
 
         //! get the derivative of the reaction term w.r.t. scalar 'scaltoderive'
         double ReacDerivScalar(int phasenum, int scaltoderive) const override
         {
-          dserror("Reaction term derivative (scalar) not available for this phase manager!");
+          FOUR_C_THROW("Reaction term derivative (scalar) not available for this phase manager!");
           return 0.0;
         };
 
         //! get the derivative of the reaction term w.r.t. porosity
         double ReacDerivPorosity(int phasenum) const override
         {
-          dserror("Reaction term derivative (porosity) not available for this phase manager!");
+          FOUR_C_THROW("Reaction term derivative (porosity) not available for this phase manager!");
           return 0.0;
         };
 
@@ -582,77 +582,79 @@ namespace DRT
         void PermeabilityTensor(
             int phasenum, CORE::LINALG::Matrix<3, 3>& permeabilitytensor) const override
         {
-          dserror("Diffusion tensor (3D) not available for this phase manager!");
+          FOUR_C_THROW("Diffusion tensor (3D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         void PermeabilityTensor(
             int phasenum, CORE::LINALG::Matrix<2, 2>& permeabilitytensor) const override
         {
-          dserror("Diffusion tensor (2D) not available for this phase manager!");
+          FOUR_C_THROW("Diffusion tensor (2D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         void PermeabilityTensor(
             int phasenum, CORE::LINALG::Matrix<1, 1>& permeabilitytensor) const override
         {
-          dserror("Diffusion tensor (1D) not available for this phase manager!");
+          FOUR_C_THROW("Diffusion tensor (1D) not available for this phase manager!");
         };
 
         //! check for constant relpermeability
         bool HasConstantRelPermeability(int phasenum) const override
         {
-          dserror("Check for Constant Relative Permeability not available for this phase manager!");
+          FOUR_C_THROW(
+              "Check for Constant Relative Permeability not available for this phase manager!");
           return false;
         };
         //! get relative diffusivity of phase
         double RelPermeability(int phasenum) const override
         {
-          dserror("Relative Diffusivity not available for this phase manager!");
+          FOUR_C_THROW("Relative Diffusivity not available for this phase manager!");
           return 0.0;
         };
         //! get derivative of relative permeability of phase
         double RelPermeabilityDeriv(int phasenum) const override
         {
-          dserror("Derivativ of relativ permeability not available for this phase manager!");
+          FOUR_C_THROW("Derivativ of relativ permeability not available for this phase manager!");
           return 0.0;
         };
 
         //! check for constant dynamic viscosity
         bool HasConstantDynViscosity(int phasenum) const override
         {
-          dserror("Check for Constant Dynamic Viscosity not available for this phase manager!");
+          FOUR_C_THROW(
+              "Check for Constant Dynamic Viscosity not available for this phase manager!");
           return false;
         };
         //! get relative diffusivity of phase
         double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const override
         {
-          dserror("Dynamic Viscosity not available for this phase manager!");
+          FOUR_C_THROW("Dynamic Viscosity not available for this phase manager!");
           return 0.0;
         };
         //! get dynamic viscosity of phase
         double DynViscosity(
             const MAT::Material& material, int phasenum, double abspressgrad) const override
         {
-          dserror("Dynamic Viscosity not available for this phase manager!");
+          FOUR_C_THROW("Dynamic Viscosity not available for this phase manager!");
           return 0.0;
         };
         //! get derivative of dynamic viscosity of phase
         double DynViscosityDeriv(int phasenum, double abspressgrad) const override
         {
-          dserror("Derivative of dynamic Viscosity not available for this phase manager!");
+          FOUR_C_THROW("Derivative of dynamic Viscosity not available for this phase manager!");
           return 0.0;
         };
         //! get derivative dynamic viscosity of phase
         double DynViscosityDeriv(
             const MAT::Material& material, int phasenum, double abspressgrad) const override
         {
-          dserror("Derivative of dynamic Viscosity not available for this phase manager!");
+          FOUR_C_THROW("Derivative of dynamic Viscosity not available for this phase manager!");
           return 0.0;
         };
 
         //! check for constant dynamic viscosity of volume fraction pressure
         bool HasConstantDynViscosityVolFracPressure(int volfracpressnum) const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Check for Constant Dynamic Viscosity (VolFracPressure) not available for this phase "
               "manager!");
           return false;
@@ -661,21 +663,21 @@ namespace DRT
         double DynViscosityVolFracPressure(
             int volfracpressnum, double abspressgrad, int matnum = 0) const override
         {
-          dserror("Dynamic Viscosity (VolFracPressure) not available for this phase manager!");
+          FOUR_C_THROW("Dynamic Viscosity (VolFracPressure) not available for this phase manager!");
           return 0.0;
         };
         //! get dynamic viscosity of volume fraction pressure
         double DynViscosityVolFracPressure(
             const MAT::Material& material, int volfracpressnum, double abspressgrad) const override
         {
-          dserror("Dynamic Viscosity (VolFracPressure) not available for this phase manager!");
+          FOUR_C_THROW("Dynamic Viscosity (VolFracPressure) not available for this phase manager!");
           return 0.0;
         };
         //! get derivative of dynamic viscosity of volume fraction pressure
         double DynViscosityDerivVolFracPressure(
             int volfracpressnum, double abspressgrad) const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Derivative of dynamic Viscosity (VolFracPressure) not available for this phase "
               "manager!");
           return 0.0;
@@ -684,7 +686,7 @@ namespace DRT
         double DynViscosityDerivVolFracPressure(
             const MAT::Material& material, int volfracpressnum, double abspressgrad) const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Derivative of dynamic Viscosity (VolFracPressure) not available for this phase "
               "manager!");
           return 0.0;
@@ -694,21 +696,21 @@ namespace DRT
         void DiffTensorVolFrac(
             int volfracnum, CORE::LINALG::Matrix<3, 3>& difftensorvolfrac) const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Diffusion tensor for volume fractions (3D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         void DiffTensorVolFrac(
             int volfracnum, CORE::LINALG::Matrix<2, 2>& difftensorvolfrac) const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Diffusion tensor for volume fractions (2D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         void DiffTensorVolFrac(
             int volfracnum, CORE::LINALG::Matrix<1, 1>& difftensorvolfrac) const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Diffusion tensor for volume fractions (1D) not available for this phase manager!");
         };
 
@@ -716,7 +718,7 @@ namespace DRT
         void PermeabilityTensorVolFracPressure(int volfracpressnum,
             CORE::LINALG::Matrix<3, 3>& permeabilitytensorvolfracpressure) const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Permeability tensor for volume fraction pressures (3D) not available for this phase "
               "manager!");
         };
@@ -724,7 +726,7 @@ namespace DRT
         void PermeabilityTensorVolFracPressure(int volfracpressnum,
             CORE::LINALG::Matrix<2, 2>& permeabilitytensorvolfracpressure) const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Permeability tensor for volume fraction pressures (2D) not available for this phase "
               "manager!");
         };
@@ -732,7 +734,7 @@ namespace DRT
         void PermeabilityTensorVolFracPressure(int volfracpressnum,
             CORE::LINALG::Matrix<1, 1>& permeabilitytensorvolfracpressure) const override
         {
-          dserror(
+          FOUR_C_THROW(
               "Permeability tensor for volume fraction pressures (1D) not available for this phase "
               "manager!");
         };
@@ -740,14 +742,14 @@ namespace DRT
         //! check if volume frac 'volfracnum' has additional scalar dependent flux
         bool HasAddScalarDependentFlux(int volfracnum) const override
         {
-          dserror("HasAddScalarDependentFlux not available for this phase manager!");
+          FOUR_C_THROW("HasAddScalarDependentFlux not available for this phase manager!");
           return false;
         };
 
         //! check if volume frac 'volfracnum' has additional scalar dependent flux of scalar 'iscal'
         bool HasAddScalarDependentFlux(int volfracnum, int iscal) const override
         {
-          dserror("HasAddScalarDependentFlux not available for this phase manager!");
+          FOUR_C_THROW("HasAddScalarDependentFlux not available for this phase manager!");
           return false;
         };
 
@@ -756,14 +758,14 @@ namespace DRT
         //       Continuous and discrete mathematical models of tumor-induced angiogenesis
         bool HasReceptorKineticLaw(int volfracnum, int iscal) const override
         {
-          dserror("HasReceptorKineticLaw not available for this phase manager!");
+          FOUR_C_THROW("HasReceptorKineticLaw not available for this phase manager!");
           return false;
         };
 
         //! return scalar diffusivities of scalar 'iscal' of volume fraction 'volfracnum'
         double ScalarDiff(int volfracnum, int iscal) const override
         {
-          dserror("ScalarDiff not available for this phase manager!");
+          FOUR_C_THROW("ScalarDiff not available for this phase manager!");
           return 0.0;
         };
 
@@ -772,14 +774,14 @@ namespace DRT
         //       Continuous and discrete mathematical models of tumor-induced angiogenesis
         double OmegaHalf(int volfracnum, int iscal) const override
         {
-          dserror("OmegaHalf not available for this phase manager!");
+          FOUR_C_THROW("OmegaHalf not available for this phase manager!");
           return 0.0;
         };
 
         //! get scalar to phase mapping
         MAT::ScatraMatMultiPoro::ScalarToPhaseMap ScalarToPhase(int iscal) const override
         {
-          dserror("ScalarToPhase not available for this phase manager!");
+          FOUR_C_THROW("ScalarToPhase not available for this phase manager!");
           MAT::ScatraMatMultiPoro::ScalarToPhaseMap null_map;
           return null_map;
         };

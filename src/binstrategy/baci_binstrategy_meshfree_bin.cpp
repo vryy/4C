@@ -48,7 +48,7 @@ void DRT::MESHFREE::MeshfreeBin<ELEMENT>::DeleteNode(int gid)
       return;
     }
   }
-  dserror("Connectivity issues: No node with specified gid to delete in element. ");
+  FOUR_C_THROW("Connectivity issues: No node with specified gid to delete in element. ");
   return;
 }
 

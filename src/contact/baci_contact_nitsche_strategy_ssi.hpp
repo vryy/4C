@@ -53,7 +53,7 @@ namespace CONTACT
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override
     {
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
     }
 
     /*!

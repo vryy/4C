@@ -159,7 +159,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
           Teuchos::RCP<const Epetra_Vector> scanp =
               discretization.GetState("scalar (n+1,converged)");
           if (velnp == Teuchos::null || scanp == Teuchos::null)
-            dserror("Cannot get state vectors 'velnp' and/or 'scanp'");
+            FOUR_C_THROW("Cannot get state vectors 'velnp' and/or 'scanp'");
 
           // extract local values from the global vectors
           std::vector<double> myvelpre(lm.size());
@@ -189,13 +189,14 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
             }
             default:
             {
-              dserror("Unknown element type for turbulent passive scalar mean value evaluation\n");
+              FOUR_C_THROW(
+                  "Unknown element type for turbulent passive scalar mean value evaluation\n");
             }
           }
         }
       }  // end if (nsd == 3)
       else
-        dserror("action 'calc_turbscatra_statistics' is a 3D specific action");
+        FOUR_C_THROW("action 'calc_turbscatra_statistics' is a 3D specific action");
     }
     break;
     case FLD::calc_loma_statistics:
@@ -215,7 +216,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
           Teuchos::RCP<const Epetra_Vector> scanp =
               discretization.GetState("scalar (n+1,converged)");
           if (velnp == Teuchos::null || scanp == Teuchos::null)
-            dserror("Cannot get state vectors 'velnp' and/or 'scanp'");
+            FOUR_C_THROW("Cannot get state vectors 'velnp' and/or 'scanp'");
 
           // extract local values from global vectors
           std::vector<double> myvelpre(lm.size());
@@ -248,13 +249,13 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
             }
             default:
             {
-              dserror("Unknown element type for low-Mach-number mean value evaluation\n");
+              FOUR_C_THROW("Unknown element type for low-Mach-number mean value evaluation\n");
             }
           }
         }
       }  // end if (nsd == 3)
       else
-        dserror("action 'calc_loma_statistics' is a 3D specific action");
+        FOUR_C_THROW("action 'calc_loma_statistics' is a 3D specific action");
     }
     break;
     case FLD::calc_fluid_box_filter:
@@ -268,7 +269,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         else if (distype == CORE::FE::CellType::tet4)
           nen = 4;
         else
-          dserror("not supported");
+          FOUR_C_THROW("not supported");
 
         // --------------------------------------------------
         // extract velocity and pressure from global
@@ -278,7 +279,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         // intermediate solution, i.e. n+alphaF for genalpha
         // and n+1 for one-step-theta)
         Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
-        if (vel == Teuchos::null) dserror("Cannot get state vectors 'vel'");
+        if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'vel'");
         // extract local values from the global vectors
         std::vector<double> myvel(lm.size());
         CORE::FE::ExtractMyValues(*vel, myvel, lm);
@@ -292,7 +293,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         if (fldpara->PhysicalType() == INPAR::FLUID::loma)
         {
           Teuchos::RCP<const Epetra_Vector> temp = discretization.GetState("T (trial)");
-          if (temp == Teuchos::null) dserror("Cannot get state vectors 'temp'");
+          if (temp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'temp'");
           CORE::FE::ExtractMyValues(*temp, tmp_temp, lm);
 
           for (int i = 0; i < nen; i++) mytemp[i] = tmp_temp[nsd + (i * (nsd + 1))];
@@ -344,7 +345,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
           }
           default:
           {
-            dserror("Unknown element type for box filter application\n");
+            FOUR_C_THROW("Unknown element type for box filter application\n");
           }
         }
 
@@ -359,7 +360,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
 
       }  // end if (nsd == 3)
       else
-        dserror("action 'calc_fluid_box_filter' is 3D specific action");
+        FOUR_C_THROW("action 'calc_fluid_box_filter' is 3D specific action");
     }
     break;
     case FLD::calc_smagorinsky_const:
@@ -418,7 +419,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
           }
           default:
           {
-            dserror("Unknown element type for box filter application\n");
+            FOUR_C_THROW("Unknown element type for box filter application\n");
           }
         }
 
@@ -459,7 +460,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         params.set<double>("zcenter", zcenter);
       }  // end if(nsd == 3)
       else
-        dserror("action 'calc_smagorinsky_const' is a 3D specific action");
+        FOUR_C_THROW("action 'calc_smagorinsky_const' is a 3D specific action");
     }
     break;
     case FLD::calc_vreman_const:
@@ -497,7 +498,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
           }
           default:
           {
-            dserror("Unknown element type for dynamic vreman application\n");
+            FOUR_C_THROW("Unknown element type for dynamic vreman application\n");
           }
         }
 
@@ -505,7 +506,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         elevec1(1) = cv_denominator;
       }  // end if(nsd == 3)
       else
-        dserror("action 'calc_vreman_const' is a 3D specific action");
+        FOUR_C_THROW("action 'calc_vreman_const' is a 3D specific action");
     }
     break;
     case FLD::calc_fluid_genalpha_update_for_subscales:
@@ -526,7 +527,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> fsvelnp = discretization.GetState("fsvelnp");
         if (velnp == Teuchos::null or fsvelnp == Teuchos::null)
         {
-          dserror("Cannot get state vectors");
+          FOUR_C_THROW("Cannot get state vectors");
         }
 
         // extract local values from the global vectors
@@ -554,12 +555,12 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
           }
           default:
           {
-            dserror("Unknown element type\n");
+            FOUR_C_THROW("Unknown element type\n");
           }
         }
       }
       else
-        dserror("%i D elements does not support calculation of model parameters", nsd);
+        FOUR_C_THROW("%i D elements does not support calculation of model parameters", nsd);
     }
     break;
     case FLD::calc_mean_Cai:
@@ -571,7 +572,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         if (distype == CORE::FE::CellType::hex8)
           nen = 8;
         else
-          dserror("not supported");
+          FOUR_C_THROW("not supported");
 
         // velocity values
         // renamed to "velaf" to be consistent i fluidimplicitintegration.cpp (krank 12/13)
@@ -580,7 +581,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> sca = discretization.GetState("scalar");
         if (vel == Teuchos::null or sca == Teuchos::null)
         {
-          dserror("Cannot get state vectors");
+          FOUR_C_THROW("Cannot get state vectors");
         }
         // extract local values from the global vectors
         std::vector<double> myvel(lm.size());
@@ -605,7 +606,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
 
         // check whether all nodes have a unique inflow condition
         DRT::UTILS::FindElementConditions(this, "TurbulentInflowSection", myinflowcond);
-        if (myinflowcond.size() > 1) dserror("More than one inflow condition on one node!");
+        if (myinflowcond.size() > 1) FOUR_C_THROW("More than one inflow condition on one node!");
 
         if (myinflowcond.size() == 1) is_inflow_ele = true;
 
@@ -622,7 +623,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
             }
             default:
             {
-              dserror("Unknown element type\n");
+              FOUR_C_THROW("Unknown element type\n");
             }
           }
         }
@@ -632,7 +633,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
         params.set<double>("ele_vol", vol);
       }
       else
-        dserror("%i D elements does not support calculation of mean Cai", nsd);
+        FOUR_C_THROW("%i D elements does not support calculation of mean Cai", nsd);
     }
     break;
     case FLD::set_mean_Cai:
@@ -682,12 +683,12 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
           }
           default:
           {
-            dserror("Unknown element type for shape function integration\n");
+            FOUR_C_THROW("Unknown element type for shape function integration\n");
           }
         }
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "action 'calculate node normal' should also work in 2D, but 2D elements are not"
             " added to the template yet. Also it is not tested");
       break;
@@ -731,7 +732,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
     // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
     //-----------------------------------------------------------------------
     default:
-      dserror("Unknown type of action '%i' for Fluid", act);
+      FOUR_C_THROW("Unknown type of action '%i' for Fluid", act);
       break;
   }  // end of switch(act)
 
@@ -778,7 +779,7 @@ void DRT::ELEMENTS::FluidIntFaceType::PreEvaluate(DRT::Discretization& dis,
     fldintfacepara->SetFaceGeneralXFEMParameter(p, dis.Comm().MyPID());
   }
   else
-    dserror("unknown action type for FluidIntFaceType::PreEvaluate");
+    FOUR_C_THROW("unknown action type for FluidIntFaceType::PreEvaluate");
 
   return;
 }

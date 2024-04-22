@@ -113,13 +113,13 @@ namespace ADAPTER
     //! check if \ref Setup() was called
     void CheckIsSetup()
     {
-      if (not IsSetup()) dserror("Setup() was not called.");
+      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! check if \ref Init() was called
     void CheckIsInit()
     {
-      if (not IsInit()) dserror("Init(...) was not called.");
+      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:

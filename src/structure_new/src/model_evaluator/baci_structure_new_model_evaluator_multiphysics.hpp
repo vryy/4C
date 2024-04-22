@@ -97,7 +97,7 @@ namespace STR
 
       void CheckActiveModelType() const
       {
-        if (active_mt_ == mt_none) dserror("No active model evaluator set for Multiphysics");
+        if (active_mt_ == mt_none) FOUR_C_THROW("No active model evaluator set for Multiphysics");
       };
 
       //! @name Functions which are derived from the base generic class

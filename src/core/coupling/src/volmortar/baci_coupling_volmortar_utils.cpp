@@ -23,7 +23,7 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
     const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
     Teuchos::RCP<DRT::Discretization> dis2)
 {
-  if (ele1 == nullptr) dserror("ERROR: Got nullptr pointer for AssignMaterial for element!");
+  if (ele1 == nullptr) FOUR_C_THROW("ERROR: Got nullptr pointer for AssignMaterial for element!");
 
   // if no corresponding element found -> leave
   if (ids_2.empty()) return;
@@ -66,7 +66,7 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
     const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
     Teuchos::RCP<DRT::Discretization> dis2)
 {
-  if (ele2 == nullptr) dserror("ERROR: Got nullptr pointer for AssignMaterial for element!");
+  if (ele2 == nullptr) FOUR_C_THROW("ERROR: Got nullptr pointer for AssignMaterial for element!");
 
   // if no corresponding element found -> leave
   if (ids_1.empty()) return;

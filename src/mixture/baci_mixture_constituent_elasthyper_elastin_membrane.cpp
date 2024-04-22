@@ -58,7 +58,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::OnGlobalDataInitialized()
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Could not find either GP cylinder coordinates nor element cylinder coordinates. The "
         "elastin material needs at least one.");
   }
@@ -76,7 +76,7 @@ MIXTURE::ElastinMembraneAnisotropyExtension::GetOrthogonalStructuralTensor(int g
 {
   if (orthogonalStructuralTensor_.empty())
   {
-    dserror("The coordinate system hast not been initialized yet.");
+    FOUR_C_THROW("The coordinate system hast not been initialized yet.");
 
     // avoid compiler error
     return orthogonalStructuralTensor_[0];
@@ -103,7 +103,7 @@ MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane::
 {
   if (nummat_membrane_ != (int)matids_membrane_->size())
   {
-    dserror(
+    FOUR_C_THROW(
         "number of membrane summands %d does not fit to the size of the membrane summands vector"
         " %d",
         nummat_membrane_, matids_membrane_->size());
@@ -130,14 +130,14 @@ MIXTURE::MixtureConstituentElastHyperElastinMembrane::MixtureConstituentElastHyp
   for (const auto& matid : *params_->matids_membrane_)
   {
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-    if (sum == Teuchos::null) dserror("Failed to read elastic summand.");
+    if (sum == Teuchos::null) FOUR_C_THROW("Failed to read elastic summand.");
 
     Teuchos::RCP<MAT::ELASTIC::IsoNeoHooke> neoHooke =
         Teuchos::rcp_dynamic_cast<MAT::ELASTIC::IsoNeoHooke>(sum);
 
     if (Teuchos::is_null(neoHooke))
     {
-      dserror(
+      FOUR_C_THROW(
           "Currently, only the an IsoNeoHooke material law is possible for use as an elastin "
           "membrane material");
     }
@@ -220,7 +220,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::Update(
   double totaltime = params.get<double>("total time", -1);
   if (totaltime < 0.0)
   {
-    dserror("Parameter 'total time' could not be read!");
+    FOUR_C_THROW("Parameter 'total time' could not be read!");
   }
 
   current_reference_growth_[gp] =
@@ -245,7 +245,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::PreEvaluate(
 
   if (strategy == nullptr)
   {
-    dserror(
+    FOUR_C_THROW(
         "The used prestretch strategy is not compatible with elastin materials. It has to "
         "implement MIXTURE::ElastinMembranePrestressStrategy.");
   }
@@ -265,7 +265,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::Evaluate(
     Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
     CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
-  dserror("This constituent does not support Evaluation without an elastic part.");
+  FOUR_C_THROW("This constituent does not support Evaluation without an elastic part.");
 }
 
 void MIXTURE::MixtureConstituentElastHyperElastinMembrane::EvaluateElasticPart(

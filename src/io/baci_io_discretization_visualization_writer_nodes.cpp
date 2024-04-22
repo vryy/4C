@@ -66,7 +66,8 @@ namespace IO
     // safety check
     if (point_coordinates.size() != num_spatial_dimensions * num_row_nodes)
     {
-      dserror("DiscretizationVisualizationWriterNodes expected %d coordinate values, but got %d",
+      FOUR_C_THROW(
+          "DiscretizationVisualizationWriterNodes expected %d coordinate values, but got %d",
           num_spatial_dimensions * num_row_nodes, point_coordinates.size());
     }
   }
@@ -105,7 +106,7 @@ namespace IO
 
     // safety check
     if ((unsigned int)result_data_nodebased->NumVectors() != result_num_components_per_node)
-      dserror(
+      FOUR_C_THROW(
           "DiscretizationVisualizationWriterNodes: expected Epetra_MultiVector with %d columns but "
           "got %d",
           result_num_components_per_node, result_data_nodebased->NumVectors());

@@ -74,9 +74,9 @@ namespace PARTICLEINTERACTION
     //! get specific runtime output writer
     inline IO::VisualizationManager* GetSpecificRuntimeOutputWriter(const std::string& fieldname)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not runtime_visualization_managers_.count(fieldname))
-        dserror("no runtime output writer for field '%s' stored!", fieldname.c_str());
+        FOUR_C_THROW("no runtime output writer for field '%s' stored!", fieldname.c_str());
 #endif
 
       return runtime_visualization_managers_[fieldname].get();
@@ -85,9 +85,9 @@ namespace PARTICLEINTERACTION
     //! get specific runtime csv writer
     inline IO::RuntimeCsvWriter* GetSpecificRuntimeCsvWriter(const std::string& fieldname)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not runtime_csvwriters_.count(fieldname))
-        dserror("no runtime csv writer for field '%s' stored!", fieldname.c_str());
+        FOUR_C_THROW("no runtime csv writer for field '%s' stored!", fieldname.c_str());
 #endif
 
       return runtime_csvwriters_[fieldname].get();

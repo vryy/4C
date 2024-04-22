@@ -45,7 +45,7 @@ namespace
       case 9:
         return CORE::FE::GaussRule1D::line_lobatto10point;
       default:
-        dserror("The Lobatto Gauss rule is not implemented for degree %d", degree);
+        FOUR_C_THROW("The Lobatto Gauss rule is not implemented for degree %d", degree);
         return CORE::FE::GaussRule1D::undefined;
     }
   }
@@ -106,7 +106,7 @@ namespace CORE::FE
     coefficients_n1[1] = 1.;
     for (unsigned int n = 2;; ++n)
     {
-      dsassert(coefficients_n1.size() == n, "Internal error");
+      FOUR_C_ASSERT(coefficients_n1.size() == n, "Internal error");
       {
         // Scale coefficients to make polynomials orthonormal
         std::vector<double> scaledCoefficients(coefficients_n1);
@@ -138,7 +138,7 @@ namespace CORE::FE
       const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
   {
     const unsigned int size = polySpace1d_.size();
-    dsassert(size < 20, "Not implemented");
+    FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20];
@@ -163,7 +163,7 @@ namespace CORE::FE
         for (unsigned int k = 0; k < size; ++k) values(renumbering_[k]) = evaluation[0][k];
         break;
       default:
-        dserror("Invalid dimension");
+        FOUR_C_THROW("Invalid dimension");
         break;
     }
   }
@@ -178,7 +178,7 @@ namespace CORE::FE
       CORE::LINALG::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = polySpace1d_.size();
-    dsassert(size < 20, "Not implemented");
+    FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20], gradient[nsd_][20];
@@ -218,7 +218,7 @@ namespace CORE::FE
         for (unsigned int k = 0; k < size; ++k) derivatives(0, renumbering_[k]) = gradient[0][k];
         break;
       default:
-        dserror("Invalid dimension");
+        FOUR_C_THROW("Invalid dimension");
         break;
     }
   }
@@ -234,7 +234,7 @@ namespace CORE::FE
       CORE::LINALG::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = polySpace1d_.size();
-    dsassert(size < 20, "Not implemented");
+    FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
@@ -282,7 +282,7 @@ namespace CORE::FE
         for (unsigned int k = 0; k < size; ++k) derivatives(0, renumbering_[k]) = hessian[0][k];
         break;
       default:
-        dserror("Invalid dimension");
+        FOUR_C_THROW("Invalid dimension");
         break;
     }
   }
@@ -324,7 +324,7 @@ namespace CORE::FE
           matrix(0, renumbering_[k]) = polySpace1d_[k].NodePoint();
         break;
       default:
-        dserror("Invalid dimension");
+        FOUR_C_THROW("Invalid dimension");
         break;
     }
   }
@@ -339,7 +339,7 @@ namespace CORE::FE
       const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
   {
     const unsigned int size = polySpace1d_.size();
-    dsassert(size < 20, "Not implemented");
+    FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20];
@@ -364,11 +364,11 @@ namespace CORE::FE
         for (unsigned int k = 0; k < size; ++k, ++c) values(renumbering_[k]) = evaluation[0][k];
         break;
       default:
-        dserror("Invalid dimension");
+        FOUR_C_THROW("Invalid dimension");
         break;
     }
 
-    dsassert(c == Size(), "Internal error");
+    FOUR_C_ASSERT(c == Size(), "Internal error");
   }
 
 
@@ -381,7 +381,7 @@ namespace CORE::FE
       CORE::LINALG::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = polySpace1d_.size();
-    dsassert(size < 20, "Not implemented");
+    FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20], gradient[nsd_][20];
@@ -423,11 +423,11 @@ namespace CORE::FE
           derivatives(0, renumbering_[k]) = gradient[0][k];
         break;
       default:
-        dserror("Invalid dimension");
+        FOUR_C_THROW("Invalid dimension");
         break;
     }
 
-    dsassert(c == Size(), "Internal error");
+    FOUR_C_ASSERT(c == Size(), "Internal error");
   }
 
 
@@ -441,7 +441,7 @@ namespace CORE::FE
       CORE::LINALG::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = polySpace1d_.size();
-    dsassert(size < 20, "Not implemented");
+    FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
@@ -485,10 +485,10 @@ namespace CORE::FE
           derivatives(0, renumbering_[k]) = hessian[0][k];
         break;
       default:
-        dserror("Invalid dimension");
+        FOUR_C_THROW("Invalid dimension");
         break;
     }
-    dsassert(c == Size(), "Internal error");
+    FOUR_C_ASSERT(c == Size(), "Internal error");
   }
 
 
@@ -529,10 +529,10 @@ namespace CORE::FE
           matrix(0, renumbering_[c]) = polySpace1d_[k].NodePoint();
         break;
       default:
-        dserror("Invalid dimension");
+        FOUR_C_THROW("Invalid dimension");
         break;
     }
-    dsassert(c == Size(), "Internal error");
+    FOUR_C_ASSERT(c == Size(), "Internal error");
   }
 
 
@@ -655,7 +655,7 @@ namespace CORE::FE
   template <int nsd_>
   void CORE::FE::LagrangeBasisTet<nsd_>::FillFeketePoints(const unsigned int)
   {
-    dserror("Not implemented for dim = %d", nsd_);
+    FOUR_C_THROW("Not implemented for dim = %d", nsd_);
   }
 
 
@@ -683,7 +683,7 @@ namespace CORE::FE
 
 
     // Sanity check: Polynomials should be nodal in the Fekete points
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     for (unsigned int i = 0; i < Size(); ++i)
     {
       for (unsigned int d = 0; d < nsd_; ++d) point(d, 0) = feketePoints_(d, i);
@@ -692,9 +692,9 @@ namespace CORE::FE
       for (unsigned int j = 0; j < Size(); ++j)
         if (i != j)
           if (std::abs(values(j)) > 1e-11)
-            dserror("Lagrange polynomial seems to not be nodal, p_j(xi_i) = %lf!", values(j));
+            FOUR_C_THROW("Lagrange polynomial seems to not be nodal, p_j(xi_i) = %lf!", values(j));
       if (std::abs(values(i) - 1.) > 1e-11)
-        dserror("Lagrange polynomial seems to not be nodal, p_i(xi_i) = %lf!", values(i));
+        FOUR_C_THROW("Lagrange polynomial seems to not be nodal, p_i(xi_i) = %lf!", values(i));
     }
 #endif
   }

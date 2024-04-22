@@ -71,9 +71,9 @@ namespace BEAMINTERACTION
           true);  // = vector of element1's node tangents
 
       // So far, the next lines are only implemented and for linear Reissner beam elements -->
-      // dserror() otherwise
+      // FOUR_C_THROW() otherwise
       if (numnodes > 2)
-        dserror("Tangent smoothing only verified for LINEAR Reissner beam elements!!!");
+        FOUR_C_THROW("Tangent smoothing only verified for LINEAR Reissner beam elements!!!");
 
       // determine boundary node of element1
       const int numnode1 = 2;

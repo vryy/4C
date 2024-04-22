@@ -91,7 +91,7 @@ namespace
 
     [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override
     {
-      dserror("This is only a Mock. Don't use this here!");
+      FOUR_C_THROW("This is only a Mock. Don't use this here!");
       std::abort();
     }
 

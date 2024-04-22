@@ -60,7 +60,7 @@ bool DRT::ELEMENTS::Artery::ReadElement(
       gaussrule_ = CORE::FE::GaussRule1D::line_10point;
       break;
     default:
-      dserror("Reading of ART element failed: Gaussrule for line not supported!\n");
+      FOUR_C_THROW("Reading of ART element failed: Gaussrule for line not supported!\n");
   }
 
   // read artery implementation type
@@ -74,7 +74,7 @@ bool DRT::ELEMENTS::Artery::ReadElement(
   else if (impltype == "PressureBased")
     impltype_ = INPAR::ARTDYN::impltype_pressure_based;
   else
-    dserror("Invalid implementation type for ARTERY elements!");
+    FOUR_C_THROW("Invalid implementation type for ARTERY elements!");
 
   // extract diameter
   double diam = 0.0;
@@ -99,7 +99,7 @@ void DRT::ELEMENTS::Artery::SetDiamInMaterial(const double diam)
     arterymat->SetDiamInitial(diam);
   }
   else
-    dserror("Artery element got unsupported material type %d", mat->MaterialType());
+    FOUR_C_THROW("Artery element got unsupported material type %d", mat->MaterialType());
   return;
 }
 

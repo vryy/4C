@@ -5986,7 +5986,7 @@ CORE::FE::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule) : 
                    "wedge15 element. ";
       std::cout << "In my opinion, you need 18 integration points here. If you are sure, go ahead, "
                    "otherwise ask me or implement the 18 point rule. Axel (06.06.08)\n";
-      dserror(
+      FOUR_C_THROW(
           "stopped code due to believed insufficient integration rule 'intrule_wedge_9point' for "
           "wedge15. Axel");
 
@@ -6088,10 +6088,10 @@ CORE::FE::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule) : 
     }
 
     default:
-      dserror("unknown 3D integration rule");
+      FOUR_C_THROW("unknown 3D integration rule");
       break;
   }
-  dsassert(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
+  FOUR_C_ASSERT(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
 }
 
 
@@ -6672,7 +6672,7 @@ CORE::FE::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D intrule) : 
     }
     case GaussRule2D::tri_64point:
     {
-      dserror(
+      FOUR_C_THROW(
           "temporarily switched off. Gives wrong surface integrals (liftdrag) in XFEM "
           "computations. Check!  (a.ger, 8.12.2008)");
 
@@ -6877,14 +6877,14 @@ CORE::FE::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D intrule) : 
     }
     case GaussRule2D::undefined:
     {
-      dserror("trying to use uninitialised 2D intrule");
+      FOUR_C_THROW("trying to use uninitialised 2D intrule");
       break;
     }
     default:
-      dserror("unknown 2D integration rule, GaussRule2D: %d", intrule);
+      FOUR_C_THROW("unknown 2D integration rule, GaussRule2D: %d", intrule);
       break;
   }
-  dsassert(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
+  FOUR_C_ASSERT(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
 }
 
 
@@ -7572,10 +7572,10 @@ CORE::FE::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D intrule) : 
       break;
     }
     default:
-      dserror("unknown 1D integration rule");
+      FOUR_C_THROW("unknown 1D integration rule");
       break;
   }
-  dsassert(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
+  FOUR_C_ASSERT(max_nquad >= nquad, "increase size of double array in IntegationPoints class");
 }
 
 FOUR_C_NAMESPACE_CLOSE

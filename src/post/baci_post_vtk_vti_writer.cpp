@@ -196,7 +196,7 @@ void PostVtiWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
         }
         else
         {
-          if (!fillzeros) dserror("received illegal dof local id: %d", lid);
+          if (!fillzeros) FOUR_C_THROW("received illegal dof local id: %d", lid);
         }
       }
       for (int d = numdf; d < ncomponents; ++d) solution[inpos + d] = 0.0;
@@ -215,7 +215,7 @@ void PostVtiWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
   }
 
   if (currentPhase_ != POINTS)
-    dserror(
+    FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
   this->WriteSolutionVector(solution, ncomponents, name, file);
@@ -241,7 +241,8 @@ void PostVtiWriter::WriteNodalResultStep(std::ofstream& file,
   const Epetra_Map* colmap = dis->NodeColMap();
   const Epetra_BlockMap& vecmap = data->Map();
 
-  dsassert(colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
+  FOUR_C_ASSERT(
+      colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
       "Given data vector does not seem to match discretization node map");
 
   Teuchos::RCP<Epetra_MultiVector> ghostedData;
@@ -280,7 +281,7 @@ void PostVtiWriter::WriteNodalResultStep(std::ofstream& file,
         }
         else
         {
-          dserror("received illegal node local id: %d", lid);
+          FOUR_C_THROW("received illegal node local id: %d", lid);
         }
       }
       for (int d = numdf; d < ncomponents; ++d) solution[inpos + d] = 0.;
@@ -299,7 +300,7 @@ void PostVtiWriter::WriteNodalResultStep(std::ofstream& file,
   }
 
   if (currentPhase_ != POINTS)
-    dserror(
+    FOUR_C_THROW(
         "Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
 
   this->WriteSolutionVector(solution, ncomponents, name, file);
@@ -329,7 +330,8 @@ void PostVtiWriter::WriteElementResultStep(std::ofstream& file,
       0.0);
 
   const int numcol = data->NumVectors();
-  if (numdf + from > numcol) dserror("violated column range of Epetra_MultiVector: %d", numcol);
+  if (numdf + from > numcol)
+    FOUR_C_THROW("violated column range of Epetra_MultiVector: %d", numcol);
 
   Teuchos::RCP<Epetra_MultiVector> importedData;
   if (dis->ElementColMap()->SameAs(data->Map()))
@@ -375,7 +377,7 @@ void PostVtiWriter::WriteElementResultStep(std::ofstream& file,
   }
 
   if (currentPhase_ != CELLS)
-    dserror(
+    FOUR_C_THROW(
         "Cannot write cell data at this stage. Most likely cell and point data fields are mixed.");
 
   this->WriteSolutionVector(solution, ncomponents, name, file);
@@ -419,7 +421,7 @@ void PostVtiWriter::WriterPrepTimestep()
     for (set_tol::const_iterator it = collected_coords[i].begin(); it != collected_coords[i].end();
          ++it, ++k)
       if (*it - lorigin[i] - k * spacing_[i] > TOL_N || *it - lorigin[i] - k * spacing_[i] < -TOL_N)
-        dserror(
+        FOUR_C_THROW(
             "The mesh is not a uniform rectangular grid: grid coordinate[%d]: %lf, "
             "node coordinate[%d]: %lf, difference: %e",
             i, lorigin[i] + k * spacing_[i], i, *it, *it - lorigin[i] - k * spacing_[i]);

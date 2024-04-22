@@ -42,7 +42,7 @@ void MAT::ELASTIC::Iso2Pow::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& d
   const int d = params_->d_;
 
   if (d < 1)
-    dserror(
+    FOUR_C_THROW(
         "The Elast_Iso2Pow - material only works for positive integer exponents larger than one.");
 
   if (d == 1)

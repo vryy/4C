@@ -99,7 +99,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
   else if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Dynamic_Vreman")
     turbmodel_ = INPAR::FLUID::dynamic_vreman;
   else
-    dserror("Unknown turbulence model for scatra!");
+    FOUR_C_THROW("Unknown turbulence model for scatra!");
 
   // define forcing for scalar field
   if (turbulencelist.get<std::string>("SCALAR_FORCING", "no") == "isotropic")
@@ -118,7 +118,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
 
     // check for solver type
     if (timintparams_->IsIncremental())
-      dserror(
+      FOUR_C_THROW(
           "Artificial fine-scale subgrid-diffusivity approach only in combination with "
           "non-incremental solver so far!");
   }
@@ -129,7 +129,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
 
     // check for solver type
     if (not timintparams_->IsIncremental())
-      dserror(
+      FOUR_C_THROW(
           "Fine-scale subgrid-diffusivity approach using all/small-scale Smagorinsky model only in "
           "combination with incremental solver so far!");
   }
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
     // get Smagorinsky constant and turbulent Prandtl number
     Cs_ = sgvisclist.get<double>("C_SMAGORINSKY");
     tpn_ = sgvisclist.get<double>("C_TURBPRANDTL");
-    if (tpn_ <= 1.0E-16) dserror("Turbulent Prandtl number should be larger than zero!");
+    if (tpn_ <= 1.0E-16) FOUR_C_THROW("Turbulent Prandtl number should be larger than zero!");
 
     Cs_av_ = CORE::UTILS::IntegralValue<int>(sgvisclist, "C_SMAGORINSKY_AVERAGED");
 
@@ -162,7 +162,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
       if (mfslist.get<std::string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
         alpha_ = 3.0;
       else
-        dserror("Scale-Separtion method not supported!");
+        FOUR_C_THROW("Scale-Separtion method not supported!");
       calc_N_ = CORE::UTILS::IntegralValue<int>(mfslist, "CALC_N");
       N_vel_ = mfslist.get<double>("N");
       if (mfslist.get<std::string>("REF_VELOCITY") == "strainrate")
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
       else if (mfslist.get<std::string>("REF_VELOCITY") == "fine_scale")
         refvel_ = INPAR::FLUID::fine_scale;
       else
-        dserror("Unknown velocity!");
+        FOUR_C_THROW("Unknown velocity!");
       if (mfslist.get<std::string>("REF_LENGTH") == "cube_edge")
         reflength_ = INPAR::FLUID::cube_edge;
       else if (mfslist.get<std::string>("REF_LENGTH") == "sphere_diameter")
@@ -184,7 +184,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
       else if (mfslist.get<std::string>("REF_LENGTH") == "metric_tensor")
         reflength_ = INPAR::FLUID::metric_tensor;
       else
-        dserror("Unknown length!");
+        FOUR_C_THROW("Unknown length!");
       c_nu_ = mfslist.get<double>("C_NU");
       nwl_ = CORE::UTILS::IntegralValue<int>(mfslist, "NEAR_WALL_LIMIT");
       // necessary parameters for subgrid-scale scalar estimation
@@ -193,19 +193,19 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
       nwl_scatra_ = CORE::UTILS::IntegralValue<int>(mfslist, "NEAR_WALL_LIMIT_CSGS_PHI");
       // general parameters
       beta_ = mfslist.get<double>("BETA");
-      if (beta_ != 0.0) dserror("Lhs terms for mfs not included! Fixed-point iteration only!");
+      if (beta_ != 0.0) FOUR_C_THROW("Lhs terms for mfs not included! Fixed-point iteration only!");
       if (mfslist.get<std::string>("EVALUATION_B") == "element_center")
         BD_gp_ = false;
       else if (mfslist.get<std::string>("EVALUATION_B") == "integration_point")
         BD_gp_ = true;
       else
-        dserror("Unknown evaluation point!");
+        FOUR_C_THROW("Unknown evaluation point!");
       if (mfslist.get<std::string>("CONVFORM") == "convective")
         mfs_conservative_ = false;
       else if (mfslist.get<std::string>("CONVFORM") == "conservative")
         mfs_conservative_ = true;
       else
-        dserror("Unknown form of convective term!");
+        FOUR_C_THROW("Unknown form of convective term!");
 
       adapt_Csgs_phi_ = CORE::UTILS::IntegralValue<bool>(mfslist, "ADAPT_CSGS_PHI");
     }

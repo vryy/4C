@@ -62,7 +62,8 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<DRT::Discretization> discr
       SumWss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true)), isinit_ = true;
       break;
     default:
-      dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
+      FOUR_C_THROW(
+          "There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
       break;
   }
 }
@@ -73,10 +74,11 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<DRT::Discretization> discr
 void FLD::UTILS::StressManager::InitAggr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat)
 {
   if (WssType_ != INPAR::FLUID::wss_aggregation)
-    dserror("One should end up here just in case of aggregated stresses!");
+    FOUR_C_THROW("One should end up here just in case of aggregated stresses!");
 
   CalcSepEnr(sysmat);
-  if (SepEnr_ == Teuchos::null) dserror("SepEnr matrix has not been build correctly. Strange...");
+  if (SepEnr_ == Teuchos::null)
+    FOUR_C_THROW("SepEnr matrix has not been build correctly. Strange...");
 
   isinit_ = true;
 
@@ -103,7 +105,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStresses(
       wss = TimeAverageWss(wss, dt);
       break;
     default:
-      dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
+      FOUR_C_THROW(
+          "There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
       break;
   }
 
@@ -132,7 +135,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcWallShearStress
         wss->Update(1.0 / SumDtWss_, *SumWss_, 0.0);  // weighted sum of all prior stresses
       break;
     default:
-      dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
+      FOUR_C_THROW(
+          "There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
       break;
   }
 
@@ -145,7 +149,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcWallShearStress
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStressesWOAgg(
     Teuchos::RCP<const Epetra_Vector> trueresidual)
 {
-  if (not isinit_) dserror("StressManager not initialized");
+  if (not isinit_) FOUR_C_THROW("StressManager not initialized");
 
   Teuchos::RCP<Epetra_Vector> stresses = CalcStresses(trueresidual);
   // calculate wss from stresses
@@ -185,7 +189,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetStresses(
       stresses = TimeAverageStresses(stresses, dt);
       break;
     default:
-      dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
+      FOUR_C_THROW(
+          "There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
       break;
   }
 
@@ -216,7 +221,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcStresses(
             1.0 / SumDtStresses_, *SumStresses_, 0.0);  // weighted sum of all prior stresses
       break;
     default:
-      dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
+      FOUR_C_THROW(
+          "There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
       break;
   }
   return stresses;
@@ -228,7 +234,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcStresses(
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcStresses(
     Teuchos::RCP<const Epetra_Vector> trueresidual)
 {
-  if (not isinit_) dserror("StressManager not initialized");
+  if (not isinit_) FOUR_C_THROW("StressManager not initialized");
   std::string condstring("FluidStressCalc");
   Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
 
@@ -369,7 +375,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcWallShearStresses(
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::AggreagteStresses(
     Teuchos::RCP<Epetra_Vector> wss)
 {
-  if (SepEnr_ == Teuchos::null) dserror("no scale separation matrix");
+  if (SepEnr_ == Teuchos::null) FOUR_C_THROW("no scale separation matrix");
 
   Teuchos::RCP<Epetra_Vector> mean_wss =
       Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
@@ -429,7 +435,7 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
                                    // BlockSparseMatrix, compare with function UseBlockMatrix()
       sysmat2 = Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat)->Merge();
     if (sysmat2 == Teuchos::null)
-      dserror("One of these two dynamic casts should have worked... Sorry!");
+      FOUR_C_THROW("One of these two dynamic casts should have worked... Sorry!");
 
 
     if (discret_->Comm().MyPID() == 0)
@@ -441,13 +447,15 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
         (GLOBAL::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER");
 
     if (ML_solver == -1)
-      dserror("If you want to aggregate your stresses you need to specify a WSS_ML_AGR_SOLVER!");
+      FOUR_C_THROW(
+          "If you want to aggregate your stresses you need to specify a WSS_ML_AGR_SOLVER!");
 
     Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
         GLOBAL::Problem::Instance()->SolverParams(ML_solver), discret_->Comm()));
 
     if (solver == Teuchos::null)
-      dserror("The solver WSS_ML_AGR_SOLVER in the FLUID DYNMAICS section is not a valid solver!");
+      FOUR_C_THROW(
+          "The solver WSS_ML_AGR_SOLVER in the FLUID DYNMAICS section is not a valid solver!");
 
     Teuchos::ParameterList& mlparams = solver->Params().sublist("ML Parameters");
     // compute the null space,
@@ -455,10 +463,10 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
 
     // get nullspace parameters
     double* nullspace = mlparams.get("null space: vectors", (double*)nullptr);
-    if (!nullspace) dserror("No nullspace supplied in parameter list");
+    if (!nullspace) FOUR_C_THROW("No nullspace supplied in parameter list");
     int nsdim = mlparams.get("null space: dimension", 1);
     if (nsdim != 4)
-      dserror("The calculation of mean WSS is only tested for three space dimensions!");
+      FOUR_C_THROW("The calculation of mean WSS is only tested for three space dimensions!");
 
     int lrowdofs = discret_->DofRowMap()->NumMyElements();
 
@@ -467,10 +475,10 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
       int gid = discret_->NodeRowMap()->GID(j);
 
       if (not discret_->NodeRowMap()->MyGID(gid))  // just in case
-        dserror("not on proc");
+        FOUR_C_THROW("not on proc");
       {
         DRT::Node* node = discret_->gNode(gid);
-        if (!node) dserror("Cannot find node");
+        if (!node) FOUR_C_THROW("Cannot find node");
 
         int firstglobaldofid = discret_->Dof(node, 0);
         int firstlocaldofid = discret_->DofRowMap()->LID(firstglobaldofid);
@@ -660,7 +668,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
         ldaxismap[label] = ldconds[i]->Get<std::vector<double>>("axis");
         // get pointer to axis vector (if available)
         const std::vector<double>* axisvecptr = ldaxismap[label];
-        if (axisvecptr->size() != 3) dserror("axis vector has not length 3");
+        if (axisvecptr->size() != 3) FOUR_C_THROW("axis vector has not length 3");
         CORE::LINALG::Matrix<3, 1> axisvec(axisvecptr->data(), false);
         if (axisvec.Norm2() > 1.0e-9) axis_for_moment = true;  // axis has been set
       }
@@ -692,7 +700,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
 
       // get also pointer to center coordinates
       const std::vector<double>* centerCoordvec = ldcoordmap[label];
-      if (centerCoordvec->size() != 3) dserror("axis vector has not length 3");
+      if (centerCoordvec->size() != 3) FOUR_C_THROW("axis vector has not length 3");
       CORE::LINALG::Matrix<3, 1> centerCoord(centerCoordvec->data(), false);
 
       // loop all nodes within my set
@@ -722,7 +730,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
         // ALE case: take displacements into account
         if (alefluid)
         {
-          if (dispnp == Teuchos::null) dserror("Displacement expected for ale fluid!");
+          if (dispnp == Teuchos::null) FOUR_C_THROW("Displacement expected for ale fluid!");
           for (int idim = 0; idim < ndim; idim++)
           {
             distances(idim, 0) += (*dispnp)[rowdofmap.LID(dof[idim])];
@@ -749,7 +757,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
             axisvec.Scale(1.0 / norm);
           }
           else
-            dserror("norm==0.0!");
+            FOUR_C_THROW("norm==0.0!");
           // projection of moment on given axis
           double mdir = actmoment_gc.Dot(axisvec);
 
@@ -1022,7 +1030,7 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FLD::UTILS::ComputeSurfaceImpulsRates(
 void FLD::UTILS::WriteDoublesToFile(
     const double time, const int step, const std::map<int, double>& data, const std::string& name)
 {
-  if (data.empty()) dserror("data vector is empty");
+  if (data.empty()) FOUR_C_THROW("data vector is empty");
 
   // print to file
   std::ostringstream header;
@@ -1090,7 +1098,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
 
   // dependent on the desired projection, just remove this line
   if (not vel->Map().SameAs(*discret->DofRowMap()))
-    dserror("input map is not a dof row map of the fluid");
+    FOUR_C_THROW("input map is not a dof row map of the fluid");
 
   switch (recomethod)
   {
@@ -1102,7 +1110,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
     case INPAR::FLUID::gradreco_spr:
     {
       if (alefluid)
-        dserror(
+        FOUR_C_THROW(
             "ale fluid is currently not supported everywhere for superconvergent patch recovery, "
             "but it is easy to implement");
       params.set<int>("action", FLD::calc_velgrad_ele_center);
@@ -1122,7 +1130,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
               *discret, *vel, "vel", numvec, params);
           break;
         default:
-          dserror("only 1/2/3D implementation available for superconvergent patch recovery");
+          FOUR_C_THROW("only 1/2/3D implementation available for superconvergent patch recovery");
           break;
       }
     }
@@ -1131,7 +1139,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
     {
       const int solvernumber =
           GLOBAL::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
-      if (solvernumber < 1) dserror("you have to specify a VELGRAD_PROJ_SOLVER");
+      if (solvernumber < 1) FOUR_C_THROW("you have to specify a VELGRAD_PROJ_SOLVER");
       const auto& solverparams = GLOBAL::Problem::Instance()->SolverParams(solvernumber);
 
       params.set<int>("action", FLD::velgradient_projection);
@@ -1146,7 +1154,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
     }
     break;
     default:
-      dserror("desired projection method not available");
+      FOUR_C_THROW("desired projection method not available");
       break;
   }
 

@@ -87,7 +87,7 @@ namespace CORE::LINALG::INTERNAL
   inline void CheckErrorCodeInDebug(
       int errorCode, const VectorOrMatrix1& a, const VectorOrMatrix2& b, const VectorOrMatrix2& c)
   {
-    dsassert(errorCode == 0,
+    FOUR_C_ASSERT(errorCode == 0,
         std::string(
             "Error code (" + std::to_string(errorCode) +
             ") is returned. Something goes wrong with the " +

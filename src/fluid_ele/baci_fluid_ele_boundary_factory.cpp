@@ -71,7 +71,7 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Prov
       return DefineProblemType<CORE::FE::CellType::nurbs9>(problem);
     }
     default:
-      dserror("Element shape %s not activated. Just do it.",
+      FOUR_C_THROW("Element shape %s not activated. Just do it.",
           CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
@@ -92,7 +92,7 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Defi
   else if (problem == "poro_p1")
     return DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance();
   else
-    dserror("Defined problem type does not exist!!");
+    FOUR_C_THROW("Defined problem type does not exist!!");
 
   return nullptr;
 }

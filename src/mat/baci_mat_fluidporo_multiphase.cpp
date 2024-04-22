@@ -60,7 +60,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
 
   // safety check
   if ((int)matids_->size() != (int)(numvolfrac_ * 2 + numfluidphases_))
-    dserror(
+    FOUR_C_THROW(
         "You have chosen %i materials, %i fluidphases and %f volume fractions, check your input "
         "definition\n"
         "Your Input should always look like (for example: 4 fluid phases, 2 volume fractions):\n"
@@ -84,7 +84,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
     {
       // safety check and cast
       if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
-        dserror(
+        FOUR_C_THROW(
             "You have chosen %i fluidphases, however your material number %i is no poro "
             "singlephase material\n"
             "Your Input should always look like (for example: 4 fluid phases, 2 volume "
@@ -103,7 +103,8 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
       if (singlephase.PoroPhaseLawType() == INPAR::MAT::m_fluidporo_phaselaw_constraint)
       {
         if (constraintphaseID_ != -1)
-          dserror("More than one constraint phase law defined. Are you sure this makes sense?");
+          FOUR_C_THROW(
+              "More than one constraint phase law defined. Are you sure this makes sense?");
         constraintphaseID_ = iphase;
       }
 
@@ -115,7 +116,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
     {
       // safety check
       if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
-        dserror(
+        FOUR_C_THROW(
             "You have chosen %i fluid phases and %i volume fractions, however your material number "
             "%i is no poro volume fraction material\n"
             "Your Input should always look like (for example: 4 fluid phases, 2 volume "
@@ -133,7 +134,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
     {
       // safety check
       if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure)
-        dserror(
+        FOUR_C_THROW(
             "You have chosen %i fluid phases and %i volume fractions, however your material number "
             "%i is no poro volume fraction pressure material\n"
             "Your Input should always look like (for example: 4 fluid phases, 2 volume "
@@ -147,12 +148,12 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
             numfluidphases_, (int)matids_->size() - numfluidphases_, iphase + 1);
     }
     else
-      dserror("something went wrong here, why is iphase = %i", iphase);
+      FOUR_C_THROW("something went wrong here, why is iphase = %i", iphase);
   }
 
   // check
   if (constraintphaseID_ == -1 && numfluidphases_ > 0)
-    dserror(
+    FOUR_C_THROW(
         "No constraint phase law defined but NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE > 0. Are you "
         "sure this makes sense?");
 
@@ -165,7 +166,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
     inverse.setMatrix(dof2pres_);
     int err = inverse.invert();
     if (err != 0)
-      dserror(
+      FOUR_C_THROW(
           "Inversion of matrix for DOF transform failed with errorcode %d. Is your system of DOFs "
           "linear independent?",
           err);
@@ -291,7 +292,7 @@ void MAT::FluidPoroMultiPhase::Unpack(const std::vector<char>& data)
         paramsporo_ = dynamic_cast<MAT::PAR::FluidPoroMultiPhase*>(mat);
       }
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -302,7 +303,8 @@ void MAT::FluidPoroMultiPhase::Unpack(const std::vector<char>& data)
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*

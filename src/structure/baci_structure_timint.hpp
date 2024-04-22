@@ -261,7 +261,7 @@ namespace STR
     //! Do time integration of multiple steps
     int Integrate() override
     {
-      dserror("time loop moved to separate adapter");
+      FOUR_C_THROW("time loop moved to separate adapter");
       return 0;
     }
 
@@ -310,7 +310,7 @@ namespace STR
     void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
-    void Evaluate() override { dserror("new structural time integration only"); }
+    void Evaluate() override { FOUR_C_THROW("new structural time integration only"); }
 
     /// update at time step end
     void Update() override = 0;
@@ -660,7 +660,7 @@ namespace STR
     //! Set the state of the nox group and the global state data container (implicit only)
     void SetState(const Teuchos::RCP<Epetra_Vector>& x) override
     {
-      dserror("new structural time integration only...");
+      FOUR_C_THROW("new structural time integration only...");
     }
 
     //! Read and set restart state
@@ -704,7 +704,7 @@ namespace STR
     /// set evaluation action
     void SetActionType(const DRT::ELEMENTS::ActionType& action) override
     {
-      dserror("new structural time integration only...");
+      FOUR_C_THROW("new structural time integration only...");
     }
 
     //! @name Access from outside via adapter (needed for coupled problems)
@@ -923,13 +923,13 @@ namespace STR
     /// do we have this model
     bool HaveModel(INPAR::STR::ModelType model) override
     {
-      dserror("new structural time integration only");
+      FOUR_C_THROW("new structural time integration only");
       return false;
     }
 
     STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override
     {
-      dserror("new time integration only");
+      FOUR_C_THROW("new time integration only");
       exit(EXIT_FAILURE);
     }
 
@@ -1260,13 +1260,13 @@ namespace STR
     //! check if \ref Setup() was called
     void CheckIsSetup()
     {
-      if (not IsSetup()) dserror("Setup() was not called.");
+      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! check if \ref Init() was called
     void CheckIsInit() const
     {
-      if (not IsInit()) dserror("Init(...) was not called.");
+      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:

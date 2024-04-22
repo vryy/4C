@@ -37,13 +37,13 @@ void FLD::TimIntPoro::Init()
   {
     if (stabparams->get<std::string>("TDS") == "time_dependent")
     {
-      dserror(
+      FOUR_C_THROW(
           "TDS is not implemented for Poro yet. An error will occur in "
           "FluidImplicitTimeInt::TimeUpdate().");
     }
   }
 
-  if (not alefluid_) dserror("poro fluid has to be an ale fluid!");
+  if (not alefluid_) FOUR_C_THROW("poro fluid has to be an ale fluid!");
 
   // set some poro-specific parameters
   SetElementCustomParameter();
@@ -124,22 +124,22 @@ void FLD::TimIntPoro::SetInitialPorosityField(
                                 .Evaluate(lnode->X().data(), time_, 0);
 
         // check whether there are invalid values of porosity
-        if (initialval < 1e-15) dserror("zero or negative initial porosity");
-        if (initialval > 1.0) dserror("initial porosity greater than 1");
+        if (initialval < 1e-15) FOUR_C_THROW("zero or negative initial porosity");
+        if (initialval > 1.0) FOUR_C_THROW("initial porosity greater than 1");
         for (int k = 0; k < numdofs; ++k)
         {
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
           int err = init_porosity_field_->ReplaceMyValues(1, &initialval, &doflid);
-          if (err != 0) dserror("dof not on proc");
+          if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
 
       break;
     }
     default:
-      dserror("Unknown option for initial field: %d", init);
+      FOUR_C_THROW("Unknown option for initial field: %d", init);
       break;
   }
 }

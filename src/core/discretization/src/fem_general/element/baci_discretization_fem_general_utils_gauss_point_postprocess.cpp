@@ -124,7 +124,7 @@ void CORE::FE::ExtrapolateGaussPointQuantityToNodes(DRT::Element& ele,
     }
     break;
     default:
-      dserror("Your discretization type (%s) is not yet in the list!",
+      FOUR_C_THROW("Your discretization type (%s) is not yet in the list!",
           CORE::FE::CellTypeToString(ele.Shape()).c_str());
   }
 }

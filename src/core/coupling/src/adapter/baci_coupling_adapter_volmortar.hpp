@@ -206,13 +206,13 @@ namespace CORE::ADAPTER
     /// check init and setup call
     void CheckSetup() const
     {
-      if (not IsSetup()) dserror("ERROR: Call Setup() first!");
+      if (not IsSetup()) FOUR_C_THROW("ERROR: Call Setup() first!");
     }
 
     /// check init and setup call
     void CheckInit() const
     {
-      if (not IsInit()) dserror("ERROR: Call Init() first!");
+      if (not IsInit()) FOUR_C_THROW("ERROR: Call Init() first!");
     }
 
    private:

@@ -101,9 +101,9 @@ namespace CROSSLINKING
      */
     const std::vector<std::pair<int, int>>& GetClBSpotStatus()
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // safety check
-      if ((int)clbspots_.size() != 2) dserror("crosslinker has wrong bspot size");
+      if ((int)clbspots_.size() != 2) FOUR_C_THROW("crosslinker has wrong bspot size");
 #endif
       return clbspots_;
     }
@@ -243,7 +243,7 @@ namespace CROSSLINKING
     */
     inline Teuchos::RCP<MAT::CrosslinkerMat> GetMaterial() const
     {
-      if (mat_ == Teuchos::null) dserror("No crosslinker material attached.");
+      if (mat_ == Teuchos::null) FOUR_C_THROW("No crosslinker material attached.");
       return mat_;
     }
 

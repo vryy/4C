@@ -57,7 +57,7 @@ Teuchos::RCP<::NOX::LineSearch::Generic> NOX::NLN::LineSearch::Factory::BuildLin
     msg << "Error - NOX::NLN::LineSearch::Factory::BuildLineSearch() - The \"Method\" parameter \""
         << method << "\" is not a valid linesearch option. " << std::endl
         << "Please fix your parameter list!" << std::endl;
-    dserror(msg.str());
+    FOUR_C_THROW(msg.str());
   }
 
   return line_search;
@@ -69,7 +69,7 @@ void NOX::NLN::LineSearch::Factory::InnerStatusTestIsRequired(
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests) const
 {
   if (innerTests.is_null())
-    dserror(
+    FOUR_C_THROW(
         "ERROR - NOX::NLN::LineSearch::Factory::InnerStatusTestIsRequired -"
         " The inner status test pointer should be initialized at this point!");
 }

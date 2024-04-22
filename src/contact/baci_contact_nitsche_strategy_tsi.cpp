@@ -64,7 +64,7 @@ void CONTACT::NitscheStrategyTsi::SetParentState(
   if (statename == MORTAR::state_temperature)
   {
     Teuchos::RCP<DRT::Discretization> disT = GLOBAL::Problem::Instance()->GetDis("thermo");
-    if (disT.is_null()) dserror("set state temperature, but no thermo-discretization???");
+    if (disT.is_null()) FOUR_C_THROW("set state temperature, but no thermo-discretization???");
 
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*disT->DofColMap(), true));
     CORE::LINALG::Export(vec, *global);
@@ -79,7 +79,7 @@ void CONTACT::NitscheStrategyTsi::SetParentState(
         int gid = idiscret.ElementColMap()->GID(j);
 
         DRT::Element* e = idiscret.gElement(gid);
-        if (e == nullptr) dserror("basic element not found");
+        if (e == nullptr) FOUR_C_THROW("basic element not found");
 
         auto* ele = dynamic_cast<MORTAR::Element*>(idiscret.gElement(gid));
         DRT::Element* ele_parentT = disT->gElement(ele->ParentElementId());
@@ -139,7 +139,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::SetupRhsBlockVec(
 Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyTsi::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bt) const
 {
-  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
   switch (bt)
   {
@@ -182,7 +182,7 @@ void CONTACT::NitscheStrategyTsi::CompleteMatrixBlockPtr(
                   *GLOBAL::Problem::Instance()->GetDis("thermo")->DofRowMap(),     // col map
                   *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // row map
                   true, Add))
-        dserror("GlobalAssemble(...) failed");
+        FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::temp_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
@@ -190,11 +190,11 @@ void CONTACT::NitscheStrategyTsi::CompleteMatrixBlockPtr(
                   *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
                   *GLOBAL::Problem::Instance()->GetDis("thermo")->DofRowMap(),     // row map
                   true, Add))
-        dserror("GlobalAssemble(...) failed");
+        FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::temp_temp:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add))
-        dserror("GlobalAssemble(...) failed");
+        FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     default:
       CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
@@ -205,7 +205,7 @@ void CONTACT::NitscheStrategyTsi::CompleteMatrixBlockPtr(
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategyTsi::GetMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
-  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
   switch (bt)
   {

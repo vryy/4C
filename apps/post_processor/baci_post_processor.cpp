@@ -182,7 +182,7 @@ namespace
           }
           else
           {
-            dserror("unknown discretization for postprocessing of polymer network problem!");
+            FOUR_C_THROW("unknown discretization for postprocessing of polymer network problem!");
           }
         }
         break;
@@ -257,7 +257,7 @@ namespace
           }
           else
           {
-            dserror("Particle problem has illegal discretization name!");
+            FOUR_C_THROW("Particle problem has illegal discretization name!");
           }
         }
         break;
@@ -391,7 +391,7 @@ namespace
           scatrawriter.WriteFiles();
         }
         else
-          dserror("wrong number of discretizations");
+          FOUR_C_THROW("wrong number of discretizations");
         break;
       }
       case GLOBAL::ProblemType::cardiac_monodomain:
@@ -417,7 +417,7 @@ namespace
           scatrawriter.WriteFiles();
         }
         else
-          dserror("number of fields does not match: got %d", numfields);
+          FOUR_C_THROW("number of fields does not match: got %d", numfields);
 
         break;
       }
@@ -428,12 +428,13 @@ namespace
 
         // safety check
         if (problem.num_discr() != 2)
-          dserror("Must have exactly two discretizations for scatra-thermo interaction problems!");
+          FOUR_C_THROW(
+              "Must have exactly two discretizations for scatra-thermo interaction problems!");
 
         DRT::ELEMENTS::Transport* transport_element = dynamic_cast<DRT::ELEMENTS::Transport*>(
             problem.get_discretization(0)->discretization()->lRowElement(0));
         if (transport_element == nullptr)
-          dserror("Elements of unknown type on scalar transport discretization!");
+          FOUR_C_THROW("Elements of unknown type on scalar transport discretization!");
 
         if (transport_element->ImplType() == INPAR::SCATRA::impltype_elch_electrode_thermo or
             transport_element->ImplType() == INPAR::SCATRA::impltype_elch_diffcond_thermo)
@@ -443,7 +444,8 @@ namespace
         }
         else
         {
-          dserror("Scatra-thermo interaction not yet implemented for standard scalar transport!");
+          FOUR_C_THROW(
+              "Scatra-thermo interaction not yet implemented for standard scalar transport!");
           ScaTraFilter scatrawriter(problem.get_discretization(0), basename);
           scatrawriter.WriteFiles();
         }
@@ -509,7 +511,7 @@ namespace
             ifacewriter.WriteFiles();
           }
           else
-            dserror(
+            FOUR_C_THROW(
                 "You try to postprocess a discretization with name %s, maybe you should add it "
                 "here?",
                 disname.c_str());
@@ -532,7 +534,7 @@ namespace
                     << std::endl;
         }
 
-        if (numfield == 0) dserror("we expect at least a fluid field, numfield=%i", numfield);
+        if (numfield == 0) FOUR_C_THROW("we expect at least a fluid field, numfield=%i", numfield);
         std::string basename = problem.outname();
 
         // XFluid in the standard case, embedded fluid for XFF
@@ -633,7 +635,7 @@ namespace
           elchwriter.WriteFiles();
         }
         else
-          dserror("number of fields does not match: got %d", numfield);
+          FOUR_C_THROW("number of fields does not match: got %d", numfield);
         break;
       }
       case GLOBAL::ProblemType::art_net:
@@ -836,7 +838,7 @@ namespace
           scatra_manifoldfieldwriter.WriteFiles();
         }
         else
-          dserror("Unknwon number of solution fields");
+          FOUR_C_THROW("Unknwon number of solution fields");
 
         break;
       }
@@ -882,7 +884,7 @@ namespace
         break;
       }
       default:
-        dserror("problem type %d not yet supported", problem.Problemtype());
+        FOUR_C_THROW("problem type %d not yet supported", problem.Problemtype());
         break;
     }
   }
@@ -921,7 +923,7 @@ int main(int argc, char** argv)
     if (filter == "ensight" || filter == "vtu" || filter == "vtu_node_based" || filter == "vti")
       runEnsightVtuFilter(problem);
     else
-      dserror("Unknown filter %s given, supported filters: [ensight|vtu|vti]", filter.c_str());
+      FOUR_C_THROW("Unknown filter %s given, supported filters: [ensight|vtu|vti]", filter.c_str());
 
   }  // try
   catch (CORE::Exception& err)

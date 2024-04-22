@@ -41,7 +41,7 @@ namespace DRT
 
       [[nodiscard]] std::size_t NumberComponents() const override
       {
-        dserror("Number of components not defined for ZalesaksDiskFunction.");
+        FOUR_C_THROW("Number of components not defined for ZalesaksDiskFunction.");
       };
     };
 
@@ -53,7 +53,7 @@ namespace DRT
 
       [[nodiscard]] std::size_t NumberComponents() const override
       {
-        dserror("Number of components not defined for CollapsingWaterColumnFunction.");
+        FOUR_C_THROW("Number of components not defined for CollapsingWaterColumnFunction.");
       };
     };
   }  // namespace UTILS

@@ -56,7 +56,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode
   for (int nlid = 1; nlid < NumNode(); ++nlid)
   {
     if (numdofpernode_ != ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]))
-      dserror(
+      FOUR_C_THROW(
           "You need different NumDofPerNode for each node on this structural surface? (%d != %d)",
           numdofpernode_, ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]));
   }
@@ -152,7 +152,7 @@ void DRT::ELEMENTS::StructuralSurface::Unpack(const std::vector<char>& data)
   gaussrule_ = static_cast<CORE::FE::GaussRule2D>(ExtractInt(position, data));
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::StructuralSurface::SetDistype()
           distype_ = CORE::FE::CellType::quad6;
         else
         {
-          dserror("what other surface element has 6 nodes???");
+          FOUR_C_THROW("what other surface element has 6 nodes???");
           distype_ = CORE::FE::CellType::dis_none;
         }
         break;
@@ -222,7 +222,7 @@ void DRT::ELEMENTS::StructuralSurface::SetDistype()
         distype_ = CORE::FE::CellType::quad9;
         break;
       default:
-        dserror("Unknown shape of surface element (unknown number of nodes)");
+        FOUR_C_THROW("Unknown shape of surface element (unknown number of nodes)");
         break;
     }
   }
@@ -258,7 +258,7 @@ void DRT::ELEMENTS::StructuralSurface::SetGaussrule()
       gaussrule_ = CORE::FE::GaussRule2D::quad_6point;
       break;
     default:
-      dserror("shape type unknown!\n");
+      FOUR_C_THROW("shape type unknown!\n");
   }
 }
 

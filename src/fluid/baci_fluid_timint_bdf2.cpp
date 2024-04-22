@@ -45,7 +45,7 @@ void FLD::TimIntBDF2::Init()
 
   // check, if starting algorithm is desired
   if (numstasteps_ > 0)
-    dserror("no starting algorithm supported for schemes other than af-gen-alpha");
+    FOUR_C_THROW("no starting algorithm supported for schemes other than af-gen-alpha");
 
   SetElementTimeParameter();
 
@@ -137,7 +137,7 @@ void FLD::TimIntBDF2::CalculateAcceleration(const Teuchos::RCP<const Epetra_Vect
 
   */
 
-  if (dta_ * dtp_ < 1e-15) dserror("Zero time step size!!!!!");
+  if (dta_ * dtp_ < 1e-15) FOUR_C_THROW("Zero time step size!!!!!");
   const double sum = dta_ + dtp_;
 
   accnp->Update((2.0 * dta_ + dtp_) / (dta_ * sum), *velnp, -sum / (dta_ * dtp_), *veln, 0.0);
@@ -178,7 +178,7 @@ void FLD::TimIntBDF2::OutputofFilteredVel(
   if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
     Sep_->Multiply(false, *velnp_, *row_finescaleveltmp);
   else
-    dserror("Unknown separation type!");
+    FOUR_C_THROW("Unknown separation type!");
 
   // get filtered or coarse scale velocity
   outvec->Update(1.0, *velnp_, -1.0, *row_finescaleveltmp, 0.0);

@@ -136,7 +136,7 @@ void XFEM::MeshCouplingFPI::CompleteStateVectors()
   Epetra_Vector iforce_tmp(itrueresidual_->Map(), true);
   Epetra_Export exporter_iforce(iforcecol_->Map(), iforce_tmp.Map());
   int err1 = iforce_tmp.Export(*iforcecol_, exporter_iforce, Add);
-  if (err1) dserror("Export using exporter returned err=%d", err1);
+  if (err1) FOUR_C_THROW("Export using exporter returned err=%d", err1);
 
   // scale the interface trueresidual with -1.0 to get the forces acting on structural side (no
   // residual-scaling!)
@@ -408,8 +408,8 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
-#ifdef BACI_DEBUG
-  dsassert(xf_c_comm_ != Teuchos::null,
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  FOUR_C_ASSERT(xf_c_comm_ != Teuchos::null,
       "UpdateConfigurationMap_GP_Contact but no Xfluid Contact Communicator assigned!");
 #endif
 
@@ -450,7 +450,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
     sliplength += refsliplength * h_scaling_ * (h_scaling_ / (gap - MIN_h * h_scaling_) - scaling);
   }
 
-  if (sliplength < 0.0) dserror("The slip should not be negative!");
+  if (sliplength < 0.0) FOUR_C_THROW("The slip should not be negative!");
 
   static double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
 
@@ -613,15 +613,15 @@ void XFEM::MeshCouplingFPI::ReadRestart(const int step)
   boundaryreader.ReadVector(idispnpi_, "idispnpi_res");
 
   if (not(cutter_dis_->DofRowMap())->SameAs(ivelnp_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(iveln_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(idispnp_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(idispn_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
   if (not(cutter_dis_->DofRowMap())->SameAs(idispnpi_->Map()))
-    dserror("Global dof numbering in maps does not match");
+    FOUR_C_THROW("Global dof numbering in maps does not match");
 }
 
 /*--------------------------------------------------------------------------*
@@ -734,22 +734,22 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
     if (i != conditions_XFPI.begin())
     {
       if (fabs(BJ_coeff_ - *cond->Get<double>("bj_coeff")) > 1e-16)
-        dserror(
+        FOUR_C_THROW(
             "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
             "conditions, with different BJ_coeff!");
 
       if (full_BJ_ != full_BJ)
-        dserror(
+        FOUR_C_THROW(
             "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
             "conditions, with different BJ Variant!");
 
       if (Sub_tang_ != Sub_tang)
-        dserror(
+        FOUR_C_THROW(
             "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
             "conditions, with different BJ Method!");
 
       if (contact_ != contact)
-        dserror(
+        FOUR_C_THROW(
             "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
             "conditions, with different contact specification!");
     }
@@ -775,7 +775,7 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
         hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
       }
       else
-        dserror("Element type != hex8, add it here!");
+        FOUR_C_THROW("Element type != hex8, add it here!");
     }
     bg_dis_->Comm().MaxAll(&hmax, &h_scaling_, 1);
     std::cout << "==| XFEM::MeshCouplingFPI: Computed h_scaling for fluidele is: " << h_scaling_
@@ -818,7 +818,8 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
   }
 
   if (contact_ && Sub_tang_)
-    dserror("XFEM::MeshCouplingFPI: Combination Contact with Substituion for BJ/BJS not tested!");
+    FOUR_C_THROW(
+        "XFEM::MeshCouplingFPI: Combination Contact with Substituion for BJ/BJS not tested!");
 }
 
 //----------------------------------------------------------------------
@@ -891,15 +892,15 @@ double XFEM::MeshCouplingFPI::CalctrPermeability(DRT::Element* ele, double& poro
 {
   // Calculate normalized trace of permeability matrix
   DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
-  if (!fele) dserror("Cast to Faceele failed!");
+  if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
   DRT::Element* coupl_ele = fele->ParentElement();
-  if (coupl_ele == nullptr) dserror("No coupl_ele!");
+  if (coupl_ele == nullptr) FOUR_C_THROW("No coupl_ele!");
   Teuchos::RCP<MAT::FluidPoro> poromat;
   // access second material in structure element
   if (coupl_ele->NumMaterial() > 1)
     poromat = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(coupl_ele->Material(1));
   else
-    dserror("no second material defined for element %i", ele->Id());
+    FOUR_C_THROW("no second material defined for element %i", ele->Id());
 
   static CORE::LINALG::Matrix<3, 3> reactiontensor(true);
   poromat->ComputeReactionTensor(reactiontensor, J, porosity);
@@ -915,10 +916,10 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
     DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& J)
 {
   DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
-  if (!fele) dserror("Cast to Faceele failed!");
+  if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
 
   DRT::Element* coupl_ele = fele->ParentElement();
-  if (coupl_ele == nullptr) dserror("No coupl_ele!");
+  if (coupl_ele == nullptr) FOUR_C_THROW("No coupl_ele!");
 
   double pres = 0.0;
   J = ComputeJacobianandPressure(ele, rst_slave, pres);
@@ -931,10 +932,10 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
     if (poromat->MaterialType() != INPAR::MAT::m_structporo and
         poromat->MaterialType() != INPAR::MAT::m_structpororeaction and
         poromat->MaterialType() != INPAR::MAT::m_structpororeactionECM)
-      dserror("invalid structure material for poroelasticity");
+      FOUR_C_THROW("invalid structure material for poroelasticity");
   }
   else
-    dserror("no second material defined for element %i", ele->Id());
+    FOUR_C_THROW("no second material defined for element %i", ele->Id());
 
   Teuchos::ParameterList params;  // empty parameter list;
   double porosity;
@@ -951,7 +952,7 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
     DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& pres)
 {
   DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
-  if (!fele) dserror("Cast to Faceele failed!");
+  if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
 
   DRT::Element* coupl_ele = fele->ParentElement();
 
@@ -1030,7 +1031,7 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
             if (lid != -1)
               xcurr(idof, inode) = xrefe(idof, inode) + fulldispnp_->operator[](lid);
             else
-              dserror("Local ID for dispnp not found (lid = -1)!");
+              FOUR_C_THROW("Local ID for dispnp not found (lid = -1)!");
           }
           int lidp = fullpres_->Map().LID(
               lm_struct_x_lm_pres_.operator[](GetCondDis()->Dof(0, coupl_ele->Nodes()[inode], 2)));
@@ -1038,7 +1039,7 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
           if (lidp != -1)
             pres += fullpres_->operator[](lidp) * pfunc_loc(inode);
           else
-            dserror("Local ID for pressure not found (lid = -1)!");
+            FOUR_C_THROW("Local ID for pressure not found (lid = -1)!");
         }
       }
 
@@ -1050,13 +1051,14 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
       return J;
     }
     else
-      dserror(
+      FOUR_C_THROW(
           "TDetDeformationGradient for type %s not yet implemented, just add your element type!",
           (CORE::FE::CellTypeToString(coupl_ele->Shape())).c_str());
     return -1.0;
   }
   else
-    dserror("TDetDeformationGradient for type %s not yet implemented, just add your element type!",
+    FOUR_C_THROW(
+        "TDetDeformationGradient for type %s not yet implemented, just add your element type!",
         (CORE::FE::CellTypeToString(fele->Shape())).c_str());
   return -1.0;
 }

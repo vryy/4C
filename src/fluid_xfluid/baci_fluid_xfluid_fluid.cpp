@@ -291,7 +291,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> FLD::XFluidFluid::BlockSystemM
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockmat =
       CORE::LINALG::BlockMatrix2x2(*fii, *fig, *fgi, *fgg);
 
-  if (blockmat == Teuchos::null) dserror("Creation of fluid-fluid block matrix failed.");
+  if (blockmat == Teuchos::null) FOUR_C_THROW("Creation of fluid-fluid block matrix failed.");
 
   return blockmat;
 }
@@ -319,7 +319,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::GetNewState()
     mc_xff_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(
         condition_manager_->GetMeshCoupling(cond_name_));
 
-    if (mc_xff_ == Teuchos::null) dserror("Failed to cast to MeshCouplingFluidFluid");
+    if (mc_xff_ == Teuchos::null) FOUR_C_THROW("Failed to cast to MeshCouplingFluidFluid");
   }
 
   if (ale_embfluid_)
@@ -355,7 +355,8 @@ void FLD::XFluidFluid::CreateState()
   XFluid::CreateState();
   xff_state_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluidState>(XFluid::state_);
 
-  if (xff_state_ == Teuchos::null) dserror("Failed to create an instance of XFluidFluidState.");
+  if (xff_state_ == Teuchos::null)
+    FOUR_C_THROW("Failed to create an instance of XFluidFluidState.");
 
   if (!ale_embfluid_) return;
 }
@@ -403,12 +404,12 @@ void FLD::XFluidFluid::AssembleMatAndRHS(int itnum  ///< iteration number
     {
       const int rhsgid = coup_state->rhC_s_->Map().GID(iter);
       if (coup_state->rhC_s_->Map().MyGID(rhsgid) == false)
-        dserror("rhC_s_ should be on all processors");
+        FOUR_C_THROW("rhC_s_ should be on all processors");
       if (embedded_fluid_->Residual()->Map().MyGID(rhsgid))
         (*embedded_fluid_->Residual())[embedded_fluid_->Residual()->Map().LID(rhsgid)] +=
             (*coup_state->rhC_s_)[coup_state->rhC_s_->Map().LID(rhsgid)];
       else
-        dserror("Interface dof %d does not belong to embedded discretization!", rhsgid);
+        FOUR_C_THROW("Interface dof %d does not belong to embedded discretization!", rhsgid);
     }
   }
 
@@ -530,7 +531,7 @@ void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
   {
     DRT::Element* actface = xdiscret->lRowFace(i);
     DRT::ELEMENTS::FluidIntFace* ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
-    if (ele == nullptr) dserror("expect FluidIntFace element");
+    if (ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
     edgestab_->EvaluateEdgeStabBoundaryGP(faceparams, xdiscret,
         mc_xff_->GetAuxiliaryDiscretization(), ele, sysmat_linalg, residual_col);
   }
@@ -547,7 +548,7 @@ void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
     Epetra_Vector res_tmp(embedded_fluid_->Residual()->Map(), true);
     Epetra_Export exporter(residual_col->Map(), res_tmp.Map());
     int err = res_tmp.Export(*residual_col, exporter, Add);
-    if (err) dserror("Export using exporter returned err=%d", err);
+    if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
     embedded_fluid_->Residual()->Update(1.0, res_tmp, 1.0);
   }
 

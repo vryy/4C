@@ -35,7 +35,7 @@ CONTACT::IntegratorNitschePoro::IntegratorNitschePoro(
       no_penetration_(params.get<bool>("CONTACTNOPEN")),
       dv_dd_(params.get<double>("porotimefac"))
 {
-  if (fabs(theta_) > 1e-16) dserror("Poro Contact just implemented Adjoint free ...");
+  if (fabs(theta_) > 1e-16) FOUR_C_THROW("Poro Contact just implemented Adjoint free ...");
 }
 
 /*----------------------------------------------------------------------*
@@ -64,7 +64,7 @@ void CONTACT::IntegratorNitschePoro::IntegrateGP_3D(MORTAR::Element& sele, MORTA
         gap, deriv_gap, n, dn, sxi, mxi);
   }
   //  else if (nit_normal_==INPAR::CONTACT::NitNor_sm)
-  //    dserror("Want to use the element normal!");
+  //    FOUR_C_THROW("Want to use the element normal!");
 }
 
 
@@ -82,7 +82,7 @@ void CONTACT::IntegratorNitschePoro::IntegrateGP_2D(MORTAR::Element& sele, MORTA
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
     std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi)
 {
-  dserror("2D is not implemented!");
+  FOUR_C_THROW("2D is not implemented!");
 }
 
 
@@ -107,7 +107,7 @@ void CONTACT::IntegratorNitschePoro::GPTSForces(MORTAR::Element& sele, MORTAR::E
 
   const CORE::LINALG::Matrix<dim, 1> normal(gpn, true);
 
-  if (dim != Dim()) dserror("dimension inconsistency");
+  if (dim != Dim()) FOUR_C_THROW("dimension inconsistency");
 
   CORE::LINALG::Matrix<dim, 1> slave_normal, master_normal;
   std::vector<CORE::GEN::Pairedvector<int, double>> deriv_slave_normal(0, 0);
@@ -430,7 +430,7 @@ bool CONTACT::IntegratorNitschePoro::GetPoroPressure(MORTAR::Element& ele,
   else if (otherele.MoData().ParentPFDof().size())
     w1 = 0.0;
   else
-    dserror("Thats not exptected...!");
+    FOUR_C_THROW("Thats not exptected...!");
   double w2 = 1.0 - w1;
 
   poropressure = 0.0;
@@ -470,7 +470,7 @@ void CONTACT::IntegratorNitschePoro::GetPoroQuantitiesatGP(MORTAR::Element& ele,
       Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele.ParentElement()->Material(0));
   if (sstructmat == Teuchos::null)
     sstructmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele.ParentElement()->Material(1));
-  if (sstructmat == Teuchos::null) dserror("Cast to StructPoro failed!");
+  if (sstructmat == Teuchos::null) FOUR_C_THROW("Cast to StructPoro failed!");
   sstructmat->ComputeSurfPorosity(sparams, spresgp, sJ, ele.FaceParentNumber(), 1, sporosity,
       &sdphi_dp, &sdphi_dJ, nullptr, nullptr, nullptr, false);
 }

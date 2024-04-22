@@ -48,8 +48,8 @@ namespace DRT
      distype) and does the actual work. Note that all those methods need the location vector
      of the parent(!) element to fill the matrixes. Therefore the evaluate actions
      corresponding to these boundaries need to be listed in the FluidPoroBoundary::LocationVector()
-     method. Otherwise one might get an dserror or even no error at all and very strange results
-     instead.
+     method. Otherwise one might get an FOUR_C_THROW or even no error at all and very strange
+     results instead.
 
      \author vuong 10/14
      */

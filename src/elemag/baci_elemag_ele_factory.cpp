@@ -89,7 +89,7 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::ProvideImpl(
     }
     // no 1D elements
     default:
-      dserror("Element shape %s not activated. Just do it.",
+      FOUR_C_THROW("Element shape %s not activated. Just do it.",
           CORE::FE::CellTypeToString(distype).c_str());
       break;
   }
@@ -108,7 +108,7 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::DefineProblemTy
   else if (problem == "diff")
     return DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Instance();
   else
-    dserror("Defined problem type does not exist!!");
+    FOUR_C_THROW("Defined problem type does not exist!!");
 
   return nullptr;
 }

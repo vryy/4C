@@ -37,7 +37,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
   if (id_ < 10)
     filename << 0;
   else if (id_ > 99)
-    dserror("Gmsh output implemented for a maximum of 99 iterations");
+    FOUR_C_THROW("Gmsh output implemented for a maximum of 99 iterations");
   filename << id_;
 
   // construct unique filename for gmsh output
@@ -52,7 +52,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
   else if (step < 10000)
     filename << 0;
   else if (step > 99999)
-    dserror("Gmsh output implemented for a maximum of 99.999 time steps");
+    FOUR_C_THROW("Gmsh output implemented for a maximum of 99.999 time steps");
   filename << step;
 
   // construct unique filename for gmsh output
@@ -63,7 +63,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
     if (iter < 10)
       filename << 0;
     else if (iter > 99)
-      dserror("Gmsh output implemented for a maximum of 99 iterations");
+      FOUR_C_THROW("Gmsh output implemented for a maximum of 99 iterations");
     filename << iter;
   }
   else
@@ -583,9 +583,9 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
       {
         int gid = snoderowmap_->GID(i);
         DRT::Node* node = idiscret_->gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* mtrnode = dynamic_cast<Node*>(node);
-        if (!mtrnode) dserror("Static Cast to Node* failed");
+        if (!mtrnode) FOUR_C_THROW("Static Cast to Node* failed");
 
         double nc[3];
         double nn[3];
@@ -648,7 +648,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
   else if (step < 10000)
     filenametn << 0;
   else if (step > 99999)
-    dserror("Gmsh output implemented for a maximum of 99.999 time steps");
+    FOUR_C_THROW("Gmsh output implemented for a maximum of 99.999 time steps");
   filenametn << step;
 
   // construct unique filename for gmsh output
@@ -659,7 +659,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
     if (iter < 10)
       filenametn << 0;
     else if (iter > 99)
-      dserror("Gmsh output implemented for a maximum of 99 iterations");
+      FOUR_C_THROW("Gmsh output implemented for a maximum of 99 iterations");
     filenametn << iter;
   }
 
@@ -818,7 +818,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
   else if (step < 10000)
     filenamectn << 0;
   else if (step > 99999)
-    dserror("Gmsh output implemented for a maximum of 99.999 time steps");
+    FOUR_C_THROW("Gmsh output implemented for a maximum of 99.999 time steps");
   filenamectn << step;
 
   // construct unique filename for gmsh output
@@ -829,7 +829,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
     if (iter < 10)
       filenamectn << 0;
     else if (iter > 99)
-      dserror("Gmsh output implemented for a maximum of 99 iterations");
+      FOUR_C_THROW("Gmsh output implemented for a maximum of 99 iterations");
     filenamectn << iter;
   }
 
@@ -860,7 +860,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
       {
         if ((int)(binarytree_->CouplingMap()[0]).size() !=
             (int)(binarytree_->CouplingMap()[1]).size())
-          dserror("Binarytree CouplingMap does not have right size!");
+          FOUR_C_THROW("Binarytree CouplingMap does not have right size!");
 
         for (int j = 0; j < (int)((binarytree_->CouplingMap()[0]).size()); j++)
         {

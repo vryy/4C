@@ -115,7 +115,7 @@ namespace DRT
       {
         if (cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID &&
             fldparaxfem_.XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_none)
-          dserror("Cannot apply convective stabilization terms for XFF_ConvStabScaling_none!");
+          FOUR_C_THROW("Cannot apply convective stabilization terms for XFF_ConvStabScaling_none!");
 
         // funct_m * timefac * fac * funct_m  * kappa_m (dyadic product)
         funct_m_m_dyad_.MultiplyNT(funct_m, funct_m);
@@ -160,7 +160,7 @@ namespace DRT
                 Teuchos::rcp_dynamic_cast<
                     SlaveElementRepresentation<distype, slave_distype, slave_numdof>>(slave_ele);
             if (ser == Teuchos::null)
-              dserror("Failed to cast slave_ele to SlaveElementRepresentation!");
+              FOUR_C_THROW("Failed to cast slave_ele to SlaveElementRepresentation!");
             CORE::LINALG::Matrix<slave_nen_, 1> funct_s;
             ser->GetSlaveFunct(funct_s);
 
@@ -190,11 +190,11 @@ namespace DRT
           }
           case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
           {
-            dserror("Convective stabilization in monolithic XFSI is not yet available!");
+            FOUR_C_THROW("Convective stabilization in monolithic XFSI is not yet available!");
             break;
           }
           default:
-            dserror(
+            FOUR_C_THROW(
                 "Unsupported coupling condition type. Cannot apply convective stabilization "
                 "terms.");
             break;
@@ -392,7 +392,7 @@ namespace DRT
             if (!configmap.at(INPAR::XFEM::F_Pen_Row_linF1).first ||
                 !configmap.at(INPAR::XFEM::F_Pen_Row_linF2).first ||
                 !configmap.at(INPAR::XFEM::F_Pen_Row_linF3).first)
-              dserror("Linearization for Penalty Term not set for all Components!");
+              FOUR_C_THROW("Linearization for Penalty Term not set for all Components!");
 
             NIT_Stab_Penalty_lin(funct_m, timefacfac, configmap.at(INPAR::XFEM::F_Pen_Row),
                 configmap.at(INPAR::XFEM::F_Pen_Row_linF1),
@@ -519,7 +519,7 @@ namespace DRT
               configmap.at(INPAR::XFEM::FStr_Adj_n_Col));
         }
         if (configmap.at(INPAR::XFEM::FStr_Adj_n_Col).first)
-          dserror("(NOT SUPPORTED FOR NORMAL DIR! Check Coercivity!)");
+          FOUR_C_THROW("(NOT SUPPORTED FOR NORMAL DIR! Check Coercivity!)");
 
         // Tangential Terms!
         if (configmap.at(INPAR::XFEM::F_Adj_t_Row).first)
@@ -545,7 +545,8 @@ namespace DRT
               configmap.at(INPAR::XFEM::X_Adj_Col));
 
           if (configmap.at(INPAR::XFEM::FStr_Adj_Col).first)
-            dserror("visc Adjoint Stress Term without projection not implemented - feel free!");
+            FOUR_C_THROW(
+                "visc Adjoint Stress Term without projection not implemented - feel free!");
         }
 
         if ((configmap.at(INPAR::XFEM::XF_Con_Col).first ||
@@ -636,7 +637,7 @@ namespace DRT
           }
           if (configmap.at(INPAR::XFEM::XF_Con_n_Col).first ||
               configmap.at(INPAR::XFEM::XF_Con_t_Col).first)
-            dserror("Want to implement projected slave consistency?");
+            FOUR_C_THROW("Want to implement projected slave consistency?");
 
           //-----------------------------------------------------------------
           // viscous adjoint consistency term
@@ -653,7 +654,7 @@ namespace DRT
           }
           if (configmap.at(INPAR::XFEM::XF_Adj_n_Row).first ||
               configmap.at(INPAR::XFEM::XF_Adj_t_Row).first)
-            dserror("Want to  implement projected slave adjoint consistency?");
+            FOUR_C_THROW("Want to  implement projected slave adjoint consistency?");
 
           //-----------------------------------------------------------------
           // standard consistency traction jump term
@@ -1240,13 +1241,15 @@ namespace DRT
           NIT_visc_Consistency_MasterTerms(dummy, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
               configmap.at(INPAR::XFEM::X_Con_Row), configmap.at(INPAR::XFEM::F_Con_Col), true);
 #else
-          dserror(
+          FOUR_C_THROW(
               "ENFORCE_URQUIZA_GNBC for NIT_visc_Consistency_MasterRHS?");  //@Magnus: What
                                                                             // should we do here?
 #endif
         }
-        if (configmap.at(INPAR::XFEM::F_Con_n_Col).first) dserror("F_Con_n_Col will come soon");
-        if (configmap.at(INPAR::XFEM::F_Con_t_Col).first) dserror("F_Con_t_Col will come soon");
+        if (configmap.at(INPAR::XFEM::F_Con_n_Col).first)
+          FOUR_C_THROW("F_Con_n_Col will come soon");
+        if (configmap.at(INPAR::XFEM::F_Con_t_Col).first)
+          FOUR_C_THROW("F_Con_t_Col will come soon");
 
         if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
         {
@@ -1278,11 +1281,11 @@ namespace DRT
 
           // Normal Terms!
           if (configmap.at(INPAR::XFEM::F_Adj_n_Row).first)
-            dserror("Implement normal Adjoint Consistency term RHS for NEW OST !");
+            FOUR_C_THROW("Implement normal Adjoint Consistency term RHS for NEW OST !");
           if (configmap.at(INPAR::XFEM::FStr_Adj_n_Col).first)
-            dserror("(NOT SUPPORTED FOR NORMAL DIR! Check Coercivity!)");
+            FOUR_C_THROW("(NOT SUPPORTED FOR NORMAL DIR! Check Coercivity!)");
           if (configmap.at(INPAR::XFEM::F_Adj_t_Row).first)
-            dserror("Implement tangential Adjoint Consistency term RHS for NEW OST !");
+            FOUR_C_THROW("Implement tangential Adjoint Consistency term RHS for NEW OST !");
 
           //-----------------------------------------------------------------
           // viscous adjoint consistency term
@@ -1362,7 +1365,7 @@ namespace DRT
           }
           if (configmap.at(INPAR::XFEM::XF_Con_n_Col).first ||
               configmap.at(INPAR::XFEM::XF_Con_t_Col).first)
-            dserror("Want to implement projected slave consistency?");
+            FOUR_C_THROW("Want to implement projected slave consistency?");
 
           // consistency terms evaluated
           if (fldparaxfem_.InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
@@ -1408,7 +1411,7 @@ namespace DRT
             }
             if (configmap.at(INPAR::XFEM::XF_Adj_n_Row).first ||
                 configmap.at(INPAR::XFEM::XF_Adj_t_Row).first)
-              dserror("Want to  implement projected slave adjoint consistency?");
+              FOUR_C_THROW("Want to  implement projected slave adjoint consistency?");
           }
         }
 
@@ -1433,7 +1436,7 @@ namespace DRT
         // projection matrix approach (Laplace-Beltrami)
         if (configmap.at(INPAR::XFEM::F_LB_Rhs).first || configmap.at(INPAR::XFEM::X_LB_Rhs).first)
         {
-          dserror(
+          FOUR_C_THROW(
               "Check if we need the (Laplace-Beltrami) for the old timestep, "
               "then you should not forget to add the LB_proj_matrix as member to this function?");
           //    CORE::LINALG::Matrix<nsd_,slave_nen_> derxy_s_timefacfac_km(derxy_s);

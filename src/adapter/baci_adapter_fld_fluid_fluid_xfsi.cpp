@@ -35,7 +35,7 @@ ADAPTER::FluidFluidXFSI::FluidFluidXFSI(Teuchos::RCP<Fluid> fluid,  // the XFlui
     : XFluidFSI(fluid, coupling_name_xfsi, solver, params, output)
 {
   // make sure
-  if (fluid_ == Teuchos::null) dserror("Failed to create the underlying fluid adapter");
+  if (fluid_ == Teuchos::null) FOUR_C_THROW("Failed to create the underlying fluid adapter");
   return;
 }
 

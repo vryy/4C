@@ -89,7 +89,7 @@ Teuchos::RCP<CORE::LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::Cre
     const int lin_sol_id, const Epetra_Comm& comm,
     enum INPAR::SOLVER::SolverType& solver_type) const
 {
-  if (lin_sol_id == -1) dserror("You must specify a meaningful LINEAR_SOLVER!");
+  if (lin_sol_id == -1) FOUR_C_THROW("You must specify a meaningful LINEAR_SOLVER!");
 
   // get solver parameter list of linear solver
   const Teuchos::ParameterList& solverparams =
@@ -101,7 +101,7 @@ Teuchos::RCP<CORE::LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::Cre
 
   if (solver_type != INPAR::SOLVER::SolverType::umfpack and
       solver_type != INPAR::SOLVER::SolverType::superlu)
-    dserror("Currently only direct linear solvers are supported!");
+    FOUR_C_THROW("Currently only direct linear solvers are supported!");
 
   return solver;
 }
@@ -112,7 +112,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::LinSolve(
     CORE::LINALG::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol)
 {
   if (rhs.NumVectors() > 1 or sol.NumVectors() > 1)
-    dserror("MultiVector support is not yet implemented!");
+    FOUR_C_THROW("MultiVector support is not yet implemented!");
 
   CORE::LINALG::SolverParams solver_params;
   solver_params.refactor = true;
@@ -120,7 +120,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::LinSolve(
   int err = lin_solver_->Solve(
       mat.EpetraOperator(), Teuchos::rcpFromRef(sol), Teuchos::rcpFromRef(rhs), solver_params);
 
-  if (err) dserror("LinSolve failed with err = %d", err);
+  if (err) FOUR_C_THROW("LinSolve failed with err = %d", err);
 }
 
 /*----------------------------------------------------------------------------*
@@ -209,7 +209,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
   Teuchos::RCP<Epetra_Vector> tmp_vec = CORE::LINALG::CreateVector(full_stiff.RangeMap(), true);
 
   int err = full_stiff.Multiply(false, dincr, *tmp_vec);
-  if (err) dserror("Multiply failed with err = %d", err);
+  if (err) FOUR_C_THROW("Multiply failed with err = %d", err);
 
   Teuchos::RCP<Epetra_Vector> tmp_vec_exp =
       CORE::LINALG::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
@@ -217,7 +217,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
   // build necessary exporter
   Epetra_Export exporter(tmp_vec_exp->Map(), tmp_vec->Map());
   err = tmp_vec_exp->Import(*tmp_vec, exporter, Insert);
-  if (err) dserror("Import failed with err = %d", err);
+  if (err) FOUR_C_THROW("Import failed with err = %d", err);
 
   CreateBMatrix();
 
@@ -231,7 +231,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
   Teuchos::RCP<Epetra_Vector> dincr_exp =
       CORE::LINALG::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
   err = dincr_exp->Import(dincr, exporter, Insert);
-  if (err) dserror("Import failed with err = %d", err);
+  if (err) FOUR_C_THROW("Import failed with err = %d", err);
 
   AssembleGradientBMatrixContribution(*dincr_exp, *tmp_vec_exp, rhs);
 
@@ -253,7 +253,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
 void CONTACT::AUG::LagrangeMultiplierFunction::AssembleGradientBBMatrixContribution(
     const Epetra_Vector& dincr, const Epetra_Vector& lm, Epetra_Vector& lmincr) const
 {
-  if (not lmincr.Map().SameAs(lm.Map())) dserror("The maps must be identical!");
+  if (not lmincr.Map().SameAs(lm.Map())) FOUR_C_THROW("The maps must be identical!");
 
   for (plain_interface_set::const_iterator cit = interfaces_.begin(); cit != interfaces_.end();
        ++cit)
@@ -269,7 +269,7 @@ void CONTACT::AUG::LagrangeMultiplierFunction::AssembleGradientBBMatrixContribut
 void CONTACT::AUG::LagrangeMultiplierFunction::AssembleGradientBMatrixContribution(
     const Epetra_Vector& dincr, const Epetra_Vector& str_grad, Epetra_Vector& lmincr) const
 {
-  if (not dincr.Map().SameAs(str_grad.Map())) dserror("The maps must be identical!");
+  if (not dincr.Map().SameAs(str_grad.Map())) FOUR_C_THROW("The maps must be identical!");
 
   for (plain_interface_set::const_iterator cit = interfaces_.begin(); cit != interfaces_.end();
        ++cit)

@@ -35,7 +35,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
   // get the action required
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_ale_solid")
     act = Ale2::calc_ale_solid;
   else if (action == "calc_ale_solid_linear")
@@ -53,7 +53,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_jacobian_determinant")
     act = Ale2::calc_det_jac;
   else
-    dserror("%s is an unknown type of action for Ale2", action.c_str());
+    FOUR_C_THROW("%s is an unknown type of action for Ale2", action.c_str());
 
   bool spatialconfiguration = true;
   if (params.isParameter("use spatial configuration"))
@@ -135,7 +135,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
           so3mat->MaterialType() !=
               INPAR::MAT::m_stvenant)  // ToDo (mayr): allow only materials without history
       {
-        dserror(
+        FOUR_C_THROW(
             "Illegal material type for ALE. Only materials allowed that do "
             "not store Gauss point data and do not need additional data from the "
             "element line definition.");
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     }
     default:
     {
-      dserror("Unknown type of action for Ale2");
+      FOUR_C_THROW("Unknown type of action for Ale2");
       break;
     }
   }
@@ -188,7 +188,7 @@ void DRT::ELEMENTS::Ale2::edge_geometry(int i, int j, const CORE::LINALG::Serial
   delta_y = xyze(1, j) - xyze(1, i);
   /*------------------------------- determine distance between i and j ---*/
   *length = sqrt(delta_x * delta_x + delta_y * delta_y);
-  if (*length < (1.0E-14)) dserror("edge or diagonal of element has zero length");
+  if (*length < (1.0E-14)) FOUR_C_THROW("edge or diagonal of element has zero length");
   /*--------------------------------------- determine direction of i-j ---*/
   *sin_alpha = delta_y / *length;
   *cos_alpha = delta_x / *length;
@@ -255,9 +255,9 @@ void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
   l_ki = sqrt(x_ki * x_ki + y_ki * y_ki);
 
   /*----------------------------------------------- check edge lengths ---*/
-  if (l_ij < (1.0E-14)) dserror("edge or diagonal of element has zero length");
-  if (l_jk < (1.0E-14)) dserror("edge or diagonal of element has zero length");
-  if (l_ki < (1.0E-14)) dserror("edge or diagonal of element has zero length");
+  if (l_ij < (1.0E-14)) FOUR_C_THROW("edge or diagonal of element has zero length");
+  if (l_jk < (1.0E-14)) FOUR_C_THROW("edge or diagonal of element has zero length");
+  if (l_ki < (1.0E-14)) FOUR_C_THROW("edge or diagonal of element has zero length");
 
   /*-------------------------------------------- fill auxiliary values ---*/
   a_ij = x_ij / (l_ij * l_ij);
@@ -303,9 +303,9 @@ void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
 
 
   int err = CORE::LINALG::multiplyTN(A, R, C);  // A = R^t * C
-  if (err != 0) dserror("Multiply failed");
+  if (err != 0) FOUR_C_THROW("Multiply failed");
   err = CORE::LINALG::multiply(*k_torsion, A, R);  // stiff = A * R
-  if (err != 0) dserror("Multiply failed");
+  if (err != 0) FOUR_C_THROW("Multiply failed");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -407,7 +407,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
       break;
     default:
       numcnd = 0;
-      dserror("distype unkown");
+      FOUR_C_THROW("distype unkown");
       break;
   }
 
@@ -553,7 +553,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
       ale2_tors_spring_tri3(sys_mat, xyze);
       break;
     default:
-      dserror("unknown distype in ale spring dynamic");
+      FOUR_C_THROW("unknown distype in ale spring dynamic");
       break;
   }
 
@@ -654,7 +654,7 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     else
     {
       // nurbs version
-      dserror("Not implemented yet!");
+      FOUR_C_THROW("Not implemented yet!");
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -729,10 +729,10 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 //      std::cout << "detF[3] = " << detF[3] << std::endl;
 //
 //      /*------------------------------------------------- check sign ---*/
-//      if (detF[0] <= 0.0) dserror("Negative JACOBIAN ");
-//      if (detF[1] <= 0.0) dserror("Negative JACOBIAN ");
-//      if (detF[2] <= 0.0) dserror("Negative JACOBIAN ");
-//      if (detF[3] <= 0.0) dserror("Negative JACOBIAN ");
+//      if (detF[0] <= 0.0) FOUR_C_THROW("Negative JACOBIAN ");
+//      if (detF[1] <= 0.0) FOUR_C_THROW("Negative JACOBIAN ");
+//      if (detF[2] <= 0.0) FOUR_C_THROW("Negative JACOBIAN ");
+//      if (detF[3] <= 0.0) FOUR_C_THROW("Negative JACOBIAN ");
 //      /*-------------------------------------- look for the smallest ---*/
 //      *min_detF = ( detF[0]  < detF[1]) ?  detF[0]  : detF[1];
 //      *min_detF = (*min_detF < detF[2]) ? *min_detF : detF[2];
@@ -742,10 +742,10 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 //    case CORE::FE::CellType::tri3:
 //      *min_detF = (-xyz[0][0]+xyz[0][1]) * (-xyz[1][0]+xyz[1][2])
 //                - (-xyz[0][0]+xyz[0][2]) * (-xyz[1][0]+xyz[1][1]);
-//      if (*min_detF <= 0.0) dserror("Negative JACOBIAN ");
+//      if (*min_detF <= 0.0) FOUR_C_THROW("Negative JACOBIAN ");
 //      break;
 //    default:
-//      dserror("minimal Jacobian determinant for this distyp not implemented");
+//      FOUR_C_THROW("minimal Jacobian determinant for this distyp not implemented");
 //      break;
 //  }
 //  return;
@@ -757,7 +757,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
     CORE::LINALG::SerialDenseMatrix* sys_mat, CORE::LINALG::SerialDenseVector& residual,
     std::vector<double>& displacements, const bool spatialconfiguration)
 {
-  //  dserror("We don't know what is really done in the element evaluation"
+  //  FOUR_C_THROW("We don't know what is really done in the element evaluation"
   //      "of the Laplace smoothing strategy. Check this CAREFULLY before"
   //      "using it.");
 
@@ -950,7 +950,7 @@ void DRT::ELEMENTS::Ale2::JacobianMatrix(const CORE::LINALG::SerialDenseMatrix& 
   /*------------------------------------------ determinant of jacobian ---*/
   *det = xjm[0][0] * xjm[1][1] - xjm[1][0] * xjm[0][1];
 
-  if (*det < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n", *det, Id());
+  if (*det < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n", *det, Id());
   /*----------------------------------------------------------------------*/
 
   return;
@@ -1127,7 +1127,7 @@ void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
     }
     default:
     {
-      dserror("Invalid type of material law for wall element");
+      FOUR_C_THROW("Invalid type of material law for wall element");
       break;
     }
   }  // switch(material->MaterialType())
@@ -1190,7 +1190,7 @@ void DRT::ELEMENTS::Ale2::MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress,
     Teuchos::ParameterList& params, const int gp)
 {
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  if (so3mat == Teuchos::null) dserror("cast to So3Material failed!");
+  if (so3mat == Teuchos::null) FOUR_C_THROW("cast to So3Material failed!");
 
   so3mat->Evaluate(nullptr, glstrain, params, stress, cmat, gp, Id());
 
@@ -1272,7 +1272,7 @@ void DRT::ELEMENTS::Ale2::compute_det_jac(CORE::LINALG::SerialDenseVector& eleve
   /*------- get integration data ---------------------------------------- */
   const CORE::FE::CellType distype = Shape();
   if (distype != CORE::FE::CellType::quad4)
-    dserror("Quality metric is currently implemented for Quad4 elements, only.");
+    FOUR_C_THROW("Quality metric is currently implemented for Quad4 elements, only.");
 
   /*----------------------------------------------------- geometry update */
   for (int k = 0; k < numnode; ++k)

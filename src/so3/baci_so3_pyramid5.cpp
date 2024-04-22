@@ -242,7 +242,7 @@ void DRT::ELEMENTS::SoPyramid5::Unpack(const std::vector<char>& data)
   }
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

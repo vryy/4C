@@ -54,7 +54,7 @@ Teuchos::RCP<STR::NLN::SOLVER::Generic> STR::NLN::SOLVER::Factory::BuildNlnSolve
       //      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Uzawa());
       //      break;
     default:
-      dserror("Solution technique \"%s\" is not implemented.",
+      FOUR_C_THROW("Solution technique \"%s\" is not implemented.",
           INPAR::STR::NonlinSolTechString(nlnSolType).c_str());
       break;
   }

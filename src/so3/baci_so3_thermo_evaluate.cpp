@@ -43,13 +43,13 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::PreEvaluate(Teuchos::ParameterL
     if (discretization.HasState(1, "temperature"))
     {
       if (la[1].Size() != nen_ * numdofpernode_thr)
-        dserror(
+        FOUR_C_THROW(
             "Location vector length for temperatures does not match!\n"
             "la[1].Size()= %i\tnen_*numdofpernode_thr= %i",
             la[1].Size(), nen_ * numdofpernode_thr);
       // check if you can get the temperature state
       Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-      if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'.");
+      if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'.");
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> nodaltempnp =
@@ -92,7 +92,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_stifftemp")
     act = So3Thermo::calc_struct_stifftemp;
   else if (action == "calc_struct_stress")
@@ -162,7 +162,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
   // get the required action for coupling with the thermal field
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_internalforce")
     act = calc_struct_internalforce;
   else if (action == "calc_struct_nlnstiff")
@@ -186,7 +186,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
   else if (action == "calc_struct_recover")
     return 0;
   else
-    dserror("Unknown type of action for So3_Thermo: %s", action.c_str());
+    FOUR_C_THROW("Unknown type of action for So3_Thermo: %s", action.c_str());
 
   // what should the element do
   switch (act)
@@ -204,7 +204,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState(0, "residual displacement");
 
       if ((disp == Teuchos::null) or (res == Teuchos::null))
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
 
       // build the location vector only for the structure field
       std::vector<double> mydisp((la[0].lm_).size());
@@ -224,13 +224,13 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       {
         // check if you can get the temperature state
         Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-        if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
         const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
         if (la[1].Size() != nen_ * numdofpernode_thr)
-          dserror("Location vector length for temperature does not match!");
+          FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
         CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
@@ -297,7 +297,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       // need current displacement and residual/incremental displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
 
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' ");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
 
       // build the location vector only for the structure field
       std::vector<double> mydisp((la[0].lm_).size());
@@ -315,13 +315,13 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       {
         // check if you can get the temperature state
         Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-        if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
         const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
         if (la[1].Size() != nen_ * numdofpernode_thr)
-          dserror("Location vector length for temperature does not match!");
+          FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
         CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
@@ -394,7 +394,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       // need current displacement and residual/incremental displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
 
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
 
       // build the location vector only for the structure field
       std::vector<double> mydisp((la[0].lm_).size());
@@ -413,13 +413,13 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       {
         // check if you can get the temperature state
         Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-        if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
         const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
         if (la[1].Size() != nen_ * numdofpernode_thr)
-          dserror("Location vector length for temperature does not match!");
+          FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
         CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
@@ -485,7 +485,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
     {
       // elemat1+2,elevec1-3 are not used anyway
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
 
       std::vector<double> mydisp((la[0].lm_).size());
       CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
@@ -520,13 +520,13 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       {
         // check if you can get the temperature state
         Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-        if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
         const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
         if (la[1].Size() != nen_ * numdofpernode_thr)
-          dserror("Location vector length for temperature does not match!");
+          FOUR_C_THROW("Location vector length for temperature does not match!");
 
         // extract the current temperatures
         CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
@@ -643,13 +643,13 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
         {
           // check if you can get the temperature state
           Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-          if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+          if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the
           // dimension of the problem
           const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
           if (la[1].Size() != nen_ * numdofpernode_thr)
-            dserror("Location vector length for temperature does not match!");
+            FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
           CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
         }
@@ -669,7 +669,8 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
           // cast to nurbs discretization
           DRT::NURBS::NurbsDiscretization* nurbsdis =
               dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-          if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+          if (nurbsdis == nullptr)
+            FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
           // zero-sized element
           if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return 1;
@@ -711,7 +712,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       // elemat2,elevec1-3 are not used anyway
       // need current displacement and residual/incremental displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp((la[0].lm_).size());
       // build the location vector only for the structure field
       CORE::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
@@ -729,13 +730,13 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
       {
         // check if you can get the temperature state
         Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState(1, "temperature");
-        if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
+        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
         const int numdofpernode_thr = discretization.NumDof(1, Nodes()[0]);
         if (la[1].Size() != nen_ * numdofpernode_thr)
-          dserror("Location vector length for temperature does not match!");
+          FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
         CORE::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
       }
@@ -780,7 +781,7 @@ int DRT::ELEMENTS::So3Thermo<so3_ele, distype>::EvaluateCouplWithThr(Teuchos::Pa
     }
     //============================================================================
     default:
-      dserror("Unknown type of action for So3_Thermo");
+      FOUR_C_THROW("Unknown type of action for So3_Thermo");
       break;
   }  // action
 
@@ -897,14 +898,14 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
         for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = couplstress(i);
         break;
       }
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
         // push forward of material stress to the spatial configuration
         CORE::LINALG::Matrix<nsd_, nsd_> cauchycouplstress;
@@ -921,7 +922,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not available");
+        FOUR_C_THROW("requested stress type not available");
         break;
     }
 
@@ -1135,7 +1136,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-    if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+    if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
     if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return;
@@ -1237,13 +1238,13 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = couplstress(i);
         break;
       }
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
         // push forward of material stress to the spatial configuration
         // sigma = 1/J . F . S_temp . F^T
@@ -1261,7 +1262,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not available");
+        FOUR_C_THROW("requested stress type not available");
         break;
     }
 
@@ -1400,7 +1401,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Locat
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-    if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+    if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
     if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return;
@@ -1732,13 +1733,13 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == nullptr) dserror("stress data not available");
+          if (elestress == nullptr) FOUR_C_THROW("stress data not available");
           for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = couplstress_bar(i);
           break;
         }
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == nullptr) dserror("stress data not available");
+          if (elestress == nullptr) FOUR_C_THROW("stress data not available");
           // push forward of material stress to the spatial configuration
           // sigma = 1/J . F . S_temp . F^T
           CORE::LINALG::Matrix<nsd_, nsd_> cauchycouplstress_bar;
@@ -1755,7 +1756,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
         case INPAR::STR::stress_none:
           break;
         default:
-          dserror("requested stress type not available");
+          FOUR_C_THROW("requested stress type not available");
           break;
       }
 
@@ -1879,7 +1880,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
 
   }  // end HEX8FBAR
   else
-    dserror("call method only for HEX8FBAR elements!");
+    FOUR_C_THROW("call method only for HEX8FBAR elements!");
 
   return;
 
@@ -2080,7 +2081,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element::
 
   }  // end HEX8FBAR
   else
-    dserror("call method only for HEX8FBAR elements!");
+    FOUR_C_THROW("call method only for HEX8FBAR elements!");
   return;
 
 }  // nln_kdT_tsi_fbar()
@@ -2099,8 +2100,8 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Materialize(
     Teuchos::ParameterList& params                  // parameter
 )
 {
-#ifdef BACI_DEBUG
-  if (!couplstress) dserror("No stress vector supplied");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (!couplstress) FOUR_C_THROW("No stress vector supplied");
 #endif
 
   // backwards compatibility: not all materials use the new interface
@@ -2146,7 +2147,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Materialize(
     }
 
     default:
-      dserror("Unknown type of temperature dependent material");
+      FOUR_C_THROW("Unknown type of temperature dependent material");
       break;
   }  // switch (mat->MaterialType())
 
@@ -2166,7 +2167,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Ctemp(
     // thermo st.venant-kirchhoff-material
     case INPAR::MAT::m_thermostvenant:
     {
-      dserror("Ctemp call no longer valid for ThermoStVenantKirchhoff. Fix implementation.");
+      FOUR_C_THROW("Ctemp call no longer valid for ThermoStVenantKirchhoff. Fix implementation.");
     }
     // small strain von Mises thermoelastoplastic material
     case INPAR::MAT::m_thermopllinelast:
@@ -2194,7 +2195,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Ctemp(
       break;
     }
     default:
-      dserror("Cannot ask material for the temperature-dependent material tangent");
+      FOUR_C_THROW("Cannot ask material for the temperature-dependent material tangent");
       break;
   }  // switch (mat->MaterialType())
 
@@ -2437,7 +2438,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::InitJacobianMappingSpecialForNu
   for (int i = 0; i < nen_; ++i)
   {
     Node** nodes = Nodes();
-    if (!nodes) dserror("Nodes() returned null pointer");
+    if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
     xrefe(i, 0) = Nodes()[i]->X()[0];
     xrefe(i, 1) = Nodes()[i]->X()[1];
     xrefe(i, 2) = Nodes()[i]->X()[2];
@@ -2461,7 +2462,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::InitJacobianMappingSpecialForNu
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
-    if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+    if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
     if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return;
@@ -2508,7 +2509,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::InitJacobianMappingSpecialForNu
     invJ_[gp].Multiply(deriv, xrefe);
     // xij_ = ds/dx
     detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] < 1.0E-16) dserror("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", detJ_[gp]);
+    if (detJ_[gp] < 1.0E-16) FOUR_C_THROW("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", detJ_[gp]);
   }  // end gp loop
 
   return;

@@ -58,30 +58,30 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> 
 {
   // check validity of input parameters
   if (tol_ <= 0.)
-    dserror("Newton tolerance TOL is negative or zero!!! Check your input!");
+    FOUR_C_THROW("Newton tolerance TOL is negative or zero!!! Check your input!");
   else if (youngs_ <= 0.)
-    dserror("Young's modulus YOUNG is negative or zero!!! Check your input!");
+    FOUR_C_THROW("Young's modulus YOUNG is negative or zero!!! Check your input!");
   else if (poisson_ >= 0.5 || poisson_ < -1.)
-    dserror("Poisson's ratio needs be between NUE=-1 and NUE=0.5 Check your input!");
+    FOUR_C_THROW("Poisson's ratio needs be between NUE=-1 and NUE=0.5 Check your input!");
   else if (density_ <= 0.)
-    dserror("Density is negative or zero!!! Check your input!");
+    FOUR_C_THROW("Density is negative or zero!!! Check your input!");
   else if (!(lattice_ == "L10" || lattice_ == "D019" || lattice_ == "FCC" || lattice_ == "BCC" ||
                lattice_ == "TEST"))
-    dserror(
+    FOUR_C_THROW(
         "Lattice type not known. Please check the LAT parameter in the input file. Currently it "
         "has to be FCC, BCC, HCP, D019 or L10");
   else if (ctoa_ <= 0.)
-    dserror("C to a ratio CTOA is negative or zero!!! Check your input!");
+    FOUR_C_THROW("C to a ratio CTOA is negative or zero!!! Check your input!");
   else if (lattice_const_ <= 0.)
-    dserror("Lattice constant ABASE is negative or zero!!! Check your input!");
+    FOUR_C_THROW("Lattice constant ABASE is negative or zero!!! Check your input!");
   else if (num_slip_sys_ <= 0.)
-    dserror("Number of slip systems NUMSLIPSYS is negative or zero!!! Check your input!");
+    FOUR_C_THROW("Number of slip systems NUMSLIPSYS is negative or zero!!! Check your input!");
   else if (num_slip_sets_ > num_slip_sys_)
-    dserror(
+    FOUR_C_THROW(
         "Number of slip system sets NUMSLIPSETS is greater than number of slip systems "
         "NUMSLIPSYS!!! Check your input!");
   else if ((num_twin_sys_ != 0) && (num_twin_sets_ > num_twin_sys_))
-    dserror(
+    FOUR_C_THROW(
         "The number of twinning system sets NUMTWINSETS is greater than the number of twinning "
         "systems NUMTWINSYS!!! Check your input!");
 
@@ -89,11 +89,11 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> 
   for (int i = 0; i < num_slip_sys_; i++)
   {
     if (slip_set_mem_[i] > num_slip_sets_)
-      dserror(
+      FOUR_C_THROW(
           "The index of one slip system in SLIPSETMEMBERS exceeds the number of slip sets given in "
           "NUMSLIPSETS!!! Check your input!");
     else if (slip_set_mem_[i] < 1)
-      dserror(
+      FOUR_C_THROW(
           "The index of one slip system in SLIPSETMEMBERS is negative or zero!!! Check your "
           "input!");
   }
@@ -102,12 +102,12 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> 
     for (int i = 0; i < num_twin_sys_; i++)
     {
       if (twin_set_mem_[i] > num_twin_sets_)
-        dserror(
+        FOUR_C_THROW(
             "The index of one twinning system in TWINSETMEMBERS exceeds the number of twinning "
             "sets given in "
             "NUMTWINSETS!!! Check your input!");
       else if (twin_set_mem_[i] < 1)
-        dserror(
+        FOUR_C_THROW(
             "The index of one twinning system in TWINSETMEMBERS is negative or zero!!! Check your "
             "input!");
     }
@@ -116,42 +116,44 @@ MAT::PAR::CrystalPlasticity::CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> 
   for (int i = 0; i < num_slip_sets_; i++)
   {
     if (slip_rate_exp_[i] <= 0)
-      dserror("One of the entries in SLIPRATEEXP is negative or zero!!! Check your input!");
+      FOUR_C_THROW("One of the entries in SLIPRATEEXP is negative or zero!!! Check your input!");
     else if (slip_ref_shear_rate_[i] <= 0)
-      dserror("One of the entries in GAMMADOTSLIPREF is negative or zero!!! Check your input!");
+      FOUR_C_THROW(
+          "One of the entries in GAMMADOTSLIPREF is negative or zero!!! Check your input!");
     else if (dis_dens_init_[i] < 0)
-      dserror("One of the entries in DISDENSINIT is negative!!! Check your input!");
+      FOUR_C_THROW("One of the entries in DISDENSINIT is negative!!! Check your input!");
     else if (dis_gen_coeff_[i] < 0)
-      dserror("One of the entries in DISGENCOEFF is negative!!! Check your input!");
+      FOUR_C_THROW("One of the entries in DISGENCOEFF is negative!!! Check your input!");
     else if (dis_dyn_rec_coeff_[i] < 0)
-      dserror("One of the entries in DISDYNECCOEFF is negative!!! Check your input!");
+      FOUR_C_THROW("One of the entries in DISDYNECCOEFF is negative!!! Check your input!");
     else if (slip_lat_resist_[i] < 0)
-      dserror("One of the entries in TAUY0 is negative!!! Check your input!");
+      FOUR_C_THROW("One of the entries in TAUY0 is negative!!! Check your input!");
     else if (slip_micro_bound_[i] <= 0)
-      dserror("One of the entries in MFPSLIP is negative or zero!!! Check your input!");
+      FOUR_C_THROW("One of the entries in MFPSLIP is negative or zero!!! Check your input!");
     else if (slip_hp_coeff_[i] < 0)
-      dserror("One of the entries in SLIPHPCOEFF is negative!!! Check your input!");
+      FOUR_C_THROW("One of the entries in SLIPHPCOEFF is negative!!! Check your input!");
     else if (slip_by_twin_[i] < 0)
-      dserror("One of the entries in SLIPBYTWIN is negative!!! Check your input!");
+      FOUR_C_THROW("One of the entries in SLIPBYTWIN is negative!!! Check your input!");
   }
   if (num_twin_sys_ != 0)
   {
     for (int i = 0; i < num_twin_sets_; i++)
     {
       if (twin_rate_exp_[i] <= 0)
-        dserror("One of the entries in TWINRATEEXP is negative or zero!!! Check your input!");
+        FOUR_C_THROW("One of the entries in TWINRATEEXP is negative or zero!!! Check your input!");
       else if (twin_ref_shear_rate_[i] <= 0)
-        dserror("One of the entries in GAMMADOTTWINREF is negative or zero!!! Check your input!");
+        FOUR_C_THROW(
+            "One of the entries in GAMMADOTTWINREF is negative or zero!!! Check your input!");
       else if (twin_lat_resist_[i] < 0)
-        dserror("One of the entries in TAUT0 is negative!!! Check your input!");
+        FOUR_C_THROW("One of the entries in TAUT0 is negative!!! Check your input!");
       else if (twin_micro_bound_[i] <= 0)
-        dserror("One of the entries in MFPTWIN is negative or zero!!! Check your input!");
+        FOUR_C_THROW("One of the entries in MFPTWIN is negative or zero!!! Check your input!");
       else if (twin_hp_coeff_[i] < 0)
-        dserror("One of the entries in TWINHPCOEFF is negative!!! Check your input!");
+        FOUR_C_THROW("One of the entries in TWINHPCOEFF is negative!!! Check your input!");
       else if (twin_by_slip_[i] < 0)
-        dserror("One of the entries in TWINBYSLIP is negative!!! Check your input!");
+        FOUR_C_THROW("One of the entries in TWINBYSLIP is negative!!! Check your input!");
       else if (twin_by_twin_[i] < 0)
-        dserror("One of the entries in TWINBYTWIN is negative!!! Check your input!");
+        FOUR_C_THROW("One of the entries in TWINBYTWIN is negative!!! Check your input!");
     }
   }
 }
@@ -254,7 +256,7 @@ void MAT::CrystalPlasticity::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::CrystalPlasticity*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -294,7 +296,7 @@ void MAT::CrystalPlasticity::Unpack(const std::vector<char>& data)
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
     if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
   }
 }  // Unpack
 
@@ -537,7 +539,7 @@ void MAT::CrystalPlasticity::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 {
   // simulation parameters
   //---------------------------------------------------------------
-  if (eleGID == -1) dserror("no element provided in material");
+  if (eleGID == -1) FOUR_C_THROW("no element provided in material");
 
   // extract time increment
   dt = params.get<double>("delta time");
@@ -603,7 +605,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
   else if (lattice_type_ == "TEST" && is_twinning_)
     def_system_count_ = 2;  // 1 slip systems and 1 twinning system
   else if (lattice_type_ == "D019" && is_twinning_)
-    dserror(
+    FOUR_C_THROW(
         "Twinning does not occur in the chosen lattice type %s or is not yet implemented. Omit "
         "all optional parameters of the material input line to switch off twinning.",
         lattice_type_.c_str());
@@ -613,7 +615,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
   if ((slip_system_count_ + twin_system_count_) != def_system_count_)
   {
     if (!is_twinning_)
-      dserror(
+      FOUR_C_THROW(
           "The number of slip systems NUMSLIPSYS = %d given in the input does not match the "
           "expected total number of %d deformation systems that is expected for %s lattices in "
           "the "
@@ -621,7 +623,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
           params_->num_slip_sys_, params_->num_twin_sys_, def_system_count_, lattice_type_.c_str());
 
     else if (is_twinning_)
-      dserror(
+      FOUR_C_THROW(
           "The sum of the number of slip systems NUMSLIPSYS = %d and the number twinning "
           "systems "
           "NUMTWINSYS = %d given in the input does not match the expected total number of %d "
@@ -977,7 +979,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
         slip_plane_normal_hex, slip_direction_hex, slip_plane_normal_, slip_direction_);
   }
   else if (lattice_type_ == "HCP" or lattice_type_ == "BCC" or lattice_type_ == "FCC")
-    dserror(
+    FOUR_C_THROW(
         "%s lattices are not yet implemented. If you want to use these lattice types you "
         "need to extend the SetupLatticeVectors() method accordingly.",
         lattice_type_.c_str());
@@ -1005,7 +1007,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
     twin_direction_[0](2, 0) = 1.0 * c_to_a_ratio_;
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Lattice type not known. Please check the LAT parameter in the input file. Currently "
         "it has to be FCC, BCC, HCP, D019 or L10");
   // test whether directions and normals are perpendicular (required!) and identify which slip
@@ -1016,7 +1018,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
     bool is_perpendicular_ =
         MAT::CrystalPlasticity::CheckOrthogonal(slip_direction_[i], slip_plane_normal_[i]);
     if (!is_perpendicular_)
-      dserror(
+      FOUR_C_THROW(
           "Warning, slip direction and slip plane normal of slip system "
           "%s are not perpendicular! Check implementation of lattice vectors.",
           def_system_id_[i].c_str());
@@ -1030,7 +1032,7 @@ void MAT::CrystalPlasticity::SetupLatticeVectors()
       bool is_perpendicular_ =
           MAT::CrystalPlasticity::CheckOrthogonal(twin_direction_[i], twin_plane_normal_[i]);
       if (!is_perpendicular_)
-        dserror(
+        FOUR_C_THROW(
             "Warning, twinning direction and twinning plane normal of twinning system "
             "%s are not perpendicular! Check implementation of lattice vectors.",
             def_system_id_[i].c_str());
@@ -1128,7 +1130,7 @@ void MAT::CrystalPlasticity::SetupLatticeOrientation(INPUT::LineDefinition* line
     }
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "No lattice orientation matrix provided! Please add 'FIBER1', 'FIBER2' and 'FIBER3' as "
         "columns of the rotation matrix that relates the lattice orientation to the global "
         "coordinate system");
@@ -1410,7 +1412,7 @@ void MAT::CrystalPlasticity::NewtonRaphson(CORE::LINALG::Matrix<3, 3>& deform_gr
   // TODO: If not: reduce time step and restart time increment!
   if (!converged)
   {
-    dserror("Internal Newton Raphson did not converge within max iterations.");
+    FOUR_C_THROW("Internal Newton Raphson did not converge within max iterations.");
   }
 
   return;
@@ -1591,7 +1593,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
     double tau_y = tau_y0 + hall_petch_strengthening + delta_tau_y;
 
     // check for consistency
-    if (tau_y < 0.0) dserror("Negative slip systems strength! Please check your input");
+    if (tau_y < 0.0) FOUR_C_THROW("Negative slip systems strength! Please check your input");
 
     // setting up Residua with flow/twinning rule
     //--------------------------------------------------------------------------
@@ -1662,7 +1664,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
       double tau_t = tau_t0 + hall_petch_strengthening + delta_tau_t;
 
       // check for consistency
-      if (tau_t < 0.0) dserror("Negative twinning systems strength! Please check your input");
+      if (tau_t < 0.0) FOUR_C_THROW("Negative twinning systems strength! Please check your input");
 
       // setting up Residua with flow/twinning rule
       //--------------------------------------------------------------------------
@@ -1754,7 +1756,7 @@ bool MAT::CrystalPlasticity::VisData(
   {
     if (name == "plastic_shear_" + def_system_id_[sys])
     {
-      if ((int)data.size() != 1) dserror("size mismatch");
+      if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
       for (int gp_index = 0; gp_index < numgp; gp_index++)
       {
         data[0] = (*gamma_last_)[gp_index][sys];
@@ -1765,7 +1767,7 @@ bool MAT::CrystalPlasticity::VisData(
   // accumulated plastic shear gamma_acc
   if (name == "accumulated_plastic_shear")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double gamma_acc;
     for (int gp_index = 0; gp_index < numgp; gp_index++)
     {
@@ -1783,7 +1785,7 @@ bool MAT::CrystalPlasticity::VisData(
   {
     if (name == "dislocation_density_" + def_system_id_[sys])
     {
-      if ((int)data.size() != 1) dserror("size mismatch");
+      if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
       for (int gp_index = 0; gp_index < numgp; gp_index++)
       {
         data[0] = (*defect_densities_last_)[gp_index][sys];
@@ -1797,7 +1799,7 @@ bool MAT::CrystalPlasticity::VisData(
     {
       if (name == "twinned_volume_" + def_system_id_[sys])
       {
-        if ((int)data.size() != 1) dserror("size mismatch");
+        if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
         for (int gp_index = 0; gp_index < numgp; gp_index++)
         {
           data[0] = (*defect_densities_last_)[gp_index][sys];
@@ -1809,7 +1811,7 @@ bool MAT::CrystalPlasticity::VisData(
   // accumulated dislocation density
   if (name == "total_dislocation_density")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double dis_dens_acc;
     for (int gp_index = 0; gp_index < numgp; gp_index++)
     {
@@ -1827,7 +1829,7 @@ bool MAT::CrystalPlasticity::VisData(
     // accumulated twinned volume fraction
     if (name == "total_twinned_volume")
     {
-      if ((int)data.size() != 1) dserror("size mismatch");
+      if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
       double twin_vol_acc;
       for (int gp_index = 0; gp_index < numgp; gp_index++)
       {

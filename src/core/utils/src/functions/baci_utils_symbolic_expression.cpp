@@ -313,7 +313,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
       }
       else if (t == '\n')
       {
-        dserror("newline in function definition");
+        FOUR_C_THROW("newline in function definition");
       }
       else if (t == EOF)
       {
@@ -351,7 +351,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
             }
             else
             {
-              dserror("no digits after point at pos %d", pos_);
+              FOUR_C_THROW("no digits after point at pos %d", pos_);
             }
           }
           if ((t == 'E') || (t == 'e'))
@@ -370,7 +370,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
             }
             else
             {
-              dserror("no digits after exponent at pos %d", pos_);
+              FOUR_C_THROW("no digits after exponent at pos %d", pos_);
             }
           }
           if (t != EOF)
@@ -439,9 +439,9 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
         else
         {
           if (t >= 32)
-            dserror("unexpected char '%c' at pos %d", t, pos_);
+            FOUR_C_THROW("unexpected char '%c' at pos %d", t, pos_);
           else
-            dserror("unexpected char '%d' at pos %d", t, pos_);
+            FOUR_C_THROW("unexpected char '%d' at pos %d", t, pos_);
           tok_ = Lexer::tok_none;
           return;
         }
@@ -504,7 +504,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
   T Parser<T>::Evaluate(const std::map<std::string, T>& variable_values,
       const std::map<std::string, double>& constants) const
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     const bool all_required_variables_passed =
         std::all_of(parsed_variable_constant_names_.begin(), parsed_variable_constant_names_.end(),
             [&](const auto& var_name)
@@ -522,7 +522,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
               [](const std::string& acc, const auto& v)
               { return acc.empty() ? v.first : acc + ", " + v.first; });
 
-      dserror(
+      FOUR_C_THROW(
           "Some variables that this parser encountered in the expression are not passed to "
           "the Evaluate function.\n\n"
           "Expression:  %s \n"
@@ -534,8 +534,8 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
 #endif
 
     //! safety check if variable_values_ and constant_values_ are nullptr
-    dsassert(variable_values_ == nullptr, "Internal error");
-    dsassert(constant_values_ == nullptr, "Internal error");
+    FOUR_C_ASSERT(variable_values_ == nullptr, "Internal error");
+    FOUR_C_ASSERT(constant_values_ == nullptr, "Internal error");
 
     //! set variable values
     variable_values_ = &variable_values;
@@ -543,7 +543,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
     if (constants.size() != 0) constant_values_ = &constants;
 
     //! check if function has been parsed
-    dsassert(expr_ != nullptr, "Internal error");
+    FOUR_C_ASSERT(expr_ != nullptr, "Internal error");
 
     //! evaluate syntax tree of function depending on set variables
     auto result = this->Interpret(*expr_);
@@ -570,7 +570,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
       case Lexer::tok_lpar:
         lexer.Lexan();
         lhs = ParseExpr(lexer);
-        if (lexer.tok_ != Lexer::tok_rpar) dserror("')' expected");
+        if (lexer.tok_ != Lexer::tok_rpar) FOUR_C_THROW("')' expected");
         lexer.Lexan();
         break;
       case Lexer::tok_int:
@@ -628,10 +628,10 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
             lhs->function_ = name;
             lexer.Lexan();
             if (lexer.tok_ != Lexer::tok_lpar)
-              dserror("'(' expected after function name '%s'", name.c_str());
+              FOUR_C_THROW("'(' expected after function name '%s'", name.c_str());
             lexer.Lexan();
             lhs->lhs_ = ParseExpr(lexer);
-            if (lexer.tok_ != Lexer::tok_rpar) dserror("')' expected");
+            if (lexer.tok_ != Lexer::tok_rpar) FOUR_C_THROW("')' expected");
             lexer.Lexan();
             break;
           }
@@ -642,14 +642,14 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
             lhs->function_ = name;
             lexer.Lexan();
             if (lexer.tok_ != Lexer::tok_lpar)
-              dserror("'(' expected after function name '%s'", name.c_str());
+              FOUR_C_THROW("'(' expected after function name '%s'", name.c_str());
             lexer.Lexan();
             lhs->lhs_ = ParseExpr(lexer);
-            if (lexer.tok_ != Lexer::tok_comma) dserror("',' expected");
+            if (lexer.tok_ != Lexer::tok_comma) FOUR_C_THROW("',' expected");
             lexer.Lexan();
             lhs->rhs_ = ParseExpr(lexer);
             if (lexer.tok_ != Lexer::tok_rpar)
-              dserror("')' expected for function name '%s'", name.c_str());
+              FOUR_C_THROW("')' expected for function name '%s'", name.c_str());
             lexer.Lexan();
             break;
           }
@@ -665,7 +665,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
         break;
       }
       default:
-        dserror("unexpected token %d", lexer.tok_);
+        FOUR_C_THROW("unexpected token %d", lexer.tok_);
         break;
     }
 
@@ -756,7 +756,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
     // check if parsing ended before processing the entire string
     if (lexer.tok_ != Lexer::tok_done)
     {
-      dserror("Invalid syntax: The remaining string '%s' is not parsed.",
+      FOUR_C_THROW("Invalid syntax: The remaining string '%s' is not parsed.",
           lexer.funct_.c_str() + lexer.pos_);
     }
 
@@ -847,7 +847,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
             res = std::pow(lhs, rhs);
             break;
           default:
-            dserror("unsupported operator '%c'", node.v_.op);
+            FOUR_C_THROW("unsupported operator '%c'", node.v_.op);
         }
         break;
       }
@@ -860,7 +860,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
           {
             if (variable_values_->find(node.variable_) == variable_values_->end())
             {
-              dserror("variable or constant '%s' not given as input in Evaluate()",
+              FOUR_C_THROW("variable or constant '%s' not given as input in Evaluate()",
                   node.variable_.c_str());
             }
             else
@@ -873,7 +873,7 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
             if ((variable_values_->find(node.variable_) == variable_values_->end()) &&
                 (constant_values_->find(node.variable_) == constant_values_->end()))
             {
-              dserror("variable or constant '%s' not given as input in EvaluateDeriv()",
+              FOUR_C_THROW("variable or constant '%s' not given as input in EvaluateDeriv()",
                   node.variable_.c_str());
             }
             else
@@ -887,12 +887,12 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
                 res = constant_values_->at(node.variable_);
               }
               else
-                dserror("Something went really wrong!");
+                FOUR_C_THROW("Something went really wrong!");
             }
           }
         }
         else
-          dserror("unknown variable '%s'", node.variable_.c_str());
+          FOUR_C_THROW("unknown variable '%s'", node.variable_.c_str());
         break;
       }
       // unary operators
@@ -947,11 +947,11 @@ namespace CORE::UTILS::SYMBOLICEXPRESSIONDETAILS
           }
         }
         else
-          dserror("unknown function_ '%s'", node.function_.c_str());
+          FOUR_C_THROW("unknown function_ '%s'", node.function_.c_str());
         break;
       }
       default:
-        dserror("unknown syntax tree node type");
+        FOUR_C_THROW("unknown syntax tree node type");
         break;
     }
 

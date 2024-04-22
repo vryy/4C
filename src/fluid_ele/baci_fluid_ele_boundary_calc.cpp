@@ -178,7 +178,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
       }
 
       // what happens, if the mynormals vector is empty? (ehrl)
-      dserror(
+      FOUR_C_THROW(
           "the action calc_node_curvature has not been called by now. What happens, if the "
           "mynormal vector is empty");
 
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
     }
     default:
     {
-      dserror("Unknown type of action for FluidBoundaryImpl!");
+      FOUR_C_THROW("Unknown type of action for FluidBoundaryImpl!");
       break;
     }
   }  // end of switch(act)
@@ -276,7 +276,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
   //========================================================
   // get scalar vector
   Teuchos::RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
-  if (scaaf == Teuchos::null) dserror("Cannot get state vector 'scaaf'");
+  if (scaaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'scaaf'");
 
   // extract local values from global vector
   std::vector<double> myscaaf(lm.size());
@@ -302,7 +302,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
       fldpara->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes)
   {
     Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
-    if (velaf == Teuchos::null) dserror("Cannot get state vector 'velaf'");
+    if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
     // extract local values from global vector
     std::vector<double> myvelaf(lm.size());
@@ -477,7 +477,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
       else if (*type == "neum_pseudo_orthopressure")
       {
         if (idim != 0 and (*onoff)[idim])
-          dserror(
+          FOUR_C_THROW(
               "If you apply a pseudo_orthopressure load on the fluid, only a load in\n"
               "the first component (which corresponds to the normal direction) is valid!");
 
@@ -517,7 +517,8 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
         }    // if (*onoff)
       }
       else
-        dserror("The type '%s' is not supported in the fluid neumann condition!", type->c_str());
+        FOUR_C_THROW(
+            "The type '%s' is not supported in the fluid neumann condition!", type->c_str());
 
     }  // for(int idim=0; idim<(nsd_); ++idim)
   }
@@ -537,7 +538,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
 {
   if (fldparatimint_->IsNewOSTImplementation())
   {
-    dserror("NEUMANN INFLOW IS NOT IMPLEMENTED FOR NEW OST AS OF YET!");
+    FOUR_C_THROW("NEUMANN INFLOW IS NOT IMPLEMENTED FOR NEW OST AS OF YET!");
   }  // end IsNewOSTImplementation
 
   //----------------------------------------------------------------------
@@ -598,7 +599,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
   Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
   Teuchos::RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
   if (velaf == Teuchos::null or scaaf == Teuchos::null)
-    dserror("Cannot get state vector 'velaf' and/or 'scaaf'");
+    FOUR_C_THROW("Cannot get state vector 'velaf' and/or 'scaaf'");
 
   // extract local values from global vector
   std::vector<double> myvelaf(lm.size());
@@ -793,7 +794,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegrateShapeFunction(
 
   if (isale)
   {
-    dsassert(edispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(edispnp.size() != 0, "paranoid");
 
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
@@ -861,7 +862,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
 
   if (isale)
   {
-    dsassert(edispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(edispnp.size() != 0, "paranoid");
 
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
@@ -935,15 +936,16 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
           (drs_ * drs_);
     }
     else
-      dserror("Calcualtion of the mean curvature is only implemented for a 2D surface element");
+      FOUR_C_THROW(
+          "Calcualtion of the mean curvature is only implemented for a 2D surface element");
 
 
     // get the number of elements adjacent to this node. Find out how many
     // will contribute to the interpolated mean curvature value.
     int contr_elements = 0;
     DRT::Node* thisNode = (ele->Nodes())[inode];
-#ifdef BACI_DEBUG
-    if (thisNode == nullptr) dserror("No node!\n");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    if (thisNode == nullptr) FOUR_C_THROW("No node!\n");
 #endif
     int NumElement = thisNode->NumElement();
     DRT::Element** ElementsPtr = thisNode->Elements();
@@ -985,8 +987,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
         }
       }
     }
-#ifdef BACI_DEBUG
-    if (!contr_elements) dserror("No contributing elements found!\n");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    if (!contr_elements) FOUR_C_THROW("No contributing elements found!\n");
 #endif
 
     for (int idim = 0; idim < nsd_; ++idim)
@@ -1026,14 +1028,14 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
   // get material data
   Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
   if (mat == Teuchos::null)
-    dserror("no mat from parent!");
+    FOUR_C_THROW("no mat from parent!");
   else if (mat->MaterialType() == INPAR::MAT::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
     SFgamma = actmat->Gamma();
   }
   else
-    dserror("Newtonian fluid material expected but got type %d", mat->MaterialType());
+    FOUR_C_THROW("Newtonian fluid material expected but got type %d", mat->MaterialType());
 
   // get Gauss rule
   const CORE::FE::IntPointsAndWeights<bdrynsd_> intpoints(
@@ -1047,7 +1049,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
 
   if (isale)
   {
-    dsassert(edispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(edispnp.size() != 0, "paranoid");
 
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
@@ -1138,7 +1140,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
       }
     }  // end if else (nsd_=1)
     else
-      dserror("There are no 3D boundary elements implemented");
+      FOUR_C_THROW("There are no 3D boundary elements implemented");
   } /* end of loop over integration points gpid */
 }  // DRT::ELEMENTS::FluidSurface::ElementSurfaceTension
 
@@ -1200,7 +1202,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::F
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
       for (int idim = 0; idim < nsd_; ++idim)
@@ -1248,7 +1250,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
   // extract pressure values from global velocity/pressure vector
   // renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velaf'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> myvelnp(lm.size());
   CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
@@ -1274,7 +1276,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
       for (int idim = 0; idim < nsd_; ++idim)
@@ -1347,7 +1349,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
       for (int idim = 0; idim < nsd_; ++idim)
@@ -1428,7 +1430,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
   // renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
 
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velaf'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> myvelnp(lm.size());
   CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
@@ -1465,7 +1467,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
       for (int idim = 0; idim < nsd_; ++idim)
@@ -1543,7 +1545,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
     CORE::LINALG::SerialDenseVector& elevec3)
 {
   // This function is only implemented for 3D
-  if (bdrynsd_ != 2) dserror("FlowRateDeriv is only implemented for 3D!");
+  if (bdrynsd_ != 2) FOUR_C_THROW("FlowRateDeriv is only implemented for 3D!");
 
   // get status of Ale
   const bool isale = ele->ParentElement()->IsAle();
@@ -1554,7 +1556,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
   if (isale)
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vectors 'dispnp'");
+    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'dispnp'");
     edispnp.resize(lm.size());
     CORE::FE::ExtractMyValues(*dispnp, edispnp, lm);
   }
@@ -1578,7 +1580,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
 
   if (isale)
   {
-    dsassert(edispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(edispnp.size() != 0, "paranoid");
 
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
@@ -1592,7 +1594,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
   // get nodal velocities and pressures
   Teuchos::RCP<const Epetra_Vector> convelnp = discretization.GetState("convectivevel");
 
-  if (convelnp == Teuchos::null) dserror("Cannot get state vector 'convectivevel'");
+  if (convelnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'convectivevel'");
 
   // extract local values from the global vectors
   std::vector<double> myconvelnp(lm.size());
@@ -1693,7 +1695,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
       {
         // get time step size
         const double dt = params.get<double>("dt", -1.0);
-        if (dt < 0.) dserror("invalid time step size");
+        if (dt < 0.) FOUR_C_THROW("invalid time step size");
 
         if (gridvel == INPAR::FLUID::BE)  // BE time discretization
         {
@@ -1705,7 +1707,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
           }
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "flowrate calculation: higher order of accuracy of grid velocity not implemented");
       }
 
@@ -1779,7 +1781,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
       {
         // get time step size
         const double dt = params.get<double>("dt", -1.0);
-        if (dt < 0.) dserror("invalid time step size");
+        if (dt < 0.) FOUR_C_THROW("invalid time step size");
 
         if (gridvel == INPAR::FLUID::BE)
         {
@@ -1801,7 +1803,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
           }
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "flowrate calculation: higher order of accuracy of grid velocity not implemented");
       }
 
@@ -1847,7 +1849,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
       for (int idim = 0; idim < nsd_; ++idim)
@@ -1908,7 +1910,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundar
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
       for (int idim = 0; idim < nsd_; ++idim)
@@ -1968,7 +1970,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
     if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density) densaf_ = funct_.Dot(escaaf);
     // Boussinesq approximation: Calculation of delta rho
     else if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
-      dserror("Boussinesq approximation not yet supported for boundary terms!");
+      FOUR_C_THROW("Boussinesq approximation not yet supported for boundary terms!");
     else
       densaf_ = actmat->Density();
   }
@@ -2112,10 +2114,10 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
 
   }  // end else if m_matlist
   else
-    dserror("Material type is not supported for density evaluation for boundary element!");
+    FOUR_C_THROW("Material type is not supported for density evaluation for boundary element!");
 
   //  // check whether there is zero or negative density
-  if (densaf_ < 1e-15) dserror("zero or negative density!");
+  if (densaf_ < 1e-15) FOUR_C_THROW("zero or negative density!");
 
 
 
@@ -2134,7 +2136,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   // extract local values from the global vectors
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
 
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velaf'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> myvelnp(lm.size());
   CORE::FE::ExtractMyValues(*velnp, myvelnp, lm);
@@ -2167,7 +2169,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
       mat->MaterialType() != INPAR::MAT::m_herschelbulkley &&
       mat->MaterialType() != INPAR::MAT::m_fluid &&
       mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
-    dserror("Material law is not a fluid");
+    FOUR_C_THROW("Material law is not a fluid");
 
   if (mat->MaterialType() == INPAR::MAT::m_fluid)
   {
@@ -2195,7 +2197,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
     density = actmat->Density();
   }
   else
-    dserror("Fluid material expected but got type %d", mat->MaterialType());
+    FOUR_C_THROW("Fluid material expected but got type %d", mat->MaterialType());
 
   //-------------------------------------------------------------------
   // get the tractions velocity component
@@ -2226,7 +2228,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
       mydispnp.resize(lm.size());
       CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
     }
-    dsassert(mydispnp.size() != 0, "paranoid");
+    FOUR_C_ASSERT(mydispnp.size() != 0, "paranoid");
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
       for (int idim = 0; idim < nsd_; ++idim)

@@ -83,7 +83,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ThermoType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented!");
+  FOUR_C_THROW("method ComputeNullSpace not implemented!");
   return nullspace;
 }
 
@@ -252,7 +252,7 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   if (distype_ == CORE::FE::CellType::nurbs27) SetNurbsElement() = true;
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }  // Unpack()
 
@@ -385,14 +385,14 @@ CORE::FE::CellType DRT::ELEMENTS::ThermoBoundary::Shape() const
         return CORE::FE::CellType::nurbs9;
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "Your parent discretization type is %s. Ccurrently only hex27 and nurbs27 are "
             "implemented.",
             CORE::FE::CellTypeToString(ParentElement()->Shape()).c_str());
       }
       break;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
   }
 }  // Shape()
 
@@ -402,7 +402,7 @@ CORE::FE::CellType DRT::ELEMENTS::ThermoBoundary::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ThermoBoundary::Pack(std::vector<char>& data) const
 {
-  dserror("This ThermoBoundary element does not support communication");
+  FOUR_C_THROW("This ThermoBoundary element does not support communication");
 
   return;
 }  // Pack()
@@ -413,7 +413,7 @@ void DRT::ELEMENTS::ThermoBoundary::Pack(std::vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ThermoBoundary::Unpack(const std::vector<char>& data)
 {
-  dserror("This ThermoBoundary element does not support communication");
+  FOUR_C_THROW("This ThermoBoundary element does not support communication");
   return;
 }  // Unpack()
 
@@ -435,7 +435,7 @@ void DRT::ELEMENTS::ThermoBoundary::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ThermoBoundary::Lines()
 {
-  dserror("Lines of ThermoBoundary not implemented");
+  FOUR_C_THROW("Lines of ThermoBoundary not implemented");
 }  // Lines()
 
 
@@ -444,7 +444,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ThermoBoundary::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ThermoBoundary::Surfaces()
 {
-  dserror("Surfaces of ThermoBoundary not implemented");
+  FOUR_C_THROW("Surfaces of ThermoBoundary not implemented");
 }  // Surfaces()
 
 FOUR_C_NAMESPACE_CLOSE

@@ -106,7 +106,10 @@ namespace STR
       [[nodiscard]] int MethodOrderOfAccuracyVel() const override { return TOrder; }
 
       //! Return linear error coefficient of displacements
-      [[nodiscard]] double MethodLinErrCoeffDis() const override { dserror("not yet implemented"); }
+      [[nodiscard]] double MethodLinErrCoeffDis() const override
+      {
+        FOUR_C_THROW("not yet implemented");
+      }
 
       //! Return linear error coefficient of velocities
       [[nodiscard]] double MethodLinErrCoeffVel() const override { return MethodLinErrCoeffDis(); }

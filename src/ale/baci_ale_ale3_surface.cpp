@@ -62,7 +62,7 @@ CORE::FE::CellType DRT::ELEMENTS::Ale3Surface::Shape() const
     case 9:
       return CORE::FE::CellType::quad9;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
       break;
   }
 }
@@ -71,14 +71,14 @@ CORE::FE::CellType DRT::ELEMENTS::Ale3Surface::Shape() const
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale3Surface::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("this Ale3Surface element does not support communication");
+  FOUR_C_THROW("this Ale3Surface element does not support communication");
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale3Surface::Unpack(const std::vector<char>& data)
 {
-  dserror("this Ale3Surface element does not support communication");
+  FOUR_C_THROW("this Ale3Surface element does not support communication");
 }
 
 /*----------------------------------------------------------------------------*/

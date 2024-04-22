@@ -71,7 +71,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
             reference_configuration_forced_to_zero_fad:
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Beam-to-solid surface coupling with rotational coupling is only implemented in "
               "combination with the \"fad\" variants of surface coupling.");
       }

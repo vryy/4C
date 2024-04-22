@@ -129,9 +129,9 @@ namespace STR
 
     inline const Epetra_Comm& Comm() const;
 
-    inline void ThrowIfNotInit() const { dsassert(isinit_, "Call Init() first!"); }
+    inline void ThrowIfNotInit() const { FOUR_C_ASSERT(isinit_, "Call Init() first!"); }
 
-    inline void ThrowIfNotSetup() const { dsassert(issetup_, "Call Setup() first!"); }
+    inline void ThrowIfNotSetup() const { FOUR_C_ASSERT(issetup_, "Call Setup() first!"); }
 
    private:
     DRT::Discretization* discret_ptr_ = nullptr;

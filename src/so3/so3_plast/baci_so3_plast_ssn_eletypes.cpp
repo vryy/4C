@@ -98,7 +98,7 @@ int DRT::ELEMENTS::SoHex8PlastType::Initialize(DRT::Discretization& dis)
 
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex8_Plast* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex8_Plast* failed");
     // initialise all quantities
     actele->InitJacobianMapping();
   }
@@ -197,7 +197,7 @@ int DRT::ELEMENTS::SoHex18PlastType::Initialize(DRT::Discretization& dis)
 
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex18_Plast* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex18_Plast* failed");
 
     actele->InitJacobianMapping();
   }
@@ -290,7 +290,7 @@ int DRT::ELEMENTS::SoHex27PlastType::Initialize(DRT::Discretization& dis)
 
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex27>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex27_Plast* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex27_Plast* failed");
 
     actele->InitJacobianMapping();
   }
@@ -383,7 +383,7 @@ int DRT::ELEMENTS::SoTet4PlastType::Initialize(DRT::Discretization& dis)
 
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet4_Plast* failed");
+    if (!actele) FOUR_C_THROW("cast to So_tet4_Plast* failed");
 
     actele->InitJacobianMapping();
   }
@@ -476,7 +476,7 @@ int DRT::ELEMENTS::SoNurbs27PlastType::Initialize(DRT::Discretization& dis)
 
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet4_Plast* failed");
+    if (!actele) FOUR_C_THROW("cast to So_tet4_Plast* failed");
 
     actele->InitJacobianMapping();
   }

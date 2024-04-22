@@ -39,14 +39,14 @@ bool DRT::ELEMENTS::SoPyramid5::ReadElement(
     kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
-    dserror("Reading SO_PYRAMID5 element failed KINEM unknown");
+    FOUR_C_THROW("Reading SO_PYRAMID5 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
 
   // Validate that materials doesn't use extended update call.
   if (SolidMaterial()->UsesExtendedUpdate())
-    dserror("This element currently does not support the extended update call.");
+    FOUR_C_THROW("This element currently does not support the extended update call.");
 
   // only for linear SVK materials and small strain plastic materials
   bool admissibl_mat = false;
@@ -59,7 +59,7 @@ bool DRT::ELEMENTS::SoPyramid5::ReadElement(
 
   // check for SVK material if geometrically linear
   if ((kintype_ == INPAR::STR::KinemType::linear) and (admissibl_mat == false))
-    dserror("ERROR: Only linear elasticity (SVK) for geometrically linear pyramid5 element");
+    FOUR_C_THROW("ERROR: Only linear elasticity (SVK) for geometrically linear pyramid5 element");
 
   return true;
 }

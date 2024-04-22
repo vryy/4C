@@ -49,11 +49,11 @@ MIXTURE::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
 
   // ensure cast was successfull
   if (Teuchos::is_null(mat))
-    dserror(
+    FOUR_C_THROW(
         "The solid material constituent with ID %d needs to be an So3Material.", params_->matid_);
 
   if (material_->Density() - 1.0 > 1e-16)
-    dserror(
+    FOUR_C_THROW(
         "Please set the density of the solid material constituent with ID %d to 1.0 and prescribe "
         "a combined density for the entire mixture material.",
         material_->Parameter()->Id());
@@ -106,7 +106,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
       }
       else
       {
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
       }
     }
@@ -117,7 +117,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
   {
     auto so3mat = MAT::Material::Factory(params_->matid_);
     material_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(so3mat);
-    if (Teuchos::is_null(so3mat)) dserror("Failed to allocate");
+    if (Teuchos::is_null(so3mat)) FOUR_C_THROW("Failed to allocate");
 
     // solid material packed: 1. the data size, 2. the packed data of size sm
     // ExtractFromPack extracts a sub_vec of size sm from data and updates the position vector

@@ -157,8 +157,8 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
           cpid--;
           max_node_id = std::max(max_node_id, cpid) + 1;
           if (cpid != filecount)
-            dserror("Reading of control points failed: They must be numbered consecutive!!");
-          if (tmp != "COORD") dserror("failed to read control point %d", cpid);
+            FOUR_C_THROW("Reading of control points failed: They must be numbered consecutive!!");
+          if (tmp != "COORD") FOUR_C_THROW("failed to read control point %d", cpid);
           std::vector<Teuchos::RCP<DRT::Discretization>> diss = FindDisNode(element_readers, cpid);
 
           for (auto& dis : diss)
@@ -252,7 +252,7 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
             {
               case FiberType::Unknown:
               {
-                dserror(
+                FOUR_C_THROW(
                     "Unknown fiber node attribute. Numbered fibers must be in order, i.e. "
                     "FIBER1, FIBER2, ...");
               }
@@ -276,7 +276,7 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
                 break;
               }
               default:
-                dserror("Unknown number of components");
+                FOUR_C_THROW("Unknown number of components");
             }
           }
 
@@ -303,7 +303,7 @@ void IO::ReadNodes(const INPUT::DatFileReader& reader, const std::string& node_s
         else if (tmp.find("--") == 0)
           break;
         else
-          dserror("unexpected word '%s'", tmp.c_str());
+          FOUR_C_THROW("unexpected word '%s'", tmp.c_str());
       }
     }
   }

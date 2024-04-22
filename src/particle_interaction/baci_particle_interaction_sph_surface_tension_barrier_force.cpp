@@ -46,19 +46,19 @@ void PARTICLEINTERACTION::SPHBarrierForce::Init()
   boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
 
   // safety check
-  if (not(dist_ > 0.0)) dserror("barrier force distance not positive!");
+  if (not(dist_ > 0.0)) FOUR_C_THROW("barrier force distance not positive!");
 
-  if (not(stiff_h_ > 0.0)) dserror("stiffness of heavy phase not positive!");
-  if (not(stiff_g_ > 0.0)) dserror("stiffness of gas phase not positive!");
+  if (not(stiff_h_ > 0.0)) FOUR_C_THROW("stiffness of heavy phase not positive!");
+  if (not(stiff_g_ > 0.0)) FOUR_C_THROW("stiffness of gas phase not positive!");
 
-  if (damp_h_ < 0.0) dserror("damping parameter of heavy phase not positive or zero!");
-  if (damp_g_ < 0.0) dserror("damping parameter of gas phase not positive or zero!");
+  if (damp_h_ < 0.0) FOUR_C_THROW("damping parameter of heavy phase not positive or zero!");
+  if (damp_g_ < 0.0) FOUR_C_THROW("damping parameter of gas phase not positive or zero!");
 
   if (trans_dT_barrier_ > 0.0)
   {
     if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
-      dserror("temperature evaluation needed for linear transition of surface tension!");
+      FOUR_C_THROW("temperature evaluation needed for linear transition of surface tension!");
   }
 }
 
@@ -78,7 +78,7 @@ void PARTICLEINTERACTION::SPHBarrierForce::Setup(
   // safety check
   for (const auto& type_i : fluidtypes_)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
-      dserror("no particle container for particle type '%s' found!",
+      FOUR_C_THROW("no particle container for particle type '%s' found!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 
   // update with actual boundary particle types

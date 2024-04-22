@@ -152,14 +152,14 @@ namespace CONTACT
         Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
-      dserror(
+      FOUR_C_THROW(
           "Nitsche does not have Lagrange multiplier DOFs. So, saddle point system makes no sense "
           "here.");
     }
     void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
     {
-      dserror(
+      FOUR_C_THROW(
           "Nitsche does not have Lagrange multiplier DOFs. So, saddle point system makes no sense "
           "here.");
     }
@@ -174,12 +174,12 @@ namespace CONTACT
     void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
-      dserror("not supported in this strategy");
+      FOUR_C_THROW("not supported in this strategy");
     }
     void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
-      dserror("not supported in this strategy");
+      FOUR_C_THROW("not supported in this strategy");
     }
     void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override

@@ -76,7 +76,7 @@ namespace THR
     //! Monolithic TSI accesses the linearised thermo problem
     void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi) override
     {
-      dserror("not implemented for explicit time integration");
+      FOUR_C_THROW("not implemented for explicit time integration");
       return;
     }
 
@@ -84,7 +84,7 @@ namespace THR
     //! Monolithic TSI accesses the linearised thermo problem
     void Evaluate() override
     {
-      dserror("not implemented for explicit time integration");
+      FOUR_C_THROW("not implemented for explicit time integration");
       return;
     }
 
@@ -117,7 +117,7 @@ namespace THR
     //! update Newton step
     void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) override
     {
-      dserror("not needed for explicit time integration");
+      FOUR_C_THROW("not needed for explicit time integration");
       return;
     }
     /*
@@ -180,21 +180,21 @@ namespace THR
     //! Return reaction forces
     Teuchos::RCP<Epetra_Vector> Freact() override
     {
-      dserror("Not impl.");
+      FOUR_C_THROW("Not impl.");
       return Teuchos::null;
     };
 
     //! initial guess of Newton's method
     Teuchos::RCP<const Epetra_Vector> InitialGuess() override
     {
-      dserror("not needed for explicit time integration");
+      FOUR_C_THROW("not needed for explicit time integration");
       return Teuchos::null;
     }
 
     //! right-hand side alias the dynamic force residual
     Teuchos::RCP<const Epetra_Vector> RHS() override
     {
-      dserror("not needed for explicit time integration");
+      FOUR_C_THROW("not needed for explicit time integration");
       return Teuchos::null;
     }
 

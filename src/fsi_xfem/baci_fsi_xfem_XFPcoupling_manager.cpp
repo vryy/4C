@@ -36,37 +36,38 @@ XFEM::XfpCouplingManager::XfpCouplingManager(Teuchos::RCP<XFEM::ConditionManager
 
   mcfpi_ps_ps_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
       condmanager->GetMeshCoupling(cond_name_ps_ps_));
-  if (mcfpi_ps_ps_ == Teuchos::null) dserror(" Failed to get MeshCouplingFPI for Porostructure!");
+  if (mcfpi_ps_ps_ == Teuchos::null)
+    FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porostructure!");
   mcfpi_ps_ps_->InitializeStrucPresMap(poro_->FluidStructureCoupling().SlaveDofMap(),
       poro_->FluidStructureCoupling().PermMasterDofMap());
 
   mcfpi_ps_pf_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
       condmanager->GetMeshCoupling(cond_name_ps_pf_));
-  if (mcfpi_ps_pf_ == Teuchos::null) dserror(" Failed to get MeshCouplingFPI for Porofluid!");
+  if (mcfpi_ps_pf_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
   mcfpi_ps_pf_->InitializeStrucPresMap(poro_->FluidStructureCoupling().SlaveDofMap(),
       poro_->FluidStructureCoupling().PermMasterDofMap());
 
   mcfpi_pf_ps_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
       condmanager->GetMeshCoupling(cond_name_pf_ps_));
-  if (mcfpi_pf_ps_ == Teuchos::null) dserror(" Failed to get MeshCouplingFPI for Porofluid!");
+  if (mcfpi_pf_ps_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
   mcfpi_pf_ps_->InitializeStrucPresMap(poro_->FluidStructureCoupling().SlaveDofMap(),
       poro_->FluidStructureCoupling().PermMasterDofMap());
 
   mcfpi_pf_pf_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
       condmanager->GetMeshCoupling(cond_name_pf_pf_));
-  if (mcfpi_pf_pf_ == Teuchos::null) dserror(" Failed to get MeshCouplingFPI for Porofluid!");
+  if (mcfpi_pf_pf_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
   mcfpi_pf_pf_->InitializeStrucPresMap(poro_->FluidStructureCoupling().SlaveDofMap(),
       poro_->FluidStructureCoupling().PermMasterDofMap());
 
   // safety check
   if (!mcfpi_ps_ps_->IDispnp()->Map().SameAs(*GetMapExtractor(0)->Map(1)))
-    dserror("XFPCoupling_Manager: Maps of Condition and Mesh Coupling do not fit (psps)!");
+    FOUR_C_THROW("XFPCoupling_Manager: Maps of Condition and Mesh Coupling do not fit (psps)!");
   if (!mcfpi_ps_pf_->IDispnp()->Map().SameAs(*GetMapExtractor(0)->Map(1)))
-    dserror("XFPCoupling_Manager: Maps of Condition and Mesh Coupling do not fit (pspf)!");
+    FOUR_C_THROW("XFPCoupling_Manager: Maps of Condition and Mesh Coupling do not fit (pspf)!");
   if (!mcfpi_pf_ps_->IDispnp()->Map().SameAs(*GetMapExtractor(0)->Map(1)))
-    dserror("XFPCoupling_Manager: Maps of Condition and Mesh Coupling do not fit (pfps)!");
+    FOUR_C_THROW("XFPCoupling_Manager: Maps of Condition and Mesh Coupling do not fit (pfps)!");
   if (!mcfpi_pf_pf_->IDispnp()->Map().SameAs(*GetMapExtractor(0)->Map(1)))
-    dserror("XFPCoupling_Manager: Maps of Condition and Mesh Coupling do not fit (pfpf)!");
+    FOUR_C_THROW("XFPCoupling_Manager: Maps of Condition and Mesh Coupling do not fit (pfpf)!");
 
   // storage of the resulting Robin-type structural forces from the old timestep
   // Recovering of Lagrange multiplier happens on fluid field
@@ -215,7 +216,8 @@ void XFEM::XfpCouplingManager::AddCouplingMatrix(
         CouplingCommManager::row_and_col, scaling * dt, true, true);
   }
   else
-    dserror("XFPCoupling_Manager::AddCouplingMatrix: Not implemented for number of blocks = %d",
+    FOUR_C_THROW(
+        "XFPCoupling_Manager::AddCouplingMatrix: Not implemented for number of blocks = %d",
         idx_.size());
 }
 
@@ -316,7 +318,7 @@ void XFEM::XfpCouplingManager::AddCouplingRHS(
     me.AddVector(pfrhs, idx_[2], rhs);
   }
   else
-    dserror("XFPCoupling_Manager::AddCouplingRHS: Not implemented for number of blocks = %d",
+    FOUR_C_THROW("XFPCoupling_Manager::AddCouplingRHS: Not implemented for number of blocks = %d",
         idx_.size());
 }
 
@@ -381,7 +383,7 @@ void XFEM::XfpCouplingManager::ReadRestart(IO::DiscretizationReader& reader)
 *-----------------------------------------------------------------------------------------*/
 double XFEM::XfpCouplingManager::GetInterfaceTimefac()
 {
-  dserror("Check if you really want this!");
+  FOUR_C_THROW("Check if you really want this!");
   /*
    * Delta u(n+1,i+1) = fac * (Delta d(n+1,i+1) - dt * u(n))
    *

@@ -44,7 +44,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
     {
       // extract additional local values from global vector
       Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
-      if (phiam == Teuchos::null) dserror("Cannot get state vector 'phiam'");
+      if (phiam == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phiam'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, lm);
     }
   }
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(DRT:
   {
     // extract local values from global vector
     Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
-    if (phiam == Teuchos::null) dserror("Cannot get state vector 'phiam'");
+    if (phiam == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phiam'");
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, la[0].lm_);
   }
 
@@ -159,7 +159,8 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element*
   double density(0.);
 
   // check whether temperature is positive
-  if (tempnp < 0.0) dserror("Negative temperature in ScaTra low-Mach-number routine 'GetDensity'!");
+  if (tempnp < 0.0)
+    FOUR_C_THROW("Negative temperature in ScaTra low-Mach-number routine 'GetDensity'!");
 
   if (material->MaterialType() == INPAR::MAT::m_sutherland)
   {
@@ -188,12 +189,12 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element*
                     ->ComputeDensity(tempnp, thermpress);
 
     else
-      dserror(
+      FOUR_C_THROW(
           "Type of material found in material list not supported, should be Arrhenius-type "
           "temperature!");
   }
   else
-    dserror("Invalid material type!");
+    FOUR_C_THROW("Invalid material type!");
 
   return density;
 }  // DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity
@@ -246,7 +247,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
   }
 
   else
-    dserror("Epsilon(u) is not implemented for the 1D case!");
+    FOUR_C_THROW("Epsilon(u) is not implemented for the 1D case!");
 
   my::derxy2_.Scale(1.0 / prefac);
 

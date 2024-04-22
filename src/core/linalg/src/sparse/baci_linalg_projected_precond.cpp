@@ -24,7 +24,7 @@ CORE::LINALG::LinalgPrecondOperator::LinalgPrecondOperator(Teuchos::RCP<Epetra_O
     : project_(project), precond_(precond), projector_(projector)
 {
   if (project_ && (projector == Teuchos::null))
-    dserror("Kernel projection enabled but got no projector object");
+    FOUR_C_THROW("Kernel projection enabled but got no projector object");
 
   return;
 }  // CORE::LINALG::LinalgPrecondOperator::LinalgPrecondOperator

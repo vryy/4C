@@ -121,8 +121,8 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
   // -------------------------------------------------------------------
   {
     // call elements and assemble
-    if (!nurbsdis->Filled()) dserror("FillComplete() was not called");
-    if (!nurbsdis->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+    if (!nurbsdis->Filled()) FOUR_C_THROW("FillComplete() was not called");
+    if (!nurbsdis->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
     // see what we have for input
     bool assemblemat = massmatrix != Teuchos::null;
@@ -197,7 +197,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
             break;
           }
           default:
-            dserror("this method is designed for usage with NurbsDiscretization only");
+            FOUR_C_THROW("this method is designed for usage with NurbsDiscretization only");
             break;
         }
 
@@ -347,7 +347,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
               // check for degenerated elements
               if (det < 1E-16)
               {
-                dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",
+                FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",
                     actele->Id(), det);
               }
 
@@ -474,7 +474,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
               // check for degenerated elements
               if (det < 0.0)
               {
-                dserror(
+                FOUR_C_THROW(
                     "GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", actele->Id(), det);
               }
 
@@ -505,7 +505,8 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
             break;
           }
           default:
-            dserror("expecting two or three-dimensional problems to set the initial conditions\n");
+            FOUR_C_THROW(
+                "expecting two or three-dimensional problems to set the initial conditions\n");
             break;
         }
       }

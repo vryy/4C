@@ -86,11 +86,11 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
       sum += (*it);
     if (sum < 0.99)
     {
-      dserror("Sum of weights for dt: %f < 1.0", sum);
+      FOUR_C_THROW("Sum of weights for dt: %f < 1.0", sum);
     }
     if (sum > 1.01)
     {
-      dserror("Sum of weights for dt: %f > 1.0", sum);
+      FOUR_C_THROW("Sum of weights for dt: %f > 1.0", sum);
     }
   }
 
@@ -152,20 +152,20 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   //----------------------------------------------------------------------------
   const double safetyfac = fsiada.get<double>("SAFETYFACTOR");
   if (safetyfac > 1.0)
-    dserror(
+    FOUR_C_THROW(
         "SAFETYFACTOR in FSI DYNAMIC/TIMEADAPTIVITY is %f > 1.0 and, "
         "thus, too large.",
         safetyfac);
 
   if (dtmax_ < dtmin_)
-    dserror("DTMAX = %f is not allowed to be smaller than DTMIN = %f.", dtmax_, dtmin_);
+    FOUR_C_THROW("DTMAX = %f is not allowed to be smaller than DTMIN = %f.", dtmax_, dtmin_);
 
   /* safety check for BDF2 time integration in fluid
    * (cf. PhD Thesis [Bornemann, 2003, p. 61, eq. (3.40)]) */
   if (FluidField()->TimIntScheme() == INPAR::FLUID::timeint_bdf2 and
       fsiada.get<double>("SIZERATIOMAX") >= 1.0 + sqrt(2))
   {
-    dserror(
+    FOUR_C_THROW(
         "In case of BDF2 time integration, the maximum increase of "
         "two subsequent time step sizes is limited to be less than '1+sqrt(2)'"
         "due to stability reasons "
@@ -194,7 +194,7 @@ void FSI::Monolithic::TimeloopAdaDt(
   // resize MStep objects of structure needed for AB2 structural extrapolation of displacements
   StructureField()->ResizeMStepTimAda();
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether all fields have the same time step size
   CheckIfDtsSame();
 #endif
@@ -252,7 +252,7 @@ void FSI::Monolithic::TimeloopAdaDt(
           else if (IsAdaSolver() and not(erroraction_ == FSI::Monolithic::erroraction_none or
                                          erroraction_ == FSI::Monolithic::erroraction_continue))
           {
-            dserror(
+            FOUR_C_THROW(
                 "Nonlinear solver did not converge after %i repetitions of "
                 "time step %i.",
                 adaptstepmax, Step());
@@ -271,7 +271,7 @@ void FSI::Monolithic::TimeloopAdaDt(
         }
       }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // check whether all fields have the same time step size
       CheckIfDtsSame();
 #endif
@@ -360,7 +360,7 @@ void FSI::Monolithic::WriteAdaFileHeader() const
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::WriteAdaFile() const
 {
-  if (logada_.is_null()) dserror("No access to adaptivity file!");
+  if (logada_.is_null()) FOUR_C_THROW("No access to adaptivity file!");
 
   if (Comm().MyPID() == 0)
   {
@@ -582,7 +582,7 @@ void FSI::Monolithic::AdaptTimeStepSize()
   }
   else
   {
-    dserror("Strange time step size!");
+    FOUR_C_THROW("Strange time step size!");
   }
 
   // ---------------------------------------------------------------------------
@@ -793,7 +793,7 @@ bool FSI::Monolithic::CheckIfDtsSame()
   }
   else
   {
-    dserror("Time step sizes do not match among the fields.");
+    FOUR_C_THROW("Time step sizes do not match among the fields.");
     return false;
   }
 }

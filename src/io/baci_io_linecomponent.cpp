@@ -43,7 +43,7 @@ namespace
   void ThrowErrorWrongDataType(const std::string& snumbersubstring, int nnumber,
       const std::string& variablename, const std::string& sectionname)
   {
-    dserror(
+    FOUR_C_THROW(
         "Failed to read value '%s' while reading variable '%s' in '%s'. BACI could only read "
         "'%d', so the specified number format is probably not supported. The variable '%s' "
         "has to be an integer.",
@@ -55,7 +55,7 @@ namespace
   void ThrowErrorWrongDataType(const std::string& snumbersubstring, double nnumber,
       const std::string& variablename, const std::string& sectionname)
   {
-    dserror(
+    FOUR_C_THROW(
         "Failed to read value '%s' while reading variable '%s' in '%s'. BACI could only read "
         "'%f', so the specified number format is probably not supported. The variable '%s' "
         "has to be a floating point.",
@@ -85,7 +85,7 @@ namespace
       // in case the parameter is mandatory and no value is given
       if (!optional and snumber.empty())
       {
-        dserror(
+        FOUR_C_THROW(
             "Invalid argument! No value of variable '%s' in '%s' specified. Possibly you "
             "didn't give enough input values. The variable '%s' expectes %i input values.",
             variablename.c_str(), sectionname.c_str(), variablename.c_str(), variablelength);
@@ -93,7 +93,7 @@ namespace
       // any other weird input values
       else
       {
-        dserror("Invalid argument! Failed to read the value '%s' of variable '%s' in '%s'.",
+        FOUR_C_THROW("Invalid argument! Failed to read the value '%s' of variable '%s' in '%s'.",
             snumber.c_str(), variablename.c_str(), sectionname.c_str(), variablename.c_str());
       }
     }
@@ -166,7 +166,7 @@ namespace INPUT
         condline->seekg(0, condline->end);
       else
         // return error in case a required line parameter is not specified
-        dserror("Required parameter '%s' for section '%s' not specified in input file!",
+        FOUR_C_THROW("Required parameter '%s' for section '%s' not specified in input file!",
             separator_.c_str(), section_name.c_str());
     }
     // case: found line parameter label "separator_"
@@ -220,7 +220,8 @@ namespace INPUT
 
       // return error in case the extraction was not successful
       if (str.empty())
-        dserror("Value of parameter '%s' for section '%s' not properly specified in input file!",
+        FOUR_C_THROW(
+            "Value of parameter '%s' for section '%s' not properly specified in input file!",
             Name().c_str(), section_name.c_str());
 
       // remove string parameter value from stringstream "condline"
@@ -250,11 +251,11 @@ namespace INPUT
     if (std::find(datfilevalues_.begin(), datfilevalues_.end(), defaultvalue_) ==
         datfilevalues_.end())
     {
-      dserror("Invalid default value '%s'.", defaultvalue_.c_str());
+      FOUR_C_THROW("Invalid default value '%s'.", defaultvalue_.c_str());
     }
     if (datfilevalues_.size() != stringcondvalues_.size())
     {
-      dserror("Input file values must match condition values.");
+      FOUR_C_THROW("Input file values must match condition values.");
     }
   }
 
@@ -271,11 +272,11 @@ namespace INPUT
     if (std::find(datfilevalues_.begin(), datfilevalues_.end(), defaultvalue_) ==
         datfilevalues_.end())
     {
-      dserror("Invalid default value '%s'.", defaultvalue_.c_str());
+      FOUR_C_THROW("Invalid default value '%s'.", defaultvalue_.c_str());
     }
     if (datfilevalues_.size() != intcondvalues_.size())
     {
-      dserror("Input file values must match condition values.");
+      FOUR_C_THROW("Input file values must match condition values.");
     }
   }
 
@@ -733,7 +734,8 @@ namespace INPUT
       else
       {
         // return error in case the conversion was not successful
-        dserror("Value of parameter '%s' for section '%s' not properly specified in input file!",
+        FOUR_C_THROW(
+            "Value of parameter '%s' for section '%s' not properly specified in input file!",
             Name().c_str(), section_name.c_str());
       }
 
@@ -821,7 +823,7 @@ namespace INPUT
     const KeyType selected_key =
         static_cast<KeyType>(*container.Get<int>(component_for_key_->Name()));
 
-    dsassert(choices_.count(selected_key) == 1, "Internal error.");
+    FOUR_C_ASSERT(choices_.count(selected_key) == 1, "Internal error.");
     for (const auto& component : choices_[selected_key].second)
     {
       component->Print(stream, container);
@@ -835,7 +837,7 @@ namespace INPUT
     component_for_key_->Read(section_name, condline, container);
     const KeyType key = static_cast<KeyType>(*container.Get<int>(component_for_key_->Name()));
 
-    dsassert(choices_.count(key) == 1, "Internal error.");
+    FOUR_C_ASSERT(choices_.count(key) == 1, "Internal error.");
 
     for (const auto& component : choices_[key].second)
     {
@@ -872,7 +874,8 @@ namespace INPUT
 
       // return error in case the extraction was not successful
       if (str.empty())
-        dserror("Value of parameter '%s' for section '%s' not properly specified in input file!",
+        FOUR_C_THROW(
+            "Value of parameter '%s' for section '%s' not properly specified in input file!",
             Name().c_str(), section_name.c_str());
 
       // remove string parameter value from stringstream "condline"

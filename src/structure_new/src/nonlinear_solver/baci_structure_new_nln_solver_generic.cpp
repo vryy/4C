@@ -69,7 +69,7 @@ Teuchos::RCP<::NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::GroupPtr()
 ::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::Group()
 {
   CheckInit();
-  dsassert(!group_ptr_.is_null(), "The group pointer should be initialized beforehand!");
+  FOUR_C_ASSERT(!group_ptr_.is_null(), "The group pointer should be initialized beforehand!");
   return *group_ptr_;
 }
 
@@ -82,7 +82,7 @@ Teuchos::RCP<::NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::GroupPtr()
 const ::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::GetSolutionGroup() const
 {
   CheckInitSetup();
-  dsassert(!group_ptr_.is_null(), "The group pointer should be initialized beforehand!");
+  FOUR_C_ASSERT(!group_ptr_.is_null(), "The group pointer should be initialized beforehand!");
 
   return *group_ptr_;
 }

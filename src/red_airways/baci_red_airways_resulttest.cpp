@@ -54,7 +54,7 @@ void AIRWAY::RedAirwayResultTest::TestNode(INPUT::LineDefinition& res, int& nerr
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretisation %s", node + 1, dis_->Name().c_str());
+    FOUR_C_THROW("Node %d does not belong to discretisation %s", node + 1, dis_->Name().c_str());
   }
   else
   {
@@ -86,7 +86,7 @@ void AIRWAY::RedAirwayResultTest::TestNode(INPUT::LineDefinition& res, int& nerr
       // test result values for a system of scalars
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "Quantity '%s' not supported in result-test of red_airway problems", position.c_str());
       }
 
@@ -120,7 +120,7 @@ void AIRWAY::RedAirwayResultTest::TestElement(
 
   if (iselementofanybody == 0)
   {
-    dserror("Node %d does not belong to discretisation %s", element + 1, dis_->Name().c_str());
+    FOUR_C_THROW("Node %d does not belong to discretisation %s", element + 1, dis_->Name().c_str());
   }
   else
   {
@@ -157,7 +157,7 @@ void AIRWAY::RedAirwayResultTest::TestElement(
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "Quantity '%s' not supported in result-test of red_airway problems.", position.c_str());
       }
 

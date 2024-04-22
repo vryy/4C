@@ -34,7 +34,7 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discr
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond)
 {
   // make sure
-  if (fluid_ == Teuchos::null) dserror("Failed to create the underlying fluid adapter");
+  if (fluid_ == Teuchos::null) FOUR_C_THROW("Failed to create the underlying fluid adapter");
   return;
 }
 
@@ -54,7 +54,8 @@ void ADAPTER::FluidLung::Init()
     DRT::Condition& cond = *(temp[i]);
     if (*(cond.Get<std::string>("field")) == "fluid") constrcond_.push_back(temp[i]);
   }
-  if (constrcond_.size() == 0) dserror("No structure-fluid volume constraints found for lung fsi");
+  if (constrcond_.size() == 0)
+    FOUR_C_THROW("No structure-fluid volume constraints found for lung fsi");
 
   // build map extractor for fsi <-> full map
 
@@ -95,12 +96,12 @@ void ADAPTER::FluidLung::Init()
 
     const int ndim = GLOBAL::Problem::Instance()->NDim();
     if (ndim > static_cast<int>(dof.size()))
-      dserror("got just %d dofs but expected %d", dof.size(), ndim);
+      FOUR_C_THROW("got just %d dofs but expected %d", dof.size(), ndim);
     std::copy(dof.data(), dof.data() + ndim, back_inserter(dofmapvec));
   }
 
   std::vector<int>::const_iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());
-  if (pos != dofmapvec.end() and *pos < 0) dserror("illegal dof number %d", *pos);
+  if (pos != dofmapvec.end() and *pos < 0) FOUR_C_THROW("illegal dof number %d", *pos);
 
   Teuchos::RCP<Epetra_Map> outflowfsidofmap = Teuchos::rcp(
       new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, Discretization()->Comm()));
@@ -134,8 +135,8 @@ void ADAPTER::FluidLung::ListLungVolCons(std::set<int>& LungVolConIDs, int& MinL
 void ADAPTER::FluidLung::InitializeVolCon(
     Teuchos::RCP<Epetra_Vector> initflowrate, const int offsetID)
 {
-  if (!(Discretization()->Filled())) dserror("FillComplete() was not called");
-  if (!Discretization()->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!Discretization()->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   // set ale displacements, fluid and grid velocities
   Discretization()->ClearState();
@@ -187,7 +188,7 @@ void ADAPTER::FluidLung::InitializeVolCon(
       // call the element specific evaluate method
       int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,
           elevector1, elevector2, elevector3);
-      if (err) dserror("error while evaluating elements");
+      if (err) FOUR_C_THROW("error while evaluating elements");
 
       // assembly
 
@@ -212,8 +213,8 @@ void ADAPTER::FluidLung::EvaluateVolCon(
     Teuchos::RCP<Epetra_Vector> FluidRHS, Teuchos::RCP<Epetra_Vector> CurrFlowRates,
     Teuchos::RCP<Epetra_Vector> lagrMultVecRed, const int offsetID, const double dttheta)
 {
-  if (!(Discretization()->Filled())) dserror("FillComplete() was not called");
-  if (!Discretization()->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!(Discretization()->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!Discretization()->HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   // set ale displacements, fluid and grid velocities
   Discretization()->ClearState();
@@ -284,7 +285,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(
       // call the element specific evaluate method
       int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,
           elevector1, elevector2, elevector3);
-      if (err) dserror("error while evaluating elements");
+      if (err) FOUR_C_THROW("error while evaluating elements");
 
       //---------------------------------------------------------------------
       // assembly

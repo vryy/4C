@@ -56,9 +56,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::Setup()
     OutputCouplingPairs();
 
   // error-checks
-  if (has_varying_diam_) dserror("Varying diameter not yet possible for node-to-point coupling");
+  if (has_varying_diam_)
+    FOUR_C_THROW("Varying diameter not yet possible for node-to-point coupling");
   if (!evaluate_in_ref_config_)
-    dserror("Evaluation in current configuration not yet possible for node-to-point coupling");
+    FOUR_C_THROW("Evaluation in current configuration not yet possible for node-to-point coupling");
 
   issetup_ = true;
 }
@@ -93,7 +94,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::PreEvaluateC
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::Evaluate(
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
-  if (!issetup_) dserror("Setup() has not been called");
+  if (!issetup_) FOUR_C_THROW("Setup() has not been called");
 
 
   // call base class
@@ -121,7 +122,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::SetupSystem(
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::ApplyMeshMovement()
 {
   if (!evaluate_in_ref_config_)
-    dserror("Evaluation in current configuration not possible for node-to-point coupling");
+    FOUR_C_THROW("Evaluation in current configuration not possible for node-to-point coupling");
 }
 
 /*----------------------------------------------------------------------*
@@ -129,7 +130,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::ApplyMeshMov
 Teuchos::RCP<const Epetra_Vector>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeToPoint::BloodVesselVolumeFraction()
 {
-  dserror("Output of vessel volume fraction not possible for node-to-point coupling");
+  FOUR_C_THROW("Output of vessel volume fraction not possible for node-to-point coupling");
 
   return Teuchos::null;
 }

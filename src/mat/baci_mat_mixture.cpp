@@ -26,7 +26,7 @@ MAT::PAR::Mixture::Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata)
   // check, if size of constituents fits to the number of constituents
   if (num_constituents != (int)constituent_matids->size())
   {
-    dserror(
+    FOUR_C_THROW(
         "number of constituents %d does not fit to the size of the constituents material vector"
         " %d",
         num_constituents, constituent_matids->size());
@@ -162,7 +162,7 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
       }
       else
       {
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
       }
     }
@@ -213,7 +213,7 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
       // position checking is not available in post processing mode
       if (position != data.size())
       {
-        dserror("Mismatch in size of data to unpack (%d <-> %d)", data.size(), position);
+        FOUR_C_THROW("Mismatch in size of data to unpack (%d <-> %d)", data.size(), position);
       }
     }
   }
@@ -281,7 +281,7 @@ void MAT::Mixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const int eleGID)
 {
   // check, whether the PostSetup method was already called
-  if (!setup_) dserror("The material's PostSetup() method has not been called yet.");
+  if (!setup_) FOUR_C_THROW("The material's PostSetup() method has not been called yet.");
 
   if (!isPreEvaluated_[gp])
   {

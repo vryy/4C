@@ -46,7 +46,7 @@ namespace MIXTURE
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
     if (I4 < 0 && !params.supports_compression_)
-      dserror("The fiber is under compression, but does not support that.");
+      FOUR_C_THROW("The fiber is under compression, but does not support that.");
 
     return (params.k1_ / (2.0 * params.k2_)) *
            (std::exp(params.k2_ * (I4 - 1.0) * (I4 - 1.0)) - 1.0);
@@ -57,7 +57,7 @@ namespace MIXTURE
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
     if (I4 < 0 && !params.supports_compression_)
-      dserror("The fiber is under compression, but does not support that.");
+      FOUR_C_THROW("The fiber is under compression, but does not support that.");
 
     return params.k1_ * (I4 - 1.0) * std::exp(params.k2_ * (I4 - 1.0) * (I4 - 1.0));
   }
@@ -67,7 +67,7 @@ namespace MIXTURE
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
     if (I4 < 0 && !params.supports_compression_)
-      dserror("The fiber is under compression, but does not support that.");
+      FOUR_C_THROW("The fiber is under compression, but does not support that.");
 
     return (1.0 + 2.0 * params.k2_ * std::pow((I4 - 1.0), 2)) * params.k1_ *
            std::exp(params.k2_ * std::pow((I4 - 1.0), 2));
@@ -78,7 +78,7 @@ namespace MIXTURE
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
     if (I4 < 0 && !params.supports_compression_)
-      dserror("The fiber is under compression, but does not support that.");
+      FOUR_C_THROW("The fiber is under compression, but does not support that.");
 
     return 4 * params.k2_ * (I4 - 1.0) * params.k1_ *
                std::exp(params.k2_ * (I4 - 1.0) * (I4 - 1.0)) +

@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // test whether newmap is non-overlapping
-  if (!newmap.UniqueGIDs()) dserror("new map not unique");
+  if (!newmap.UniqueGIDs()) FOUR_C_THROW("new map not unique");
 
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
@@ -79,7 +79,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
   {
     int gid = oldmap.GID(i);
     if (!(newmap.MyGID(gid)))
-      dserror("Proc %d: Node gid=%d from oldmap is not in newmap", myrank, gid);
+      FOUR_C_THROW("Proc %d: Node gid=%d from oldmap is not in newmap", myrank, gid);
   }
 
   // create an exporter object that will figure out the communication pattern
@@ -102,7 +102,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
   int size = (int)gidlist.size();
   std::vector<int> pidlist(size);  // gids on proc 0
   int err = target.RemoteIDList(size, gidlist.data(), pidlist.data(), nullptr);
-  if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d", err);
+  if (err < 0) FOUR_C_THROW("Epetra_BlockMap::RemoteIDList returned err=%d", err);
 
   std::map<int, std::vector<char>> sendmap;  // proc to send a set of elements to
   if (!myrank)
@@ -112,7 +112,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
     {
       if (pidlist[i] == myrank or pidlist[i] < 0) continue;  // do not send to myself
       Element* actele = gElement(gidlist[i]);
-      if (!actele) dserror("Cannot find global element %d", gidlist[i]);
+      if (!actele) FOUR_C_THROW("Cannot find global element %d", gidlist[i]);
       actele->Pack(sendpb[pidlist[i]]);
     }
     for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
@@ -162,7 +162,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
           0, fool->first, fool->second.data(), (int)fool->second.size(), tag, request[tag]);
       tag++;
     }
-    if (tag != size) dserror("Number of messages is mixed up");
+    if (tag != size) FOUR_C_THROW("Number of messages is mixed up");
     // do not delete sendmap until Wait has returned!
   }
 
@@ -174,7 +174,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
     int source = -1;
     int tag = -1;
     exporter.ReceiveAny(source, tag, recvdata, length);
-    if (source != 0 || tag != foundme) dserror("Messages got mixed up");
+    if (source != 0 || tag != foundme) FOUR_C_THROW("Messages got mixed up");
     // Put received elements into discretization
     std::vector<char>::size_type index = 0;
     while (index < recvdata.size())
@@ -183,7 +183,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
       CORE::COMM::ParObject::ExtractfromPack(index, recvdata, data);
       CORE::COMM::ParObject* object = CORE::COMM::Factory(data);
       DRT::Element* ele = dynamic_cast<DRT::Element*>(object);
-      if (!ele) dserror("Received object is not an element");
+      if (!ele) FOUR_C_THROW("Received object is not an element");
       ele->SetOwner(myrank);
       Teuchos::RCP<DRT::Element> rcpele = Teuchos::rcp(ele);
       AddElement(rcpele);
@@ -214,7 +214,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
   std::vector<int> pidlist(size, -1);
   {
     int err = target.RemoteIDList(size, oldmap.MyGlobalElements(), pidlist.data(), nullptr);
-    if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d", err);
+    if (err) FOUR_C_THROW("Epetra_BlockMap::RemoteIDLis returned err=%d", err);
   }
 
   std::map<int, std::vector<char>> sendmap;
@@ -226,7 +226,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
       // proc 0 does not send to itself
       if (pidlist[i] == myrank || pidlist[i] == -1) continue;
       Node* node = gNode(oldmap.MyGlobalElements()[i]);
-      if (!node) dserror("Proc 0 cannot find global node %d", oldmap.MyGlobalElements()[i]);
+      if (!node) FOUR_C_THROW("Proc 0 cannot find global node %d", oldmap.MyGlobalElements()[i]);
       node->Pack(sendpb[pidlist[i]]);
     }
     for (std::map<int, CORE::COMM::PackBuffer>::iterator fool = sendpb.begin();
@@ -276,7 +276,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
           0, fool->first, fool->second.data(), (int)fool->second.size(), tag, request[tag]);
       tag++;
     }
-    if (tag != size) dserror("Number of messages is mixed up");
+    if (tag != size) FOUR_C_THROW("Number of messages is mixed up");
     // do not delete sendmap until Wait has returned!
   }
 
@@ -289,7 +289,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
     int tag = -1;
     exporter.ReceiveAny(source, tag, recvdata, length);
     // printf("Proc %d received tag %d length %d\n",myrank,tag,length); fflush(stdout);
-    if (source != 0 || tag != foundme) dserror("Messages got mixed up");
+    if (source != 0 || tag != foundme) FOUR_C_THROW("Messages got mixed up");
     // Put received nodes into discretization
     std::vector<char>::size_type index = 0;
     while (index < recvdata.size())
@@ -298,7 +298,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
       CORE::COMM::ParObject::ExtractfromPack(index, recvdata, data);
       CORE::COMM::ParObject* object = CORE::COMM::Factory(data);
       DRT::Node* node = dynamic_cast<DRT::Node*>(object);
-      if (!node) dserror("Received object is not a node");
+      if (!node) FOUR_C_THROW("Received object is not a node");
       node->SetOwner(myrank);
       Teuchos::RCP<DRT::Node> rcpnode = Teuchos::rcp(node);
       AddNode(rcpnode);
@@ -319,7 +319,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
 void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // test whether newmap is non-overlapping
-  if (!newmap.UniqueGIDs()) dserror("new map not unique");
+  if (!newmap.UniqueGIDs()) FOUR_C_THROW("new map not unique");
 
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
@@ -374,7 +374,7 @@ void DRT::Discretization::ExportColumnElements(
   {
     int gid = oldmap.GID(i);
     if (!(newmap.MyGID(gid)))
-      dserror("Proc %d: Element gid=%d from oldmap is not in newmap", myrank, gid);
+      FOUR_C_THROW("Proc %d: Element gid=%d from oldmap is not in newmap", myrank, gid);
   }
 
   // create an exporter object that will figure out the communication pattern
@@ -389,7 +389,7 @@ void DRT::Discretization::ExportColumnElements(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 {
-  if (!Filled()) dserror("FillComplete() was not called on this discretization");
+  if (!Filled()) FOUR_C_THROW("FillComplete() was not called on this discretization");
 
   // get nodal row map
   const Epetra_Map* noderowmap = NodeRowMap();
@@ -416,14 +416,14 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
       {
         int colnode = nodeids[col];
         int err = graph->InsertGlobalIndices(rownode, 1, &colnode);
-        if (err < 0) dserror("graph->InsertGlobalIndices returned err=%d", err);
+        if (err < 0) FOUR_C_THROW("graph->InsertGlobalIndices returned err=%d", err);
       }
     }
   }
   int err = graph->FillComplete();
-  if (err) dserror("graph->FillComplete() returned err=%d", err);
+  if (err) FOUR_C_THROW("graph->FillComplete() returned err=%d", err);
   err = graph->OptimizeStorage();
-  if (err) dserror("graph->OptimizeStorage() returned err=%d", err);
+  if (err) FOUR_C_THROW("graph->OptimizeStorage() returned err=%d", err);
 
   return graph;
 }
@@ -463,14 +463,14 @@ DRT::Discretization::BuildElementRowColumn(
   // - noderowmap need not match distribution of nodes in this
   //   discretization at all.
   // - noderowmap is a non-overlapping map, that's tested
-  if (!noderowmap.UniqueGIDs()) dserror("noderowmap is not a unique map");
+  if (!noderowmap.UniqueGIDs()) FOUR_C_THROW("noderowmap is not a unique map");
 
   // find all owners for the overlapping node map
   const int ncnode = nodecolmap.NumMyElements();
   std::vector<int> cnodeowner(ncnode);
   int err =
       noderowmap.RemoteIDList(ncnode, nodecolmap.MyGlobalElements(), cnodeowner.data(), nullptr);
-  if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d", err);
+  if (err) FOUR_C_THROW("Epetra_BlockMap::RemoteIDLis returned err=%d", err);
 
   // build connectivity of elements
   // storing :  element gid
@@ -547,7 +547,7 @@ DRT::Discretization::BuildElementRowColumn(
       // this is necessary to be able to own or ghost the element
       for (int j = 0; j < numnode; ++j)
         if (!nodecolmap.MyGID(nodeids[j]))
-          dserror("I do not have own/ghosted node gid=%d", nodeids[j]);
+          FOUR_C_THROW("I do not have own/ghosted node gid=%d", nodeids[j]);
 
       // find out who owns how many of the nodes
       std::vector<int> nodeowner(numnode);
@@ -593,7 +593,7 @@ DRT::Discretization::BuildElementRowColumn(
         myghostele[nummyghostele++] = elegid;
         continue;
       }
-      dserror("Error in logic of element ownerships");
+      FOUR_C_THROW("Error in logic of element ownerships");
 
     }  // for (int i=0; i<size;)
   }    // for (int proc=0; proc<numproc; ++proc)
@@ -609,7 +609,7 @@ DRT::Discretization::BuildElementRowColumn(
   // build the rowmap of elements
   Teuchos::RCP<Epetra_Map> elerowmap =
       Teuchos::rcp(new Epetra_Map(-1, nummyele, myele.data(), 0, Comm()));
-  if (!elerowmap->UniqueGIDs()) dserror("Element row map is not unique");
+  if (!elerowmap->UniqueGIDs()) FOUR_C_THROW("Element row map is not unique");
 
   // build elecolmap
   std::vector<int> elecol(nummyele + nummyghostele);
@@ -639,7 +639,7 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
   // these exports have set Filled()=false as all maps are invalid now
   int err = FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
-  if (err) dserror("FillComplete() returned err=%d", err);
+  if (err) FOUR_C_THROW("FillComplete() returned err=%d", err);
 }
 
 /*----------------------------------------------------------------------*
@@ -657,7 +657,7 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
   // these exports have set Filled()=false as all maps are invalid now
   int err = FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
-  if (err) dserror("FillComplete() returned err=%d", err);
+  if (err) FOUR_C_THROW("FillComplete() returned err=%d", err);
 }
 
 /*----------------------------------------------------------------------*
@@ -665,7 +665,7 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap, const Epetr
 void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool assigndegreesoffreedom,
     bool initelements, bool doboundaryconditions, bool checkghosting)
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (Filled())
   {
     const Epetra_Map* oldelecolmap = ElementColMap();
@@ -674,14 +674,15 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
     {
       bool hasgid = elecolmap.MyGID(oldelecolmap->GID(i));
       if (!hasgid)
-        dserror("standard ghosting of ele %d is not included in extended ghosting",
+        FOUR_C_THROW("standard ghosting of ele %d is not included in extended ghosting",
             oldelecolmap->GID(i));
     }
 
     if (checkghosting)
     {
       int diff = elecolmap.NumGlobalElements() - oldelecolmap->NumGlobalElements();
-      if (diff == 0 and Comm().MyPID() == 0) dserror("no additional elements have been ghosted");
+      if (diff == 0 and Comm().MyPID() == 0)
+        FOUR_C_THROW("no additional elements have been ghosted");
     }
   }
 #endif
@@ -799,7 +800,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
 
   // these exports have set Filled()=false as all maps are invalid now
   int err = FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
-  if (err) dserror("FillComplete() threw error code %d", err);
+  if (err) FOUR_C_THROW("FillComplete() threw error code %d", err);
 }
 
 /*----------------------------------------------------------------------*
@@ -808,7 +809,8 @@ void DRT::Discretization::SetupGhosting(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   if (Filled())
-    dserror("there is really no need to setup ghosting if the discretization is already filled");
+    FOUR_C_THROW(
+        "there is really no need to setup ghosting if the discretization is already filled");
 
   // build the graph ourselves
   std::map<int, std::set<int>> localgraph;
@@ -862,7 +864,7 @@ void DRT::Discretization::SetupGhosting(
     rowset.clear();
 
     int err = graph->InsertGlobalIndices(1, &i->first, row.size(), row.data());
-    if (err < 0) dserror("graph->InsertGlobalIndices returned %d", err);
+    if (err < 0) FOUR_C_THROW("graph->InsertGlobalIndices returned %d", err);
   }
 
   localgraph.clear();
@@ -871,7 +873,7 @@ void DRT::Discretization::SetupGhosting(
   // happens. The ghosting problem is solved at this point.
 
   int err = graph->GlobalAssemble(rownodes, rownodes);
-  if (err) dserror("graph->GlobalAssemble returned %d", err);
+  if (err) FOUR_C_THROW("graph->GlobalAssemble returned %d", err);
 
   // replace rownodes, colnodes with row and column maps from the graph
   // do stupid conversion from Epetra_BlockMap to Epetra_Map

@@ -167,7 +167,7 @@ namespace CORE::GEO
       void LocalCoordinates(T& rst)
       {
         if (rst.M() < Dim())
-          dserror(
+          FOUR_C_THROW(
               "rst has the wrong row number! ( DIM = %d ( rst.M() = %d < DIM ) )", Dim(), rst.M());
         LocalCoordinates(rst.A());
 
@@ -178,7 +178,7 @@ namespace CORE::GEO
        *         given point and embedded element */
       virtual double Distance() const
       {
-        dserror("Unsupported for the standard case!");
+        FOUR_C_THROW("Unsupported for the standard case!");
         exit(EXIT_FAILURE);
       }
 
@@ -198,7 +198,7 @@ namespace CORE::GEO
       void Distance(T& distance) const
       {
         if (distance.M() < (ProbDim() - Dim()))
-          dserror(
+          FOUR_C_THROW(
               "The distance vector has the wrong row number! "
               "( DIM = %d ( rst.M() = %d < DIM ) )",
               Dim(), distance.M());
@@ -214,7 +214,7 @@ namespace CORE::GEO
       }
       virtual bool WithinLimitsTol(const double& Tol, const bool& allow_dist) const
       {
-        dserror("Unsupported for the standard case!");
+        FOUR_C_THROW("Unsupported for the standard case!");
         exit(EXIT_FAILURE);
       }
 
@@ -306,7 +306,7 @@ namespace CORE::GEO
           msg << "The local coordinates are not valid. "
                  "( Position::Status = "
               << Status2String(pos_status_) << " )";
-          dserror(msg.str());
+          FOUR_C_THROW(msg.str());
         }
 
         std::copy(xsi_.A(), xsi_.A() + xsi_.M(), rst);
@@ -320,9 +320,9 @@ namespace CORE::GEO
 
       const double& NewtonTolerance() const override
       {
-        if (compute_tolerance_ < 0.0) dserror("Call the Compute() routine first!");
+        if (compute_tolerance_ < 0.0) FOUR_C_THROW("Call the Compute() routine first!");
         if (compute_tolerance_ > 1.0)
-          dserror(
+          FOUR_C_THROW(
               "The compute_tolerance seems not trustworthy, "
               "properly the Compute() routine failed in some way. "
               "( tol = %e )",
@@ -415,7 +415,7 @@ namespace CORE::GEO
      protected:
       void Distance(double* distance) const override
       {
-        dserror("Unsupported for the standard case!");
+        FOUR_C_THROW("Unsupported for the standard case!");
       }
 
       /** \brief Compute method for the standard case with user defined tolerance
@@ -426,7 +426,7 @@ namespace CORE::GEO
        *                           on the lower dimensional element. */
       bool Compute(const double& Tol, const bool& allow_dist) override
       {
-        if (allow_dist) dserror("Compute: allow_dist for ComputePosition not possible!");
+        if (allow_dist) FOUR_C_THROW("Compute: allow_dist for ComputePosition not possible!");
         return Compute(Tol);
       }
       bool Compute(const double& Tol) override;
@@ -482,7 +482,7 @@ namespace CORE::GEO
           msg << "Neither the position nor the distance value is valid! "
                  "( Position::Status = "
               << Position::Status2String(this->pos_status_) << " )";
-          dserror(msg.str());
+          FOUR_C_THROW(msg.str());
         }
 
         switch (probdim - dim)
@@ -490,7 +490,7 @@ namespace CORE::GEO
           case 1:
             return xsi_aug_(dim, 0);
           default:
-            dserror("A scalar signed distance value is not available!");
+            FOUR_C_THROW("A scalar signed distance value is not available!");
             exit(EXIT_FAILURE);
         }
       }
@@ -503,7 +503,7 @@ namespace CORE::GEO
           msg << "Neither the position nor the distance value is valid! "
                  "( Position::Status = "
               << Position::Status2String(this->pos_status_) << " )";
-          dserror(msg.str());
+          FOUR_C_THROW(msg.str());
         }
 
         std::copy(xsi_aug_.A() + dim, xsi_aug_.A() + probdim, distance);
@@ -619,7 +619,7 @@ namespace CORE::GEO
             const CORE::LINALG::Matrix<dim, 1>& xyz,
             INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
-          dserror(
+          FOUR_C_THROW(
               "Wrong template combination: ProbDim must be unequal"
               " element Dim for the embedded case.");
           exit(EXIT_FAILURE);
@@ -634,7 +634,7 @@ namespace CORE::GEO
             const CORE::LINALG::Matrix<1, 1>& xyz,
             INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
-          dserror(
+          FOUR_C_THROW(
               "Wrong template combination: ProbDim must be larger"
               " than the element Dim for the embedded case.");
           exit(EXIT_FAILURE);
@@ -649,7 +649,7 @@ namespace CORE::GEO
             const CORE::LINALG::Matrix<1, 1>& xyz,
             INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
-          dserror(
+          FOUR_C_THROW(
               "Wrong template combination: ProbDim must be larger"
               " than the element Dim for the embedded case.");
           exit(EXIT_FAILURE);
@@ -664,7 +664,7 @@ namespace CORE::GEO
             const CORE::LINALG::Matrix<2, 1>& xyz,
             INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
-          dserror(
+          FOUR_C_THROW(
               "Wrong template combination: ProbDim must be larger"
               " than the element Dim for the embedded case.");
           exit(EXIT_FAILURE);
@@ -680,7 +680,7 @@ namespace CORE::GEO
             const CORE::LINALG::Matrix<probdim, 1>& xyz,
             INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
         {
-          dserror(
+          FOUR_C_THROW(
               "Wrong template combination: ProbDim must be equal"
               " element Dim for the standard case.");
           exit(EXIT_FAILURE);
@@ -714,7 +714,7 @@ namespace CORE::GEO
               break;
             }
             default:
-              dserror("Unsupported floattype!");
+              FOUR_C_THROW("Unsupported floattype!");
           }
           return nullptr;
         }
@@ -744,7 +744,7 @@ namespace CORE::GEO
               break;
             }
             default:
-              dserror("Unsupported floattype!");
+              FOUR_C_THROW("Unsupported floattype!");
           }
           return nullptr;
         }
@@ -784,7 +784,7 @@ namespace CORE::GEO
               PositionCreator<false, probdim, dim, eletype>::Create(xyze, px, floattype));
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "The element dimension is larger than the problem dimension! \n"
               "dim = %d, probdim = %d",
               dim, probdim);
@@ -799,7 +799,7 @@ namespace CORE::GEO
       {
         const int dim = CORE::FE::dim<eletype>;
         if (dim > probdim_)
-          dserror(
+          FOUR_C_THROW(
               "The element dimension is larger than the problem dimension! \n"
               "dim = %d, probdim = %d",
               dim, probdim_);
@@ -811,7 +811,7 @@ namespace CORE::GEO
           case 3:
             return BuildPosition<3, eletype>(element, point, floattype);
           default:
-            dserror("Unsupported problem dimension! (probdim = %d)", probdim_);
+            FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim_);
             exit(EXIT_FAILURE);
         }
 
@@ -851,7 +851,7 @@ namespace CORE::GEO
               PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz, floattype));
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "The element dimension is larger than the problem dimension! \n"
               "dim = %d, probdim = %d",
               dim, probdim);
@@ -867,7 +867,7 @@ namespace CORE::GEO
       {
         const int dim = CORE::FE::dim<eletype>;
         if (dim > probdim_)
-          dserror(
+          FOUR_C_THROW(
               "The element dimension is larger than the problem dimension! \n"
               "dim = %d, probdim = %d",
               dim, probdim_);
@@ -885,7 +885,7 @@ namespace CORE::GEO
             return BuildPosition<3, eletype>(element, xyz_mat, floattype);
           }
           default:
-            dserror("Unsupported problem dimension! (probdim = %d)", probdim_);
+            FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim_);
             exit(EXIT_FAILURE);
         }
 
@@ -922,7 +922,7 @@ namespace CORE::GEO
               PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz, floattype));
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "The element dimension is larger than the problem dimension! \n"
               "dim = %d, probdim = %d",
               dim, probdim);
@@ -952,7 +952,7 @@ namespace CORE::GEO
             return BuildPosition<3, eletype>(xyze_mat, xyz_mat, floattype);
           }
           default:
-            dserror("Unsupported problem dimension! (probdim = %d)", probdim_);
+            FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim_);
             exit(EXIT_FAILURE);
         }
 
@@ -978,7 +978,7 @@ namespace CORE::GEO
           INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double)
       {
         if (not(nodes.size() == numNodesElement))
-          dserror(
+          FOUR_C_THROW(
               "node number for this element is not correct\n"
               "numNodesElement = %d, nodes.size() = %d",
               numNodesElement, nodes.size());
@@ -1001,7 +1001,7 @@ namespace CORE::GEO
               PositionCreator<false, probdim, dim, eletype>::Create(xyze, xyz, floattype));
         }
         else
-          dserror(
+          FOUR_C_THROW(
               "The element dimension is larger than the problem dimension! \n"
               "dim = %d, probdim = %d",
               dim, probdim);
@@ -1029,7 +1029,7 @@ namespace CORE::GEO
             return BuildPosition<3, eletype>(nodes, xyz_mat, floattype);
           }
           default:
-            dserror("Unsupported problem dimension! (probdim = %d)", probdim_);
+            FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim_);
             exit(EXIT_FAILURE);
         }
 

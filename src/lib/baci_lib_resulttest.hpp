@@ -39,7 +39,7 @@ namespace DRT
     state if a particular result value belongs to that field and needs
     to be checked here. And then there are testing methods for element
     tests, nodal tests and special cases (like beltrami fluid
-    flow). These methods provide dummy (dserror) implementations and
+    flow). These methods provide dummy (FOUR_C_THROW) implementations and
     have to be redefined in subclasses to actually do the testing.
 
     \author u.kue

@@ -63,7 +63,7 @@ MORTAR::ElementIntegrator::ElementIntegrator(CORE::FE::CellType eletype)
       rule2d = Teuchos::rcp(new CORE::FE::IntegrationPoints2D(CORE::FE::GaussRule2D::quad_25point));
       break;
     default:
-      dserror("ElementIntegrator: This contact element type is not implemented!");
+      FOUR_C_THROW("ElementIntegrator: This contact element type is not implemented!");
   }  // switch(eletype)
 
   // save Gauss points for all 2D rules

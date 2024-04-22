@@ -58,7 +58,7 @@ void CORE::LINALG::MultiMapExtractor::CheckForValidMapExtractor() const
 {
   if (maps_.size() == 0)
   {
-    dserror("no maps_ available");
+    FOUR_C_THROW("no maps_ available");
   }
 
   for (unsigned i = 0; i < maps_.size(); ++i)
@@ -67,11 +67,11 @@ void CORE::LINALG::MultiMapExtractor::CheckForValidMapExtractor() const
     {
       if (maps_[i]->DataPtr() == nullptr)
       {
-        dserror("Got zero data pointer on setup of block %d of maps_\n", i);
+        FOUR_C_THROW("Got zero data pointer on setup of block %d of maps_\n", i);
       }
       if (not maps_[i]->UniqueGIDs())
       {
-        dserror("map %d not unique", i);
+        FOUR_C_THROW("map %d not unique", i);
       }
     }
   }
@@ -85,11 +85,11 @@ void CORE::LINALG::MultiMapExtractor::CheckForValidMapExtractor() const
 Teuchos::RCP<Epetra_Map> CORE::LINALG::MultiMapExtractor::MergeMaps(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  if (maps.size() == 0) dserror("no maps to merge");
+  if (maps.size() == 0) FOUR_C_THROW("no maps to merge");
   for (unsigned i = 0; i < maps.size(); ++i)
   {
-    if (maps[i] == Teuchos::null) dserror("can not merge extractor with null maps");
-    if (not maps[i]->UniqueGIDs()) dserror("map %d not unique", i);
+    if (maps[i] == Teuchos::null) FOUR_C_THROW("can not merge extractor with null maps");
+    if (not maps[i]->UniqueGIDs()) FOUR_C_THROW("map %d not unique", i);
   }
   std::set<int> mapentries;
   for (unsigned i = 0; i < maps.size(); ++i)
@@ -107,13 +107,13 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::MultiMapExtractor::MergeMaps(
 Teuchos::RCP<Epetra_Map> CORE::LINALG::MultiMapExtractor::MergeMapsKeepOrder(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  if (maps.empty()) dserror("no maps to merge");
+  if (maps.empty()) FOUR_C_THROW("no maps to merge");
 
   // sanity checks
   for (std::size_t i = 0; i < maps.size(); ++i)
   {
-    if (maps[i] == Teuchos::null) dserror("can not merge extractor with null maps");
-    if (not maps[i]->UniqueGIDs()) dserror("map %d not unique", i);
+    if (maps[i] == Teuchos::null) FOUR_C_THROW("can not merge extractor with null maps");
+    if (not maps[i]->UniqueGIDs()) FOUR_C_THROW("map %d not unique", i);
   }
 
   // collect gids
@@ -136,11 +136,11 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::MultiMapExtractor::MergeMapsKeepOrder(
 Teuchos::RCP<Epetra_Map> CORE::LINALG::MultiMapExtractor::IntersectMaps(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  if (maps.size() == 0) dserror("no maps to intersect");
+  if (maps.size() == 0) FOUR_C_THROW("no maps to intersect");
   for (unsigned i = 0; i < maps.size(); ++i)
   {
-    if (maps[i] == Teuchos::null) dserror("can not intersect extractor with null maps");
-    if (not maps[i]->UniqueGIDs()) dserror("map %d not unique", i);
+    if (maps[i] == Teuchos::null) FOUR_C_THROW("can not intersect extractor with null maps");
+    if (not maps[i]->UniqueGIDs()) FOUR_C_THROW("map %d not unique", i);
   }
   std::set<int> mapentries(
       maps[0]->MyGlobalElements(), maps[0]->MyGlobalElements() + maps[0]->NumMyElements());
@@ -168,7 +168,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::MultiMapExtractor::IntersectMaps(
 Teuchos::RCP<Epetra_Vector> CORE::LINALG::MultiMapExtractor::ExtractVector(
     const Epetra_Vector& full, int block) const
 {
-  if (maps_[block] == Teuchos::null) dserror("null map at block %d", block);
+  if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
   Teuchos::RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*maps_[block]));
   ExtractVector(full, block, *vec);
   return vec;
@@ -180,7 +180,7 @@ Teuchos::RCP<Epetra_Vector> CORE::LINALG::MultiMapExtractor::ExtractVector(
 Teuchos::RCP<Epetra_MultiVector> CORE::LINALG::MultiMapExtractor::ExtractVector(
     const Epetra_MultiVector& full, int block) const
 {
-  if (maps_[block] == Teuchos::null) dserror("null map at block %d", block);
+  if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
   Teuchos::RCP<Epetra_MultiVector> vec =
       Teuchos::rcp(new Epetra_MultiVector(*maps_[block], full.NumVectors()));
   ExtractVector(full, block, *vec);
@@ -193,9 +193,9 @@ Teuchos::RCP<Epetra_MultiVector> CORE::LINALG::MultiMapExtractor::ExtractVector(
 void CORE::LINALG::MultiMapExtractor::ExtractVector(
     const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const
 {
-  if (maps_[block] == Teuchos::null) dserror("null map at block %d", block);
+  if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
   int err = partial.Import(full, *importer_[block], Insert);
-  if (err) dserror("Import using importer returned err=%d", err);
+  if (err) FOUR_C_THROW("Import using importer returned err=%d", err);
 }
 
 
@@ -227,9 +227,9 @@ Teuchos::RCP<Epetra_MultiVector> CORE::LINALG::MultiMapExtractor::InsertVector(
 void CORE::LINALG::MultiMapExtractor::InsertVector(
     const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const
 {
-  if (maps_[block] == Teuchos::null) dserror("null map at block %d", block);
+  if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
   int err = full.Export(partial, *importer_[block], Insert);
-  if (err) dserror("Export using importer returned err=%d", err);
+  if (err) FOUR_C_THROW("Export using importer returned err=%d", err);
 }
 
 
@@ -239,7 +239,7 @@ void CORE::LINALG::MultiMapExtractor::AddVector(
     const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale) const
 {
   Teuchos::RCP<Epetra_MultiVector> v = ExtractVector(full, block);
-  if (not v->Map().SameAs(partial.Map())) dserror("The maps of the vectors must be the same!");
+  if (not v->Map().SameAs(partial.Map())) FOUR_C_THROW("The maps of the vectors must be the same!");
   v->Update(scale, partial, 1.0);
   InsertVector(*v, block, full);
 }
@@ -258,7 +258,7 @@ void CORE::LINALG::MultiMapExtractor::PutScalar(Epetra_Vector& full, int block, 
   for (int i = 0; i < numv; ++i)
   {
     int lid = fm.LID(v[i]);
-    if (lid == -1) dserror("maps do not match");
+    if (lid == -1) FOUR_C_THROW("maps do not match");
     full[lid] = scalar;
   }
 }
@@ -279,7 +279,7 @@ double CORE::LINALG::MultiMapExtractor::Norm2(const Epetra_Vector& full, int blo
   for (int i = 0; i < numv; ++i)
   {
     int lid = fm.LID(v[i]);
-    if (lid == -1) dserror("maps do not match");
+    if (lid == -1) FOUR_C_THROW("maps do not match");
     double value = full[lid];
     local_norm += value * value;
   }
@@ -304,7 +304,7 @@ void CORE::LINALG::MultiMapExtractor::Scale(Epetra_Vector& full, int block, doub
   for (int i = 0; i < numv; ++i)
   {
     int lid = fm.LID(v[i]);
-    if (lid == -1) dserror("maps do not match");
+    if (lid == -1) FOUR_C_THROW("maps do not match");
     full[lid] *= scalar;
   }
 }

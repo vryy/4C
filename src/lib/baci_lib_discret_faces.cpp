@@ -124,7 +124,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       buildtype = CORE::COMM::buildLines;
     }
     else
-      dserror("creating internal faces for 1D elements (would be points) not implemented yet");
+      FOUR_C_THROW("creating internal faces for 1D elements (would be points) not implemented yet");
 
 
     // get node connectivity for specific distype of parent element
@@ -146,13 +146,13 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
         break;
       }
       default:
-        dserror("DRT::UTILS::build... not supported");
+        FOUR_C_THROW("DRT::UTILS::build... not supported");
         break;
     }
 
 
     // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
-    if (nele != connectivity.size()) dserror("number of surfaces or lines does not match!");
+    if (nele != connectivity.size()) FOUR_C_THROW("number of surfaces or lines does not match!");
 
     // now, get the nodal information for the new surface/line faces
     for (unsigned int iele = 0; iele < nele; iele++)
@@ -183,7 +183,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       }
       else
       {
-        if (surf_it->second.GetSlavePeid() != -1) dserror("slave peid should not be set!!!");
+        if (surf_it->second.GetSlavePeid() != -1) FOUR_C_THROW("slave peid should not be set!!!");
         // if found -> add second neighbor data to existing data
         surf_it->second.SetSlavePeid(ele->Id());
         surf_it->second.SetLSurfaceSlave(iele);
@@ -193,7 +193,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
         // get the face's nodes sorted w.r.t local coordinate system of the parent's face element
         const std::vector<DRT::Node*> nodes_face_master = surf_it->second.GetNodes();
         if (nodes_face_master.size() != nnode)
-          dserror(
+          FOUR_C_THROW(
               "the number of the face w.r.t parent element and slave element are not the same. "
               "That is wrong!");
 
@@ -210,7 +210,8 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
           if (position >= 0)
             localtrafomap.push_back(position);
           else
-            dserror("face's node from master's face element not found in slave's face element!");
+            FOUR_C_THROW(
+                "face's node from master's face element not found in slave's face element!");
         }
 
         surf_it->second.SetLocalNumberingMap(localtrafomap);
@@ -245,10 +246,10 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   {
     int master_peid = face_it->second.GetMasterPeid();
     int slave_peid = face_it->second.GetSlavePeid();
-    if (master_peid == -1) dserror("Face master expected!");
+    if (master_peid == -1) FOUR_C_THROW("Face master expected!");
 
-    dsassert(master_peid == gElement(master_peid)->Id(), "Internal error");
-    dsassert(slave_peid == -1 || slave_peid == gElement(slave_peid)->Id(), "Internal error");
+    FOUR_C_ASSERT(master_peid == gElement(master_peid)->Id(), "Internal error");
+    FOUR_C_ASSERT(slave_peid == -1 || slave_peid == gElement(slave_peid)->Id(), "Internal error");
 
     // check for potential periodic boundary conditions and connect respective faces/elements
     if (col_pbcmapmastertoslave)
@@ -306,7 +307,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
             }
           }
           else
-            dserror("Unknown type for pbc!");
+            FOUR_C_THROW("Unknown type for pbc!");
         }
 
         // provide vectors for master and slave node ids
@@ -394,7 +395,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
               else
               {
                 // this is only possible for multiple pbcs
-                if (numpbcpairs == 1) dserror("Two or three pbs sets expected");
+                if (numpbcpairs == 1) FOUR_C_THROW("Two or three pbs sets expected");
 
                 // identify the pbc condition (i.e., pbc id) to which the current face belongs
 
@@ -573,7 +574,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
                   }
                 }
 
-                if (mypotslaveids.size() == 0) dserror("Expected to find node!");
+                if (mypotslaveids.size() == 0) FOUR_C_THROW("Expected to find node!");
 
                 // find the corresponding slave of the current master node
 
@@ -646,7 +647,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
                       else if (slavepbcid == 2)
                         slavecond_1 = 1;
                       else
-                        dserror("Same pbc ids?");
+                        FOUR_C_THROW("Same pbc ids?");
                     }
                     else if (furthermastercond == 1)
                     {
@@ -655,7 +656,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
                       else if (slavepbcid == 2)
                         slavecond_1 = 0;
                       else
-                        dserror("Same pbc ids?");
+                        FOUR_C_THROW("Same pbc ids?");
                     }
                     else if (furthermastercond == 2)
                     {
@@ -664,10 +665,10 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
                       else if (slavepbcid == 1)
                         slavecond_1 = 0;
                       else
-                        dserror("Same pbc ids?");
+                        FOUR_C_THROW("Same pbc ids?");
                     }
                     else
-                      dserror("Unknown pbc id!");
+                      FOUR_C_THROW("Unknown pbc id!");
                   }
                 }
 
@@ -788,7 +789,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
               for (std::size_t kk = 0; kk < myslavenodeids.size(); kk++)
                 std::cout << myslavenodeids[kk] << std::endl;
 
-              dserror("Expected to find slave face!");
+              FOUR_C_THROW("Expected to find slave face!");
             }
 
             // add slave data to master data
@@ -824,7 +825,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
               if (position >= 0)
                 localtrafomap.push_back(position);
               else
-                dserror(
+                FOUR_C_THROW(
                     "face's node from master's face element not found in slave's face element!");
             }
             // set in face
@@ -862,12 +863,12 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
     // create faces
     if (doboundaryfaces_ || (master_peid != -1 && slave_peid != -1))
     {
-      dsassert(master_peid != -1, "At least the master element should be present");
+      FOUR_C_ASSERT(master_peid != -1, "At least the master element should be present");
       DRT::Element* parent_master = gElement(master_peid);
       DRT::Element* parent_slave = slave_peid != -1 ? gElement(slave_peid) : nullptr;
 
-      dsassert(master_peid == parent_master->Id(), "Internal error");
-      dsassert(slave_peid == -1 || slave_peid == parent_slave->Id(), "Internal error");
+      FOUR_C_ASSERT(master_peid == parent_master->Id(), "Internal error");
+      FOUR_C_ASSERT(slave_peid == -1 || slave_peid == parent_slave->Id(), "Internal error");
 
       // get the unsorted nodes
       std::vector<DRT::Node*> nodes = face_it->second.GetNodes();
@@ -882,14 +883,15 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
               nodes.data(), face_it->second.GetLSurfaceMaster(), face_it->second.GetLSurfaceSlave(),
               face_it->second.GetLocalNumberingMap()),
           true);
-      dsassert(surf != Teuchos::null,
+      FOUR_C_ASSERT(surf != Teuchos::null,
           "Creating a face element failed. Check overloading of CreateFaceElement");
 
       // create a clone (the internally created element does not exist anymore when all
       // Teuchos::RCP's finished)
       Teuchos::RCP<DRT::FaceElement> surf_clone =
           Teuchos::rcp(dynamic_cast<DRT::FaceElement*>(surf->Clone()));
-      if (surf_clone.get() == nullptr) dserror("Invalid element detected. Expected face element");
+      if (surf_clone.get() == nullptr)
+        FOUR_C_THROW("Invalid element detected. Expected face element");
 
       // Set owning process of surface to node with smallest gid
       // REMARK: see below
@@ -951,7 +953,7 @@ void DRT::DiscretizationFaces::BuildFaceRowMap()
       facerowptr_[count] = curr->second.get();
       ++count;
     }
-  if (count != nummyeles) dserror("Mismatch in no. of internal faces");
+  if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of internal faces");
   facerowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, Comm()));
   return;
 }
@@ -974,7 +976,7 @@ void DRT::DiscretizationFaces::BuildFaceColMap()
     curr->second->SetLID(count);
     ++count;
   }
-  if (count != nummyeles) dserror("Mismatch in no. of elements");
+  if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
   facecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, Comm()));
   return;
 }
@@ -985,7 +987,7 @@ void DRT::DiscretizationFaces::BuildFaceColMap()
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::DiscretizationFaces::FaceRowMap() const
 {
-  dsassert(Filled(), "FillComplete() must be called before call to FaceRowMap()");
+  FOUR_C_ASSERT(Filled(), "FillComplete() must be called before call to FaceRowMap()");
   return facerowmap_.get();
 }
 
@@ -995,7 +997,7 @@ const Epetra_Map* DRT::DiscretizationFaces::FaceRowMap() const
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::DiscretizationFaces::FaceColMap() const
 {
-  dsassert(Filled(), "FillComplete() must be called before call to FaceColMap()");
+  FOUR_C_ASSERT(Filled(), "FillComplete() must be called before call to FaceColMap()");
   return facecolmap_.get();
 }
 
@@ -1005,7 +1007,7 @@ const Epetra_Map* DRT::DiscretizationFaces::FaceColMap() const
  *----------------------------------------------------------------------*/
 int DRT::DiscretizationFaces::NumGlobalFaces() const
 {
-  dsassert(Filled(), "FillComplete() must be called before call to NumGlobalFaces()");
+  FOUR_C_ASSERT(Filled(), "FillComplete() must be called before call to NumGlobalFaces()");
   return FaceRowMap()->NumGlobalElements();
 }
 
@@ -1015,7 +1017,7 @@ int DRT::DiscretizationFaces::NumGlobalFaces() const
  *----------------------------------------------------------------------*/
 int DRT::DiscretizationFaces::NumMyRowFaces() const
 {
-  dsassert(Filled(), "FillComplete() must be called before call to NumMyRowFaces()");
+  FOUR_C_ASSERT(Filled(), "FillComplete() must be called before call to NumMyRowFaces()");
   return FaceRowMap()->NumMyElements();
 }
 

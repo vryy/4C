@@ -39,7 +39,7 @@ bool STR::NLN::SOLVER::IsXMLStatusTestFile(const Teuchos::ParameterList& pstatus
         if (pxml.sublist("Outer Status Test").numParams() > 0) check = true;
     }
     else
-      dserror("The file name \"%s\" is not a valid XML file name.", xmlfilename.c_str());
+      FOUR_C_THROW("The file name \"%s\" is not a valid XML file name.", xmlfilename.c_str());
   }
 
   return check;
@@ -241,7 +241,7 @@ void STR::NLN::SOLVER::SetStatusTestParams(Teuchos::ParameterList& pstatus,
       pcombo_incr_fres.set("Combo Type", "OR");
       break;
     default:
-      dserror("Unknown structural combination type enum!");
+      FOUR_C_THROW("Unknown structural combination type enum!");
       break;
   }
 
@@ -436,7 +436,7 @@ void STR::NLN::SOLVER::SetQuantityTestParams(Teuchos::ParameterList& p,
   else if (testname == "ActiveSet")
     SetActiveSetParams(p, qtype);
   else
-    dserror("Unknown/Unsupported status test name: %s", testname.c_str());
+    FOUR_C_THROW("Unknown/Unsupported status test name: %s", testname.c_str());
 }
 
 
@@ -458,7 +458,7 @@ void STR::NLN::SOLVER::SplitAndOrCombo(
     if (testname == "NormF")
       combotype = datasdyn.GetResComboType(*qtiter);
     else if (testname != "NormUpdate")
-      dserror("The given test \"%s\" name is not supported!", testname.c_str());
+      FOUR_C_THROW("The given test \"%s\" name is not supported!", testname.c_str());
 
     switch (combotype)
     {
@@ -469,7 +469,7 @@ void STR::NLN::SOLVER::SplitAndOrCombo(
         combo_and.push_back(*qtiter);
         break;
       default:
-        dserror(
+        FOUR_C_THROW(
             "Unknown combination type. See list of valid "
             "\"INPAR::STR::BinaryOp\" enums for more information.");
         break;
@@ -536,7 +536,7 @@ void STR::NLN::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
       break;
     }
     default:
-      dserror("Unknown \"Tolerance Type\" defined!");
+      FOUR_C_THROW("Unknown \"Tolerance Type\" defined!");
       break;
   }  // switch case toltype
 
@@ -556,13 +556,13 @@ void STR::NLN::SOLVER::SetNormUpdateParams(Teuchos::ParameterList& qlist,
       qlist.set("Norm Type", "Max Norm");
       break;
     case INPAR::STR::norm_rms:
-      dserror(
+      FOUR_C_THROW(
           "The norm type \"Root Mean Square\" is no longer supported! "
           "Consider to use the \"NOX::NLN::StatusTest::NormWRMS\" test instead!");
       break;
     case INPAR::STR::norm_vague:
     default:
-      dserror("Unknown vector norm type!");
+      FOUR_C_THROW("Unknown vector norm type!");
       break;
   }  // switch case normtype
 
@@ -634,7 +634,7 @@ void STR::NLN::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
       break;
     }
     default:
-      dserror("Unknown \"Tolerance Type\" defined!");
+      FOUR_C_THROW("Unknown \"Tolerance Type\" defined!");
       break;
   }  // switch case toltype
 
@@ -654,13 +654,13 @@ void STR::NLN::SOLVER::SetNormFParams(Teuchos::ParameterList& qlist,
       qlist.set("Norm Type", "Max Norm");
       break;
     case INPAR::STR::norm_rms:
-      dserror(
+      FOUR_C_THROW(
           "This norm type is no longer supported! "
           "Consider to use the \"NOX::NLN::StatusTest::NormWRMS\" test instead!");
       break;
     case INPAR::STR::norm_vague:
     default:
-      dserror("Unknown vector norm type!");
+      FOUR_C_THROW("Unknown vector norm type!");
       break;
   }  // switch case normtype
 

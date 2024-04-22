@@ -81,7 +81,7 @@ bool BEAMINTERACTION::GEO::PointToCurveProjection(CORE::LINALG::Matrix<3, 1, T> 
      * cross in one point and norm_delta_r = 0. Since in this case |eta1|>1 and |eta2|>1 they will
      * be sorted out later anyways. */
     if (norm_delta_r < POINT_TO_CURVE_PROJECTION_IDENTICAL_POINTS_TOLERANCE)
-      dserror("Point-to-curve projection fails because point lies on the curve!");
+      FOUR_C_THROW("Point-to-curve projection fails because point lies on the curve!");
 
 
     // evaluate f at current eta1, eta2
@@ -112,7 +112,7 @@ bool BEAMINTERACTION::GEO::PointToCurveProjection(CORE::LINALG::Matrix<3, 1, T> 
         df, delta_r, norm_delta_r, r_xi_master, r_xixi_master);
 
     if (not validlinearization)
-      dserror(
+      FOUR_C_THROW(
           "Linearization of point to line projection is zero, i.e. the minimal distance "
           "problem seems to be non-unique!");
 
@@ -599,7 +599,7 @@ void BEAMINTERACTION::GEO::CalcPTCProjectionOrthogonalityConditionPartialDerivPa
 
   if (std::abs(CORE::FADUTILS::CastToDouble(orthogon_condition_partial_xi_master)) <
       POINT_TO_CURVE_PROJECTION_NONUNIQUE_MINIMAL_DISTANCE_TOLERANCE)
-    dserror(
+    FOUR_C_THROW(
         "Linearization of point to line projection is zero, i.e. the minimal distance "
         "problem is non-unique!");
 }
@@ -641,7 +641,7 @@ void BEAMINTERACTION::GEO::CalcEnclosedAngle(T& angle, T& cosine_angle,
     const CORE::LINALG::Matrix<3, 1, T>& a, const CORE::LINALG::Matrix<3, 1, T>& b)
 {
   if (CORE::FADUTILS::VectorNorm(a) < 1.0e-12 or CORE::FADUTILS::VectorNorm(b) < 1.0e-12)
-    dserror("Cannot determine angle for zero vector!");
+    FOUR_C_THROW("Cannot determine angle for zero vector!");
 
   cosine_angle = CORE::FADUTILS::Norm<T>(
       a.Dot(b) / (CORE::FADUTILS::VectorNorm(a) * CORE::FADUTILS::VectorNorm(b)));
@@ -660,7 +660,7 @@ void BEAMINTERACTION::GEO::CalcEnclosedAngle(T& angle, T& cosine_angle,
 
   // We want an angle \in [0;pi/2] in each case:
   if (angle > M_PI / 2.0)
-    dserror("Something went wrong here, angle should be in the interval [0;pi/2]!");
+    FOUR_C_THROW("Something went wrong here, angle should be in the interval [0;pi/2]!");
 }
 
 

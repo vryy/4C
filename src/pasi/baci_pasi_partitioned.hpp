@@ -196,13 +196,13 @@ namespace PASI
     //! check correct setup
     void CheckIsSetup()
     {
-      if (not IsSetup()) dserror("pasi algorithm not setup correctly!");
+      if (not IsSetup()) FOUR_C_THROW("pasi algorithm not setup correctly!");
     };
 
     //! check correct initialization
     void CheckIsInit()
     {
-      if (not IsInit()) dserror("pasi algorithm not initialized correctly!");
+      if (not IsInit()) FOUR_C_THROW("pasi algorithm not initialized correctly!");
     };
 
     //! structural field

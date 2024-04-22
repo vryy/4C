@@ -84,7 +84,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
       localSolver_ = Teuchos::rcp(new LocalSolver(ele, *shapes_, *shapesface_, usescompletepoly_));
   }
   else
-    dserror("Only works for HDG fluid elements");
+    FOUR_C_THROW("Only works for HDG fluid elements");
 }
 
 
@@ -138,7 +138,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
         interiorebofoaf_, elevec1, interiorecorrectionterm_, interiorebodyforce_);
     localSolver_->ComputeInteriorMatrices(mat, false);
 
-    dsassert(nfaces_ == static_cast<unsigned int>(ele->NumFace()), "Internal error");
+    FOUR_C_ASSERT(nfaces_ == static_cast<unsigned int>(ele->NumFace()), "Internal error");
 
     // loop over faces
     for (unsigned int f = 0; f < nfaces_; ++f)
@@ -185,7 +185,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::ReadGlobalVectors(const DRT::Eleme
   traceVal_.resize(1 + nfaces_ * nsd_ * shapesface_->nfdofs_);
   interiorVal_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
   interiorAcc_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
-  dsassert(lm.size() == traceVal_.size(), "Internal error");
+  FOUR_C_ASSERT(lm.size() == traceVal_.size(), "Internal error");
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("velaf");
   CORE::FE::ExtractMyValues(*matrix_state, traceVal_, lm);
 
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::UpdateSecondarySolution(const DRT:
 {
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intvelnp");
   std::vector<int> localDofs = discretization.Dof(1, &ele);
-  dsassert(localDofs.size() == static_cast<std::size_t>(updateG.length() + updateUp.length()),
+  FOUR_C_ASSERT(localDofs.size() == static_cast<std::size_t>(updateG.length() + updateUp.length()),
       "Internal error");
 
   // update vector content by making the vector writeable (need to adjust in calling site before
@@ -301,7 +301,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Flui
       break;
     }
     default:
-      dserror("Unknown type of action for FluidHDG");
+      FOUR_C_THROW("Unknown type of action for FluidHDG");
       break;
   }  // end of switch(act)
 
@@ -406,7 +406,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
   shapes_->Evaluate(*ele);
 
   // reshape elevec2 as matrix
-  dsassert(
+  FOUR_C_ASSERT(
       elevec2.numRows() == 0 ||
           elevec2.numRows() == static_cast<int>((nsd_ * nsd_ + nsd_ + 1) * shapes_->ndofs_ + 1),
       "Wrong size in project vector 2");
@@ -442,7 +442,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
       CORE::LINALG::Matrix<nsd_, nsd_> grad(true);  // is not necessarily set in EvaluateAll
       double p;
 
-      dsassert(initfield != nullptr && startfunc != nullptr,
+      FOUR_C_ASSERT(initfield != nullptr && startfunc != nullptr,
           "initfield or startfuncno not set for initial value");
 
       // This function returns the values of velocity, gradient and pressure from the given
@@ -526,8 +526,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
   // instead of being a vector it is a matrix so that we use the same matrix
   // to solve the projection problem on every component of the field
   CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
-  dsassert(elevec1.numRows() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
-               elevec1.numRows() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
+  FOUR_C_ASSERT(
+      elevec1.numRows() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
+          elevec1.numRows() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
       "Wrong size in project vector 1");
 
   const unsigned int* faceConsider = params.getPtr<unsigned int>("faceconsider");
@@ -543,7 +544,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
       // We get here only if IT IS NOT an initial value but IT IS a time
       // dependant boundary value. If we are here we only want the function to run
       // for boundary faces specified in the faceConsider variable
-      dsassert(faceConsider != nullptr, "Unsupported operation");
+      FOUR_C_ASSERT(faceConsider != nullptr, "Unsupported operation");
       if (*faceConsider != face) continue;
     }
 
@@ -588,7 +589,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
         // temporal evolution of the simulation. This is strictly connected to
         // the first if of the loop, in fact, the condition is the same
         //"initfield == nullptr" and the face is a boundary face.
-        dsassert(functno != nullptr && time != nullptr && onoff != nullptr,
+        FOUR_C_ASSERT(functno != nullptr && time != nullptr && onoff != nullptr,
             "No array with functions given");
         for (unsigned int d = 0; d < nsd_; ++d)
         {
@@ -664,7 +665,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
 {
   InitializeShapes(ele);
   // Check if the vector has the correct size
-  dsassert(
+  FOUR_C_ASSERT(
       elevec1.numRows() == (int)nen_ * (2 * nsd_ + 1) + 1, "Vector does not have correct size");
 
   // Getting the connectivity matrix
@@ -855,7 +856,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze);
 
   const int numsamppoints = 5;
-  dsassert(elevec1.numRows() == numsamppoints * numsamppoints * numsamppoints * 6,
+  FOUR_C_ASSERT(elevec1.numRows() == numsamppoints * numsamppoints * numsamppoints * 6,
       "Vector does not have correct size");
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
@@ -925,7 +926,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   CORE::LINALG::SerialDenseMatrix locations;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   locations.shape(3, 125);
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
@@ -955,9 +956,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
 
   CORE::FE::PolynomialSpaceTensor<nsd_, CORE::FE::LagrangePolynomial> poly(poly1d);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check if we have the right number of polynomials
-  if (poly.Size() != 125) dserror("wrong number of polynomials");
+  if (poly.Size() != 125) FOUR_C_THROW("wrong number of polynomials");
 #endif
 
   InitializeShapes(ele);
@@ -988,7 +989,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
           sum += values(k) * elevec2(6 * k + d);
         f(d) = sum;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         // check plausibility via comparison of quadrature coordinates
         sum = 0.0;
         for (unsigned int k = 0; k < numsamppoints * numsamppoints * numsamppoints; ++k)
@@ -996,7 +997,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
         if (not(sum + 1e-9 > xsi(d) and sum - 1e-9 < xsi(d)))
         {
           std::cout << "Gauss point:  " << xsi(d) << "  coordinate:  " << sum << std::endl;
-          dserror("Plausibility check failed! Problem might be sequence of polynomials");
+          FOUR_C_THROW("Plausibility check failed! Problem might be sequence of polynomials");
         }
 #endif
       }
@@ -1041,7 +1042,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   CORE::LINALG::SerialDenseMatrix locations;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   locations.shape(3, 125);
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
@@ -1099,7 +1100,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
           sum += values(k) * elevec2(6 * k + d);
         f(d) = sum;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         // check plausibility via comparison of quadrature coordinates
         sum = 0.0;
         for (unsigned int k = 0; k < numsamppoints * numsamppoints * numsamppoints; ++k)
@@ -1107,7 +1108,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
         if (not(sum + 1e-9 > xsi(d) and sum - 1e-9 < xsi(d)))
         {
           std::cout << "Gauss point:  " << xsi(d) << "  coordinate:  " << sum << std::endl;
-          dserror("Plausibility check failed! Problem might be sequence of polynomials");
+          FOUR_C_THROW("Plausibility check failed! Problem might be sequence of polynomials");
         }
 #endif
       }
@@ -1138,8 +1139,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
   // traces
   CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
   CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
-  dsassert(elevec3.numRows() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
-               elevec3.numRows() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
+  FOUR_C_ASSERT(
+      elevec3.numRows() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
+          elevec3.numRows() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
       "Wrong size in project vector 1");
 
   for (unsigned int face = 0; face < nfaces_; ++face)
@@ -1233,7 +1235,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
     case INPAR::FLUID::initfield_beltrami_flow:
       // check whether present flow is indeed three-dimensional
       {
-        if (nsd_ != 3) dserror("Beltrami flow is a three-dimensional flow!");
+        if (nsd_ != 3) FOUR_C_THROW("Beltrami flow is a three-dimensional flow!");
 
         // set constants for analytical solution
         const double a = M_PI / 4.0;
@@ -1303,7 +1305,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
     break;
 
     default:
-      dserror("Given field %i not yet implemented.", initfield);
+      FOUR_C_THROW("Given field %i not yet implemented.", initfield);
       break;
   }
 }
@@ -1691,7 +1693,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatric
 
   if (mat->MaterialType() != INPAR::MAT::m_fluid and
       mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
-    dserror("Only m_fluid and m_fluid_murnaghantait supported as materials");
+    FOUR_C_THROW("Only m_fluid and m_fluid_murnaghantait supported as materials");
 
   double viscosity = 0.0;
   double density = 0.0;
@@ -1976,7 +1978,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(c
     // get material properties
     if (mat->MaterialType() != INPAR::MAT::m_fluid and
         mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
-      dserror("Only m_fluid and m_fluid_murnaghantait supported as materials");
+      FOUR_C_THROW("Only m_fluid and m_fluid_murnaghantait supported as materials");
 
     double viscosity = 0.0;
     double density = 0.0;
@@ -2074,7 +2076,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(c
 
   if (mat->MaterialType() != INPAR::MAT::m_fluid and
       mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
-    dserror("Only m_fluid and m_fluid_murnaghantait supported as materials");
+    FOUR_C_THROW("Only m_fluid and m_fluid_murnaghantait supported as materials");
 
   double viscosity = 0.0;
   double density = 0.0;
@@ -2347,10 +2349,10 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
     uuMatFinal.print(std::cout);
     uuMat.print(std::cout);
   }
-  dsassert(errnum == 0, "Factorization failed");
+  FOUR_C_ASSERT(errnum == 0, "Factorization failed");
   lapack.GETRS(
       'N', size, 1, uuMatFinal.values(), size, pivots.data(), upUpd.values(), size, &errnum);
-  dsassert(errnum == 0, "Substitution failed");
+  FOUR_C_ASSERT(errnum == 0, "Substitution failed");
 
   // compute Rg - GU * upUpd
   // shape of GU in 3D
@@ -2448,12 +2450,12 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
   // solve for velocity matrix
   Teuchos::LAPACK<int, double> lapack;
   int errnum;
-  dsassert(
+  FOUR_C_ASSERT(
       pivots.size() == static_cast<unsigned int>(uuMatFinal.numRows()) && pivots[0] + pivots[1] > 0,
       "Matrix seems to not have been factorized");
   lapack.GETRS('N', uuMatFinal.numRows(), ufMat.numCols(), uuMatFinal.values(),
       uuMatFinal.numRows(), pivots.data(), ufMat.values(), ufMat.numRows(), &errnum);
-  dsassert(errnum == 0, "Substitution failed");
+  FOUR_C_ASSERT(errnum == 0, "Substitution failed");
 
   // put velocity/pressure part into element matrix
   blas.GEMM(Teuchos::NO_TRANS, Teuchos::NO_TRANS, fuMat.numRows(), ufMat.numCols(), fuMat.numCols(),

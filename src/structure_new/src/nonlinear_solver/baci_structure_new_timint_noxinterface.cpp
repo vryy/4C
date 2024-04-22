@@ -70,12 +70,12 @@ void STR::TIMINT::NoxInterface::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::NoxInterface::CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
+void STR::TIMINT::NoxInterface::CheckInit() const { FOUR_C_ASSERT(IsInit(), "Call Init() first!"); }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::NoxInterface::CheckInitSetup() const
 {
-  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -110,7 +110,7 @@ bool STR::TIMINT::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_O
   CheckInitSetup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
-  dsassert(jac_ptr != nullptr, "Dynamic cast failed.");
+  FOUR_C_ASSERT(jac_ptr != nullptr, "Dynamic cast failed.");
 
   if (not int_ptr_->ApplyStiff(x, *jac_ptr)) return false;
 
@@ -130,7 +130,7 @@ bool STR::TIMINT::NoxInterface::computeFandJacobian(
   CheckInitSetup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
-  dsassert(jac_ptr != nullptr, "Dynamic cast failed!");
+  FOUR_C_ASSERT(jac_ptr != nullptr, "Dynamic cast failed!");
 
   if (not int_ptr_->ApplyForceStiff(x, rhs, *jac_ptr)) return false;
 
@@ -156,7 +156,7 @@ bool STR::TIMINT::NoxInterface::computeCorrectionSystem(const enum NOX::NLN::Cor
   CheckInitSetup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
-  dsassert(jac_ptr != nullptr, "Dynamic cast failed!");
+  FOUR_C_ASSERT(jac_ptr != nullptr, "Dynamic cast failed!");
 
   std::vector<INPAR::STR::ModelType> constraint_models;
   FindConstraintModels(&grp, constraint_models);
@@ -479,7 +479,7 @@ double STR::TIMINT::NoxInterface::GetModelValue(const Epetra_Vector& x, const Ep
     }
     default:
     {
-      dserror("There is no objective model value for %s | %d.",
+      FOUR_C_THROW("There is no objective model value for %s | %d.",
           NOX::NLN::MeritFunction::MeritFuncName2String(merit_func_type).c_str(), merit_func_type);
       exit(EXIT_FAILURE);
     }
@@ -507,7 +507,7 @@ double STR::TIMINT::NoxInterface::GetLinearizedModelTerms(const ::NOX::Abstract:
       return 0.0;
     default:
     {
-      dserror("There is no linearization for the objective model %s | %d.",
+      FOUR_C_THROW("There is no linearization for the objective model %s | %d.",
           NOX::NLN::MeritFunction::MeritFuncName2String(mf_type).c_str(), mf_type);
       exit(EXIT_FAILURE);
     }

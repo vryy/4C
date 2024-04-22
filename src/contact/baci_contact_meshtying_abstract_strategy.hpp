@@ -199,7 +199,10 @@ namespace CONTACT
      *
      *  \date 02/2016
      *  \author hiermeier */
-    virtual void Reset(const Epetra_Vector& dis) { dserror("Not yet considered for meshtying!"); };
+    virtual void Reset(const Epetra_Vector& dis)
+    {
+      FOUR_C_THROW("Not yet considered for meshtying!");
+    };
 
     /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class [derived]
      *
@@ -210,7 +213,7 @@ namespace CONTACT
      *  \author hiermeier */
     virtual bool ApplyForce()
     {
-      dserror("Not yet considered for msht!");
+      FOUR_C_THROW("Not yet considered for msht!");
       return false;
     };
 
@@ -224,7 +227,7 @@ namespace CONTACT
      *  \author hiermeier */
     virtual bool ApplyForceStiff()
     {
-      dserror("Not yet considered for msht!");
+      FOUR_C_THROW("Not yet considered for msht!");
       return false;
     };
 

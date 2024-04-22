@@ -77,7 +77,7 @@ CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Beam3tosoli
     const Beam3tosolidcontact& old)
     : pdiscret_(old.pdiscret_), cdiscret_(old.cdiscret_), dofoffsetmap_(old.dofoffsetmap_)
 {
-  dserror("ERROR: Copy constructor incomplete");
+  FOUR_C_THROW("ERROR: Copy constructor incomplete");
   return;
 }
 /*----------------------------------------------------------------------*
@@ -279,7 +279,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
   const DRT::ELEMENTS::Beam3Base* beamele1 =
       static_cast<const DRT::ELEMENTS::Beam3Base*>(element1_);
 
-  if (beamele1 == nullptr) dserror("cast to beam base failed!");
+  if (beamele1 == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
   const double radius1 =
       MANIPULATERADIUS * beamele1->GetCircularCrossSectionRadiusForInteractions();
@@ -476,7 +476,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
     // considered surface element, i.e. xi1 and xi2 in [-1, 1]
     if (fabs(xi1) > 1.0 + XIETATOL || fabs(xi2) > 1.0 + XIETATOL)
     {
-      dserror("Projection on surface is not on the considered surface element.");
+      FOUR_C_THROW("Projection on surface is not on the considered surface element.");
 
       // std::cout << "Projection of Gauss point " << i_gp + 1 << " of " << gaussPoints.nquad
       //     << " (at eta: " << eta << ") on surface is not on the considered surface element." <<
@@ -734,7 +734,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
     }
   }
   else
-    dserror("Only the values 1,2,3,4 are possible for ARBITPENALTY!");
+    FOUR_C_THROW("Only the values 1,2,3,4 are possible for ARBITPENALTY!");
 #endif
 }
 /*----------------------------------------------------------------------*
@@ -1135,7 +1135,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
   TYPEBTS det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
   if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(det_L)) < DETERMINANTTOL)
   {
-    dserror("ERROR: Determinant of L = 0");
+    FOUR_C_THROW("ERROR: Determinant of L = 0");
   }
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
@@ -1769,7 +1769,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetCon
     else
     {
       // std::cout << "Contact interval not closed" << std::endl;
-      dserror("Contact interval not closed.");
+      FOUR_C_THROW("Contact interval not closed.");
     }
   }
 
@@ -2185,7 +2185,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetBea
   else if (numnodalvalues == 2)
   {
     if (element1_->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance())
-      dserror("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
+      FOUR_C_THROW("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
 
     double length = 2 * (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->jacobi();
 
@@ -2195,7 +2195,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetBea
     CORE::FE::shape_function_hermite_1D_deriv2(N_i_etaeta, eta, length, distype);
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents) "
         "values are valid!");
 
@@ -2489,7 +2489,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
 
   if (CORE::FADUTILS::CastToDouble(norm_rD) < NORMTOL)
   {
-    dserror("ERROR: Distance vector of length zero! --> Change time step!");
+    FOUR_C_THROW("ERROR: Distance vector of length zero! --> Change time step!");
   }
 
   // Compute unit distance vector
@@ -2529,7 +2529,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
 
   if (CORE::FADUTILS::CastToDouble(norm_a2) < NORMTOL)
   {
-    dserror("ERROR: Surface normal vector of length zero! --> Change time step!");
+    FOUR_C_THROW("ERROR: Surface normal vector of length zero! --> Change time step!");
   }
 
   // Compute unit surface normal vector
@@ -2721,9 +2721,10 @@ template <const int numnodessol, const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::UpdateEleSmoothTangents(
     std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {
-  //  //Tangent smoothing is only possible for Reissner beam elements --> dserror() otherwise
+  //  //Tangent smoothing is only possible for Reissner beam elements --> FOUR_C_THROW() otherwise
   //  if (numnodalvalues>1)
-  //    dserror("Tangent smoothing only possible for Reissner beam elements (numnodalvalues=1)!!!");
+  //    FOUR_C_THROW("Tangent smoothing only possible for Reissner beam elements
+  //    (numnodalvalues=1)!!!");
   //
   //  CORE::LINALG::Matrix<3*numnodes,1> elepos_aux(true);
   //  //Tangent smoothing only possible with data type double (not with Sacado FAD)
@@ -2776,12 +2777,12 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::ShiftN
   //    }
   //    else
   //    {
-  //      dserror("Only numnodes = 2 possible for Kirchhoff beams!!!");
+  //      FOUR_C_THROW("Only numnodes = 2 possible for Kirchhoff beams!!!");
   //    }
   //  }
   //  else
   //  {
-  //    dserror("The parameter numnodalvalues can only have the values 1 or 2!!!");
+  //    FOUR_C_THROW("The parameter numnodalvalues can only have the values 1 or 2!!!");
   //  }
   return;
 }
@@ -2797,18 +2798,18 @@ Teuchos::RCP<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontact
     Teuchos::ParameterList beamcontactparams)
 {
   if (numnodalvalues != 1 and numnodalvalues != 2)
-    dserror("Only the values 1 and 2 are valid for numnodalvalues!");
+    FOUR_C_THROW("Only the values 1 and 2 are valid for numnodalvalues!");
 
   if (numnodalvalues != 2 and numnodes != 2)
-    dserror(
+    FOUR_C_THROW(
         "Only the values numnodes=2 is possible for Kirchhoff beams, i.e. if numnodalvalues=2!");
 
   if (numnodes != 2 and numnodes != 3 and numnodes != 4 and numnodes != 5)
-    dserror("Only the values 2, 3, 4 and 5 are valid for numnodes!");
+    FOUR_C_THROW("Only the values 2, 3, 4 and 5 are valid for numnodes!");
 
   if (numnodessol != 3 and numnodessol != 6 and numnodessol != 4 and numnodessol != 8 and
       numnodessol != 9)
-    dserror("Only the values 3, 4, 6, 8 and 9 are valid for numnodessol!");
+    FOUR_C_THROW("Only the values 3, 4, 6, 8 and 9 are valid for numnodessol!");
 
 
   switch (numnodessol)
@@ -3085,7 +3086,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FADChe
   // Invert L by hand
   TYPEBTS det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
   if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(det_L)) < DETERMINANTTOL)
-    dserror("ERROR: Determinant of L = 0");
+    FOUR_C_THROW("ERROR: Determinant of L = 0");
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
   L_inv(1, 0) = -L(1, 0) / det_L;

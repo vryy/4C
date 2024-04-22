@@ -569,7 +569,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Teuchos::ParameterLi
     bool isale, bool isowned, double CsDeltaSq, double CiDeltaSq, double* saccn, double* sveln,
     double* svelnp, const CORE::FE::GaussIntegration& intpoints, bool offdiag)
 {
-  if (offdiag) dserror("No-off-diagonal matrix evaluation in standard fluid implementation!!");
+  if (offdiag) FOUR_C_THROW("No-off-diagonal matrix evaluation in standard fluid implementation!!");
 
   // flag for higher order elements
   is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
@@ -580,7 +580,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Teuchos::ParameterLi
 
   // stationary formulation does not support ALE formulation
   if (isale and fldparatimint_->IsStationary())
-    dserror("No ALE support within stationary fluid solver.");
+    FOUR_C_THROW("No ALE support within stationary fluid solver.");
 
   // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
   // its time derivative at n+alpha_M/n+1
@@ -922,7 +922,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
           // GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
           // would overwrite materials at the element center, hence BGp() should always be combined
           // with MatGp()
-          dserror(
+          FOUR_C_THROW(
               "evaluation of B and D at gauss-point should always be combined with evaluation "
               "material at gauss-point!");
         }
@@ -947,7 +947,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
       // only required for variable-density flow at low Mach number
       if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
       {
-        if (isale) dserror("Multifractal subgrid-scales with ale and loma not supported");
+        if (isale) FOUR_C_THROW("Multifractal subgrid-scales with ale and loma not supported");
         mfssgscaint_ = D_mfs * funct_.Dot(fsescaaf);
         grad_fsscaaf_.Multiply(derxy_, fsescaaf);
         for (int dim = 0; dim < nsd_; dim++) grad_fsscaaf_(dim, 0) *= D_mfs;
@@ -1060,7 +1060,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
           if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
               fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
               fldpara_->TurbModAction() == INPAR::FLUID::vreman)
-            dserror("No material update in combination with smagorinsky model!");
+            FOUR_C_THROW("No material update in combination with smagorinsky model!");
 
           if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
             UpdateMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
@@ -1275,7 +1275,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
       else if (nsd_ == 2)
         LinMeshMotion_2D(emesh, evelaf, press, fldparatimint_->TimeFac(), timefacfac);
       else
-        dserror("Linearization of the mesh motion is not available in 1D");
+        FOUR_C_THROW("Linearization of the mesh motion is not available in 1D");
     }
   }
   //------------------------------------------------------------------------
@@ -1413,9 +1413,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
   else if (nsd_ == 2)
     DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
   else
-    dserror("Body force for 1D problem not yet implemented!");
+    FOUR_C_THROW("Body force for 1D problem not yet implemented!");
 
-  if (myneumcond.size() > 1) dserror("More than one Neumann condition on one node!");
+  if (myneumcond.size() > 1) FOUR_C_THROW("More than one Neumann condition on one node!");
 
   if (myneumcond.size() == 1)
   {
@@ -1471,7 +1471,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
           else if (condtype == "neum_pgrad")
             eprescpgaf(isd, jnode) = num * functionfac;
           else
-            dserror("Unknown Neumann condition");
+            FOUR_C_THROW("Unknown Neumann condition");
         }
       }
       else
@@ -1499,7 +1499,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
           else if (condtype == "neum_pgrad")
             eprescpgaf(isd, jnode) = num * functionfac;
           else
-            dserror("Unknown Neumann condition");
+            FOUR_C_THROW("Unknown Neumann condition");
         }
     }
   }
@@ -1516,9 +1516,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
     else if (nsd_ == 2)
       DRT::UTILS::FindElementConditions(ele, "TransportSurfaceNeumann", myscatraneumcond);
     else
-      dserror("Body force for 1D problem not yet implemented!");
+      FOUR_C_THROW("Body force for 1D problem not yet implemented!");
 
-    if (myscatraneumcond.size() > 1) dserror("More than one Neumann condition on one node!");
+    if (myscatraneumcond.size() > 1) FOUR_C_THROW("More than one Neumann condition on one node!");
 
     if (myscatraneumcond.size() == 1)
     {
@@ -1539,7 +1539,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
                          ->FunctionById<CORE::UTILS::FunctionOfTime>(functnum)
                          .Evaluate(time);
         else
-          dserror("Negative time in bodyforce calculation: time = %f", time);
+          FOUR_C_THROW("Negative time in bodyforce calculation: time = %f", time);
       }
       else
         functfac = 1.0;
@@ -1567,7 +1567,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectionTerm(
   // fill the element correction term
   const Teuchos::ParameterList& fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   int functnum = (fluidparams.get<int>("CORRTERMFUNCNO"));
-  if (functnum < 0) dserror("Please provide a correct function number");
+  if (functnum < 0) FOUR_C_THROW("Please provide a correct function number");
   for (int i = 0; i < nen_; ++i)
   {
     ecorrectionterm(i) = GLOBAL::Problem::Instance()
@@ -1704,7 +1704,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvalShapeFuncAndDerivsAtIntP
   det_ = xji_.Invert(xjm_);
 
   if (det_ < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eid_, det_);
+    FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eid_, det_);
 
   // compute integration factor
   fac_ = gpweight * det_;
@@ -1738,9 +1738,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispVelALE(
     case INPAR::FLUID::oseen:
     case INPAR::FLUID::stokes:
     {
-      dserror(
+      FOUR_C_THROW(
           "ALE with Oseen or Stokes seems to be a tricky combination. Think deep before removing "
-          "dserror!");
+          "FOUR_C_THROW!");
       break;
     }
     default:
@@ -1798,7 +1798,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetConvectiveVelint(const bo
       break;
     }
     default:
-      dserror(
+      FOUR_C_THROW(
           "Physical type not implemented here. For Poro-problems see derived class "
           "FluidEleCalcPoro.");
       break;
@@ -1924,7 +1924,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     {
       const double density_0 = actmat->Density();
 
-      if (escaaf(0) < 1e-12) dserror("Boussinesq approximation: density in escaaf is zero");
+      if (escaaf(0) < 1e-12) FOUR_C_THROW("Boussinesq approximation: density in escaaf is zero");
       densaf = density_0;
       densam = densaf;
       densn = densaf;
@@ -2035,7 +2035,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
 
     // compute temperature at n+alpha_F or n+1 and check whether it is positive
     const double tempaf = funct_.Dot(escaaf);
-    if (tempaf < 0.0) dserror("Negative temperature in Fluid yoghurt material evaluation!");
+    if (tempaf < 0.0) FOUR_C_THROW("Negative temperature in Fluid yoghurt material evaluation!");
 
     // compute rate of strain at n+alpha_F or n+1
     double rateofstrain = -1.0e30;
@@ -2100,7 +2100,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
 
     // compute temperature at n+alpha_F or n+1 and check whether it is positive
     const double tempaf = funct_.Dot(escaaf);
-    if (tempaf < 0.0) dserror("Negative temperature in Fluid Sutherland material evaluation!");
+    if (tempaf < 0.0) FOUR_C_THROW("Negative temperature in Fluid Sutherland material evaluation!");
 
 
     // compute viscosity according to Sutherland law
@@ -2206,7 +2206,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
 
       if (not fldparatimint_->IsStationary())
       {
-        dserror("Genalpha is the only scheme implemented for weakly compressibility");
+        FOUR_C_THROW("Genalpha is the only scheme implemented for weakly compressibility");
       }
     }
   }
@@ -2249,7 +2249,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
 
       if (not fldparatimint_->IsStationary())
       {
-        dserror("Genalpha is the only scheme implemented for weakly compressibility");
+        FOUR_C_THROW("Genalpha is the only scheme implemented for weakly compressibility");
       }
     }
   }
@@ -2260,7 +2260,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     // compute temperature at n+alpha_F or n+1 and check whether it is positive
     const double tempaf = funct_.Dot(escaaf);
     if (tempaf < 0.0)
-      dserror("Negative temperature in Fluid temperature-dependent water evaluation!");
+      FOUR_C_THROW("Negative temperature in Fluid temperature-dependent water evaluation!");
 
     // compute temperature-dependent viscosity
     visc = actmat->ComputeViscosity(tempaf);
@@ -2310,7 +2310,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     // and check whether it is positive
     const double tempaf = actmat->ComputeTemperature(provaraf);
     if (tempaf < 0.0)
-      dserror("Negative temperature in Fluid Arrhenius progress-variable material evaluation!");
+      FOUR_C_THROW(
+          "Negative temperature in Fluid Arrhenius progress-variable material evaluation!");
 
     // compute viscosity according to Sutherland law
     visc = actmat->ComputeViscosity(tempaf);
@@ -2373,7 +2374,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     // and check whether it is positive
     const double tempaf = actmat->ComputeTemperature(provaraf);
     if (tempaf < 0.0)
-      dserror(
+      FOUR_C_THROW(
           "Negative temperature in Fluid Ferziger and Echekki progress-variable material "
           "evaluation!");
 
@@ -2449,7 +2450,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     // check stabilization parameter definition for permeable fluid
     if (not(fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
             fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
-      dserror("incorrect definition of stabilization parameter for Darcy or Darcy-Stokes problem");
+      FOUR_C_THROW(
+          "incorrect definition of stabilization parameter for Darcy or Darcy-Stokes problem");
   }
   else if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
@@ -2461,11 +2463,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     // Error messages
     if (numofmaterials > 2)
     {
-      dserror("More than two materials is currently not supported.");
+      FOUR_C_THROW("More than two materials is currently not supported.");
     }
     if (not fldpara_->MatGp())
     {
-      dserror(
+      FOUR_C_THROW(
           "For Two Phase Flow, the material should be evaluated at the Gauss-points. Switch "
           "EVALUATION_MAT to integration_point.");
     }
@@ -2502,7 +2504,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
         // different types of materials (to be added here)
         //------------------------------------------------
         default:
-          dserror("Only Newtonian fluids supported as input.");
+          FOUR_C_THROW("Only Newtonian fluids supported as input.");
           break;
       }
     }
@@ -2560,19 +2562,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     }
 
 
-    if (gamma_vector[0] != gamma_vector[1]) dserror("Surface tensions have to be equal");
+    if (gamma_vector[0] != gamma_vector[1]) FOUR_C_THROW("Surface tensions have to be equal");
 
     // Surface tension coefficient assigned.
     gamma = gamma_vector[0];
 
   }  // end else if m_matlist
   else
-    dserror("Material type is not supported");
+    FOUR_C_THROW("Material type is not supported");
 
   // check whether there is zero or negative (physical) viscosity
   // (expect for permeable fluid)
   if (visc < 1e-15 and not(material->MaterialType() == INPAR::MAT::m_permeable_fluid))
-    dserror("zero or negative (physical) diffusivity");
+    FOUR_C_THROW("zero or negative (physical) diffusivity");
 
   return;
 }  // FluidEleCalc::GetMaterialParams
@@ -3103,7 +3105,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
       {
         if (not(fldpara_->StabType() == INPAR::FLUID::stabtype_edgebased and
                 fldpara_->WhichTau() == INPAR::FLUID::tau_not_defined))
-          dserror("unknown definition for tau_M\n %i  ", fldpara_->WhichTau());
+          FOUR_C_THROW("unknown definition for tau_M\n %i  ", fldpara_->WhichTau());
 
         break;
       }
@@ -3335,7 +3337,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
       {
         if (not(fldpara_->StabType() == INPAR::FLUID::stabtype_edgebased and
                 fldpara_->WhichTau() == INPAR::FLUID::tau_not_defined))
-          dserror("unknown definition for tau_C\n %i  ", fldpara_->WhichTau());
+          FOUR_C_THROW("unknown definition for tau_C\n %i  ", fldpara_->WhichTau());
 
         break;
       }
@@ -3616,7 +3618,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcStabParameter(const doub
       break;
       default:
       {
-        dserror("Unknown definition of stabilization parameter for time-dependent formulation\n");
+        FOUR_C_THROW(
+            "Unknown definition of stabilization parameter for time-dependent formulation\n");
       }
       break;
     }  // Switch TauType
@@ -3635,7 +3638,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcCharEleLength(
     const double vol, const double vel_norm, double& h_u, double& h_p)
 {
   // check for potential 1-D computations
-  if (nsd_ == 1) dserror("Element length not implemented for 1-D computation!");
+  if (nsd_ == 1) FOUR_C_THROW("Element length not implemented for 1-D computation!");
 
   //---------------------------------------------------------------------
   // select from various definitions for characteristic element length
@@ -3694,7 +3697,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcCharEleLength(
     break;
 
     default:
-      dserror("unknown characteristic element length for tau_Mu\n");
+      FOUR_C_THROW("unknown characteristic element length for tau_Mu\n");
       break;
   }  // switch (charelelengthu_)
 
@@ -3753,7 +3756,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcCharEleLength(
     break;
 
     default:
-      dserror("unknown characteristic element length for tau_Mu and tau_C\n");
+      FOUR_C_THROW("unknown characteristic element length for tau_Mu and tau_C\n");
       break;
   }  // switch (charelelengthpc_)
 
@@ -3807,7 +3810,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
   // reconstruction of second derivative via projection or superconvergent patch recovery
   if (fldpara_->IsReconstructDer())
   {
-    if (is_higher_order_ele_ == false) dserror("this doesn't make sense");
+    if (is_higher_order_ele_ == false) FOUR_C_THROW("this doesn't make sense");
 
     // global second derivatives of evalaf (projected velgrad)
     // not symmetric!
@@ -3844,7 +3847,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
                              evelgradderxy(4, 2));
             break;
           default:
-            dserror("only 3d");
+            FOUR_C_THROW("only 3d");
             break;
         }
         // assemble each row of div epsilon(evelaf)
@@ -3872,7 +3875,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
             sum2 = 0.5 * (evelgradderxy(1, 0) + evelgradderxy(0, 1));
             break;
           default:
-            dserror("only 2d");
+            FOUR_C_THROW("only 2d");
             break;
         }
 
@@ -3881,7 +3884,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
       }
     }
     else
-      dserror("Epsilon(N) is not implemented for the 1D case");
+      FOUR_C_THROW("Epsilon(N) is not implemented for the 1D case");
   }
   else  // get second derivatives via shape functions
   {
@@ -3931,7 +3934,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
       }
     }
     else
-      dserror("Epsilon(N) is not implemented for the 1D case");
+      FOUR_C_THROW("Epsilon(N) is not implemented for the 1D case");
   }
 
   return;
@@ -3954,7 +3957,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocity(
     {
       // safety check
       if (fldparatimint_->AlphaF() != 1.0 or fldparatimint_->Gamma() != 1.0)
-        dserror(
+        FOUR_C_THROW(
             "Boussinesq approximation in combination with generalized-alpha time integration "
             "has only been tested for BDF2-equivalent time integration parameters! "
             "Feel free to remove this error at your own risk!");
@@ -4045,9 +4048,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocity(
   {
     // some checking
     if (fldparatimint_->IsStationary())
-      dserror("there is no time dependent subgrid scale closure for stationary problems\n");
+      FOUR_C_THROW("there is no time dependent subgrid scale closure for stationary problems\n");
     if (saccn == nullptr or sveln == nullptr or svelnp == nullptr)
-      dserror("no subscale array provided");
+      FOUR_C_THROW("no subscale array provided");
 
     // parameter definitions
     double alphaF = fldparatimint_->AlphaF();
@@ -4088,7 +4091,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocity(
     // integration
     if (!fldparatimint_->IsGenalpha())
     {
-      dserror("the time-dependent subgrid closure requires a genalpha time integration\n");
+      FOUR_C_THROW("the time-dependent subgrid closure requires a genalpha time integration\n");
     }
 
     /*         +-                                       -+
@@ -4929,7 +4932,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PressureProjectionFinalize(
   if (not(distype == CORE::FE::CellType::hex8 or distype == CORE::FE::CellType::tet4 or
           distype == CORE::FE::CellType::quad4 or distype == CORE::FE::CellType::tri3))
   {
-    dserror("Polynomial pressure projection only implemented for linear elements so far.");
+    FOUR_C_THROW("Polynomial pressure projection only implemented for linear elements so far.");
   }
 
   // compute difference of consistent and projection pressure mass matrices
@@ -5516,7 +5519,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ReacStab(
     reac_tau = fldpara_->ViscReaStabFac() * reacoeff_ * tau_(1);
   else
   {
-    dserror("Is this factor correct? Check for bugs!");
+    FOUR_C_THROW("Is this factor correct? Check for bugs!");
     reac_tau = fldpara_->ViscReaStabFac() * reacoeff_ * fldparatimint_->AlphaF() * fac3;
   }
 
@@ -6119,7 +6122,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateService(DRT::ELEMENTS
         }
       }
       else
-        dserror("%i D elements does not support calculation of dissipation", nsd_);
+        FOUR_C_THROW("%i D elements does not support calculation of dissipation", nsd_);
     }
     break;
     case FLD::integrate_shape:
@@ -6184,7 +6187,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateService(DRT::ELEMENTS
         }
       }  // end if (nsd == 3)
       else
-        dserror("action 'calc_turbulence_statistics' is a 3D specific action");
+        FOUR_C_THROW("action 'calc_turbulence_statistics' is a 3D specific action");
       return 0;
     }
     break;
@@ -6222,7 +6225,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateService(DRT::ELEMENTS
     }
     break;
     default:
-      dserror("Unknown type of action '%i' for Fluid EvaluateService()", act);
+      FOUR_C_THROW("Unknown type of action '%i' for Fluid EvaluateService()", act);
       break;
   }  // end of switch(act)
 
@@ -6781,7 +6784,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
           visc = actmat->Viscosity() / actmat->Density();
         }
         else
-          dserror("Material is not Newtonian Fluid");
+          FOUR_C_THROW("Material is not Newtonian Fluid");
 
         const double a = M_PI / 4.0;
         const double d = M_PI / 2.0;
@@ -6862,7 +6865,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
         dervel(2, 2) = ww.dx(2);
       }
       else
-        dserror("action 'calc_fluid_beltrami_error' is a 3D specific action");
+        FOUR_C_THROW("action 'calc_fluid_beltrami_error' is a 3D specific action");
     }
     break;
     case INPAR::FLUID::shear_flow:
@@ -6927,7 +6930,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
         u(1) = 0.0;
       }
       else
-        dserror("3D analytical solution is not implemented yet");
+        FOUR_C_THROW("3D analytical solution is not implemented yet");
     }
     break;
     case INPAR::FLUID::byfunct:
@@ -6948,7 +6951,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
         position[2] = xyzint(2);
       }
       else
-        dserror("invalid nsd %d", nsd_);
+        FOUR_C_THROW("invalid nsd %d", nsd_);
 
       if (nsd_ == 2)
       {
@@ -7051,7 +7054,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
         }
       }
       else
-        dserror("invalid dimension");
+        FOUR_C_THROW("invalid dimension");
     }
     break;
     case INPAR::FLUID::fsi_fluid_pusher:
@@ -7119,13 +7122,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
           }
           default:
           {
-            dserror("Unknown solution type.");
+            FOUR_C_THROW("Unknown solution type.");
             break;
           }
         }
       }
       else
-        dserror("Material is not a Newtonian Fluid");
+        FOUR_C_THROW("Material is not a Newtonian Fluid");
     }
     break;
     case INPAR::FLUID::channel_weakly_compressible:
@@ -7144,7 +7147,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
 
         if (actmat->MatParameter() != 1.0)
         {
-          dserror("The analytical solution is only valid for material parameter = 1");
+          FOUR_C_THROW("The analytical solution is only valid for material parameter = 1");
         }
 
         double x = xyzint(0);
@@ -7188,7 +7191,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
           dervel(1, 1) = dervel(1, 1) * mean_velocity_channel_exit * radius / length;
         }
         else
-          dserror("3D analytical solution is not implemented");
+          FOUR_C_THROW("3D analytical solution is not implemented");
       }
       else if (mat->MaterialType() == INPAR::MAT::m_fluid_linear_density_viscosity)
       {
@@ -7306,16 +7309,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
               reference_pressure;
         }
         else
-          dserror("3D analytical solution is not implemented");
+          FOUR_C_THROW("3D analytical solution is not implemented");
       }
       else
       {
-        dserror("The analytical solution is not implemented for this material");
+        FOUR_C_THROW("The analytical solution is not implemented for this material");
       }
     }
     break;
     default:
-      dserror("analytical solution is not defined");
+      FOUR_C_THROW("analytical solution is not defined");
       break;
   }
 }
@@ -7336,7 +7339,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ExtractValuesFromGlobalVecto
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);
 
-  if (matrix_state == Teuchos::null) dserror("Cannot get state vector %s", state.c_str());
+  if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
@@ -7374,7 +7377,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   //----------------------------------------------------------------------
   // get all nodal values
   // ---------------------------------------------------------------------
-  if (not fldparatimint_->IsGenalpha()) dserror("this routine supports only GenAlpha currently");
+  if (not fldparatimint_->IsGenalpha())
+    FOUR_C_THROW("this routine supports only GenAlpha currently");
   // call routine for calculation of body force in element nodes,
   // with pressure gradient prescribed as body force included for turbulent
   // channel flow and with scatra body force included for variable-density flow
@@ -7388,7 +7392,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   // if not available, the arrays for the subscale quantities have to be
   // resized and initialised to zero
   if (fldpara_->Tds() == INPAR::FLUID::subscales_time_dependent)
-    dserror("Time-dependent subgrid scales not supported");
+    FOUR_C_THROW("Time-dependent subgrid scales not supported");
 
   // get all general state vectors: velocity/pressure, scalar,
   // acceleration/scalar time derivative and history
@@ -7529,7 +7533,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   Teuchos::RCP<std::vector<double>> planecoords =
       params.get<Teuchos::RCP<std::vector<double>>>("planecoords_", Teuchos::null);
   if (planecoords == Teuchos::null)
-    dserror("planecoords is null, but need channel_flow_of_height_2\n");
+    FOUR_C_THROW("planecoords is null, but need channel_flow_of_height_2\n");
 
   // this will be the y-coordinate of a point in the element interior
   double center = 0.0;
@@ -7830,7 +7834,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
       // -> different for generalized-alpha and other time-integration schemes
       ComputeGalRHSContEq(eveln, escaaf, escaam, escadtam, ele->IsAle());
       if (not fldparatimint_->IsGenalpha())
-        dserror("Does ComputeGalRHSContEq() for ost really the right thing?");
+        FOUR_C_THROW("Does ComputeGalRHSContEq() for ost really the right thing?");
       // remark: I think the term theta*u^n+1*nabla T^n+1 is missing.
       //         Moreover, the resulting conres_old_ should be multiplied by theta (see
       //         monres_old_).
@@ -8011,7 +8015,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
       }
       if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
       {
-        dserror("Read warning before usage!");
+        FOUR_C_THROW("Read warning before usage!");
         // Warning: Here, we should use the deviatoric part of the strain-rate tensor.
         //          However, I think this is not done in the element Sysmat-routine.
         //          Hence, I skipped it here.
@@ -8441,7 +8445,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   }
   if (found == false)
   {
-    dserror("could not determine element layer");
+    FOUR_C_THROW("could not determine element layer");
   }
 
   // collect layer volume
@@ -8581,7 +8585,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FDcheck(
   // magnitude of dof perturbation
   const double epsilon = 1e-14;
 
-  if (fldparatimint_->IsGenalphaNP()) dserror("FD check not available for NP genalpha!!");
+  if (fldparatimint_->IsGenalphaNP()) FOUR_C_THROW("FD check not available for NP genalpha!!");
 
   // make a copy of all input parameters potentially modified by Sysmat
   // call --- they are not intended to be modified
@@ -8763,7 +8767,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InflowElement(DRT::Element* 
 
   // check whether all nodes have a unique inflow condition
   DRT::UTILS::FindElementConditions(ele, "TurbulentInflowSection", myinflowcond);
-  if (myinflowcond.size() > 1) dserror("More than one inflow condition on one node!");
+  if (myinflowcond.size() > 1) FOUR_C_THROW("More than one inflow condition on one node!");
 
   if (myinflowcond.size() == 1) is_inflow_ele_ = true;
 
@@ -8865,11 +8869,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
   // add terms associated to pressure dofs for weakly_compressible flows
   if (fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible)
   {
-    dserror("Evaluation of the mass matrix for pressure dofs");
+    FOUR_C_THROW("Evaluation of the mass matrix for pressure dofs");
     // check fluid material
     if (mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
     {
-      dserror(
+      FOUR_C_THROW(
           "The evaluation of the mass matrix for pressure dofs is implemented only for "
           "Murnaghan-Tait equation of state");
     }
@@ -8970,7 +8974,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   else if (discretization.Name() == "porofluid")
     fluiddynamicviscosity = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(currentmaterial)->Viscosity();
   else
-    dserror("no support for discretization guaranteed. check for valid material.");
+    FOUR_C_THROW("no support for discretization guaranteed. check for valid material.");
 
   // determine whether fluid mesh is deformable or not
   static int isALE = (GLOBAL::Problem::Instance()->ImmersedMethodParams().get<std::string>(
@@ -8992,8 +8996,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> state = discretization.GetState("velnp");
 
-#ifdef BACI_DEBUG
-  if (state == Teuchos::null) dserror("Cannot get state vector %s", "velnp");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", "velnp");
 #endif
 
   if (isALE)
@@ -9352,18 +9356,20 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
       immersedele->ConstructElementRCP(num_gp_fluid_bound);
 
       // DEBUG test
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (immersedele->GetRCPProjectedIntPointDivergence() == Teuchos::null)
-        dserror("construction of ProjectedIntPointDivergence failed");
+        FOUR_C_THROW("construction of ProjectedIntPointDivergence failed");
       if ((int)(immersedele->GetRCPProjectedIntPointDivergence()->size()) != num_gp_fluid_bound)
-        dserror("size of ProjectedIntPointDivergence should be equal numgp in cut element = %d",
+        FOUR_C_THROW(
+            "size of ProjectedIntPointDivergence should be equal numgp in cut element = %d",
             num_gp_fluid_bound);
 
       // DEBUG test
       if (immersedele->GetRCPIntPointHasProjectedDivergence() == Teuchos::null)
-        dserror("construction of IntPointHasProjectedDivergence failed");
+        FOUR_C_THROW("construction of IntPointHasProjectedDivergence failed");
       if ((int)(immersedele->GetRCPIntPointHasProjectedDivergence()->size()) != num_gp_fluid_bound)
-        dserror("size of IntPointHasProjectedDivergence should be equal numgp in cut element = %d",
+        FOUR_C_THROW(
+            "size of IntPointHasProjectedDivergence should be equal numgp in cut element = %d",
             num_gp_fluid_bound);
 #endif
     }  // these vectors only need to be constructed when fluid interaction is switched ON
@@ -9434,7 +9440,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
       }    // only if IsBoundaryImmersed
     }      // degree_gp_fluid_bound > 0
     else
-      dserror(
+      FOUR_C_THROW(
           "In case of fluid interaction a proper value for NUM_GP_FLUID_BOUND must be set in your "
           ".dat file.\n"
           "(valid parameters are 8, 64, 125, 343, 729 and 1000). Check also if you forgot to set "
@@ -9765,7 +9771,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolatePressureToPoint(
     // fill the local element vector with the global values
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, nullptr, &epre, "velnp");
 
-    if (elevec1.length() != 2) dserror("velnp is set, there must be a vel as well");
+    if (elevec1.length() != 2) FOUR_C_THROW("velnp is set, there must be a vel as well");
 
     elevec1[1] = funct_.Dot(epre);
   }
@@ -9871,7 +9877,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
   // --------------------------------------------------
   // velocity and pressure values (n+1)
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1,converged)");
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
+  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   // extract local values from the global vectors
   std::vector<double> mysol(lm.size());
@@ -9930,7 +9936,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
     {
       if (abs(edispnp(normdirect, inode)) > 1e-6)
       {
-        dserror("no sampling possible if homogeneous planes are not conserved\n");
+        FOUR_C_THROW("no sampling possible if homogeneous planes are not conserved\n");
       }
     }
   }
@@ -10063,7 +10069,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
     }
     else
     {
-      dserror("cannot determine orientation of plane normal in local coordinate system of element");
+      FOUR_C_THROW(
+          "cannot determine orientation of plane normal in local coordinate system of element");
     }
     std::vector<int> inplanedirect;
     {
@@ -10160,10 +10167,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
         // check for degenerated elements
         if (det <= 0.0)
         {
-          dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+          FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
         }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         // check whether this gausspoint is really inside the desired plane
         {
           double x[3];
@@ -10191,7 +10198,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
 
           if (abs(x[normdirect] - (*planes)[*id]) > 2e-9)
           {
-            dserror("Mixing up element cut planes during integration");
+            FOUR_C_THROW("Mixing up element cut planes during integration");
           }
         }
 #endif
@@ -10274,7 +10281,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
 
     if (nurbsdis == nullptr)
     {
-      dserror("we need a nurbs discretisation for nurbs elements\n");
+      FOUR_C_THROW("we need a nurbs discretisation for nurbs elements\n");
     }
 
     // get nurbs dis' element numbers
@@ -10298,7 +10305,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
     knots->ConvertEleGidToKnotIds(gid, npatch, ele_cart_id);
     if (npatch != 0)
     {
-      dserror("expected single patch nurbs problem for calculating means");
+      FOUR_C_THROW("expected single patch nurbs problem for calculating means");
     }
 
     bool zero_size = false;
@@ -10335,7 +10342,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
     // this is dangerous because we don't check anywhere, if the wall normal points in y direction.
     // please make this more general!
     // we don't have a test case for this routine either
-    dserror(
+    FOUR_C_THROW(
         "Warning: Nurbs channel statistics work only if the element wall normal points in y "
         "direction.");
 
@@ -10406,7 +10413,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
         // check for degenerated elements
         if (det <= 0.0)
         {
-          dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+          FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
         }
 
         // interpolated values at gausspoints
@@ -10466,7 +10473,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
   }
   else
   {
-    dserror("Unknown element type for mean value evaluation\n");
+    FOUR_C_THROW("Unknown element type for mean value evaluation\n");
   }
 
   return 0;
@@ -10577,7 +10584,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassFlowPeriodicHill(
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Do ALE specific updates if necessary
-  if (ele->IsAle()) dserror("no ale for periodic hill");
+  if (ele->IsAle()) FOUR_C_THROW("no ale for periodic hill");
 
   CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelnp, nullptr, "velnp");
@@ -10654,7 +10661,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcVelGradientEleCenter(
 {
   if (distype != CORE::FE::CellType::hex8 && distype != CORE::FE::CellType::tet4 &&
       distype != CORE::FE::CellType::quad4 && distype != CORE::FE::CellType::tri3)
-    dserror("this is currently only implemented for linear elements");
+    FOUR_C_THROW("this is currently only implemented for linear elements");
   // get node coordinates
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // Do ALE specific updates if necessary
@@ -11869,7 +11876,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
     // and check whether it is positive
     tempaf += sgsca;
     if (tempaf < 0.0)
-      dserror("Negative temperature in Fluid Sutherland material-update evaluation!");
+      FOUR_C_THROW("Negative temperature in Fluid Sutherland material-update evaluation!");
 
     // compute viscosity according to Sutherland law
     visc_ = actmat->ComputeViscosity(tempaf);
@@ -11958,7 +11965,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
 
       if (not fldparatimint_->IsStationary())
       {
-        dserror("Genalpha is the only scheme implemented for weakly compressibility");
+        FOUR_C_THROW("Genalpha is the only scheme implemented for weakly compressibility");
       }
     }
   }
@@ -11998,7 +12005,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
 
       if (not fldparatimint_->IsStationary())
       {
-        dserror("Genalpha is the only scheme implemented for weakly compressibility");
+        FOUR_C_THROW("Genalpha is the only scheme implemented for weakly compressibility");
       }
     }
   }
@@ -12016,7 +12023,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
     // and check whether it is positive
     const double tempaf = actmat->ComputeTemperature(provaraf);
     if (tempaf < 0.0)
-      dserror(
+      FOUR_C_THROW(
           "Negative temperature in Fluid Arrhenius progress-variable material-update evaluation!");
 
 
@@ -12073,7 +12080,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
     // and check whether it is positive
     const double tempaf = actmat->ComputeTemperature(provaraf);
     if (tempaf < 0.0)
-      dserror(
+      FOUR_C_THROW(
           "Negative temperature in Fluid Ferziger and Echekki progress-variable material-update "
           "evaluation!");
 
@@ -12127,7 +12134,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
 
     // compute temperature at n+alpha_F or n+1 and check whether it is positive
     const double tempaf = funct_.Dot(escaaf);
-    if (tempaf < 0.0) dserror("Negative temperature in Fluid yoghurt material-update evaluation!");
+    if (tempaf < 0.0)
+      FOUR_C_THROW("Negative temperature in Fluid yoghurt material-update evaluation!");
 
     // compute rate of strain at n+alpha_F or n+1
     double rateofstrain = -1.0e30;
@@ -12140,7 +12148,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
     diffus_ = actmat->ComputeDiffusivity();
   }
   else
-    dserror("Update of material parameters not required for this material type!");
+    FOUR_C_THROW("Update of material parameters not required for this material type!");
 
   return;
 }  // FluidEleCalc::UpdateMaterialParams
@@ -12708,7 +12716,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
           // GetMaterialParams(material,evelaf,epreaf,epream,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
           // would overwrite materials at the element center, hence BGp() should always be combined
           // with MatGp()
-          dserror(
+          FOUR_C_THROW(
               "evaluation of B and D at gauss-point should always be combined with evaluation "
               "material at gauss-point!");
         }
@@ -12743,7 +12751,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
         grad_fsscaaf_.Clear();
       }
 
-      if (isale) dserror("Multifractal subgrid-scales with ale not supported");
+      if (isale) FOUR_C_THROW("Multifractal subgrid-scales with ale not supported");
     }
     else
     {
@@ -12881,7 +12889,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
           if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
               fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
               fldpara_->TurbModAction() == INPAR::FLUID::vreman)
-            dserror("No material update in combination with smagorinsky model!");
+            FOUR_C_THROW("No material update in combination with smagorinsky model!");
 
           if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
             UpdateMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
@@ -13075,7 +13083,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
       else if (nsd_ == 2)
         LinMeshMotion_2D(emesh, evelaf, press, fldparatimint_->TimeFac(), timefacfac);
       else
-        dserror("Linearization of the mesh motion is not available in 1D");
+        FOUR_C_THROW("Linearization of the mesh motion is not available in 1D");
     }
   }
   //------------------------------------------------------------------------
@@ -13226,7 +13234,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
   // reconstruction of second derivative via projection or superconvergent patch recovery
   if (fldpara_->IsReconstructDer())
   {
-    if (is_higher_order_ele_ == false) dserror("this doesn't make sense");
+    if (is_higher_order_ele_ == false) FOUR_C_THROW("this doesn't make sense");
 
     // global second derivatives of evalaf (projected velgrad)
     // not symmetric!
@@ -13292,7 +13300,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
       }
     }
     else
-      dserror("Epsilon(N) is not implemented for the 1D case");
+      FOUR_C_THROW("Epsilon(N) is not implemented for the 1D case");
 
     //*VELN*
     // CORE::LINALG::Matrix<nsd_*nsd_,nsd_> evelngradderxy;
@@ -13357,7 +13365,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
       }
     }
     else
-      dserror("Epsilon(N) is not implemented for the 1D case");
+      FOUR_C_THROW("Epsilon(N) is not implemented for the 1D case");
   }
   else
   {
@@ -13409,7 +13417,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
       }
     }
     else
-      dserror("Epsilon(N) is not implemented for the 1D case");
+      FOUR_C_THROW("Epsilon(N) is not implemented for the 1D case");
   }
 
   return;
@@ -13428,7 +13436,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocityO
   if (fldparatimint_->IsGenalpha())
   {
     if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
-      dserror(
+      FOUR_C_THROW(
           "The combination of generalized-alpha time integration and a Boussinesq approximation "
           "has not been implemented yet!");
 
@@ -13577,9 +13585,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocityO
   {
     // some checking
     if (fldparatimint_->IsStationary())
-      dserror("there is no time dependent subgrid scale closure for stationary problems\n");
+      FOUR_C_THROW("there is no time dependent subgrid scale closure for stationary problems\n");
     if (saccn == nullptr or sveln == nullptr or svelnp == nullptr)
-      dserror("no subscale array provided");
+      FOUR_C_THROW("no subscale array provided");
 
     // parameter definitions
     double alphaF = fldparatimint_->AlphaF();
@@ -13620,7 +13628,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocityO
     // integration
     if (!fldparatimint_->IsGenalpha())
     {
-      dserror("the time-dependent subgrid closure requires a genalpha time integration\n");
+      FOUR_C_THROW("the time-dependent subgrid closure requires a genalpha time integration\n");
     }
 
     /*         +-                                       -+
@@ -14712,9 +14720,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispVelALEOSTNew(
     case INPAR::FLUID::oseen:
     case INPAR::FLUID::stokes:
     {
-      dserror(
+      FOUR_C_THROW(
           "ALE with Oseen or Stokes seems to be a tricky combination. Think deep before removing "
-          "dserror!");
+          "FOUR_C_THROW!");
       break;
     }
     default:
@@ -14748,7 +14756,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetConvectiveVelintN(const b
     }
     case INPAR::FLUID::oseen:
     {
-      dserror("not supported for new ost up to now");
+      FOUR_C_THROW("not supported for new ost up to now");
       break;
     }
     case INPAR::FLUID::stokes:
@@ -14757,7 +14765,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetConvectiveVelintN(const b
       break;
     }
     default:
-      dserror(
+      FOUR_C_THROW(
           "Physical type not implemented here. For Poro-problems see derived class "
           "FluidEleCalcPoro.");
       break;
@@ -14782,7 +14790,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetTurbulenceParams(
     double CsDeltaSq, double CiDeltaSq)
 {
   if (fldpara_->TurbModAction() != INPAR::FLUID::no_model and nsd_ == 2)
-    dserror("turbulence and 2D flow does not make any sense");
+    FOUR_C_THROW("turbulence and 2D flow does not make any sense");
 
   // classical smagorinsky does only have constant parameter
   if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
@@ -14814,7 +14822,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetTurbulenceParams(
     }
     if (found == false)
     {
-      dserror("could not determine element layer");
+      FOUR_C_THROW("could not determine element layer");
     }
   }
   // --------------------------------------------------
@@ -14890,7 +14898,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetTurbulenceParams(
           }
           if (found == false)
           {
-            dserror("could not determine element layer");
+            FOUR_C_THROW("could not determine element layer");
           }
         }
         else if (homdir == "x" or homdir == "y" or homdir == "z")
@@ -14933,7 +14941,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetTurbulenceParams(
           }
           if (dir1found == false)
           {
-            dserror("could not determine element layer");
+            FOUR_C_THROW("could not determine element layer");
           }
           for (n2layer = 0; n2layer < (int)(*dir2coords).size() - 1;)
           {
@@ -14946,14 +14954,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetTurbulenceParams(
           }
           if (dir2found == false)
           {
-            dserror("could not determine element layer");
+            FOUR_C_THROW("could not determine element layer");
           }
 
           const int numdir1layer = (int)(*dir1coords).size() - 1;
           nlayer = numdir1layer * n2layer + n1layer;
         }
         else
-          dserror("Homogeneous directions not supported!");
+          FOUR_C_THROW("Homogeneous directions not supported!");
 
         // Cs_delta_sq is set by the averaged quantities
         if ((*averaged_MijMij)[nlayer] > 1E-16)
@@ -15212,7 +15220,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcSubgrVisc(
       }
     }
     else
-      dserror("Vreman model only for nsd_==3");
+      FOUR_C_THROW("Vreman model only for nsd_==3");
   }
   else
   {
@@ -15275,7 +15283,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcSubgrVisc(
       if (fldpara_->IncludeCi() and is_inflow_ele_ == false)
       {
         if (fldpara_->Ci() < 0.0)
-          dserror("Ci expected!");
+          FOUR_C_THROW("Ci expected!");
         else
         {
           // get characteristic element length for Smagorinsky model for 2D and 3D
@@ -15441,7 +15449,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
       }
       case INPAR::FLUID::metric_tensor:
       {
-        if (nsd_ != 3) dserror("Turbulence is 3d!");
+        if (nsd_ != 3) FOUR_C_THROW("Turbulence is 3d!");
         /*          +-           -+   +-           -+   +-           -+
                     |             |   |             |   |             |
                     |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
@@ -15485,7 +15493,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
       }
       case INPAR::FLUID::gradient_based:
       {
-        if (nsd_ != 3) dserror("Turbulence is 3d!");
+        if (nsd_ != 3) FOUR_C_THROW("Turbulence is 3d!");
         CORE::LINALG::Matrix<nsd_, 1> normed_velgrad;
 
         for (int rr = 0; rr < nsd_; ++rr)
@@ -15539,7 +15547,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
         break;
       }
       default:
-        dserror("Unknown length");
+        FOUR_C_THROW("Unknown length");
     }
 
 // alternative length for comparison, currently not used
@@ -15624,7 +15632,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
     }
 #endif
 
-    if (hk == 1.0e+10) dserror("Something went wrong!");
+    if (hk == 1.0e+10) FOUR_C_THROW("Something went wrong!");
 
     switch (fldpara_->RefVel())
     {
@@ -15646,9 +15654,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
         break;
       }
       default:
-        dserror("Unknown velocity!");
+        FOUR_C_THROW("Unknown velocity!");
     }
-    if (Re_ele < 0.0) dserror("Something went wrong!");
+    if (Re_ele < 0.0) FOUR_C_THROW("Something went wrong!");
 
     // clip Re to prevent negative N
     if (Re_ele < 1.0) Re_ele = 1.0;
@@ -15667,7 +15675,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
     //  N =log | ----------- |
     //        2|  lambda_nu  |
     double N_re = log(scale_ratio) / log(2.0);
-    if (N_re < 0.0) dserror("Something went wrong when calculating N!");
+    if (N_re < 0.0) FOUR_C_THROW("Something went wrong when calculating N!");
 
     // store calculated N
     for (int i = 0; i < nsd_; i++) Nvel[i] = N_re;
@@ -15685,11 +15693,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
       strainnorm /= sqrt(2.0);  // cf. Burton & Dahm 2005
     }
     // and reference length
-    if (not fldpara_->CalcN()) dserror("hk not yet calculated");  // solution see scatra
+    if (not fldpara_->CalcN()) FOUR_C_THROW("hk not yet calculated");  // solution see scatra
 
     // get Re from strain rate
     double Re_ele_str = strainnorm * hk * hk * densaf_ / visc_;
-    if (Re_ele_str < 0.0) dserror("Something went wrong!");
+    if (Re_ele_str < 0.0) FOUR_C_THROW("Something went wrong!");
     // ensure positive values
     if (Re_ele_str < 1.0) Re_ele_str = 1.0;
 
@@ -15749,17 +15757,17 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
       //  N =log | ----------- |
       //        2|  lambda_nu  |
       Nphi = log(scale_ratio_phi) / log(2.0);
-      if (Nphi < 0.0) dserror("Something went wrong when calculating N!");
+      if (Nphi < 0.0) FOUR_C_THROW("Something went wrong when calculating N!");
     }
     else
-      dserror("Multifractal subgrid-scales for loma with calculation of N, only!");
+      FOUR_C_THROW("Multifractal subgrid-scales for loma with calculation of N, only!");
 
     // call function to compute coefficient D
     if (not fldpara_->NearWallLimitScatra())
       CalcMultiFracSubgridScaCoef(Csgs_phi, alpha, Pr, Pr_limit, Nvel, Nphi, D_mfs);
     else
     {
-      if (not fldpara_->NearWallLimit()) dserror("Near-wall limit expected!");
+      if (not fldpara_->NearWallLimit()) FOUR_C_THROW("Near-wall limit expected!");
 
       CalcMultiFracSubgridScaCoef(Csgs_phi * Cai_phi, alpha, Pr, Pr_limit, Nvel, Nphi, D_mfs);
     }
@@ -15833,12 +15841,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMultiFracSubgridScaCoef(
     gamma = 4.0 / 3.0;
   else  // Pr >> 1
   {
-    dserror("Loma with Pr>>1?");
+    FOUR_C_THROW("Loma with Pr>>1?");
     if (Nvel[0] < 1.0)  // Pr >> 1 and fluid fully resolved, i.e., case 2 (ii)
       gamma = 2.0;
     else  // Pr >> 1 and fluid not fully resolved, i.e., case 2 (i)
     {
-      if (Nvel[0] > Nphi) dserror("Nvel < Nphi expected!");
+      if (Nvel[0] > Nphi) FOUR_C_THROW("Nvel < Nphi expected!");
       // here different options are possible
       // 1) we assume k^(-5/3) for the complete range
       gamma = 4.0 / 3.0;
@@ -15862,7 +15870,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMultiFracSubgridScaCoef(
             sqrt((pow(2.0, gamma * Nphi) - 1.0));
   else
   {
-    dserror("Special option for passive scalars only!");
+    FOUR_C_THROW("Special option for passive scalars only!");
     //    double gamma1 = 4.0/3.0;
     //    double gamma2 = 2.0;
     //    kappa_phi = 1.0/(1.0-pow(alpha,-gamma1));
@@ -15930,7 +15938,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FineScaleSubGridViscosityTer
     }
   }
   else
-    dserror("fine-scale subgrid viscosity not implemented for 1-D problems!");
+    FOUR_C_THROW("fine-scale subgrid viscosity not implemented for 1-D problems!");
 
   return;
 }
@@ -15995,15 +16003,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesCross(
 
         if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
         {
-          dserror("Conservative formulation not supported for loma!");
+          FOUR_C_THROW("Conservative formulation not supported for loma!");
         }
         if (gridvelint_.Norm2() > 1.0e-9)
-          dserror("Conservative formulation not supported with ale!");
+          FOUR_C_THROW("Conservative formulation not supported with ale!");
       }
     }
   }
   else
-    dserror("Multifractal subgrid-scale modeling model for 3D-problems only!");
+    FOUR_C_THROW("Multifractal subgrid-scale modeling model for 3D-problems only!");
 
   //--------------------------------------------------------------------
   // lhs contribution
@@ -16015,7 +16023,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesCross(
 
   if (beta > 1.0e-9)
   {
-    if (gridvelint_.Norm2() > 1.0e-9) dserror("left hand side terms of MFS not supported with ale");
+    if (gridvelint_.Norm2() > 1.0e-9)
+      FOUR_C_THROW("left hand side terms of MFS not supported with ale");
     CORE::LINALG::Matrix<nen_, 1> mfconv_c(true);
     mfconv_c.MultiplyTN(derxy_, mffsvelint_);
     // convective part
@@ -16077,7 +16086,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesCross(
 
               if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
               {
-                dserror("Conservative formulation not supported for loma!");
+                FOUR_C_THROW("Conservative formulation not supported for loma!");
               }
             }
           }
@@ -16143,13 +16152,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesReynold
 
         if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
         {
-          dserror("Conservative formulation not supported for loma!");
+          FOUR_C_THROW("Conservative formulation not supported for loma!");
         }
       }
     }
   }
   else
-    dserror("Multifractal subgrid-scale modeling for 3D-problems only!");
+    FOUR_C_THROW("Multifractal subgrid-scale modeling for 3D-problems only!");
 
   //--------------------------------------------------------------------
   // lhs contribution
@@ -16170,7 +16179,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesConsist
       fldpara_->ConsistentMFSResidual())
   {
     if (not fldparatimint_->IsGenalpha())
-      dserror(
+      FOUR_C_THROW(
           "please check the implementation of the consistent residual for mfs for your "
           "time-integrator!");
 
@@ -16261,7 +16270,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::StoreModelParametersForOutpu
             (*(turbmodelparams.get<Teuchos::RCP<std::vector<double>>>("local_Cs_sum")))[nlayer] +=
                 fldpara_->Cs() * fldpara_->VanDriestdamping();
           else
-            dserror("Dynamic Smagorinsky or Smagorisnsky with van Driest damping expected!");
+            FOUR_C_THROW("Dynamic Smagorinsky or Smagorisnsky with van Driest damping expected!");
           (*(turbmodelparams.get<Teuchos::RCP<std::vector<double>>>(
               "local_Cs_delta_sq_sum")))[nlayer] += Cs_delta_sq;
           (*(turbmodelparams.get<Teuchos::RCP<std::vector<double>>>(

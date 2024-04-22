@@ -57,7 +57,8 @@ void FLD::FluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& 
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1, fluiddis_->Name().c_str());
+    FOUR_C_THROW(
+        "Node %d does not belong to discretization %s", node + 1, fluiddis_->Name().c_str());
   }
   else
   {
@@ -82,13 +83,13 @@ void FLD::FluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& 
         result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0, actnode, 1))];
       else if (position == "velz")
       {
-        if (numdim == 2) dserror("Cannot test result for velz in 2D case.");
+        if (numdim == 2) FOUR_C_THROW("Cannot test result for velz in 2D case.");
         result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0, actnode, 2))];
       }
       else if (position == "pressure")
       {
         if (fluiddis_->NumDof(0, actnode) < (numdim + 1))
-          dserror("too few dofs at node %d for pressure testing", actnode->Id());
+          FOUR_C_THROW("too few dofs at node %d for pressure testing", actnode->Id());
         result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0, actnode, numdim))];
       }
       else if (position == "tractionx")
@@ -97,7 +98,7 @@ void FLD::FluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& 
         result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(0, actnode, 1))];
       else if (position == "tractionz")
       {
-        if (numdim == 2) dserror("Cannot test result for tractionz in 2D case.");
+        if (numdim == 2) FOUR_C_THROW("Cannot test result for tractionz in 2D case.");
         result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(0, actnode, 2))];
       }
       else if (position == "wssx")
@@ -106,7 +107,7 @@ void FLD::FluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& 
         result = (*mywss_)[(mywss_->Map()).LID(fluiddis_->Dof(0, actnode, 1))];
       else if (position == "wssz")
       {
-        if (numdim == 2) dserror("Cannot test result for wssz in 2D case.");
+        if (numdim == 2) FOUR_C_THROW("Cannot test result for wssz in 2D case.");
         result = (*mywss_)[(mywss_->Map()).LID(fluiddis_->Dof(0, actnode, 2))];
       }
       else if (position == "L2errvel")
@@ -124,7 +125,7 @@ void FLD::FluidResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& 
       else if (position == "L2errmom")
         result = (*myerror_)[2];
       else
-        dserror("Quantity '%s' not supported in fluid testing", position.c_str());
+        FOUR_C_THROW("Quantity '%s' not supported in fluid testing", position.c_str());
 
       nerr += CompareValues(result, "NODE", res);
       test_count++;

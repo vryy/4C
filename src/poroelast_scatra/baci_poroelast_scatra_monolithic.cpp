@@ -226,7 +226,7 @@ void POROELASTSCATRA::PoroScatraMono::Solve()
     // check whether we have a sanely filled tangent matrix
     if (not systemmatrix_->Filled())
     {
-      dserror("Effective tangent matrix must be filled here");
+      FOUR_C_THROW("Effective tangent matrix must be filled here");
     }
 
     // create full monolithic rhs vector
@@ -271,7 +271,7 @@ void POROELASTSCATRA::PoroScatraMono::Solve()
   }
   else if (iter_ >= itermax_)
   {
-    dserror("Newton unconverged in %d iterations", iter_);
+    FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
   }
 
 }  // Solve()
@@ -346,9 +346,9 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystem()
     vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra, false));
   }
 
-  if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No poro structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No poro fluid equation. Panic.");
-  if (vecSpaces[2]->NumGlobalElements() == 0) dserror("No scatra equation. Panic.");
+  if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No poro fluid equation. Panic.");
+  if (vecSpaces[2]->NumGlobalElements() == 0) FOUR_C_THROW("No scatra equation. Panic.");
 
   // build dof row map of monolithic system
   SetDofRowMaps(vecSpaces);
@@ -362,7 +362,7 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystem()
 
     // Finally, create the global FSI Dirichlet map extractor
     dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
-    if (dbcmaps_ == Teuchos::null) dserror("Creation of Dirichlet map extractor failed.");
+    if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Creation of Dirichlet map extractor failed.");
   }
 
   // initialize Poroscatra-systemmatrix_
@@ -562,7 +562,7 @@ bool POROELASTSCATRA::PoroScatraMono::SetupSolver()
   const int linsolvernumber = poroscatradyn.get<int>("LINEAR_SOLVER");
   // check if the poroelasticity solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for scalar transport in porous media. Please set LINEAR_SOLVER "
         "in POROSCATRA CONTROL to a valid number!");
   const Teuchos::ParameterList& solverparams =
@@ -579,7 +579,7 @@ bool POROELASTSCATRA::PoroScatraMono::SetupSolver()
   else
     // create a linear solver
     // CreateLinearSolver();
-    dserror("no implicit solver supported yet!");
+    FOUR_C_THROW("no implicit solver supported yet!");
 
   // Get the parameters for the Newton iteration
   itermax_ = poroscatradyn.get<int>("ITEMAX");
@@ -635,7 +635,7 @@ bool POROELASTSCATRA::PoroScatraMono::Converged()
       );
       break;
     default:
-      dserror("Cannot check for convergence of residual values!");
+      FOUR_C_THROW("Cannot check for convergence of residual values!");
       break;
   }
 
@@ -652,7 +652,7 @@ bool POROELASTSCATRA::PoroScatraMono::Converged()
       );
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }
 
@@ -667,7 +667,7 @@ bool POROELASTSCATRA::PoroScatraMono::Converged()
       conv = convinc or convfres;
       break;
     default:
-      dserror("Something went terribly wrong with binary operator!");
+      FOUR_C_THROW("Something went terribly wrong with binary operator!");
       break;
   }
 
@@ -727,7 +727,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterHeader(FILE* ofile)
       //  case INPAR::POROELASTSCATRA::convnorm_rel_singlefields:
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -744,7 +744,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterHeader(FILE* ofile)
       // case INPAR::POROELASTSCATRA::convnorm_rel_singlefields:
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -767,7 +767,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterHeader(FILE* ofile)
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_scalar_ << ")";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -789,7 +789,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterHeader(FILE* ofile)
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_scalar_ << ")";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -800,7 +800,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterHeader(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == nullptr) dserror("no ofile available");
+  if (ofile == nullptr) FOUR_C_THROW("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -835,7 +835,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterText(FILE* ofile)
     case INPAR::POROELAST::convnorm_abs_singlefields:
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
   // increments
@@ -847,7 +847,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterText(FILE* ofile)
     case INPAR::POROELAST::convnorm_abs_singlefields:
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -865,7 +865,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterText(FILE* ofile)
     case INPAR::POROELAST::convnorm_abs_global:
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -882,7 +882,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterText(FILE* ofile)
     case INPAR::POROELAST::convnorm_abs_global:
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -893,7 +893,7 @@ void POROELASTSCATRA::PoroScatraMono::PrintNewtonIterText(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == nullptr) dserror("no ofile available");
+  if (ofile == nullptr) FOUR_C_THROW("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -1163,7 +1163,7 @@ void POROELASTSCATRA::PoroScatraMono::EvaluateODBlockMatScatra()
   // StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
 
   ScaTraField()->Discretization()->ClearState();
-  // dserror("stop");
+  // FOUR_C_THROW("stop");
   //************************************************************************************
   //************************************************************************************
 
@@ -1454,7 +1454,7 @@ void POROELASTSCATRA::PoroScatraMono::FDCheck()
     std::cout << "******************finite difference check done***************\n\n" << std::endl;
   }
   else
-    dserror("PoroFDCheck failed");
+    FOUR_C_THROW("PoroFDCheck failed");
 
   return;
 }

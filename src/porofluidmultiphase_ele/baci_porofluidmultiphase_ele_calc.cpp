@@ -161,7 +161,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(DRT::Elem
     }
     default:
     {
-      dserror("Not acting on this action. Forgot implementation?");
+      FOUR_C_THROW("Not acting on this action. Forgot implementation?");
       break;
     }
   }  // switch(action)
@@ -495,11 +495,12 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(DRT::Element* 
   Teuchos::RCP<MAT::Material> mat = ele->Material();
   if (mat->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
       mat->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-    dserror("PoroFluidMultiPhase element got unsupported material type %d", mat->MaterialType());
+    FOUR_C_THROW(
+        "PoroFluidMultiPhase element got unsupported material type %d", mat->MaterialType());
 
   Teuchos::RCP<MAT::FluidPoroMultiPhase> actmat =
       Teuchos::rcp_static_cast<MAT::FluidPoroMultiPhase>(mat);
-  if (actmat == Teuchos::null) dserror("cast failed");
+  if (actmat == Teuchos::null) FOUR_C_THROW("cast failed");
   numfluidphases_ = actmat->NumFluidPhases();
 
   // Note:
@@ -555,7 +556,8 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
   det_ = EvalShapeFuncAndDerivsInParameterSpace();
 
   if (det_ < 1E-16)
-    dserror("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", ele_->Id(), det_);
+    FOUR_C_THROW(
+        "GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", ele_->Id(), det_);
 
   // compute global spatial derivatives
   derxy_.Multiply(xij_, deriv_);
@@ -643,7 +645,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeJacobianAtNode(c
   det_ = EvalShapeFuncAndDerivsInParameterSpace();
 
   if (det_ < 1E-16)
-    dserror("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", ele_->Id(), det_);
+    FOUR_C_THROW(
+        "GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", ele_->Id(), det_);
 
   // compute global spatial derivatives
   derxy_.Multiply(xij_, deriv_);

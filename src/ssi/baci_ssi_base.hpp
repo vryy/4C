@@ -254,13 +254,13 @@ namespace SSI
     //! check if \ref Setup() was called
     void CheckIsSetup() const
     {
-      if (not IsSetup()) dserror("Setup() was not called.");
+      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
     }
 
     //! check if \ref Init() was called
     void CheckIsInit() const
     {
-      if (not IsInit()) dserror("Init(...) was not called.");
+      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
     }
 
     //! copy modified time step from scatra to scatra manifold field

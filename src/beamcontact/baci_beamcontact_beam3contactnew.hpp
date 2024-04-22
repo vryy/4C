@@ -255,7 +255,7 @@ namespace CONTACT
     {
       if (firsttimestep_)
       {
-        dserror(
+        FOUR_C_THROW(
             "Vector normal_old_requested but not available in the first time step the pair has "
             "been found: Choose larger search radius!!!");
       }

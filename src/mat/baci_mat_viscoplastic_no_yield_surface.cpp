@@ -130,7 +130,7 @@ void MAT::ViscoPlasticNoYieldSurface::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = dynamic_cast<MAT::PAR::ViscoPlasticNoYieldSurface*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -143,7 +143,8 @@ void MAT::ViscoPlasticNoYieldSurface::Unpack(const std::vector<char>& data)
   current_flowres_isotropic_.resize(last_flowres_isotropic_.size(), 0.0);
   current_plastic_defgrd_inverse_.resize(last_plastic_defgrd_inverse_.size());
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*---------------------------------------------------------------------*
@@ -561,7 +562,7 @@ void MAT::ViscoPlasticNoYieldSurface::LocalNewtonLoop(
 
     // Check if maximum iteration is reached
     if (iter > max_iter)
-      dserror("Local Newton Raphson in ViscoPlasticNoYieldSurface material not converged");
+      FOUR_C_THROW("Local Newton Raphson in ViscoPlasticNoYieldSurface material not converged");
 
     // calculate linearization
     J = CalculateLinearization(x(0), x(1), terms);

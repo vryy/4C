@@ -96,14 +96,14 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
     if (!nstet) continue;
     const double* x = nstet->MidX();
     std::vector<int> dofs = dis.Dof(0, ele);
-#ifdef BACI_DEBUG
-    if (dofs.size() != 3) dserror("Wrong number of dofs");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    if (dofs.size() != 3) FOUR_C_THROW("Wrong number of dofs");
 #endif
     for (unsigned j = 0; j < dofs.size(); ++j)
     {
       const int dof = dofs[j];
       const int lid = rowmap->LID(dof);
-      if (lid < 0) dserror("Cannot find element dof in dofrowmap");
+      if (lid < 0) FOUR_C_THROW("Cannot find element dof in dofrowmap");
       switch (j)
       {
         case 0:
@@ -131,7 +131,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
           mode[5][lid] = 0.0;
           break;
         default:
-          dserror("Only dofs 0 - 5 supported");
+          FOUR_C_THROW("Only dofs 0 - 5 supported");
           break;
       }  // switch (j)
     }
@@ -139,19 +139,19 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
   */
 
   if (numdof != 3)
-    dserror(
+    FOUR_C_THROW(
         "The computation of the solid nullspace in three dimensions requires three DOFs"
         "per solid node, however the current node carries %d DOFs.",
         numdof);
 
   if (dimnsp != 6)
-    dserror(
+    FOUR_C_THROW(
         "The computation of the solid nullspace in three dimensions requires six nullspace"
         "vectors per node, however the current node carries %d vectors.",
         dimnsp);
 
   DRT::ELEMENTS::NStet5* nstet = dynamic_cast<DRT::ELEMENTS::NStet5*>(node.Elements()[0]);
-  if (!nstet) dserror("Cannot cast to NStet5");
+  if (!nstet) FOUR_C_THROW("Cannot cast to NStet5");
   const double* x = nstet->MidX();
 
   CORE::LINALG::SerialDenseMatrix nullspace(numdof, dimnsp);
@@ -330,7 +330,7 @@ void DRT::ELEMENTS::NStet5::Unpack(const std::vector<char>& data)
   }
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -425,7 +425,7 @@ void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(std::map<int, DRT::ELEMENTS:
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::NStet5*>(dis.lColElement(i));
-    if (!actele) dserror("cast to NStet5* failed");
+    if (!actele) FOUR_C_THROW("cast to NStet5* failed");
 
     // init the element
     actele->InitElement();
@@ -532,7 +532,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
                 break;
               }
           }
-          if ((int)subele.size() != 3) dserror("Node not attached to exactly 3 subelements");
+          if ((int)subele.size() != 3) FOUR_C_THROW("Node not attached to exactly 3 subelements");
 
           masterele[ele->Id()] = subele;
 
@@ -540,9 +540,9 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
           break;
         }
       }
-      if (!foundit) dserror("Weired, this adjele seems not attached to me");
+      if (!foundit) FOUR_C_THROW("Weired, this adjele seems not attached to me");
     }  // for (unsigned j=0; j<myadjele.size(); ++j)
-    if (masterele.size() != myadjele.size()) dserror("subelement connectivity wrong");
+    if (masterele.size() != myadjele.size()) FOUR_C_THROW("subelement connectivity wrong");
 
     adjsubele[nodeidL] = masterele;
 
@@ -572,7 +572,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
             for (int dof : dofs) elelm.push_back(dof);
           }
         }
-        if ((int)elelm.size() != 12) dserror("Subelement does not have 12 dofs");
+        if ((int)elelm.size() != 12) FOUR_C_THROW("Subelement does not have 12 dofs");
         lmlm[j][k].resize(12);
         for (int l = 0; l < 12; ++l)
         {

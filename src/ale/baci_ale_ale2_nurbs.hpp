@@ -112,7 +112,7 @@ namespace DRT
           }
           else
           {
-            dserror("Could not determine number of lines");
+            FOUR_C_THROW("Could not determine number of lines");
             return -1;
           }
         }

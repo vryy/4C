@@ -401,7 +401,7 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd, nen>::CreateEvaluator
     }
     default:
     {
-      dserror("unknown action for evaluation class!");
+      FOUR_C_THROW("unknown action for evaluation class!");
       break;
     }
   }  // switch(action)
@@ -587,7 +587,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::CalcDivVelODMes
     }
   }
   else
-    dserror("shapederivatives not implemented for 1D!");
+    FOUR_C_THROW("shapederivatives not implemented for 1D!");
 
   return;
 }
@@ -811,7 +811,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBase<nsd, nen>::CalcDiffODMesh(
     }
   }
   else
-    dserror("shapederivatives not implemented for 1D!");
+    FOUR_C_THROW("shapederivatives not implemented for 1D!");
 
   return;
 }
@@ -1129,7 +1129,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd, nen>::EvaluateMat
     const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, bool inittimederiv)
 {
-  dserror("Biot stabilization is still missing");
+  FOUR_C_THROW("Biot stabilization is still missing");
   return;
 }
 
@@ -1145,7 +1145,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd, nen>::EvaluateVec
     const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
     double fac, bool inittimederiv)
 {
-  dserror("Biot stabilization is still missing");
+  FOUR_C_THROW("Biot stabilization is still missing");
 
   return;
 }
@@ -1163,7 +1163,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,
     const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
     double fac, double det)
 {
-  dserror("Biot stabilization is still missing");
+  FOUR_C_THROW("Biot stabilization is still missing");
   return;
 }
 
@@ -2591,7 +2591,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPressureAndSaturation<nsd,
     }
   }
   else
-    dserror("wrong value for curphase: %i", curphase);
+    FOUR_C_THROW("wrong value for curphase: %i", curphase);
 };
 
 /*----------------------------------------------------------------------*
@@ -2984,7 +2984,7 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(
   const auto& funct =
       GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(functnum);
   if (funct.NumberComponents() != 1)
-    dserror("only one component allowed for domain integral functions");
+    FOUR_C_THROW("only one component allowed for domain integral functions");
   return funct;
 };
 
@@ -3303,7 +3303,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorPhaseVelocities<nsd,
     }
   }
   else
-    dserror("Invalid phase index for current phase: %i", curphase);
+    FOUR_C_THROW("Invalid phase index for current phase: %i", curphase);
 }
 
 /*----------------------------------------------------------------------*
@@ -4316,7 +4316,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracDivVel<nsd,
       }
     }
     else
-      dserror("shapederivatives not implemented for 1D!");
+      FOUR_C_THROW("shapederivatives not implemented for 1D!");
   }
   return;
 }
@@ -4760,7 +4760,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                       MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid)
                   {
                     if (phasemanager.ScalarToPhase(iscal).phaseID > phasemanager.NumFluidPhases())
-                      dserror("Wrong PhaseID");
+                      FOUR_C_THROW("Wrong PhaseID");
                     // 1) saturation deriv
                     // 2) porosity deriv
                     mymat(fvi, fui) +=
@@ -4779,7 +4779,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                     // derivative of solid phase volume fraction w.r.t. all fluid phases = 0
                     break;
                   else
-                    dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
+                    FOUR_C_THROW(
+                        "AddScalarDependentFlux only possible for species in fluid or solid!");
                 }
                 // derivative w.r.t. volfrac phases
                 for (int jvolfrac = numfluidphases; jvolfrac < numdofpernode; ++jvolfrac)
@@ -4812,7 +4813,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                             phasemanager.VolFrac(ivolfrac - numfluidphases));
                   }
                   else
-                    dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
+                    FOUR_C_THROW(
+                        "AddScalarDependentFlux only possible for species in fluid or solid!");
                 }
               }
             }
@@ -4879,7 +4881,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                 phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID));
           }
           else
-            dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
+            FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
 
           static CORE::LINALG::Matrix<nsd, 1> diffflux(true);
           diffflux.Multiply(difftensoraddflux, gradscalarnp[iscal]);
@@ -4957,7 +4959,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                 difftensoraddflux, gradscalarnp[iscal]);
           }
           else
-            dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
+            FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
 
           double v(0.0);
           // TODO: anisotropic difftensor
@@ -4978,7 +4980,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                 phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID);
           }
           else
-            dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
+            FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
 
           // gradient of phi w.r.t. reference coordinates
           CORE::LINALG::Matrix<nsd, 1> refgradscalarnp(true);
@@ -5023,7 +5025,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                   difftensoraddflux, gradscalarnp[iscal]);
             }
             else
-              dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
+              FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
 
             for (int vi = 0; vi < nen; ++vi)
             {
@@ -5096,7 +5098,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracAddFlux<nsd,
                 phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
                 phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID));
           else
-            dserror("AddScalarDependentFlux only possible for species in fluid or solid!");
+            FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
 
           static CORE::LINALG::Matrix<nsd, nen> diffflux(true);
           diffflux.Multiply(difftensoraddflux, derxy);
@@ -5215,7 +5217,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorVolFracPressureDiff<nsd,
 
         if (not phasemanager.HasConstantDynViscosityVolFracPressure(
                 ivolfracpress - numfluidphases - numvolfrac))
-          dserror(
+          FOUR_C_THROW(
               "only constant dynamic viscosities possible for volume fraction pressures so far");
       }
     }

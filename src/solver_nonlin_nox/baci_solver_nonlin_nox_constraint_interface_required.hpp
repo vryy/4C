@@ -63,7 +63,7 @@ namespace NOX
            *  function value. */
           virtual double GetModelValue(NOX::NLN::MeritFunction::MeritFctName name) const
           {
-            dserror("GetObjectiveModelValue() is not implemented!");
+            FOUR_C_THROW("GetObjectiveModelValue() is not implemented!");
             exit(EXIT_FAILURE);
           };
 
@@ -73,7 +73,7 @@ namespace NOX
               const enum NOX::NLN::MeritFunction::LinOrder order,
               const enum NOX::NLN::MeritFunction::LinType type) const
           {
-            dserror("GetLinearizedObjectiveModelTerms() is not implemented!");
+            FOUR_C_THROW("GetLinearizedObjectiveModelTerms() is not implemented!");
             exit(EXIT_FAILURE);
           };
 

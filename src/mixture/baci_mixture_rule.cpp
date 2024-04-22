@@ -53,13 +53,13 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
   // for the sake of safety
   if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
   {
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }
 
   // yet another safety check
   if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
   {
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
   }
 
   // retrieve problem instance to read from
@@ -87,7 +87,7 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::GrowthRemodelMixtureRule>(curmat);
     }
     default:
-      dserror("The referenced material with id %d is not registered as a mixturerule!", matid);
+      FOUR_C_THROW("The referenced material with id %d is not registered as a mixturerule!", matid);
   }
   return nullptr;
 }
@@ -129,7 +129,7 @@ void MIXTURE::MixtureRule::UnpackMixtureRule(
 void MIXTURE::MixtureRule::ReadElement(int numgp, INPUT::LineDefinition* linedef)
 {
   // Init must only be called once
-  if (has_read_element_) dserror("ReadElement() is called multiple times. Just once allowed.");
+  if (has_read_element_) FOUR_C_THROW("ReadElement() is called multiple times. Just once allowed.");
   numgp_ = numgp;
 
   has_read_element_ = true;
@@ -139,10 +139,10 @@ void MIXTURE::MixtureRule::ReadElement(int numgp, INPUT::LineDefinition* linedef
 void MIXTURE::MixtureRule::Setup(Teuchos::ParameterList& params, const int eleGID)
 {
   // Setup must be called after ReadElement()
-  if (!has_read_element_) dserror("ReadElement() must be called before Setup()!");
+  if (!has_read_element_) FOUR_C_THROW("ReadElement() must be called before Setup()!");
 
   // Setup must only be called once
-  if (is_setup_) dserror("Setup() is called multiple times. Just once allowed.");
+  if (is_setup_) FOUR_C_THROW("Setup() is called multiple times. Just once allowed.");
   is_setup_ = true;
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -81,14 +81,14 @@ void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::ThrowErrorIfNotInitAndSetup() const
 {
-  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+  if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::ThrowErrorIfNotInit() const
 {
-  if (!IsInit()) dserror("Init() has not been called, yet!");
+  if (!IsInit()) FOUR_C_THROW("Init() has not been called, yet!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -59,7 +59,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     // get the action required
     std::string action = params.get<std::string>("action", "calc_none");
     if (action == "calc_none")
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
       act = ELEMENTS::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     else if (action == "calc_struct_mass_volume")
       act = ELEMENTS::struct_calc_mass_volume;
     else
-      dserror("Unknown type of action %s for Wall1", action.c_str());
+      FOUR_C_THROW("Unknown type of action %s for Wall1", action.c_str());
   }
   // get the material law
   Teuchos::RCP<const MAT::Material> actmat = Material();
@@ -161,7 +161,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -198,7 +198,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -232,7 +232,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror("Cannot get state vectors 'displacement' and/or residual");
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -271,7 +271,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (dispo == Teuchos::null or disp == Teuchos::null or res == Teuchos::null)
-        dserror("Cannot get state vectors");
+        FOUR_C_THROW("Cannot get state vectors");
       std::vector<double> mydispo(lm.size());
       CORE::FE::ExtractMyValues(*dispo, mydispo, lm);
       std::vector<double> mydisp(lm.size());
@@ -289,7 +289,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
-        dserror(
+        FOUR_C_THROW(
             "Cannot get state vectors \"displacement\" "
             "and/or \"residual displacement\"");
       std::vector<double> mydisp(lm.size());
@@ -358,9 +358,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
             params, "iostrain", INPAR::STR::strain_none);
       }
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-      if (stressdata == Teuchos::null) dserror("Cannot get stress 'data'");
-      if (straindata == Teuchos::null) dserror("Cannot get strain 'data'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
+      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get strain 'data'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -411,7 +411,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -423,7 +423,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_mass_volume:
     {
       // check length of elevec1
-      if (elevec1.length() < 6) dserror("The given result vector is too short.");
+      if (elevec1.length() < 6) FOUR_C_THROW("The given result vector is too short.");
 
       // declaration of variables
       double volume_ref = 0.0;
@@ -455,7 +455,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
 
       // get displacements and extract values of this element
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -603,7 +603,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     {
       // get displacements and extract values of this element
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state displacement vector");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -628,7 +628,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case ELEMENTS::struct_calc_eleload:
     {
-      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      FOUR_C_THROW("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
       break;
     }
     //==================================================================================
@@ -637,21 +637,21 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case ELEMENTS::struct_create_backup:
     {
-      if (iseas_) dserror("EAS for the wall element is not yet considered!");
+      if (iseas_) FOUR_C_THROW("EAS for the wall element is not yet considered!");
 
       break;
     }
     //==================================================================================
     case ELEMENTS::struct_recover_from_backup:
     {
-      if (iseas_) dserror("EAS for the wall element is not yet considered!");
+      if (iseas_) FOUR_C_THROW("EAS for the wall element is not yet considered!");
 
       break;
     }
     //==================================================================================
     default:
     {
-      dserror("Unknown type of action for Wall1 element: %s", ActionType2String(act).c_str());
+      FOUR_C_THROW("Unknown type of action for Wall1 element: %s", ActionType2String(act).c_str());
       break;
     }
   }
@@ -681,7 +681,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < noddof_)
-    dserror("Fewer functions or curves defined than the element has dofs.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   // no. of nodes on this surface
   const int iel = NumNode();
@@ -828,7 +828,7 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
     alpha = &easdata_.alpha;
     // get the old eas increment
     eas_inc = &easdata_.eas_inc;
-    if (!alpha || !eas_inc) dserror("Missing EAS history data (eas_inc and/or alpha)");
+    if (!alpha || !eas_inc) FOUR_C_THROW("Missing EAS history data (eas_inc and/or alpha)");
   }
 
   /* if it is a default step, we have to recover the condensed
@@ -847,7 +847,7 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
       CORE::LINALG::SerialDenseMatrix* oldfeas = &easdata_.feas;
       CORE::LINALG::SerialDenseMatrix* oldKaainv = &easdata_.invKaa;
       CORE::LINALG::SerialDenseMatrix* oldKda = &easdata_.Kda;
-      if (!oldKaainv or !oldKda or !oldfeas) dserror("Missing EAS history-data");
+      if (!oldKaainv or !oldKda or !oldfeas) FOUR_C_THROW("Missing EAS history-data");
 
       // we need the (residual) displacement at the previous step
       const int numnode = NumNode();
@@ -868,7 +868,7 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
   else
   {
     // The first step has to be a default step!
-    if (old_step_length_ < 0.0) dserror("The old step length was not defined!");
+    if (old_step_length_ < 0.0) FOUR_C_THROW("The old step length was not defined!");
     /* if this is no full step, we have to adjust the length of the
      * enhanced assumed strain incremental step. */
     if (iseas_)
@@ -1039,7 +1039,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     oldfeas = &easdata_.feas;
     oldKaainv = &easdata_.invKaa;
     oldKda = &easdata_.Kda;
-    if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
+    if (!alpha || !oldKaainv || !oldKda || !oldfeas) FOUR_C_THROW("Missing EAS history-data");
     // FixMe deprecated implementation
     if (not IsParamsInterface())
     {
@@ -1155,7 +1155,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       {
         case INPAR::STR::strain_gl:
         {
-          if (elestrain == nullptr) dserror("no strain data available");
+          if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
           (*elestrain)(ip, 0) = strain(0);
           (*elestrain)(ip, 1) = strain(1);
           (*elestrain)(ip, 2) = 0.0;
@@ -1166,7 +1166,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
           break;
         case INPAR::STR::strain_ea:
         default:
-          dserror("requested strain type not supported");
+          FOUR_C_THROW("requested strain type not supported");
           break;
       }
 
@@ -1175,7 +1175,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == nullptr) dserror("no stress data available");
+          if (elestress == nullptr) FOUR_C_THROW("no stress data available");
           (*elestress)(ip, 0) = stress(0, 0);
           (*elestress)(ip, 1) = stress(1, 1);
           (*elestress)(ip, 2) = 0.0;
@@ -1184,14 +1184,14 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
         break;
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == nullptr) dserror("no stress data available");
+          if (elestress == nullptr) FOUR_C_THROW("no stress data available");
           StressCauchy(ip, F_tot(0, 0), F_tot(1, 1), F_tot(0, 2), F_tot(1, 2), stress, elestress);
         }
         break;
         case INPAR::STR::stress_none:
           break;
         default:
-          dserror("requested stress type not supported");
+          FOUR_C_THROW("requested stress type not supported");
           break;
       }
 
@@ -1216,7 +1216,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       {
         case INPAR::STR::strain_gl:
         {
-          if (elestrain == nullptr) dserror("no strain data available");
+          if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
           (*elestrain)(ip, 0) = strain(0);
           (*elestrain)(ip, 1) = strain(1);
           (*elestrain)(ip, 2) = 0.0;
@@ -1227,7 +1227,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
           break;
         case INPAR::STR::strain_ea:
         default:
-          dserror("requested strain type not supported");
+          FOUR_C_THROW("requested strain type not supported");
           break;
       }
 
@@ -1236,7 +1236,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == nullptr) dserror("no stress data available");
+          if (elestress == nullptr) FOUR_C_THROW("no stress data available");
           (*elestress)(ip, 0) = stress(0, 0);
           (*elestress)(ip, 1) = stress(1, 1);
           (*elestress)(ip, 2) = 0.0;
@@ -1245,14 +1245,14 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
         break;
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == nullptr) dserror("no stress data available");
+          if (elestress == nullptr) FOUR_C_THROW("no stress data available");
           StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
         }
         break;
         case INPAR::STR::stress_none:
           break;
         default:
-          dserror("requested stress type not supported");
+          FOUR_C_THROW("requested stress type not supported");
           break;
       }
 
@@ -1447,7 +1447,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == nullptr) dserror("no strain data available");
+        if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
         (*elestrain)(ip, 0) = strain(0);
         (*elestrain)(ip, 1) = strain(1);
         (*elestrain)(ip, 2) = 0.0;
@@ -1458,7 +1458,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
         break;
       case INPAR::STR::strain_ea:
       default:
-        dserror("requested strain type not supported");
+        FOUR_C_THROW("requested strain type not supported");
         break;
     }
 
@@ -1467,7 +1467,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("no stress data available");
+        if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         (*elestress)(ip, 0) = stress(0, 0);
         (*elestress)(ip, 1) = stress(1, 1);
         (*elestress)(ip, 2) = 0.0;
@@ -1476,14 +1476,14 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("no stress data available");
+        if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
       }
       break;
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not supported");
+        FOUR_C_THROW("requested stress type not supported");
         break;
     }
 
@@ -1518,7 +1518,7 @@ void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(const CORE::LINALG::SerialDenseMatr
   /*------------------------------------------ determinant of jacobian ---*/
   *det = xjm[0][0] * xjm[1][1] - xjm[1][0] * xjm[0][1];
 
-  if (*det < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n", *det, Id());
+  if (*det < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n", *det, Id());
   /*----------------------------------------------------------------------*/
 
   return;
@@ -1729,7 +1729,7 @@ void DRT::ELEMENTS::Wall1::w1_boplin_cure(CORE::LINALG::SerialDenseMatrix& b_cur
 //      break;
 //    }
 //    default:
-//      dserror("Illegal type %d of material for wall1 element ", mat->MaterialType());
+//      FOUR_C_THROW("Illegal type %d of material for wall1 element ", mat->MaterialType());
 //      break;
 //  }
 //
@@ -1990,7 +1990,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
   else if (energies)  // old structural time integration
   {
     // check length of elevec1
-    if ((*energies).length() < 1) dserror("The given result vector is too short.");
+    if ((*energies).length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
     (*energies)(0) += internal_energy;
   }

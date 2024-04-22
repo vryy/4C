@@ -42,11 +42,11 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
 
   // add proxy dofssets of other fields to discretizations and check if number of dofsets is correct
   if (scatradis->AddDofSet(structdofset) != ++scatra_dofset_counter)
-    dserror("unexpected dof sets in scatra field");
+    FOUR_C_THROW("unexpected dof sets in scatra field");
   scatra_integrator->SetNumberOfDofSetDisplacement(scatra_dofset_counter);
   scatra_integrator->SetNumberOfDofSetVelocity(scatra_dofset_counter);
   if (structdis->AddDofSet(scatradofset) != ++structure_dofset_counter)
-    dserror("unexpected dof sets in structure field");
+    FOUR_C_THROW("unexpected dof sets in structure field");
 
   if (GLOBAL::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
   {
@@ -55,7 +55,7 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
     Teuchos::RCP<DRT::DofSetInterface> dofsettemp =
         Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(numDofsPerNodeTemp, 0, 0, true));
     if (structdis->AddDofSet(dofsettemp) != ++structure_dofset_counter)
-      dserror("unexpected dof sets in structure field");
+      FOUR_C_THROW("unexpected dof sets in structure field");
   }
 
   if (GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) !=
@@ -65,10 +65,10 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
   {
     auto dofsetmicro = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0, 0, true));
     if (scatradis->AddDofSet(dofsetmicro) != ++scatra_dofset_counter)
-      dserror("unexpected dof sets in scatra field");
+      FOUR_C_THROW("unexpected dof sets in scatra field");
     scatra_integrator->SetNumberOfDofSetMicroScale(scatra_dofset_counter);
     if (structdis->AddDofSet(dofsetmicro) != ++structure_dofset_counter)
-      dserror("unexpected dof sets in structure field");
+      FOUR_C_THROW("unexpected dof sets in structure field");
   }
 
   if (ssi_base->IsS2IKineticsWithPseudoContact())
@@ -77,10 +77,10 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
     Teuchos::RCP<DRT::DofSetInterface> dofsetstresses =
         Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(numDofsPerNodeStresses, 0, 0, true));
     if (structdis->AddDofSet(dofsetstresses) != ++structure_dofset_counter)
-      dserror("unexpected dof sets in structure field");
+      FOUR_C_THROW("unexpected dof sets in structure field");
     if (scatradis->AddDofSet(structdis->GetDofSetProxy(structure_dofset_counter)) !=
         ++scatra_dofset_counter)
-      dserror("unexpected dof sets in scatra field");
+      FOUR_C_THROW("unexpected dof sets in scatra field");
     scatra_integrator->SetNumberOfDofSetTwoTensorQuantity(scatra_dofset_counter);
   }
 
@@ -212,11 +212,11 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,
   dofsetaux = Teuchos::rcp(
       new DRT::DofSetPredefinedDoFNumber(ndofpernode_scatra, ndofperelement_scatra, 0, true));
   if (structdis->AddDofSet(dofsetaux) != ++structure_dofset_counter)
-    dserror("unexpected dof sets in structure field");
+    FOUR_C_THROW("unexpected dof sets in structure field");
   dofsetaux = Teuchos::rcp(
       new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
   if (scatradis_->AddDofSet(dofsetaux) != ++scatra_dofset_counter)
-    dserror("unexpected dof sets in scatra field");
+    FOUR_C_THROW("unexpected dof sets in scatra field");
   scatra_integrator->SetNumberOfDofSetDisplacement(scatra_dofset_counter);
   scatra_integrator->SetNumberOfDofSetVelocity(scatra_dofset_counter);
 
@@ -294,7 +294,7 @@ void SSI::SSICouplingNonMatchingBoundary::SetVelocityFields(
 void SSI::SSICouplingNonMatchingBoundary::SetScalarField(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
-  dserror(
+  FOUR_C_THROW(
       "transferring scalar state to structure discretization not implemented for "
       "transport on structural boundary. Only SolidToScatra coupling available.");
 }
@@ -304,7 +304,7 @@ void SSI::SSICouplingNonMatchingBoundary::SetScalarField(
 void SSI::SSICouplingNonMatchingBoundary::SetScalarFieldMicro(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
-  dserror("transferring micro scalar state to structure discretization not implemented.");
+  FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");
 }
 
 /*----------------------------------------------------------------------*/
@@ -333,11 +333,11 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,
   dofsetaux = Teuchos::rcp(
       new DRT::DofSetPredefinedDoFNumber(ndofpernode_scatra, ndofperelement_scatra, 0, true));
   if (structdis->AddDofSet(dofsetaux) != ++structure_dofset_counter)
-    dserror("unexpected dof sets in structure field");
+    FOUR_C_THROW("unexpected dof sets in structure field");
   dofsetaux = Teuchos::rcp(
       new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
   if (scatradis->AddDofSet(dofsetaux) != ++scatra_dofset_counter)
-    dserror("unexpected dof sets in scatra field");
+    FOUR_C_THROW("unexpected dof sets in scatra field");
   scatra_integrator->SetNumberOfDofSetDisplacement(scatra_dofset_counter);
   scatra_integrator->SetNumberOfDofSetVelocity(scatra_dofset_counter);
 
@@ -419,7 +419,7 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarField(
 void SSI::SSICouplingNonMatchingVolume::SetScalarFieldMicro(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
-  dserror("transferring micro scalar state to structure discretization not implemented.");
+  FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");
 }
 
 /*----------------------------------------------------------------------*/
@@ -453,7 +453,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
 
       // at least one condition needs to be defined on each discretization
       if (conds_struct.size() == 0 or conds_scatra.size() == 0)
-        dserror("No coupling condition defined on one or both structure or scatra discretization!");
+        FOUR_C_THROW(
+            "No coupling condition defined on one or both structure or scatra discretization!");
 
       std::set<int> couplingids;
       for (auto& cond_struct : conds_struct)
@@ -468,7 +469,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
 
       // add dofset and check if scatra field has 2 dofsets, so that coupling is possible
       if (scatradis->AddDofSet(newdofset_scatra) != ++scatra_dofset_counter)
-        dserror("unexpected dof sets in scatra field");
+        FOUR_C_THROW("unexpected dof sets in scatra field");
       scatra_integrator->SetNumberOfDofSetDisplacement(scatra_dofset_counter);
       scatra_integrator->SetNumberOfDofSetVelocity(scatra_dofset_counter);
     }
@@ -484,7 +485,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
 
       // at least one condition needs to be defined on each discretization
       if (conds_struct.size() == 0 or conds_scatra.size() == 0)
-        dserror("No coupling condition defined on one or both structure or scatra discretization!");
+        FOUR_C_THROW(
+            "No coupling condition defined on one or both structure or scatra discretization!");
 
       std::set<int> couplingids;
       for (auto& cond_struct : conds_struct)
@@ -521,11 +523,11 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     // add proxy dofssets of other fields to discretizations and check if number of dofsets is
     // correct
     if (scatradis->AddDofSet(structdofset) != ++scatra_dofset_counter)
-      dserror("unexpected dof sets in scatra field");
+      FOUR_C_THROW("unexpected dof sets in scatra field");
     scatra_integrator->SetNumberOfDofSetDisplacement(scatra_dofset_counter);
     scatra_integrator->SetNumberOfDofSetVelocity(scatra_dofset_counter);
     if (structdis->AddDofSet(scatradofset) != ++structure_dofset_counter)
-      dserror("unexpected dof sets in structure field");
+      FOUR_C_THROW("unexpected dof sets in structure field");
 
     // set dummy coupling id, as coupling between scatra_manifold dis and structdis/scatradis should
     // be setup for all conditions
@@ -540,7 +542,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
 
     if (scatra_manifold_dis->AddDofSet(proxy_structure_scatramanifold) !=
         ++scatra_manifold_dofset_counter)
-      dserror("unexpected dof sets in scatra manifold field");
+      FOUR_C_THROW("unexpected dof sets in scatra manifold field");
     scatra_manifold_integrator->SetNumberOfDofSetDisplacement(scatra_manifold_dofset_counter);
     scatra_manifold_integrator->SetNumberOfDofSetVelocity(scatra_manifold_dofset_counter);
   }
@@ -552,7 +554,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     Teuchos::RCP<DRT::DofSetInterface> dofsettemp =
         Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(numDofsPerNodeTemp, 0, 0, true));
     if (structdis->AddDofSet(dofsettemp) != ++structure_dofset_counter)
-      dserror("unexpected dof sets in structure field");
+      FOUR_C_THROW("unexpected dof sets in structure field");
   }
 
   // exchange material pointers for coupled material formulations
@@ -611,7 +613,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarField(
 void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarFieldMicro(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
-  dserror("transferring micro scalar state to structure discretization not implemented.");
+  FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

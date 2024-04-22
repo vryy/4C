@@ -93,8 +93,10 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
   const bool visifpack = predictSolver_list_.isSublist("IFPACK Parameters");
   const bool pisifpack = schurSolver_list_.isSublist("IFPACK Parameters");
 
-  if (!visml && !visifpack && !vismuelu) dserror("Have to use either ML or Ifpack for velocities");
-  if (!pisml && !pisifpack && !pismuelu) dserror("Have to use either ML or Ifpack for pressure");
+  if (!visml && !visifpack && !vismuelu)
+    FOUR_C_THROW("Have to use either ML or Ifpack for velocities");
+  if (!pisml && !pisifpack && !pismuelu)
+    FOUR_C_THROW("Have to use either ML or Ifpack for pressure");
 
   //-------------------------------------------------------------------------
   // either do manual split or use provided BlockSparseMatrixBase
@@ -139,7 +141,7 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
     Epetra_Vector diag(*mmex_.Map(0), false);
     (*A_)(0, 0).ExtractDiagonalCopy(diag);
     int err = diag.Reciprocal(diag);
-    if (err) dserror("Epetra_MultiVector::Reciprocal returned %d", err);
+    if (err) FOUR_C_THROW("Epetra_MultiVector::Reciprocal returned %d", err);
     diagAinv_ = Teuchos::rcp(new SparseMatrix(diag));
     diagAinv_->Complete(*mmex_.Map(0), *mmex_.Map(0));
   }
@@ -229,8 +231,9 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
 
         Teuchos::RCP<Epetra_MultiVector> nsdata =
             MueLuList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
-        if (numdf < 1 or dimns < 1) dserror("Error: PDE equations or null space dimension wrong.");
-        if (nsdata == Teuchos::null) dserror("Error: null space data is empty");
+        if (numdf < 1 or dimns < 1)
+          FOUR_C_THROW("Error: PDE equations or null space dimension wrong.");
+        if (nsdata == Teuchos::null) FOUR_C_THROW("Error: null space data is empty");
 
         Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector =
             Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));
@@ -306,8 +309,9 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
 
         Teuchos::RCP<Epetra_MultiVector> nsdata =
             MueLuList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
-        if (numdf < 1 or dimns < 1) dserror("Error: PDE equations or null space dimension wrong.");
-        if (nsdata == Teuchos::null) dserror("Error: null space data is empty");
+        if (numdf < 1 or dimns < 1)
+          FOUR_C_THROW("Error: PDE equations or null space dimension wrong.");
+        if (nsdata == Teuchos::null) FOUR_C_THROW("Error: null space data is empty");
 
         Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector =
             Teuchos::rcp(new Xpetra::EpetraMultiVectorT<GO, NO>(nsdata));

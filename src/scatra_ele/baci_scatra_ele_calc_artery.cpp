@@ -31,7 +31,7 @@ DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ScaTraEleCalcArtery(
   //        will not work anymore
   if (nen_ != 2)
   {
-    dserror(
+    FOUR_C_THROW(
         "Only line2 elements supported so far, you have %d nodes, if called with 2D or 3D element, "
         "think again",
         nen_);
@@ -107,7 +107,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Materials(
     }
     default:
     {
-      dserror("Material type %i is not supported!", material->MaterialType());
+      FOUR_C_THROW("Material type %i is not supported!", material->MaterialType());
       break;
     }
   }
@@ -143,7 +143,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
   Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (hist == Teuchos::null || phinp == Teuchos::null)
-    dserror("Cannot get state vector 'hist' and/or 'phinp'");
+    FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
 
   // values of scatra field are always in first dofset
   const std::vector<int>& lm = la[0].lm_;
@@ -154,7 +154,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
-    if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
+    if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
     CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
 
@@ -210,7 +210,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
         *arterypn, earterypressurenp_, lm_artery);
   }
   else
-    dserror("Something went wrong here, scatra-dis does not have artery primary variable");
+    FOUR_C_THROW("Something went wrong here, scatra-dis does not have artery primary variable");
 
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes

@@ -73,7 +73,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3kType::Create(const int id, const
 void DRT::ELEMENTS::Beam3kType::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  dserror("method 'NodalBlockInformation' not implemented for element type beam3k!");
+  FOUR_C_THROW("method 'NodalBlockInformation' not implemented for element type beam3k!");
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -82,7 +82,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3kType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented for element type beam3k!");
+  FOUR_C_THROW("method ComputeNullSpace not implemented for element type beam3k!");
   return nullspace;
 }
 
@@ -135,7 +135,7 @@ int DRT::ELEMENTS::Beam3kType::Initialize(DRT::Discretization& dis)
 
     // if we get so far current element is a Beam3k element and  we get a pointer at it
     DRT::ELEMENTS::Beam3k* currele = dynamic_cast<DRT::ELEMENTS::Beam3k*>(dis.lColElement(num));
-    if (!currele) dserror("cast to Beam3k* failed");
+    if (!currele) FOUR_C_THROW("cast to Beam3k* failed");
 
     // reference node position
     std::vector<CORE::LINALG::Matrix<3, 1>> xrefe;
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::Beam3kType::Initialize(DRT::Discretization& dis)
 
     // getting element's nodal coordinates and treating them as reference configuration
     if (currele->Nodes()[0] == nullptr || currele->Nodes()[1] == nullptr)
-      dserror("Cannot get nodes in order to compute reference configuration'");
+      FOUR_C_THROW("Cannot get nodes in order to compute reference configuration'");
     else
     {
       for (int node = 0; node < nnode; ++node)  // element has k nodes
@@ -311,7 +311,7 @@ CORE::FE::CellType DRT::ELEMENTS::Beam3k::Shape() const
       return CORE::FE::CellType::line4;
       break;
     default:
-      dserror("Only Line2, Line3 and Line4 elements are implemented.");
+      FOUR_C_THROW("Only Line2, Line3 and Line4 elements are implemented.");
       break;
   }
 }
@@ -436,7 +436,7 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, bending_moment_3_GP_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -1003,7 +1003,7 @@ void DRT::ELEMENTS::Beam3k::GetPosAtXi(
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "size mismatch: expected either 12 values for disp_centerline or 15 for "
         "full element disp vector and got %d",
         disp.size());
@@ -1018,10 +1018,11 @@ void DRT::ELEMENTS::Beam3k::GetTriadAtXi(
     CORE::LINALG::Matrix<3, 3>& triad, const double& xi, const std::vector<double>& disp) const
 {
   if (not weakkirchhoff_)
-    dserror("method GetTriadAtXi is limited to WK so far! extend to SK if needed");
+    FOUR_C_THROW("method GetTriadAtXi is limited to WK so far! extend to SK if needed");
 
   if (disp.size() != 15)
-    dserror("size mismatch: expected 15 values for element disp vector and got %d", disp.size());
+    FOUR_C_THROW(
+        "size mismatch: expected 15 values for element disp vector and got %d", disp.size());
 
 
   // Dof vector in total Lagrangian style, i.e. "displacement + reference values"
@@ -1061,7 +1062,7 @@ void DRT::ELEMENTS::Beam3k::GetScaledSecondAndThirdBaseVectorAtXi(const double& 
     const std::vector<double>& disp, CORE::LINALG::Matrix<3, 2>& scaledbasevectors) const
 {
   // Todo @grill: delete or update this method. kept it for now as we might need it soon
-  dserror(
+  FOUR_C_THROW(
       "Beam3k: method GetScaledSecondAndThirdBaseVectorAtXi is deprecated for now because it "
       "was only valid for the implicit assumption of a rectangular cross-section! If need be, "
       "generalize the definition of cross-section shape and dimensions and adapt this method. "
@@ -1093,10 +1094,10 @@ void DRT::ELEMENTS::Beam3k::GetScaledSecondAndThirdBaseVectorAtXi(const double& 
 void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
     CORE::LINALG::SerialDenseMatrix& Ivar, const double& xi, const std::vector<double>& disp) const
 {
-  if (not weakkirchhoff_) dserror("method is limited to WK so far! extend to SK if needed");
+  if (not weakkirchhoff_) FOUR_C_THROW("method is limited to WK so far! extend to SK if needed");
 
   if (rotvec_)
-    dserror("method is limited to tangent-based parametrization! extend to rotvec if needed");
+    FOUR_C_THROW("method is limited to tangent-based parametrization! extend to rotvec if needed");
 
   const unsigned int ndim = 3;
   const unsigned int nnodecl = 2;
@@ -1105,7 +1106,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
 
   // safety check
   if ((unsigned int)Ivar.numRows() != 2 * ndim or (unsigned int) Ivar.numCols() != numdof)
-    dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6, numdof, Ivar.numRows(),
+    FOUR_C_THROW("size mismatch! expected %dx%d matrix and got %dx%d", 6, numdof, Ivar.numRows(),
         Ivar.numCols());
 
   Ivar.putScalar(0.0);
@@ -1248,10 +1249,10 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
     CORE::LINALG::SerialDenseMatrix& stiffmat, const double& xi, const std::vector<double>& disp,
     const CORE::LINALG::SerialDenseVector& force) const
 {
-  if (not weakkirchhoff_) dserror("method is limited to WK so far! extend to SK if needed");
+  if (not weakkirchhoff_) FOUR_C_THROW("method is limited to WK so far! extend to SK if needed");
 
   if (rotvec_)
-    dserror("method is limited to tangent-based parametrization! extend to rotvec if needed");
+    FOUR_C_THROW("method is limited to tangent-based parametrization! extend to rotvec if needed");
 
 
   const unsigned int ndim = 3;
@@ -1261,7 +1262,7 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
 
   // safety check
   if ((unsigned int)stiffmat.numRows() != numdof or (unsigned int) stiffmat.numCols() != numdof)
-    dserror("size mismatch! expected %dx%d matrix and got %dx%d", numdof, numdof,
+    FOUR_C_THROW("size mismatch! expected %dx%d matrix and got %dx%d", numdof, numdof,
         stiffmat.numRows(), stiffmat.numCols());
 
   stiffmat.putScalar(0.0);
@@ -1386,10 +1387,10 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
 void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
     CORE::LINALG::SerialDenseMatrix& Iinc, const double& xi, const std::vector<double>& disp) const
 {
-  if (not weakkirchhoff_) dserror("method is limited to WK so far! extend to SK if needed");
+  if (not weakkirchhoff_) FOUR_C_THROW("method is limited to WK so far! extend to SK if needed");
 
   if (rotvec_)
-    dserror("method is limited to tangent-based parametrization! extend to rotvec if needed");
+    FOUR_C_THROW("method is limited to tangent-based parametrization! extend to rotvec if needed");
 
 
   const unsigned int ndim = 3;
@@ -1399,7 +1400,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
 
   // safety check
   if ((unsigned int)Iinc.numRows() != 2 * ndim or (unsigned int) Iinc.numCols() != numdof)
-    dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6, numdof, Iinc.numRows(),
+    FOUR_C_THROW("size mismatch! expected %dx%d matrix and got %dx%d", 6, numdof, Iinc.numRows(),
         Iinc.numCols());
 
   Iinc.putScalar(0.0);
@@ -1584,7 +1585,8 @@ void DRT::ELEMENTS::Beam3k::ExtractCenterlineDofValuesFromElementStateVector(
     bool add_reference_values) const
 {
   if (dofvec.size() != 15)
-    dserror("size mismatch: expected 15 values for element state vector and got %d", dofvec.size());
+    FOUR_C_THROW(
+        "size mismatch: expected 15 values for element state vector and got %d", dofvec.size());
 
   dofvec_centerline.resize(12, 0.0);
 

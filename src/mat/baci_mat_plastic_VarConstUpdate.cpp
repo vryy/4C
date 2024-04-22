@@ -37,7 +37,7 @@ MAT::PAR::PlasticElastHyperVCU::PlasticElastHyperVCU(Teuchos::RCP<MAT::PAR::Mate
 {
   // polyconvexity check is just implemented for isotropic hyperlastic materials
   if (polyconvex_)
-    dserror(
+    FOUR_C_THROW(
         "This polyconvexity-check is just implemented for isotropic "
         "hyperelastic-materials (do not use for plastic materials).");
 }
@@ -77,7 +77,7 @@ MAT::PlasticElastHyperVCU::PlasticElastHyperVCU(MAT::PAR::PlasticElastHyperVCU* 
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-    if (sum == Teuchos::null) dserror("Failed to allocate");
+    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
   }
 }
@@ -141,7 +141,7 @@ void MAT::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::PlasticElastHyperVCU*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -156,7 +156,7 @@ void MAT::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
     {
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-      if (sum == Teuchos::null) dserror("Failed to allocate");
+      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
 
@@ -177,7 +177,8 @@ void MAT::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 }
@@ -405,7 +406,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgr
       iH = hess_analyt;
       CORE::LINALG::FixedSizeSerialDenseSolver<5, 5, 1> solver;
       solver.SetMatrix(iH);
-      if (solver.Invert() != 0) dserror("Inversion failed");
+      if (solver.Invert() != 0) FOUR_C_THROW("Inversion failed");
 
       CORE::LINALG::Matrix<5, 1> beta_incr;
       beta_incr.Multiply(-1., iH, rhs, 0.);
@@ -477,7 +478,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgr
     if (!converged)
     {
       std::cout << "eleGID: " << eleGID << "gp: " << gp << std::endl;
-      dserror("unconverged");
+      FOUR_C_THROW("unconverged");
     }
 
     dLp(0, 0) = beta(0);
@@ -690,7 +691,7 @@ bool MAT::PlasticElastHyperVCU::VisData(
 {
   if (name == "accumulatedstrain")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double tmp = 0.;
     for (unsigned gp = 0; gp < last_alpha_isotropic_.size(); gp++) tmp += AccumulatedStrain(gp);
     data[0] = tmp / last_alpha_isotropic_.size();
@@ -783,7 +784,7 @@ void MAT::PlasticElastHyperVCU::MatrixExponentialSecondDerivativeSym3x3x6(
   if (k == kmax)
   {
     std::cout << "matrixIn: " << MatrixIn;
-    dserror("Matrix exponential unconverged with %i summands", k);
+    FOUR_C_THROW("Matrix exponential unconverged with %i summands", k);
   }
 
   // Zusatz: 1. Map MatExpFirstDer from [6](3,3) to (6,6)
@@ -901,7 +902,7 @@ void MAT::PlasticElastHyperVCU::MatrixExponentialSecondDerivativeSym3x3(
   if (k == kmax)
   {
     std::cout << "matrixIn: " << MatrixIn;
-    dserror("Matrix exponential unconverged with %i summands", k);
+    FOUR_C_THROW("Matrix exponential unconverged with %i summands", k);
   }
   return;
 }

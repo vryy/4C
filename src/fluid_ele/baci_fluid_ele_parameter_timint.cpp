@@ -227,7 +227,7 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter(Teuchos::Pa
     std::cout << "gamma_ " << gamma_ << std::endl;
     std::cout << "alphaF_ " << alphaF_ << std::endl;
     std::cout << "alphaM_ " << alphaM_ << std::endl;
-    dserror("Negative (or no) time-integration parameter or time-step length supplied");
+    FOUR_C_THROW("Negative (or no) time-integration parameter or time-step length supplied");
   }
 }
 

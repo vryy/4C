@@ -158,7 +158,7 @@ void MAT::MembraneActiveStrain::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::MembraneActiveStrain*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -172,7 +172,7 @@ void MAT::MembraneActiveStrain::Unpack(const std::vector<char>& data)
   {
     CORE::COMM::ParObject* o = CORE::COMM::Factory(matpassive_data);  // Unpack is done here
     MAT::So3Material* matpassive = dynamic_cast<MAT::So3Material*>(o);
-    if (matpassive == nullptr) dserror("failed to unpack passive material");
+    if (matpassive == nullptr) FOUR_C_THROW("failed to unpack passive material");
 
     matpassive_ = Teuchos::rcp(matpassive);
   }
@@ -188,7 +188,7 @@ void MAT::MembraneActiveStrain::Unpack(const std::vector<char>& data)
   {
     isinit_ = false;
     if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
     return;
   }
 
@@ -258,7 +258,7 @@ void MAT::MembraneActiveStrain::EvaluateMembrane(const CORE::LINALG::Matrix<3, 3
   const unsigned int scalarid_voltage = params_->scalid_voltage_;
 
   if (scalarid_voltage >= gpscalar->at(0).size())
-    dserror("Mismatch in requested scalar and number of supplied scalars.");
+    FOUR_C_THROW("Mismatch in requested scalar and number of supplied scalars.");
 
   // voltage at current gp
   double gpvoltage = gpscalar->at(gp).at(scalarid_voltage);
@@ -391,7 +391,7 @@ bool MAT::MembraneActiveStrain::VisData(
 {
   if (name == "voltage")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
 
     for (int gp = 0; gp < numgp; gp++) data[0] += voltage_->at(gp);
 
@@ -400,7 +400,7 @@ bool MAT::MembraneActiveStrain::VisData(
   }
   else if (name == "activation")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
 
     for (int gp = 0; gp < numgp; gp++) data[0] += activation_->at(gp);
 
@@ -450,12 +450,13 @@ void MAT::MembraneActiveStrain::SetupFiberVectors(int numgp, INPUT::LineDefiniti
   }
   else
   {
-    dserror("Either use Fiber or CIR-AXI-RAD nomenclature to set fiber directions");
+    FOUR_C_THROW("Either use Fiber or CIR-AXI-RAD nomenclature to set fiber directions");
   }
 
   // Check orthonormal basis
   if (fibervecs_.size() != 3)
-    dserror("Wrong number of fiber vectors. This material need three, it is %i", fibervecs_.size());
+    FOUR_C_THROW(
+        "Wrong number of fiber vectors. This material need three, it is %i", fibervecs_.size());
 
   double eps = 1e-12;
   if (std::abs(fibervecs_[0].Dot(fibervecs_[1])) > eps or
@@ -465,7 +466,7 @@ void MAT::MembraneActiveStrain::SetupFiberVectors(int numgp, INPUT::LineDefiniti
     std::cout << std::endl;
     std::cout << "\tWARNING: fiber vectors do NOT build orthonormal basis!" << std::endl;
     std::cout << std::endl;
-    dserror(
+    FOUR_C_THROW(
         "Fiber vectors are not orthonormal: while this is not necessary in general, for now we "
         "limit ourselves to the orthonomal case!\n"
         "In particular the calculation of the inverse active deformation gradient depends on this "
@@ -500,7 +501,7 @@ void MAT::MembraneActiveStrain::SetupNormalDirection()
 {
   if (fibervecs_.size() != 2)
   {
-    dserror("Wrong number of fiber vectors to calculate a normal direction.");
+    FOUR_C_THROW("Wrong number of fiber vectors to calculate a normal direction.");
   }
 
   CORE::LINALG::Matrix<3, 1> dir1 = fibervecs_[0];

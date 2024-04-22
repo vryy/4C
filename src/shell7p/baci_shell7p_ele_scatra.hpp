@@ -146,7 +146,7 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& StrParamsInterface() const
     {
-      if (not IsParamsInterface()) dserror("The interface ptr is not set!");
+      if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
       return *interface_ptr_;
     }
 

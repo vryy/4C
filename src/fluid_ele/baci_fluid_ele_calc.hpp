@@ -106,7 +106,7 @@ namespace DRT
           const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells) override
       {
-        dserror("Implemented in derived xfem class!");
+        FOUR_C_THROW("Implemented in derived xfem class!");
         return 1;
       };
 
@@ -317,7 +317,7 @@ namespace DRT
           Teuchos::ParameterList& params                      ///< parameter list
           ) override
       {
-        dserror("Implemented in derived xfem class!");
+        FOUR_C_THROW("Implemented in derived xfem class!");
         return 1;
       };
 
@@ -332,7 +332,7 @@ namespace DRT
           const std::vector<CORE::FE::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) override
       {
-        dserror("Implemented in derived xfem class!");
+        FOUR_C_THROW("Implemented in derived xfem class!");
         return 1;
       }
 
@@ -387,7 +387,7 @@ namespace DRT
           const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
           ) override
       {
-        dserror("Implemented in derived xfem class!");
+        FOUR_C_THROW("Implemented in derived xfem class!");
         return;
       }
 
@@ -413,7 +413,7 @@ namespace DRT
           bool evaluated_cut  ///< the CUT was updated before this evaluation is called
           ) override
       {
-        dserror("Implemented in derived xfem class!");
+        FOUR_C_THROW("Implemented in derived xfem class!");
         return;
       }
 
@@ -421,14 +421,14 @@ namespace DRT
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           const CORE::FE::GaussIntegration& intpoints) override
       {
-        dserror("Implemented in derived xfem class!");
+        FOUR_C_THROW("Implemented in derived xfem class!");
         return;
       }
 
       void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) override
       {
-        dserror("Implemented in derived xfem class!");
+        FOUR_C_THROW("Implemented in derived xfem class!");
         return;
       }
 
@@ -1225,7 +1225,7 @@ namespace DRT
       //    // get state of the global vector
       //    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);
       //    if(matrix_state == Teuchos::null)
-      //      dserror("Cannot get state vector %s", state.c_str());
+      //      FOUR_C_THROW("Cannot get state vector %s", state.c_str());
       //
       //    // extract local values of the global vectors
       //    std::vector<double> mymatrix(lm.size());

@@ -41,7 +41,7 @@ void PARTICLEALGORITHM::InputGenerator::AddGeneratedParticle(const std::vector<d
 {
   // safety check
   if (position.size() != 3)
-    dserror("particle can not be generated since position vector needs three entries!");
+    FOUR_C_THROW("particle can not be generated since position vector needs three entries!");
 
   // allocate memory to hold particle states
   PARTICLEENGINE::ParticleStates particlestates;

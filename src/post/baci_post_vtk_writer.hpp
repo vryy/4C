@@ -124,7 +124,7 @@ class PostVtkWriter : public PostWriterBase
       const int from = 0         ///< start position of values in nodes
       ) override
   {
-    dserror("Not yet implemented");
+    FOUR_C_THROW("Not yet implemented");
   }
 
   /*!
@@ -162,7 +162,7 @@ class PostVtkWriter : public PostWriterBase
   //! point)
   virtual void CurrentlyNotImplemented() const
   {
-    dserror("Functionality currently not implemented");
+    FOUR_C_THROW("Functionality currently not implemented");
   }
 
   enum Phase

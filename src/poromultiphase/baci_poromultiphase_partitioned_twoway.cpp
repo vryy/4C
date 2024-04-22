@@ -268,7 +268,7 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
       printf("\n");
       printf("\n");
     }
-    dserror("The partitioned solver did not converge in ITEMAX steps!");
+    FOUR_C_THROW("The partitioned solver did not converge in ITEMAX steps!");
   }
 
   return stopnonliniter;
@@ -358,7 +358,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PerformRelaxation(
 
     default:
     {
-      dserror("Relaxation method not yet implemented!");
+      FOUR_C_THROW("Relaxation method not yet implemented!");
       break;
     }
   }
@@ -456,7 +456,8 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ReadRestart(int restart)
 
     IO::DiscretizationReader reader(
         FluidField()->Discretization(), GLOBAL::Problem::Instance()->InputControlFile(), restart);
-    if (restart != reader.ReadInt("step")) dserror("Time step on file not equal to given step");
+    if (restart != reader.ReadInt("step"))
+      FOUR_C_THROW("Time step on file not equal to given step");
 
     // get omega_ from restart
     omega_ = reader.ReadDouble("omega_");

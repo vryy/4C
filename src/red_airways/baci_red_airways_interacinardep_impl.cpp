@@ -47,7 +47,7 @@ DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepI
       return acinus;
     }
     default:
-      dserror("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
+      FOUR_C_THROW("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
       break;
   }
   return nullptr;
@@ -167,7 +167,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
 
   // Get state for pressure
   Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
-  if (pnp == Teuchos::null) dserror("Cannot get state vectors 'pnp'");
+  if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           }
           else
           {
-            dserror("no boundary condition defined!");
+            FOUR_C_THROW("no boundary condition defined!");
             exit(1);
           }
           // Get factor of FUNCT
@@ -250,7 +250,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
           if (local_id < 0)
           {
-            dserror("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i]->Id(),
                 discretization.Comm().MyPID());
             exit(1);
           }
@@ -295,7 +295,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
               if (((ppl_Type == "Linear_Polynomial") or (ppl_Type == "Nonlinear_Polynomial")) and
                   (TLC != 0.0))
               {
-                dserror(
+                FOUR_C_THROW(
                     "TLC is not used for the following type of VolumeDependentPleuralPressure BC: "
                     "%s.\n Set TLC = 0.0",
                     ppl_Type.c_str());
@@ -304,7 +304,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
               if ((ppl_Type == "Nonlinear_Ogden") and
                   ((TLC != 0.0) or (ap != 0.0) or (bp != 0.0) or (dp == 0.0)))
               {
-                dserror(
+                FOUR_C_THROW(
                     "Parameters are not set correctly for Nonlinear_Ogden. Only P_PLEURAL_NONLIN, "
                     "TAU and RV are used. Set all others to zero. TAU is not allowed to be zero.");
               }
@@ -346,7 +346,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
               }
               else
               {
-                dserror("Unknown volume pleural pressure type: %s", ppl_Type.c_str());
+                FOUR_C_THROW("Unknown volume pleural pressure type: %s", ppl_Type.c_str());
               }
               Pp_np *= curvefac * ((*vals)[0]);
             }
@@ -354,7 +354,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
             {
               std::cout << "Node " << ele->Nodes()[i]->Id() + 1 << "is not on corresponding DLINE "
                         << std::endl;
-              dserror("No volume dependent pleural pressure condition was defined");
+              FOUR_C_THROW("No volume dependent pleural pressure condition was defined");
             }
 
             BCin += Pp_np;
@@ -375,7 +375,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
         }
         else
         {
-          dserror("Prescribed [%s] is not defined for reduced-inter-acinar linkers", Bc.c_str());
+          FOUR_C_THROW(
+              "Prescribed [%s] is not defined for reduced-inter-acinar linkers", Bc.c_str());
           exit(1);
         }
       }
@@ -391,7 +392,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           int local_id = discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
           if (local_id < 0)
           {
-            dserror("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
+            FOUR_C_THROW("node (%d) doesn't exist on proc(%d)", ele->Nodes()[i],
                 discretization.Comm().MyPID());
             exit(1);
           }

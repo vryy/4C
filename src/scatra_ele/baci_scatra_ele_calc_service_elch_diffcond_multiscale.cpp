@@ -31,7 +31,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 {
   // safety check
   if (my::numscal_ != 1)
-    dserror("Electrode state of charge can only be computed for one transported scalar!");
+    FOUR_C_THROW("Electrode state of charge can only be computed for one transported scalar!");
 
   // extract multi-scale material
   auto elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(ele->Material());
@@ -68,7 +68,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 
   // safety check
   if (scalars.length() != 3 and scalars.length() != 6)
-    dserror("Result vector for electrode state of charge computation has invalid length!");
+    FOUR_C_THROW("Result vector for electrode state of charge computation has invalid length!");
 
   // write results for concentration and domain integrals into result vector
   scalars(0) = intconcentration;
@@ -89,7 +89,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 {
   // safety check
   if (my::numscal_ != 1)
-    dserror("Electrode state of charge can only be computed for one transported scalar!");
+    FOUR_C_THROW("Electrode state of charge can only be computed for one transported scalar!");
 
   // extract multi-scale material
   auto elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(ele->Material());
@@ -103,7 +103,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   if (intpoints.IP().nquad != nen_)
-    dserror("number of element nodes must equal number of Gauss points for reasonable projection");
+    FOUR_C_THROW(
+        "number of element nodes must equal number of Gauss points for reasonable projection");
 
   // matrix of shape functions evaluated at Gauss points
   CORE::LINALG::SerialDenseMatrix N(nen_, nen_);

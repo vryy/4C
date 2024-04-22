@@ -132,7 +132,7 @@ void CONSTRAINTS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
     case none:
       return;
     default:
-      dserror("Constraint/monitor is not an multi point constraint!");
+      FOUR_C_THROW("Constraint/monitor is not an multi point constraint!");
   }
   EvaluateConstraint(constraintdis_.find(0)->second, params, systemmatrix1, systemmatrix2,
       systemvector1, systemvector2, systemvector3);
@@ -160,7 +160,7 @@ CONSTRAINTS::MPConstraint2::CreateDiscretizationFromCondition(
   const int myrank = newdis->Comm().MyPID();
 
   if (constrcondvec.size() == 0)
-    dserror(
+    FOUR_C_THROW(
         "number of multi point constraint conditions = 0 --> cannot create constraint "
         "discretization");
 
@@ -245,7 +245,7 @@ void CONSTRAINTS::MPConstraint2::ReorderConstraintNodes(
   }
   else
   {
-    dserror("strange number of nodes for an MPC! Should be 3 in 2D.");
+    FOUR_C_THROW("strange number of nodes for an MPC! Should be 3 in 2D.");
   }
 }
 
@@ -260,8 +260,8 @@ void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  if (!(disc->Filled())) dserror("FillComplete() was not called");
-  if (!(disc->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
+  if (!(disc->Filled())) FOUR_C_THROW("FillComplete() was not called");
+  if (!(disc->HaveDofs())) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   // see what we have for input
   bool assemblemat1 = systemmatrix1 != Teuchos::null;
@@ -333,7 +333,8 @@ void CONSTRAINTS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretiza
       int err = actele->Evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err)
-        dserror("Proc %d: Element %d returned err=%d", disc->Comm().MyPID(), actele->Id(), err);
+        FOUR_C_THROW(
+            "Proc %d: Element %d returned err=%d", disc->Comm().MyPID(), actele->Id(), err);
 
       int eid = actele->Id();
 

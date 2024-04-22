@@ -33,14 +33,14 @@ PostFilterBase::PostFilterBase(PostField* field, const std::string& name)
   else if (field->problem()->filter() == "vtu_node_based")
     writer_ = Teuchos::rcp(new PostVtuWriterNode(field, name));
   else
-    dserror("Unsupported filter");
+    FOUR_C_THROW("Unsupported filter");
 }
 
 
 
 void PostFilterBase::WriteFiles()
 {
-  dsassert(writer_ != Teuchos::null, "No writer has been set! Fatal error");
+  FOUR_C_ASSERT(writer_ != Teuchos::null, "No writer has been set! Fatal error");
   writer_->WriteFiles(*this);
 }
 

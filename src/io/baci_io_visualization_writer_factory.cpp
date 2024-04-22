@@ -31,7 +31,7 @@ std::unique_ptr<IO::VisualizationWriterBase> IO::VisualizationWriterFactory(
   }
   else
   {
-    dserror("You have to select a valid visualization writer in the input file");
+    FOUR_C_THROW("You have to select a valid visualization writer in the input file");
   }
 }
 FOUR_C_NAMESPACE_CLOSE

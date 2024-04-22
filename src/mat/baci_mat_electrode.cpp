@@ -34,23 +34,23 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
 {
   // safety checks
   if (cmax_ < 1.0e-12)
-    dserror("Saturation value c_max of intercalated Lithium concentration is too small!");
+    FOUR_C_THROW("Saturation value c_max of intercalated Lithium concentration is too small!");
   if (static_cast<int>(ocppara_.size()) != ocpparanum_)
   {
-    dserror(
+    FOUR_C_THROW(
         "Length of coefficient vector for electrode half cell open circuit potential doesn't match "
         "prescribed number of coefficients!");
   }
   if ((xmin_ > 1.0) or (xmax_ > 1.0))
   {
-    dserror(
+    FOUR_C_THROW(
         "Lower bound (X_MIN) and upper bound (X_MAX) of range of validity for ocp calculation "
         "model cannot be larger than one since X is calculated as c/c_max! If you do not want to "
         "prescribe bounds, you have to set the two variables to negative values. "
         "If you set the bounds to realistic values (i.e. [0,1]) you will get a warning printed to "
         "the screen if bounds are violated throughout the simulation time!");
   }
-  if (xmin_ > xmax_) dserror("X_MIN cannot be larger than X_MAX!");
+  if (xmin_ > xmax_) FOUR_C_THROW("X_MIN cannot be larger than X_MAX!");
 
   // additional preparations
   std::string ocpcsv(*matdata->Get<std::string>("OCP_CSV"));
@@ -60,10 +60,11 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
     {
       // safety checks
       if (ocpcsv.length() == 0)
-        dserror("You forgot to specify the *.csv file for the half cell open circuit potential!");
+        FOUR_C_THROW(
+            "You forgot to specify the *.csv file for the half cell open circuit potential!");
       if (ocpparanum_)
       {
-        dserror(
+        FOUR_C_THROW(
             "Must not specify any parameters in case half-cell open-circuit potential is to be "
             "determined via a *.csv file!");
       }
@@ -83,7 +84,7 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
         ocpcsv.insert(ocpcsv.begin(), ocpcsvpath.begin(), ocpcsvpath.end());
       }
       std::ifstream file(ocpcsv);
-      if (!file.good()) dserror("Invalid file!");
+      if (!file.good()) FOUR_C_THROW("Invalid file!");
       std::string line, value;
       std::vector<double> ocp(0, 0.0);
       while (getline(file, line))
@@ -107,16 +108,17 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
         }
         catch (...)
         {
-          dserror("Invalid *.csv file!");
+          FOUR_C_THROW("Invalid *.csv file!");
         }
       }
       file.close();
 
       // safety checks
-      if (X_.size() != ocp.size()) dserror("Internal error! Vector lengths have to match!");
-      if (X_.size() < 2) dserror("Need at least two data points for cubic spline interpolation!");
+      if (X_.size() != ocp.size()) FOUR_C_THROW("Internal error! Vector lengths have to match!");
+      if (X_.size() < 2)
+        FOUR_C_THROW("Need at least two data points for cubic spline interpolation!");
       for (unsigned i = 0; i < X_.size() - 1; ++i)
-        if (X_[i + 1] <= X_[i]) dserror("Data points must be sorted in ascending order!");
+        if (X_[i + 1] <= X_[i]) FOUR_C_THROW("Data points must be sorted in ascending order!");
 
       // build coefficient matrix and right-hand side
       const unsigned N = X_.size() - 2;
@@ -141,7 +143,7 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
       solver.factorWithEquilibration(true);
       solver.solveToRefinedSolution(true);
       if (solver.factor() or solver.solve())
-        dserror("Solution of linear system of equations failed!");
+        FOUR_C_THROW("Solution of linear system of equations failed!");
 
       // fill coefficient vectors
       m_.resize(X_.size(), 0.0);
@@ -164,16 +166,16 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
     {
       // safety checks
       if (ocpparanum_ < 1)
-        dserror("No parameters found for electrode half cell open circuit potential!");
+        FOUR_C_THROW("No parameters found for electrode half cell open circuit potential!");
       if (ocpcsv.length())
       {
-        dserror(
+        FOUR_C_THROW(
             "Must not specify *.csv file with data points for chosen half cell open circuit "
             "potential model!");
       }
       if (ocpmodel_ == ocp_taralov and ocpparanum_ != 13)
       {
-        dserror(
+        FOUR_C_THROW(
             "Electrode half cell open circuit potential according to Taralov, Taralova, Popov, "
             "Iliev, Latz, and Zausch (2012) needs to be specified by exactly 13 coefficients!");
       }
@@ -184,7 +186,7 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
     default:
     {
       // safety check
-      dserror("Invalid model for half-cell open-circuit potential!");
+      FOUR_C_THROW("Invalid model for half-cell open-circuit potential!");
 
       break;
     }
@@ -287,12 +289,13 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Electrode*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -328,7 +331,7 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
       {
         // safety check
         if (X < params_->X_.front() or X > params_->X_.back())
-          dserror("Intercalation fraction X = %lf lies outside sampling point range!", X);
+          FOUR_C_THROW("Intercalation fraction X = %lf lies outside sampling point range!", X);
 
         // evaluate cubic spline interpolation
         for (unsigned i = 0; i < params_->m_.size() - 1; ++i)
@@ -404,7 +407,7 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
 
       default:
       {
-        dserror("Model for half cell open circuit potential not recognized!");
+        FOUR_C_THROW("Model for half cell open circuit potential not recognized!");
         break;
       }
     }
@@ -448,7 +451,7 @@ double MAT::Electrode::ComputeDOpenCircuitPotentialDIntercalationFraction(
       {
         // safety check
         if (X < params_->X_.front() or X > params_->X_.back())
-          dserror("Intercalation fraction X = %lf lies outside sampling point range!", X);
+          FOUR_C_THROW("Intercalation fraction X = %lf lies outside sampling point range!", X);
 
         // evaluate derivative of cubic spline interpolation w.r.t. concentration
         for (unsigned i = 0; i < params_->m_.size() - 1; ++i)
@@ -524,7 +527,7 @@ double MAT::Electrode::ComputeDOpenCircuitPotentialDIntercalationFraction(
 
       default:
       {
-        dserror("Model for half cell open circuit potential not recognized!");
+        FOUR_C_THROW("Model for half cell open circuit potential not recognized!");
       }
     }
   }
@@ -570,7 +573,7 @@ double MAT::Electrode::ComputeD2OpenCircuitPotentialDConcentrationDConcentration
       {
         // safety check
         if (X < params_->X_.front() or X > params_->X_.back())
-          dserror("Intercalation fraction X = %lf lies outside sampling point range!", X);
+          FOUR_C_THROW("Intercalation fraction X = %lf lies outside sampling point range!", X);
 
         // evaluate second derivative of cubic spline interpolation w.r.t. concentration
         for (unsigned i = 0; i < params_->m_.size() - 1; ++i)
@@ -650,7 +653,7 @@ double MAT::Electrode::ComputeD2OpenCircuitPotentialDConcentrationDConcentration
 
       default:
       {
-        dserror("Model for half cell open circuit potential not recognized!");
+        FOUR_C_THROW("Model for half cell open circuit potential not recognized!");
         break;
       }
     }
@@ -689,7 +692,7 @@ double MAT::Electrode::ComputeDOpenCircuitPotentialDTemperature(
     }
     default:
     {
-      dserror("Model for half cell open circuit potential not recognized!");
+      FOUR_C_THROW("Model for half cell open circuit potential not recognized!");
       break;
     }
   }

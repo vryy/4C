@@ -61,7 +61,7 @@ namespace CORE::GEO
             return nullptr;
           }
 
-          dserror("more than one cycle in common");
+          FOUR_C_THROW("more than one cycle in common");
         }
 
         cycle_t* find_path(vertex_t u, vertex_t v, graph_t& st)
@@ -156,7 +156,7 @@ namespace CORE::GEO
           cycle_t::const_iterator p2 = std::find(cycle_to_split->begin(), cycle_to_split->end(), v);
 
           if (p1 == cycle_to_split->end() or p2 == cycle_to_split->end())
-            dserror("edge vertex not in cycle");
+            FOUR_C_THROW("edge vertex not in cycle");
 
           if (p1 > p2)
           {

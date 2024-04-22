@@ -50,7 +50,7 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_nlnstiff")
     act = SoTet4av::calc_struct_nlnstiff;
   else if (action == "calc_struct_internalforce")
@@ -70,7 +70,7 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_struct_predict")
     return 0;
   else
-    dserror("Unknown type of action for So_tet4av");
+    FOUR_C_THROW("Unknown type of action for So_tet4av");
 
 
   // what should the element do
@@ -82,7 +82,8 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (disp == Teuchos::null)
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -97,7 +98,8 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (disp == Teuchos::null)
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr, params,
@@ -111,7 +113,8 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (disp == Teuchos::null)
+        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
@@ -129,9 +132,9 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
       Teuchos::RCP<std::vector<char>> straindata =
           params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-      if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-      if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
-      if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
+      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D> stress(true);  // set to zero
@@ -178,7 +181,7 @@ int DRT::ELEMENTS::SoTet4av::Evaluate(Teuchos::ParameterList& params,
     break;
 
     default:
-      dserror("Unknown type of action for so_tet4");
+      FOUR_C_THROW("Unknown type of action for so_tet4");
       break;
   }
 
@@ -212,12 +215,13 @@ int DRT::ELEMENTS::SoTet4av::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOTET4av)
-    dserror("Fewer functions or curves defined than the element has dofs.");
+    FOUR_C_THROW("Fewer functions or curves defined than the element has dofs.");
 
   for (int checkdof = NUMDIM_SOTET4av; checkdof < int(onoff->size()); ++checkdof)
   {
     if ((*onoff)[checkdof] != 0)
-      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+      FOUR_C_THROW(
+          "Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
   }
 
   // (SPATIAL) FUNCTION BUSINESS
@@ -330,7 +334,7 @@ void DRT::ELEMENTS::SoTet4av::InitJacobianMapping()
 
     // xij_ = ds/dx
     detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] < 1.0E-16) dserror("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", detJ_[gp]);
+    if (detJ_[gp] < 1.0E-16) FOUR_C_THROW("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", detJ_[gp]);
   }
 
   return;
@@ -403,8 +407,8 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
     CORE::LINALG::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> invdefgrd;
     const double detF = invdefgrd.Invert(defgrd);
     const double intNodalVol = shapefct.Dot(nodalVol);
-    if (intNodalVol < 0.) dserror("intNodalVol < 0");
-    if (detF < 0.) dserror("detF < 0");
+    if (intNodalVol < 0.) FOUR_C_THROW("intNodalVol < 0");
+    if (detF < 0.) FOUR_C_THROW("detF < 0");
     const double fbar_fac = std::pow(intNodalVol / detF, 1. / 3.);
     defgrd_bar.Update(fbar_fac, defgrd, 0.);
     rcg_bar.MultiplyTN(defgrd_bar, defgrd_bar);
@@ -422,13 +426,13 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = pk2(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == nullptr) dserror("stress data not available");
+        if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF_bar = defgrd_bar.Determinant();
 
         CORE::LINALG::Matrix<3, 3> pkstress_bar;
@@ -458,7 +462,7 @@ void DRT::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // location ma
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("requested stress type not available");
+        FOUR_C_THROW("requested stress type not available");
         break;
     }
 
@@ -600,7 +604,7 @@ int DRT::ELEMENTS::SoTet4avType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoTet4av*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet4av* failed");
+    if (!actele) FOUR_C_THROW("cast to So_tet4av* failed");
     actele->InitJacobianMapping();
   }
   return 0;

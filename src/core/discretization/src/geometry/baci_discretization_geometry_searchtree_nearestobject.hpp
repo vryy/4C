@@ -100,7 +100,8 @@ namespace CORE::GEO
      */
     inline CORE::LINALG::Matrix<3, 1> getPhysCoord() const
     {
-      if (objectType_ == NOTYPE_OBJECT) dserror("no object type and physical coordinates are set");
+      if (objectType_ == NOTYPE_OBJECT)
+        FOUR_C_THROW("no object type and physical coordinates are set");
       return physcoord_;
     }
 

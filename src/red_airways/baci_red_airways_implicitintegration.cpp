@@ -440,7 +440,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(
   coupledTo3D_ = CoupledTo3D;
   if (CoupledTo3D && CouplingParams.get() == nullptr)
   {
-    dserror(
+    FOUR_C_THROW(
         "Coupling parameter list is not allowed to be empty, If a 3-D/reduced-D coupling is "
         "defined\n");
   }
@@ -714,7 +714,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeStep(
   }
   else
   {
-    dserror("[%s] is not a defined solver", (params_.get<std::string>("solver type")).c_str());
+    FOUR_C_THROW("[%s] is not a defined solver", (params_.get<std::string>("solver type")).c_str());
   }
 
   // Solve scatra if required
@@ -771,7 +771,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(
   }
   else
   {
-    dserror("[%s] is not a defined solver", (params_.get<std::string>("solver type")).c_str());
+    FOUR_C_THROW("[%s] is not a defined solver", (params_.get<std::string>("solver type")).c_str());
   }
 
 }  // RedAirwayImplicitTimeInt::IntegrateStep
@@ -804,7 +804,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(
   bool err1 = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, acinar_volume_np);
   if (err1)
   {
-    dserror("Error in summing acinar volumes");
+    FOUR_C_THROW("Error in summing acinar volumes");
   }
 
   // Evaluate total airway volume
@@ -812,7 +812,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(
   bool err2 = this->SumAllColElemVal(elemVolumenp_, open_, airway_volume_np);
   if (err2)
   {
-    dserror("Error in summing airway volumes");
+    FOUR_C_THROW("Error in summing airway volumes");
   }
 
   // Evaluate total lung volume (in acini and airways)
@@ -957,21 +957,21 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
     if (err)
     {
-      dserror("Error by summing all acinar volumes");
+      FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_n = 0.0;
     err = this->SumAllColElemVal(acini_e_volumen_, acini_bc_, lung_volume_n);
     if (err)
     {
-      dserror("Error by summing all acinar volumes");
+      FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_nm = 0.0;
     err = this->SumAllColElemVal(acini_e_volumenm_, acini_bc_, lung_volume_nm);
     if (err)
     {
-      dserror("Error by summing all acinar volumes");
+      FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     evaluation_data.lungVolume_np = lung_volume_np;
@@ -1033,13 +1033,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
     bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
     if (err)
     {
-      dserror("Error by summing all acinar volumes");
+      FOUR_C_THROW("Error by summing all acinar volumes");
     }
     double lung_volume_n = 0.0;
     err = this->SumAllColElemVal(acini_e_volumen_, acini_bc_, lung_volume_n);
     if (err)
     {
-      dserror("Error by summing all acinar volumes");
+      FOUR_C_THROW("Error by summing all acinar volumes");
     }
     evaluation_data.lungVolume_np = lung_volume_np;
     evaluation_data.lungVolume_n = lung_volume_n;
@@ -1367,7 +1367,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
   {
     Epetra_Export exporter(junctionVolumeInMix_->Map(), jVDofRowMix_->Map());
     int err = jVDofRowMix_->Export(*junctionVolumeInMix_, exporter, Zero);
-    if (err) dserror("Export using exporter returned err=%d", err);
+    if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
   }
   for (int i = 0; i < scatraO2np_->MyLength(); i++)
   {
@@ -1874,44 +1874,44 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
       {
         Epetra_Export exporter(e1scatraO2np_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2np_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e1scatraO2np", qexp_);
       {
         Epetra_Export exporter(e1scatraO2n_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2n_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e1scatraO2n", qexp_);
       {
         Epetra_Export exporter(e1scatraO2nm_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2nm_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e1scatraO2nm", qexp_);
 
       {
         Epetra_Export exporter(e2scatraO2np_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2np_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e2scatraO2np", qexp_);
       {
         Epetra_Export exporter(e2scatraO2n_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2n_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e2scatraO2n", qexp_);
       {
         Epetra_Export exporter(e2scatraO2nm_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2nm_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e2scatraO2nm", qexp_);
       {
         Epetra_Export exporter(junctionVolumeInMix_->Map(), jVDofRowMix_->Map());
         int err = jVDofRowMix_->Export(*junctionVolumeInMix_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("juncVolMix", jVDofRowMix_);
     }
@@ -1957,31 +1957,31 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
     {
       Epetra_Export exporter(acini_e_volumenm_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_e_volumenm_, exporter, Zero);
-      if (err) dserror("Export using exporter returned err=%d", err);
+      if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       output_.WriteVector("acini_vnm", qexp_);
     }
     {
       Epetra_Export exporter(acini_e_volumen_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_e_volumen_, exporter, Zero);
-      if (err) dserror("Export using exporter returned err=%d", err);
+      if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       output_.WriteVector("acini_vn", qexp_);
     }
     {
       Epetra_Export exporter(acini_e_volumenp_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_e_volumenp_, exporter, Zero);
-      if (err) dserror("Export using exporter returned err=%d", err);
+      if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       output_.WriteVector("acini_vnp", qexp_);
     }
     {
       Epetra_Export exporter(acini_e_volume_strain_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_e_volume_strain_, exporter, Zero);
-      if (err) dserror("Export using exporter returned err=%d", err);
+      if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       output_.WriteVector("acini_volumetric_strain", qexp_);
     }
     {
       Epetra_Export exporter(acini_e_volume0_->Map(), qexp_->Map());
       int err = qexp_->Export(*acini_e_volume0_, exporter, Zero);
-      if (err) dserror("Export using exporter returned err=%d", err);
+      if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       output_.WriteVector("acini_v0", qexp_);
     }
 
@@ -2030,44 +2030,44 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
       {
         Epetra_Export exporter(e1scatraO2np_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2np_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e1scatraO2np", qexp_);
       {
         Epetra_Export exporter(e1scatraO2n_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2n_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e1scatraO2n", qexp_);
       {
         Epetra_Export exporter(e1scatraO2nm_->Map(), qexp_->Map());
         int err = qexp_->Export(*e1scatraO2nm_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e1scatraO2nm", qexp_);
 
       {
         Epetra_Export exporter(e2scatraO2np_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2np_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e2scatraO2np", qexp_);
       {
         Epetra_Export exporter(e2scatraO2n_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2n_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e2scatraO2n", qexp_);
       {
         Epetra_Export exporter(e2scatraO2nm_->Map(), qexp_->Map());
         int err = qexp_->Export(*e2scatraO2nm_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("e2scatraO2nm", qexp_);
       {
         Epetra_Export exporter(junctionVolumeInMix_->Map(), jVDofRowMix_->Map());
         int err = jVDofRowMix_->Export(*junctionVolumeInMix_, exporter, Zero);
-        if (err) dserror("Export using exporter returned err=%d", err);
+        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       }
       output_.WriteVector("juncVolMix", jVDofRowMix_);
     }
@@ -2307,21 +2307,21 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
     bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
     if (err)
     {
-      dserror("Error by summing all acinar volumes");
+      FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_n = 0.0;
     err = this->SumAllColElemVal(acini_e_volumen_, acini_bc_, lung_volume_n);
     if (err)
     {
-      dserror("Error by summing all acinar volumes");
+      FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_nm = 0.0;
     err = this->SumAllColElemVal(acini_e_volumenm_, acini_bc_, lung_volume_nm);
     if (err)
     {
-      dserror("Error by summing all acinar volumes");
+      FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     evaluation_data.lungVolume_np = lung_volume_np;
@@ -2381,13 +2381,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
     bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
     if (err)
     {
-      dserror("Error by summing all acinar volumes");
+      FOUR_C_THROW("Error by summing all acinar volumes");
     }
     double lung_volume_n = 0.0;
     err = this->SumAllColElemVal(acini_e_volumen_, acini_bc_, lung_volume_n);
     if (err)
     {
-      dserror("Error by summing all acinar volumes");
+      FOUR_C_THROW("Error by summing all acinar volumes");
     }
     evaluation_data.lungVolume_np = lung_volume_np;
     evaluation_data.lungVolume_n = lung_volume_n;
@@ -2436,7 +2436,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
   std::vector<DRT::Condition*> nodecond;
   discret_->GetCondition("RedAirwayPrescribedCond", nodecond);
   unsigned int numnodecond = nodecond.size();
-  if (numnodecond == 0) dserror("no redairway prescribed conditions");
+  if (numnodecond == 0) FOUR_C_THROW("no redairway prescribed conditions");
 
   std::vector<int> tmp;
   for (unsigned int i = 0; i < numnodecond; ++i)
@@ -2451,7 +2451,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
     }
   }
   unsigned int numcond = tmp.size();
-  if (numcond == 0) dserror("no coupling conditions found");
+  if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
   coupmap_ = Teuchos::rcp(new Epetra_Map(tmp.size(), tmp.size(), tmp.data(), 0, discret_->Comm()));
 }
 
@@ -2467,7 +2467,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vecto
     DRT::Condition* cond = coupcond_[condgid];
     const std::vector<int>* nodes = cond->GetNodes();
     if (nodes->size() != 1)
-      dserror("Too many nodes on coupling with tissue condition ID=[%d]\n", condgid);
+      FOUR_C_THROW("Too many nodes on coupling with tissue condition ID=[%d]\n", condgid);
 
     int gid = (*nodes)[0];
     double pressure = 0.0;
@@ -2509,12 +2509,12 @@ bool AIRWAY::RedAirwayImplicitTimeInt::SumAllColElemVal(
     Epetra_Export exporter(vec->Map(), qexp_->Map());
     // export from ColMap to RowMap
     int err = qexp_->Export(*vec, exporter, Zero);
-    if (err) dserror("Export using exporter returned err=%d", err);
+    if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
 
     Epetra_Export exporter2(sumCond->Map(), qexp2_->Map());
     // export from ColMap to RowMap
     err = qexp2_->Export(*sumCond, exporter2, Zero);
-    if (err) dserror("Export using exporter returned err=%d", err);
+    if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
   }
 
   // Get the mean acinar volume on the current processor

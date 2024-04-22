@@ -206,7 +206,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       {
         // old structural time integration
         // check length of elevec1
-        if (elevec1.length() < 1) dserror("The given result vector is too short.");
+        if (elevec1.length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
         elevec1(0) = int_energy;
       }
@@ -249,7 +249,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       return 0;
     }
     default:
-      dserror("The element action %s is not yet implemented for the new solid elements",
+      FOUR_C_THROW("The element action %s is not yet implemented for the new solid elements",
           ActionType2String(action).c_str());
   }
 

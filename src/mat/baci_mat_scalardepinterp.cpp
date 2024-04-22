@@ -81,7 +81,7 @@ MAT::ScalarDepInterp::ScalarDepInterp(MAT::PAR::ScalarDepInterp* params)
 void MAT::ScalarDepInterp::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
   if (isinit_)
-    dserror("This function should just be called, if the material is jet not initialized.");
+    FOUR_C_THROW("This function should just be called, if the material is jet not initialized.");
 
   // Setup of elastic material for zero concentration
   lambda_zero_mat_ =
@@ -97,7 +97,7 @@ void MAT::ScalarDepInterp::Setup(int numgp, INPUT::LineDefinition* linedef)
   const double density1 = lambda_zero_mat_->Density();
   const double density2 = lambda_unit_mat_->Density();
   if (abs(density1 - density2) > 1e-14)
-    dserror(
+    FOUR_C_THROW(
         "The densities of the materials specified in IDMATZEROSC and IDMATUNITSC must be equal!");
 
 
@@ -144,7 +144,7 @@ void MAT::ScalarDepInterp::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     // NOTE: this would be nice, but since negative concentrations can occur,
     // we have to catch 'unnatural' cases different...
     //  if ( lambda < -1.0e-14 or lambda > (1.0+1.0e-14) )
-    //      dserror("The lambda must be in [0,1]!");
+    //      FOUR_C_THROW("The lambda must be in [0,1]!");
 
     // e.g. like that:
     if (lambda < -1.0e-14) lambda = 0.0;
@@ -254,7 +254,7 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = dynamic_cast<MAT::PAR::ScalarDepInterp*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -279,7 +279,7 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
   {
     CORE::COMM::ParObject* o = CORE::COMM::Factory(dataelastic);  // Unpack is done here
     MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
-    if (matel == nullptr) dserror("failed to unpack elastic material");
+    if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     lambda_zero_mat_ = Teuchos::rcp(matel);
   }
   else
@@ -292,13 +292,14 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
   {
     CORE::COMM::ParObject* o = CORE::COMM::Factory(dataelastic2);  // Unpack is done here
     MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
-    if (matel == nullptr) dserror("failed to unpack elastic material");
+    if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     lambda_unit_mat_ = Teuchos::rcp(matel);
   }
   else
     lambda_unit_mat_ = Teuchos::null;
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 }
@@ -335,7 +336,7 @@ bool MAT::ScalarDepInterp::VisData(
 {
   if (name == "lambda")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
 
     double temp = 0.0;
     for (int gp = 0; gp < numgp; gp++)

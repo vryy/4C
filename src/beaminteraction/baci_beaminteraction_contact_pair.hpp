@@ -125,7 +125,7 @@ namespace BEAMINTERACTION
       else if (index == 1)
         return element2_;
       else
-        dserror("Index has to be 0 or 1, got %d", index);
+        FOUR_C_THROW("Index has to be 0 or 1, got %d", index);
       return nullptr;
     };
 
@@ -145,7 +145,7 @@ namespace BEAMINTERACTION
     inline Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GeometryPair() const
     {
       if (geometry_pair_ == Teuchos::null)
-        dserror("The geometry pair is requested, but it is a null pointer!");
+        FOUR_C_THROW("The geometry pair is requested, but it is a null pointer!");
       return geometry_pair_;
     }
 
@@ -341,7 +341,7 @@ namespace BEAMINTERACTION
     virtual void CreateGeometryPair(const DRT::Element* element1, const DRT::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
     {
-      dserror("CreateGeometryPair has to be implemented in the derived class.");
+      FOUR_C_THROW("CreateGeometryPair has to be implemented in the derived class.");
     };
 
     /**
@@ -367,7 +367,7 @@ namespace BEAMINTERACTION
      */
     virtual void SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element)
     {
-      dserror("This method has to be implemented in the derived class.");
+      FOUR_C_THROW("This method has to be implemented in the derived class.");
     }
 
    protected:

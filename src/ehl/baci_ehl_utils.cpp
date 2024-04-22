@@ -38,7 +38,7 @@ int EHL::Utils::CheckTimeStepping(double dt1, double dt2)
       break;
 
     else if (t1 > workdt2)
-      dserror("Chosen time steps %f and %f are not a multiplicative of each other", dt1, dt2);
+      FOUR_C_THROW("Chosen time steps %f and %f are not a multiplicative of each other", dt1, dt2);
   }
   return i;
 }
@@ -86,7 +86,7 @@ void EHL::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
   double updatetime = ehlparams.get<double>("RESULTSEVRYTIME");
   if ((updatetime > 0.0) or (restarttime > 0.0))
     if (!(updatetime > 0.0) and !(restarttime > 0.0))
-      dserror(
+      FOUR_C_THROW(
           "If time controlled output and restart is desired, both parameters RESTARTEVRYTIME and "
           "RESULTSEVRYTIME has to be set");
 

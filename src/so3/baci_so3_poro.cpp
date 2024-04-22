@@ -164,7 +164,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::Unpack(const std::vector<char>& d
   init_ = true;
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
@@ -198,7 +198,7 @@ bool DRT::ELEMENTS::So3Poro<so3_ele, distype>::ReadElement(
 
   // setup poro material
   Teuchos::RCP<MAT::StructPoro> poromat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-  if (poromat == Teuchos::null) dserror("no poro material assigned to poro element!");
+  if (poromat == Teuchos::null) FOUR_C_THROW("no poro material assigned to poro element!");
   poromat->PoroSetup(numgpt_, linedef);
 
   ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(linedef);
@@ -260,7 +260,7 @@ int DRT::ELEMENTS::So3Poro<so3_ele, distype>::UniqueParObjectId() const
     case CORE::FE::CellType::nurbs27:
       return SoNurbs27PoroType::Instance().UniqueParObjectId();
     default:
-      dserror("unknown element type!");
+      FOUR_C_THROW("unknown element type!");
       break;
   }
   return -1;
@@ -282,7 +282,7 @@ DRT::ElementType& DRT::ELEMENTS::So3Poro<so3_ele, distype>::ElementType() const
     case CORE::FE::CellType::nurbs27:
       return SoNurbs27PoroType::Instance();
     default:
-      dserror("unknown element type!");
+      FOUR_C_THROW("unknown element type!");
   }
 }
 

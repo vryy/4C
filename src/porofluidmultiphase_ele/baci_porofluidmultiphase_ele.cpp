@@ -178,7 +178,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseType::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::PoroFluidMultiPhase* actele =
         dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(dis.lColElement(i));
-    if (!actele) dserror("cast to PoroFluidMultiPhase* failed");
+    if (!actele) FOUR_C_THROW("cast to PoroFluidMultiPhase* failed");
     actele->Initialize();
   }
   return 0;
@@ -283,7 +283,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, numdofpernode_);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -382,11 +382,12 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(int matnum)
   {
     const MAT::FluidPoroMultiPhase* actmat =
         dynamic_cast<const MAT::FluidPoroMultiPhase*>(mat.get());
-    if (actmat == nullptr) dserror("cast failed");
+    if (actmat == nullptr) FOUR_C_THROW("cast failed");
     numdofpernode_ = actmat->NumMat();
   }
   else
-    dserror("PoroFluidMultiPhase element got unsupported material type %d", mat->MaterialType());
+    FOUR_C_THROW(
+        "PoroFluidMultiPhase element got unsupported material type %d", mat->MaterialType());
 
   return;
 }
@@ -448,7 +449,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Pack(CORE::COMM::PackBuffer& da
   // boundary elements are rebuild by their parent element for each condition
   // after redistribution. This way we make sure, that the node ids always match.
   // -> no communication of boundary elements
-  dserror("This PoroFluidMultiPhaseBoundary element does not support communication");
+  FOUR_C_THROW("This PoroFluidMultiPhaseBoundary element does not support communication");
   return;
 }
 
@@ -460,7 +461,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Unpack(const std::vector<char>&
   // boundary elements are rebuild by their parent element for each condition
   // after redistribution. This way we make sure, that the node ids always match.
   // -> no communication of boundary elements
-  dserror("This PoroFluidMultiPhaseBoundary element does not support communication");
+  FOUR_C_THROW("This PoroFluidMultiPhaseBoundary element does not support communication");
   return;
 }
 
@@ -500,7 +501,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::NumSurface() const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Lines()
 {
-  dserror("Lines of PoroFluidMultiPhaseBoundary not implemented");
+  FOUR_C_THROW("Lines of PoroFluidMultiPhaseBoundary not implemented");
 }
 
 /*----------------------------------------------------------------------*
@@ -508,7 +509,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhaseBounda
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Surfaces()
 {
-  dserror("Surfaces of PoroFluidMultiPhaseBoundary not implemented");
+  FOUR_C_THROW("Surfaces of PoroFluidMultiPhaseBoundary not implemented");
 }
 
 FOUR_C_NAMESPACE_CLOSE

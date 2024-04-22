@@ -49,7 +49,7 @@ void ELCH::MovingBoundaryAlgorithm::Init()
   // safety check
   if (!ScaTraField()->Discretization()->GetCondition("ScaTraFluxCalc"))
   {
-    dserror(
+    FOUR_C_THROW(
         "Scalar transport discretization must have boundary condition for flux calculation at FSI "
         "interface!");
   }
@@ -258,7 +258,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
   {
     case INPAR::FLUID::timeint_npgenalpha:
     case INPAR::FLUID::timeint_afgenalpha:
-      dserror("ConvectiveVel() not implemented for Gen.Alpha versions");
+      FOUR_C_THROW("ConvectiveVel() not implemented for Gen.Alpha versions");
       break;
     case INPAR::FLUID::timeint_one_step_theta:
     case INPAR::FLUID::timeint_bdf2:
@@ -272,7 +272,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
     }
     break;
     default:
-      dserror("Time integration scheme not supported");
+      FOUR_C_THROW("Time integration scheme not supported");
       break;
   }
 
@@ -366,7 +366,7 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
 
       // now insert only the first numdim entries (pressure dof is not inserted!)
       int error = iveln_->ReplaceGlobalValues(numdim, Values.data(), fluidnodedofs.data());
-      if (error > 0) dserror("Could not insert values into vector iveln_: error %d", error);
+      if (error > 0) FOUR_C_THROW("Could not insert values into vector iveln_: error %d", error);
     }
   }
 

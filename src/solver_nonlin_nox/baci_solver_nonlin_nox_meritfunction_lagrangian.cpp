@@ -201,7 +201,7 @@ void NOX::NLN::MeritFunction::Lagrangian::SetType(const std::string& identifier)
       std::cout << supported_pair.first << " [= " << MeritFuncName2String(supported_pair.second)
                 << "]\n";
 
-    dserror("Unknown type name: \"%s\"", identifier.c_str());
+    FOUR_C_THROW("Unknown type name: \"%s\"", identifier.c_str());
   }
 }
 

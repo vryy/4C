@@ -68,7 +68,7 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::GetRhsBlockPtrForNormCheck(
   {
     case CONTACT::VecBlockType::displ:
     {
-      dserror("Unused!");
+      FOUR_C_THROW("Unused!");
 
       break;
     }
@@ -83,7 +83,7 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::GetRhsBlockPtrForNormCheck(
     }
     default:
     {
-      dserror("Unsupported VecBlocktype! (enum=%d)", bt);
+      FOUR_C_THROW("Unsupported VecBlocktype! (enum=%d)", bt);
       exit(EXIT_FAILURE);
     }
   }
@@ -140,7 +140,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::STEEPESTASCENT::Strategy:
     }
     default:
     {
-      dserror("Unknown STR::MatBlockType!");
+      FOUR_C_THROW("Unknown STR::MatBlockType!");
       break;
     }
   }
@@ -275,7 +275,7 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::ComputeActiveLagrangeIncrInNormalDirecti
   // calculate the Uzawa Update increment
   // *** Attention: zincr_Update has the wrong sign here! ***
   int err = gradWGapUpdate->Multiply(false, displ_incr, znincr_active);
-  if (err) dserror("Multiply error! (err=%d)", err);
+  if (err) FOUR_C_THROW("Multiply error! (err=%d)", err);
 
   CATCH_EPETRA_ERROR(znincr_active.Update(1.0, Data().WGap(), 1.0));
 
@@ -317,7 +317,7 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::ComputeInactiveLagrangeIncrInNormalDirec
       CORE::LINALG::ExtractMyVector(displ_incr, SlDoFRowMap(true));
 
   int err = Data().InactiveLinMatrix().Multiply(false, *displ_incr_sl_ptr, zincr_inactive);
-  if (err) dserror("Multiply error (err=%d)!", err);
+  if (err) FOUR_C_THROW("Multiply error (err=%d)!", err);
 
   zincr_inactive.ReciprocalMultiply(-1.0, Data().InactiveDiagMatrix(), zincr_inactive, 0.0);
 

@@ -121,7 +121,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
 
     // safety check
     if (function.NumberComponents() != 1)
-      dserror("dimension of function defining temperature boundary condition is not one!");
+      FOUR_C_THROW("dimension of function defining temperature boundary condition is not one!");
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)

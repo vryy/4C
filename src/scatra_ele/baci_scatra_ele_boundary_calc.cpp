@@ -156,7 +156,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
       break;
     }
     default:
-      dserror("Not implemented for discretization type: %i!", ele->ParentElement()->Shape());
+      FOUR_C_THROW("Not implemented for discretization type: %i!", ele->ParentElement()->Shape());
       break;
   }
 }
@@ -176,7 +176,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
     const int ndsdisp = scatraparams_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
-    dsassert(dispnp != Teuchos::null, "Cannot get state vector 'dispnp'");
+    FOUR_C_ASSERT(dispnp != Teuchos::null, "Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -270,7 +270,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
     case SCATRA::BoundaryAction::calc_Neumann:
     {
       DRT::Condition* condition = params.get<DRT::Condition*>("condition");
-      if (condition == nullptr) dserror("Cannot access Neumann boundary condition!");
+      if (condition == nullptr) FOUR_C_THROW("Cannot access Neumann boundary condition!");
 
       EvaluateNeumann(ele, params, discretization, *condition, la, elevec1_epetra, 1.);
 
@@ -292,7 +292,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
 
       // get values of scalar
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
       // extract local values from global vector
       std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
@@ -301,7 +301,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
 
       // get condition
       Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
-      if (cond == Teuchos::null) dserror("Cannot access condition 'TransportThermoConvections'!");
+      if (cond == Teuchos::null)
+        FOUR_C_THROW("Cannot access condition 'TransportThermoConvections'!");
 
       // get heat transfer coefficient and surrounding temperature
       const auto heatranscoeff = *cond->Get<double>("coeff");
@@ -319,7 +320,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       DRT::Element* parentele = ele->ParentElement();
       Teuchos::RCP<MAT::Material> mat = parentele->Material();
 
-      if (numscal_ > 1) dserror("not yet implemented for more than one scalar\n");
+      if (numscal_ > 1) FOUR_C_THROW("not yet implemented for more than one scalar\n");
 
       switch (distype)
       {
@@ -333,7 +334,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
           }
           else
           {
-            dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
+            FOUR_C_THROW("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
           }
           break;
         }
@@ -347,14 +348,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
                 ele, params, discretization, mat, elemat1_epetra, elevec1_epetra);
           }
           else
-            dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
+            FOUR_C_THROW("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
 
           break;
         }
 
         default:
         {
-          dserror("not implemented yet\n");
+          FOUR_C_THROW("not implemented yet\n");
           break;
         }
       }
@@ -384,7 +385,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
 
       // get actual values of transported scalars
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
       std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
@@ -397,7 +398,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       // get convective (velocity - mesh displacement) velocity at nodes
       Teuchos::RCP<const Epetra_Vector> convel =
           discretization.GetState(ndsvel, "convective velocity field");
-      if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
+      if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -473,7 +474,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
     }
     default:
     {
-      dserror("Not acting on this boundary action. Forgot implementation?");
+      FOUR_C_THROW("Not acting on this boundary action. Forgot implementation?");
       break;
     }
   }
@@ -504,7 +505,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNeumann(DRT:
 
   if (numdofpernode_ != numdof)
   {
-    dserror(
+    FOUR_C_THROW(
         "The NUMDOF you have entered in your TRANSPORT NEUMANN CONDITION does not equal the number "
         "of scalars.");
   }
@@ -562,14 +563,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
   // access the global vector
   const auto normals =
       params.get<Teuchos::RCP<Epetra_MultiVector>>("normal vectors", Teuchos::null);
-  if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
+  if (normals == Teuchos::null) FOUR_C_THROW("Could not access vector 'normal vectors'");
 
   // determine constant outer normal to this element
   if constexpr (nsd_ == 3 and nsd_ele_ == 1)
   {
     // get first 3 nodes in parent element
     auto* p_ele = ele->ParentElement();
-    dsassert(p_ele->NumNode() >= 3, "Parent element must at least have 3 nodes.");
+    FOUR_C_ASSERT(p_ele->NumNode() >= 3, "Parent element must at least have 3 nodes.");
     CORE::LINALG::Matrix<nsd_, 3> xyz_parent_ele;
 
     for (int i_node = 0; i_node < 3; ++i_node)
@@ -585,7 +586,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
     normal_ = GetConstNormal(xyze_);
   }
   else
-    dserror("This combination of space dimension and element dimension makes no sense.");
+    FOUR_C_THROW("This combination of space dimension and element dimension makes no sense.");
 
   for (int j = 0; j < nen_; j++)
   {
@@ -629,7 +630,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
 
   // get values of scalar
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // extract local values from global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
@@ -642,7 +643,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
   // get convective (velocity - mesh displacement) velocity at nodes
   Teuchos::RCP<const Epetra_Vector> convel =
       discretization.GetState(ndsvel, "convective velocity field");
-  if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
+  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -753,7 +754,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetDensity(
         density = 1.;
       }
       else
-        dserror("type of material found in material list is not supported");
+        FOUR_C_THROW("type of material found in material list is not supported");
 
       break;
     }
@@ -769,7 +770,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetDensity(
 
     default:
     {
-      dserror("Invalid material type!");
+      FOUR_C_THROW("Invalid material type!");
       break;
     }
   }
@@ -859,7 +860,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ConvectiveHeatTrans
         shc = actmat->Capacity();
       }
       else
-        dserror("Material type is not supported for convective heat transfer!");
+        FOUR_C_THROW("Material type is not supported for convective heat transfer!");
 
       // integration factor for left-hand side
       const double lhsfac = heatranscoeff * scatraparamstimint_->TimeFac() * fac / shc;
@@ -913,7 +914,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 {
   // safety check
   if (nsd_ele_ != 2)
-    dserror("Computation of shape derivatives only implemented for 2D interfaces!");
+    FOUR_C_THROW("Computation of shape derivatives only implemented for 2D interfaces!");
 
   EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
 
@@ -1004,7 +1005,7 @@ template <CORE::FE::CellType distype, int probdim>
 CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
     const CORE::LINALG::Matrix<3, nen_>& xyze)
 {
-  if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
+  if (DRT::NURBS::IsNurbs(distype)) FOUR_C_THROW("Element normal not implemented for NURBS");
 
   CORE::LINALG::Matrix<3, 1> normal(true), dist1(true), dist2(true);
   for (int i = 0; i < 3; i++)
@@ -1016,7 +1017,7 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
   normal.CrossProduct(dist1, dist2);
 
   const double length = normal.Norm2();
-  if (length < 1.0e-16) dserror("Zero length for element normal");
+  if (length < 1.0e-16) FOUR_C_THROW("Zero length for element normal");
 
   normal.Scale(1.0 / length);
 
@@ -1029,7 +1030,7 @@ template <CORE::FE::CellType distype, int probdim>
 CORE::LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
     const CORE::LINALG::Matrix<2, nen_>& xyze)
 {
-  if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
+  if (DRT::NURBS::IsNurbs(distype)) FOUR_C_THROW("Element normal not implemented for NURBS");
 
   CORE::LINALG::Matrix<2, 1> normal(true);
 
@@ -1037,7 +1038,7 @@ CORE::LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
   normal(1) = (-1.0) * (xyze(0, 1) - xyze(0, 0));
 
   const double length = normal.Norm2();
-  if (length < 1.0e-16) dserror("Zero length for element normal");
+  if (length < 1.0e-16) FOUR_C_THROW("Zero length for element normal");
 
   normal.Scale(1.0 / length);
 
@@ -1050,7 +1051,7 @@ template <CORE::FE::CellType distype, int probdim>
 CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
     const CORE::LINALG::Matrix<3, nen_>& xyze, const CORE::LINALG::Matrix<3, 3>& nodes_parent_ele)
 {
-  if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
+  if (DRT::NURBS::IsNurbs(distype)) FOUR_C_THROW("Element normal not implemented for NURBS");
 
   CORE::LINALG::Matrix<3, 1> normal(true), normal_parent_ele(true), boundary_ele(true),
       parent_ele_v1(true), parent_ele_v2(true);
@@ -1094,7 +1095,7 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
   if (inward_vector.Dot(normal) >= 0.0) normal.Scale(-1.0);
 
   const double length = normal.Norm2();
-  if (length < 1.0e-16) dserror("Zero length for element normal");
+  if (length < 1.0e-16) FOUR_C_THROW("Zero length for element normal");
 
   normal.Scale(1.0 / length);
 
@@ -1144,7 +1145,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
     // evaluate overall integration factors
     const double timefacfac = scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     const double pseudo_contact_fac =
         CalculatePseudoContactFactor(is_pseudo_contact, eslavestress_vector, normal, funct_);
@@ -1196,9 +1197,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
       case INPAR::S2I::kinetics_constperm:
       {
         if (permeabilities == nullptr)
-          dserror("Cannot access vector of permeabilities for scatra-scatra interface coupling!");
+          FOUR_C_THROW(
+              "Cannot access vector of permeabilities for scatra-scatra interface coupling!");
         if (permeabilities->size() != (unsigned)numscal)
-          dserror("Number of permeabilities does not match number of scalars!");
+          FOUR_C_THROW("Number of permeabilities does not match number of scalars!");
 
         // core residual
         const double N_timefacrhsfac = pseudo_contact_fac * timefacrhsfac * (*permeabilities)[k] *
@@ -1227,7 +1229,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
           }
         }
         else if (k_ss.numRows() or k_sm.numRows() or r_s.length())
-          dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
+          FOUR_C_THROW(
+              "Must provide both slave-side matrices and slave-side vector or none of them!");
 
         if (k_ms.numRows() and k_mm.numRows() and r_m.length())
         {
@@ -1247,14 +1250,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
           }
         }
         else if (k_ms.numRows() or k_mm.numRows() or r_m.length())
-          dserror("Must provide both master-side matrices and master-side vector or none of them!");
+          FOUR_C_THROW(
+              "Must provide both master-side matrices and master-side vector or none of them!");
 
         break;
       }
 
       default:
       {
-        dserror("Kinetic model for scatra-scatra interface coupling not yet implemented!");
+        FOUR_C_THROW("Kinetic model for scatra-scatra interface coupling not yet implemented!");
         break;
       }
     }
@@ -1312,7 +1316,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfPa
       }
       default:
       {
-        dserror("Not implemented for discretization type: %i!", faceele->ParentElement()->Shape());
+        FOUR_C_THROW(
+            "Not implemented for discretization type: %i!", faceele->ParentElement()->Shape());
         break;
       }
     }
@@ -1389,7 +1394,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
   // get current scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition>>("condition");
   if (s2icondition == Teuchos::null)
-    dserror("Cannot access scatra-scatra interface coupling condition!");
+    FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // get primary variable to derive the linearization
   const auto differentiationtype =
@@ -1415,7 +1420,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
 
     // evaluate overall integration factor
     const double timefacwgt = scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
-    if (timefacwgt < 0.) dserror("Integration factor is negative!");
+    if (timefacwgt < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     // loop over scalars
     for (int k = 0; k < numscal_; ++k)
@@ -1440,10 +1445,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
               // access real vector of constant permeabilities associated with current condition
               const std::vector<double>* permeabilities = scatraparamsboundary_->Permeabilities();
               if (permeabilities == nullptr)
-                dserror(
+                FOUR_C_THROW(
                     "Cannot access vector of permeabilities for scatra-scatra interface coupling!");
               if (permeabilities->size() != static_cast<unsigned>(numscal_))
-                dserror("Number of permeabilities does not match number of scalars!");
+                FOUR_C_THROW("Number of permeabilities does not match number of scalars!");
 
               // core linearization
               const double dN_dsqrtdetg_timefacwgt = pseudo_contact_fac * timefacwgt *
@@ -1471,7 +1476,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
             }
             default:
             {
-              dserror("Unknown primary quantity to calculate derivative");
+              FOUR_C_THROW("Unknown primary quantity to calculate derivative");
               break;
             }
           }
@@ -1481,7 +1486,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
 
         default:
         {
-          dserror("Kinetic model for scatra-scatra interface coupling not yet implemented!");
+          FOUR_C_THROW("Kinetic model for scatra-scatra interface coupling not yet implemented!");
           break;
         }
       }  // selection of kinetic model
@@ -1526,7 +1531,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
   // extract global state vector from discretization
   const Teuchos::RCP<const Epetra_Vector> state = discretization.GetState(nds, statename);
   if (state == Teuchos::null)
-    dserror("Cannot extract state vector \"" + statename + "\" from discretization!");
+    FOUR_C_THROW("Cannot extract state vector \"" + statename + "\" from discretization!");
 
   // extract nodal state variables associated with boundary element
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*state, estate, la[nds].lm_);
@@ -1609,7 +1614,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
 
   // get current condition
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
-  if (cond == Teuchos::null) dserror("Cannot access condition 'TransportRobin'");
+  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'TransportRobin'");
 
   // get on/off flags
   const auto* onoff = cond->Get<std::vector<int>>("onoff");
@@ -1617,7 +1622,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
   // safety check
   if ((int)(onoff->size()) != numscal_)
   {
-    dserror(
+    FOUR_C_THROW(
         "Mismatch in size for Robin boundary conditions, onoff has length %i, but you have %i "
         "scalars",
         onoff->size(), numscal_);
@@ -1636,7 +1641,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
   // ------------get values of scalar transport------------------
   // extract global state vector from discretization
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp == Teuchos::null) dserror("Cannot read state vector \"phinp\" from discretization!");
+  if (phinp == Teuchos::null)
+    FOUR_C_THROW("Cannot read state vector \"phinp\" from discretization!");
 
   // extract local nodal state variables from global state vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
@@ -1724,13 +1730,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
   //////////////////////////////////////////////////////////////////////
 
   if (scatraparamstimint_->IsGenAlpha() or not scatraparamstimint_->IsIncremental())
-    dserror("Not a valid time integration scheme!");
+    FOUR_C_THROW("Not a valid time integration scheme!");
 
   std::vector<int>& lm = la[0].lm_;
 
   // ------------get values of scalar transport------------------
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
   // extract local values from global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
       numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
@@ -1739,7 +1745,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
   //------------get membrane concentration at the interface (i.e. within the
   // membrane)------------------
   Teuchos::RCP<const Epetra_Vector> phibar = discretization.GetState("MembraneConcentration");
-  if (phibar == Teuchos::null) dserror("Cannot get state vector 'MembraneConcentration'");
+  if (phibar == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'MembraneConcentration'");
   // extract local values from global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephibar(
       numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
@@ -1748,9 +1754,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
   // ------------get values of wall shear stress-----------------------
   // get number of dofset associated with pressure related dofs
   const int ndswss = scatraparams_->NdsWss();
-  if (ndswss == -1) dserror("Cannot get number of dofset of wss vector");
+  if (ndswss == -1) FOUR_C_THROW("Cannot get number of dofset of wss vector");
   Teuchos::RCP<const Epetra_Vector> wss = discretization.GetState(ndswss, "WallShearStress");
-  if (wss == Teuchos::null) dserror("Cannot get state vector 'WallShearStress'");
+  if (wss == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'WallShearStress'");
 
   // determine number of velocity (and pressure) related dofs per node
   const int numwssdofpernode = la[ndswss].lm_.size() / nen_;
@@ -1771,7 +1777,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
   //////////////////////////////////////////////////////////////////////
 
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
-  if (cond == Teuchos::null) dserror("Cannot access condition 'SurfacePermeability'");
+  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'SurfacePermeability'");
 
   const auto* onoff = cond->Get<std::vector<int>>("onoff");
 
@@ -1810,7 +1816,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
           if (scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
             facfac = scatraparamstimint_->TimeFac() * fac * refconcfac;
           else
-            dserror("EvaluateSurfacePermeability: Requested scheme not yet implemented");
+            FOUR_C_THROW("EvaluateSurfacePermeability: Requested scheme not yet implemented");
 
           // scalar at integration point
           const double phi = funct_.Dot(ephinp[k]);
@@ -1858,13 +1864,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
 {
   // safety checks
   if (scatraparamstimint_->IsGenAlpha() or not scatraparamstimint_->IsIncremental())
-    dserror("Not a valid time integration scheme!");
+    FOUR_C_THROW("Not a valid time integration scheme!");
 
   std::vector<int>& lm = la[0].lm_;
 
   // ------------get values of scalar transport------------------
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
   // extract local values from global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
       numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
@@ -1874,7 +1880,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   //------------get membrane concentration at the interface (i.e. within the
   // membrane)------------------
   Teuchos::RCP<const Epetra_Vector> phibar = discretization.GetState("MembraneConcentration");
-  if (phibar == Teuchos::null) dserror("Cannot get state vector 'MembraneConcentration'");
+  if (phibar == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'MembraneConcentration'");
   // extract local values from global vector
   std::vector<CORE::LINALG::Matrix<nen_, 1>> ephibar(
       numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
@@ -1884,9 +1890,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   //--------get values of pressure at the interface ----------------------
   // get number of dofset associated with pressure related dofs
   const int ndspres = scatraparams_->NdsPres();
-  if (ndspres == -1) dserror("Cannot get number of dofset of pressure vector");
+  if (ndspres == -1) FOUR_C_THROW("Cannot get number of dofset of pressure vector");
   Teuchos::RCP<const Epetra_Vector> pressure = discretization.GetState(ndspres, "Pressure");
-  if (pressure == Teuchos::null) dserror("Cannot get state vector 'Pressure'");
+  if (pressure == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'Pressure'");
 
   // determine number of velocity (and pressure) related dofs per node
   const int numveldofpernode = la[ndspres].lm_.size() / nen_;
@@ -1905,9 +1911,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   // ------------get values of wall shear stress-----------------------
   // get number of dofset associated with pressure related dofs
   const int ndswss = scatraparams_->NdsWss();
-  if (ndswss == -1) dserror("Cannot get number of dofset of wss vector");
+  if (ndswss == -1) FOUR_C_THROW("Cannot get number of dofset of wss vector");
   Teuchos::RCP<const Epetra_Vector> wss = discretization.GetState(ndswss, "WallShearStress");
-  if (wss == Teuchos::null) dserror("Cannot get state vector 'WallShearStress'");
+  if (wss == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'WallShearStress'");
 
   // determine number of velocity (and pressure) related dofs per node
   const int numwssdofpernode = la[ndswss].lm_.size() / nen_;
@@ -1923,7 +1929,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   // ------------get current condition----------------------------------
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
   if (cond == Teuchos::null)
-    dserror("Cannot access condition 'DESIGN SCATRA COUPLING SURF CONDITIONS'");
+    FOUR_C_THROW("Cannot access condition 'DESIGN SCATRA COUPLING SURF CONDITIONS'");
 
   const auto* onoff = cond->Get<std::vector<int>>("onoff");
 
@@ -1965,7 +1971,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
         if (scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
           facfac = scatraparamstimint_->TimeFac() * fac;
         else
-          dserror("Kedem-Katchalsky: Requested time integration scheme not yet implemented");
+          FOUR_C_THROW("Kedem-Katchalsky: Requested time integration scheme not yet implemented");
 
         // scalar at integration point
         const double phi = funct_.Dot(ephinp[k]);
@@ -2134,7 +2140,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   // get convective (velocity - mesh displacement) velocity at nodes
   Teuchos::RCP<const Epetra_Vector> convel =
       discretization.GetState(ndsvel, "convective velocity field");
-  if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
+  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = pla[ndsvel].lm_.size() / pnen;
@@ -2156,7 +2162,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
 
   // get scalar values at parent element nodes
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // extract local values from global vectors for parent element
   std::vector<CORE::LINALG::Matrix<pnen, 1>> ephinp(numscal_);
@@ -2251,7 +2257,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   else if (consistency == "diffusive-optimal")
     gamma = -1.0;
   else
-    dserror("unknown definition for gamma parameter: %s", consistency.c_str());
+    FOUR_C_THROW("unknown definition for gamma parameter: %s", consistency.c_str());
 
   // use one-point Gauss rule to do calculations at element center
   const CORE::FE::IntPointsAndWeights<bnsd> intpoints_tau(
@@ -2333,7 +2339,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
       pxjm.MultiplyNT(pderiv, pxyze);
       const double det = pxji.Invert(pxjm);
       if (det < 1E-16)
-        dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
+        FOUR_C_THROW(
+            "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
 
       // compute integration factor
       const double fac = pintpoints.IP().qwgt[iquad] * det;
@@ -2352,13 +2359,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
         {
           const auto* actmat = static_cast<const MAT::ScatraMat*>(material.get());
 
-          dsassert(numdofpernode_ == 1, "more than 1 dof per node for SCATRA material");
+          FOUR_C_ASSERT(numdofpernode_ == 1, "more than 1 dof per node for SCATRA material");
 
           // get constant diffusivity
           diffus_[k] = actmat->Diffusivity();
         }
         else
-          dserror("Material type is not supported");
+          FOUR_C_THROW("Material type is not supported");
 
         // gradient of current scalar value
         gradphi.Multiply(pderxy, ephinp[k]);
@@ -2479,7 +2486,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
     pxjm.MultiplyNT(pderiv, pxyze);
     const double det = pxji.Invert(pxjm);
     if (det < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
+      FOUR_C_THROW(
+          "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
 
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector
@@ -2521,7 +2529,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
       {
         printf("%12.5e %12.5e\n", check(j), coordgp(j));
       }
-      dserror("Gausspoint matching error %12.5e\n", norm);
+      FOUR_C_THROW("Gausspoint matching error %12.5e\n", norm);
     }
 
     //--------------------------------------------------------------------
@@ -2557,13 +2565,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
       {
         const auto* actmat = static_cast<const MAT::ScatraMat*>(material.get());
 
-        dsassert(numdofpernode_ == 1, "more than 1 dof per node for SCATRA material");
+        FOUR_C_ASSERT(numdofpernode_ == 1, "more than 1 dof per node for SCATRA material");
 
         // get constant diffusivity
         diffus_[k] = actmat->Diffusivity();
       }
       else
-        dserror("Material type is not supported");
+        FOUR_C_THROW("Material type is not supported");
 
       // get scalar value at integration point
       const double phi = pfunct.Dot(ephinp[k]);
@@ -2831,9 +2839,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
 
   // get scalar values at parent element nodes
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
   Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector 'phin'");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
 
   // extract local values from global vectors for parent element
   std::vector<CORE::LINALG::Matrix<pnen, 1>> ephinp(numscal_);
@@ -2988,7 +2996,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
     pxjm.MultiplyNT(pderiv, pxyze);
     const double det = pxji.Invert(pxjm);
     if (det < 1E-16)
-      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
+      FOUR_C_THROW(
+          "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
 
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector

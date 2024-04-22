@@ -113,7 +113,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   const DRT::ElementType& eot1 = element1_->ElementType();
 
   if (smoothing_ == INPAR::BEAMCONTACT::bsm_cpp and eot1 != DRT::ELEMENTS::Beam3rType::Instance())
-    dserror("Tangent smoothing only implemented for beams of type beam3r!");
+    FOUR_C_THROW("Tangent smoothing only implemented for beams of type beam3r!");
 
   // For both elements the 2 direct neighbor elements are determined and saved in the
   // B3CNeighbor-Class variables neighbors1_ and neighbors2_. The neighbors are not only necessary
@@ -135,25 +135,25 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   ele1length_ = lvec1.Norm2();
   ele2length_ = lvec2.Norm2();
 
-  if (element1->ElementType() != element2->ElementType())
-    dserror("The class beam3contact only works for contact pairs of the same beam element type!");
+  FOUR_C_THROW_UNLESS(element1->ElementType() == element2->ElementType(),
+      "The class beam3contact only works for contact pairs of the same beam element type!");
 
   if (element1->Id() >= element2->Id())
-    dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
+    FOUR_C_THROW("Element 1 has to have the smaller element-ID. Adapt your contact search!");
 
 
   // get radius of elements
   const DRT::ELEMENTS::Beam3Base* beamele1 =
       static_cast<const DRT::ELEMENTS::Beam3Base*>(element1_);
 
-  if (beamele1 == nullptr) dserror("cast to beam base failed!");
+  FOUR_C_THROW_UNLESS(beamele1, "cast to beam base failed!");
 
   radius1_ = MANIPULATERADIUS * beamele1->GetCircularCrossSectionRadiusForInteractions();
 
   const DRT::ELEMENTS::Beam3Base* beamele2 =
       static_cast<const DRT::ELEMENTS::Beam3Base*>(element2_);
 
-  if (beamele2 == nullptr) dserror("cast to beam base failed!");
+  if (beamele2 == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
   radius2_ = MANIPULATERADIUS * beamele2->GetCircularCrossSectionRadiusForInteractions();
 
@@ -167,11 +167,11 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   searchboxinc_ = BEAMINTERACTION::DetermineSearchboxInc(beamcontactparams);
 
   if (searchboxinc_ < 0.0)
-    dserror("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
+    FOUR_C_THROW("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
 
   if (CORE::UTILS::IntegralValue<int>(bcparams_, "BEAMS_NEWGAP") and
       !CORE::UTILS::IntegralValue<int>(beamcontactparams, "BEAMS_ADDITEXT"))
-    dserror("New gap function only possible when the flag BEAMS_ADDITEXT is set true!");
+    FOUR_C_THROW("New gap function only possible when the flag BEAMS_ADDITEXT is set true!");
 
   int penaltylaw = CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
       beamcontactparams, "BEAMS_PENALTYLAW");
@@ -180,7 +180,8 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
     if (beamcontactparams.get<double>("BEAMS_PENREGPARAM_F0", -1.0) == -1.0 or
         beamcontactparams.get<double>("BEAMS_PENREGPARAM_G0", -1.0) == -1.0 or
         beamcontactparams.get<double>("BEAMS_PENREGPARAM_C0", -1.0) == -1.0)
-      dserror("Regularized penalty law chosen, but not all regularization parameters are set!");
+      FOUR_C_THROW(
+          "Regularized penalty law chosen, but not all regularization parameters are set!");
   }
 
   if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Damping>(beamcontactparams, "BEAMS_DAMPING") !=
@@ -189,11 +190,12 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
     if (beamcontactparams.get<double>("BEAMS_DAMPINGPARAM", -1.0) == -1.0 or
         beamcontactparams.get<double>("BEAMS_DAMPREGPARAM1", -1.0) == -1.0 or
         beamcontactparams.get<double>("BEAMS_DAMPREGPARAM2", -1.0) == -1.0)
-      dserror("Damping force chosen in input-file, but no damping (regularization) parameter!");
+      FOUR_C_THROW(
+          "Damping force chosen in input-file, but no damping (regularization) parameter!");
   }
 
   if (beamcontactparams.get<double>("BEAMS_GAPSHIFTPARAM", 0.0) != 0.0)
-    dserror(
+    FOUR_C_THROW(
         "BEAMS_GAPSHIFTPARAM not implemented for beam3contactnew (input parameter "
         "BEAMS_SEGCON==No)!");
 
@@ -583,7 +585,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
   if (basicstiffgap != -1.0)
   {
     if (basicstiffgap < 0.0)
-      dserror("The parameter BEAMS_BASICSTIFFGAP has to be positive!");
+      FOUR_C_THROW("The parameter BEAMS_BASICSTIFFGAP has to be positive!");
     else if (gap_ < -1.0 * basicstiffgap)
     {
       completestiff = false;
@@ -1452,7 +1454,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
   if (basicstiffgap != -1.0)
   {
     if (basicstiffgap < 0.0)
-      dserror("The parameter BEAMS_BASICSTIFFGAP has to be positive!");
+      FOUR_C_THROW("The parameter BEAMS_BASICSTIFFGAP has to be positive!");
     else if (gap_ < -1.0 * basicstiffgap)
     {
       completestiff = false;
@@ -1905,7 +1907,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeLinXiAndLinEta(
   // invert L by hand
   TYPE det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
   if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(det_L)) < DETERMINANTTOL)
-    dserror("ERROR: Determinant of L = 0");
+    FOUR_C_THROW("ERROR: Determinant of L = 0");
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
   L_inv(1, 0) = -L(1, 0) / det_L;
@@ -2385,7 +2387,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
       std::cout << "residual: " << residual << std::endl;
       std::cout << "eta1: " << eta1 << std::endl;
       std::cout << "eta2: " << eta2 << std::endl;
-      dserror(
+      FOUR_C_THROW(
           "Relative CPP residual norm is smaller than 1.0e-08 but Newton is not converged. Adapt "
           "your absolut CPP residual norm!");
     }
@@ -2455,7 +2457,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CalcPenaltyLaw()
       }
       case INPAR::BEAMCONTACT::pl_lnqp:  // quadratic regularization for negative gaps
       {
-        if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+        if (g0 == -1.0)
+          FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
         if (gap_ > -g0)
         {
@@ -2474,7 +2477,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CalcPenaltyLaw()
       }
       case INPAR::BEAMCONTACT::pl_lpqp:  // quadratic regularization for positiv gaps
       {
-        if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+        if (g0 == -1.0)
+          FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
         double f0 = g0 * pp_ / 2.0;
         double factor_a = pp_ / (g0)-f0 / (g0 * g0);
@@ -2497,11 +2501,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CalcPenaltyLaw()
       }
       case INPAR::BEAMCONTACT::pl_lpcp:  // cubic regularization for positive gaps
       {
-        if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+        if (g0 == -1.0)
+          FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
         // Third parameter for contact force regularization
         double c0 = bcparams_.get<double>("BEAMS_PENREGPARAM_C0", -1.0);
-        if (c0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
+        if (c0 == -1.0)
+          FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
 
         // k \in ~[1;3] delivers sensible results representing a parable without turning point
         // k \in ~[3;6] delivers a parable with turning point and consequentely also small negative
@@ -2530,15 +2536,18 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CalcPenaltyLaw()
       }
       case INPAR::BEAMCONTACT::pl_lpdqp:  // double quadratic regularization for positiv gaps
       {
-        if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+        if (g0 == -1.0)
+          FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
         // Third parameter for contact force regularization
         double c0 = bcparams_.get<double>("BEAMS_PENREGPARAM_C0", -1.0);
-        if (c0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
+        if (c0 == -1.0)
+          FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
 
         // Second parameter for contact force regularization
         double f0 = bcparams_.get<double>("BEAMS_PENREGPARAM_F0", -1.0);
-        if (f0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
+        if (f0 == -1.0)
+          FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
 
         double k =
             c0;  // transition between first and second quadratic regularization part: k \in [0;2.0]
@@ -2574,11 +2583,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CalcPenaltyLaw()
       case INPAR::BEAMCONTACT::pl_lpep:  // exponential regularization for positiv gaps. Here g0
                                          // represents the cut off radius!
       {
-        if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+        if (g0 == -1.0)
+          FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
         // Second parameter for contact force regularization
         double f0 = bcparams_.get<double>("BEAMS_PENREGPARAM_F0", -1.0);
-        if (f0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
+        if (f0 == -1.0)
+          FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
 
         if (gap_ > 0)
         {
@@ -2647,11 +2658,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CalcDampingLaw()
   double gd2 = bcparams_.get<double>("BEAMS_DAMPREGPARAM2", -1000.0);
 
   if (d0 == -1000.0 or gd1 == -1000.0 or gd2 == -1000.0)
-    dserror(
+    FOUR_C_THROW(
         "Damping parameter BEAMS_DAMPINGPARAM, BEAMS_DAMPREGPARAM1 and BEAMS_DAMPREGPARAM2 have to "
         "be chosen!");
 
-  if (gd1 < gd2) dserror("BEAMS_DAMPREGPARAM1 has to be larger or equal to BEAMS_DAMPREGPARAM2!");
+  if (gd1 < gd2)
+    FOUR_C_THROW("BEAMS_DAMPREGPARAM1 has to be larger or equal to BEAMS_DAMPREGPARAM2!");
 
   if (dampingcontactflag_)
   {
@@ -2771,10 +2783,10 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
   else if (numnodalvalues == 2)
   {
     if (element1_->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance())
-      dserror("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
+      FOUR_C_THROW("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
 
     if (element2_->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance())
-      dserror("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
+      FOUR_C_THROW("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
 
     double length1 = 2 * (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->jacobi();
     double length2 = 2 * (static_cast<DRT::ELEMENTS::Beam3eb*>(element2_))->jacobi();
@@ -2788,7 +2800,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetShapeFunctions(
     CORE::FE::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2);
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents) "
         "values are valid!");
 
@@ -3094,7 +3106,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeNormal(
   norm_delta_r = CORE::FADUTILS::VectorNorm<3>(delta_r);
 
   if (CORE::FADUTILS::CastToDouble(norm_delta_r) < NORMTOL)
-    dserror("ERROR: Normal of length zero! --> change time step!");
+    FOUR_C_THROW("ERROR: Normal of length zero! --> change time step!");
 
   // compute unit normal
   for (int i = 0; i < 3; i++)
@@ -3121,7 +3133,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ComputeNormal(
   {
     if (CORE::FADUTILS::CastToDouble(
             CORE::FADUTILS::Norm(CORE::FADUTILS::ScalarProduct(normal_, normal_old_))) < NORMALTOL)
-      dserror("ERROR: Rotation too large! --> Choose smaller Time step!");
+      FOUR_C_THROW("ERROR: Rotation too large! --> Choose smaller Time step!");
 
     gap =
         CORE::FADUTILS::Signum(CORE::FADUTILS::ScalarProduct(normal_, normal_old_)) * norm_delta_r -
@@ -3187,7 +3199,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CheckContactStatus(cons
       penaltylaw == INPAR::BEAMCONTACT::pl_lpdqp or penaltylaw == INPAR::BEAMCONTACT::pl_lpep)
   {
     // penalty laws with regularization for positive gaps
-    if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+    if (g0 == -1.0) FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
     if (gap_ < g0)
     {
@@ -3215,7 +3227,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CheckContactStatus(cons
     // First parameter for contact force regularization
     double gd1 = bcparams_.get<double>("BEAMS_DAMPREGPARAM1", -1000.0);
     if (gd1 == -1000.0)
-      dserror(
+      FOUR_C_THROW(
           "Damping parameter BEAMS_DAMPINGPARAM, BEAMS_DAMPREGPARAM1 and BEAMS_DAMPREGPARAM2 have "
           "to be chosen!");
 
@@ -3232,7 +3244,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CheckContactStatus(cons
   // Contact is not allowed to happen in the first time step a pair was found by the contact search.
   // An exception is the first time step of a simulation, where no history is available.
   if ((contactflag_ or dampingcontactflag_) and firsttimestep_ and numstep_ > 1)
-    dserror(
+    FOUR_C_THROW(
         "Contact is not allowed to happen in the first time step a pair was found by the contact "
         "search! Choose larger search radius or smaller time step!");
 
@@ -3331,7 +3343,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateClassVariablesSte
     std::cout << "ele1pos_old_: " << ele1pos_old_ << std::endl;
     std::cout << "ele2pos_: " << ele2pos_ << std::endl;
     std::cout << "ele2pos_old_: " << ele2pos_old_ << std::endl;
-    dserror(
+    FOUR_C_THROW(
         "Change in nodal positions per time step is larger than prescribed maximum "
         "MAXDELTADFAC*searchboxinc_! Choose smaller time step or larger search radius!");
   }
@@ -3428,7 +3440,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::SetClassVariables(
   //  std::cout << "dt_: " << dt_ << std::endl;
   //  std::cout << "numstep_: " << numstep_ << std::endl;
   if (iter_ == -10.0 or dt_ == -10.0 or numstep_ == -10.0)
-    dserror("Invalid time integration parameter!");
+    FOUR_C_THROW("Invalid time integration parameter!");
 
   cppunconverged_ = true;
   sgn_ = 1.0;
@@ -3533,9 +3545,10 @@ template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateEleSmoothTangents(
     std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {
-  // Tangent smoothing is only possible for Reissner beam elements --> dserror() otherwise
+  // Tangent smoothing is only possible for Reissner beam elements --> FOUR_C_THROW() otherwise
   if (numnodalvalues > 1)
-    dserror("Tangent smoothing only possible for Reissner beam elements (numnodalvalues=1)!!!");
+    FOUR_C_THROW(
+        "Tangent smoothing only possible for Reissner beam elements (numnodalvalues=1)!!!");
 
   CORE::LINALG::Matrix<3 * numnodes, 1> elepos_aux(true);
   // Tangent smoothing only possible with data type double (not with Sacado FAD)
@@ -3585,12 +3598,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ShiftNodalPositions()
     }
     else
     {
-      dserror("Only numnodes = 2 possible for Kirchhoff beams!!!");
+      FOUR_C_THROW("Only numnodes = 2 possible for Kirchhoff beams!!!");
     }
   }
   else
   {
-    dserror("The parameter numnodalvalues can only have the values 1 or 2!!!");
+    FOUR_C_THROW("The parameter numnodalvalues can only have the values 1 or 2!!!");
   }
 
   return;
@@ -3683,7 +3696,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
 
           if (contactpairmap[std::make_pair(id1, id2)]->FirstTimeStep() == true and
               beamsclose == true)
-            dserror(
+            FOUR_C_THROW(
                 "Vector normal_old_ requested but not available in the first time step the pair "
                 "has been found: Choose larger search radius!!!");
 
@@ -3698,7 +3711,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
             std::cout << "pair: " << element1_->Id() << " / " << element2_->Id() << ":"
                       << std::endl;
             std::cout << "neighbor pair: " << id1 << " / " << id2 << ":" << std::endl;
-            dserror(
+            FOUR_C_THROW(
                 "The vector normal_old_ is not allowed to be zero when taken from neighbor element "
                 "pair!");
           }
@@ -3717,7 +3730,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
           std::cout << "Warning: Neighbor pair " << id1 << " / " << id2
                     << " not found in order to calculate normal_old_ for pair " << element1_->Id()
                     << " / " << element2_->Id() << "! Choose larger search radius!" << std::endl;
-          dserror("Stopped due to Warning above!");
+          FOUR_C_THROW("Stopped due to Warning above!");
         }
       }
     }
@@ -3733,7 +3746,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
 
           if (contactpairmap[std::make_pair(id2, id1)]->FirstTimeStep() == true and
               beamsclose == true)
-            dserror(
+            FOUR_C_THROW(
                 "Vector normal_old_requested but not available in the first time step the pair has "
                 "been found: Choose larger search radius!!!");
 
@@ -3748,7 +3761,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
             std::cout << "pair: " << element1_->Id() << " / " << element2_->Id() << ":"
                       << std::endl;
             std::cout << "neighbor pair: " << id2 << " / " << id1 << ":" << std::endl;
-            dserror(
+            FOUR_C_THROW(
                 "The vector normal_old_ is not allowed to be zero when taken from neighbor element "
                 "pair!");
           }
@@ -3767,12 +3780,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
           std::cout << "Warning: Neighbor pair " << id2 << " / " << id1
                     << " not found in order to calculate normal_old_ for pair " << element1_->Id()
                     << " / " << element2_->Id() << "! Choose larger search radius!" << std::endl;
-          dserror("Stopped due to Warning above!");
+          FOUR_C_THROW("Stopped due to Warning above!");
         }
       }
     }
     else if (id1 == id2)
-      dserror("Selfcontact not possible!!!");
+      FOUR_C_THROW("Selfcontact not possible!!!");
   }
 
   // If no valid vector normal_old_ has been delivered from the neighbor element pair we set it to
@@ -3914,7 +3927,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::FADCheckLinXiAndLinEta(
   // invert L by hand
   TYPE det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
   if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(det_L)) < DETERMINANTTOL)
-    dserror("ERROR: Determinant of L = 0");
+    FOUR_C_THROW("ERROR: Determinant of L = 0");
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
   L_inv(1, 0) = -L(1, 0) / det_L;

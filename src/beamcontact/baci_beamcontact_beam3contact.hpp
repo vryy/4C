@@ -399,7 +399,7 @@ namespace CONTACT
               bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_qp and
           CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lpqp)
-        dserror("Contact Energy calculation not implemented for the chosen penalty law!");
+        FOUR_C_THROW("Contact Energy calculation not implemented for the chosen penalty law!");
 
 
       double energy = 0.0;
@@ -439,7 +439,7 @@ namespace CONTACT
               bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_qp and
           CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lpqp)
-        dserror("Contact Energy calculation not implemented for the chosen penalty law!");
+        FOUR_C_THROW("Contact Energy calculation not implemented for the chosen penalty law!");
 
 
       double energy = 0.0;
@@ -464,7 +464,7 @@ namespace CONTACT
               bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_qp and
           CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lpqp)
-        dserror("Contact Energy calculation not implemented for the chosen penalty law!");
+        FOUR_C_THROW("Contact Energy calculation not implemented for the chosen penalty law!");
 
       double energy = 0.0;
 
@@ -504,7 +504,7 @@ namespace CONTACT
     could cross in the next time step when the new gap function definition (ngf_=true) for slender
     beams is applied!
     */
-    void InvertNormal() override { dserror("Function not implemented!"); };
+    void InvertNormal() override { FOUR_C_THROW("Function not implemented!"); };
 
     // TODO
     /*!
@@ -1018,7 +1018,7 @@ namespace CONTACT
     {
       const DRT::ELEMENTS::Beam3Base* ele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element1);
 
-      if (ele == nullptr) dserror("Dynamic cast to Beam3Base failed");
+      if (ele == nullptr) FOUR_C_THROW("Dynamic cast to Beam3Base failed");
 
       return ele->GetJacobiFacAtXi(xi);
     }

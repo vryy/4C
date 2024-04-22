@@ -90,7 +90,7 @@ void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
     {
       std::vector<int> dofs = facedis->Dof(0, facedis->lRowFace(i));
       const unsigned int dim = CORE::FE::getDimension(facedis->lRowFace(i)->Shape()) + 1;
-      dsassert(dofs.size() % dim == 0, "Could not match face dofs");
+      FOUR_C_ASSERT(dofs.size() % dim == 0, "Could not match face dofs");
       const unsigned int ndofs = dofs.size() / dim;
       for (unsigned int i = 0; i < dofs.size(); ++i)
       {
@@ -103,7 +103,7 @@ void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
     for (int i = 0; i < erowmap->NumMyElements(); ++i)
     {
       std::vector<int> dofs = dis.Dof(0, dis.lRowElement(i));
-      dsassert(dofs.size() == 1, "Expect a single pressure dof per element for fluid HDG");
+      FOUR_C_ASSERT(dofs.size() == 1, "Expect a single pressure dof per element for fluid HDG");
       const unsigned int lid = rowmap->LID(dofs[0]);
       const unsigned int dim = CORE::FE::getDimension(dis.lRowElement(i)->Shape());
       for (unsigned int d = 0; d < dim; ++d) mode[d][lid] = 0.;
@@ -111,7 +111,7 @@ void DRT::ELEMENTS::FluidHDGType::ComputeNullSpace(
     }
   }
   else
-    dserror("Faces not initialized");
+    FOUR_C_THROW("Faces not initialized");
 }
 
 
@@ -212,13 +212,13 @@ void DRT::ELEMENTS::FluidHDG::Unpack(const std::vector<char>& data)
 
   int val = 0;
   ExtractfromPack(position, data, val);
-  dsassert(val >= 0 && val < 255, "Degree out of range");
+  FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
   degree_ = val;
   ExtractfromPack(position, data, val);
   completepol_ = val;
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 
@@ -304,7 +304,7 @@ int DRT::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
       break;
 
     default:
-      dserror("Unknown type of action '%i' for FluidHDG", act);
+      FOUR_C_THROW("Unknown type of action '%i' for FluidHDG", act);
       break;
   }
 

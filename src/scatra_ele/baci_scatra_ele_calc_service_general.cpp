@@ -93,7 +93,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           discretization.GetState(ndsvel, "velocity field");
 
       // safety check
-      if (convel == Teuchos::null or vel == Teuchos::null) dserror("Cannot get state vector");
+      if (convel == Teuchos::null or vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -115,7 +115,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       // need current values of transported scalar
       // -> extract local values from global vectors
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       // access control parameter for flux calculation
@@ -154,7 +154,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       // need current scalar vector
       // -> extract local values from the global vectors
       auto phinp = discretization.GetState("phinp");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       // calculate scalars and domain integral
@@ -176,7 +176,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       if (nsd_ == 3)
         CalcBoxFilter(ele, params, discretization, la);
       else
-        dserror("action 'calc_scatra_box_filter' is 3D specific action");
+        FOUR_C_THROW("action 'calc_scatra_box_filter' is 3D specific action");
 
       break;
     }
@@ -222,7 +222,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           }
           default:
           {
-            dserror("Unknown element type for box filter application\n");
+            FOUR_C_THROW("Unknown element type for box filter application\n");
           }
         }
 
@@ -248,7 +248,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         params.set<double>("ele_Prt", inv_Prt);
       }
       else
-        dserror("action 'calc_turbulent_prandtl_number' is a 3D specific action");
+        FOUR_C_THROW("action 'calc_turbulent_prandtl_number' is a 3D specific action");
 
       break;
     }
@@ -281,7 +281,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           }
           default:
           {
-            dserror("Unknown element type for vreman scatra application\n");
+            FOUR_C_THROW("Unknown element type for vreman scatra application\n");
           }
           break;
         }
@@ -290,7 +290,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         elevec1_epetra(1) = dt_denominator;
       }
       else
-        dserror("action 'calc_vreman_scatra' is a 3D specific action");
+        FOUR_C_THROW("action 'calc_vreman_scatra' is a 3D specific action");
 
 
       break;
@@ -322,7 +322,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       // get convective (velocity - mesh displacement) velocity at nodes
       Teuchos::RCP<const Epetra_Vector> convel =
           discretization.GetState(ndsvel, "convective velocity field");
-      if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
+      if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
       // determine number of velocity related dofs per node
       const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -341,11 +341,11 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
       // get phi for material parameters
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       if (turbparams_->TurbModel() != INPAR::FLUID::multifractal_subgrid_scales)
-        dserror("Multifractal_Subgrid_Scales expected");
+        FOUR_C_THROW("Multifractal_Subgrid_Scales expected");
 
       double Cai = 0.0;
       double vol = 0.0;
@@ -403,7 +403,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
           // get Re from strain rate
           double Re_ele_str = strainnorm * hk * hk * densnp[0] / visc;
-          if (Re_ele_str < 0.0) dserror("Something went wrong!");
+          if (Re_ele_str < 0.0) FOUR_C_THROW("Something went wrong!");
           // ensure positive values
           if (Re_ele_str < 1.0) Re_ele_str = 1.0;
 
@@ -457,7 +457,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         // need current scalar vector
         // -> extract local values from the global vectors
         Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-        if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+        if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
         CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
         // calculate momentum vector and volume for element.
@@ -469,11 +469,11 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     case SCATRA::Action::calc_error:
     {
       // check if length suffices
-      if (elevec1_epetra.length() < 1) dserror("Result vector too short");
+      if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
 
       // need current solution
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       CalErrorComparedToAnalytSolution(ele, params, elevec1_epetra);
@@ -703,11 +703,12 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       EvalShapeFuncAndDerivsInParameterSpace();
 
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
+      if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       if (params.get<int>("numscal") > numscal_)
-        dserror("you requested the pointvalue of the %d-th scalar but there is only %d scalars",
+        FOUR_C_THROW(
+            "you requested the pointvalue of the %d-th scalar but there is only %d scalars",
             params.get<int>("numscal"), numscal_);
 
       const double value = funct_.Dot(ephinp_[params.get<int>("numscal")]);
@@ -719,7 +720,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
     default:
     {
-      dserror("Not acting on this action. Forgot implementation?");
+      FOUR_C_THROW("Not acting on this action. Forgot implementation?");
       break;
     }
   }  // switch(action)
@@ -752,7 +753,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element
     const int ndsdisp = scatrapara_->NdsDisp();
 
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -789,7 +790,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBoxFilter(DRT::Element*
 {
   // extract scalar values from global vector
   Teuchos::RCP<const Epetra_Vector> scalar = discretization.GetState("scalar");
-  if (scalar == Teuchos::null) dserror("Cannot get scalar!");
+  if (scalar == Teuchos::null) FOUR_C_THROW("Cannot get scalar!");
   CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*scalar, ephinp_, la[0].lm_);
 
   // get number of dofset associated with velocity related dofs
@@ -798,7 +799,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBoxFilter(DRT::Element*
   // get convective (velocity - mesh displacement) velocity at nodes
   Teuchos::RCP<const Epetra_Vector> convel =
       discretization.GetState(ndsvel, "convective velocity field");
-  if (convel == Teuchos::null) dserror("Cannot get state vector convective velocity");
+  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // determine number of velocity related dofs per node
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -850,7 +851,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBoxFilter(DRT::Element*
     }
     default:
     {
-      dserror("Unknown element type for box filter application\n");
+      FOUR_C_THROW("Unknown element type for box filter application\n");
       break;
     }
   }
@@ -1030,7 +1031,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CorrectRHSFromCalcRHSLinMas
   if (scatraparatimint_->IsIncremental())
     CalcRHSLinMass(erhs, k, 0.0, -fac, 0.0, densnp);
   else
-    dserror("Must be incremental!");
+    FOUR_C_THROW("Must be incremental!");
 }
 
 
@@ -1048,7 +1049,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::IntegrateShapeFunctions(
 
   // safety check
   if (dofids.numRows() < numdofpernode_)
-    dserror("Dofids vector is too short. Received not enough flags");
+    FOUR_C_THROW("Dofids vector is too short. Received not enough flags");
 
   // loop over integration points
   // this order is not efficient since the integration of the shape functions is always the same for
@@ -1152,7 +1153,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateFlux(
 
         break;
       default:
-        dserror("received illegal flag inside flux evaluation for whole domain");
+        FOUR_C_THROW("received illegal flag inside flux evaluation for whole domain");
         break;
     }
     // q at integration point
@@ -1236,7 +1237,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalars(const DRT:
         for (unsigned i = 0; i < nen_; i++)
         {
           const double inv_value = 1.0 / ephinp_[k](i);
-          if (std::abs(inv_value) < 1e-14) dserror("Division by zero");
+          if (std::abs(inv_value) < 1e-14) FOUR_C_THROW("Division by zero");
           inv_ephinp(i) = inv_value;
         }
       }
@@ -1273,7 +1274,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalarTimeDerivati
 {
   // extract scalar time derivatives from global state vector
   const Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
-  if (phidtnp == Teuchos::null) dserror("Cannot get state vector \"phidtnp\"!");
+  if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
   static std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(numscal_);
   CORE::FE::ExtractMyValues(*phidtnp, ephidtnp, lm);
 
@@ -1497,7 +1498,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::FDCheck(DRT::Element* ele,
 
         // confirm accuracy of first comparison
         if (abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
-          dserror("Finite difference check involves values too close to numerical zero!");
+          FOUR_C_THROW("Finite difference check involves values too close to numerical zero!");
 
         // absolute and relative errors in first comparison
         const double abserr1 = entry - fdval;
@@ -1532,7 +1533,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::FDCheck(DRT::Element* ele,
 
           // confirm accuracy of second comparison
           if (abs(right) > 1.e-17 and abs(right) < 1.e-15)
-            dserror("Finite difference check involves values too close to numerical zero!");
+            FOUR_C_THROW("Finite difference check involves values too close to numerical zero!");
 
           // absolute and relative errors in second comparison
           const double abserr2 = left - right;
@@ -1583,7 +1584,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalErrorComparedToAnalytSol
     CORE::LINALG::SerialDenseVector& errors)
 {
   if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)
-    dserror("How did you get here?");
+    FOUR_C_THROW("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
   // set constants for analytical solution
@@ -1752,7 +1753,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalErrorComparedToAnalytSol
     }
     break;
     default:
-      dserror("Unknown analytical solution!");
+      FOUR_C_THROW("Unknown analytical solution!");
       break;
   }  // switch(errortype)
 }  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolution

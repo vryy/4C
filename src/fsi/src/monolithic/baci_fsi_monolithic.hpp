@@ -140,7 +140,7 @@ namespace FSI
     /// Write Lagrange multiplier
     virtual void OutputLambda()
     {
-      dserror("This function must be implemented in a derived class!");
+      FOUR_C_THROW("This function must be implemented in a derived class!");
     };
 
     /// access to structural field
@@ -368,7 +368,7 @@ namespace FSI
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
     virtual Teuchos::RCP<Epetra_Vector> GetLambda()
     {
-      dserror("GetLambda not implemented in the base class");
+      FOUR_C_THROW("GetLambda not implemented in the base class");
       return Teuchos::null;
     };
 

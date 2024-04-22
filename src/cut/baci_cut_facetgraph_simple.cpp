@@ -30,7 +30,7 @@ CORE::GEO::CUT::SimpleFacetGraph1D::SimpleFacetGraph1D(
   {
     Facet* f = *cit;
 
-    if (f->HasHoles()) dserror("Holes are not yet considered for the simple case!");
+    if (f->HasHoles()) FOUR_C_THROW("Holes are not yet considered for the simple case!");
   }
 
   // first store all facets
@@ -78,7 +78,7 @@ void CORE::GEO::CUT::SimpleFacetGraph1D::SortFacets(
   {
     Facet* f = *cit;
     if (not f->Equals(CORE::FE::CellType::point1))
-      dserror("The given facets are supposed to be points!");
+      FOUR_C_THROW("The given facets are supposed to be points!");
 
     Point* p = f->Points()[0];
     double t = p->t(edge);
@@ -120,7 +120,7 @@ CORE::GEO::CUT::SimpleFacetGraph2D::SimpleFacetGraph2D(
   {
     Facet* f = *cit;
 
-    if (f->HasHoles()) dserror("Holes are not yet considered for the simple case!");
+    if (f->HasHoles()) FOUR_C_THROW("Holes are not yet considered for the simple case!");
   }
 
   // first store all facets
@@ -136,7 +136,7 @@ void CORE::GEO::CUT::SimpleFacetGraph2D::CreateVolumeCells(
   std::vector<plain_facet_set> volumes;
 
   const std::vector<Side*> sides = element->Sides();
-  if (sides.size() != 1) dserror("A 2-D element is supposed to contain exactly one side!");
+  if (sides.size() != 1) FOUR_C_THROW("A 2-D element is supposed to contain exactly one side!");
 
   Side* side = sides[0];
 
@@ -170,7 +170,7 @@ void CORE::GEO::CUT::SimpleFacetGraph2D::CreateVolumeCells(
         line_points[1]->Print(std::cout);
         std::cout << "=====================================================" << std::endl;
 
-        dserror("Could not find the correct line facet!");
+        FOUR_C_THROW("Could not find the correct line facet!");
       }
 
       collected_facets.insert(f);

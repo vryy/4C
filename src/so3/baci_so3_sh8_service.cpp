@@ -71,7 +71,7 @@ DRT::ELEMENTS::SoSh8::ThicknessDirection DRT::ELEMENTS::SoSh8::sosh8_findthickdi
     {
       // std::cout << "ID: " << this->Id() << ", has aspect ratio of: ";
       // std::cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << std::endl;
-      // dserror("Solid-Shell element geometry has not a shell aspect ratio");
+      // FOUR_C_THROW("Solid-Shell element geometry has not a shell aspect ratio");
       return undefined;
     }
     thickdir = autor;
@@ -84,7 +84,7 @@ DRT::ELEMENTS::SoSh8::ThicknessDirection DRT::ELEMENTS::SoSh8::sosh8_findthickdi
     {
       // std::cout << "ID: " << this->Id() << ", has aspect ratio of: ";
       // std::cout << max_stretch / r_stretch << " , " << max_stretch / t_stretch << std::endl;
-      // dserror("Solid-Shell element geometry has not a shell aspect ratio");
+      // FOUR_C_THROW("Solid-Shell element geometry has not a shell aspect ratio");
       return undefined;
     }
     thickdir = autos;
@@ -97,7 +97,7 @@ DRT::ELEMENTS::SoSh8::ThicknessDirection DRT::ELEMENTS::SoSh8::sosh8_findthickdi
     {
       // std::cout << "ID: " << this->Id() << ", has aspect ratio of: ";
       // std::cout << max_stretch / r_stretch << " , " << max_stretch / s_stretch << std::endl;
-      // dserror("Solid-Shell element geometry has not a shell aspect ratio");
+      // FOUR_C_THROW("Solid-Shell element geometry has not a shell aspect ratio");
       return undefined;
     }
     thickdir = autot;
@@ -105,8 +105,8 @@ DRT::ELEMENTS::SoSh8::ThicknessDirection DRT::ELEMENTS::SoSh8::sosh8_findthickdi
   }
 
   if (thick_index == -1)
-    dserror("Trouble with thick_index=%d %g,%g,%g,%g", thick_index, r_stretch, s_stretch, t_stretch,
-        max_stretch);
+    FOUR_C_THROW("Trouble with thick_index=%d %g,%g,%g,%g", thick_index, r_stretch, s_stretch,
+        t_stretch, max_stretch);
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord
   CORE::LINALG::Matrix<NUMDIM_SOH8, 1> loc_thickvec(true);
@@ -237,7 +237,7 @@ DRT::ELEMENTS::SoSh8::ThicknessDirection DRT::ELEMENTS::SoSh8::sosh8_enfthickdir
   const double tol = 0.9;  // should be larger than 1/sqrt(2)=0.707
   // check if parametric co-ordinate is clear
   if (thickdirlocmax < tol * thickdirlocsharp.Norm2())
-    dserror(
+    FOUR_C_THROW(
         "could not clearly identify a parametric direction pointing along enforced thickness "
         "direction");
 
@@ -256,7 +256,7 @@ DRT::ELEMENTS::SoSh8::ThicknessDirection DRT::ELEMENTS::SoSh8::sosh8_enfthickdir
   }
   else
   {
-    dserror("Trouble with thick_index=%g", thick_index);
+    FOUR_C_THROW("Trouble with thick_index=%g", thick_index);
   }
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord

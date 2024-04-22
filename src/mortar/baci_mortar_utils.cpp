@@ -164,7 +164,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixRowTransformGIDs(
     double* Values;
     int* Indices;
     int err = (inmat->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
-    if (err != 0) dserror("ExtractMyRowView error: %d", err);
+    if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
 
     // pull indices back to global
     std::vector<int> idx(NumEntries);
@@ -176,7 +176,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixRowTransformGIDs(
     err = (outmat->EpetraMatrix())
               ->InsertGlobalValues(
                   newrowmap->GID(i), NumEntries, const_cast<double*>(Values), idx.data());
-    if (err < 0) dserror("InsertGlobalValues error: %d", err);
+    if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
   }
 
   // complete output matrix
@@ -210,7 +210,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixColTransformGIDs(
     double* Values;
     int* Indices;
     int err = (inmat->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
-    if (err != 0) dserror("ExtractMyRowView error: %d", err);
+    if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
     std::vector<int> idx;
     std::vector<double> vals;
     idx.reserve(NumEntries);
@@ -226,7 +226,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixColTransformGIDs(
         vals.push_back(Values[j]);
       }
       else
-        dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
+        FOUR_C_THROW("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
     }
 
     Values = vals.data();
@@ -234,7 +234,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixColTransformGIDs(
     err = (outmat->EpetraMatrix())
               ->InsertGlobalValues(
                   inmat->RowMap().GID(i), NumEntries, const_cast<double*>(Values), idx.data());
-    if (err < 0) dserror("InsertGlobalValues error: %d", err);
+    if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
   }
 
   // complete output matrix
@@ -248,7 +248,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixColTransformGIDs(
 void MORTAR::CreateNewColMap(const CORE::LINALG::SparseMatrix& mat, const Epetra_Map& newdomainmap,
     Teuchos::RCP<Epetra_Map>& newcolmap)
 {
-  if (not mat.Filled()) dserror("Matrix must be filled!");
+  if (not mat.Filled()) FOUR_C_THROW("Matrix must be filled!");
 
   if (not newcolmap.is_null() and mat.ColMap().SameAs(*newcolmap)) return;
 
@@ -261,7 +261,7 @@ void MORTAR::CreateNewColMap(const CORE::LINALG::SparseMatrix& mat, const Epetra
 
   const int nummyelements = mat.DomainMap().NumMyElements();
   if (nummyelements != newdomainmap.NumMyElements())
-    dserror("NumMyElements must be the same on each proc!");
+    FOUR_C_THROW("NumMyElements must be the same on each proc!");
 
   const int* old_gids = mat.DomainMap().MyGlobalElements();
   const int* new_gids = newdomainmap.MyGlobalElements();
@@ -275,7 +275,7 @@ void MORTAR::CreateNewColMap(const CORE::LINALG::SparseMatrix& mat, const Epetra
   {
     const int lid = mat.ColMap().LID(cit->first);
     if (lid == -1)
-      dserror("Couldn't find the GID %d in the old column map on proc %d.", cit->first,
+      FOUR_C_THROW("Couldn't find the GID %d in the old column map on proc %d.", cit->first,
           mat.Comm().MyPID());
 
     my_col_gids[lid] = cit->second;
@@ -290,7 +290,7 @@ void MORTAR::CreateNewColMap(const CORE::LINALG::SparseMatrix& mat, const Epetra
 void MORTAR::ReplaceColumnAndDomainMap(CORE::LINALG::SparseMatrix& mat,
     const Epetra_Map& newdomainmap, Teuchos::RCP<Epetra_Map>* const newcolmap_ptr)
 {
-  if (not mat.Filled()) dserror("Matrix must be filled!");
+  if (not mat.Filled()) FOUR_C_THROW("Matrix must be filled!");
 
   Teuchos::RCP<Epetra_Map> newcolmap = Teuchos::null;
   if (newcolmap_ptr)
@@ -302,12 +302,12 @@ void MORTAR::ReplaceColumnAndDomainMap(CORE::LINALG::SparseMatrix& mat,
     CreateNewColMap(mat, newdomainmap, newcolmap);
 
   int err = mat.EpetraMatrix()->ReplaceColMap(*newcolmap);
-  if (err) dserror("ReplaceColMap failed! ( err = %d )", err);
+  if (err) FOUR_C_THROW("ReplaceColMap failed! ( err = %d )", err);
 
   Epetra_Import importer(*newcolmap, newdomainmap);
 
   err = mat.EpetraMatrix()->ReplaceDomainMapAndImporter(newdomainmap, &importer);
-  if (err) dserror("ReplaceDomainMapAndImporter failed! ( err = %d )", err);
+  if (err) FOUR_C_THROW("ReplaceDomainMapAndImporter failed! ( err = %d )", err);
 }
 
 /*----------------------------------------------------------------------*
@@ -335,7 +335,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(
     double* Values;
     int* Indices;
     int err = (inmat->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
-    if (err != 0) dserror("ExtractMyRowView error: %d", err);
+    if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
     std::vector<int> idx;
     std::vector<double> vals;
     idx.reserve(NumEntries);
@@ -351,7 +351,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(
         vals.push_back(Values[j]);
       }
       else
-        dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
+        FOUR_C_THROW("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
     }
 
     Values = vals.data();
@@ -359,7 +359,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(
     err = (outmat->EpetraMatrix())
               ->InsertGlobalValues(
                   newrowmap->GID(i), NumEntries, const_cast<double*>(Values), idx.data());
-    if (err < 0) dserror("InsertGlobalValues error: %d", err);
+    if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
   }
 
   // complete output matrix
@@ -429,7 +429,7 @@ Teuchos::RCP<Epetra_CrsMatrix> MORTAR::Redistribute(const CORE::LINALG::SparseMa
   Teuchos::RCP<Epetra_CrsMatrix> permsrc =
       Teuchos::rcp(new Epetra_CrsMatrix(Copy, permrowmap, src.MaxNumEntries()));
   int err = permsrc->Import(*src.EpetraMatrix(), *exporter, Insert);
-  if (err) dserror("Import failed with err=%d", err);
+  if (err) FOUR_C_THROW("Import failed with err=%d", err);
 
   permsrc->FillComplete(permdomainmap, permrowmap);
   return permsrc;
@@ -496,7 +496,7 @@ int MORTAR::SortConvexHullPoints(bool out, CORE::LINALG::SerialDenseMatrix& tran
     double xdiff = transformed(0, i) - startpoint[0];
     double ydiff = transformed(1, i) - startpoint[1];
 
-    if (xdiff < 0) dserror("Found point with x < x_start for convex hull!");
+    if (xdiff < 0) FOUR_C_THROW("Found point with x < x_start for convex hull!");
     if (xdiff >= tol)
     {
       cotangle.push_back(ydiff / xdiff);
@@ -556,7 +556,7 @@ int MORTAR::SortConvexHullPoints(bool out, CORE::LINALG::SerialDenseMatrix& tran
   }
 
   // check if sizes are correct
-  if ((int)cotangle.size() != np - 1) dserror("Size went wrong for cot angle!");
+  if ((int)cotangle.size() != np - 1) FOUR_C_THROW("Size went wrong for cot angle!");
 
   // now sort descending w.r.t cotangle = ascending w.r.t angle
   MORTAR::Sort(cotangle.data(), np - 1, sorted.data());
@@ -728,7 +728,7 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
   if (check_on_in)
     for (int c = 1; c < (int)voldis.size(); ++c)
       if (voldis.at(c)->ElementRowMap()->SameAs(*voldis.at(0)->ElementRowMap()) == false)
-        dserror("row maps on input do not coincide");
+        FOUR_C_THROW("row maps on input do not coincide");
 
   const Epetra_Map* ielecolmap = dis_src.ElementColMap();
 
@@ -754,9 +754,9 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
       int gid = ielecolmap->GID(i);
 
       DRT::Element* ele = dis_src.gElement(gid);
-      if (!ele) dserror("Cannot find element with gid %", gid);
+      if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
       DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
-      if (!faceele) dserror("source element is not a face element");
+      if (!faceele) FOUR_C_THROW("source element is not a face element");
       int volgid = faceele->ParentElementId();
       // Ghost the parent element additionally
       if (elecolmap->LID(volgid) == -1 &&
@@ -784,16 +784,16 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
       int gid = ielecolmap->GID(i);
 
       DRT::Element* ele = dis_src.gElement(gid);
-      if (!ele) dserror("Cannot find element with gid %", gid);
+      if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
       DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
-      if (!faceele) dserror("source element is not a face element");
+      if (!faceele) FOUR_C_THROW("source element is not a face element");
       int volgid = faceele->ParentElementId();
 
       if (elecolmap->LID(volgid) == -1)  // Volume Discretization has not Element
-        dserror("CreateVolumeGhosting: Element %d does not exist on this Proc!", volgid);
+        FOUR_C_THROW("CreateVolumeGhosting: Element %d does not exist on this Proc!", volgid);
 
       DRT::Element* vele = voldis[0]->gElement(volgid);
-      if (!vele) dserror("Cannot find element with gid %", volgid);
+      if (!vele) FOUR_C_THROW("Cannot find element with gid %", volgid);
 
       faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
 
@@ -805,7 +805,7 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
         else
         {
           auto* volele = voldis[1]->gElement(volgid);
-          if (volele == nullptr) dserror("Cannot find element with gid %", volgid);
+          if (volele == nullptr) FOUR_C_THROW("Cannot find element with gid %", volgid);
           faceele->SetParentSlaveElement(volele, faceele->FaceParentNumber());
         }
       }
@@ -816,9 +816,9 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
     for (int c = 1; c < (int)voldis.size(); ++c)
     {
       if (voldis.at(c)->ElementRowMap()->SameAs(*voldis.at(0)->ElementRowMap()) == false)
-        dserror("row maps on exit do not coincide");
+        FOUR_C_THROW("row maps on exit do not coincide");
       if (voldis.at(c)->ElementColMap()->SameAs(*voldis.at(0)->ElementColMap()) == false)
-        dserror("col maps on exit do not coincide");
+        FOUR_C_THROW("col maps on exit do not coincide");
     }
 
   // 3 setup material pointers between newly ghosted elements
@@ -979,13 +979,13 @@ void MORTAR::UTILS::MortarRhsCondensation(
   CORE::LINALG::Export(*rhs, *fs);
   Teuchos::RCP<Epetra_Vector> fs_full = Teuchos::rcp(new Epetra_Vector(rhs->Map()));
   CORE::LINALG::Export(*fs, *fs_full);
-  if (rhs->Update(-1., *fs_full, 1.)) dserror("update failed");
+  if (rhs->Update(-1., *fs_full, 1.)) FOUR_C_THROW("update failed");
 
-  if (p->Multiply(true, *fs, *fm_cond)) dserror("multiply failed");
+  if (p->Multiply(true, *fs, *fm_cond)) FOUR_C_THROW("multiply failed");
 
   Teuchos::RCP<Epetra_Vector> fm_cond_full = Teuchos::rcp(new Epetra_Vector(rhs->Map()));
   CORE::LINALG::Export(*fm_cond, *fm_cond_full);
-  if (rhs->Update(1., *fm_cond_full, 1.)) dserror("update failed");
+  if (rhs->Update(1., *fm_cond_full, 1.)) FOUR_C_THROW("update failed");
 
   return;
 }
@@ -1005,10 +1005,10 @@ void MORTAR::UTILS::MortarRecover(
   CORE::LINALG::Export(*inc, *m_inc);
 
   Teuchos::RCP<Epetra_Vector> s_inc = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap));
-  if (p->Multiply(false, *m_inc, *s_inc)) dserror("multiply failed");
+  if (p->Multiply(false, *m_inc, *s_inc)) FOUR_C_THROW("multiply failed");
   Teuchos::RCP<Epetra_Vector> s_inc_full = Teuchos::rcp(new Epetra_Vector(inc->Map()));
   CORE::LINALG::Export(*s_inc, *s_inc_full);
-  if (inc->Update(1., *s_inc_full, 1.)) dserror("update failed");
+  if (inc->Update(1., *s_inc_full, 1.)) FOUR_C_THROW("update failed");
 
   return;
 }

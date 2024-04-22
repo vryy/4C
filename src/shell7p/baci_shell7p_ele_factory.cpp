@@ -43,7 +43,7 @@ DRT::ELEMENTS::Shell7pFactory::ProvideShell7pCalculationInterface(
       return DefineCalculationInterfaceType<CORE::FE::CellType::tri6>(eletech);
     }
     default:
-      dserror("unknown distype provided");
+      FOUR_C_THROW("unknown distype provided");
   }
 }
 
@@ -67,17 +67,17 @@ DRT::ELEMENTS::Shell7pFactory::DefineCalculationInterfaceType(
           if constexpr ((distype != CORE::FE::CellType::quad4) &&
                         (distype != CORE::FE::CellType::quad9))
           {
-            dserror("EAS is only implemented for quad4 and quad9 elements.");
+            FOUR_C_THROW("EAS is only implemented for quad4 and quad9 elements.");
           }
           return std::make_unique<DRT::ELEMENTS::Shell7pEleCalcEas<distype>>();
         }
         default:
-          dserror("unknown element technology");
+          FOUR_C_THROW("unknown element technology");
       }
     // combination of element technologies
     default:
     {
-      dserror("unknown combination of element technologies.");
+      FOUR_C_THROW("unknown combination of element technologies.");
     }
   }
 }

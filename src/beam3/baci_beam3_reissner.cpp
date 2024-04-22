@@ -70,11 +70,11 @@ void DRT::ELEMENTS::Beam3rType::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   DRT::ELEMENTS::Beam3r* currele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(dwele);
-  if (!currele) dserror("cast to Beam3r* failed");
+  if (!currele) FOUR_C_THROW("cast to Beam3r* failed");
 
   if (currele->HermiteCenterlineInterpolation() or currele->NumNode() > 2)
   {
-    dserror(
+    FOUR_C_THROW(
         "method NodalBlockInformation not implemented for element type beam3r in case of Hermite "
         "interpolation or higher order Lagrange interpolation!");
   }
@@ -92,7 +92,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3rType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented for element type beam3r!");
+  FOUR_C_THROW("method ComputeNullSpace not implemented for element type beam3r!");
   return nullspace;
 }
 
@@ -186,7 +186,7 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
 
     // if we get so far current element is a beam3r element and we get a pointer at it
     DRT::ELEMENTS::Beam3r* currele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(dis.lColElement(num));
-    if (!currele) dserror("cast to Beam3r* failed");
+    if (!currele) FOUR_C_THROW("cast to Beam3r* failed");
 
     // reference node position
     std::vector<double> xrefe;
@@ -232,7 +232,7 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
     for (int node = 0; node < nnodecl; ++node)
     {
       if (currele->Nodes()[node] == nullptr)
-        dserror("beam3r: Cannot get nodes in order to compute reference configuration");
+        FOUR_C_THROW("beam3r: Cannot get nodes in order to compute reference configuration");
 
       for (unsigned int dim = 0; dim < 3; ++dim)
         xrefe[node * 3 + dim] = currele->Nodes()[node]->X()[dim] + disp_shift[node * numdof + dim];
@@ -274,7 +274,7 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
         break;
       }
       default:
-        dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+        FOUR_C_THROW("Only Line2, Line3, Line4 and Line5 Elements implemented.");
         break;
     }
   }
@@ -410,7 +410,7 @@ CORE::FE::CellType DRT::ELEMENTS::Beam3r::Shape() const
       return CORE::FE::CellType::line5;
       break;
     default:
-      dserror("Only Line2, Line3, Line4 and Line5 elements are implemented.");
+      FOUR_C_THROW("Only Line2, Line3, Line4 and Line5 elements are implemented.");
       break;
   }
 }
@@ -548,7 +548,7 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   spatial_z_moment_3_GP_elastm_.clear();
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -605,7 +605,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpos
         }
         default:
         {
-          dserror("unknown discretization type!");
+          FOUR_C_THROW("unknown discretization type!");
           break;
         }
       }
@@ -649,7 +649,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpos
         }
         default:
         {
-          dserror("unknown discretization type!");
+          FOUR_C_THROW("unknown discretization type!");
           break;
         }
       }
@@ -679,7 +679,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpos
         }
         default:
         {
-          dserror("unknown discretization type!");
+          FOUR_C_THROW("unknown discretization type!");
           break;
         }
       }
@@ -720,7 +720,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpos
         }
         default:
         {
-          dserror("unknown discretization type!");
+          FOUR_C_THROW("unknown discretization type!");
           break;
         }
       }
@@ -729,7 +729,7 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(const IntegrationPurpos
 
     default:
     {
-      dserror("beam3r: unknown purpose for numerical quadrature!");
+      FOUR_C_THROW("beam3r: unknown purpose for numerical quadrature!");
       break;
     }
   }
@@ -752,7 +752,7 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
    * are used for centerline interpolation; the triad field may be interpolated with Lagrange
    * polynomials of order 1-4 (linear-quartic), i.e. nnodetriad=2...5*/
   if (centerline_hermite_ and nnodecl != 2)
-    dserror("Only 3rd order Hermite interpolation of beam centerline implemented!");
+    FOUR_C_THROW("Only 3rd order Hermite interpolation of beam centerline implemented!");
 
   /* this method initializes geometric variables of the element; the initialization can usually be
    * applied to elements only once; therefore after the first initialization the flag isinit_ is set
@@ -769,13 +769,13 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(
 
     // check input data
     if (xrefe.size() != 3 * nnodecl)
-      dserror(
+      FOUR_C_THROW(
           "size mismatch in given position vector for stress-free reference geometry of beam3r:"
           " expected %d and got %d entries!",
           3 * nnodecl, xrefe.size());
 
     if (rotrefe.size() != 3 * nnodetriad)
-      dserror(
+      FOUR_C_THROW(
           "size mismatch in given rotation vector for stress-free reference geometry of beam3r:"
           " expected %d and got %d entries!",
           3 * nnodetriad, rotrefe.size());
@@ -1181,7 +1181,7 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
   else if (disp.size() == 3 * numnodalvalues * nnodecl + 3 * nnodetriad)
     ExtractCenterlineDofValuesFromElementStateVector(disp, disp_centerline);
   else
-    dserror(
+    FOUR_C_THROW(
         "size mismatch: expected either %d values for disp_centerline or "
         "%d values for full disp state vector of this element and got %d",
         3 * numnodalvalues * nnodecl, 3 * numnodalvalues * nnodecl + 3 * nnodetriad, disp.size());
@@ -1226,7 +1226,7 @@ void DRT::ELEMENTS::Beam3r::GetPosAtXi(
       break;
     }
     default:
-      dserror("no valid number for number of centerline nodes");
+      FOUR_C_THROW("no valid number for number of centerline nodes");
   }
 
   return;
@@ -1262,7 +1262,7 @@ double DRT::ELEMENTS::Beam3r::GetJacobiFacAtXi(const double& xi) const
       break;
     }
     default:
-      dserror("no valid number for number of centerline nodes");
+      FOUR_C_THROW("no valid number for number of centerline nodes");
   }
 
   return jacfac;
@@ -1290,7 +1290,7 @@ void DRT::ELEMENTS::Beam3r::GetTriadAtXi(
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "size mismatch: expected either %d values for psi (rotation vecs) or "
         "%d values for for full disp state vector of this element and got %d",
         3 * nnodetriad, 3 * numnodalvalues * nnodecl + 3 * nnodetriad, disp.size());
@@ -1326,7 +1326,7 @@ void DRT::ELEMENTS::Beam3r::GetTriadAtXi(
       break;
     }
     default:
-      dserror("%d is no valid number of nodes for beam3r triad interpolation", nnodetriad);
+      FOUR_C_THROW("%d is no valid number of nodes for beam3r triad interpolation", nnodetriad);
       break;
   }
 }
@@ -1343,7 +1343,7 @@ void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixVariationsAtXi(
   // safety check
   if (static_cast<unsigned int>(Ivar.numRows()) != 6 or
       static_cast<unsigned int>(Ivar.numCols()) != 3 * vpernode * nnodecl + 3 * nnodetriad)
-    dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6,
+    FOUR_C_THROW("size mismatch! expected %dx%d matrix and got %dx%d", 6,
         3 * vpernode * nnodecl + 3 * nnodetriad, Ivar.numRows(), Ivar.numCols());
 
   switch (nnodetriad)
@@ -1405,7 +1405,7 @@ void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixVariationsAtXi(
       break;
     }
     default:
-      dserror("Beam3r: no valid number of nodes specified");
+      FOUR_C_THROW("Beam3r: no valid number of nodes specified");
   }
 }
 
@@ -1461,7 +1461,7 @@ void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   // safety check
   if (static_cast<unsigned int>(Iinc.numRows()) != 6 or
       static_cast<unsigned int>(Iinc.numCols()) != 3 * vpernode * nnodecl + 3 * nnodetriad)
-    dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6,
+    FOUR_C_THROW("size mismatch! expected %dx%d matrix and got %dx%d", 6,
         3 * vpernode * nnodecl + 3 * nnodetriad, Iinc.numRows(), Iinc.numCols());
 
   switch (nnodetriad)
@@ -1523,7 +1523,7 @@ void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixIncrementsAtXi(
       break;
     }
     default:
-      dserror("Beam3r: no valid number of nodes specified");
+      FOUR_C_THROW("Beam3r: no valid number of nodes specified");
   }
 }
 
@@ -1695,7 +1695,7 @@ void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValuesFromElementStateVector(
   const int dofpercombinode = dofperclnode + dofpertriadnode;
 
   if (dofvec.size() != dofperclnode * nnodecl + dofpertriadnode * this->NumNode())
-    dserror("size mismatch: expected %d values for element state vector and got %d",
+    FOUR_C_THROW("size mismatch: expected %d values for element state vector and got %d",
         dofperclnode * nnodecl + dofpertriadnode * this->NumNode(), dofvec.size());
 
   // get current values for DOFs relevant for centerline interpolation
@@ -1767,7 +1767,7 @@ void DRT::ELEMENTS::Beam3r::ExtractCenterlineDofValuesFromElementStateVector(
       break;
     }
     default:
-      dserror("no valid number for number of centerline nodes");
+      FOUR_C_THROW("no valid number for number of centerline nodes");
   }
 }
 
@@ -1787,7 +1787,7 @@ void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues(const std::vector<double>& do
   const int dofpercombinode = dofperclnode + dofpertriadnode;
 
   if (dofvec.size() != dofperclnode * nnodecl + dofpertriadnode * nnodetriad)
-    dserror("size mismatch: expected %d values for element state vector and got %d",
+    FOUR_C_THROW("size mismatch: expected %d values for element state vector and got %d",
         dofperclnode * nnodecl + dofpertriadnode * nnodetriad, dofvec.size());
 
   // get current values for DOFs relevant for triad interpolation
@@ -1860,7 +1860,7 @@ void DRT::ELEMENTS::Beam3r::ExtractRotVecDofValues(const std::vector<double>& do
       break;
     }
     default:
-      dserror("no valid number for number of centerline nodes");
+      FOUR_C_THROW("no valid number for number of centerline nodes");
   }
 }
 
@@ -1917,7 +1917,7 @@ void DRT::ELEMENTS::Beam3r::GetNodalTriadsFromFullDispVecOrFromDispTheta(
   }
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "size mismatch: expected either %d values for psi (rotation vecs) or "
         "%d values for for full disp state vector of this element and got %d",
         3 * nnodetriad, 3 * vpernode * nnodecl + 3 * nnodetriad, dispvec.size());

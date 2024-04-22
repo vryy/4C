@@ -95,7 +95,7 @@ INPAR::STR::KinemType STR::UTILS::READELEMENT::ReadElementKinematicType(
     return INPAR::STR::KinemType::linear;
   else
   {
-    dserror("unknown kinematic type %s", kinem.c_str());
+    FOUR_C_THROW("unknown kinematic type %s", kinem.c_str());
     return INPAR::STR::KinemType::vague;
   }
 }
@@ -122,7 +122,7 @@ DRT::ELEMENTS::ElementTechnology STR::UTILS::READELEMENT::ReadElementTechnology(
     return DRT::ELEMENTS::ElementTechnology::none;
   }
   else
-    dserror("unrecognized element technology type %s", type.c_str());
+    FOUR_C_THROW("unrecognized element technology type %s", type.c_str());
 }
 
 DRT::ELEMENTS::PrestressTechnology STR::UTILS::READELEMENT::ReadPrestressTechnology(
@@ -139,7 +139,7 @@ DRT::ELEMENTS::PrestressTechnology STR::UTILS::READELEMENT::ReadPrestressTechnol
     return DRT::ELEMENTS::PrestressTechnology::mulf;
   }
 
-  dserror("unrecognized prestress technology type %s", type.c_str());
+  FOUR_C_THROW("unrecognized prestress technology type %s", type.c_str());
 }
 
 void STR::UTILS::NodalBlockInformationSolid(

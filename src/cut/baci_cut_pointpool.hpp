@@ -181,11 +181,11 @@ namespace CORE::GEO
             return tree_.NewPoint(
                 x, cut_edge, cut_side, GetTolerance(x, tolerance), merge_strategy_);
           default:
-            dserror("Unsupported problem dimension! (probdim = %d)", probdim_);
+            FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim_);
             exit(EXIT_FAILURE);
         }
 
-        dserror("Impossible to reach this line!");
+        FOUR_C_THROW("Impossible to reach this line!");
         exit(EXIT_FAILURE);
       }
 

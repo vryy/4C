@@ -140,7 +140,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
     {
       if (!pcoupled_)
       {
-        dserror(
+        FOUR_C_THROW(
             "The system cannot be solved in a block matrix!! \n"
             "The null space does not have the right length. Fix it or use option Smat");
       }
@@ -251,7 +251,7 @@ void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bo
     }
     break;
     default:
-      dserror("Choose a correct mesh-tying option");
+      FOUR_C_THROW("Choose a correct mesh-tying option");
       break;
   }
 }
@@ -300,7 +300,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> FLD::Meshtying::InitSystemMatrix() co
     }
     default:
     {
-      dserror("Choose a correct mesh-tying option");
+      FOUR_C_THROW("Choose a correct mesh-tying option");
       break;
     }
   }
@@ -326,7 +326,7 @@ void FLD::Meshtying::CheckOverlappingBC(Teuchos::RCP<Epetra_Map> map)
   {
     int gid = adaptermeshtying_->Interface()->SlaveRowNodes()->GID(j);
     DRT::Node* node = adaptermeshtying_->Interface()->Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("ERROR: Cannot find node with gid %", gid);
     auto* mtnode = static_cast<MORTAR::Node*>(node);
 
     // check if this node's dofs are in given map
@@ -349,7 +349,7 @@ void FLD::Meshtying::CheckOverlappingBC(Teuchos::RCP<Epetra_Map> map)
   {
     if (myrank_ == 0)
     {
-      dserror(
+      FOUR_C_THROW(
           "Slave boundary and volume flow rate boundary conditions overlap!\n"
           "This leads to an over-constraint problem setup");
     }
@@ -502,7 +502,7 @@ void FLD::Meshtying::PrepareMeshtyingSystem(
       CondensationSparseMatrix(sysmat, residual, velnp);
       break;
     default:
-      dserror("Meshtying algorithm not recognized!");
+      FOUR_C_THROW("Meshtying algorithm not recognized!");
       break;
   }
 }
@@ -552,7 +552,7 @@ Teuchos::RCP<Epetra_Vector> FLD::Meshtying::AdaptKrylovProjector(Teuchos::RCP<Ep
       case INPAR::FLUID::condensed_smat:
         break;
       default:
-        dserror("Krylov projection not supported for this meshtying option.");
+        FOUR_C_THROW("Krylov projection not supported for this meshtying option.");
         break;
     }
   }
@@ -675,7 +675,7 @@ void FLD::Meshtying::SolveMeshtying(CORE::LINALG::Solver& solver,
     }
     break;
     default:
-      dserror("");
+      FOUR_C_THROW("");
       break;
   }
 }
@@ -1471,7 +1471,7 @@ void FLD::Meshtying::OutputSparseMatrixSplit(Teuchos::RCP<CORE::LINALG::SparseOp
   std::cout << "Teil sm: " << std::endl << splitmatrix->Matrix(2, 1) << std::endl;
   std::cout << "Teil ss: " << std::endl << splitmatrix->Matrix(2, 2) << std::endl;
 
-  dserror("Matrix output finished");
+  FOUR_C_THROW("Matrix output finished");
 }
 
 /*-------------------------------------------------------*/
@@ -1541,7 +1541,7 @@ void FLD::Meshtying::AnalyzeMatrix(Teuchos::RCP<CORE::LINALG::SparseMatrix> spar
 
       int error =
           matrix->ExtractMyRowCopy(i, maxnumentries, numOfNonZeros, values.data(), indices.data());
-      if (error != 0) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d", error);
+      if (error != 0) FOUR_C_THROW("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d", error);
 
       for (int ii = 0; ii < numOfNonZeros; ii++)
       {

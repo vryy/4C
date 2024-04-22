@@ -101,7 +101,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
   }
   else
   {
-    dserror("Fluid discretization given in input file. This is not supported!");
+    FOUR_C_THROW("Fluid discretization given in input file. This is not supported!");
   }
 
   structdis->FillComplete();
@@ -114,11 +114,12 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
 
   // assign structure dof set to fluid and save the dofset number
   nds_disp = fluiddis->AddDofSet(structdofset);
-  if (nds_disp != 1) dserror("unexpected dof sets in porofluid field");
+  if (nds_disp != 1) FOUR_C_THROW("unexpected dof sets in porofluid field");
   // velocities live on same dofs as displacements
   nds_vel = nds_disp;
 
-  if (structdis->AddDofSet(fluiddofset) != 1) dserror("unexpected dof sets in structure field");
+  if (structdis->AddDofSet(fluiddofset) != 1)
+    FOUR_C_THROW("unexpected dof sets in structure field");
 
   // build auxiliary dofset for postprocessing solid pressures
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
@@ -182,7 +183,7 @@ Teuchos::RCP<ADAPTER::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhas
       break;
     }
     default:
-      dserror("Unknown time-integration scheme for multiphase poro fluid problem");
+      FOUR_C_THROW("Unknown time-integration scheme for multiphase poro fluid problem");
       break;
   }
 
@@ -236,7 +237,7 @@ double POROMULTIPHASE::UTILS::CalculateVectorNorm(
   }
   else
   {
-    dserror("Cannot handle vector norm");
+    FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
 }  // CalculateVectorNorm()

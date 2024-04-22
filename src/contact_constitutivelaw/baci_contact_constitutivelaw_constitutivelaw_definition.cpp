@@ -71,11 +71,11 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& proble
 
       if (name == coconstlawname_)
       {
-        if (id <= -1) dserror("Illegal negative ID provided");
+        if (id <= -1) FOUR_C_THROW("Illegal negative ID provided");
 
         // check if material ID is already in use
         if (bundle->Find(id) != -1)
-          dserror("More than one contact constitutivelaw with 'Law %d'", id);
+          FOUR_C_THROW("More than one contact constitutivelaw with 'Law %d'", id);
 
         // the read-in contact constitutive law line
         Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container = Teuchos::rcp(
@@ -86,7 +86,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& proble
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)
-          dserror(
+          FOUR_C_THROW(
               "Specification of material '%s' contains the following unknown, redundant, or "
               "incorrect elements: '%s'",
               coconstlawname_.c_str(), condline->str().c_str());
@@ -142,13 +142,13 @@ void CONTACT::CONSTITUTIVELAW::AppendCoConstLawComponentDefinition(
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> mmd = *m;
 
     if (mmd->Type() == def->Type())
-      dserror(
+      FOUR_C_THROW(
           "Trying to define two contact constitutive laws with the same type '%d'\n"
           "Please revise your definitions of valid contact constitutive laws",
           mmd->Type());
 
     if (mmd->Name() == def->Name())
-      dserror(
+      FOUR_C_THROW(
           "Trying to define two contact constitutive laws with the same name '%s'\n"
           "Please revise your definitions of valid contact constitutive laws",
           mmd->Name().c_str());
@@ -158,7 +158,7 @@ void CONTACT::CONSTITUTIVELAW::AppendCoConstLawComponentDefinition(
   if (m == list.end())
     list.push_back(def);
   else
-    dserror("Trouble in determining coincidences of contact constitutive definitions");
+    FOUR_C_THROW("Trouble in determining coincidences of contact constitutive definitions");
 }
 
 FOUR_C_NAMESPACE_CLOSE

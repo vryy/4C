@@ -38,12 +38,12 @@ namespace INPAR
       if (typeid(T) == data.type())
       {
         const T* any_ptr = std::any_cast<T>(&data);
-        dsassert(any_ptr != nullptr, "Implementation error.");
+        FOUR_C_ASSERT(any_ptr != nullptr, "Implementation error.");
         return any_ptr;
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "You tried to get the data named %s from the container as type '%s'.\n"
             "Actually, it has type '%s'.",
             name.c_str(), CORE::UTILS::TryDemangle(typeid(T).name()).c_str(),
@@ -120,7 +120,7 @@ namespace INPAR
       if (const T* p = GetIf<T>(name))
         return p;
       else
-        dserror("Key %s cannot be found in the container's map!", name.c_str());
+        FOUR_C_THROW("Key %s cannot be found in the container's map!", name.c_str());
     }
 
     /*!

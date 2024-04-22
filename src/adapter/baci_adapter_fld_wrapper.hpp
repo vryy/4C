@@ -37,7 +37,7 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> Veln() override { return fluid_->Veln(); }
     Teuchos::RCP<const Epetra_Vector> Velnm() override
     {
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       return Teuchos::null;
     };
     Teuchos::RCP<const Epetra_Vector> Stepinc() override { return fluid_->Stepinc(); }
@@ -48,7 +48,7 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> Scaaf() override { return fluid_->Scaaf(); };
     Teuchos::RCP<const Epetra_Vector> Scaam() override
     {
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       return Teuchos::null;
     };
     Teuchos::RCP<const Epetra_Vector> Hist() override { return fluid_->Hist(); }
@@ -59,22 +59,22 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Vector> ConvectiveVel() override { return fluid_->ConvectiveVel(); }
     Teuchos::RCP<const Epetra_Vector> FsVel() override
     {
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       return Teuchos::null;
     };
     Teuchos::RCP<Epetra_Vector> StdVeln() override
     {
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       return Teuchos::null;
     };
     Teuchos::RCP<Epetra_Vector> StdVelnp() override
     {
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       return Teuchos::null;
     };
     Teuchos::RCP<Epetra_Vector> StdVelaf() override
     {
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       return Teuchos::null;
     };
     Teuchos::RCP<const Epetra_Map> DofRowMap() override { return fluid_->DofRowMap(); }
@@ -168,7 +168,7 @@ namespace ADAPTER
     Teuchos::RCP<FLD::Vreman> Vreman() override { return fluid_->Vreman(); }
     void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp) override
     {
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       return;
     };
     //    virtual void TimeLoop()
@@ -177,7 +177,7 @@ namespace ADAPTER
     void PrepareTimeStep() override { return fluid_->PrepareTimeStep(); }
     void IncrementTimeAndStep() override
     {
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       return;
     }
     void PrepareSolve() override { fluid_->PrepareSolve(); }
@@ -188,12 +188,12 @@ namespace ADAPTER
     bool ConvergenceCheck(int itnum, int itmax, const double velrestol, const double velinctol,
         const double presrestol, const double presinctol) override
     {
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       return false;
     }
     void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment) override
     {
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       return;
     }
     void Update() override { return fluid_->Update(); }
@@ -201,7 +201,7 @@ namespace ADAPTER
     void Output() override { return fluid_->Output(); }
     void StatisticsOutput() override
     {
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       return;
     }
     const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() override
@@ -218,7 +218,7 @@ namespace ADAPTER
         Teuchos::RCP<const Epetra_Vector> readaccnp,
         Teuchos::RCP<const Epetra_Vector> readaccn) override
     {
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       return;
     }
     double Time() const override { return fluid_->Time(); }
@@ -260,7 +260,7 @@ namespace ADAPTER
         double& errinfother  ///< L-inf-norm of temporal discretization error based on interior DOFs
         ) override
     {
-      dserror("Not implemented in the base class, may be overridden by a subclass.");
+      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     };
 
     //! Set fluid time step size that was computed outside
@@ -282,18 +282,18 @@ namespace ADAPTER
 
     double EvalTime() const override
     {
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       return 0.0;
     }
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) override
     {
-      dserror("not implemented!");
+      FOUR_C_THROW("not implemented!");
       return;
     }
     void Solve() override { return fluid_->Solve(); }
     Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) override
     {
-      dserror("Not implemented in the base class, may be overridden by a subclass.");
+      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
     Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return fluid_->LinearSolver(); }
@@ -306,7 +306,7 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Map> PressureRowMap() override { return fluid_->PressureRowMap(); }
     void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override
     {
-      dserror("Not implemented in the base class, may be overridden by a subclass.");
+      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
 
     /// Use ResidualScaling() to convert the implemented fluid residual to an actual force with unit
@@ -321,14 +321,14 @@ namespace ADAPTER
 
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override
     {
-      dserror("Not implemented in the base class, may be overridden by a subclass.");
+      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
       return ret;
     }
 
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const override
     {
-      dserror("Not implemented in the base class, may be overridden by a subclass.");
+      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
       return ret;
     }
@@ -419,7 +419,7 @@ namespace ADAPTER
     /// calculate error in comparison to analytical solution
     void CalculateError() override
     {
-      dserror("Not implemented in the base class, may be overridden by a subclass.");
+      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
 
     /// return physical type of fluid algorithm

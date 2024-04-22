@@ -56,7 +56,7 @@ namespace
     }
     else
     {
-      dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
+      FOUR_C_THROW("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
       return Teuchos::RCP<CORE::UTILS::FunctionOfAnything>(nullptr);
     }
   }
@@ -99,7 +99,7 @@ namespace
       case 3:
         return TryCreatePoroFunction<3>(function_line_defs);
       default:
-        dserror("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+        FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
     }
   }
 }  // namespace
@@ -146,14 +146,16 @@ void POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::CheckOrder(
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in fluidporo_multiphase_singlereaction, but
   // order might be different if we do not use exactly three fluid phases
-  if (variables[1].first != "p2") dserror("wrong order in variable vector, p2 not at position 2");
-  if (variables[4].first != "S2") dserror("wrong order in variable vector, S2 not at position 5");
+  if (variables[1].first != "p2")
+    FOUR_C_THROW("wrong order in variable vector, p2 not at position 2");
+  if (variables[4].first != "S2")
+    FOUR_C_THROW("wrong order in variable vector, S2 not at position 5");
   if (variables[6].first != "porosity")
-    dserror("wrong order in variable vector, porosity not at position 7");
+    FOUR_C_THROW("wrong order in variable vector, porosity not at position 7");
   if (variables[7].first != "phi1")
-    dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 8");
+    FOUR_C_THROW("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 8");
   if (variables[8].first != "phi2")
-    dserror("wrong order in variable vector, phi2 (necrotic mass fraction) not at position 9");
+    FOUR_C_THROW("wrong order in variable vector, phi2 (necrotic mass fraction) not at position 9");
 
   // order is correct
   this->order_checked_ = true;
@@ -255,14 +257,16 @@ void POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::CheckOrder(
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
   // order might be different if we do not use exactly three fluid phases
-  if (constants[1].first != "p2") dserror("wrong order in variable vector, p2 not at position 2");
-  if (constants[4].first != "S2") dserror("wrong order in variable vector, S2 not at position 5");
+  if (constants[1].first != "p2")
+    FOUR_C_THROW("wrong order in variable vector, p2 not at position 2");
+  if (constants[4].first != "S2")
+    FOUR_C_THROW("wrong order in variable vector, S2 not at position 5");
   if (constants[6].first != "porosity")
-    dserror("wrong order in variable vector, porosity not at position 7");
+    FOUR_C_THROW("wrong order in variable vector, porosity not at position 7");
   if (variables[0].first != "phi1")
-    dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
+    FOUR_C_THROW("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
   if (variables[1].first != "phi2")
-    dserror("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
+    FOUR_C_THROW("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
 
   // order is correct
   this->order_checked_ = true;
@@ -362,7 +366,7 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::EvaluateDer
     // Note: no pressure derivative, only coupling is with heaviside --> derivative zero
   }
   else
-    dserror("Something went wrong in derivative evaluation of NECROSIS_LAW_HEAVISIDE");
+    FOUR_C_THROW("Something went wrong in derivative evaluation of NECROSIS_LAW_HEAVISIDE");
 
   return deriv;
 }
@@ -388,14 +392,16 @@ void POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::CheckOrder(
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
   // order might be different if we do not use exactly three fluid phases
-  if (constants[1].first != "p2") dserror("wrong order in variable vector, p2 not at position 2");
-  if (constants[4].first != "S2") dserror("wrong order in variable vector, S2 not at position 5");
+  if (constants[1].first != "p2")
+    FOUR_C_THROW("wrong order in variable vector, p2 not at position 2");
+  if (constants[4].first != "S2")
+    FOUR_C_THROW("wrong order in variable vector, S2 not at position 5");
   if (constants[6].first != "porosity")
-    dserror("wrong order in variable vector, porosity not at position 7");
+    FOUR_C_THROW("wrong order in variable vector, porosity not at position 7");
   if (variables[0].first != "phi1")
-    dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
+    FOUR_C_THROW("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
   if (variables[1].first != "phi2")
-    dserror("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
+    FOUR_C_THROW("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
 
   // order is correct
   this->order_checked_ = true;
@@ -503,7 +509,8 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Ev
     deriv[6] = poro_deriv;
   }
   else
-    dserror("Something went wrong in derivative evaluation of OXYGEN_CONSUMPTION_LAW_HEAVISIDE");
+    FOUR_C_THROW(
+        "Something went wrong in derivative evaluation of OXYGEN_CONSUMPTION_LAW_HEAVISIDE");
 
   return deriv;
 }
@@ -527,14 +534,16 @@ void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::CheckOrder(
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
   // order might be different if we do not use exactly three fluid phases
-  if (constants[1].first != "p2") dserror("wrong order in variable vector, p2 not at position 2");
-  if (constants[4].first != "S2") dserror("wrong order in variable vector, S2 not at position 5");
+  if (constants[1].first != "p2")
+    FOUR_C_THROW("wrong order in variable vector, p2 not at position 2");
+  if (constants[4].first != "S2")
+    FOUR_C_THROW("wrong order in variable vector, S2 not at position 5");
   if (constants[6].first != "porosity")
-    dserror("wrong order in variable vector, porosity not at position 7");
+    FOUR_C_THROW("wrong order in variable vector, porosity not at position 7");
   if (variables[0].first != "phi1")
-    dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
+    FOUR_C_THROW("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
   if (variables[1].first != "phi2")
-    dserror("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
+    FOUR_C_THROW("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
 
   // order is correct
   this->order_checked_ = true;
@@ -638,7 +647,7 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evalu
     deriv[6] = poro_deriv;
   }
   else
-    dserror("Something went wrong in derivative evaluation of TUMOR_GROWTH_LAW_HEAVISIDE_OXY");
+    FOUR_C_THROW("Something went wrong in derivative evaluation of TUMOR_GROWTH_LAW_HEAVISIDE_OXY");
 
   return deriv;
 }
@@ -662,14 +671,16 @@ void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::CheckOrder(
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
   // order might be different if we do not use exactly three fluid phases
-  if (constants[1].first != "p2") dserror("wrong order in variable vector, p2 not at position 2");
-  if (constants[4].first != "S2") dserror("wrong order in variable vector, S2 not at position 5");
+  if (constants[1].first != "p2")
+    FOUR_C_THROW("wrong order in variable vector, p2 not at position 2");
+  if (constants[4].first != "S2")
+    FOUR_C_THROW("wrong order in variable vector, S2 not at position 5");
   if (constants[6].first != "porosity")
-    dserror("wrong order in variable vector, porosity not at position 7");
+    FOUR_C_THROW("wrong order in variable vector, porosity not at position 7");
   if (variables[0].first != "phi1")
-    dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
+    FOUR_C_THROW("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
   if (variables[1].first != "phi2")
-    dserror("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
+    FOUR_C_THROW("wrong order in variable vector, phi1 (necrotic mass fraction) not at position 2");
 
   // order is correct
   this->order_checked_ = true;
@@ -776,7 +787,8 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Eva
     // Note: no pressure derivative, only coupling is with heaviside --> derivative zero
   }
   else
-    dserror("Something went wrong in derivative evaluation of TUMOR_GROWTH_LAW_HEAVISIDE_NECRO");
+    FOUR_C_THROW(
+        "Something went wrong in derivative evaluation of TUMOR_GROWTH_LAW_HEAVISIDE_NECRO");
 
   return deriv;
 }
@@ -801,15 +813,15 @@ void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::CheckOrder(
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
   // order might be different if we do not use exactly three fluid phases
   if (constants[7].first != "VF1")
-    dserror("wrong order in variable vector, porosity not at position 8");
+    FOUR_C_THROW("wrong order in variable vector, porosity not at position 8");
   if (variables[0].first != "phi1")
-    dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
+    FOUR_C_THROW("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
   if (variables[1].first != "phi2")
-    dserror("wrong order in variable vector, phi2 (necrotic mass fraction) not at position 2");
+    FOUR_C_THROW("wrong order in variable vector, phi2 (necrotic mass fraction) not at position 2");
   if (variables[2].first != "phi3")
-    dserror("wrong order in variable vector, phi3 (necrotic mass fraction) not at position 3");
+    FOUR_C_THROW("wrong order in variable vector, phi3 (necrotic mass fraction) not at position 3");
   if (variables[3].first != "phi4")
-    dserror("wrong order in variable vector, phi4 (necrotic mass fraction) not at position 4");
+    FOUR_C_THROW("wrong order in variable vector, phi4 (necrotic mass fraction) not at position 4");
 
   // order is correct
   this->order_checked_ = true;
@@ -882,7 +894,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivativ
     oxy_mass_frac_nv.val() = constants[3].second;
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Something went wrong in derivative evaluation of OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT");
 
   FAD Pb = 0.0;
@@ -904,7 +916,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivativ
     deriv[7] = parameter.gammarhoSV * (Pb.val() - oxy_mass_frac_if / fac_if) * heaviside_oxy;
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Something went wrong in derivative evaluation of OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT");
 
   return deriv;
@@ -930,7 +942,7 @@ void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::CheckOrder(
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
   // order might be different if we do not use exactly three fluid phases
   if (variables[0].first != "phi1")
-    dserror("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
+    FOUR_C_THROW("wrong order in variable vector, phi1 (oxygen mass fraction) not at position 1");
 
   // oxygen in artery
   // we have no neo-vasculature --> at position 2, species 1: oxy in IF, species 2: NTC
@@ -938,18 +950,19 @@ void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::CheckOrder(
   // we have no neo-vasculature --> at position 4, species 1: oxy in IF, species 2: NTC,
   // species 3: TAF, species 4: oxy in NV
   if (variables.size() >= 5 && variables[4].first == "phi_art1") pos_oxy_art_ = 4;
-  if (pos_oxy_art_ == -1) dserror("cannot find position of oxygen in arteries");
+  if (pos_oxy_art_ == -1) FOUR_C_THROW("cannot find position of oxygen in arteries");
 
   // fluid variables
   if (constants[1].first != "p2")
-    dserror("wrong order in constants vector, p2 (pressure of tumor cells) not at position 2");
+    FOUR_C_THROW("wrong order in constants vector, p2 (pressure of tumor cells) not at position 2");
   if (constants[4].first != "S2")
-    dserror("wrong order in constants vector, S2 (saturation of tumor cells) not at position 5");
+    FOUR_C_THROW(
+        "wrong order in constants vector, S2 (saturation of tumor cells) not at position 5");
 
   // diameter
   if (constants[8].first == "D") pos_diam_ = 8;
   if (constants.size() >= 11 && constants[10].first == "D") pos_diam_ = 10;
-  if (pos_diam_ == -1) dserror("cannot find position of artery diameter");
+  if (pos_diam_ == -1) FOUR_C_THROW("cannot find position of artery diameter");
 
   // order is correct
   this->order_checked_ = true;
@@ -1049,33 +1062,33 @@ void POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::CheckOrder(
   if (variables[0].first == "phi1")
   {
     if (constants[0].first != "p1")
-      dserror("wrong order in constants vector, P1 (Pressure of air) not at position 1");
+      FOUR_C_THROW("wrong order in constants vector, P1 (Pressure of air) not at position 1");
     if (constants[3].first != "VF1")
-      dserror(
+      FOUR_C_THROW(
           "wrong order in constants vector, VF1 (volume fraction of additional porous network "
           "(blood phase)) not at position 4");
     if (variables[1].first != "phi2")
-      dserror(
+      FOUR_C_THROW(
           "wrong order in variable vector, phi2 (oxygen mass fraction in blood) not at position 2");
   }
   else if (variables[0].first == "p1")
   {
     if (variables[3].first != "VF1")
     {
-      dserror(
+      FOUR_C_THROW(
           "wrong order in variable vector, VF1 (volume fraction of additional porous network "
           "(blood)) not at position 4");
     }
     if (constants[0].first != "phi1")
-      dserror(
+      FOUR_C_THROW(
           "wrong order in variable vector, phi1 (oxygen mass fraction in air) not at position 1");
     if (constants[1].first != "phi2")
-      dserror(
+      FOUR_C_THROW(
           "wrong order in variable vector, phi2 (oxygen mass fraction in blood) not at position 2");
   }
   else
   {
-    dserror("Variable <%s> not supported on position 0. Wrong order in variable vector! ",
+    FOUR_C_THROW("Variable <%s> not supported on position 0. Wrong order in variable vector! ",
         variables[0].first.c_str());
   }
 
@@ -1094,7 +1107,7 @@ double POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::Evaluate(
   if (not this->order_checked_) CheckOrder(variables, constants);
 
     // In debug mode, check order of variables and constants vector on every call
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   CheckOrder(variables, constants);
 #endif
 
@@ -1136,7 +1149,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
 // In debug mode, check order of variables and constants vector on every call
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   CheckOrder(variables, constants);
 #endif
   // Check order of variables and constants vector only once (since it does not change)
@@ -1169,7 +1182,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
     volfrac_blood = variables[3].second;
   }
   else
-    dserror("Derivative w.r.t. <%s> not supported in LUNG_OXYGEN_EXCHANGE_LAW.",
+    FOUR_C_THROW("Derivative w.r.t. <%s> not supported in LUNG_OXYGEN_EXCHANGE_LAW.",
         variables[0].first.c_str());
 
   // volfrac relation
@@ -1201,7 +1214,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
                (1 / parameter.volfrac_blood_ref) * (P_oA - P_oB.val());
   }
   else
-    dserror("Derivative w.r.t. <%s> not supported in LUNG_OXYGEN_EXCHANGE_LAW.",
+    FOUR_C_THROW("Derivative w.r.t. <%s> not supported in LUNG_OXYGEN_EXCHANGE_LAW.",
         variables[0].first.c_str());
 
   return deriv;
@@ -1228,33 +1241,33 @@ void POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::CheckOrder(
   if (variables[0].first == "phi1")
   {
     if (constants[0].first != "p1")
-      dserror("wrong order in constants vector, P1 (Pressure of air) not at position 1");
+      FOUR_C_THROW("wrong order in constants vector, P1 (Pressure of air) not at position 1");
     if (constants[1].first != "S1")
-      dserror("wrong order in constants vector, S1 (Saturation of air) not at position 2");
+      FOUR_C_THROW("wrong order in constants vector, S1 (Saturation of air) not at position 2");
     if (constants[3].first != "VF1")
-      dserror("wrong order in constants vector, VF1 (volfrac 1) not at position 4");
+      FOUR_C_THROW("wrong order in constants vector, VF1 (volfrac 1) not at position 4");
     if (variables[1].first != "phi2")
-      dserror(
+      FOUR_C_THROW(
           "wrong order in variable vector, phi2 (oxygen mass fraction in blood) not at position 2");
   }
   else if (variables[0].first == "p1")
   {
     if (constants[0].first != "phi1")
-      dserror(
+      FOUR_C_THROW(
           "wrong order in variable vector, phi1 (oxygen mass fraction in air) not at position 1");
     if (constants[1].first != "phi2")
-      dserror(
+      FOUR_C_THROW(
           "wrong order in variable vector, phi2 (oxygen mass fraction in blood) not at position 2");
     if (constants[2].first != "phi3")
-      dserror(
+      FOUR_C_THROW(
           "wrong order in variable vector, phi3 (oxygen mass fraction in blood) not at position 3");
     if (constants[3].first != "phi4")
-      dserror(
+      FOUR_C_THROW(
           "wrong order in variable vector, phi4 (oxygen mass fraction in blood) not at position 4");
   }
   else
   {
-    dserror("Variable <%s> not supported on position 0. Wrong order in variable vector! ",
+    FOUR_C_THROW("Variable <%s> not supported on position 0. Wrong order in variable vector! ",
         variables[0].first.c_str());
   }
 
@@ -1273,7 +1286,7 @@ double POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Evaluate(
   if (not this->order_checked_) CheckOrder(variables, constants);
 
     // In debug mode, check order of variables and constants vector on every call
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   CheckOrder(variables, constants);
 #endif
 
@@ -1331,7 +1344,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Eva
     const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
 // In debug mode, check order of variables and constants vector on every call
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   CheckOrder(variables, constants);
 #endif
 
@@ -1367,7 +1380,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Eva
     volfrac_blood = variables[3].second;
   }
   else
-    dserror("Derivative w.r.t. <%s> not supported in LUNG_CARBONDIOXIDE_EXCHANGE_LAW.",
+    FOUR_C_THROW("Derivative w.r.t. <%s> not supported in LUNG_CARBONDIOXIDE_EXCHANGE_LAW.",
         variables[0].first.c_str());
 
   // volfrac relation
@@ -1429,7 +1442,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Eva
                (P_CO2B - P_CO2A);
   }
   else
-    dserror("Derivative w.r.t. <%s> not supported in LUNG_CARBONDIOXIDE_EXCHANGE_LAW.",
+    FOUR_C_THROW("Derivative w.r.t. <%s> not supported in LUNG_CARBONDIOXIDE_EXCHANGE_LAW.",
         variables[0].first.c_str());
 
   return deriv;

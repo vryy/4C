@@ -78,7 +78,7 @@ void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::ExtractElementAndNodeValues(
   // extract electrochemistry state vector from discretization
   const Teuchos::RCP<const Epetra_Vector> elchnp = discretization.GetState(2, "scatra");
   if (elchnp == Teuchos::null)
-    dserror("Cannot extract electrochemistry state vector from discretization!");
+    FOUR_C_THROW("Cannot extract electrochemistry state vector from discretization!");
 
   // extract local nodal values of concentration and electric potential from global state vector
   const std::vector<int>& lm = la[2].lm_;

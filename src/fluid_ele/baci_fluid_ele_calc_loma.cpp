@@ -230,7 +230,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(Teuchos::ParameterList&
 
   // stationary formulation does not support ALE formulation
   if (isale and my::fldparatimint_->IsStationary())
-    dserror("No ALE support within stationary fluid solver.");
+    FOUR_C_THROW("No ALE support within stationary fluid solver.");
 
   // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
   // its time derivative at n+alpha_M/n+1
@@ -392,7 +392,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
           my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
           my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
-        dserror("No material update in combination with smagorinsky model!");
+        FOUR_C_THROW("No material update in combination with smagorinsky model!");
       my::UpdateMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, thermpressaf,
           thermpressam, my::sgscaint_);
       my::visceff_ = my::visc_;

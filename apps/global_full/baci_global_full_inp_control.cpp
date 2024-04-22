@@ -85,7 +85,7 @@ void ntainp_ccadiscret(
       GLOBAL::ReadKnots(*problem, reader);
       break;
     default:
-      dserror("nptype (nested parallelity type) not recognized");
+      FOUR_C_THROW("nptype (nested parallelity type) not recognized");
       break;
   }
 

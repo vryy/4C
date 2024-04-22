@@ -165,7 +165,7 @@ void CORE::GEO::CutWizard::AddCutterState(const int mc_idx,
   std::map<int, Teuchos::RCP<CutterMesh>>::iterator cm = cutter_meshes_.find(mc_idx);
 
   if (cm != cutter_meshes_.end())
-    dserror("cutter mesh with mesh coupling index %i already set", mc_idx);
+    FOUR_C_THROW("cutter mesh with mesh coupling index %i already set", mc_idx);
 
   cutter_meshes_[mc_idx] = Teuchos::rcp(new CutterMesh(cutter_dis, cutter_disp_col, start_ele_gid));
 
@@ -215,7 +215,8 @@ void CORE::GEO::CutWizard::SetMarkedConditionSides(
       }
     }
     else
-      dserror("If we don't find a marked side it's not sure what happens... You are on your own!");
+      FOUR_C_THROW(
+          "If we don't find a marked side it's not sure what happens... You are on your own!");
   }
 }
 
@@ -363,7 +364,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(
 )
 {
   if (cutterdis == Teuchos::null)
-    dserror("cannot add mesh cutting sides for invalid cutter discretiaztion!");
+    FOUR_C_THROW("cannot add mesh cutting sides for invalid cutter discretiaztion!");
 
   std::vector<int> lm;
   std::vector<double> mydisp;
@@ -407,9 +408,9 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(
           CORE::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
         }
         else
-          dserror("wrong number of dofs for node %i", lm.size());
+          FOUR_C_THROW("wrong number of dofs for node %i", lm.size());
 
-        if (mydisp.size() != 3) dserror("we need 3 displacements here");
+        if (mydisp.size() != 3) FOUR_C_THROW("we need 3 displacements here");
 
         CORE::LINALG::Matrix<3, 1> disp(mydisp.data(), true);
 
@@ -520,9 +521,9 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
         CORE::FE::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm_red);
       }
       else
-        dserror("wrong number of dofs for node %i", lm.size());
+        FOUR_C_THROW("wrong number of dofs for node %i", lm.size());
 
-      if (mydisp.size() != 3) dserror("we need 3 displacements here");
+      if (mydisp.size() != 3) FOUR_C_THROW("we need 3 displacements here");
 
       CORE::LINALG::Matrix<3, 1> disp(mydisp.data(), true);
 
@@ -710,10 +711,11 @@ void CORE::GEO::CutWizard::FindPositionDofSets(bool include_inner)
 
 bool CORE::GEO::CutWizard::SafetyChecks(bool is_prepare_cut_call)
 {
-  if (!is_set_options_) dserror("You have to call SetOptions() before you can use the CutWizard");
+  if (!is_set_options_)
+    FOUR_C_THROW("You have to call SetOptions() before you can use the CutWizard");
 
   if (!is_prepare_cut_call and !is_cut_prepare_performed_)
-    dserror("You have to call PrepareCut() before you can call the Cut-routine");
+    FOUR_C_THROW("You have to call PrepareCut() before you can call the Cut-routine");
 
   if (!do_mesh_intersection_ and !do_levelset_intersection_)
   {
@@ -737,7 +739,7 @@ void CORE::GEO::CutWizard::Output(bool include_inner)
 {
   if (gmsh_output_) DumpGmshNumDOFSets(include_inner);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   PrintCellStats();
 #endif
 
@@ -807,10 +809,10 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CutWizard::GetSide(int sid)
 
 CORE::GEO::CUT::SideHandle* CORE::GEO::CutWizard::GetCutSide(int sid)
 {
-  if (intersection_ == Teuchos::null) dserror("No Intersection object available!");
+  if (intersection_ == Teuchos::null) FOUR_C_THROW("No Intersection object available!");
   Teuchos::RCP<CORE::GEO::CUT::MeshIntersection> meshintersection =
       Teuchos::rcp_dynamic_cast<CORE::GEO::CUT::MeshIntersection>(intersection_);
-  if (meshintersection == Teuchos::null) dserror("Cast to MeshIntersection failed!");
+  if (meshintersection == Teuchos::null) FOUR_C_THROW("Cast to MeshIntersection failed!");
   return meshintersection->GetCutSide(sid);
 }
 
@@ -840,7 +842,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretiza
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
 {
   if (cutterdis == Teuchos::null)
-    dserror("cannot add mesh cutting sides for invalid cutter Discretization!");
+    FOUR_C_THROW("cannot add mesh cutting sides for invalid cutter Discretization!");
 
   std::vector<int> lm;
   std::vector<double> mydisp;
@@ -890,9 +892,9 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretiza
           CORE::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
         }
         else
-          dserror("wrong number of dofs for node %i", lm.size());
+          FOUR_C_THROW("wrong number of dofs for node %i", lm.size());
 
-        if (mydisp.size() != 3) dserror("we need 3 displacements here");
+        if (mydisp.size() != 3) FOUR_C_THROW("we need 3 displacements here");
 
         CORE::LINALG::Matrix<3, 1> disp(mydisp.data(), true);
 
@@ -903,7 +905,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretiza
     }
 
     CORE::GEO::CUT::SideHandle* sh = GetCutSide(element->Id() + start_ele_gid);
-    if (!sh) dserror("couldn't get sidehandle!");
+    if (!sh) FOUR_C_THROW("couldn't get sidehandle!");
 
     if (xyze.numCols() == 4 && sh->Shape() == CORE::FE::CellType::quad4)
     {
@@ -941,7 +943,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<DRT::Discretiza
       }
     }
     else
-      dserror("Shape not implemented!");
+      FOUR_C_THROW("Shape not implemented!");
   }
 }
 
@@ -950,7 +952,7 @@ int CORE::GEO::CutWizard::Get_BC_Cubaturedegree() const
   if (is_set_options_)
     return intersection_->GetOptions().BC_Cubaturedegree();
   else
-    dserror("Get_BC_Cubaturedegree: Options are not set!");
+    FOUR_C_THROW("Get_BC_Cubaturedegree: Options are not set!");
   return -1;  // dummy to make compiler happy :)
 }
 

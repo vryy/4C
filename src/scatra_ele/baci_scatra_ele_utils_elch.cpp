@@ -112,7 +112,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       if (dlcap != 0.0) pot0hist = *cond->Get<double>("pot0hist");
       auto i0 = *cond->Get<double>("i0");
       if (i0 < -1e-14)
-        dserror(
+        FOUR_C_THROW(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
@@ -120,10 +120,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       i0 *= timefac;
       const auto gamma = *cond->Get<double>("gamma");
       const auto refcon = *cond->Get<double>("refcon");
-      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
 
       if (valence_k != nume)
-        dserror(
+        FOUR_C_THROW(
             "Kinetic model Butler-Volmer: The number of transferred electrons need to be  \n "
             "the same as the charge number of the reacting species %i",
             k);
@@ -134,7 +134,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       // overpotential based on opencircuit potential
       const double eta = epd - ocp;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // some safety checks/ user warnings
       if ((alphaa * frt * eta) > 100.0)
         std::cout << "WARNING: Exp(alpha_a...) in Butler-Volmer law is near overflow!"
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       if ((conint[k] / refcon) < 1e-13)
       {
         pow_conint_gamma_k = std::pow(1e-13, gamma);
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         std::cout << "WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "
                   << (conint[k] / refcon) << std::endl;
         std::cout << "-> Replacement value: pow(EPS,gamma) = " << pow_conint_gamma_k << std::endl;
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       else if (kinetics == INPAR::ELCH::butler_volmer_yang1997)
       {
         if (dlcap != 0.0)
-          dserror(
+          FOUR_C_THROW(
               "double layer charging is not implemented for Butler-Volmer-Yang electrode kinetics");
 
         // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
@@ -239,7 +239,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
         }
       }  // if (kinetics=="Butler-Volmer-Yang1997")
       else
-        dserror(
+        FOUR_C_THROW(
             "You should not be here!! Two options: Butler-Volmer-Yang1997 and "
             "Butler-Volmer-Yang1997 ");
 
@@ -258,13 +258,13 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       i0 *= timefac;
       const auto gamma = *cond->Get<double>("gamma");
       const auto refcon = *cond->Get<double>("refcon");
-      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
       const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
-        dserror("double layer charging is not implemented for Tafel electrode kinetics");
+        FOUR_C_THROW("double layer charging is not implemented for Tafel electrode kinetics");
 
       if (valence_k != nume)
-        dserror(
+        FOUR_C_THROW(
             "Kinetic model Butler-Volmer: The number of transferred electrons need to be  \n "
             "the same as the charge number of the reacting species %i",
             k);
@@ -276,7 +276,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       // concentration-dependent Tafel law
       double pow_conint_gamma_k(0.0);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // some safety checks/ user warnings
       if (((-alpha) * frt * eta) > 100.0)
         std::cout << "WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
@@ -285,7 +285,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       if ((conint[k] / refcon) < 1e-13)
       {
         pow_conint_gamma_k = std::pow(1e-13, gamma);
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         std::cout << "WARNING: Rel. Conc. in Tafel formula is zero/negative: "
                   << (conint[k] / refcon) << std::endl;
         std::cout << "-> Replacement value: pow(EPS,gamma) = " << pow_conint_gamma_k << std::endl;
@@ -337,16 +337,16 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       if (dlcap != 0.0) pot0hist = *cond->Get<double>("pot0hist");
       i0 *= timefac;
       if (i0 < -1e-14)
-        dserror(
+        FOUR_C_THROW(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
       const auto gamma = *cond->Get<double>("gamma");
       const auto refcon = *cond->Get<double>("refcon");
-      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
 
       if (valence_k != nume)
-        dserror(
+        FOUR_C_THROW(
             "Kinetic model Butler-Volmer: The number of transferred electrons need to be  \n "
             "the same as the charge number of the reacting species %i",
             k);
@@ -359,7 +359,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       if ((conint[k] / refcon) < 1e-13)
       {
         pow_conint_gamma_k = std::pow(1e-13, gamma);
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         std::cout << "WARNING: Rel. Conc. in Tafel formula is zero/negative: "
                   << (conint[k] / refcon) << std::endl;
         std::cout << "-> Replacement value: pow(EPS,gamma) = " << pow_conint_gamma_k << std::endl;
@@ -373,7 +373,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       if (conint[k] > 1e-13)
         concterm = gamma * pow(conint[k], (gamma - 1.0)) / pow(refcon, gamma);
       else
-        dserror("Better stop here!");
+        FOUR_C_THROW("Better stop here!");
 
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -423,7 +423,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       const auto beta = *cond->Get<double>("beta");
       const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
-        dserror(
+        FOUR_C_THROW(
             "double layer charging is not implemented for Butler-Volmer-Newman electrode kinetics");
 
       // reaction order of the cathodic and anodic reactants of ionic species k
@@ -446,7 +446,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
         }
       }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // some safety checks/ user warnings
       if (((1 - beta) * frt * epd) > 100.0)
         std::cout << "WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
@@ -470,7 +470,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
         {
           pow_conint_p *= std::pow(1e-13, p[kk]);
           pow_conint_q *= std::pow(1e-13, q[kk]);
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
           std::cout << "WARNING: Rel. Conc. of species" << k
                     << " in Butler-Volmer formula is zero/negative: " << (conint[k]) << std::endl;
           std::cout << "-> Replacement value: pow(1.0E-16,p[ispec]) = " << pow(1e-13, p[k])
@@ -542,11 +542,11 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       const auto c_a0 = *cond->Get<double>("c_a0");
       const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
-        dserror(
+        FOUR_C_THROW(
             "double layer charging is not implemented for Butler-Volmer-Bard electrode kinetics");
 
       if (nume != 1)
-        dserror(
+        FOUR_C_THROW(
             "electron != 1; \n "
             "this Butler-Volmer-equation (Bard/Faulkner) works for elementary steps (one electron) "
             "only!");
@@ -558,14 +558,14 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
         for (int kk = 0; kk < numscal_; kk++)
         {
           if (abs(stoich[kk]) > 1)
-            dserror(
+            FOUR_C_THROW(
                 "Stoichiometry is larger than 1!! \n"
                 "This is not supported by the reaction model based on Bard");
 
           check1 += abs(stoich[kk]);
         }
         if (check1 > 2 or check1 == 0)
-          dserror(
+          FOUR_C_THROW(
               "More than one reactant or product defined!! \n"
               "This is not supported by the reaction model based on Bard");
 
@@ -614,7 +614,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
         }
       }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // some safety checks/ user warnings
       if (((1 - beta) * (frt * nume) * eta_equilpot) > 100.0)
         std::cout << "WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
@@ -660,7 +660,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
 
     default:
     {
-      dserror("Kinetic model not implemented!");
+      FOUR_C_THROW("Kinetic model not implemented!");
       break;
     }
   }
@@ -741,13 +741,13 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       const auto alphac = *cond->Get<double>("alpha_c");
       double i0 = *cond->Get<double>("i0");
       if (i0 < -1e-14)
-        dserror(
+        FOUR_C_THROW(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
       const auto gamma = *cond->Get<double>("gamma");
       const auto refcon = *cond->Get<double>("refcon");
-      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
 
       const auto dlcap = *cond->Get<double>("dl_spec_cap");
       double pot0dtnp = 0.0;
@@ -776,7 +776,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
         epd = ocp;
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "The electrode kinetics flag zero_cur has only two options: false (=0) or true (=1).");
 
       double expterm(0.0);
@@ -808,7 +808,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 
       // scan for NaNs due to negative concentrations under exponent gamma
       if (std::isnan(expterm) or std::isnan(linea))
-        dserror("NaN detected in electrode status calculation");
+        FOUR_C_THROW("NaN detected in electrode status calculation");
 
       // compute integrals
       electpotentialint += elepot * fac;
@@ -848,10 +848,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 
       const auto gamma = *cond->Get<double>("gamma");
       const auto refcon = *cond->Get<double>("refcon");
-      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
       const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
-        dserror("double layer charging is not implemented for Tafel electrode kinetics");
+        FOUR_C_THROW("double layer charging is not implemented for Tafel electrode kinetics");
 
       // opencircuit potential is assumed to be zero here
       double ocp = 0.0;
@@ -871,7 +871,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
         epd = ocp;
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "The electrode kinetics flag zero_cur has only two options: false (=0) or true (=1).");
 
       const double expterm = std::pow(conint[k] / refcon, gamma) * (-exp((-alpha) * frt * eta));
@@ -903,13 +903,13 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       const auto alphaa = *cond->Get<double>("alpha");
       auto i0 = *cond->Get<double>("i0");
       if (i0 < -1e-14)
-        dserror(
+        FOUR_C_THROW(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
       const auto gamma = *cond->Get<double>("gamma");
       const auto refcon = *cond->Get<double>("refcon");
-      if (refcon < 1e-12) dserror("reference concentration is too small: %f", refcon);
+      if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
       const auto dlcap = *cond->Get<double>("dl_spec_cap");
       double pot0dtnp = 0.0;
       double pot0hist = 0.0;
@@ -937,7 +937,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
         epd = ocp;
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "The electrode kinetics flag zero_cur has only two options: false (=0) or true (=1).");
 
       // compute integrals
@@ -985,10 +985,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       const auto beta = *cond->Get<double>("beta");
       const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
-        dserror(
+        FOUR_C_THROW(
             "double layer charging is not implemented for Butler-Volmer-Newman electrode kinetics");
       if (zerocur != 0)
-        dserror(
+        FOUR_C_THROW(
             "The electrode kinetics flag zero_cur is not implemented for this specific kinetic "
             "model.");
 
@@ -1033,7 +1033,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
         ocp += 1 / frt / nume * (q[kk] - p[kk]) * log(conint[kk]);
         // safety check
         if ((q[kk] - p[kk]) != -stoich[kk])
-          dserror("stoichiometry factors and the factors q,p do not correlate!!");
+          FOUR_C_THROW("stoichiometry factors and the factors q,p do not correlate!!");
       }
 
       if (zerocur == 0)
@@ -1048,7 +1048,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
         epd = ocp;
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "The electrode kinetics flag zero_cur has only two options: false (=0) or true (=1).");
 
       for (int kk = 0; kk < numscal_; ++kk)
@@ -1057,7 +1057,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
         {
           pow_conint_p *= std::pow(1e-13, p[kk]);
           pow_conint_q *= std::pow(1e-13, q[kk]);
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
           std::cout << "WARNING: Rel. Conc. of species" << kk
                     << " in Butler-Volmer formula is zero/negative: " << (conint[kk]) << std::endl;
           std::cout << "-> Replacement value: pow(EPS,p[ispec]) = " << pow(1e-13, p[kk])
@@ -1079,7 +1079,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 
       // scan for NaNs due to negative concentrations under exponent gamma
       if (std::isnan(expterm) or std::isnan(linea))
-        dserror("NaN detected in electrode status calculation");
+        FOUR_C_THROW("NaN detected in electrode status calculation");
 
       // compute integrals
       currentintegral += scalar * nume * faraday *
@@ -1114,15 +1114,15 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       const auto c_a0 = *cond->Get<double>("c_a0");
       const auto dlcap = *cond->Get<double>("dl_spec_cap");
       if (dlcap != 0.0)
-        dserror(
+        FOUR_C_THROW(
             "double layer charging is not implemented for Butler-Volmer-Bard electrode kinetics");
       if (zerocur != 0)
-        dserror(
+        FOUR_C_THROW(
             "The electrode kinetics flag zero_cur is not implemented for this specific kinetic "
             "model.");
 
       if (nume != 1)
-        dserror(
+        FOUR_C_THROW(
             "electron != 1; \n "
             "this Butler-Volmer-equation (Bard/Faulkner) works for elementary steps (one electron) "
             "only!");
@@ -1134,14 +1134,14 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
         for (int kk = 0; kk < numscal_; kk++)
         {
           if (abs(stoich[kk]) > 1)
-            dserror(
+            FOUR_C_THROW(
                 "Stoichiometry is larger than 1!! \n"
                 "This is not supported by the reaction model based on Bard");
 
           check1 += abs(stoich[kk]);
         }
         if (check1 > 2 or check1 == 0)
-          dserror(
+          FOUR_C_THROW(
               "More than one reactant or product defined!! \n"
               "This is not supported by the reaction model based on Bard");
 
@@ -1187,7 +1187,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 
       // scan for NaNs due to negative concentrations under exponent gamma
       if (std::isnan(expterma) or std::isnan(exptermc) or std::isnan(linea))
-        dserror("NaN detected in electrode status calculation");
+        FOUR_C_THROW("NaN detected in electrode status calculation");
 
       const double i0 = faraday * k0 * pow(c_c0, 1 - beta) * pow(c_a0, beta);
 
@@ -1214,7 +1214,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       const auto e0 = *cond->Get<double>("e0");
       const auto c0 = *cond->Get<double>("c0");
       if (zerocur != 0)
-        dserror(
+        FOUR_C_THROW(
             "The electrode kinetics flag zero_cur is not implemented for this specific kinetic "
             "model.");
 
@@ -1231,7 +1231,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 
     default:
     {
-      dserror("Kinetic model not implemented");
+      FOUR_C_THROW("Kinetic model not implemented");
       break;
     }
   }

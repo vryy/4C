@@ -70,7 +70,7 @@ int PARTICLEENGINE::EnumToStateDim(const enum ParticleState& state)
       break;
 
     default:
-      dserror("particle state unknown!");
+      FOUR_C_THROW("particle state unknown!");
   }
 
   return dim;
@@ -203,7 +203,7 @@ std::string PARTICLEENGINE::EnumToStateName(const enum ParticleState& state)
       name = "temperature last iteration";
       break;
     default:
-      dserror("particle state unknown!");
+      FOUR_C_THROW("particle state unknown!");
   }
 
   return name;
@@ -220,7 +220,7 @@ enum PARTICLEENGINE::ParticleState PARTICLEENGINE::EnumFromStateName(const std::
   else if (name == "temperature")
     state = Temperature;
   else
-    dserror("particle state '%s' unknown!", name.c_str());
+    FOUR_C_THROW("particle state '%s' unknown!", name.c_str());
 
   return state;
 }
@@ -250,7 +250,7 @@ std::string PARTICLEENGINE::EnumToTypeName(const enum ParticleType& type)
       name = "neumannphase";
       break;
     default:
-      dserror("particle type unknown!");
+      FOUR_C_THROW("particle type unknown!");
   }
 
   return name;
@@ -273,7 +273,7 @@ enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::st
   else if (name == "neumannphase")
     type = NeumannPhase;
   else
-    dserror("particle type '%s' unknown!", name.c_str());
+    FOUR_C_THROW("particle type '%s' unknown!", name.c_str());
 
   return type;
 }
@@ -291,7 +291,7 @@ std::string PARTICLEENGINE::EnumToStatusName(const enum ParticleStatus& status)
       name = "ghosted";
       break;
     default:
-      dserror("particle status unknown!");
+      FOUR_C_THROW("particle status unknown!");
   }
 
   return name;

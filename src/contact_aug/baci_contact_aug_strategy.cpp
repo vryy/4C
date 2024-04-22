@@ -131,7 +131,7 @@ void CONTACT::AUG::DataContainer::InitSubDataContainer(
             new CONTACT::AUG::STEEPESTASCENT::DataContainer());
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "There is no known sub-data container for the given "
           "strategy type! ( strat_type = %s )",
           INPAR::CONTACT::SolvingStrategy2String(strat_type).c_str());
@@ -173,7 +173,7 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
 
   if (Data().AddInactivForceContributions() and
       Data().VariationalApproachType() != INPAR::CONTACT::var_complete)
-    dserror(
+    FOUR_C_THROW(
         "The \"ADD_INACTIVE_FORCE_CONTRIBUTIONS\" option is only supported "
         "by the complete variational approach.");
 
@@ -320,7 +320,7 @@ void CONTACT::AUG::Strategy::AssembleGlobalEleMaps()
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Strategy::InitializeCn(const double cn_init)
 {
-  if (cn_init <= 0.0) dserror("The initial CN value must be greater than zero!");
+  if (cn_init <= 0.0) FOUR_C_THROW("The initial CN value must be greater than zero!");
 
   if (Data().CnPtr().is_null() or Data().Cn().GlobalLength() == 0)
     Data().CnPtr() = CORE::LINALG::CreateVector(SlRowNodes(), true);
@@ -530,14 +530,14 @@ void CONTACT::AUG::Strategy::Initialize(enum MORTAR::ActionType actiontype)
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Unsupported action type detected: %s", MORTAR::ActionType2String(actiontype).c_str());
       exit(EXIT_FAILURE);
     }
   }
 
   if (Data().IsFriction())
-    dserror(
+    FOUR_C_THROW(
         "AugmentedLagrangeStrategy::Initialize: "
         "Frictional case is not yet considered!");
 
@@ -601,7 +601,8 @@ void CONTACT::AUG::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInter
       }
       default:
       {
-        dserror("Augmented Lagrange strategy supports only redundant ghosting of interfaces.\".");
+        FOUR_C_THROW(
+            "Augmented Lagrange strategy supports only redundant ghosting of interfaces.\".");
         break;
       }
     }
@@ -673,7 +674,7 @@ void CONTACT::AUG::Strategy::EvalInterface(CONTACT::AUG::Interface& interface, c
     }
     default:
     {
-      dserror("What shall be integrated? (enum=%d | \"%s\")", atype,
+      FOUR_C_THROW("What shall be integrated? (enum=%d | \"%s\")", atype,
           MORTAR::ActionType2String(atype).c_str());
 
       exit(EXIT_FAILURE);
@@ -692,7 +693,7 @@ void CONTACT::AUG::Strategy::RunPostComputeX(const CONTACT::ParamsInterface& cpa
   Epetra_Vector zincr_exp(LMDoFRowMap(true));
   CORE::LINALG::Export(dir, zincr_exp);
   int err = zincr_exp.ReplaceMap(SlDoFRowMap(true));
-  if (err) dserror("ReplaceMap failed with error code %d.", err);
+  if (err) FOUR_C_THROW("ReplaceMap failed with error code %d.", err);
 
   // get the current step length
   const double stepLength = cparams.GetStepLength();
@@ -724,11 +725,11 @@ void CONTACT::AUG::Strategy::ResetLagrangeMultipliers(
 
   z.PutScalar(0.0);
 
-  if (z.ReplaceMap(LMDoFRowMap(true))) dserror("ReplaceMap failed!");
+  if (z.ReplaceMap(LMDoFRowMap(true))) FOUR_C_THROW("ReplaceMap failed!");
 
   CORE::LINALG::Export(xnew, z);
 
-  if (z.ReplaceMap(SlDoFRowMap(true))) dserror("ReplaceMap failed!");
+  if (z.ReplaceMap(SlDoFRowMap(true))) FOUR_C_THROW("ReplaceMap failed!");
 
   // ---------------------------------------------------------------------
   // store the new Lagrange multiplier in the nodes
@@ -989,7 +990,7 @@ void CONTACT::AUG::Strategy::EvalStrContactRHS()
 
   // For self contact, slave and master sets may have changed,
   if (IsSelfContact())
-    dserror("Augmented Lagrange Formulation: Self contact is not yet considered!");
+    FOUR_C_THROW("Augmented Lagrange Formulation: Self contact is not yet considered!");
 
   // --- add contact force terms ----------------------------------------------
   // *** Slave side ***
@@ -1165,7 +1166,7 @@ void CONTACT::AUG::Strategy::CheckConservationLaws(CONTACT::ParamsInterface& cpa
     {
       if (std::abs(gcsum[i]) >
           1.0e-11 * std::max(1.0, std::max(std::abs(gssum[i]), std::abs(gmsum[i]))))
-        dserror("Conservation of linear momentum is not fulfilled!");
+        FOUR_C_THROW("Conservation of linear momentum is not fulfilled!");
     }
 
     // slave
@@ -1201,7 +1202,7 @@ void CONTACT::AUG::Strategy::CheckConservationLaws(CONTACT::ParamsInterface& cpa
     {
       if (std::abs(gcsum[i]) >
           1.0e-11 * std::max(1.0, std::max(std::abs(gssum[i]), std::abs(gmsum[i]))))
-        dserror("Conservation of linear momentum is not fulfilled!");
+        FOUR_C_THROW("Conservation of linear momentum is not fulfilled!");
     }
 
     // slave
@@ -1235,7 +1236,7 @@ void CONTACT::AUG::Strategy::CheckConservationLaws(CONTACT::ParamsInterface& cpa
     {
       if (std::abs(gcsum[i]) >
           1.0e-11 * std::max(1.0, std::max(std::abs(gssum[i]), std::abs(gmsum[i]))))
-        dserror("Conservation of linear momentum is not fulfilled!");
+        FOUR_C_THROW("Conservation of linear momentum is not fulfilled!");
     }
   }
   /*-------------------------------*
@@ -1423,13 +1424,13 @@ void CONTACT::AUG::Strategy::ComputeContactStresses()
     {
       int gid = interface.SlaveRowNodes()->GID(j);
       DRT::Node* node = interface.Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       // be aware of problem dimension
       int dim = Dim();
       int numdof = cnode->NumDof();
-      if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
+      if (dim != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
 
       // get nodal normal and tangential directions
       double* nn = cnode->MoData().n();
@@ -1538,7 +1539,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Strategy::GetRhsBlockPtr(
     }
     default:
     {
-      dserror("Unknown CONTACT::VecBlockType!");
+      FOUR_C_THROW("Unknown CONTACT::VecBlockType!");
       break;
     }
   }
@@ -1594,7 +1595,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockP
       // build constraint matrix kzd
       AddContributionsToMatrixBlockLmDispl(*kzd_ptr);
       int err = kzd_ptr->ReplaceRowMap(*LMDoFRowMapPtr(true));
-      if (err) dserror("ReplaceMap failed on kzd_ptr! (err = %d)", err);
+      if (err) FOUR_C_THROW("ReplaceMap failed on kzd_ptr! (err = %d)", err);
 
       kzd_ptr->Complete(*Data().GDispDofRowMapPtr(), *LMDoFRowMapPtr(true));
 
@@ -1610,7 +1611,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockP
 
       // replace row map
       int err = kzz_ptr->ReplaceRowMap(*LMDoFRowMapPtr(true));
-      if (err) dserror("ReplaceMap failed on kzz_ptr! (err = %d)", err);
+      if (err) FOUR_C_THROW("ReplaceMap failed on kzz_ptr! (err = %d)", err);
 
       kzz_ptr->Complete(SlDoFRowMap(true), *LMDoFRowMapPtr(true));
 
@@ -1622,7 +1623,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockP
     }
     default:
     {
-      dserror("Unknown STR::MatBlockType!");
+      FOUR_C_THROW("Unknown STR::MatBlockType!");
       break;
     }
   }
@@ -1685,7 +1686,7 @@ void CONTACT::AUG::Strategy::AddContributionsToMatrixBlockLmLm(
     CORE::LINALG::AssembleMyVector(1.0, kzz_diag, 1.0, *Data().InactiveDiagMatrixPtr());
 
     // if the matrix is filled, we try to replace the diagonal
-    if (kzz.ReplaceDiagonalValues(kzz_diag)) dserror("ReplaceDiagonalValues failed!");
+    if (kzz.ReplaceDiagonalValues(kzz_diag)) FOUR_C_THROW("ReplaceDiagonalValues failed!");
   }
 
   kzz.Add(*Data().DLmTLmTMatrixPtr(), false, 1.0, 1.0);
@@ -1708,20 +1709,20 @@ const Epetra_Vector& CONTACT::AUG::Strategy::GetWeightedGap(const enum MapType t
   {
     case MapType::active_slave_nodes:
     {
-      if (Data().WGapPtr().is_null()) dserror("The weighted gap vector is not initialized!");
+      if (Data().WGapPtr().is_null()) FOUR_C_THROW("The weighted gap vector is not initialized!");
 
       return *Data().WGapPtr();
     }
     case MapType::all_slave_nodes:
     {
       if (Data().WGapAllSlNodesPtr().is_null())
-        dserror("The weighted gap of all slave nodes is not initialized!");
+        FOUR_C_THROW("The weighted gap of all slave nodes is not initialized!");
 
       return *Data().WGapAllSlNodesPtr();
     }
     default:
     {
-      dserror("Unknown weighted gap type! (type=%d)", type);
+      FOUR_C_THROW("Unknown weighted gap type! (type=%d)", type);
       exit(EXIT_FAILURE);
     }
   }
@@ -1741,7 +1742,7 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetWeight
         case MapType::all_slave_nodes:
         {
           if (Data().BMatrixPtr().is_null())
-            dserror("The modified weighted gap gradient is not initialized!");
+            FOUR_C_THROW("The modified weighted gap gradient is not initialized!");
 
           return Data().BMatrixPtr();
         }
@@ -1751,7 +1752,7 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetWeight
               Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Data().GActiveNDofRowMapPtr(), 100));
 
           if (Data().DMatrixPtr().is_null() or Data().MMatrixPtr().is_null())
-            dserror("D-Matrix or/and M-Matrix are nullptr!");
+            FOUR_C_THROW("D-Matrix or/and M-Matrix are nullptr!");
 
           wgap_grad->Add(*Data().DMatrixPtr(), false, 1.0, 0.0);
           wgap_grad->Add(*Data().MMatrixPtr(), false, 1.0, 0.0);
@@ -1761,7 +1762,7 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetWeight
           return wgap_grad;
         }
         default:
-          dserror("Unsupported MapType!");
+          FOUR_C_THROW("Unsupported MapType!");
           exit(EXIT_FAILURE);
       }
       break;
@@ -1801,17 +1802,17 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetWeight
         case MapType::active_slave_nodes:
         {
           if (Data().DLmNWGapLinMatrixPtr().is_null())
-            dserror("The active weighted gap gradient is not initialized!");
+            FOUR_C_THROW("The active weighted gap gradient is not initialized!");
 
           return Data().DLmNWGapLinMatrixPtr();
         }
         default:
-          dserror("Unsupported MapType!");
+          FOUR_C_THROW("Unsupported MapType!");
           exit(EXIT_FAILURE);
       }
     }
     default:
-      dserror("Unsupported WGapGradientType!");
+      FOUR_C_THROW("Unsupported WGapGradientType!");
       exit(EXIT_FAILURE);
   }
 }
@@ -1914,7 +1915,7 @@ void CONTACT::AUG::L2ErrorNormPerNode(const std::unordered_map<int, Deriv1stMap>
     //        nodal_error_norm.second << std::endl;
   }
 
-  if (count != error_map.size()) dserror("Size <--> count mismatch!");
+  if (count != error_map.size()) FOUR_C_THROW("Size <--> count mismatch!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -1948,7 +1949,7 @@ double CONTACT::AUG::Strategy::GetPotentialValue(
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "The specified merit function type is not yet supported. "
           "type = %s | %d",
           NOX::NLN::MeritFunction::MeritFuncName2String(mrt_type).c_str(), mrt_type);
@@ -1988,7 +1989,7 @@ double CONTACT::AUG::Strategy::GetLinearizedPotentialValueTerms(const Epetra_Vec
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "The specified merit function type is not yet supported. "
           "type = %s | %d",
           NOX::NLN::MeritFunction::MeritFuncName2String(mrt_type).c_str(), mrt_type);

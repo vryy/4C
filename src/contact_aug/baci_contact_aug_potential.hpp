@@ -105,7 +105,7 @@ namespace CONTACT
       /// return active Lagrange multiplier vector (normal part)
       inline const Epetra_Vector& GetZnActive() const
       {
-        if (not isvalid_.state_) dserror("zn_active_ is not valid!");
+        if (not isvalid_.state_) FOUR_C_THROW("zn_active_ is not valid!");
 
         return *zn_active_;
       }
@@ -113,7 +113,7 @@ namespace CONTACT
       /// return inactive Lagrange multiplier vector (normal part)
       inline const Epetra_Vector& GetZnInactive() const
       {
-        if (not isvalid_.state_) dserror("zn_inactive_ is not valid!");
+        if (not isvalid_.state_) FOUR_C_THROW("zn_inactive_ is not valid!");
 
         return *zn_inactive_;
       }

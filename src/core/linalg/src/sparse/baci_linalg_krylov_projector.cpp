@@ -50,7 +50,7 @@ CORE::LINALG::KrylovProjector::KrylovProjector(
   else if (*weighttype_ == "pointvalues")
     w_ = c_;
   else
-    dserror("No permissible weight type.");
+    FOUR_C_THROW("No permissible weight type.");
 
   invwTc_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(nsdim_, nsdim_));
 }  // CORE::LINALG::KrylovProjector::KrylovProjector
@@ -77,7 +77,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::LINALG::KrylovProjector::GetNonConstKerne
 Teuchos::RCP<Epetra_MultiVector> CORE::LINALG::KrylovProjector::GetNonConstWeights()
 {
   if ((*weighttype_) == "pointvalues")
-    dserror(
+    FOUR_C_THROW(
         "For weight type 'pointvalues' weight vector equals kernel vector and can thus only be "
         "changed implicitely by changing the kernel.");
 
@@ -119,22 +119,22 @@ void CORE::LINALG::KrylovProjector::FillComplete()
 {
   if (c_ == Teuchos::null)
   {
-    dserror("No kernel vector supplied for projection");
+    FOUR_C_THROW("No kernel vector supplied for projection");
   }
 
   if (w_ == Teuchos::null)
   {
-    dserror("No weight vector supplied for projection");
+    FOUR_C_THROW("No weight vector supplied for projection");
   }
 
   if (c_->NumVectors() != nsdim_)
   {
-    dserror("Number of kernel vectors has been changed.");
+    FOUR_C_THROW("Number of kernel vectors has been changed.");
   }
 
   if (w_->NumVectors() != nsdim_)
   {
-    dserror("Number of weight vectors has been changed.");
+    FOUR_C_THROW("Number of weight vectors has been changed.");
   }
 
   // projector matrices will change
@@ -162,8 +162,8 @@ void CORE::LINALG::KrylovProjector::FillComplete()
       if ((rr == mm) and (abs(wTc) < 1e-14))
       {
         // not sure whether c_i and w_i must not be krylov.
-        // delete dserror in case you are sure what you are doing!
-        dserror("weight vector w_%i must not be orthogonal to c_%i", rr, mm);
+        // delete FOUR_C_THROW in case you are sure what you are doing!
+        FOUR_C_THROW("weight vector w_%i must not be orthogonal to c_%i", rr, mm);
       }
       // fill matrix (w_^T * c_) - not yet inverted!
       (*invwTc_)(mm, rr) = wTc;
@@ -178,7 +178,7 @@ void CORE::LINALG::KrylovProjector::FillComplete()
   densesolver.setMatrix(invwTc_);
   int err = densesolver.invert();
   if (err)
-    dserror(
+    FOUR_C_THROW(
         "Error inverting dot-product matrix of kernels and weights for orthogonal (\"krylov\") "
         "projection.");
 
@@ -201,7 +201,8 @@ CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetP()
    *                invwTc_
    */
   if (!complete_)
-    dserror("Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
+    FOUR_C_THROW(
+        "Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
 
   if (P_ == Teuchos::null)
   {
@@ -222,14 +223,15 @@ CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetPT()
    *               (invwTc_)^T
    */
   if (!complete_)
-    dserror("Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
+    FOUR_C_THROW(
+        "Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
 
   if (PT_ == Teuchos::null)
   {
     if ((*weighttype_) == "pointvalues")
     {
       if (P_ == Teuchos::null)
-        dserror("When using type pointvalues, first get P_ than PT_. Don't ask - do it!");
+        FOUR_C_THROW("When using type pointvalues, first get P_ than PT_. Don't ask - do it!");
       PT_ = P_;
     }
     else
@@ -257,7 +259,8 @@ int CORE::LINALG::KrylovProjector::ApplyP(Epetra_MultiVector& Y) const
    */
 
   if (!complete_)
-    dserror("Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
+    FOUR_C_THROW(
+        "Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
 
   return ApplyProjector(Y, w_, c_, invwTc_);
 }
@@ -273,7 +276,8 @@ int CORE::LINALG::KrylovProjector::ApplyPT(Epetra_MultiVector& Y) const
    */
 
   if (!complete_)
-    dserror("Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
+    FOUR_C_THROW(
+        "Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
 
   Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> invwTcT =
       Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(*invwTc_, Teuchos::TRANS));
@@ -297,7 +301,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::KrylovProjector::Project(
    */
 
   if (!complete_)
-    dserror("Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
+    FOUR_C_THROW(
+        "Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
 
   // auxiliary preliminary products
 
@@ -386,7 +391,7 @@ void CORE::LINALG::KrylovProjector::CreateProjector(Teuchos::RCP<CORE::LINALG::S
       err = P->EpetraMatrix()->SumIntoGlobalValues(grid, 1, &one, &grid);
       if (err < 0)
       {
-        dserror("insertion error when trying to computekrylov projection matrix.");
+        FOUR_C_THROW("insertion error when trying to computekrylov projection matrix.");
       }
     }
   }
@@ -405,7 +410,7 @@ int CORE::LINALG::KrylovProjector::ApplyProjector(Epetra_MultiVector& Y,
     const Teuchos::RCP<Epetra_MultiVector>& v1, const Teuchos::RCP<Epetra_MultiVector>& v2,
     const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& inv_v1Tv2) const
 {
-  if (!complete_) dserror("Krylov space projector is not complete. Call FillComplete().");
+  if (!complete_) FOUR_C_THROW("Krylov space projector is not complete. Call FillComplete().");
 
   int ierr = 0;
 
@@ -415,7 +420,7 @@ int CORE::LINALG::KrylovProjector::ApplyProjector(Epetra_MultiVector& Y,
   // vector index is zero
   if (Y.NumVectors() != 1)
   {
-    dserror("expecting only one solution vector during iterative solver Apply call\n");
+    FOUR_C_THROW("expecting only one solution vector during iterative solver Apply call\n");
   }
 
   /*
@@ -460,7 +465,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::LINALG::KrylovProjector::MultiplyMultiVec
     const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& dm) const
 {
   if (mv == Teuchos::null or dm == Teuchos::null)
-    dserror("Either the multivector or the densematrix point to Teuchos::null");
+    FOUR_C_THROW("Either the multivector or the densematrix point to Teuchos::null");
 
   // create empty multivector mvout
   Teuchos::RCP<Epetra_MultiVector> mvout = Teuchos::rcp(new Epetra_MultiVector(mv->Map(), nsdim_));
@@ -491,7 +496,7 @@ CORE::LINALG::KrylovProjector::MultiplyMultiVecterMultiVector(
     const int id, const bool fill) const
 {
   if (mv1 == Teuchos::null or mv2 == Teuchos::null)
-    dserror("At least one multi-vector points to Teuchos::null.");
+    FOUR_C_THROW("At least one multi-vector points to Teuchos::null.");
 
   // compute information about density of P^T A P
   Teuchos::RCP<Epetra_MultiVector> temp = Teuchos::null;
@@ -500,7 +505,7 @@ CORE::LINALG::KrylovProjector::MultiplyMultiVecterMultiVector(
   else if (id == 2)
     temp = mv2;
   else
-    dserror("id must be 1 or 2");
+    FOUR_C_THROW("id must be 1 or 2");
 
   Epetra_Vector prod(*((*temp)(0)));
   for (int i = 1; i < nsdim_; ++i) prod.Multiply(1.0, *((*temp)(i)), prod, 1.0);
@@ -578,7 +583,7 @@ CORE::LINALG::KrylovProjector::MultiplyMultiVecterMultiVector(
         grid, indices.size(), rowvals.data(), indices.data());
     if (err < 0)
     {
-      dserror(
+      FOUR_C_THROW(
           "insertion error when trying to compute krylov projection matrix (error code: %i).", err);
     }
   }

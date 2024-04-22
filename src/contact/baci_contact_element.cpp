@@ -42,7 +42,7 @@ CORE::LINALG::SerialDenseMatrix CONTACT::ElementType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   CORE::LINALG::SerialDenseMatrix nullspace;
-  dserror("method ComputeNullSpace not implemented!");
+  FOUR_C_THROW("method ComputeNullSpace not implemented!");
   return nullspace;
 }
 
@@ -132,7 +132,7 @@ void CONTACT::Element::Unpack(const std::vector<char>& data)
   MORTAR::Element::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -142,7 +142,7 @@ void CONTACT::Element::Unpack(const std::vector<char>& data)
 int CONTACT::Element::NumDofPerNode(const DRT::Node& node) const
 {
   const CONTACT::Node* cnode = dynamic_cast<const CONTACT::Node*>(&node);
-  if (!cnode) dserror("Node is not a Node");
+  if (!cnode) FOUR_C_THROW("Node is not a Node");
   return cnode->NumDof();
 }
 
@@ -154,7 +154,7 @@ int CONTACT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretizati
     CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
 {
-  dserror("CONTACT::Element::Evaluate not implemented!");
+  FOUR_C_THROW("CONTACT::Element::Evaluate not implemented!");
   return -1;
 }
 
@@ -186,7 +186,7 @@ void CONTACT::Element::DerivNormalAtXi(double* xi, int& i, CORE::LINALG::SerialD
   // initialize variables
   const int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("DerivNormalAtXi: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("DerivNormalAtXi: Null pointer!");
   CORE::LINALG::SerialDenseVector val(nnodes);
   CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
@@ -216,7 +216,7 @@ void CONTACT::Element::DerivNormalAtXi(double* xi, int& i, CORE::LINALG::SerialD
   for (int n = 0; n < nnodes; ++n)
   {
     Node* mycnode = dynamic_cast<Node*>(mynodes[n]);
-    if (!mycnode) dserror("DerivNormalAtXi: Null pointer!");
+    if (!mycnode) FOUR_C_THROW("DerivNormalAtXi: Null pointer!");
     int ndof = mycnode->NumDof();
 
     // derivative weighting matrix for current node
@@ -264,12 +264,12 @@ void CONTACT::Element::OldUnitNormalAtXi(
   for (int i = 0; i < nnodes; ++i)
   {
     Node* cnode = dynamic_cast<CONTACT::Node*>(Nodes()[i]);
-    if (!cnode) dserror("this is not a FriNode!");
+    if (!cnode) FOUR_C_THROW("this is not a FriNode!");
 
     for (int d = 0; d < Dim(); ++d)
     {
       if (CORE::LINALG::Matrix<3, 1>(cnode->Data().Normal_old(), true).Norm2() < 0.9)
-        dserror("where's my old normal");
+        FOUR_C_THROW("where's my old normal");
       tmp_n(d) += val(i) * cnode->Data().Normal_old()[d];
       for (int x = 0; x < Dim() - 1; ++x)
         tmp_n_deriv(d, x) += deriv(i, x) * cnode->Data().Normal_old()[d];
@@ -377,7 +377,7 @@ void CONTACT::Element::DJacDXi(
 
   // unknown case
   else
-    dserror("DJacDXi called for unknown element type!");
+    FOUR_C_THROW("DJacDXi called for unknown element type!");
 
   return;
 }
@@ -407,7 +407,7 @@ void CONTACT::Element::PrepareMderiv(const std::vector<MORTAR::Element*>& meles,
 void CONTACT::Element::AssembleDderivToNodes(bool dual)
 {
   if (dMatrixDeriv_ == Teuchos::null)
-    dserror("AssembleDderivToNodes called w/o PrepareDderiv first");
+    FOUR_C_THROW("AssembleDderivToNodes called w/o PrepareDderiv first");
 
   if (dMatrixDeriv_->size() == 0) return;
 
@@ -444,7 +444,7 @@ void CONTACT::Element::AssembleDderivToNodes(bool dual)
 void CONTACT::Element::AssembleMderivToNodes(MORTAR::Element& mele)
 {
   if (mMatrixDeriv_ == Teuchos::null)
-    dserror("AssembleMderivToNodes called w/o PrepareMderiv first");
+    FOUR_C_THROW("AssembleMderivToNodes called w/o PrepareMderiv first");
   if (mMatrixDeriv_->size() == 0) return;
 
   for (int j = 0; j < NumNode(); ++j)

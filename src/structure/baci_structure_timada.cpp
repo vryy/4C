@@ -128,7 +128,7 @@ int STR::TimAda::Integrate()
 
   // Richardson extrapolation to no avail
   if (MethodAdaptDis() == ada_ident)
-    dserror(
+    FOUR_C_THROW(
         "This combination is not implemented ... Richardson's extrapolation ... Yoshida technique "
         "...");
 
@@ -198,7 +198,7 @@ int STR::TimAda::Integrate()
     }
     else
     {
-      dserror("Do not know what to do");
+      FOUR_C_THROW("Do not know what to do");
     }
 
     // increment time and step in the marching time integrator

@@ -109,7 +109,7 @@ void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::Pack(
 {
   if constexpr (!std::is_floating_point_v<T>)
   {
-    dserror(
+    FOUR_C_THROW(
         "Pack and Unpack is only available for floating point types. You are probably using a "
         "FAD-type.");
     return;
@@ -134,7 +134,7 @@ void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::Unpack(
 {
   if constexpr (!std::is_floating_point_v<T>)
   {
-    dserror(
+    FOUR_C_THROW(
         "Pack and Unpack is only available for floating point types. You are probably using a "
         "FAD-type.");
     return;
@@ -165,7 +165,7 @@ void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::Update()
 
   // predictor: start from previous solution
   states_.back() = states_[states_.size() - 2];
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   state_is_set_ = false;
 #endif
 }
@@ -189,7 +189,7 @@ void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::SetState
 {
   states_.back().lambda_f = lambda_f;
   states_.back().lambda_ext = lambda_ext;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   state_is_set_ = true;
 #endif
 }
@@ -198,7 +198,7 @@ template <int numstates, typename T>
 CORE::LINALG::Matrix<2, 2, T> MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::IntegrateLocalEvolutionEquationsImplicit(const T dt)
 {
-  dsassert(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
   const T lambda_f = states_.back().lambda_f;
   const T lambda_ext = states_.back().lambda_ext;
   const auto EvaluateLocalNewtonLinearSystem = [&]()
@@ -273,7 +273,8 @@ CORE::LINALG::Matrix<2, 2, T> MIXTURE::IMPLEMENTATION::RemodelFiberImplementatio
   {
     if (iteration >= 500)
     {
-      dserror("The local newton didn't converge within 500 iterations. Residuum is %.3e > %.3e",
+      FOUR_C_THROW(
+          "The local newton didn't converge within 500 iterations. Residuum is %.3e > %.3e",
           CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm(b)), 1e-10);
     }
     K.Invert();
@@ -503,7 +504,7 @@ template <int numstates, typename T>
 T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::EvaluateCurrentFiberCauchyStress() const
 {
-  dsassert(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
@@ -515,7 +516,7 @@ template <int numstates, typename T>
 T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::EvaluateCurrentFiberPK2Stress()
     const
 {
-  dsassert(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
@@ -528,7 +529,7 @@ template <int numstates, typename T>
 T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::EvaluateDCurrentFiberPK2StressDLambdafsq() const
 {
-  dsassert(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
@@ -542,7 +543,7 @@ template <int numstates, typename T>
 T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::EvaluateDCurrentFiberPK2StressDLambdar() const
 {
-  dsassert(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
   const T lambda_f = states_.back().lambda_f;
   const T lambda_r = states_.back().lambda_r;
   const T lambda_ext = states_.back().lambda_ext;
@@ -557,7 +558,7 @@ template <int numstates, typename T>
 T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::EvaluateDCurrentGrowthEvolutionImplicitTimeIntegrationResiduumDLambdafsq(T dt) const
 {
-  dsassert(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
   const IntegrationState<numstates, T> growth_state = std::invoke(
       [&]
       {
@@ -588,7 +589,7 @@ template <int numstates, typename T>
 T MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::EvaluateDCurrentRemodelEvolutionImplicitTimeIntegrationResiduumDLambdafsq(T dt) const
 {
-  dsassert(state_is_set_, "You have to call SetState() before!");
+  FOUR_C_ASSERT(state_is_set_, "You have to call SetState() before!");
   const IntegrationState<numstates, T> remodel_state = std::invoke(
       [&]
       {

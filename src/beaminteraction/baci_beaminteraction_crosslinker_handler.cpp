@@ -125,8 +125,8 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
     int from = -1;
     exporter.ReceiveAny(from, tag, rdata, length);
     if (tag != 1234 or from != fromrank)
-      dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank,
-          from, myrank);
+      FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank,
+          myrank, from, myrank);
 
 
     // ---- unpack ----
@@ -141,7 +141,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
         // this Teuchos::rcp holds the memory of the node
         Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
         Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast<DRT::Node>(object);
-        if (node == Teuchos::null) dserror("Received object is not a node");
+        if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 
         // process received linker
         const double* currpos = node->X().data();
@@ -204,7 +204,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
     std::vector<int> unique_pidlist(uniquesize);
     int err = binstrategy_->BinDiscret()->ElementRowMap()->RemoteIDList(
         uniquesize, uniquevec_targetbinIdlist.data(), unique_pidlist.data(), nullptr);
-    if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d", err);
+    if (err < 0) FOUR_C_THROW("Epetra_BlockMap::RemoteIDList returned err=%d", err);
 
     // 3) build full pid list via lookup table
     std::map<int, int> lookuptable;
@@ -263,7 +263,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
         myrank_, p->first, (p->second).data(), (int)(p->second).size(), 1234, request[tag]);
     ++tag;
   }
-  if (tag != length) dserror("Number of messages is mixed up");
+  if (tag != length) FOUR_C_THROW("Number of messages is mixed up");
 
   ReceiveLinkerAndFillThemInBins(summedtargets[myrank_], exporter, homelesslinker);
 
@@ -304,10 +304,10 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
     }
     else
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // safety check
       if (not binstrategy_->BinDiscret()->HaveGlobalElement(binId))
-        dserror(
+        FOUR_C_THROW(
             "To transfer linker using ghosting you need to provide a one layer ghosting,"
             " that is not the case. Bin with gid %i not ghosted on rank %i ",
             binId, myrank_);
@@ -363,7 +363,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
         myrank_, p->first, (p->second).data(), (int)(p->second).size(), 1234, request[tag]);
     ++tag;
   }
-  if (tag != length) dserror("Number of messages is mixed up");
+  if (tag != length) FOUR_C_THROW("Number of messages is mixed up");
 
 
   if (removedlinker->size() != 0)
@@ -405,7 +405,8 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::ReceiveLinkerAndFillThemInBins(int
     int tag = -1;
     int from = -1;
     exporter.ReceiveAny(from, tag, rdata, length);
-    if (tag != 1234) dserror("Received on proc %i data with wrong tag from proc %i", myrank_, from);
+    if (tag != 1234)
+      FOUR_C_THROW("Received on proc %i data with wrong tag from proc %i", myrank_, from);
 
     // ---- unpack ----
     {
@@ -418,13 +419,13 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::ReceiveLinkerAndFillThemInBins(int
         // this Teuchos::rcp holds the memory of the node
         Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
         Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast<DRT::Node>(object);
-        if (node == Teuchos::null) dserror("Received object is not a node");
+        if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 
         // process received linker
         const double* currpos = node->X().data();
         PlaceNodeCorrectly(node, currpos, homelesslinker);
         if (homelesslinker.size())
-          dserror(
+          FOUR_C_THROW(
               "linker (id: %i) was sent to proc %i but corresponding bin (gid: %i) "
               " is missing",
               node->Id(), myrank_, binstrategy_->ConvertPosToGid(currpos));
@@ -451,9 +452,9 @@ bool BEAMINTERACTION::BeamCrosslinkerHandler::PlaceNodeCorrectly(Teuchos::RCP<DR
   {
     DRT::MESHFREE::MeshfreeMultiBin* currbin =
         dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(binstrategy_->BinDiscret()->gElement(binId));
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (currbin == nullptr)
-      dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+      FOUR_C_THROW("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
     // check whether it is a row bin
     if (currbin->Owner() == myrank_)  // row bin
@@ -537,8 +538,9 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
   {
     DRT::Node* currlinker = binstrategy_->BinDiscret()->lRowNode(i);
 
-#ifdef BACI_DEBUG
-    if (currlinker->NumElement() != 1) dserror("ERROR: A linker is assigned to more than one bin!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    if (currlinker->NumElement() != 1)
+      FOUR_C_THROW("ERROR: A linker is assigned to more than one bin!");
 #endif
 
     DRT::MESHFREE::MeshfreeMultiBin* currbin =
@@ -579,7 +581,7 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::TransferLi
     for (size_t iter = 0; iter < tobemoved.size(); ++iter) currbin->DeleteNode(tobemoved[iter]);
   }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (homelesslinker.size())
     std::cout << "There are " << homelesslinker.size() << " homeless linker on proc" << myrank_
               << std::endl;
@@ -639,7 +641,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::GetNeighbouringBinsOfLinkerContain
   std::list<DRT::Element*> const boundaryrowbins = binstrategy_->BoundaryRowBins();
 
   if (boundaryrowbins.size() == 0)
-    dserror("Boundary row bins unknown, call function DetermineBoundaryRowBins() first!");
+    FOUR_C_THROW("Boundary row bins unknown, call function DetermineBoundaryRowBins() first!");
 
   // loop over boundary row bins and add neighbors of filled row bins
   std::list<DRT::Element*>::const_iterator it;

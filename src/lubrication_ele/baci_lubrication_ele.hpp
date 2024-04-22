@@ -300,7 +300,7 @@ namespace DRT
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
-        dserror("method ComputeNullSpace not implemented");
+        FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
 
@@ -430,7 +430,7 @@ namespace DRT
       {
         DRT::Element* parent = DRT::FaceElement::ParentElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::Lubrication*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Lubrication*>(parent) != nullptr,
             "Master element is no Lubrication element");
         return static_cast<DRT::ELEMENTS::Lubrication*>(parent);
       }
@@ -495,7 +495,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec2,
           CORE::LINALG::SerialDenseVector& elevec3) override
       {
-        dserror("Evaluate() method for Lubrication boundary element not yet implemented");
+        FOUR_C_THROW("Evaluate() method for Lubrication boundary element not yet implemented");
         return 0;
       };
 
@@ -521,7 +521,8 @@ namespace DRT
           DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
       {
-        dserror("EvaluateNeumann() method for Lubrication boundary element not yet implemented");
+        FOUR_C_THROW(
+            "EvaluateNeumann() method for Lubrication boundary element not yet implemented");
         return 0;
       };
 

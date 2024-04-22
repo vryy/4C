@@ -78,7 +78,7 @@ int DRT::ELEMENTS::SoHex8PoroType::Initialize(DRT::Discretization& dis)
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex8_poro* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex8_poro* failed");
     actele->InitElement();
   }
   return 0;
@@ -148,7 +148,7 @@ int DRT::ELEMENTS::SoTet4PoroType::Initialize(DRT::Discretization& dis)
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet4_poro* failed");
+    if (!actele) FOUR_C_THROW("cast to So_tet4_poro* failed");
     actele->So3Poro<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>::InitElement();
   }
   return 0;
@@ -214,7 +214,7 @@ int DRT::ELEMENTS::SoHex27PoroType::Initialize(DRT::Discretization& dis)
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex27_poro* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex27_poro* failed");
     actele->So3Poro<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>::InitElement();
   }
   return 0;
@@ -280,7 +280,7 @@ int DRT::ELEMENTS::SoTet10PoroType::Initialize(DRT::Discretization& dis)
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet10_poro* failed");
+    if (!actele) FOUR_C_THROW("cast to So_tet10_poro* failed");
     actele->So3Poro<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>::InitElement();
   }
   return 0;
@@ -349,7 +349,7 @@ int DRT::ELEMENTS::SoNurbs27PoroType::Initialize(DRT::Discretization& dis)
     auto* actele = dynamic_cast<
         DRT::ELEMENTS::So3Poro<DRT::ELEMENTS::NURBS::SoNurbs27, CORE::FE::CellType::nurbs27>*>(
         dis.lColElement(i));
-    if (!actele) dserror("cast to So_nurbs27_poro* failed");
+    if (!actele) FOUR_C_THROW("cast to So_nurbs27_poro* failed");
     actele->So3Poro<DRT::ELEMENTS::NURBS::SoNurbs27, CORE::FE::CellType::nurbs27>::InitElement();
   }
   return 0;

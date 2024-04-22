@@ -149,10 +149,10 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
       int length = restartname_.length();
       std::vector<int> name(restartname_.begin(), restartname_.end());
       int err = microdis->Comm().Broadcast(&length, 1, 0);
-      if (err) dserror("communication error");
+      if (err) FOUR_C_THROW("communication error");
       name.resize(length);
       err = microdis->Comm().Broadcast(name.data(), length, 0);
-      if (err) dserror("communication error");
+      if (err) FOUR_C_THROW("communication error");
       restartname_.assign(name.begin(), name.end());
     }
 
@@ -161,10 +161,10 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
       int length = newfilename.length();
       std::vector<int> name(newfilename.begin(), newfilename.end());
       int err = microdis->Comm().Broadcast(&length, 1, 0);
-      if (err) dserror("communication error");
+      if (err) FOUR_C_THROW("communication error");
       name.resize(length);
       err = microdis->Comm().Broadcast(name.data(), length, 0);
-      if (err) dserror("communication error");
+      if (err) FOUR_C_THROW("communication error");
       newfilename.assign(name.begin(), name.end());
     }
   }

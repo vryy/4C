@@ -48,7 +48,8 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const 
   for (int nlid = 1; nlid < NumNode(); ++nlid)
   {
     if (numdofpernode_ != ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]))
-      dserror("You need different NumDofPerNode for each node on this fluid boundary? (%d != %d)",
+      FOUR_C_THROW(
+          "You need different NumDofPerNode for each node on this fluid boundary? (%d != %d)",
           numdofpernode_, ParentMasterElement()->NumDofPerNode(*Nodes()[nlid]));
   }
   return;
@@ -123,7 +124,7 @@ void DRT::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
   numdofpernode_ = ExtractInt(position, data);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -144,7 +145,7 @@ void DRT::ELEMENTS::FluidBoundary::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidBoundary::Lines()
 {
-  dserror("Lines of FluidBoundary not implemented");
+  FOUR_C_THROW("Lines of FluidBoundary not implemented");
 }
 
 /*----------------------------------------------------------------------*

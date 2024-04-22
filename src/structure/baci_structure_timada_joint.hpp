@@ -72,7 +72,7 @@ namespace STR
           return INPAR::STR::timada_kind_centraldiff;
           break;
         default:
-          dserror("Cannot handle requested time integrator");
+          FOUR_C_THROW("Cannot handle requested time integrator");
           return INPAR::STR::timada_kind_none;
           break;
       }
@@ -101,7 +101,7 @@ namespace STR
       // check explicitness
       if (sta_->MethodImplicit())
       {
-        dserror("Implicit might work, but please check carefully");
+        FOUR_C_THROW("Implicit might work, but please check carefully");
       }
 
       // check order

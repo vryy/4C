@@ -179,7 +179,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
           double* d_cauchyndir_dc)
       {
-        dserror("not implemented for chosen solid element");
+        FOUR_C_THROW("not implemented for chosen solid element");
       }
 
       /*!
@@ -254,7 +254,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
           double* d_cauchyndir_dc)
       {
-        dserror("not implemented for chosen solid element");
+        FOUR_C_THROW("not implemented for chosen solid element");
       }
 
       /** \brief set the parameter interface ptr for the solid elements
@@ -284,7 +284,7 @@ namespace DRT
        *  \date 04/16 */
       inline DRT::ELEMENTS::ParamsInterface& ParamsInterface()
       {
-        if (not IsParamsInterface()) dserror("The interface ptr is not set!");
+        if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
       }
 

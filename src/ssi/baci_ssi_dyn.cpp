@@ -88,7 +88,7 @@ void ssi_drt()
         ssi = Teuchos::rcp(new SSI::SSIMono(comm, ssiparams));
         break;
       default:
-        dserror("unknown coupling algorithm for SSI!");
+        FOUR_C_THROW("unknown coupling algorithm for SSI!");
         break;
     }
 

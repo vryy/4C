@@ -261,7 +261,7 @@ bool CORE::GEO::CUT::QuadratureCompression::Compress_Leja_points(
   {
     return false;
     // std::cout<<"info = "<<info<<"\n";
-    // dserror("Lu decomposition failed\n");
+    // FOUR_C_THROW("Lu decomposition failed\n");
   }
 
   // Adapt the indices. GETRF uses Fortran implementation in the background
@@ -299,7 +299,7 @@ bool CORE::GEO::CUT::QuadratureCompression::Compress_Leja_points(
   qr.setVectors(sol, rhs);
 
   int isSolved = qr.solve();
-  if (isSolved != 0) dserror("SerialDenseSolver failed\n");
+  if (isSolved != 0) FOUR_C_THROW("SerialDenseSolver failed\n");
 
   // rhs->print(std::cout);
   // sol->print(std::cout);
@@ -574,7 +574,7 @@ void CORE::GEO::CUT::QuadratureCompression::Teuchos_GELS(
       &info);
 
   rhs->print(std::cout);
-  dserror("done");
+  FOUR_C_THROW("done");
 }
 
 void CORE::GEO::CUT::QuadratureCompression::QR_decomposition_Teuchos(
@@ -611,7 +611,7 @@ void CORE::GEO::CUT::QuadratureCompression::QR_decomposition_Teuchos(
   // qr.solveWithTranspose( true );
   qr.solveWithTransposeFlag(Teuchos::TRANS);
   int NotSolved = qr.solve();
-  if (NotSolved != 0) dserror("QR-factorization using Trilinos not successful\n");
+  if (NotSolved != 0) FOUR_C_THROW("QR-factorization using Trilinos not successful\n");
 }
 
 void CORE::GEO::CUT::QuadratureCompression::QR_decomposition_LAPACK(
@@ -668,7 +668,7 @@ void CORE::GEO::CUT::QuadratureCompression::QR_decomposition_LAPACK(
   Teuchos::LAPACK<int, double> ll;
   ll.GEQP3(ma, na, mat->values(), mat->stride(), jpvt->values(), tau->values(), work->values(),
       lwork, rwork->values(), &info);
-  if (info) dserror("QR-decomposition with column pivoting failed\n");
+  if (info) FOUR_C_THROW("QR-decomposition with column pivoting failed\n");
 
   ll.ORMQR('L', 'T', ma, nb, na, mat->values(), mat->stride(), tau->values(), rhs->values(),
       rhs->stride(), work->values(), lwork, &info);
@@ -688,7 +688,7 @@ void CORE::GEO::CUT::QuadratureCompression::QR_decomposition_LAPACK(
   /*DGEQPF_F77(ma, na, sqr->values(), &(sqr->stride()),
   jpvt->values(), tau->values(), work->values(), &info);*/
 
-  dserror("done");
+  FOUR_C_THROW("done");
 }
 
 /*------------------------------------------------------------------------------------------------------------------------------------*

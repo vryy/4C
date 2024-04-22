@@ -81,7 +81,7 @@ namespace MAT
     {
       if (!isDefined_)
       {
-        dserror("The coordinate system is not yet defined.");
+        FOUR_C_THROW("The coordinate system is not yet defined.");
       }
       return radial_;
     };
@@ -90,7 +90,7 @@ namespace MAT
     {
       if (!isDefined_)
       {
-        dserror("The coordinate system is not yet defined.");
+        FOUR_C_THROW("The coordinate system is not yet defined.");
       }
       return axial_;
     }
@@ -99,7 +99,7 @@ namespace MAT
     {
       if (!isDefined_)
       {
-        dserror("The coordinate system is not yet defined.");
+        FOUR_C_THROW("The coordinate system is not yet defined.");
       }
       return circumferential_;
     };

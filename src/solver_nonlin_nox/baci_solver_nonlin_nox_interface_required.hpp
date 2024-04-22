@@ -81,7 +81,7 @@ namespace NOX
             const enum NOX::NLN::MeritFunction::LinOrder linorder,
             const enum NOX::NLN::MeritFunction::LinType lintype) const
         {
-          dserror("Not implemented!");
+          FOUR_C_THROW("Not implemented!");
           exit(EXIT_FAILURE);
         }
 
@@ -91,27 +91,27 @@ namespace NOX
         //! access the lumped mass matrix
         virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const
         {
-          dserror("The evaluation of the lumped mass matrix is not implemented!");
+          FOUR_C_THROW("The evaluation of the lumped mass matrix is not implemented!");
           return Teuchos::null;
         }
 
         //! create a backup state (optional)
         virtual void CreateBackupState(const Epetra_Vector& dir)
         {
-          dserror("There is no meaningful implementation for this method!");
+          FOUR_C_THROW("There is no meaningful implementation for this method!");
         }
 
         //! recover from a backup state (optional)
         virtual void RecoverFromBackupState()
         {
-          dserror("There is no meaningful implementation for this method!");
+          FOUR_C_THROW("There is no meaningful implementation for this method!");
         }
 
         //! compute element volumes (optional)
         virtual bool computeElementVolumes(
             const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols) const
         {
-          dserror("There is no meaningful implementation for this method!");
+          FOUR_C_THROW("There is no meaningful implementation for this method!");
           exit(EXIT_FAILURE);
         }
 
@@ -119,7 +119,7 @@ namespace NOX
         virtual void getDofsFromElements(
             const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const
         {
-          dserror("There is no meaningful implementation for this method!");
+          FOUR_C_THROW("There is no meaningful implementation for this method!");
         };
       };
     }  // namespace Interface

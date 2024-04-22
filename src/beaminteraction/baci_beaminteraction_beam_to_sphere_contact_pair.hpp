@@ -138,13 +138,13 @@ namespace BEAMINTERACTION
     inline void GetAllActiveContactPointCoordsElement1(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
-      dserror("not implemented yet!");
+      FOUR_C_THROW("not implemented yet!");
     }
 
     inline void GetAllActiveContactPointCoordsElement2(
         std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
-      dserror("not implemented yet!");
+      FOUR_C_THROW("not implemented yet!");
     }
 
     /*!
@@ -152,7 +152,7 @@ namespace BEAMINTERACTION
     */
     inline void GetAllActiveContactForces(std::vector<double>& forces) const override
     {
-      dserror("not implemented yet!");
+      FOUR_C_THROW("not implemented yet!");
     }
 
     /*!
@@ -160,7 +160,7 @@ namespace BEAMINTERACTION
     */
     void GetAllActiveContactGaps(std::vector<double>& gaps) const override
     {
-      dserror("not implemented yet!");
+      FOUR_C_THROW("not implemented yet!");
     }
 
     /*!
@@ -168,7 +168,7 @@ namespace BEAMINTERACTION
     */
     double GetEnergy() const override
     {
-      dserror("not implemented yet!");
+      FOUR_C_THROW("not implemented yet!");
       return 0.0;
     }
     //@}

@@ -109,7 +109,7 @@ void FSI::MonolithicBase::CreateStructureTimeIntegrator(
   structure_->Setup();
 
   if (structure_ == Teuchos::null)
-    dserror(
+    FOUR_C_THROW(
         "Cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper "
         "failed.");
 
@@ -130,14 +130,15 @@ void FSI::MonolithicBase::CreateFluidAndALETimeIntegrator(const Teuchos::Paramet
       timeparams, GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", true));
   fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fluid->FluidField());
 
-  if (fluid_ == Teuchos::null) dserror("Cast from ADAPTER::Fluid to ADAPTER::FluidFSI failed");
+  if (fluid_ == Teuchos::null) FOUR_C_THROW("Cast from ADAPTER::Fluid to ADAPTER::FluidFSI failed");
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale =
       Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(timeparams, aledis));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFsiWrapper>(ale->AleField());
 
-  if (ale_ == Teuchos::null) dserror("Cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
+  if (ale_ == Teuchos::null)
+    FOUR_C_THROW("Cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
 
   return;
 }
@@ -395,10 +396,10 @@ void FSI::Monolithic::SetupSystem()
   // interface dof map for all fields and have just one transfer
   // operator from the interface map to the full field map.
   if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
-    dserror("structure interface dof maps do not match");
+    FOUR_C_THROW("structure interface dof maps do not match");
 
   if (coupsf.MasterDofMap()->NumGlobalElements() == 0)
-    dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+    FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
@@ -519,7 +520,7 @@ void FSI::Monolithic::PrepareTimeloop()
   const double pstime =
       GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
   if (pstype != INPAR::STR::PreStress::none && Time() + Dt() <= pstime + 1.0e-15)
-    dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
+    FOUR_C_THROW("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
 
   return;
 }
@@ -594,7 +595,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
     }
     default:
     {
-      dserror("Verbosity level not supported!");
+      FOUR_C_THROW("Verbosity level not supported!");
       break;
     }
   }
@@ -734,8 +735,8 @@ void FSI::Monolithic::NonLinErrorCheck()
         erroraction_ = erroraction_stop;
 
         // stop the simulation
-        dserror("Nonlinear solver did not converge in %i iterations in time step %i.", noxiter_,
-            Step());
+        FOUR_C_THROW("Nonlinear solver did not converge in %i iterations in time step %i.",
+            noxiter_, Step());
         break;
       }
       case INPAR::FSI::divcont_continue:
@@ -760,7 +761,7 @@ void FSI::Monolithic::NonLinErrorCheck()
             CORE::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
         if (not timeadapton)
         {
-          dserror(
+          FOUR_C_THROW(
               "Nonlinear solver wants to halve the time step size. This is "
               "not possible in a time integrator with constant Delta t.");
         }
@@ -783,7 +784,7 @@ void FSI::Monolithic::NonLinErrorCheck()
             CORE::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
         if (not timeadapton)
         {
-          dserror(
+          FOUR_C_THROW(
               "Nonlinear solver wants to revert the time step size. This is "
               "not possible in a time integrator with constant Delta t.");
         }
@@ -799,14 +800,14 @@ void FSI::Monolithic::NonLinErrorCheck()
       }
       default:
       {
-        dserror("Unknown action to cope with non-converged nonlinear solver.");
+        FOUR_C_THROW("Unknown action to cope with non-converged nonlinear solver.");
         break;
       }
     }
   }
   else
   {
-    dserror("Unknown ::NOX::StatusTest::StatusType.");
+    FOUR_C_THROW("Unknown ::NOX::StatusTest::StatusType.");
   }
 
   return;
@@ -818,7 +819,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether all fields have the same time step size
   CheckIfDtsSame();
 #endif
@@ -1230,7 +1231,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
     }
     default:
     {
-      dserror("Unsupported type of monolithic solver/preconditioner");
+      FOUR_C_THROW("Unsupported type of monolithic solver/preconditioner");
       break;
     }
   }
@@ -1272,7 +1273,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSyst
     {
       const int linsolvernumber = fsimono.get<int>("LINEAR_SOLVER");
       if (linsolvernumber == -1)
-        dserror(
+        FOUR_C_THROW(
             "no linear solver defined for monolithic FSI. Please set LINEAR_SOLVER in FSI "
             "DYNAMIC/MONOLITHIC SOLVER to a valid number!");
 
@@ -1341,7 +1342,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSyst
     }
     default:
     {
-      dserror("unsupported linear block solver strategy: %d", linearsolverstrategy);
+      FOUR_C_THROW("unsupported linear block solver strategy: %d", linearsolverstrategy);
       break;
     }
   }

@@ -142,13 +142,13 @@ bool STR::IMPLICIT::Generic::ApplyCorrectionSystem(const enum NOX::NLN::Correcti
     case NOX::NLN::CorrectionType::soc_cheap:
     {
       ok = ModelEval().ApplyCheapSOCRhs(type, constraint_models, x, f, 1.0);
-      if (not jac.Filled()) dserror("The jacobian is supposed to be filled at this point!");
+      if (not jac.Filled()) FOUR_C_THROW("The jacobian is supposed to be filled at this point!");
 
       break;
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "No action defined for the given second order correction type: "
           "\"%s\"",
           NOX::NLN::CorrectionType2String(type).c_str());
@@ -256,7 +256,8 @@ Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVector(
     ::NOX::Abstract::Vector& vec) const
 {
   ::NOX::Epetra::Vector* epetra_vec = dynamic_cast<::NOX::Epetra::Vector*>(&vec);
-  dsassert(epetra_vec != nullptr, "The given ::NOX::Abstract::Vector is no ::NOX::Epetra::Vector!");
+  FOUR_C_ASSERT(
+      epetra_vec != nullptr, "The given ::NOX::Abstract::Vector is no ::NOX::Epetra::Vector!");
 
   return epetra_vec->getEpetraVector();
 }
@@ -267,7 +268,8 @@ const Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVecto
     const ::NOX::Abstract::Vector& vec) const
 {
   const ::NOX::Epetra::Vector* epetra_vec = dynamic_cast<const ::NOX::Epetra::Vector*>(&vec);
-  dsassert(epetra_vec != nullptr, "The given ::NOX::Abstract::Vector is no ::NOX::Epetra::Vector!");
+  FOUR_C_ASSERT(
+      epetra_vec != nullptr, "The given ::NOX::Abstract::Vector is no ::NOX::Epetra::Vector!");
 
   return epetra_vec->getEpetraVector();
 }

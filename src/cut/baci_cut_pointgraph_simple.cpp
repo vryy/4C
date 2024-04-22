@@ -26,7 +26,7 @@ CORE::GEO::CUT::IMPL::SimplePointGraph1D::SimplePointGraph1D(Mesh &mesh, Element
     : PointGraph::PointGraph(1) /* explicit call of the protected base
                                    class constructor */
 {
-  if (element->Dim() != 1) dserror("This class is only meaningful for 1-D elements!");
+  if (element->Dim() != 1) FOUR_C_THROW("This class is only meaningful for 1-D elements!");
 
   Cycle cycle;
   FillGraph(element, side, cycle, strategy);
@@ -66,7 +66,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph1D::AddCutPointsToCycle(
     Element *element, Side *side, Cycle &cycle)
 {
   std::vector<Side *> ele_sides = element->Sides();
-  if (ele_sides.size() != 1) dserror("There should be only one side in the 1-D case!");
+  if (ele_sides.size() != 1) FOUR_C_THROW("There should be only one side in the 1-D case!");
 
   Side &ele_side = **ele_sides.begin();
   PointSet cuts;
@@ -75,7 +75,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph1D::AddCutPointsToCycle(
   ele_side.GetCutPoints(element, *side, cuts);
 
   if (cuts.size() > 1)
-    dserror("There are a multiple cut points for the 2 line cut, check this case.");
+    FOUR_C_THROW("There are a multiple cut points for the 2 line cut, check this case.");
 
   // add the found cut points and actual in the case of a cut_side, no other points
   // were added till now, to the cycle.
@@ -116,7 +116,7 @@ CORE::GEO::CUT::IMPL::SimplePointGraph2D::SimplePointGraph2D(Mesh &mesh, Element
     : PointGraph::PointGraph(mesh, element, side, location, strategy),
       graph_2d_(Teuchos::rcp_dynamic_cast<SimplePointGraph2D::Graph>(GraphPtr(), true))
 {
-  if (element->Dim() != 2) dserror("This class is only meaningful for 2-D elements!");
+  if (element->Dim() != 2) FOUR_C_THROW("This class is only meaningful for 2-D elements!");
   /* intentionally left blank, the work is done in the base class */
 }
 
@@ -148,7 +148,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::Graph::FindCycles(
     if (all_points_.size() > 2)
     {
       for (auto i = all_points_.begin(); i != all_points_.end(); ++i) i->second->Print();
-      dserror(
+      FOUR_C_THROW(
           "A cut_side point cycle with more than 2 points is currently not "
           "supported in the 2-D case, since it cannot happen for level-set "
           "cut cases ( always straight cuts ). Check this scenario if you run "
@@ -225,7 +225,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::FillGraphAndCycleWithLineFacets(
     Facet *f = *cit;
 
     if (not f->Equals(CORE::FE::CellType::line2))
-      dserror("This function works only for line facets!");
+      FOUR_C_THROW("This function works only for line facets!");
 
     const std::vector<Point *> &line_points = f->Points();
     GetGraph().AddEdge(line_points[0], line_points[1]);
@@ -263,7 +263,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph2D::CorrectRotationDirection(
     Cycle &cycle = *it;
 
     const unsigned cycle_size = cycle().size();
-    if (cycle_size < 3) dserror("The cycle needs at least three points!");
+    if (cycle_size < 3) FOUR_C_THROW("The cycle needs at least three points!");
 
     std::vector<Point *>::const_iterator it_begin = cycle().begin();
     std::vector<Point *>::const_iterator it_end = cycle().end() - 1;

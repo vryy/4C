@@ -293,7 +293,7 @@ namespace SCATRA
           return CORE::FE::GaussRule3D::hex_1000point;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Integration rule only until degree 19 for HEX elements defined. You used a degree "
               "of %d",
               degree);
@@ -350,7 +350,7 @@ namespace SCATRA
           return CORE::FE::GaussRule3D::hex_1000point;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Integration rule only until degree 19 for HEX elements defined. You used a degree "
               "of %d",
               degree);
@@ -407,7 +407,7 @@ namespace SCATRA
           return CORE::FE::GaussRule3D::hex_1000point;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Integration rule only until degree 19 for HEX elements defined. You used a degree "
               "of %d",
               degree);
@@ -461,7 +461,7 @@ namespace SCATRA
           return CORE::FE::GaussRule3D::tet_729point_peano;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Integration rule only until degree 16 for TET elements defined. You used a degree "
               "of %d",
               degree);
@@ -515,7 +515,7 @@ namespace SCATRA
           return CORE::FE::GaussRule3D::tet_729point_peano;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Integration rule only until degree 16 for TET elements defined. You used a degree "
               "of %d",
               degree);
@@ -529,7 +529,7 @@ namespace SCATRA
   {
     static CORE::FE::GaussRule3D GetGaussRule(int degree)
     {
-      dserror("Gauss rule not for WEDGE elements defined. Feel free to add the Gauss rule.");
+      FOUR_C_THROW("Gauss rule not for WEDGE elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule3D::undefined;
     };
   };
@@ -538,7 +538,7 @@ namespace SCATRA
   {
     static CORE::FE::GaussRule3D GetGaussRule(int degree)
     {
-      dserror("Gauss rule not for PYRAMID elements defined. Feel free to add the Gauss rule.");
+      FOUR_C_THROW("Gauss rule not for PYRAMID elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule3D::undefined;
     };
   };
@@ -547,7 +547,7 @@ namespace SCATRA
   {
     static CORE::FE::GaussRule3D GetGaussRule(int degree)
     {
-      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
+      FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule3D::undefined;
     };
   };
@@ -556,7 +556,7 @@ namespace SCATRA
   {
     static CORE::FE::GaussRule3D GetGaussRule(int degree)
     {
-      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
+      FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule3D::undefined;
     };
   };
@@ -608,7 +608,7 @@ namespace SCATRA
           return CORE::FE::GaussRule2D::quad_100point;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Integration rule only until degree 19 for QUAD elements defined. You used a degree "
               "of %d",
               degree);
@@ -665,7 +665,7 @@ namespace SCATRA
           return CORE::FE::GaussRule2D::quad_100point;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Integration rule only until degree 19 for QUAD elements defined. You used a degree "
               "of %d",
               degree);
@@ -722,7 +722,7 @@ namespace SCATRA
           return CORE::FE::GaussRule2D::quad_100point;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Integration rule only until degree 19 for QUAD elements defined. You used a degree "
               "of %d",
               degree);
@@ -773,7 +773,7 @@ namespace SCATRA
           return CORE::FE::GaussRule2D::tri_64point;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Integration rule only until degree 15 for TRI elements defined. You used a degree "
               "of %d",
               degree);
@@ -795,7 +795,7 @@ namespace SCATRA
   {
     static CORE::FE::GaussRule2D GetGaussRule(int degree)
     {
-      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
+      FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule2D::undefined;
     };
   };
@@ -804,7 +804,7 @@ namespace SCATRA
   {
     static CORE::FE::GaussRule2D GetGaussRule(int degree)
     {
-      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
+      FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule2D::undefined;
     };
   };
@@ -856,7 +856,7 @@ namespace SCATRA
           return CORE::FE::GaussRule1D::line_10point;
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "Integration rule only until degree 19 for LINE elements defined. You used a degree "
               "of %d",
               degree);
@@ -870,7 +870,7 @@ namespace SCATRA
   {
     static CORE::FE::GaussRule1D GetGaussRule(int degree)
     {
-      dserror("Gauss rule not for LINE elements defined. Feel free to add the Gauss rule.");
+      FOUR_C_THROW("Gauss rule not for LINE elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule1D::undefined;
     };
   };
@@ -879,7 +879,7 @@ namespace SCATRA
   {
     static CORE::FE::GaussRule1D GetGaussRule(int degree)
     {
-      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
+      FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule1D::undefined;
     };
   };
@@ -888,7 +888,7 @@ namespace SCATRA
   {
     static CORE::FE::GaussRule1D GetGaussRule(int degree)
     {
-      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
+      FOUR_C_THROW("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return CORE::FE::GaussRule1D::undefined;
     };
   };
@@ -1042,7 +1042,7 @@ namespace SCATRA
         return 0.083333333333333333333;
         break;
       default:
-        dserror("Element shape not supported.");
+        FOUR_C_THROW("Element shape not supported.");
         break;
     }
     return -1.0;

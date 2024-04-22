@@ -227,7 +227,7 @@ void MAT::SuperElasticSMA::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::SuperElasticSMA*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -262,7 +262,8 @@ void MAT::SuperElasticSMA::Unpack(const std::vector<char>& data)
     xi_s_last_->push_back(tmpDouble);
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 
@@ -383,7 +384,7 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   if (matdata.model != 1 and matdata.model != 2)
   {
     // No proper model is given --> throw error
-    dserror("No sma-model given. Use 1 for the exponential model and 2 for the linear model.");
+    FOUR_C_THROW("No sma-model given. Use 1 for the exponential model and 2 for the linear model.");
   }
 
   CORE::LINALG::Matrix<3, 3> deformation_gradient_invert(*defgrd);
@@ -706,7 +707,7 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       }
       else
       {
-        dserror("Local Newton iteration unconverged in %i iterations. Residual: %e Tol: %e",
+        FOUR_C_THROW("Local Newton iteration unconverged in %i iterations. Residual: %e Tol: %e",
             maxiter, fp, tol);
       }
     }
@@ -1134,14 +1135,14 @@ bool MAT::SuperElasticSMA::VisData(
 {
   if (name == "martensiticfraction")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int iter = 0; iter < numgp; iter++) temp += xi_s_last_->at(iter);
     data[0] = temp / numgp;
   }
   else if (name == "druckerprager")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double F = 0.0;
     for (int iter = 0; iter < numgp; iter++)
       if (F < druckerpragerloadinglast_->at(iter)) F = druckerpragerloadinglast_->at(iter);

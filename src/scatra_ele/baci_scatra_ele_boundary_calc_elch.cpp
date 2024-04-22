@@ -105,7 +105,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
 
   // get current condition
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
-  if (cond == Teuchos::null) dserror("Cannot access condition 'ElchBoundaryKinetics'");
+  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
 
   // access parameters of the condition
   const auto kinetics = *cond->Get<int>("kinetic model");
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
   // condition) but the electrode status is evaluated
   const auto zerocur = *cond->Get<int>("zero_cur");
   if (nume < 0)
-    dserror(
+    FOUR_C_THROW(
         "The convention for electrochemical reactions at the electrodes does not allow \n"
         "a negative number of transferred electrons");
 
@@ -124,7 +124,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
   // Sum_i (s_i  M_i^(z_i)) -> n e- (n needs to be positive)
   const auto* stoich = cond->Get<std::vector<int>>("stoich");
   if ((unsigned int)my::numscal_ != (*stoich).size())
-    dserror(
+    FOUR_C_THROW(
         "Electrode kinetics: number of stoichiometry coefficients %u does not match"
         " the number of ionic species %d",
         (*stoich).size(), my::numscal_);
@@ -139,7 +139,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
     if (reactspecies > 1 and (kinetics == INPAR::ELCH::butler_volmer or
                                  kinetics == INPAR::ELCH::butler_volmer_yang1997 or
                                  kinetics == INPAR::ELCH::tafel or kinetics == INPAR::ELCH::linear))
-      dserror(
+      FOUR_C_THROW(
           "Kinetic model Butler-Volmer / Butler-Volmer-Yang / Tafel and Linear: \n"
           "Only one educt and no product is allowed in the implemented version");
   }
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
       // BDF2:              timefac = 2/3 * dt
       // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
       timefac = my::scatraparamstimint_->TimeFac();
-      if (timefac < 0.0) dserror("time factor is negative.");
+      if (timefac < 0.0) FOUR_C_THROW("time factor is negative.");
       // for correct scaling of rhs contribution (see below)
       rhsfac = 1 / my::scatraparamstimint_->AlphaF();
     }
@@ -202,7 +202,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
       // BDF2:              timefacrhs = 2/3 * dt
       // generalized-alpha: timefacrhs = (gamma/alpha_M) * dt
       timefac = my::scatraparamstimint_->TimeFacRhs();
-      if (timefac < 0.) dserror("time factor is negative.");
+      if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
     EvaluateElectrodeStatus(ele, elevec1_epetra, params, cond, my::ephinp_, ephidtnp, kinetics,
@@ -223,7 +223,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinea
     CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
-  if (cond == Teuchos::null) dserror("Cannot access condition 'ElchBoundaryKinetics'");
+  if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
 
   const auto kinetics = *cond->Get<int>("kinetic model");
 
@@ -241,13 +241,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinea
     const auto c0 = *cond->Get<double>("c0");
 
     if (nume < 0)
-      dserror(
+      FOUR_C_THROW(
           "The convention for electrochemical reactions at the electrodes does not allow \n"
           "a negative number of transferred electrons");
 
     const auto* stoich = cond->Get<std::vector<int>>("stoich");
     if ((unsigned int)my::numscal_ != (*stoich).size())
-      dserror(
+      FOUR_C_THROW(
           "Electrode kinetics: number of stoichiometry coefficients %u does not match"
           " the number of ionic species %d",
           (*stoich).size(), my::numscal_);
@@ -292,7 +292,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinea
         // el. potential at integration point
         const double potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
 
-        if (c0 < 1e-12) dserror("reference concentration is too small (c0 < 1.0E-12) : %f", c0);
+        if (c0 < 1e-12)
+          FOUR_C_THROW("reference concentration is too small (c0 < 1.0E-12) : %f", c0);
 
         for (int vi = 0; vi < nen_; ++vi)
         {
@@ -354,7 +355,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcCellVoltage
 
   // safety check
   if (scalars.length() != 2)
-    dserror("Result vector for cell voltage computation has invalid length!");
+    FOUR_C_THROW("Result vector for cell voltage computation has invalid length!");
 
   // write results for electric potential and domain integrals into result vector
   scalars(0) = intpotential;
@@ -423,7 +424,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElchBou
       if (epsilon == -1)
         epsilon = scalar;
       else if (epsilon <= 0 or epsilon > 1)
-        dserror("Boundary porosity has to be between 0 and 1, or -1 by default!");
+        FOUR_C_THROW("Boundary porosity has to be between 0 and 1, or -1 by default!");
 
       // call utility class for element evaluation
       utils_->EvaluateElchKineticsAtIntegrationPoint(ele, emat, erhs, ephinp, ehist, timefac, fac,
@@ -474,7 +475,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElectro
   if (epsilon == -1)
     epsilon = scalar;
   else if (epsilon <= 0 or epsilon > 1)
-    dserror("Boundary porosity has to be between 0 and 1, or -1 by default!");
+    FOUR_C_THROW("Boundary porosity has to be between 0 and 1, or -1 by default!");
 
   // integration points and weights
   const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -509,7 +510,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElectro
 
   // safety check
   if (statistics == false)
-    dserror(
+    FOUR_C_THROW(
         "There is no oxidized species O (stoich<0) defined in your input file!! \n"
         " Statistics could not be evaluated");
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElectrodeStatus

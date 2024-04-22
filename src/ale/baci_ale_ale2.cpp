@@ -140,7 +140,7 @@ CORE::FE::CellType DRT::ELEMENTS::Ale2::Shape() const
     case 9:
       return CORE::FE::CellType::quad9;
     default:
-      dserror("unexpected number of nodes %d", NumNode());
+      FOUR_C_THROW("unexpected number of nodes %d", NumNode());
       break;
   }
 }
@@ -173,7 +173,7 @@ void DRT::ELEMENTS::Ale2::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -223,7 +223,7 @@ CORE::FE::GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(const CORE::FE::C
       rule = CORE::FE::GaussRule2D::tri_6point;
       break;
     default:
-      dserror("unknown number of nodes for gaussrule initialization");
+      FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
       break;
   }
   return rule;

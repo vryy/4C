@@ -123,7 +123,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRela
   // get the solution group
   ::NOX::Abstract::Group& grp = nlnsolver.SolutionGroup();
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  if (grp_ptr == nullptr) dserror("Dynamic cast failed!");
+  if (grp_ptr == nullptr) FOUR_C_THROW("Dynamic cast failed!");
 
   // get nox parameter
   Teuchos::ParameterList& noxparams = ti_impl->DataSDyn().GetNoxParams();
@@ -153,7 +153,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRela
   // ---------------------------------------------------------------------------
   const std::string dir_str(NOX::NLN::AUX::GetDirectionMethodListName(noxparams));
   if (dir_str != "Newton")
-    dserror(
+    FOUR_C_THROW(
         "The RelaxationSolve is currently only working for the direction-"
         "method \"Newton\".");
 

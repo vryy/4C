@@ -47,13 +47,13 @@ void lubrication_dyn(int restart)
 
   // we directly use the elements from the Lubrication elements section
   if (lubricationdis->NumGlobalNodes() == 0)
-    dserror("No elements in the ---LUBRICATION ELEMENTS section");
+    FOUR_C_THROW("No elements in the ---LUBRICATION ELEMENTS section");
 
   // add proxy of velocity related degrees of freedom to lubrication discretization
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
       new DRT::DofSetPredefinedDoFNumber(GLOBAL::Problem::Instance()->NDim(), 0, 0, true));
   if (lubricationdis->AddDofSet(dofsetaux) != 1)
-    dserror("lub discretization has illegal number of dofsets!");
+    FOUR_C_THROW("lub discretization has illegal number of dofsets!");
 
   // finalize discretization
   lubricationdis->FillComplete(true, false, false);
@@ -61,7 +61,7 @@ void lubrication_dyn(int restart)
   // get linear solver id from LUBRICATION DYNAMIC
   const int linsolvernumber = lubricationdyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for LUBRICATION problem. Please set LINEAR_SOLVER in LUBRICATION "
         "DYNAMIC to a valid number!");
 

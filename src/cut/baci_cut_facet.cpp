@@ -112,7 +112,7 @@ void CORE::GEO::CUT::Facet::Register(VolumeCell* cell)
 
     std::ostringstream ostr;
     ostr << "Too many volume cells at facet! ( num cells = " << cells_.size() << " )";
-    dserror(ostr.str().c_str());
+    FOUR_C_THROW(ostr.str().c_str());
   }
 }
 
@@ -289,7 +289,7 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& poin
     double det = CORE::LINALG::gaussElimination<true, 3, double>(B, x3, x2);
     if (fabs(det) < LINSOLVETOL)
     {
-      dserror("failed to find point position");
+      FOUR_C_THROW("failed to find point position");
     }
 
     if (fabs(x2(2)) > PLANARTOL)
@@ -519,7 +519,7 @@ bool CORE::GEO::CUT::Facet::IsCutSide(Side* side)
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Facet::Position(Point::PointPosition pos)
 {
-  dsassert(IsCutPositionUnchanged(position_, pos),
+  FOUR_C_ASSERT(IsCutPositionUnchanged(position_, pos),
       "Are you sure that you want to change the facet-position from inside to outside or vice "
       "versa?");
 
@@ -588,7 +588,7 @@ void CORE::GEO::CUT::Facet::GetLines(
       lines[std::make_pair(p1, p2)].insert(this);
     }
     else
-      dserror("line creation with identical begin and end points\n");
+      FOUR_C_THROW("line creation with identical begin and end points\n");
   }
 }
 
@@ -849,7 +849,7 @@ bool CORE::GEO::CUT::Facet::HaveConsistantNormal(Facet* f, bool& result)
       else if ((matchingppoints.begin()->first) == (bmatchingppoints->first + 1) % (points1.size()))
         firstordering = false;
       else
-        dserror("Is there a point between the matched edges?");
+        FOUR_C_THROW("Is there a point between the matched edges?");
 
       bool secondordering = false;  // ordering of the facet given as parameter
       if ((matchingppoints.begin()->second + 1) % (points2.size()) == bmatchingppoints->second)
@@ -883,11 +883,11 @@ bool CORE::GEO::CUT::Facet::HaveConsistantNormal(Facet* f, bool& result)
             }
             else
             {
-              dserror("Check this case!");
+              FOUR_C_THROW("Check this case!");
             }
           }
         }
-        dserror("Is there a point between the matched edges?");
+        FOUR_C_THROW("Is there a point between the matched edges?");
       }
 
       // ordering of the edge hast to be different, if the facets are ordered equal and vice versa!
@@ -901,9 +901,9 @@ bool CORE::GEO::CUT::Facet::HaveConsistantNormal(Facet* f, bool& result)
 
 CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Facet::Neighbor(VolumeCell* cell)
 {
-  if (cells_.size() > 2) dserror("can only have two neighbors");
+  if (cells_.size() > 2) FOUR_C_THROW("can only have two neighbors");
 
-  if (cells_.count(cell) == 0) dserror("not my neighbor");
+  if (cells_.count(cell) == 0) FOUR_C_THROW("not my neighbor");
 
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); ++i)
   {
@@ -978,7 +978,7 @@ bool CORE::GEO::CUT::Facet::Equals(CORE::FE::CellType distype)
         return KERNEL::IsValidTri3(corner_points_);
         break;
       default:
-        dserror("unsupported distype requested");
+        FOUR_C_THROW("unsupported distype requested");
         break;
     }
   }
@@ -1000,7 +1000,8 @@ unsigned CORE::GEO::CUT::Facet::Normal(const std::vector<Point*>& points,
   b1.Update(1, x2, -1, x1, 0);
   b1.Scale(1. / b1.Norm2());
 
-  if (b1.Norm2() < std::numeric_limits<double>::min()) dserror("same point in facet not supported");
+  if (b1.Norm2() < std::numeric_limits<double>::min())
+    FOUR_C_THROW("same point in facet not supported");
 
   bool found = false;
   unsigned i = 2;
@@ -1150,7 +1151,7 @@ void CORE::GEO::CUT::Facet::TestFacetArea(double tolerance, bool istetmeshinters
     }
     if (area.size() != 2)
     {
-      dserror("expect two volume cells at facet");
+      FOUR_C_THROW("expect two volume cells at facet");
     }
     double diff = area[0] - area[1];
     if (fabs(diff) >= tolerance)
@@ -1217,7 +1218,7 @@ void CORE::GEO::CUT::Facet::Print(std::ostream& stream) const
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Facet::IsTriangle(const std::vector<Point*>& tri) const
 {
-  if (tri.size() != 3) dserror("three points expected");
+  if (tri.size() != 3) FOUR_C_THROW("three points expected");
 
   return points_.size() == 3 and not IsTriangulated() and not HasHoles() and Contains(tri);
 }
@@ -1226,7 +1227,7 @@ bool CORE::GEO::CUT::Facet::IsTriangle(const std::vector<Point*>& tri) const
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Facet::IsTriangulatedSide(const std::vector<Point*>& tri) const
 {
-  if (tri.size() != 3) dserror("three points expected");
+  if (tri.size() != 3) FOUR_C_THROW("three points expected");
 
   for (std::vector<std::vector<Point*>>::const_iterator i = triangulation_.begin();
        i != triangulation_.end(); ++i)
@@ -1282,14 +1283,14 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::Facet::OtherPoint(Point* p1, Point* p2)
         }
         else
         {
-          dserror("point not unique");
+          FOUR_C_THROW("point not unique");
         }
       }
     }
   }
   else
   {
-    dserror("plain triangular facet required");
+    FOUR_C_THROW("plain triangular facet required");
   }
   return result;
 }

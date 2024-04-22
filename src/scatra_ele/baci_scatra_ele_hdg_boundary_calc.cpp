@@ -71,7 +71,7 @@ DRT::ELEMENTS::ScaTraHDGBoundaryImplInterface* DRT::ELEMENTS::ScaTraHDGBoundaryI
       return ScaTraHDGBoundaryImpl<CORE::FE::CellType::nurbs9>::Instance();
     }
     default:
-      dserror(
+      FOUR_C_THROW(
           "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
       break;
   }
@@ -153,7 +153,7 @@ int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::EvaluateNeumann(
     }
   }
   if (same == false && (faces[0]->NumNode() != ele->NumNode()))
-    dserror("Neumann boundary condition implemented only for surface elements");
+    FOUR_C_THROW("Neumann boundary condition implemented only for surface elements");
 
   return 0;
 }

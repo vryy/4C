@@ -143,7 +143,7 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
   else
   {
     if (whichtau_ == INPAR::SCATRA::tau_exact_1d)
-      dserror("exact stabilization parameter only available for stationary case");
+      FOUR_C_THROW("exact stabilization parameter only available for stationary case");
   }
 
   if (whichtau_ == INPAR::SCATRA::tau_numerical_value)
@@ -174,12 +174,12 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
     case INPAR::SCATRA::stabtype_hdg_centered:
     case INPAR::SCATRA::stabtype_hdg_upwind:
       if (whichtau_ != INPAR::SCATRA::tau_numerical_value or tau_value_ <= 0.0)
-        dserror(
+        FOUR_C_THROW(
             "Wrong definition for tau for hdg stabilization, only tau_numerical_value is allowed "
             "with tau>0");
       break;
     default:
-      dserror("unknown definition for stabilization parameter");
+      FOUR_C_THROW("unknown definition for stabilization parameter");
   }
 
   // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
   {
     // check for matching flags
     if (not mat_gp_ or not tau_gp_)
-      dserror(
+      FOUR_C_THROW(
           "Evaluation of material and stabilization parameters need to be done at the integration "
           "points if subgrid-scale velocity is included!");
   }
@@ -246,7 +246,7 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(Teuchos::ParameterList&
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsDisp() const
 {
-  dsassert(nds_disp_ != -1,
+  FOUR_C_ASSERT(nds_disp_ != -1,
       "You try to access the number of dofset associated with displacement dofs without "
       "having set it!");
   return nds_disp_;
@@ -254,7 +254,7 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsDisp() const
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsGrowth() const
 {
-  dsassert(nds_growth_ != -1,
+  FOUR_C_ASSERT(nds_growth_ != -1,
       "You try to access the number of dofset associated with interface growth dofs without "
       "having set it!");
   return nds_growth_;
@@ -262,7 +262,7 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsGrowth() const
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsMicro() const
 {
-  dsassert(nds_micro_ != -1,
+  FOUR_C_ASSERT(nds_micro_ != -1,
       "You try to access the number of dofset to write micro scale values on without having "
       "set it!");
   return nds_micro_;
@@ -270,7 +270,7 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsMicro() const
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsPres() const
 {
-  dsassert(nds_pres_ != -1,
+  FOUR_C_ASSERT(nds_pres_ != -1,
       "You try to access the number of dofset associated with pressure dofs without having "
       "set it!");
   return nds_pres_;
@@ -278,7 +278,7 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsPres() const
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsScaTra() const
 {
-  dsassert(nds_scatra_ != -1,
+  FOUR_C_ASSERT(nds_scatra_ != -1,
       "You try to access the number of dofset associated with scalar transport dofs without having "
       "set it!");
   return nds_scatra_;
@@ -286,7 +286,7 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsScaTra() const
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsThermo() const
 {
-  dsassert(nds_thermo_ != -1,
+  FOUR_C_ASSERT(nds_thermo_ != -1,
       "You try to access the number of dofset associated with temperature dofs without having "
       "set it!");
   return nds_thermo_;
@@ -294,7 +294,7 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsThermo() const
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsTwoTensorQuantity() const
 {
-  dsassert(nds_two_tensor_quantitiy_ != -1,
+  FOUR_C_ASSERT(nds_two_tensor_quantitiy_ != -1,
       "You try to access the number of dofset associated with two-tensor quantity dofs without "
       "having set it!");
   return nds_two_tensor_quantitiy_;
@@ -302,7 +302,7 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsTwoTensorQuantity() const
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsVel() const
 {
-  dsassert(nds_vel_ != -1,
+  FOUR_C_ASSERT(nds_vel_ != -1,
       "You try to access the number of dofset associated with velocity related dofs without "
       "having set it!");
   return nds_vel_;
@@ -310,7 +310,7 @@ int DRT::ELEMENTS::ScaTraEleParameterStd::NdsVel() const
 
 int DRT::ELEMENTS::ScaTraEleParameterStd::NdsWss() const
 {
-  dsassert(nds_wss_ != -1,
+  FOUR_C_ASSERT(nds_wss_ != -1,
       "You try to access the number of dofset associated with wall shear stress dofs without "
       "having set it!");
   return nds_wss_;

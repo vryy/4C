@@ -34,7 +34,7 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret)
   // get problem dimension (2D or 3D) and store into dim_
   dim_ = GLOBAL::Problem::Instance()->NDim();
 
-  if (Dim() != 2 && Dim() != 3) dserror("Locsys problem must be 2D or 3D");
+  if (Dim() != 2 && Dim() != 3) FOUR_C_THROW("Locsys problem must be 2D or 3D");
 
   // get node row layout of discretization
   const Epetra_Map* noderowmap = discret_.NodeRowMap();
@@ -58,7 +58,7 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret)
     const int* locsysId = locsysconds_[i]->GetIf<int>("ConditionID");
     if (locsysId)
     {
-      if ((*locsysId) != i) dserror("Locsys condition has non-matching ID");
+      if ((*locsysId) != i) FOUR_C_THROW("Locsys condition has non-matching ID");
     }
     else
     {
@@ -129,7 +129,7 @@ void DRT::UTILS::LocsysManager::Update(
           currlocsys->Type() != DRT::Condition::SurfaceLocsys and
           currlocsys->Type() != DRT::Condition::LineLocsys and
           currlocsys->Type() != DRT::Condition::PointLocsys)
-        dserror("Unknown type of locsys condition!");
+        FOUR_C_THROW("Unknown type of locsys condition!");
 
       if (currlocsys->Type() == geo_level)
       {
@@ -165,7 +165,7 @@ void DRT::UTILS::LocsysManager::Update(
         // Here we have the convention that 2D problems "live" in the global xy-plane.
         if (Dim() == 2 and ((*rotangle)[0] != 0 or (*rotangle)[1] != 0))
         {
-          dserror(
+          FOUR_C_THROW(
               "For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global "
               "z-axis!");
         }
@@ -184,7 +184,7 @@ void DRT::UTILS::LocsysManager::Update(
             dispnp = Discret().GetState("dispnp");
             if (dispnp == Teuchos::null)
             {
-              dserror(
+              FOUR_C_THROW(
                   "Locsys: Cannot find state 'dispnp'! You need to set the state 'dispnp' before "
                   "calling the locsys setup.");
             }
@@ -287,7 +287,7 @@ void DRT::UTILS::LocsysManager::Update(
   {
     int nodeGID = noderowmap->GID(i);
     DRT::Node* node = Discret().gNode(nodeGID);
-    if (!node) dserror("Cannot find node with gid %", nodeGID);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", nodeGID);
     std::vector<int> dofs = Discret().Dof(0, node);
     int numdof = (int)dofs.size();
     int locsysindex = (int)(*locsystoggle_)[i];
@@ -331,7 +331,7 @@ void DRT::UTILS::LocsysManager::Update(
       // test how big numdofs are
       if (numdof > 3)
       {
-        dserror(
+        FOUR_C_THROW(
             "The locsys condition is not implemented for elements with numdof "
             "exceeding 3");
       }
@@ -406,7 +406,7 @@ void DRT::UTILS::LocsysManager::Update(
   }
   locsysdofmap_ = Teuchos::rcp(new Epetra_Map(
       -1, nummyentries, myglobalentries, discret_.DofRowMap()->IndexBase(), discret_.Comm()));
-  if (locsysdofmap_ == Teuchos::null) dserror("Creation failed.");
+  if (locsysdofmap_ == Teuchos::null) FOUR_C_THROW("Creation failed.");
 
   // The matrix subtrafo_ is used in order to apply the Dirichlet Conditions in a more efficient
   // manner
@@ -460,7 +460,7 @@ void DRT::UTILS::LocsysManager::Print() const
       else if (TypeLocsys(i) == DRT::Condition::VolumeLocsys)
         IO::cout << " Volume  " << IO::endl;
       else
-        dserror("Unknown type of locsys condition!");
+        FOUR_C_THROW("Unknown type of locsys condition!");
     }
     IO::cout << "-------------------------------------------------------------\n\n";
   }
@@ -582,7 +582,7 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
   // check if the normals were set
   if (nodenormals_.empty())
   {
-    dserror(
+    FOUR_C_THROW(
         "The option massConsistentNodeNormals of the Local SYS BC needs the current normals of the "
         "problem. Before calling Setup, please provide the Node Normals.");
   }
@@ -632,7 +632,7 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
     length = sqrt(length);
     if (length < 1e-12)
     {
-      dserror(
+      FOUR_C_THROW(
           "Locsys: CalcRotationVectorForNormalSystem: Node normal length is zero, what shouldn't "
           "happen! Check, if your BC nodeset really contains surface elements!");
     }

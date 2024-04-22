@@ -81,7 +81,7 @@ int BEAMINTERACTION::BeamToSolidSurfaceContactParams::GetFADOrder() const
       return 2;
       break;
     default:
-      dserror("Got unexpected contact type.");
+      FOUR_C_THROW("Got unexpected contact type.");
       return 0;
   }
 }

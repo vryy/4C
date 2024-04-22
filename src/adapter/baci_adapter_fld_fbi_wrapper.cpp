@@ -26,7 +26,7 @@ ADAPTER::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discret
 {
   // make sure
   if (Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true) == Teuchos::null)
-    dserror("Failed to create the correct underlying fluid adapter");
+    FOUR_C_THROW("Failed to create the correct underlying fluid adapter");
   return;
 }
 

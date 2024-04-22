@@ -94,7 +94,7 @@ namespace MAT
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (kinem != INPAR::STR::KinemType::linear)
-        dserror(
+        FOUR_C_THROW(
             "The plastic Drucker Prager material model is only compatible with linear kinematics.");
     }
     Teuchos::RCP<Material> Clone() const override

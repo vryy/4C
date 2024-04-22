@@ -336,7 +336,7 @@ namespace DRT
       {
         if (!filled_)
         {
-          dserror("can't access data. knotvector not completed\n");
+          FOUR_C_THROW("can't access data. knotvector not completed\n");
         }
         return (degree_[npatch]);
       };
@@ -350,7 +350,7 @@ namespace DRT
       {
         if (!filled_)
         {
-          dserror("can't access data. knotvector not completed\n");
+          FOUR_C_THROW("can't access data. knotvector not completed\n");
         }
         return (n_x_m_x_l_[npatch]);
       };
@@ -386,7 +386,7 @@ namespace DRT
       {
         if (!filled_)
         {
-          dserror("can't access data. knotvector not completed\n");
+          FOUR_C_THROW("can't access data. knotvector not completed\n");
         }
         return (nele_x_mele_x_lele_[npatch]);
       };
@@ -401,7 +401,7 @@ namespace DRT
       {
         if (!filled_)
         {
-          dserror("can't access data. knotvector not completed\n");
+          FOUR_C_THROW("can't access data. knotvector not completed\n");
         }
         return (offsets_);
       };
@@ -442,7 +442,7 @@ namespace DRT
       {
         if (!filled_)
         {
-          dserror("can't access data. knotvector not completed\n");
+          FOUR_C_THROW("can't access data. knotvector not completed\n");
         }
         return (npatches_);
       };

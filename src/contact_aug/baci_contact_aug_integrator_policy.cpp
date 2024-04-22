@@ -159,10 +159,10 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_UnitSlaveEle
   // safety check
   else
   {
-    if (d_unit_normal.size() < probdim) dserror("Given vector has the wrong size.");
+    if (d_unit_normal.size() < probdim) FOUR_C_THROW("Given vector has the wrong size.");
     for (auto& d_un_ndof : d_unit_normal)
       if (d_un_ndof.capacity() < SLAVENUMNODE * probdim)
-        dserror("Given Pairedvector provides an insufficient capacity.");
+        FOUR_C_THROW("Given Pairedvector provides an insufficient capacity.");
   }
 
   // (0) calculate the projection matrix into the tangential plain
@@ -217,7 +217,7 @@ double CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::UnitSlaveElementNor
   std::copy(non_unit_normal_extended.A(), non_unit_normal_extended.A() + probdim, unit_normal.A());
 
   double length_n_inv = unit_normal.Norm2();
-  if (length_n_inv == 0.0) dserror("The length of the slave element normal is equal to 0.0!");
+  if (length_n_inv == 0.0) FOUR_C_THROW("The length of the slave element normal is equal to 0.0!");
 
   length_n_inv = 1.0 / length_n_inv;
   const double normal_fac = sele.NormalFac();
@@ -288,7 +288,7 @@ void CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype>::Deriv1st_NonUnitSlave
             }
             default:
             {
-              dserror("Unsupported slave element dimension! (dim=%d)", SLAVEDIM);
+              FOUR_C_THROW("Unsupported slave element dimension! (dim=%d)", SLAVEDIM);
               exit(EXIT_FAILURE);
             }
           }
@@ -570,7 +570,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::LMatrixInverse
   if (std::abs(lmat_inv.Determinant()) < 1.0e-15)
   {
     lmat_inv.Print(std::cout);
-    dserror("L-matrix is almost singular!");
+    FOUR_C_THROW("L-matrix is almost singular!");
   }
 
   lmat_inv.Invert();

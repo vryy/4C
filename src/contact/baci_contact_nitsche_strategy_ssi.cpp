@@ -104,7 +104,7 @@ void CONTACT::NitscheStrategySsi::SetParentState(
     case MORTAR::state_scalar:
     {
       auto scatra_dis = GLOBAL::Problem::Instance()->GetDis("scatra");
-      if (scatra_dis == Teuchos::null) dserror("didn't get scatra discretization");
+      if (scatra_dis == Teuchos::null) FOUR_C_THROW("didn't get scatra discretization");
 
       auto scatra_dofcolmap = Teuchos::rcp(new Epetra_Vector(*scatra_dis->DofColMap(), true));
       CORE::LINALG::Export(vec, *scatra_dofcolmap);
@@ -121,7 +121,7 @@ void CONTACT::NitscheStrategySsi::SetParentState(
           const int gid = interface_dis.ElementColMap()->GID(j);
 
           auto* interface_ele = interface_dis.gElement(gid);
-          if (interface_ele == nullptr) dserror("Did not find element.");
+          if (interface_ele == nullptr) FOUR_C_THROW("Did not find element.");
 
           auto* mortar_ele = dynamic_cast<MORTAR::Element*>(interface_ele);
           auto* mortar_parent_ele = scatra_dis->gElement(mortar_ele->ParentElementId());
@@ -131,7 +131,7 @@ void CONTACT::NitscheStrategySsi::SetParentState(
           std::vector<int> lmstride;
 
           if (mortar_parent_ele == nullptr)
-            dserror("Did not get parent element to extract scalar values");
+            FOUR_C_THROW("Did not get parent element to extract scalar values");
           else
             mortar_parent_ele->LocationVector(*scatra_dis, lm, lmowner, lmstride);
 
@@ -173,7 +173,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategySsi::SetupRhsBlockVec(
 Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategySsi::GetRhsBlockPtr(
     const enum CONTACT::VecBlockType& bp) const
 {
-  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
   switch (bp)
   {
@@ -225,7 +225,7 @@ void CONTACT::NitscheStrategySsi::CompleteMatrixBlockPtr(
                   *GLOBAL::Problem::Instance()->GetDis("scatra")->DofRowMap(),     // col map
                   *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // row map
                   true, Add))
-        dserror("GlobalAssemble(...) failed");
+        FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::elch_displ:
     case CONTACT::MatBlockType::scatra_displ:
@@ -234,12 +234,12 @@ void CONTACT::NitscheStrategySsi::CompleteMatrixBlockPtr(
                   *GLOBAL::Problem::Instance()->GetDis("structure")->DofRowMap(),  // col map
                   *GLOBAL::Problem::Instance()->GetDis("scatra")->DofRowMap(),     // row map
                   true, Add))
-        dserror("GlobalAssemble(...) failed");
+        FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     case CONTACT::MatBlockType::elch_elch:
     case CONTACT::MatBlockType::scatra_scatra:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add))
-        dserror("GlobalAssemble(...) failed");
+        FOUR_C_THROW("GlobalAssemble(...) failed");
       break;
     default:
       CONTACT::NitscheStrategy::CompleteMatrixBlockPtr(bt, kc);
@@ -252,7 +252,7 @@ void CONTACT::NitscheStrategySsi::CompleteMatrixBlockPtr(
 Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::NitscheStrategySsi::GetMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bp) const
 {
-  if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
+  if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
   switch (bp)
   {

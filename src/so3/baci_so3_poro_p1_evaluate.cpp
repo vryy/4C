@@ -24,7 +24,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::ComputePorosityAndLinearization
     CORE::LINALG::Matrix<1, Base::numdof_>& dphi_dus)
 {
   if (myporosity == nullptr)
-    dserror("no porosity values given!");
+    FOUR_C_THROW("no porosity values given!");
   else
     porosity = shapfct.Dot(*myporosity);
 
@@ -40,7 +40,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::ComputePorosityAndLinearization
   dphi_dp = 0.0;
 
   if (myporosity == nullptr)
-    dserror("no porosity values given!");
+    FOUR_C_THROW("no porosity values given!");
   else
     porosity = shapfct.Dot(*myporosity);
 }
@@ -60,7 +60,7 @@ int DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::Evaluate(Teuchos::ParameterList&
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "struct_poro_calc_fluidcoupling")
     act = Base::calc_struct_multidofsetcoupling;
   else if (action == "interpolate_porosity_to_given_point")
@@ -219,7 +219,7 @@ int DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterLis
   // get the required action
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
-    dserror("No action supplied");
+    FOUR_C_THROW("No action supplied");
   else if (action == "calc_struct_internalforce")
     act = Base::calc_struct_internalforce;
   else if (action == "calc_struct_nlnstiff")
@@ -630,7 +630,7 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::GaussPointLoopP1(Teuchos::Param
     double W = 0.0;
 
     if (init_porosity_ == Teuchos::null)
-      dserror("Failed to create vector of nodal intial porosity");
+      FOUR_C_THROW("Failed to create vector of nodal intial porosity");
     double init_porosity = shapefct.Dot(*init_porosity_);
     Base::struct_mat_->ConstitutiveDerivatives(params, press, volchange, porosity, init_porosity,
         &dW_dp,  // dW_dp not needed

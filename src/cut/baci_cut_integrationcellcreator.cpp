@@ -37,7 +37,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCells(
         found = (creator.CreateLine2Cell(mesh, cell, cell->Facets()) or
                  creator.CreatePoint1Cell(mesh, cell, cell->Facets()));
         if (not found)
-          dserror(
+          FOUR_C_THROW(
               "No 1-D cell could be generated! Seems impossible to happen in 1-D! "
               "-- hiermeier 01/17");
         break;
@@ -46,7 +46,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCells(
         found = (creator.Create2DCell<CORE::FE::CellType::tri3>(mesh, cell, cell->Facets()) or
                  creator.Create2DCell<CORE::FE::CellType::quad4>(mesh, cell, cell->Facets()));
         if (not found)
-          dserror(
+          FOUR_C_THROW(
               "No 2-D cell could be generated and tessellation is currently "
               "unsupported! Thus the given cut case is not yet supported! -- hiermeier 01/17");
         break;
@@ -60,7 +60,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCells(
         break;
       }
       default:
-        dserror("Wrong element dimension! ( element dim = %d )", element->Dim());
+        FOUR_C_THROW("Wrong element dimension! ( element dim = %d )", element->Dim());
         exit(EXIT_FAILURE);
     }
 
@@ -112,7 +112,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateCell(
       success = creator.Create2DCell<CORE::FE::CellType::quad4>(mesh, cell, cell->Facets());
       break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "unsupported element shape ( shape = %s )", CORE::FE::CellTypeToString(shape).c_str());
       exit(EXIT_FAILURE);
   }
@@ -178,7 +178,7 @@ void CORE::GEO::CUT::IntegrationCellCreator::AddSide(
       break;
     default:
     {
-      dserror("Unknown boundary creation position type! ( enum = %d )", bcell_position);
+      FOUR_C_THROW("Unknown boundary creation position type! ( enum = %d )", bcell_position);
       exit(EXIT_FAILURE);
     }
   }
@@ -215,10 +215,10 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateLine2Cell(
   if (line_corner_points.size() == 2)
   {
     if (line_corner_points[0] == line_corner_points[1])
-      dserror("The line is not well defined! ( same corner points )");
+      FOUR_C_THROW("The line is not well defined! ( same corner points )");
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "There are more than two line corner points. You shouldn't "
         "reach this point!");
 
@@ -247,16 +247,16 @@ bool CORE::GEO::CUT::IntegrationCellCreator::Create2DCell(
   {
     Cycle& line_cycle = *it;
 
-    if (line_cycle().size() != 2) dserror("The line cycle has the wrong length!");
+    if (line_cycle().size() != 2) FOUR_C_THROW("The line cycle has the wrong length!");
 
     // find corresponding facet
     Facet* f = FindFacet(facets, line_cycle());
-    if (not f) dserror("Could not find the corresponding line facet!");
+    if (not f) FOUR_C_THROW("Could not find the corresponding line facet!");
 
     AddSide(bcell_pos, cell, f, facetype, line_cycle());
   }
 
-  if (pg.NumSurfaces() != 1) dserror("There shouldn't be more than one surface cycle!");
+  if (pg.NumSurfaces() != 1) FOUR_C_THROW("There shouldn't be more than one surface cycle!");
 
   const Cycle& vol_cycle = (*pg.sbegin());
   Add(cell, celltype, vol_cycle());
@@ -305,7 +305,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateTet4Cell(
         }
         else if (top_point != p)
         {
-          dserror(
+          FOUR_C_THROW(
               "Illegal tet4 cell. We found a side point of TET4 which "
               "belongs neither to the bottom facet nor is it the top node!");
         }
@@ -381,7 +381,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateTet4Cell(
   }
   else
   {
-    dserror("This cannot happen!");
+    FOUR_C_THROW("This cannot happen!");
     exit(EXIT_FAILURE);
   }
 }
@@ -423,7 +423,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
     }
     if (top == nullptr)
     {
-      dserror("illegal hex8 cell");
+      FOUR_C_THROW("illegal hex8 cell");
     }
 
     const std::vector<Point*>& bot_points = bot->CornerPoints();
@@ -451,7 +451,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
             ++i;
             if (i == side_points.end())
             {
-              dserror("illegal hex8 cell");
+              FOUR_C_THROW("illegal hex8 cell");
             }
 
             std::vector<Point*>::iterator pointpos2 = std::find(points.begin(), end, *i);
@@ -461,7 +461,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
               pointpos2 = std::find(points.begin(), end, side_points[3]);
               if (pointpos2 == end)
               {
-                dserror("illegal hex8 cell");
+                FOUR_C_THROW("illegal hex8 cell");
               }
               std::swap(pointpos1, pointpos2);
             }
@@ -473,7 +473,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
             if (std::find(top_points.begin(), top_points.end(), top_point1) == top_points.end() or
                 std::find(top_points.begin(), top_points.end(), top_point2) == top_points.end())
             {
-              dserror("illegal hex8 cell");
+              FOUR_C_THROW("illegal hex8 cell");
             }
 
             pos = (pointpos1 - points.begin()) + 4;
@@ -483,7 +483,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
             }
             else if (points[pos] != top_point1)
             {
-              dserror("illegal hex8 cell");
+              FOUR_C_THROW("illegal hex8 cell");
             }
 
             pos = (pointpos2 - points.begin()) + 4;
@@ -493,7 +493,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
             }
             else if (points[pos] != top_point2)
             {
-              dserror("illegal hex8 cell");
+              FOUR_C_THROW("illegal hex8 cell");
             }
 
             break;
@@ -642,7 +642,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateWedge6Cell(
           ++i;
           if (i == side_points.end())
           {
-            dserror("illegal wedge6 cell");
+            FOUR_C_THROW("illegal wedge6 cell");
           }
 
           std::vector<Point*>::iterator pointpos2 = std::find(points.begin(), end, *i);
@@ -652,7 +652,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateWedge6Cell(
             pointpos2 = std::find(points.begin(), end, side_points[3]);
             if (pointpos2 == end)
             {
-              dserror("illegal wedge6 cell");
+              FOUR_C_THROW("illegal wedge6 cell");
             }
             std::swap(pointpos1, pointpos2);
           }
@@ -664,7 +664,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateWedge6Cell(
           if (std::find(top_points.begin(), top_points.end(), top_point1) == top_points.end() or
               std::find(top_points.begin(), top_points.end(), top_point2) == top_points.end())
           {
-            dserror("illegal wedge6 cell");
+            FOUR_C_THROW("illegal wedge6 cell");
           }
 
           pos = (pointpos1 - points.begin()) + 3;
@@ -674,7 +674,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateWedge6Cell(
           }
           else if (points[pos] != top_point1)
           {
-            dserror("illegal wedge6 cell");
+            FOUR_C_THROW("illegal wedge6 cell");
           }
 
           pos = (pointpos2 - points.begin()) + 3;
@@ -684,7 +684,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateWedge6Cell(
           }
           else if (points[pos] != top_point2)
           {
-            dserror("illegal wedge6 cell");
+            FOUR_C_THROW("illegal wedge6 cell");
           }
 
           break;
@@ -863,7 +863,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell(
           {
             // Corner point confusion. This is actually not a pyramid5.
             //
-            // dserror( "illegal pyramid5 cell" );
+            // FOUR_C_THROW( "illegal pyramid5 cell" );
             return false;
           }
         }
@@ -964,7 +964,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell(
     }
     else
     {
-      dserror("This is not possible!");
+      FOUR_C_THROW("This is not possible!");
     }
   }
   return false;
@@ -1209,7 +1209,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut(Mesh& mesh, Eleme
         std::vector<Point*>::iterator pos = std::find(inner_points.begin(), inner_points.end(), p);
         if (pos == inner_points.end())
         {
-          dserror("inner point missing");
+          FOUR_C_THROW("inner point missing");
         }
 
         points.push_back(projected_points[pos - inner_points.begin()]);
@@ -1278,7 +1278,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut(Mesh& mesh, Eleme
         std::vector<Point*>::iterator pos = std::find(inner_points.begin(), inner_points.end(), p);
         if (pos == inner_points.end())
         {
-          dserror("inner point missing");
+          FOUR_C_THROW("inner point missing");
         }
 
         points.push_back(projected_points[pos - inner_points.begin()]);

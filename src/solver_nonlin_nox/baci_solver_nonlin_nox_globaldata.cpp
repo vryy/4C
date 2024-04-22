@@ -139,7 +139,8 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
 void NOX::NLN::GlobalData::CheckInput() const
 {
   // short input check
-  if (linSolvers_.size() == 0) dserror("The linear solver map has the size 0! Required size > 0.");
+  if (linSolvers_.size() == 0)
+    FOUR_C_THROW("The linear solver map has the size 0! Required size > 0.");
 
   typedef std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>::const_iterator CI;
   for (CI iter = linSolvers_.begin(); iter != linSolvers_.end(); ++iter)
@@ -281,7 +282,7 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
 
   // check the input: path to the "Status Test" xml-file
   if (xmlfilename == "none")
-    dserror("Please specify a \"Status Test\"->\"XML File\" for the nox nonlinear solver!");
+    FOUR_C_THROW("Please specify a \"Status Test\"->\"XML File\" for the nox nonlinear solver!");
 
   if (xmlfilename.length() && xmlfilename.rfind(".xml"))
   {
@@ -291,7 +292,7 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
     }
     catch (const std::runtime_error&)
     {
-      dserror(
+      FOUR_C_THROW(
           "The \"Status Test\"->\"XML File\" was not found! "
           "Please check the path in your input file! \n"
           "CURRENT PATH = %s",
@@ -299,11 +300,11 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
     }
   }
   else
-    dserror("The file name '%s' is not a valid XML file name.", xmlfilename.c_str());
+    FOUR_C_THROW("The file name '%s' is not a valid XML file name.", xmlfilename.c_str());
 
   // copy the "Outer Status Test" into the nox parameter list
   if (not xmlParams.isSublist("Outer Status Test"))
-    dserror("You have to specify a sublist \"Outer Status Test\" in your xml-file.");
+    FOUR_C_THROW("You have to specify a sublist \"Outer Status Test\" in your xml-file.");
   else
     outerStatusTestParams = xmlParams.sublist("Outer Status Test");
 
@@ -328,7 +329,7 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
  *----------------------------------------------------------------------------*/
 const ::NOX::Utils& NOX::NLN::GlobalData::GetNoxUtils() const
 {
-  if (noxUtils_.is_null()) dserror("noxUtils_ was not initialized!");
+  if (noxUtils_.is_null()) FOUR_C_THROW("noxUtils_ was not initialized!");
 
   return *noxUtils_;
 }
@@ -337,7 +338,7 @@ const ::NOX::Utils& NOX::NLN::GlobalData::GetNoxUtils() const
  *----------------------------------------------------------------------------*/
 const Teuchos::RCP<::NOX::Utils>& NOX::NLN::GlobalData::GetNoxUtilsPtr() const
 {
-  if (noxUtils_.is_null()) dserror("noxUtils_ was not initialized!");
+  if (noxUtils_.is_null()) FOUR_C_THROW("noxUtils_ was not initialized!");
 
   return noxUtils_;
 }
@@ -346,7 +347,7 @@ const Teuchos::RCP<::NOX::Utils>& NOX::NLN::GlobalData::GetNoxUtilsPtr() const
  *----------------------------------------------------------------------------*/
 const Teuchos::ParameterList& NOX::NLN::GlobalData::GetNlnParameterList() const
 {
-  if (nlnparams_.is_null()) dserror("nlnparams_ was not initialized!");
+  if (nlnparams_.is_null()) FOUR_C_THROW("nlnparams_ was not initialized!");
 
   return *nlnparams_;
 }
@@ -355,7 +356,7 @@ const Teuchos::ParameterList& NOX::NLN::GlobalData::GetNlnParameterList() const
  *----------------------------------------------------------------------------*/
 Teuchos::ParameterList& NOX::NLN::GlobalData::GetNlnParameterList()
 {
-  if (nlnparams_.is_null()) dserror("nlnparams_ was not initialized!");
+  if (nlnparams_.is_null()) FOUR_C_THROW("nlnparams_ was not initialized!");
 
   return *nlnparams_;
 }
@@ -364,7 +365,7 @@ Teuchos::ParameterList& NOX::NLN::GlobalData::GetNlnParameterList()
  *----------------------------------------------------------------------------*/
 const Teuchos::RCP<Teuchos::ParameterList>& NOX::NLN::GlobalData::GetNlnParameterListPtr()
 {
-  if (nlnparams_.is_null()) dserror("nlnparams_ was not initialized!");
+  if (nlnparams_.is_null()) FOUR_C_THROW("nlnparams_ was not initialized!");
 
   return nlnparams_;
 }
@@ -373,7 +374,7 @@ const Teuchos::RCP<Teuchos::ParameterList>& NOX::NLN::GlobalData::GetNlnParamete
  *----------------------------------------------------------------------------*/
 const Epetra_Comm& NOX::NLN::GlobalData::GetComm() const
 {
-  if (comm_.is_null()) dserror("comm_ was not initialized!");
+  if (comm_.is_null()) FOUR_C_THROW("comm_ was not initialized!");
 
   return *comm_;
 }
@@ -389,7 +390,7 @@ const NOX::NLN::LinearSystem::SolverMap& NOX::NLN::GlobalData::GetLinSolvers()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRequiredInterface()
 {
-  if (iReqPtr_.is_null()) dserror("Required interface pointer iReqPtr_ was not initialized!");
+  if (iReqPtr_.is_null()) FOUR_C_THROW("Required interface pointer iReqPtr_ was not initialized!");
 
   return iReqPtr_;
 }
@@ -398,7 +399,7 @@ Teuchos::RCP<::NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRequir
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJacobianInterface()
 {
-  if (iJacPtr_.is_null()) dserror("Jacobian interface pointer iJacPtr_ was not initialized!");
+  if (iJacPtr_.is_null()) FOUR_C_THROW("Jacobian interface pointer iJacPtr_ was not initialized!");
 
   return iJacPtr_;
 }
@@ -416,7 +417,7 @@ NOX::NLN::GlobalData::GetPreconditionerInterface()
  *----------------------------------------------------------------------------*/
 const NOX::NLN::CONSTRAINT::ReqInterfaceMap& NOX::NLN::GlobalData::GetConstraintInterfaces()
 {
-  if (iConstr_.size() == 0) dserror("The constraint interface map is empty!");
+  if (iConstr_.size() == 0) FOUR_C_THROW("The constraint interface map is empty!");
 
   return iConstr_;
 }
@@ -425,7 +426,8 @@ const NOX::NLN::CONSTRAINT::ReqInterfaceMap& NOX::NLN::GlobalData::GetConstraint
  *----------------------------------------------------------------------------*/
 const NOX::NLN::CONSTRAINT::PrecInterfaceMap& NOX::NLN::GlobalData::GetConstraintPrecInterfaces()
 {
-  if (iConstrPrec_.size() == 0) dserror("The constraint preconditioner interface map is empty!");
+  if (iConstrPrec_.size() == 0)
+    FOUR_C_THROW("The constraint preconditioner interface map is empty!");
 
   return iConstrPrec_;
 }

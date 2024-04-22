@@ -95,13 +95,13 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
       }
       if (Rf < 0.0 || Rf > 1.0)
       {
-        dserror("forced reflection (Rf = %f) should always belong to the range :[0  1.0]", Rf);
+        FOUR_C_THROW("forced reflection (Rf = %f) should always belong to the range :[0  1.0]", Rf);
         exit(1);
       }
     }
     else
     {
-      dserror("%s is not defined as a 1D artery's inlet BC type", Type.c_str());
+      FOUR_C_THROW("%s is not defined as a 1D artery's inlet BC type", Type.c_str());
       exit(1);
     }
 
@@ -117,7 +117,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     }
     else
     {
-      dserror("no inlet boundary condition defined!");
+      FOUR_C_THROW("no inlet boundary condition defined!");
       exit(1);
     }
   }
@@ -134,7 +134,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
     if (CoupledTo3DParams.get() == nullptr)
     {
-      dserror(
+      FOUR_C_THROW(
           "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed "
           "don't exist");
       exit(1);
@@ -197,13 +197,13 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     }
     else
     {
-      dserror("%s, is an unimplimented type of coupling", Type.c_str());
+      FOUR_C_THROW("%s, is an unimplimented type of coupling", Type.c_str());
       exit(1);
     }
   }
   else
   {
-    dserror("No such condition Name");
+    FOUR_C_THROW("No such condition Name");
     exit(1);
   }
 
@@ -278,7 +278,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
         itrs++;
         if (itrs >= 100)
         {
-          dserror(
+          FOUR_C_THROW(
               "Inflow boundary condition for Newton-Raphson exceeded the maximum allowed "
               "iterations");
           exit(1);
@@ -318,7 +318,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     }
     else
     {
-      dserror("%s is not defined!", BC.c_str());
+      FOUR_C_THROW("%s is not defined!", BC.c_str());
       exit(1);
     }
   }                  // If BC is prescribed at the inlet
@@ -382,7 +382,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
         itrs++;
         if (itrs >= 30)
         {
-          dserror(
+          FOUR_C_THROW(
               "Inflow boundary condition for Newton-Raphson exceeded the maximum allowed "
               "iterations");
           exit(1);
@@ -424,7 +424,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
   }  // If BC is prescribed at the outlet
   else
   {
-    dserror("IO flag must be either 1 (for outlets) or 0 (for inlets)\n");
+    FOUR_C_THROW("IO flag must be either 1 (for outlets) or 0 (for inlets)\n");
     exit(1);
   }
 
@@ -438,7 +438,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
     if (CoupledTo3DParams.get() == nullptr)
     {
-      dserror(
+      FOUR_C_THROW(
           "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed "
           "don't exist");
       exit(1);
@@ -489,7 +489,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     else
     {
       std::string str = (*condition->Get<std::string>("ReturnedVariable"));
-      dserror("%s, is an unimplimented type of coupling", str.c_str());
+      FOUR_C_THROW("%s, is an unimplimented type of coupling", str.c_str());
       exit(1);
     }
     std::stringstream returnedBCwithId;
@@ -508,7 +508,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     itrMap1D = map1D->find(returnedBCwithId.str());
     if (itrMap1D == map1D->end())
     {
-      dserror("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",
+      FOUR_C_THROW("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",
           returnedBC.c_str(), ID);
       exit(1);
     }
@@ -652,7 +652,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
     // -----------------------------------------------------------------
     if (wk_type == "R")  // a resister with a peripheral Pressure (Pout)
     {
-      dserror("So far, only the 3 element windkessel model is implimented\n");
+      FOUR_C_THROW("So far, only the 3 element windkessel model is implimented\n");
       exit(1);
       // ---------------------------------------------------------------
       // Read in the wind kessel parameters
@@ -676,7 +676,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
 
       if (R < 0.0)
       {
-        dserror("terminal resistance must be greater or equal to zero\n");
+        FOUR_C_THROW("terminal resistance must be greater or equal to zero\n");
         exit(1);
       }
 
@@ -714,7 +714,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
         count++;
         if (count > 40)
         {
-          dserror("1 windkessel elemenet (resistive) boundary condition didn't converge!");
+          FOUR_C_THROW("1 windkessel elemenet (resistive) boundary condition didn't converge!");
           exit(1);
         }
       }
@@ -725,7 +725,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
     }                          // if(wk_type == "R")
     else if (wk_type == "RC")  // an RC circuit with a peripheral Pressure (Pout)
     {
-      dserror("So far, only the 3 element windkessel model is implimented\n");
+      FOUR_C_THROW("So far, only the 3 element windkessel model is implimented\n");
       exit(1);
 
       // ---------------------------------------------------------------
@@ -775,7 +775,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
 
       if (R <= 0.0 || C <= 0.0)
       {
-        dserror("terminal resistance and capacitance must be always greater than zero\n");
+        FOUR_C_THROW("terminal resistance and capacitance must be always greater than zero\n");
         exit(1);
       }
 
@@ -867,7 +867,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
 
       if (R1 < 0.0 || C <= 0.0 || R2 <= 0.0)
       {
-        dserror("terminal resistances and capacitance must always be greater than zero\n");
+        FOUR_C_THROW("terminal resistances and capacitance must always be greater than zero\n");
         exit(1);
       }
 
@@ -908,7 +908,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
         F_A = std::pow(F * sqrt(Ao) / beta + 1.0, 2) - 1.0;
         if (i > 40)
         {
-          dserror("3 element windkessel Newton Raphson is not converging\n");
+          FOUR_C_THROW("3 element windkessel Newton Raphson is not converging\n");
           exit(1);
         }
       }
@@ -919,7 +919,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
     }                            // if (wk_type == "RCR")
     else if (wk_type == "RCRL")  // four element windkessel model
     {
-      dserror("So far, only the 3 element windkessel model is implimented\n");
+      FOUR_C_THROW("So far, only the 3 element windkessel model is implimented\n");
       exit(1);
       // ---------------------------------------------------------------
       // Read in the wind kessel parameters
@@ -995,7 +995,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
 
       if (R1 <= 0.0 || C <= 0.0 || R2 <= 0.0 || L <= 0.0)
       {
-        dserror("terminal resistance and capacitance must be always greater than zero\n");
+        FOUR_C_THROW("terminal resistance and capacitance must be always greater than zero\n");
         exit(1);
       }
       // Calculate W2
@@ -1003,12 +1003,12 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
     }  // if (wk_type == "RCRL")
     else if (wk_type == "none")
     {
-      dserror("So far, only the 3 element windkessel model is implimented\n");
+      FOUR_C_THROW("So far, only the 3 element windkessel model is implimented\n");
       exit(1);
     }
     else
     {
-      dserror("\"%s\" is not supported type of windkessel model\n", wk_type.c_str());
+      FOUR_C_THROW("\"%s\" is not supported type of windkessel model\n", wk_type.c_str());
       exit(1);
     }
 
@@ -1019,7 +1019,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
   }
   else
   {
-    dserror("so far windkessel BC supports only ExplicitWindkessel");
+    FOUR_C_THROW("so far windkessel BC supports only ExplicitWindkessel");
     exit(1);
   }
 

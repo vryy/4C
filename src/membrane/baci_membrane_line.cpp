@@ -57,7 +57,7 @@ DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nnode,
     }
     break;
     default:
-      dserror("shape type unknown!\n");
+      FOUR_C_THROW("shape type unknown!\n");
       break;
   }
   return;
@@ -102,7 +102,7 @@ CORE::FE::CellType DRT::ELEMENTS::MembraneLine<distype>::Shape() const
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::MembraneLine<distype>::Pack(CORE::COMM::PackBuffer& data) const
 {
-  dserror("this membrane line element does not support communication");
+  FOUR_C_THROW("this membrane line element does not support communication");
 
   return;
 }
@@ -114,7 +114,7 @@ void DRT::ELEMENTS::MembraneLine<distype>::Pack(CORE::COMM::PackBuffer& data) co
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::MembraneLine<distype>::Unpack(const std::vector<char>& data)
 {
-  dserror("this membrane line element does not support communication");
+  FOUR_C_THROW("this membrane line element does not support communication");
   return;
 }
 

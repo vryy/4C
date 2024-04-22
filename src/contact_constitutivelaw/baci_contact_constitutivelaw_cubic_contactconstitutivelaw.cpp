@@ -50,7 +50,7 @@ double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::Evaluate(double gap, CONT
 {
   if (gap + params_->GetOffset() > 0)
   {
-    dserror("You should not be here. The Evaluate function is only tested for active nodes. ");
+    FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   double result = 1.0;
   gap = -gap;
@@ -60,7 +60,7 @@ double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::Evaluate(double gap, CONT
             params_->GetB() * (gap - params_->GetOffset()) * (gap - params_->GetOffset()) +
             params_->GetC() * (gap - params_->GetOffset()) + params_->GetD();
   if (result > 0)
-    dserror(
+    FOUR_C_THROW(
         "The constitutive function you are using seems to be positive, even though the gap is "
         "negative. Please check your coefficients!");
   return result;
@@ -73,7 +73,7 @@ double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::EvaluateDeriv(
 {
   if (gap + params_->GetOffset() > 0)
   {
-    dserror("You should not be here. The Evaluate function is only tested for active nodes. ");
+    FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   gap = -gap;
   return 3 * params_->GetA() * (gap - params_->GetOffset()) * (gap - params_->GetOffset()) +

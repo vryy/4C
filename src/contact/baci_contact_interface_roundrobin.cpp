@@ -28,14 +28,14 @@ void CONTACT::Interface::RoundRobinExtendGhosting(bool firstevaluation)
   {
     int gid = SlaveColElements()->GID(k);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("Cannot find ele with gid %i", gid);
+    if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     Element* slave_ele = dynamic_cast<Element*>(ele);
 
     for (int j = 0; j < slave_ele->MoData().NumSearchElements(); ++j)
     {
       int gid2 = slave_ele->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("Cannot find master element with gid %", gid2);
+      if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
       element_GIDs_to_be_ghosted.push_back(melement->Id());
@@ -127,7 +127,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
   {
     int gid = MasterColelesdummy->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("Cannot find ele with gid %i", gid);
+    if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->Pack(dataeles);
@@ -143,7 +143,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
   {
     int gid = MasterColelesdummy->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("Cannot find ele with gid %i", gid);
+    if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->Pack(dataeles);
@@ -164,7 +164,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
   {
     int gid = MasterColelesdummy->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("Cannot find ele with gid %i", gid);
+    if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     // check for ghosting
@@ -184,7 +184,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
   int from = -1;
   exporter.ReceiveAny(from, tag, rdataeles, length);
   if (tag != 1234 or from != fromrank)
-    dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank,
+    FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank,
         from, myrank);
 
   // ---- unpack ----
@@ -197,12 +197,12 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
       int ghost = -1;
       CORE::COMM::ParObject::ExtractfromPack(index, rdataeles, data);
       CORE::COMM::ParObject::ExtractfromPack(index, rdataeles, ghost);
-      if (ghost == -1) dserror("UNPACK ERROR!!!!!!!!!");
+      if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the ele
       Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
       Teuchos::RCP<MORTAR::Element> ele = Teuchos::rcp_dynamic_cast<MORTAR::Element>(object);
-      if (ele == Teuchos::null) dserror("Received object is not an ele");
+      if (ele == Teuchos::null) FOUR_C_THROW("Received object is not an ele");
 
       // add whether its a row ele
       if (ghost == 1)
@@ -241,7 +241,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
   {
     int gid = MasterColNodesdummy->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("Cannot find ele with gid %i", gid);
+    if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
     if (ftype == INPAR::CONTACT::friction_none)
     {
@@ -263,7 +263,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
   {
     int gid = MasterColNodesdummy->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("Cannot find ele with gid %i", gid);
+    if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
     // check for ghosting
     int ghost;
@@ -298,7 +298,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
   {
     int gid = MasterColNodesdummy->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("Cannot find ele with gid %i", gid);
+    if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
     if (ftype == INPAR::CONTACT::friction_none)
     {
@@ -322,7 +322,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
   int fromn = -1;
   exportern.ReceiveAny(fromn, tagn, rdatanodes, lengthn);
   if (tagn != 1234 or fromn != fromrank)
-    dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank,
+    FOUR_C_THROW("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank,
         fromn, myrank);
 
   // ---- unpack ----
@@ -336,7 +336,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
       int ghost = -1;
       CORE::COMM::ParObject::ExtractfromPack(index, rdatanodes, data);
       CORE::COMM::ParObject::ExtractfromPack(index, rdatanodes, ghost);
-      if (ghost == -1) dserror("UNPACK ERROR!!!!!!!!!");
+      if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the node
       Teuchos::RCP<CORE::COMM::ParObject> object = Teuchos::rcp(CORE::COMM::Factory(data), true);
@@ -344,7 +344,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
       if (ftype == INPAR::CONTACT::friction_none)
       {
         Teuchos::RCP<MORTAR::Node> node = Teuchos::rcp_dynamic_cast<MORTAR::Node>(object);
-        if (node == Teuchos::null) dserror("Received object is not a node");
+        if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 
         if (ghost == 1)
         {
@@ -363,7 +363,7 @@ void CONTACT::Interface::RoundRobinChangeOwnership()
       else  // if friction...
       {
         Teuchos::RCP<FriNode> node = Teuchos::rcp_dynamic_cast<FriNode>(object);
-        if (node == Teuchos::null) dserror("Received object is not a node");
+        if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 
         if (ghost == 1)
         {
@@ -435,7 +435,7 @@ void CONTACT::Interface::RoundRobinDetectGhosting()
   else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
     EvaluateSearchBinarytree();
   else
-    dserror("Invalid search algorithm");
+    FOUR_C_THROW("Invalid search algorithm");
 
   // first ghosting for std. distribution
   RoundRobinExtendGhosting(true);
@@ -468,7 +468,7 @@ void CONTACT::Interface::RoundRobinDetectGhosting()
       if (SearchAlg() == INPAR::MORTAR::search_binarytree)
         CreateSearchTree();
       else if (SearchAlg() != INPAR::MORTAR::search_bfele)
-        dserror("Invalid search algorithm");
+        FOUR_C_THROW("Invalid search algorithm");
 
       // evaluate interfaces
       if (proc < (int)(Comm().NumProc() - 1))
@@ -478,7 +478,7 @@ void CONTACT::Interface::RoundRobinDetectGhosting()
         else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
           EvaluateSearchBinarytree();
         else
-          dserror("Invalid search algorithm");
+          FOUR_C_THROW("Invalid search algorithm");
 
         // other ghostings per iteration
         RoundRobinExtendGhosting(false);
@@ -512,7 +512,7 @@ void CONTACT::Interface::RoundRobinDetectGhosting()
   if (SearchAlg() == INPAR::MORTAR::search_binarytree)
     CreateSearchTree();
   else if (SearchAlg() != INPAR::MORTAR::search_bfele)
-    dserror("Invalid search algorithm");
+    FOUR_C_THROW("Invalid search algorithm");
 
   // final output for loop
   if (Comm().MyPID() == 0) std::cout << " Round-Robin loop done!" << std::endl;

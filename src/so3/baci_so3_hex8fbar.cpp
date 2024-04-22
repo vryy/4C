@@ -161,7 +161,7 @@ void DRT::ELEMENTS::SoHex8fbar::Unpack(const std::vector<char>& data)
   DRT::ELEMENTS::SoHex8::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

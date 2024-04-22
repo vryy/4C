@@ -68,7 +68,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
       break;
     }
     default:
-      dserror("fsi type not supported");
+      FOUR_C_THROW("fsi type not supported");
       break;
   }
 }

@@ -260,7 +260,8 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
       for (; setfool != fool->second.end(); ++setfool) cols.push_back(*setfool);
       int err = graph->InsertGlobalIndices(grid, (int)cols.size(), &cols[0]);
       if (err < 0)
-        dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err, grid);
+        FOUR_C_THROW(
+            "Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err, grid);
     }
     locals.clear();
   }
@@ -300,7 +301,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
         if (rownodes->LID(grid) != -1)  // I have it, put stuff in my graph
         {
           int err = graph->InsertGlobalIndices(grid, num - 1, (ptr + 2));
-          if (err < 0) dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d", err);
+          if (err < 0) FOUR_C_THROW("Epetra_CrsGraph::InsertGlobalIndices returned %d", err);
           ptr += (num + 1);
         }
         else  // I don't have it so I don't care for entries of this row, goto next row
@@ -389,7 +390,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
 
         int err = my_graph->InsertGlobalIndices(1, &index_main, 1, &index);
         if (err < 0)
-          dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err,
+          FOUR_C_THROW("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err,
               node_main->Id());
       }
     }
@@ -401,14 +402,14 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
   {
     int predicate_lid_discretization = dis.ElementRowMap()->LID(predicate_gid);
     if (predicate_lid_discretization < 0)
-      dserror("Could not find lid for predicate with gid %d on rank %d", predicate_gid,
+      FOUR_C_THROW("Could not find lid for predicate with gid %d on rank %d", predicate_gid,
           dis.Comm().MyPID());
     if (predicate_lid != predicate_lid_discretization)
-      dserror("The ids dont match from arborx and the discretization");
+      FOUR_C_THROW("The ids dont match from arborx and the discretization");
     const auto* predicate = dis.gElement(predicate_gid);
 
     int primitive_lid_in_map = my_colliding_primitives_map.LID(primitive_gid);
-    if (primitive_lid_in_map < 0) dserror("Could not find lid for gid %d", primitive_gid);
+    if (primitive_lid_in_map < 0) FOUR_C_THROW("Could not find lid for gid %d", primitive_gid);
 
     for (int i_node = 0; i_node < predicate->NumNode(); ++i_node)
     {
@@ -426,7 +427,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
         {
           int err = my_graph->InsertGlobalIndices(1, &index_main, 1, &primitive_node_index);
           if (err < 0)
-            dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err,
+            FOUR_C_THROW("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err,
                 node_main->Id());
         }
       }

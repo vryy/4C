@@ -50,7 +50,7 @@ void ELEMAG::ElemagResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, i
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1, dis_->Name().c_str());
+    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, dis_->Name().c_str());
   }
   else
   {
@@ -85,7 +85,7 @@ void ELEMAG::ElemagResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, i
         if ((*error_)[1] > 0.0)
           result = std::sqrt((*error_)[0] / (*error_)[1]);
         else
-          dserror(
+          FOUR_C_THROW(
               "Impossible to compute the electric relative error. The L2-norm of the "
               "analytical solution is zero, resulting in a division by zero.");
       }
@@ -94,7 +94,7 @@ void ELEMAG::ElemagResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, i
         if ((*error_)[3] > 0.0)
           result = std::sqrt((*error_)[2] / (*error_)[3]);
         else
-          dserror(
+          FOUR_C_THROW(
               "Impossible to compute the magnetic relative error. The L2-norm of the "
               "analytical solution is zero, resulting in a division by zero.");
       }
@@ -123,7 +123,7 @@ void ELEMAG::ElemagResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, i
         if ((*error_)[1] > 0.0)
           result = std::sqrt((*error_)[8] / (*error_)[1]);
         else
-          dserror(
+          FOUR_C_THROW(
               "Impossible to compute the post-processed electric relative error. The L2-norm of "
               "the analytical solution is zero, resulting in a division by zero.");
       }
@@ -137,7 +137,7 @@ void ELEMAG::ElemagResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, i
       }
       else
       {
-        dserror("Quantity '%s' not supported in result-test of elemagstic transport problems",
+        FOUR_C_THROW("Quantity '%s' not supported in result-test of elemagstic transport problems",
             variable.c_str());
       }
 

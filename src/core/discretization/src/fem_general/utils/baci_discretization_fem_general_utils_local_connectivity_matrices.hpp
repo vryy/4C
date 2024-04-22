@@ -1149,7 +1149,7 @@ namespace CORE::FE
       }
       default:
       {
-        dserror("discretization type %s not yet implemented",
+        FOUR_C_THROW("discretization type %s not yet implemented",
             CORE::FE::CellTypeToString(distype).c_str());
         exit(EXIT_FAILURE);
       }

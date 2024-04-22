@@ -253,21 +253,23 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_Vector> SolidPressure() const override
     {
       if (!output_solidpress_)
-        dserror("solid pressure requested but flag OUTPUT_SOLIDPRESS set to no");
+        FOUR_C_THROW("solid pressure requested but flag OUTPUT_SOLIDPRESS set to no");
       return solidpressure_;
     }
 
     //! return pressure field
     Teuchos::RCP<const Epetra_Vector> Pressure() const override
     {
-      if (!output_satpress_) dserror("pressure requested but flag OUTPUT_SATANDPRESS set to no");
+      if (!output_satpress_)
+        FOUR_C_THROW("pressure requested but flag OUTPUT_SATANDPRESS set to no");
       return pressure_;
     }
 
     //! return saturation field
     Teuchos::RCP<const Epetra_Vector> Saturation() const override
     {
-      if (!output_satpress_) dserror("saturation requested but flag OUTPUT_SATANDPRESS set to no");
+      if (!output_satpress_)
+        FOUR_C_THROW("saturation requested but flag OUTPUT_SATANDPRESS set to no");
       return saturation_;
     }
 

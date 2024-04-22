@@ -179,7 +179,7 @@ MAT::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(Teuchos::RCP<MAT::PAR::Ma
       tolerance_nr_(1.e-12)
 {
   if (yield_ == 0 && functionID_hardening_ == 0)
-    dserror(
+    FOUR_C_THROW(
         "You have to provide either a parameter for "
         "HARDENING_FUNC or YIELD in MAT_Struct_PlasticNlnLogNeoHooke");
 }
@@ -287,7 +287,7 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::PlasticNlnLogNeoHooke*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -315,7 +315,8 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
     invplrcgcurr_.push_back(tmp);
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 
@@ -415,7 +416,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   const double detF = defgrd->Determinant();
 
   const double dt = params.get<double>("delta time");
-  // check, if errors are tolerated or should throw a dserror
+  // check, if errors are tolerated or should throw a FOUR_C_THROW
   bool error_tol = false;
   if (params.isParameter("tolerate_errors")) error_tol = params.get<bool>("tolerate_errors");
 
@@ -696,7 +697,7 @@ bool MAT::PlasticNlnLogNeoHooke::VisData(
 {
   if (name == "accumulatedstrain")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     double temp = 0.0;
     for (int gp = 0; gp < numgp; ++gp) temp += AccumulatedStrain(gp);
     data[0] = temp / numgp;

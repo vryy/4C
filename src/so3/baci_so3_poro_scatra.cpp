@@ -86,7 +86,7 @@ void DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::Unpack(const std::vector<ch
   my::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -142,7 +142,7 @@ bool DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::ReadElement(
   else if (impltype == "Std")
     impltype_ = INPAR::SCATRA::impltype_std;
   else
-    dserror("Invalid implementation type for So3_Poro_Scatra elements!");
+    FOUR_C_THROW("Invalid implementation type for So3_Poro_Scatra elements!");
 
   return true;
 }
@@ -183,7 +183,7 @@ int DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::UniqueParObjectId() const
     }
     default:
     {
-      dserror("unknown element type!");
+      FOUR_C_THROW("unknown element type!");
       break;
     }
   }
@@ -209,7 +209,7 @@ DRT::ElementType& DRT::ELEMENTS::So3PoroScatra<so3_ele, distype>::ElementType() 
     case CORE::FE::CellType::nurbs27:
       return SoNurbs27PoroScatraType::Instance();
     default:
-      dserror("unknown element type!");
+      FOUR_C_THROW("unknown element type!");
       break;
   }
   return SoHex8PoroScatraType::Instance();

@@ -243,7 +243,7 @@ CONTACT::FriNode::FriNode(int id, const std::vector<double>& coords, const int o
 CONTACT::FriNode::FriNode(const CONTACT::FriNode& old) : CONTACT::Node(old), wear_(old.wear_)
 {
   // not yet used and thus not necessarily consistent
-  dserror("FriNode copy-ctor not yet implemented");
+  FOUR_C_THROW("FriNode copy-ctor not yet implemented");
 
   return;
 }
@@ -348,7 +348,7 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
 
   // Check
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -430,14 +430,14 @@ void CONTACT::FriNode::AddMNode(int node)
 void CONTACT::FriNode::AddD2Value(int& row, int& col, double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == true) dserror("AddD2Value: function called for slave node %i", Id());
+  if (IsSlave() == true) FOUR_C_THROW("AddD2Value: function called for slave node %i", Id());
 
   // check if this has been called before
   if ((int)WearData().GetD2().size() == 0) WearData().GetD2().resize(NumDof());
 
   // check row index input
   if ((int)WearData().GetD2().size() <= row)
-    dserror("AddD2Value: tried to access invalid row index!");
+    FOUR_C_THROW("AddD2Value: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
   std::map<int, double>& d2map = WearData().GetD2()[row];
@@ -452,15 +452,15 @@ void CONTACT::FriNode::AddD2Value(int& row, int& col, double& val)
 void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddJumpValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("AddJumpValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) FOUR_C_THROW("AddJumpValue: function called for master node %i", Id());
+  if (IsOnBound() == true) FOUR_C_THROW("AddJumpValue: function called for boundary node %i", Id());
 
   // check if this has been called before
   if ((int)FriData().GetDerivJump().size() == 0) FriData().GetDerivJump().resize(NumDof());
 
   // check row index input
   if ((int)FriData().GetDerivJump().size() <= row)
-    dserror("AddDerivJumpValue: tried to access invalid row index!");
+    FOUR_C_THROW("AddDerivJumpValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
   std::map<int, double>& zmap = FriData().GetDerivJump()[row];
@@ -475,8 +475,8 @@ void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
 void CONTACT::FriNode::AddJumpValue(double val, int k)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("AddJumpValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("AddJumpValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) FOUR_C_THROW("AddJumpValue: function called for master node %i", Id());
+  if (IsOnBound() == true) FOUR_C_THROW("AddJumpValue: function called for boundary node %i", Id());
 
   FriData().jump_var()[k] += val;
 
@@ -490,14 +490,14 @@ void CONTACT::FriNode::AddTValue(int& row, int& col, double& val)
 {
   // check if this is a master node or slave boundary node
   //  if (IsSlave()==false)
-  //    dserror("AddTValue: function called for master node %i", Id());
+  //    FOUR_C_THROW("AddTValue: function called for master node %i", Id());
 
   // check if this has been called before
   if ((int)WearData().GetT().size() == 0) WearData().GetT().resize(NumDof());
 
   // check row index input
   if ((int)WearData().GetT().size() <= row)
-    dserror("AddTValue: tried to access invalid row index!");
+    FOUR_C_THROW("AddTValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
   std::map<int, double>& tmap = WearData().GetT()[row];
@@ -513,14 +513,14 @@ void CONTACT::FriNode::AddEValue(int& row, int& col, double& val)
 {
   // check if this is a master node or slave boundary node
   //  if (IsSlave()==false)
-  //    dserror("AddEValue: function called for master node %i", Id());
+  //    FOUR_C_THROW("AddEValue: function called for master node %i", Id());
 
   // check if this has been called before
   if ((int)WearData().GetE().size() == 0) WearData().GetE().resize(NumDof());
 
   // check row index input
   if ((int)WearData().GetE().size() <= row)
-    dserror("AddEValue: tried to access invalid row index!");
+    FOUR_C_THROW("AddEValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
   std::map<int, double>& emap = WearData().GetE()[row];

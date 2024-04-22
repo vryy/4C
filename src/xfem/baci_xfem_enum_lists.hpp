@@ -44,7 +44,7 @@ namespace XFEM
         return "xstructure";
         break;
       default:
-        dserror("Unknown FieldName enumerator (enum = %d)!", field);
+        FOUR_C_THROW("Unknown FieldName enumerator (enum = %d)!", field);
         break;
     }
     return "";
@@ -59,7 +59,7 @@ namespace XFEM
     else if (name == "xstructure")
       field = xstructure;
     else
-      dserror(
+      FOUR_C_THROW(
           "No known conversion for the given discretization "
           "name \"%s\"!",
           name.c_str());

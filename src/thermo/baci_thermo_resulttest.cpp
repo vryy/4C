@@ -52,7 +52,8 @@ void THR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1, thrdisc_->Name().c_str());
+    FOUR_C_THROW(
+        "Node %d does not belong to discretization %s", node + 1, thrdisc_->Name().c_str());
   }
   else
   {
@@ -106,7 +107,8 @@ void THR::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_
       }
 
       // catch position strings, which are not handled by thermo result test
-      if (unknownpos) dserror("Quantity '%s' not supported in thermo testing", position.c_str());
+      if (unknownpos)
+        FOUR_C_THROW("Quantity '%s' not supported in thermo testing", position.c_str());
 
       // compare values
       const int err = CompareValues(result, "NODE", res);

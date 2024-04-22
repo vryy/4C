@@ -82,7 +82,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vect
   {
     // interface needs to be complete
     if (!interface_[i]->Filled() && Comm().MyPID() == 0)
-      dserror("FillComplete() not called on interface %", i);
+      FOUR_C_THROW("FillComplete() not called on interface %", i);
 
     // do the computation of nodal shape function integral
     // (for convenience, the results will be stored in nodal gap)
@@ -93,7 +93,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vect
     {
       int gid1 = interface_[i]->SlaveColElements()->GID(j);
       DRT::Element* ele1 = interface_[i]->Discret().gElement(gid1);
-      if (!ele1) dserror("Cannot find slave element with gid %", gid1);
+      if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       Element* selement = dynamic_cast<Element*>(ele1);
 
       interface_[i]->IntegrateKappaPenalty(*selement);
@@ -104,7 +104,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vect
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       // get nodal weighted gap
@@ -294,7 +294,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
         std::cout << "-- CONTACTFDDERIVZ --------------------" << std::endl;
       }
       else
-        dserror("Error: FD Check for this friction type not implemented!");
+        FOUR_C_THROW("Error: FD Check for this friction type not implemented!");
     }
   }
 #endif
@@ -415,12 +415,12 @@ void CONTACT::PenaltyStrategy::EvaluateFriction(
   }
   else if (ftype == INPAR::CONTACT::friction_tresca)
   {
-    dserror(
+    FOUR_C_THROW(
         "Error in AbstractStrategy::Evaluate: Penalty Strategy for"
         " Tresca friction not yet implemented");
   }
   else
-    dserror("Error in AbstractStrategy::Evaluate: Unknown friction type");
+    FOUR_C_THROW("Error in AbstractStrategy::Evaluate: Unknown friction type");
 
   return;
 }
@@ -542,7 +542,7 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(
     {
       int gid = interface_[i]->SlaveColNodesBound()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
       for (int k = 0; k < (int)((cnode->Data().GetDerivZ()).size()); ++k)
@@ -641,7 +641,7 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
         for (int i = 0; i < (int)interface_.size(); ++i)
         {
           double ippcurr = interface_[i]->InterfaceParams().get<double>("PENALTYPARAM");
-          if (ippcurr != ppcurr) dserror("Something wrong with penalty parameter");
+          if (ippcurr != ppcurr) FOUR_C_THROW("Something wrong with penalty parameter");
           interface_[i]->InterfaceParams().set<double>("PENALTYPARAM", 10 * ippcurr);
         }
         // in the case of frictional contact, the tangential penalty
@@ -657,7 +657,7 @@ void CONTACT::PenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
           for (int i = 0; i < (int)interface_.size(); ++i)
           {
             double ippcurrtan = interface_[i]->InterfaceParams().get<double>("PENALTYPARAMTAN");
-            if (ippcurrtan != ppcurrtan) dserror("Something wrong with penalty parameter");
+            if (ippcurrtan != ppcurrtan) FOUR_C_THROW("Something wrong with penalty parameter");
             interface_[i]->InterfaceParams().set<double>("PENALTYPARAMTAN", 10 * ippcurrtan);
           }
         }
@@ -950,7 +950,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetRhsBlockPtr(
       break;
     default:
     {
-      dserror("Unknown STR::VecBlockType!");
+      FOUR_C_THROW("Unknown STR::VecBlockType!");
       break;
     }
   }
@@ -1057,7 +1057,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::PenaltyStrategy::GetMatrixBloc
     }
     default:
     {
-      dserror("Unknown STR::MatBlockType!");
+      FOUR_C_THROW("Unknown STR::MatBlockType!");
       break;
     }
   }

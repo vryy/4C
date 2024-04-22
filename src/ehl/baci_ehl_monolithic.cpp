@@ -141,7 +141,7 @@ void EHL::Monolithic::CreateLinearSolver()
   const int linsolvernumber = ehldynmono_.get<int>("LINEAR_SOLVER");
   // check if the EHL solver has a valid solver number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for monolithic EHL. Please set LINEAR_SOLVER in ELASTO HYDRO "
         "DYNAMIC to a valid number!");
 
@@ -152,7 +152,7 @@ void EHL::Monolithic::CreateLinearSolver()
   const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
   // check if the structural solver has a valid solver number
   if (slinsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
@@ -163,7 +163,7 @@ void EHL::Monolithic::CreateLinearSolver()
   const int tlinsolvernumber = ldyn.get<int>("LINEAR_SOLVER");
   // check if the EHL solver has a valid solver number
   if (tlinsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for lubrication field. Please set LINEAR_SOLVER in THERMAL "
         "DYNAMIC to a valid number!");
 
@@ -183,7 +183,7 @@ void EHL::Monolithic::CreateLinearSolver()
     std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries " << std::endl;
     std::cout << " in the dat files!" << std::endl;
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("Iterative solver expected");
+    FOUR_C_THROW("Iterative solver expected");
   }
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(ehlsolverparams, "AZPREC");
@@ -202,7 +202,7 @@ void EHL::Monolithic::CreateLinearSolver()
     }
     break;
     default:
-      dserror(
+      FOUR_C_THROW(
           "Block Gauss-Seidel BGS2x2 preconditioner expected. Alternatively you can define your "
           "own AMG block preconditioner (using an xml file). This is experimental.");
       break;
@@ -299,7 +299,7 @@ void EHL::Monolithic::CreateLinearSolver()
       break;
     }
     default:
-      dserror("Block Gauss-Seidel BGS2x2 preconditioner expected");
+      FOUR_C_THROW("Block Gauss-Seidel BGS2x2 preconditioner expected");
       break;
   }
 
@@ -320,7 +320,7 @@ void EHL::Monolithic::Solve()
       break;
     // catch problems
     default:
-      dserror("Solution technique \"%s\" is not implemented",
+      FOUR_C_THROW("Solution technique \"%s\" is not implemented",
           INPAR::EHL::NlnSolTechString(soltech_).c_str());
       break;
   }  // end switch (soltechnique_)
@@ -402,7 +402,7 @@ void EHL::Monolithic::NewtonFull()
     SetupSystemMatrix();
 
     // check whether we have a sanely filled tangent matrix
-    if (not systemmatrix_->Filled()) dserror("Effective tangent matrix must be filled here");
+    if (not systemmatrix_->Filled()) FOUR_C_THROW("Effective tangent matrix must be filled here");
 
     // create full monolithic rhs vector
     // make negative residual not necessary: rhs_ is already negative
@@ -496,7 +496,7 @@ void EHL::Monolithic::NewtonFull()
            INPAR::STR::divcont_continue)
     ;
   else if (iter_ >= itermax_)
-    dserror("Newton unconverged in %d iterations", iter_);
+    FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
 
 }  // NewtonFull()
 
@@ -528,7 +528,7 @@ void EHL::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> stepinc)
   // i.e. set mesh displacement, velocity fields and film thickness
   // note: the iteration update has not been done yet
   Teuchos::RCP<Epetra_Vector> new_disp = Teuchos::rcp(new Epetra_Vector(*structure_->Dispnp()));
-  if (new_disp->Update(1., *sx, 1.)) dserror("update failed");
+  if (new_disp->Update(1., *sx, 1.)) FOUR_C_THROW("update failed");
 
   // set interface height, velocity etc to lubrication field
   SetStructSolution(new_disp);
@@ -593,8 +593,8 @@ void EHL::Monolithic::SetupSystem()
   vecSpaces.push_back(StructureField()->DofRowMap(0));
   vecSpaces.push_back(lubrication_->LubricationField()->DofRowMap(0));
 
-  if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No pressure equation. Panic.");
+  if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No pressure equation. Panic.");
 
   SetDofRowMaps(vecSpaces);
 
@@ -655,7 +655,7 @@ void EHL::Monolithic::SetupSystemMatrix()
       break;
     }
     default:
-      dserror("unknown time integration strategy for structural problem in coupled EHL");
+      FOUR_C_THROW("unknown time integration strategy for structural problem in coupled EHL");
   }
 
   //--------------------------------------------------------------------------------------
@@ -989,7 +989,7 @@ bool EHL::Monolithic::Converged()
       convrhs = ((normrhs_ < tolrhs_) and (normrhs_ < std::max(normrhsiter0_ * tolrhs_, 1.0e-15)));
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }
 
@@ -1006,7 +1006,7 @@ bool EHL::Monolithic::Converged()
       convinc = norminc_ < std::max(norminciter0_ * tolinc_, 1e-15);
       break;
     default:
-      dserror("Cannot check for convergence of increments!");
+      FOUR_C_THROW("Cannot check for convergence of increments!");
       break;
   }  // switch (normtypeinc_)
 
@@ -1026,7 +1026,7 @@ bool EHL::Monolithic::Converged()
                     (normstrrhs_ < std::max(normstrrhsiter0_ * tolstrrhs_, 1e-15)));
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }  // switch (normtypestrrhs_)
 
@@ -1044,7 +1044,7 @@ bool EHL::Monolithic::Converged()
           ((normdisi_ < toldisi_) or (normdisi_ < std::max(normdisiiter0_ * toldisi_, 1e-15)));
       break;
     default:
-      dserror("Cannot check for convergence of displacements!");
+      FOUR_C_THROW("Cannot check for convergence of displacements!");
       break;
   }  // switch (normtypedisi_)
 
@@ -1063,7 +1063,7 @@ bool EHL::Monolithic::Converged()
                             (normlubricationrhs_ < normlubricationrhsiter0_ * tollubricationrhs_));
       break;
     default:
-      dserror("Cannot check for convergence of residual forces!");
+      FOUR_C_THROW("Cannot check for convergence of residual forces!");
       break;
   }  // switch (normtypelubricationrhs_)
 
@@ -1080,7 +1080,7 @@ bool EHL::Monolithic::Converged()
       convpre = ((normprei_ < tolprei_) or (normprei_ < normpreiiter0_ * tolprei_));
       break;
     default:
-      dserror("Cannot check for convergence of pressures!");
+      FOUR_C_THROW("Cannot check for convergence of pressures!");
       break;
   }  // switch (normtypeprei_)
 
@@ -1101,7 +1101,7 @@ bool EHL::Monolithic::Converged()
   else if (combincrhs_ == INPAR::EHL::bop_or_singl)
     conv = (convdisp or convstrrhs or convpre or convlubricationrhs);
   else
-    dserror("Something went terribly wrong with binary operator!");
+    FOUR_C_THROW("Something went terribly wrong with binary operator!");
 
   // return things
   return conv;
@@ -1154,7 +1154,7 @@ void EHL::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(15) << "mix-res-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1167,7 +1167,7 @@ void EHL::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(15) << "rel-inc-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1185,7 +1185,7 @@ void EHL::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(18) << "mix-str-res-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypestrrhs_)
 
@@ -1201,7 +1201,7 @@ void EHL::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(16) << "mix-dis-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypedisi_)
 
@@ -1218,7 +1218,7 @@ void EHL::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(18) << "mix-lub-res-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypelubricationrhs_)
 
@@ -1234,7 +1234,7 @@ void EHL::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       oss << std::setw(16) << "mix-pre-norm";
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypeprei_)
 
@@ -1254,7 +1254,7 @@ void EHL::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == nullptr) dserror("no ofile available");
+  if (ofile == nullptr) FOUR_C_THROW("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -1294,7 +1294,7 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(normrhs_, normrhs_ / normrhsiter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }
 
@@ -1311,7 +1311,7 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(norminc_, norminc_ / norminciter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypeinc_)
 
@@ -1333,7 +1333,7 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(normstrrhs_, normstrrhs_ / normstrrhsiter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypestrrhs_)
 
@@ -1350,7 +1350,7 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(normdisi_, normdisi_ / normdisiiter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypedisi_)
 
@@ -1369,7 +1369,7 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(normlubricationrhs_, normlubricationrhs_ / normlubricationrhsiter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypelubricationrhs_)
 
@@ -1386,7 +1386,7 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
           << std::min(normprei_, normprei_ / normpreiiter0_);
       break;
     default:
-      dserror("You should not turn up here.");
+      FOUR_C_THROW("You should not turn up here.");
       break;
   }  // switch (normtypeprei_)
 
@@ -1409,7 +1409,7 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == nullptr) dserror("no ofile available");
+  if (ofile == nullptr) FOUR_C_THROW("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -1515,7 +1515,7 @@ void EHL::Monolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epet
     if ((A->LeftScale(*srowsum_)) or (A->RightScale(*scolsum_)) or
         (mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_)) or
         (mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_)))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(1, 1).EpetraMatrix();
     lrowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
@@ -1525,13 +1525,13 @@ void EHL::Monolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epet
     if ((A->LeftScale(*lrowsum_)) or (A->RightScale(*lcolsum_)) or
         (mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*lrowsum_)) or
         (mat.Matrix(0, 1).EpetraMatrix()->RightScale(*lcolsum_)))
-      dserror("lubrication scaling failed");
+      FOUR_C_THROW("lubrication scaling failed");
 
     Teuchos::RCP<Epetra_Vector> sx = Extractor()->ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> lx = Extractor()->ExtractVector(b, 1);
 
-    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (lx->Multiply(1.0, *lrowsum_, *lx, 0.0)) dserror("lubrication scaling failed");
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (lx->Multiply(1.0, *lrowsum_, *lx, 0.0)) FOUR_C_THROW("lubrication scaling failed");
 
     Extractor()->InsertVector(*sx, 0, b);
     Extractor()->InsertVector(*lx, 1, b);
@@ -1552,8 +1552,8 @@ void EHL::Monolithic::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sy = Extractor()->ExtractVector(x, 0);
     Teuchos::RCP<Epetra_Vector> ly = Extractor()->ExtractVector(x, 1);
 
-    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) dserror("structure scaling failed");
-    if (ly->Multiply(1.0, *lcolsum_, *ly, 0.0)) dserror("lubrication scaling failed");
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (ly->Multiply(1.0, *lcolsum_, *ly, 0.0)) FOUR_C_THROW("lubrication scaling failed");
 
     Extractor()->InsertVector(*sy, 0, x);
     Extractor()->InsertVector(*ly, 1, x);
@@ -1561,8 +1561,9 @@ void EHL::Monolithic::UnscaleSolution(
     Teuchos::RCP<Epetra_Vector> sx = Extractor()->ExtractVector(b, 0);
     Teuchos::RCP<Epetra_Vector> lx = Extractor()->ExtractVector(b, 1);
 
-    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) dserror("structure scaling failed");
-    if (lx->ReciprocalMultiply(1.0, *lrowsum_, *lx, 0.0)) dserror("lubrication scaling failed");
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
+    if (lx->ReciprocalMultiply(1.0, *lrowsum_, *lx, 0.0))
+      FOUR_C_THROW("lubrication scaling failed");
 
     Extractor()->InsertVector(*sx, 0, b);
     Extractor()->InsertVector(*lx, 1, b);
@@ -1573,7 +1574,7 @@ void EHL::Monolithic::UnscaleSolution(
     if ((A->LeftScale(*srowsum_)) or (A->RightScale(*scolsum_)) or
         (mat.Matrix(0, 1).EpetraMatrix()->LeftScale(*srowsum_)) or
         (mat.Matrix(1, 0).EpetraMatrix()->RightScale(*scolsum_)))
-      dserror("structure scaling failed");
+      FOUR_C_THROW("structure scaling failed");
 
     A = mat.Matrix(1, 1).EpetraMatrix();
     lrowsum_->Reciprocal(*lrowsum_);
@@ -1581,7 +1582,7 @@ void EHL::Monolithic::UnscaleSolution(
     if ((A->LeftScale(*lrowsum_)) or (A->RightScale(*lcolsum_)) or
         (mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*lrowsum_)) or
         (mat.Matrix(0, 1).EpetraMatrix()->RightScale(*lcolsum_)))
-      dserror("lubrication scaling failed");
+      FOUR_C_THROW("lubrication scaling failed");
 
   }  // if (scaling_infnorm)
 
@@ -1635,7 +1636,7 @@ double EHL::Monolithic::CalculateVectorNorm(
   }
   else
   {
-    dserror("Cannot handle vector norm");
+    FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
 }  // CalculateVectorNorm()
@@ -1715,7 +1716,7 @@ void EHL::Monolithic::SetDefaultParameters()
     }
     default:
     {
-      dserror("Something went terribly wrong with binary operator!");
+      FOUR_C_THROW("Something went terribly wrong with binary operator!");
       break;
     }
   }  // switch (combincrhs_)
@@ -1738,7 +1739,7 @@ void EHL::Monolithic::SetDefaultParameters()
       break;
     case INPAR::STR::norm_vague:
     default:
-      dserror("STR norm is not determined");
+      FOUR_C_THROW("STR norm is not determined");
       break;
   }  // switch (striternorm)
 
@@ -1760,7 +1761,7 @@ void EHL::Monolithic::SetDefaultParameters()
     case INPAR::LUBRICATION::norm_vague:
     default:
     {
-      dserror("LUBRICATION norm is not determined.");
+      FOUR_C_THROW("LUBRICATION norm is not determined.");
       break;
     }
   }  // switch (lubricationiternorm)
@@ -1824,22 +1825,22 @@ void EHL::Monolithic::LinPressureForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatr
   Teuchos::RCP<Epetra_Vector> p_full =
       Teuchos::rcp(new Epetra_Vector(*lubrication_->LubricationField()->DofRowMap(1)));
   if (lubrimaptransform_->Apply(*lubrication_->LubricationField()->Prenp(), *p_full))
-    dserror("apply failed");
+    FOUR_C_THROW("apply failed");
   Teuchos::RCP<Epetra_Vector> p_exp =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   p_exp = ada_strDisp_to_lubDisp_->SlaveToMaster(p_full);
-  if (p_deriv_normal->LeftScale(*p_exp)) dserror("leftscale failed");
-  if (p_deriv_normal->Scale(-1.)) dserror("scale failed");
+  if (p_deriv_normal->LeftScale(*p_exp)) FOUR_C_THROW("leftscale failed");
+  if (p_deriv_normal->Scale(-1.)) FOUR_C_THROW("scale failed");
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> tmp = CORE::LINALG::MLMultiply(
       *mortaradapter_->GetMortarMatrixD(), true, *p_deriv_normal, false, false, false, true);
-  if (tmp.is_null()) dserror("MLMULTIPLY failed");
+  if (tmp.is_null()) FOUR_C_THROW("MLMULTIPLY failed");
   ds_dd->Add(*tmp, false, +1., 1.);
 
   tmp = Teuchos::null;
   tmp = CORE::LINALG::MLMultiply(
       *mortaradapter_->GetMortarMatrixM(), true, *p_deriv_normal, false, false, false, true);
-  if (tmp.is_null()) dserror("MLMULTIPLY failed");
+  if (tmp.is_null()) FOUR_C_THROW("MLMULTIPLY failed");
   dm_dd->Add(*tmp, false, -1., 1.);
 
   return;
@@ -1857,18 +1858,18 @@ void EHL::Monolithic::LinPoiseuilleForceDisp(Teuchos::RCP<CORE::LINALG::SparseMa
   Teuchos::RCP<Epetra_Vector> nodal_gap =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   if (slavemaptransform_->Multiply(false, *mortaradapter_->Nodal_Gap(), *nodal_gap))
-    dserror("multiply failed");
+    FOUR_C_THROW("multiply failed");
 
   Teuchos::RCP<Epetra_Vector> grad_p =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
-  if (mortaradapter_->SurfGradMatrix()->Apply(*p_int_full, *grad_p)) dserror("apply failed");
+  if (mortaradapter_->SurfGradMatrix()->Apply(*p_int_full, *grad_p)) FOUR_C_THROW("apply failed");
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> deriv_Poiseuille = Teuchos::rcp(
       new CORE::LINALG::SparseMatrix(*mortaradapter_->SlaveDofMap(), 81, false, false));
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> derivH_gradP =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*mortaradapter_->Nodal_GapDeriv()));
-  if (derivH_gradP->LeftScale(*grad_p)) dserror("leftscale failed");
+  if (derivH_gradP->LeftScale(*grad_p)) FOUR_C_THROW("leftscale failed");
   deriv_Poiseuille->Add(*derivH_gradP, false, -.5, 1.);
 
   Teuchos::RCP<Epetra_Vector> p_int_full_col =
@@ -1876,20 +1877,20 @@ void EHL::Monolithic::LinPoiseuilleForceDisp(Teuchos::RCP<CORE::LINALG::SparseMa
   CORE::LINALG::Export(*p_int_full, *p_int_full_col);
   Teuchos::RCP<CORE::LINALG::SparseMatrix> h_derivGrad_nodalP =
       mortaradapter_->AssembleSurfGradDeriv(p_int_full_col);
-  if (h_derivGrad_nodalP->LeftScale(*nodal_gap)) dserror("leftscale failed");
+  if (h_derivGrad_nodalP->LeftScale(*nodal_gap)) FOUR_C_THROW("leftscale failed");
   deriv_Poiseuille->Add(*h_derivGrad_nodalP, false, -.5, 1.);
 
   deriv_Poiseuille->Complete(*mortaradapter_->SMdofMap(), *mortaradapter_->SlaveDofMap());
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> tmp = CORE::LINALG::MLMultiply(
       *mortaradapter_->GetMortarMatrixD(), true, *deriv_Poiseuille, false, false, false, true);
-  if (tmp.is_null()) dserror("MLMULTIPLY failed");
+  if (tmp.is_null()) FOUR_C_THROW("MLMULTIPLY failed");
   ds_dd->Add(*tmp, false, +1., 1.);
 
   tmp = Teuchos::null;
   tmp = CORE::LINALG::MLMultiply(
       *mortaradapter_->GetMortarMatrixM(), true, *deriv_Poiseuille, false, false, false, true);
-  if (tmp.is_null()) dserror("MLMULTIPLY failed");
+  if (tmp.is_null()) FOUR_C_THROW("MLMULTIPLY failed");
   dm_dd->Add(*tmp, false, +1., 1.);
 }
 
@@ -1903,12 +1904,12 @@ void EHL::Monolithic::LinCouetteForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatri
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
   {
     DRT::Node* lnode = lub_dis.lRowNode(i);
-    if (!lnode) dserror("node not found");
+    if (!lnode) FOUR_C_THROW("node not found");
     const double p = lubrication_->LubricationField()->Prenp()->operator[](
         lubrication_->LubricationField()->Prenp()->Map().LID(lub_dis.Dof(0, lnode, 0)));
 
     Teuchos::RCP<MAT::Material> mat = lnode->Elements()[0]->Material(0);
-    if (mat.is_null()) dserror("null pointer");
+    if (mat.is_null()) FOUR_C_THROW("null pointer");
     Teuchos::RCP<MAT::LubricationMat> lmat =
         Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(mat, true);
     const double visc = lmat->ComputeViscosity(p);
@@ -1920,10 +1921,10 @@ void EHL::Monolithic::LinCouetteForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatri
   Teuchos::RCP<Epetra_Vector> height =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   if (slavemaptransform_->Multiply(false, *mortaradapter_->Nodal_Gap(), *height))
-    dserror("multiply failed");
+    FOUR_C_THROW("multiply failed");
   Teuchos::RCP<Epetra_Vector> h_inv =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
-  if (h_inv->Reciprocal(*height)) dserror("Reciprocal failed");
+  if (h_inv->Reciprocal(*height)) FOUR_C_THROW("Reciprocal failed");
 
   Teuchos::RCP<Epetra_Vector> hinv_visc =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
@@ -1955,13 +1956,13 @@ void EHL::Monolithic::LinCouetteForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatri
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> tmp = CORE::LINALG::MLMultiply(
       *mortaradapter_->GetMortarMatrixD(), true, *deriv_Couette, false, false, false, true);
-  if (tmp.is_null()) dserror("MLMULTIPLY failed");
+  if (tmp.is_null()) FOUR_C_THROW("MLMULTIPLY failed");
   ds_dd->Add(*tmp, false, +1., 1.);
 
   tmp = Teuchos::null;
   tmp = CORE::LINALG::MLMultiply(
       *mortaradapter_->GetMortarMatrixM(), true, *deriv_Couette, false, false, false, true);
-  if (tmp.is_null()) dserror("MLMULTIPLY failed");
+  if (tmp.is_null()) FOUR_C_THROW("MLMULTIPLY failed");
   dm_dd->Add(*tmp, false, -1., 1.);
 }
 
@@ -1976,18 +1977,18 @@ void EHL::Monolithic::LinPressureForcePres(Teuchos::RCP<CORE::LINALG::SparseMatr
 
   tmp->Complete(*lubrication_->LubricationField()->DofRowMap(0), *mortaradapter_->SlaveDofMap());
 
-  if (tmp->LeftScale(*mortaradapter_->Normals())) dserror("leftscale failed");
-  if (tmp->Scale(-1.)) dserror("scale failed");
+  if (tmp->LeftScale(*mortaradapter_->Normals())) FOUR_C_THROW("leftscale failed");
+  if (tmp->Scale(-1.)) FOUR_C_THROW("scale failed");
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> a = CORE::LINALG::MLMultiply(
       *mortaradapter_->GetMortarMatrixD(), true, *tmp, false, false, false, true);
-  if (a.is_null()) dserror("MLMULTIPLY failed");
+  if (a.is_null()) FOUR_C_THROW("MLMULTIPLY failed");
   ds_dp->Add(*a, false, +1., 1.);
 
   a = Teuchos::null;
   a = CORE::LINALG::MLMultiply(
       *mortaradapter_->GetMortarMatrixM(), true, *tmp, false, false, false, true);
-  if (a.is_null()) dserror("MLMULTIPLY failed");
+  if (a.is_null()) FOUR_C_THROW("MLMULTIPLY failed");
   dm_dp->Add(*a, false, -1., 1.);
 }
 
@@ -1997,7 +1998,7 @@ void EHL::Monolithic::LinPoiseuilleForcePres(Teuchos::RCP<CORE::LINALG::SparseMa
   Teuchos::RCP<Epetra_Vector> nodal_gap =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   if (slavemaptransform_->Multiply(false, *mortaradapter_->Nodal_Gap(), *nodal_gap))
-    dserror("multiply failed");
+    FOUR_C_THROW("multiply failed");
 
   CORE::LINALG::SparseMatrix m(*mortaradapter_->SurfGradMatrix());
   m.LeftScale(*nodal_gap);
@@ -2049,10 +2050,10 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatri
   Teuchos::RCP<Epetra_Vector> height =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   if (slavemaptransform_->Multiply(false, *mortaradapter_->Nodal_Gap(), *height))
-    dserror("multiply failed");
+    FOUR_C_THROW("multiply failed");
   Teuchos::RCP<Epetra_Vector> h_inv =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
-  if (h_inv->Reciprocal(*height)) dserror("Reciprocal failed");
+  if (h_inv->Reciprocal(*height)) FOUR_C_THROW("Reciprocal failed");
   Teuchos::RCP<Epetra_Vector> hinv_relV =
       Teuchos::rcp(new Epetra_Vector(*mortaradapter_->SlaveDofMap()));
   hinv_relV->Multiply(1., *h_inv, *relVel, 0.);
@@ -2064,12 +2065,12 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatri
   for (int i = 0; i < lub_dis.NodeRowMap()->NumMyElements(); ++i)
   {
     DRT::Node* lnode = lub_dis.lRowNode(i);
-    if (!lnode) dserror("node not found");
+    if (!lnode) FOUR_C_THROW("node not found");
     const double p = lubrication_->LubricationField()->Prenp()->operator[](
         lubrication_->LubricationField()->Prenp()->Map().LID(lub_dis.Dof(0, lnode, 0)));
 
     Teuchos::RCP<MAT::Material> mat = lnode->Elements()[0]->Material(0);
-    if (mat.is_null()) dserror("null pointer");
+    if (mat.is_null()) FOUR_C_THROW("null pointer");
     Teuchos::RCP<MAT::LubricationMat> lmat =
         Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(mat, true);
     const double visc = lmat->ComputeViscosity(p);

@@ -46,10 +46,10 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
   L2_projection_ = true;
 
   // safety check
-  if (NdsVel() >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
+  if (NdsVel() >= discret_->NumDofSets()) FOUR_C_THROW("Too few dofsets on scatra discretization!");
 
   if (multiflux->NumVectors() % nsd_ != 0)
-    dserror("Unexpected length of flux vector: %i", multiflux->NumVectors());
+    FOUR_C_THROW("Unexpected length of flux vector: %i", multiflux->NumVectors());
 
   const int totalnumdof = multiflux->NumVectors() / nsd_;
 
@@ -74,7 +74,7 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
       std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
 
       if ((int)nodedofs.size() != nsd_)
-        dserror(
+        FOUR_C_THROW(
             "Expected number of DOFs to be equal to the number of space dimensions for flux "
             "state!");
 
@@ -83,12 +83,12 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
         // get global and local dof IDs
         const int gid = nodedofs[index];
         const int lid = phaseflux->Map().LID(gid);
-        if (lid < 0) dserror("Local ID not found in map for given global ID!");
+        if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
         const double value = (*(*multiflux)(curphase * nsd_ + index))[lnodeid];
 
         int err = phaseflux->ReplaceMyValue(lid, 0, value);
-        if (err != 0) dserror("error while inserting a value into convel");
+        if (err != 0) FOUR_C_THROW("error while inserting a value into convel");
       }
     }
 
@@ -103,7 +103,8 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
 void SCATRA::ScaTraTimIntPoroMulti::SetSolutionFieldOfMultiFluid(
     Teuchos::RCP<const Epetra_Vector> phinp_fluid, Teuchos::RCP<const Epetra_Vector> phin_fluid)
 {
-  if (NdsPressure() >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
+  if (NdsPressure() >= discret_->NumDofSets())
+    FOUR_C_THROW("Too few dofsets on scatra discretization!");
 
   // provide scatra discretization with fluid primary variable field
   discret_->SetState(NdsPressure(), "phinp_fluid", phinp_fluid);
@@ -133,7 +134,8 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputState()
   if (isale_)
   {
     const auto dispnp = discret_->GetState(NdsDisp(), "dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot extract displacement field from discretization");
+    if (dispnp == Teuchos::null)
+      FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     const auto dispnp_multi = ConvertDofVectorToComponentwiseNodeVector(dispnp, NdsDisp());
     output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
@@ -185,7 +187,8 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputOxygenPartialPressure()
     // this condition is supposed to be for output of oxygen partial pressure over whole domain
     // it does not make sense to have more than one condition
     if (conditions.size() != 1)
-      dserror("Should have only one PoroMultiphaseScatraOxyPartPressCalcCond per discretization");
+      FOUR_C_THROW(
+          "Should have only one PoroMultiphaseScatraOxyPartPressCalcCond per discretization");
 
     // extract nodal cloud from condition
     const std::vector<int>* nodegids = conditions[0]->GetNodes();
@@ -219,7 +222,7 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputOxygenPartialPressure()
           // get dof
           int myoxydof = discret_->Dof(0, node, oxyscalar);
           const int lidoxydof = discret_->DofRowMap()->LID(myoxydof);
-          if (lidoxydof < 0) dserror("Couldn't extract local ID of oxygen dof!");
+          if (lidoxydof < 0) FOUR_C_THROW("Couldn't extract local ID of oxygen dof!");
           // compute CaO2
           const double CaO2 = (*phinp_)[lidoxydof] * rho_bl / rho_oxy;
           // compute Pb

@@ -165,7 +165,7 @@ namespace LIBB64
    *----------------------------------------------------------------------*/
   std::string int2string(const unsigned int i, const unsigned int digits)
   {
-    dsassert(i < std::pow(10, digits), "Invalid digits information");
+    FOUR_C_ASSERT(i < std::pow(10, digits), "Invalid digits information");
     if (digits == 0 || digits > 9) return "invalid_digit";
 
     std::string digitstring(digits, '0');
@@ -213,7 +213,7 @@ void VtkWriterBase::SetAndCreateVtkWorkingDirectory(
   //       if the VTK working directory shall be created in current working
   //       directory of executable
   if (name_vtk_subdirectory_to_be_created.empty())
-    dserror("VtkWriterBase: name for VTK working directory must not be empty!");
+    FOUR_C_THROW("VtkWriterBase: name for VTK working directory must not be empty!");
 
   working_directory_full_path_ =
       std::filesystem::path(path_existing_working_directory) / name_vtk_subdirectory_to_be_created;
@@ -221,7 +221,7 @@ void VtkWriterBase::SetAndCreateVtkWorkingDirectory(
   std::filesystem::create_directories(working_directory_full_path_);
 
   if (!std::filesystem::is_directory(working_directory_full_path_))
-    dserror("VtkWriterBase failed to create working (sub)directory!");
+    FOUR_C_THROW("VtkWriterBase failed to create working (sub)directory!");
 }
 
 /*----------------------------------------------------------------------*
@@ -439,7 +439,7 @@ void VtkWriterBase::WriteDataArray(const IO::visualization_vector_type_variant& 
     vtk_type_name = ScalarTypeToVtkType<int>();
   }
   else
-    dserror("Got unexpected vector type");
+    FOUR_C_THROW("Got unexpected vector type");
 
   if (myrank_ == 0) WriteDataArrayMasterFile(num_components, name, vtk_type_name);
 }
@@ -556,7 +556,7 @@ void VtkWriterBase::WriteVtkFooters()
 
     default:
     {
-      dserror("No data was written or writer was already in final phase.");
+      FOUR_C_THROW("No data was written or writer was already in final phase.");
 
       break;
     }
@@ -579,7 +579,7 @@ void VtkWriterBase::WriteVtkFooterMasterFile()
   typedef std::vector<std::string> pptags_type;
   const pptags_type& ppiecetags = this->WriterPPieceTags();
 
-  if (numproc_ != ppiecetags.size()) dserror("Incorrect number of Pieces.");
+  if (numproc_ != ppiecetags.size()) FOUR_C_THROW("Incorrect number of Pieces.");
 
   for (pptags_type::const_iterator it = ppiecetags.begin(); it != ppiecetags.end(); ++it)
     currentmasterout_ << "    " << *it << "\n";
@@ -710,7 +710,7 @@ void VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
   restart_collection_file.open(restartcollectionfilename.c_str(), std::ios::out);
 
   // check if file was found
-  if (not restart_collection_file) dserror(" restart collection file could not be found");
+  if (not restart_collection_file) FOUR_C_THROW(" restart collection file could not be found");
 
   // loop over lines of restarted collection file
   std::string line;
@@ -824,7 +824,7 @@ void VtkWriterBase::WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
  *----------------------------------------------------------------------*/
 void VtkWriterBase::ThrowErrorIfInvalidFileStream(const std::ostream& ostream) const
 {
-  if (not ostream) dserror("VtkWriterBase: trying to write to invalid output stream!");
+  if (not ostream) FOUR_C_THROW("VtkWriterBase: trying to write to invalid output stream!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

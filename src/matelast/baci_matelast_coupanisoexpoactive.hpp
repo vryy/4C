@@ -67,7 +67,7 @@ namespace MAT
         /// Factory method of the elastic summand
         Teuchos::RCP<MAT::Material> CreateMaterial() override
         {
-          dserror(
+          FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;

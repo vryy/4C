@@ -73,7 +73,7 @@ void pasi_dyn()
     }
     default:
     {
-      dserror("no valid coupling type for particle structure interaction specified!");
+      FOUR_C_THROW("no valid coupling type for particle structure interaction specified!");
       break;
     }
   }

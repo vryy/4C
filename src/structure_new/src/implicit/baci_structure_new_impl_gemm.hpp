@@ -114,56 +114,56 @@ namespace STR
       //! Give linear order of accuracy of displacement part
       int MethodOrderOfAccuracyDis() const override
       {
-        dserror("Not yet available");
+        FOUR_C_THROW("Not yet available");
         return 0;
       }
 
       //! Give linear order of accuracy of velocity part
       int MethodOrderOfAccuracyVel() const override
       {
-        dserror("Not yet available");
+        FOUR_C_THROW("Not yet available");
         return 0;
       }
 
       //! Return linear error coefficient of displacements
       double MethodLinErrCoeffDis() const override
       {
-        dserror("Not yet available");
+        FOUR_C_THROW("Not yet available");
         return 0.0;
       }
 
       //! 2nd order linear error coefficient of displacements
       double MethodLinErrCoeffDis2() const
       {
-        dserror("Not yet available");
+        FOUR_C_THROW("Not yet available");
         return 0.0;
       }
 
       //! 3rd order linear error coefficient of displacements
       double MethodLinErrCoeffDis3() const
       {
-        dserror("Not yet available");
+        FOUR_C_THROW("Not yet available");
         return 0.0;
       }
 
       //! Return linear error coefficient of velocities
       double MethodLinErrCoeffVel() const override
       {
-        dserror("Not yet available");
+        FOUR_C_THROW("Not yet available");
         return 0.0;
       }
 
       //! 1st order linear error coefficient of velocities
       double MethodLinErrCoeffVel1() const
       {
-        dserror("Not yet available");
+        FOUR_C_THROW("Not yet available");
         return 0.0;
       }
 
       //! 2nd order linear error coefficient of velocities
       double MethodLinErrCoeffVel2() const
       {
-        dserror("Not yet available");
+        FOUR_C_THROW("Not yet available");
         return 0.0;
       }
       //@}

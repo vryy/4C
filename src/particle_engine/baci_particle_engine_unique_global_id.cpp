@@ -80,7 +80,8 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::ReadRestart(
     }
 
     if (position != buffer->size())
-      dserror("mismatch in size of data %d <-> %d", static_cast<int>(buffer->size()), position);
+      FOUR_C_THROW(
+          "mismatch in size of data %d <-> %d", static_cast<int>(buffer->size()), position);
   }
 }
 
@@ -100,9 +101,9 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DrawRequestedNumberOfGlobalIds(
   std::map<int, std::vector<int>> preparedglobalids;
   PrepareRequestedGlobalIdsForAllProcs(numberofrequestedgids, preparedglobalids);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (myrank_ != masterrank_ and (not preparedglobalids.empty()))
-    dserror("generated global ids on processor %d", myrank_);
+    FOUR_C_THROW("generated global ids on processor %d", myrank_);
 #endif
 
   // extract requested global ids on master processor
@@ -111,9 +112,9 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DrawRequestedNumberOfGlobalIds(
   // distribute requested global ids from master processor to all processors
   DistributeRequestedGlobalIdsFromMasterProcToAllProcs(preparedglobalids, requesteduniqueglobalids);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (numberofrequestedgids != static_cast<int>(requesteduniqueglobalids.size()))
-    dserror("requested %d global ids on processor %d but received only %d global ids!",
+    FOUR_C_THROW("requested %d global ids on processor %d but received only %d global ids!",
         numberofrequestedgids, myrank_, requesteduniqueglobalids.size());
 #endif
 
@@ -145,7 +146,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
   // communicate data via non-buffered send from proc to proc
   COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (myrank_ != masterrank_)
   {
     for (const auto& p : rdata)
@@ -154,7 +155,8 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
       const std::vector<char>& rmsg = p.second;
 
       if (rmsg.size() != 0)
-        dserror("not expected to received reusable global ids on processor %d from processor %d!",
+        FOUR_C_THROW(
+            "not expected to received reusable global ids on processor %d from processor %d!",
             myrank_, msgsource);
     }
   }
@@ -181,16 +183,16 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
       }
 
       if (position != rmsg.size())
-        dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+        FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
     }
   }
 
   // sort reusable global ids
   std::sort(reusableglobalids_.begin(), reusableglobalids_.end());
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   auto it = std::unique(reusableglobalids_.begin(), reusableglobalids_.end());
-  if (it != reusableglobalids_.end()) dserror("duplicate entries in reusable global ids!");
+  if (it != reusableglobalids_.end()) FOUR_C_THROW("duplicate entries in reusable global ids!");
 #endif
 }
 
@@ -199,7 +201,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::PrepareRequestedGlobalIdsForAllProcs
 {
   // mpi communicator
   const auto* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm_);
-  if (!mpicomm) dserror("dynamic cast to Epetra_MpiComm failed!");
+  if (!mpicomm) FOUR_C_THROW("dynamic cast to Epetra_MpiComm failed!");
 
   // gather number of requested global ids of each processor on master processor
   std::vector<int> numberofrequestedgidsofallprocs(comm_.NumProc(), 0);
@@ -305,15 +307,15 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DistributeRequestedGlobalIdsFromMast
   // communicate data via non-buffered send from proc to proc
   COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   for (const auto& p : rdata)
   {
     const int msgsource = p.first;
     const std::vector<char>& rmsg = p.second;
 
     if (msgsource != masterrank_ and rmsg.size() != 0)
-      dserror("not expected to received global ids on processor %d from processor %d!", myrank_,
-          msgsource);
+      FOUR_C_THROW("not expected to received global ids on processor %d from processor %d!",
+          myrank_, msgsource);
   }
 #endif
 
@@ -331,7 +333,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DistributeRequestedGlobalIdsFromMast
       }
 
       if (position != rmsg.size())
-        dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
+        FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
     }
   }
 }

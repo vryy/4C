@@ -29,10 +29,10 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
 
   // for the sake of safety
   if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
-    dserror("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
-    dserror("List of materials in the global problem instance is empty.");
+    FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
@@ -82,7 +82,7 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
       break;
     }
     default:
-      dserror("invalid material for porosity law %d", curmat->Type());
+      FOUR_C_THROW("invalid material for porosity law %d", curmat->Type());
       break;
   }
 }
@@ -118,7 +118,7 @@ MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params)
 {
   mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->matid_));
   if (mat_ == Teuchos::null)
-    dserror("MAT::StructPoro: underlying material should be of type MAT::So3Material");
+    FOUR_C_THROW("MAT::StructPoro: underlying material should be of type MAT::So3Material");
 }
 
 void MAT::StructPoro::PoroSetup(int numgp, INPUT::LineDefinition* linedef)
@@ -148,7 +148,7 @@ double MAT::StructPoro::DensitySolidPhase() const { return mat_->Density(); }
 
 void MAT::StructPoro::Pack(CORE::COMM::PackBuffer& data) const
 {
-  if (not is_initialized_) dserror("poro material not initialized. Not a poro element?");
+  if (not is_initialized_) FOUR_C_THROW("poro material not initialized. Not a poro element?");
 
   CORE::COMM::PackBuffer::SizeMarker sm(data);
   sm.Insert();
@@ -205,7 +205,7 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::StructPoro*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -242,7 +242,7 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
   {
     CORE::COMM::ParObject* o = CORE::COMM::Factory(datamat);  // Unpack is done here
     auto* mat = dynamic_cast<MAT::So3Material*>(o);
-    if (mat == nullptr) dserror("failed to unpack elastic material");
+    if (mat == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     mat_ = Teuchos::rcp(mat);
   }
   else
@@ -383,7 +383,7 @@ void MAT::StructPoro::ConstitutiveDerivatives(Teuchos::ParameterList& params, do
     double J, double porosity, double* dW_dp, double* dW_dphi, double* dW_dJ, double* dW_dphiref,
     double* W)
 {
-  if (porosity == 0.0) dserror("porosity equals zero!! Wrong initial porosity?");
+  if (porosity == 0.0) FOUR_C_THROW("porosity equals zero!! Wrong initial porosity?");
 
   ConstitutiveDerivatives(
       params, press, J, porosity, params_->init_porosity_, dW_dp, dW_dphi, dW_dJ, dW_dphiref, W);
@@ -410,7 +410,7 @@ bool MAT::StructPoro::VisData(
   if (mat_->VisData(name, data, numgp)) return true;
   if (name == "porosity")
   {
-    if ((int)data.size() != 1) dserror("size mismatch");
+    if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     data[0] = PorosityAv();
     return true;
   }

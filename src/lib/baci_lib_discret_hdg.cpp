@@ -61,7 +61,7 @@ int DRT::DiscretizationHDG::FillComplete(
   {
     if (f->second->Owner() == Comm().MyPID()) continue;
     std::vector<int>& ids = nodeIds[f->first];
-    dsassert(ids.size() > 0, "Lost a face during communication");
+    FOUR_C_ASSERT(ids.size() > 0, "Lost a face during communication");
     f->second->SetNodeIds(ids.size(), ids.data());
     f->second->SetLocalTrafoMap(trafoMap[f->first]);
 
@@ -78,13 +78,13 @@ int DRT::DiscretizationHDG::FillComplete(
           {
             nodes[i] = oldnodes[j];
           }
-        dsassert(nodes[i] != 0, "Could not find node.");
+        FOUR_C_ASSERT(nodes[i] != 0, "Could not find node.");
       }
       f->second->BuildNodalPointers(nodes.data());
     }
 
     // check master/slave relation of current face in terms of the local trafo map
-    dsassert(
+    FOUR_C_ASSERT(
         f->second->ParentMasterElement() != nullptr, "Unexpected topology between face and parent");
     const int* nodeIdsMaster = f->second->ParentMasterElement()->NodeIds();
     const int* nodeIds = f->second->NodeIds();
@@ -373,7 +373,7 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& 
         // get corresponding local id
         const int lid = info.toggle.Map().LID(gid);
         if (lid < 0)
-          dserror(
+          FOUR_C_THROW(
               "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;
@@ -429,7 +429,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
 
   // get ids of conditioned nodes
   const std::vector<int>* nodeids = cond.GetNodes();
-  if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+  if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
 
   // get curves, functs, vals, and onoff toggles from the condition
   const auto* funct = cond.Get<std::vector<int>>("funct");
@@ -556,7 +556,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
         // get corresponding local id
         const int lid = toggle.Map().LID(gid);
         if (lid < 0)
-          dserror(
+          FOUR_C_THROW(
               "Global id %d not on this proc %d in system vector", dofs[j], discret.Comm().MyPID());
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;

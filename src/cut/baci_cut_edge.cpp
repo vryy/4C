@@ -119,7 +119,7 @@ bool CORE::GEO::CUT::Edge::FindCutPointsMeshCut(
   if (point_stack.size() > 2)
   {
     CORE::GEO::CUT::OUTPUT::DebugDump_MoreThanTwoIntersectionPoints(this, &other, point_stack);
-    dserror("Line x Side has more than 2 intersection points.Namely %u", point_stack.size());
+    FOUR_C_THROW("Line x Side has more than 2 intersection points.Namely %u", point_stack.size());
   }
 
   // if 2 points found - we are done
@@ -280,7 +280,7 @@ void CORE::GEO::CUT::Edge::CutPoint(
   }
   else
   {
-    dserror("not a valid edge");
+    FOUR_C_THROW("not a valid edge");
   }
 }
 
@@ -341,7 +341,7 @@ void CORE::GEO::CUT::Edge::CutPointsBetween(Point* begin, Point* end, std::vecto
   {
     if (begin != end)
     {
-      dserror("different points at the same place");
+      FOUR_C_THROW("different points at the same place");
     }
   }
 }
@@ -377,13 +377,13 @@ void CORE::GEO::CUT::Edge::CutPointsIncluding(Point* begin, Point* end, std::vec
   {
     if (begin != end)
     {
-      dserror("different points at the same place");
+      FOUR_C_THROW("different points at the same place");
     }
   }
 
   // to detect if cut point local coordinates is outside of edges endpoints
-  if (*bi_or != begin) dserror("beginning point not on edge");
-  if (*et_or != end) dserror("end point not on edge");
+  if (*bi_or != begin) FOUR_C_THROW("beginning point not on edge");
+  if (*et_or != end) FOUR_C_THROW("end point not on edge");
 }
 
 /*----------------------------------------------------------------------------*
@@ -515,7 +515,7 @@ void CORE::GEO::CUT::Edge::RectifyCutNumerics()
  *------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Edge::SelfCutPosition(Point::PointPosition pos)
 {
-  dsassert(IsCutPositionUnchanged(selfcutposition_, pos),
+  FOUR_C_ASSERT(IsCutPositionUnchanged(selfcutposition_, pos),
       "Are you sure that you want to change the edge-position from inside to outside or vice "
       "versa?");
 
@@ -613,7 +613,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Han
 {
   PointSet parallel_cuts;
   if (numNodesEdge != 2 or other->NumNodes() != 2)
-    dserror("This method works only for 2 line2 intersections!");
+    FOUR_C_THROW("This method works only for 2 line2 intersections!");
 
   std::vector<Node*> touch_nodes;
   GetTouchingPoints(other->Nodes(), touch_nodes, floattype);
@@ -680,7 +680,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Han
     case 0:
       return false;
     default:
-      dserror("Something went wrong!");
+      FOUR_C_THROW("Something went wrong!");
   }
   return false;
 }
@@ -733,11 +733,11 @@ void CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
       }
       default:
       {
-        dserror("Unexpected floattype for KERNEL::ComputeDistance!");
+        FOUR_C_THROW("Unexpected floattype for KERNEL::ComputeDistance!");
       }
     }
 
-    if (!conv) dserror("Newton did not converge for parallelism detection of lines!");
+    if (!conv) FOUR_C_THROW("Newton did not converge for parallelism detection of lines!");
 
     if (SurfaceWithinLimits0) touch_nodes.push_back(node);
 
@@ -754,7 +754,7 @@ void CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
         err_msg << "Distance between points is " << std::setprecision(15)
                 << CORE::GEO::CUT::DistanceBetweenPoints(p, edge_point)
                 << " This two points should have been merged!";
-        dserror(err_msg.str());
+        FOUR_C_THROW(err_msg.str());
       }
     }
   }
@@ -852,7 +852,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
         inter_ptr->FinalPoints(xyz_cuts);
         inter_ptr->LocalSideCoordinates(r_cuts);
 
-        dsassert(xyz_cuts.size() == r_cuts.size(), "Size mismatch!");
+        FOUR_C_ASSERT(xyz_cuts.size() == r_cuts.size(), "Size mismatch!");
 
         Point* p = nullptr;
         for (unsigned i = 0; i < xyz_cuts.size(); ++i)
@@ -885,7 +885,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
         break;
       }
       default:
-        dserror("Unsupported intersection status! ( status = %d )", istatus);
+        FOUR_C_THROW("Unsupported intersection status! ( status = %d )", istatus);
         exit(EXIT_FAILURE);
     }
     return (static_cast<bool>(retstatus));
@@ -920,7 +920,7 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::EdgeFactory::CreateEdge(
     }
     default:
     {
-      dserror("Unsupported edge type! ( %d | %s )", edgetype,
+      FOUR_C_THROW("Unsupported edge type! ( %d | %s )", edgetype,
           CORE::FE::CellTypeToString(edgetype).c_str());
       break;
     }

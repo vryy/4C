@@ -50,7 +50,7 @@ NOX::NLN::LinSystem::ConditionNumber STR::NLN::Convert2NoxConditionNumberType(
     case INPAR::STR::ConditionNumber::inf_norm:
       return NOX::NLN::LinSystem::ConditionNumber::inf_norm;
     default:
-      dserror("No known conversion.");
+      FOUR_C_THROW("No known conversion.");
       exit(EXIT_FAILURE);
   }
 }
@@ -76,7 +76,7 @@ enum ::NOX::Abstract::Vector::NormType STR::NLN::Convert2NoxNormType(
     case INPAR::STR::norm_rms:
     case INPAR::STR::norm_vague:
     default:
-      dserror("Unknown conversion for the given vector norm type: \" %s \"!",
+      FOUR_C_THROW("Unknown conversion for the given vector norm type: \" %s \"!",
           INPAR::STR::VectorNormString(normtype).c_str());
       break;
   }  // switch case normtype
@@ -148,7 +148,7 @@ enum NOX::NLN::SolutionType STR::NLN::ConvertModelType2SolType(
     default:
       // check if the corresponding enum could be found.
       if (do_check)
-        dserror(
+        FOUR_C_THROW(
             "The corresponding solution-type was not found. "
             "Given string: %s",
             INPAR::STR::ModelTypeString(modeltype).c_str());
@@ -184,7 +184,7 @@ enum INPAR::STR::ModelType STR::NLN::ConvertSolType2ModelType(
     default:
       // check if the corresponding enum could be found.
       if (do_check)
-        dserror(
+        FOUR_C_THROW(
             "The corresponding model-type was not found. "
             "Given string: %s",
             NOX::NLN::SolutionType2String(soltype).c_str());
@@ -221,7 +221,7 @@ enum INPAR::STR::EleTech STR::NLN::ConvertQuantityType2EleTech(
       eletech = INPAR::STR::EleTech::eas;
       break;
     default:
-      dserror("Cannot convert QuantityType %s to EleTech.",
+      FOUR_C_THROW("Cannot convert QuantityType %s to EleTech.",
           NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
       break;
   }
@@ -380,7 +380,7 @@ void STR::ComputeGeneralizedAlphaParameters(STR::IMPLICIT::GenAlpha::Coefficient
   if (((coeffs.beta_ != -1.0) or (coeffs.gamma_ != -1.0) or (coeffs.alpham_ != -1.0) or
           (coeffs.alphaf_ != -1.0)) and
       (coeffs.rhoinf_ != -1.0))
-    dserror(
+    FOUR_C_THROW(
         "There are two ways to provide GenAlpha parameters:\n"
         "- You can choose to only provide RHO_INF as the spectral radius."
         "In this way, no other parameters are allowed.\n"
@@ -390,15 +390,18 @@ void STR::ComputeGeneralizedAlphaParameters(STR::IMPLICIT::GenAlpha::Coefficient
   // ------ rho_inf set to -1.0--> use the four parameters provided by the user -----------------
   else if (coeffs.rhoinf_ == -1.0)
   {
-    if ((coeffs.alpham_ < 0.0) or (coeffs.alpham_ >= 1.0)) dserror("alpham out of range [0.0,1.0)");
-    if ((coeffs.alphaf_ < 0.0) or (coeffs.alphaf_ >= 1.0)) dserror("alphaf out of range [0.0,1.0)");
-    if ((coeffs.beta_ <= 0.0) or (coeffs.beta_ > 0.5)) dserror("beta out of range (0.0,0.5]");
-    if ((coeffs.gamma_ <= 0.0) or (coeffs.gamma_ > 1.0)) dserror("gamma out of range (0.0,1.0]");
+    if ((coeffs.alpham_ < 0.0) or (coeffs.alpham_ >= 1.0))
+      FOUR_C_THROW("alpham out of range [0.0,1.0)");
+    if ((coeffs.alphaf_ < 0.0) or (coeffs.alphaf_ >= 1.0))
+      FOUR_C_THROW("alphaf out of range [0.0,1.0)");
+    if ((coeffs.beta_ <= 0.0) or (coeffs.beta_ > 0.5)) FOUR_C_THROW("beta out of range (0.0,0.5]");
+    if ((coeffs.gamma_ <= 0.0) or (coeffs.gamma_ > 1.0))
+      FOUR_C_THROW("gamma out of range (0.0,1.0]");
   }
 
   // ------ rho_inf out of [0,1]--> report error
   else if ((coeffs.rhoinf_ < 0.0) or (coeffs.rhoinf_ > 1.0))
-    dserror("rho_inf out of range [0.0,1.0]");
+    FOUR_C_THROW("rho_inf out of range [0.0,1.0]");
 
   // ------ rho_inf specified --> calculate optimal parameters -----------------
   else

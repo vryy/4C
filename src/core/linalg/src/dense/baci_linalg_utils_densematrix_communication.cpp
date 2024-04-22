@@ -73,8 +73,8 @@ void CORE::LINALG::AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map&
 /*----------------------------------------------------------------------*/
 void CORE::LINALG::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& emap)
 {
-#ifdef BACI_DEBUG
-  if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (not emap.UniqueGIDs()) FOUR_C_THROW("works only for unique Epetra_Maps");
 #endif
 
   idxmap.clear();
@@ -93,8 +93,8 @@ void CORE::LINALG::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& e
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
 {
-#ifdef BACI_DEBUG
-  if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (not emap.UniqueGIDs()) FOUR_C_THROW("works only for unique Epetra_Maps");
 #endif
   std::vector<int> rv;
   AllreduceEMap(rv, emap);
@@ -104,7 +104,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceEMap(const Epetra_Map& emap, con
   {
     rmap = Teuchos::rcp(new Epetra_Map(-1, rv.size(), rv.data(), 0, emap.Comm()));
     // check the map
-    dsassert(rmap->NumMyElements() == rmap->NumGlobalElements(),
+    FOUR_C_ASSERT(rmap->NumMyElements() == rmap->NumGlobalElements(),
         "Processor with pid does not get all map elements");
   }
   else
@@ -112,7 +112,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceEMap(const Epetra_Map& emap, con
     rv.clear();
     rmap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, emap.Comm()));
     // check the map
-    dsassert(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
+    FOUR_C_ASSERT(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
   }
   return rmap;
 }
@@ -122,8 +122,8 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceEMap(const Epetra_Map& emap, con
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceEMap(const Epetra_Map& emap)
 {
-#ifdef BACI_DEBUG
-  if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (not emap.UniqueGIDs()) FOUR_C_THROW("works only for unique Epetra_Maps");
 #endif
   std::vector<int> rv;
   AllreduceEMap(rv, emap);
@@ -167,7 +167,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceOverlappingEMap(
 
     rmap = Teuchos::rcp(new Epetra_Map(-1, rv.size(), rv.data(), 0, emap.Comm()));
     // check the map
-    dsassert(rmap->NumMyElements() == rmap->NumGlobalElements(),
+    FOUR_C_ASSERT(rmap->NumMyElements() == rmap->NumGlobalElements(),
         "Processor with pid does not get all map elements");
   }
   else
@@ -175,7 +175,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceOverlappingEMap(
     rv.clear();
     rmap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, emap.Comm()));
     // check the map
-    dsassert(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
+    FOUR_C_ASSERT(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
   }
   return rmap;
 }
@@ -188,7 +188,7 @@ void CORE::LINALG::AllToAllCommunication(const Epetra_Comm& comm,
 {
   if (comm.NumProc() == 1)
   {
-    dsassert(send.size() == 1, "there has to be just one entry for sending");
+    FOUR_C_ASSERT(send.size() == 1, "there has to be just one entry for sending");
 
     // make a copy
     recv.clear();
@@ -223,7 +223,7 @@ void CORE::LINALG::AllToAllCommunication(const Epetra_Comm& comm,
     int status = MPI_Alltoall(
         sendcounts.data(), 1, MPI_INT, recvcounts.data(), 1, MPI_INT, mpicomm.GetMpiComm());
 
-    if (status != MPI_SUCCESS) dserror("MPI_Alltoall returned status=%d", status);
+    if (status != MPI_SUCCESS) FOUR_C_THROW("MPI_Alltoall returned status=%d", status);
 
     std::vector<int> rdispls;
     rdispls.reserve(comm.NumProc());
@@ -243,7 +243,7 @@ void CORE::LINALG::AllToAllCommunication(const Epetra_Comm& comm,
 
     status = MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_INT,
         recvbuf.data(), recvcounts.data(), rdispls.data(), MPI_INT, mpicomm.GetMpiComm());
-    if (status != MPI_SUCCESS) dserror("MPI_Alltoallv returned status=%d", status);
+    if (status != MPI_SUCCESS) FOUR_C_THROW("MPI_Alltoallv returned status=%d", status);
 
     recv.clear();
     for (int proc = 0; proc < comm.NumProc(); ++proc)
@@ -262,7 +262,7 @@ void CORE::LINALG::AllToAllCommunication(
 {
   if (comm.NumProc() == 1)
   {
-    dsassert(send.size() == 1, "there has to be just one entry for sending");
+    FOUR_C_ASSERT(send.size() == 1, "there has to be just one entry for sending");
 
     // make a copy
     recv.clear();
@@ -297,7 +297,7 @@ void CORE::LINALG::AllToAllCommunication(
     int status = MPI_Alltoall(
         sendcounts.data(), 1, MPI_INT, recvcounts.data(), 1, MPI_INT, mpicomm.GetMpiComm());
 
-    if (status != MPI_SUCCESS) dserror("MPI_Alltoall returned status=%d", status);
+    if (status != MPI_SUCCESS) FOUR_C_THROW("MPI_Alltoall returned status=%d", status);
 
     std::vector<int> rdispls;
     rdispls.reserve(comm.NumProc());
@@ -320,7 +320,7 @@ void CORE::LINALG::AllToAllCommunication(
 
     status = MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_INT, recv.data(),
         recvcounts.data(), rdispls.data(), MPI_INT, mpicomm.GetMpiComm());
-    if (status != MPI_SUCCESS) dserror("MPI_Alltoallv returned status=%d", status);
+    if (status != MPI_SUCCESS) FOUR_C_THROW("MPI_Alltoallv returned status=%d", status);
   }
 }
 

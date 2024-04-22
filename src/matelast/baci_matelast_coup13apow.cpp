@@ -47,13 +47,13 @@ void MAT::ELASTIC::Coup13aPow::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1
 
   // If d<2 the material model is not stress free in the reference configuration
   if (d < 2)
-    dserror(
+    FOUR_C_THROW(
         "The Elast_Coup13aPow - material only works for positive integer exponents, which are "
         "larger than two.");
   // a==0 not necessary to implement extra as equal to coup1pow
-  if (a == 0) dserror("Use Elast_Coup1Pow.");
+  if (a == 0) FOUR_C_THROW("Use Elast_Coup1Pow.");
   // Material not implemented for negative exponents a
-  if (a < 0) dserror("Use positive values for the exponent a.");
+  if (a < 0) FOUR_C_THROW("Use positive values for the exponent a.");
   // Restriction for a (due to polyconvexity)
   if (a > (1. / 3. - 1. / (2. * d)))
     std::cout << "\nWARNING: A should be smaller then 1./3.- 1/(2*D). And D should be odd."

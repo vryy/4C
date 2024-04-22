@@ -62,7 +62,7 @@ ART::TimInt::TimInt(Teuchos::RCP<DRT::Discretization> actdis, const int linsolve
   // solve scatra flag
   solvescatra_ = CORE::UTILS::IntegralValue<int>(artparams, "SOLVESCATRA");
 
-  if (linsolvernumber_ == -1) dserror("Set a valid linear solver for arterial network");
+  if (linsolvernumber_ == -1) FOUR_C_THROW("Set a valid linear solver for arterial network");
 }
 
 
@@ -96,7 +96,7 @@ void ART::TimInt::Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterLis
   coupledTo3D_ = CoupledTo3D;
   if (CoupledTo3D && CouplingParams.get() == nullptr)
   {
-    dserror(
+    FOUR_C_THROW(
         "Coupling parameter list is not allowed to be empty, If a 3-D/reduced-D coupling is "
         "defined\n");
   }

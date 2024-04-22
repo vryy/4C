@@ -105,8 +105,8 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
         }
       }
 
-      if (ndl == nullptr) dserror("artery %d has no outlet node!", Artery_Number);
-      if (ndi == nullptr) dserror("artery %d has no inlet node!", Artery_Number);
+      if (ndl == nullptr) FOUR_C_THROW("artery %d has no outlet node!", Artery_Number);
+      if (ndi == nullptr) FOUR_C_THROW("artery %d has no inlet node!", Artery_Number);
 
 
       // loop over all nodes
@@ -115,7 +115,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
 
       DRT::Element* Elem_i;
       if (ndi->NumElement() != 1)
-        dserror("artery %d must have one element connected to the inlet node!", Artery_Number);
+        FOUR_C_THROW("artery %d must have one element connected to the inlet node!", Artery_Number);
 
       Elem_i = Elements[0];
 
@@ -129,7 +129,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
         else
           ndi = Elem_i->Nodes()[1];
         if (ndi->NumElement() != 2)
-          dserror(
+          FOUR_C_THROW(
               "artery %d must have two elements connected to any internal node!", Artery_Number);
 
         // find the next element
@@ -158,7 +158,8 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
       bool inserted2 = agnode_map_.insert(std::make_pair(Artery_Number, sorted_nodes)).second;
 
       if (!inserted || !inserted2)
-        dserror("Each artery must have a unique artery number, please correct your input file\n");
+        FOUR_C_THROW(
+            "Each artery must have a unique artery number, please correct your input file\n");
 
       std::cout << "----------------------------------------------------------" << std::endl;
       std::cout << "Artery[" << Artery_Number << "] has the following sorted nodes" << std::endl;
@@ -276,7 +277,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(Teuchos::RCP<DRT::Discretization> discre
     if (!discret->HaveGlobalNode((*nodes)[i]))
     {
       int proc = discret->Comm().MyPID();
-      dserror("Global Node (%d) doesn't exist on processor (%d)\n", (*nodes)[i], proc);
+      FOUR_C_THROW("Global Node (%d) doesn't exist on processor (%d)\n", (*nodes)[i], proc);
       exit(1);
     }
 

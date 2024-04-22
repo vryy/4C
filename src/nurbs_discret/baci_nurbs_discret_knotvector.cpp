@@ -58,7 +58,7 @@ DRT::NURBS::Knotvector::Knotvector(const int dim, const int npatches)
   // check if there are any patches
   if (npatches_ < 0)
   {
-    dserror("A knot vector needs at least one patch.");
+    FOUR_C_THROW("A knot vector needs at least one patch.");
   }
 
   // resize degrees
@@ -118,12 +118,12 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
 {
   if ((int)loc_cart_id.size() != dim_)
   {
-    dserror("size vector not of appropriate size (%d,%d)\n", (int)loc_cart_id.size(), dim_);
+    FOUR_C_THROW("size vector not of appropriate size (%d,%d)\n", (int)loc_cart_id.size(), dim_);
   }
 
   if (filled_ == false)
   {
-    dserror("cannot convert ele ids when filled is false\n");
+    FOUR_C_THROW("cannot convert ele ids when filled is false\n");
   }
 
   // get number of patch containing the node
@@ -160,7 +160,7 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
   }
   else
   {
-    dserror("dim_ not available\n");
+    FOUR_C_THROW("dim_ not available\n");
   }
 
   return;
@@ -193,7 +193,7 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
 
   if (filled_ == false)
   {
-    dserror("cannot get ele knots when filled is false\n");
+    FOUR_C_THROW("cannot get ele knots when filled is false\n");
   }
 
   eleknots.resize(dim_);
@@ -408,12 +408,12 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
           break;
         }
         default:
-          dserror("invalid number of surfaces, unable to determine intpoint in parent");
+          FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }  // if(degree_[0]==2 && degree_[1]==2 && degree_[2]==2)
     else
     {
-      dserror("surface knot vector extraction not available for this degree\n");
+      FOUR_C_THROW("surface knot vector extraction not available for this degree\n");
     }
   }  // if(dim_==3)
   else if (dim_ == 2)
@@ -503,17 +503,17 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
           break;
         }
         default:
-          dserror("invalid number of surfaces, unable to determine intpoint in parent");
+          FOUR_C_THROW("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }  // if(degree_[0]==2 && degree_[1]==2)
     else
     {
-      dserror("line knot vector extraction not available for this degree\n");
+      FOUR_C_THROW("line knot vector extraction not available for this degree\n");
     }
   }  // if(dim_==2)
   else
   {
-    dserror("surface knot vector extraction only in 2d and 3d\n");
+    FOUR_C_THROW("surface knot vector extraction only in 2d and 3d\n");
   }
 
   return (zero_size);
@@ -532,12 +532,12 @@ void DRT::NURBS::Knotvector::SetKnots(const int& direction, const int& npatch, c
 
   if (direction < 0 || direction > dim_ - 1)
   {
-    dserror("direction has to in[0...dim_]\n");
+    FOUR_C_THROW("direction has to in[0...dim_]\n");
   }
 
   if (npatch < 0 || npatch > npatches_ - 1)
   {
-    dserror("patchnumber is invalid\n");
+    FOUR_C_THROW("patchnumber is invalid\n");
   }
 
   // set the type
@@ -551,7 +551,7 @@ void DRT::NURBS::Knotvector::SetKnots(const int& direction, const int& npatch, c
   }
   else
   {
-    dserror("unknown knotvector-type '%s'\n", knotvectortype.c_str());
+    FOUR_C_THROW("unknown knotvector-type '%s'\n", knotvectortype.c_str());
   }
 
   // set the degree of the added knotvector
@@ -583,13 +583,13 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
   // check if there are any patches
   if (npatches_ < 0)
   {
-    dserror("There are no patches. We need at least one patch.");
+    FOUR_C_THROW("There are no patches. We need at least one patch.");
   }
 
   // check degrees
   if ((int)degree_.size() != npatches_)
   {
-    dserror("Each patch needs its own degree information.");
+    FOUR_C_THROW("Each patch needs its own degree information.");
   }
   else
   {
@@ -598,7 +598,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
     {
       if ((int)(degree_[rr]).size() != dim_)
       {
-        dserror("size mismatch: degree\n");
+        FOUR_C_THROW("size mismatch: degree\n");
       }
     }
   }
@@ -606,7 +606,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
   // check n_x_m_x_ls
   if ((int)n_x_m_x_l_.size() != npatches_)
   {
-    dserror("each patch needs its own n_x_m_x_l information\n");
+    FOUR_C_THROW("each patch needs its own n_x_m_x_l information\n");
   }
   else
   {
@@ -615,7 +615,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
     {
       if ((int)(n_x_m_x_l_[rr]).size() != dim_)
       {
-        dserror("size mismatch: n_x_m_x_l\n");
+        FOUR_C_THROW("size mismatch: n_x_m_x_l\n");
       }
     }
   }
@@ -624,7 +624,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
   // and each patch?
   if ((int)knot_values_.size() != npatches_)
   {
-    dserror("each patch needs its own knotvector\n");
+    FOUR_C_THROW("each patch needs its own knotvector\n");
   }
 
   // loop patches
@@ -632,7 +632,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
   {
     if ((int)(knot_values_[np]).size() != dim_)
     {
-      dserror("knotvector of patch has to be of size dim\n");
+      FOUR_C_THROW("knotvector of patch has to be of size dim\n");
     }
 
     for (int rr = 0; rr < dim_; ++rr)
@@ -640,20 +640,20 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
       // is the knotvector of this dimension nonempty?
       if ((knot_values_[np])[rr] == Teuchos::null)
       {
-        dserror("no knotvector available in this direction\n");
+        FOUR_C_THROW("no knotvector available in this direction\n");
       }
 
       // has it the correct size?
       if ((int)(*((knot_values_[np])[rr])).size() != (n_x_m_x_l_[np])[rr])
       {
-        dserror("knotvector size mismatch to n_x_m_x_l_ %d!=%d\n",
+        FOUR_C_THROW("knotvector size mismatch to n_x_m_x_l_ %d!=%d\n",
             (*((knot_values_[np])[rr])).size(), (n_x_m_x_l_[np])[rr]);
       }
 
       // is interpolation/periodicity assigned correctly?
       if ((interpolation_[np])[rr] == knotvector_is_not_defined)
       {
-        dserror("undefined knotvector type\n");
+        FOUR_C_THROW("undefined knotvector type\n");
       }
       else if ((interpolation_[np])[rr] == knotvector_is_interpolating)
       {
@@ -669,7 +669,8 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
 
           if (de > 1e-9 || db > 1e-9)
           {
-            dserror("need multiple knots at the beginning and end of an interpolated knotvector\n");
+            FOUR_C_THROW(
+                "need multiple knots at the beginning and end of an interpolated knotvector\n");
           }
         }
       }
@@ -684,7 +685,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
                       (*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr] - 1 - mm];
           if (abs(de - db) > 1e-9)
           {
-            dserror("periodic knotvector doesn't obey periodicity\n");
+            FOUR_C_THROW("periodic knotvector doesn't obey periodicity\n");
           }
         }
       }
@@ -875,7 +876,7 @@ std::vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
 {
   if (!filled_)
   {
-    dserror("can't access data. knotvector not completed\n");
+    FOUR_C_THROW("can't access data. knotvector not completed\n");
   }
 
   std::vector<int> num_zero_sized(dim_);
@@ -961,7 +962,7 @@ std::vector<int> DRT::NURBS::Knotvector::Return_n_zerosize_ele(const int npatch)
       break;
     }
     default:
-      dserror("implemented only for 1,2 and 3 dimensions\n");
+      FOUR_C_THROW("implemented only for 1,2 and 3 dimensions\n");
   }
 
   return (num_zero_sized);
@@ -1017,7 +1018,7 @@ int DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid(
 {
   if (!filled_)
   {
-    dserror("can't access data. knotvector not completed\n");
+    FOUR_C_THROW("can't access data. knotvector not completed\n");
   }
 
   int gid = -1;
@@ -1062,7 +1063,7 @@ int DRT::NURBS::Knotvector::ConvertEleKnotIdsToGid(
       break;
     }
     default:
-      dserror("implemented only for 1,2 and 3 dimensions\n");
+      FOUR_C_THROW("implemented only for 1,2 and 3 dimensions\n");
   }
 
   return (gid);

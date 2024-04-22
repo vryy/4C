@@ -110,7 +110,7 @@ namespace CORE::FE
       case 1000:
         return GaussRule3D::hex_1000point;
       default:
-        dserror("I don't know the GaussRule3D for hex elements with %d Gauss points", numgp);
+        FOUR_C_THROW("I don't know the GaussRule3D for hex elements with %d Gauss points", numgp);
     }
   }
 
@@ -122,7 +122,7 @@ namespace CORE::FE
       case 27:
         return GaussRule3D::hex_27point;
       default:
-        dserror("I don't know the GaussRule3D for nurbs elements with %d Gauss points", numgp);
+        FOUR_C_THROW("I don't know the GaussRule3D for nurbs elements with %d Gauss points", numgp);
     }
   }
 
@@ -142,7 +142,8 @@ namespace CORE::FE
       case 45:
         return GaussRule3D::tet_45point;
       default:
-        dserror("I don't know an open GaussRule3D for tet elements with %d Gauss points", numgp);
+        FOUR_C_THROW(
+            "I don't know an open GaussRule3D for tet elements with %d Gauss points", numgp);
     }
   }
 
@@ -158,7 +159,7 @@ namespace CORE::FE
       case 9:
         return GaussRule3D::wedge_9point;
       default:
-        dserror("I don't know the GaussRule3D for wedge elements with %d Gauss points", numgp);
+        FOUR_C_THROW("I don't know the GaussRule3D for wedge elements with %d Gauss points", numgp);
     }
   }
 
@@ -172,7 +173,8 @@ namespace CORE::FE
       case 8:
         return GaussRule3D::pyramid_8point;
       default:
-        dserror("I don't know the GaussRule3D for pyramid elements with %d Gauss points", numgp);
+        FOUR_C_THROW(
+            "I don't know the GaussRule3D for pyramid elements with %d Gauss points", numgp);
     }
   }
 
@@ -412,7 +414,7 @@ namespace CORE::FE
       case 1024:
         return GaussRule2D::quad_1024point;
       default:
-        dserror("I don't know the GaussRule2D for quad elements with %d Gauss points", numgp);
+        FOUR_C_THROW("I don't know the GaussRule2D for quad elements with %d Gauss points", numgp);
     }
   }
 
@@ -440,7 +442,7 @@ namespace CORE::FE
       case 64:
         return GaussRule2D::tri_64point;
       default:
-        dserror("I don't know the GaussRule2D for tri elements with %d Gauss points", numgp);
+        FOUR_C_THROW("I don't know the GaussRule2D for tri elements with %d Gauss points", numgp);
     }
   }
 
@@ -512,7 +514,7 @@ namespace CORE::FE
       case 50:
         return GaussRule1D::line_50point;
       default:
-        dserror("I don't know the GaussRule1D for line elements with %d Gauss points", numgp);
+        FOUR_C_THROW("I don't know the GaussRule1D for line elements with %d Gauss points", numgp);
     }
   }
 
@@ -589,7 +591,7 @@ namespace CORE::FE
     /// gauss point coordinates
     const double* Point(int point) const
     {
-      dsassert(point < max_nquad, "Index out of range");
+      FOUR_C_ASSERT(point < max_nquad, "Index out of range");
       return qxg[point];
     };
 
@@ -626,7 +628,7 @@ namespace CORE::FE
     /// gauss point coordinates
     const double* Point(int point) const
     {
-      dsassert(point < max_nquad, "Index out of range");
+      FOUR_C_ASSERT(point < max_nquad, "Index out of range");
       return qxg[point];
     };
 
@@ -662,7 +664,7 @@ namespace CORE::FE
     /// gauss point coordinates
     const double* Point(int point) const
     {
-      dsassert(point < max_nquad, "Index out of range");
+      FOUR_C_ASSERT(point < max_nquad, "Index out of range");
       return qxg[point];
     };
 

@@ -84,7 +84,7 @@ int map_find_map(MAP* map, const char* key, MAP** dir);
 
 
 /* Find the last symbols value. The value has to be of the given
- * type. Calls dserror on failture. */
+ * type. Calls FOUR_C_THROW on failture. */
 const char* map_read_string(MAP* map, const char* key);
 int map_read_int(MAP* map, const char* key);
 double map_read_real(MAP* map, const char* key);
@@ -130,7 +130,7 @@ int symbol_get_real_as_float(const SYMBOL* symbol, float* real);
 int symbol_get_map(const SYMBOL* symbol, MAP** map);
 
 
-/* Extract the value of this symbol. Call dserror on failure. */
+/* Extract the value of this symbol. Call FOUR_C_THROW on failure. */
 MAP* symbol_map(const SYMBOL* symbol);
 
 

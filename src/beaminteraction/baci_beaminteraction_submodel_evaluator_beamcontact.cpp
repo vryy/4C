@@ -544,14 +544,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeBeamCont
 
       const unsigned int num_active_point_pairs = (unsigned int)coordinates_ele1_this_pair.size();
 
-      dsassert(num_active_point_pairs == (unsigned int)coordinates_ele2_this_pair.size(),
+      FOUR_C_ASSERT(num_active_point_pairs == (unsigned int)coordinates_ele2_this_pair.size(),
           "number of active points on element 1 does not match number of active points "
           "on element 2!");
 
-      dsassert(num_active_point_pairs == (unsigned int)contact_forces_this_pair.size(),
+      FOUR_C_ASSERT(num_active_point_pairs == (unsigned int)contact_forces_this_pair.size(),
           "number of active points on element 1 does not match number of contact forces!");
 
-      dsassert(num_active_point_pairs == (unsigned int)gaps_this_pair.size(),
+      FOUR_C_ASSERT(num_active_point_pairs == (unsigned int)gaps_this_pair.size(),
           "number of active points on element 1 does not match number of gap values!");
 
 
@@ -764,7 +764,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::GetHalfInteractionDistance
   // iii) beam to solid contact
   if (HaveContactType(BINSTRATEGY::UTILS::Solid))
   {
-    dserror("Not yet implemented for beam to solid contact");
+    FOUR_C_THROW("Not yet implemented for beam to solid contact");
   }
 }
 
@@ -900,7 +900,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
     }
   }
   else
-    dserror("No appropriate search strategy for beam interaction chosen!");
+    FOUR_C_THROW("No appropriate search strategy for beam interaction chosen!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -964,9 +964,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
     std::vector<DRT::Element const*> ele_ptrs(2);
     ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele_ptrs[0]) == nullptr)
-      dserror("first element of element pair must be a beam element");
+      FOUR_C_THROW("first element of element pair must be a beam element");
 #endif
 
     std::set<DRT::Element*>::const_iterator secondeleiter;

@@ -128,7 +128,7 @@ namespace BEAMINTERACTION
     //! scale linker element reference length
     void ScaleLinkerReferenceLength(double scalefac) override
     {
-      dserror(" not yet implemented for beam3r element.");
+      FOUR_C_THROW(" not yet implemented for beam3r element.");
     }
 
     //! get force in first or second binding spot
@@ -137,7 +137,7 @@ namespace BEAMINTERACTION
 
     double GetCurrentLinkerLength() const override
     {
-      dserror("not yet implemented");
+      FOUR_C_THROW("not yet implemented");
       return 0.0;
     }
 

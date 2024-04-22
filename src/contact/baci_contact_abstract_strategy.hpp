@@ -117,7 +117,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Map> GActiveNodeRowMapPtr() const { return gactivenodes_; };
     Epetra_Map& GActiveNodeRowMap()
     {
-      if (gactivenodes_.is_null()) dserror("The gactivenodes_ is not initialized!");
+      if (gactivenodes_.is_null()) FOUR_C_THROW("The gactivenodes_ is not initialized!");
       return *gactivenodes_;
     }
 
@@ -126,7 +126,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Map> GActiveDofRowMapPtr() const { return gactivedofs_; };
     Epetra_Map& GActiveDofRowMap()
     {
-      if (gactivedofs_.is_null()) dserror("The gAugActiveSlaveDofsPtr_ is not initialized!");
+      if (gactivedofs_.is_null()) FOUR_C_THROW("The gAugActiveSlaveDofsPtr_ is not initialized!");
       return *gactivedofs_;
     }
 
@@ -136,7 +136,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Map> GInActiveNodeRowMapPtr() const { return ginactivenodes_; };
     Epetra_Map& GInActiveNodeRowMap()
     {
-      if (ginactivenodes_.is_null()) dserror("The ginactivenodes_ is not initialized!");
+      if (ginactivenodes_.is_null()) FOUR_C_THROW("The ginactivenodes_ is not initialized!");
       return *ginactivenodes_;
     }
 
@@ -145,7 +145,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Map> GInActiveDofRowMapPtr() const { return ginactivedofs_; };
     Epetra_Map& GInActiveDofRowMap()
     {
-      if (ginactivedofs_.is_null()) dserror("The gAugActiveSlaveDofsPtr_ is not initialized!");
+      if (ginactivedofs_.is_null()) FOUR_C_THROW("The gAugActiveSlaveDofsPtr_ is not initialized!");
       return *ginactivedofs_;
     }
 
@@ -155,7 +155,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Map> GActiveNDofRowMapPtr() const { return gactiven_; };
     Epetra_Map& GActiveNDofRowMap()
     {
-      if (gactiven_.is_null()) dserror("The gactiven_ is not initialized!");
+      if (gactiven_.is_null()) FOUR_C_THROW("The gactiven_ is not initialized!");
       return *gactiven_;
     }
 
@@ -164,7 +164,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Map> GActiveTDofRowMapPtr() const { return gactivet_; };
     Epetra_Map& GActiveTDofRowMap()
     {
-      if (gactivet_.is_null()) dserror("The gactivet_ is not initialized!");
+      if (gactivet_.is_null()) FOUR_C_THROW("The gactivet_ is not initialized!");
       return *gactivet_;
     }
 
@@ -227,7 +227,7 @@ namespace CONTACT
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> DMatrixPtr() const { return dmatrix_; };
     CORE::LINALG::SparseMatrix& DMatrix()
     {
-      if (dmatrix_.is_null()) dserror("The dmatrix_ is not initialized!");
+      if (dmatrix_.is_null()) FOUR_C_THROW("The dmatrix_ is not initialized!");
       return *dmatrix_;
     }
 
@@ -236,7 +236,7 @@ namespace CONTACT
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> MMatrixPtr() const { return mmatrix_; };
     CORE::LINALG::SparseMatrix& MMatrix()
     {
-      if (mmatrix_.is_null()) dserror("The mmatrix_ is not initialized!");
+      if (mmatrix_.is_null()) FOUR_C_THROW("The mmatrix_ is not initialized!");
       return *mmatrix_;
     }
 
@@ -245,7 +245,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Vector> WGapPtr() const { return g_; };
     Epetra_Vector& WGap()
     {
-      if (g_.is_null()) dserror("The wGapRhsPtr_ is not initialized!");
+      if (g_.is_null()) FOUR_C_THROW("The wGapRhsPtr_ is not initialized!");
       return *g_;
     }
 
@@ -258,7 +258,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Vector> InactiveRhsPtr() const { return inactiverhs_; };
     Epetra_Vector& InactiveRhs()
     {
-      if (inactiverhs_.is_null()) dserror("The inactiverhs_ is not initialized!");
+      if (inactiverhs_.is_null()) FOUR_C_THROW("The inactiverhs_ is not initialized!");
       return *inactiverhs_;
     }
 
@@ -268,7 +268,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Vector> StrContactRhsPtr() const { return strContactRhsPtr_; }
     Epetra_Vector& StrContactRhs()
     {
-      if (strContactRhsPtr_.is_null()) dserror("The strContactRhsPtr_ is not initialized!");
+      if (strContactRhsPtr_.is_null()) FOUR_C_THROW("The strContactRhsPtr_ is not initialized!");
       return *strContactRhsPtr_;
     }
 
@@ -277,7 +277,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Vector> ConstrRhsPtr() const { return constrrhs_; };
     Epetra_Vector& ConstrRhs()
     {
-      if (constrrhs_.is_null()) dserror("The constrrhs_ is not initialized!");
+      if (constrrhs_.is_null()) FOUR_C_THROW("The constrrhs_ is not initialized!");
       return *constrrhs_;
     }
 
@@ -286,7 +286,7 @@ namespace CONTACT
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> DLinMatrixPtr() const { return lindmatrix_; };
     CORE::LINALG::SparseMatrix& DLinMatrix()
     {
-      if (lindmatrix_.is_null()) dserror("The augDnLinMatrixPtr_ is not initialized!");
+      if (lindmatrix_.is_null()) FOUR_C_THROW("The augDnLinMatrixPtr_ is not initialized!");
       return *lindmatrix_;
     }
 
@@ -295,7 +295,7 @@ namespace CONTACT
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> MLinMatrixPtr() const { return linmmatrix_; };
     CORE::LINALG::SparseMatrix& MLinMatrix()
     {
-      if (linmmatrix_.is_null()) dserror("The augMnLinMatrixPtr_ is not initialized!");
+      if (linmmatrix_.is_null()) FOUR_C_THROW("The augMnLinMatrixPtr_ is not initialized!");
       return *linmmatrix_;
     }
 
@@ -304,7 +304,7 @@ namespace CONTACT
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> kteffnewMatrixPtr() const { return kteffnew_; };
     CORE::LINALG::SparseMatrix& kteffnewMatrix()
     {
-      if (kteffnew_.is_null()) dserror("The kteffnewMatrixPtr is not initialized!");
+      if (kteffnew_.is_null()) FOUR_C_THROW("The kteffnewMatrixPtr is not initialized!");
       return *kteffnew_;
     }
 
@@ -777,7 +777,7 @@ namespace CONTACT
 
       if (IsSelfContact())
       {
-        if (ParRedist()) dserror("Parallel redistribution is not supported for self contact!");
+        if (ParRedist()) FOUR_C_THROW("Parallel redistribution is not supported for self contact!");
         return Data().GSelfContactLmDofRowMapPtr();
       }
       else
@@ -812,16 +812,16 @@ namespace CONTACT
      *  \author hiermeier */
     virtual Teuchos::RCP<const Epetra_Map> SlNormalDoFRowMapPtr(const bool& redist) const
     {
-      dserror("Map not available in abstract strategy!");
+      FOUR_C_THROW("Map not available in abstract strategy!");
       if ((not redist) and ParRedist())
-        dserror("The original / not redistributed slave normal row map is not available!");
+        FOUR_C_THROW("The original / not redistributed slave normal row map is not available!");
 
       return Teuchos::null;
     };
     virtual const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const
     {
       // currently not supported for the abstract strategy
-      dserror("SlNormalDoFRowMap() seems currently unsupported!");
+      FOUR_C_THROW("SlNormalDoFRowMap() seems currently unsupported!");
       exit(EXIT_FAILURE);
     }
 
@@ -835,7 +835,7 @@ namespace CONTACT
     virtual Teuchos::RCP<const Epetra_Map> SlTangentialDoFRowMapPtr(const bool& redist) const
     {
       if ((not redist) and ParRedist())
-        dserror("The original / not redistributed slave tangential row map is not available!");
+        FOUR_C_THROW("The original / not redistributed slave tangential row map is not available!");
 
       return Teuchos::null;
     };
@@ -893,7 +893,7 @@ namespace CONTACT
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
         const enum CONTACT::VecBlockType& bt) const
     {
-      dserror("Not yet implemented!");
+      FOUR_C_THROW("Not yet implemented!");
       exit(EXIT_FAILURE);
 
       return Teuchos::null;
@@ -929,7 +929,7 @@ namespace CONTACT
     virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
         Epetra_Vector& f, const double& timefac_np) const
     {
-      dserror("Not yet implemented!");
+      FOUR_C_THROW("Not yet implemented!");
       exit(EXIT_FAILURE);
 
       return Teuchos::null;
@@ -948,7 +948,7 @@ namespace CONTACT
         const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const
     {
-      dserror("Not yet implemented!");
+      FOUR_C_THROW("Not yet implemented!");
       exit(EXIT_FAILURE);
 
       return Teuchos::null;
@@ -968,7 +968,7 @@ namespace CONTACT
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
         Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteff, const double& timefac_np) const
     {
-      dserror("Not yet implemented!");
+      FOUR_C_THROW("Not yet implemented!");
       exit(EXIT_FAILURE);
 
       return Teuchos::null;
@@ -1988,7 +1988,7 @@ namespace CONTACT
      * \date 05/16 */
     CONTACT::AbstractStratDataContainer& Data()
     {
-      if (data_ptr_.is_null()) dserror("The AbstractStratDataContainer is not initialized!");
+      if (data_ptr_.is_null()) FOUR_C_THROW("The AbstractStratDataContainer is not initialized!");
       return *data_ptr_;
     };
 
@@ -2000,7 +2000,7 @@ namespace CONTACT
      * \date 05/16 */
     const CONTACT::AbstractStratDataContainer& Data() const
     {
-      if (data_ptr_.is_null()) dserror("The AbstractStratDataContainer is not initialized!");
+      if (data_ptr_.is_null()) FOUR_C_THROW("The AbstractStratDataContainer is not initialized!");
       return *data_ptr_;
     };
 

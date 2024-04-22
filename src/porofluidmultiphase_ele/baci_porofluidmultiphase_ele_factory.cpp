@@ -34,7 +34,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       if (ndim == 2)
         return DefineProblemType<CORE::FE::CellType::quad4>(numdofpernode, disname);
       else
-        dserror("invalid problem dimension for quad4 porofluidmultiphase element!");
+        FOUR_C_THROW("invalid problem dimension for quad4 porofluidmultiphase element!");
       break;
     }
       //  case CORE::FE::CellType::quad8:
@@ -43,7 +43,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       //      return
       //      DefineProblemType<CORE::FE::CellType::quad8>(numdofpernode,disname);
       //    else
-      //      dserror("invalid problem dimension for quad8 porofluidmultiphase element!");
+      //      FOUR_C_THROW("invalid problem dimension for quad8 porofluidmultiphase element!");
       //    break;
       //  }
     case CORE::FE::CellType::quad9:
@@ -51,7 +51,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       if (ndim == 2)
         return DefineProblemType<CORE::FE::CellType::quad9>(numdofpernode, disname);
       else
-        dserror("invalid problem dimension for quad9 porofluidmultiphase element!");
+        FOUR_C_THROW("invalid problem dimension for quad9 porofluidmultiphase element!");
       break;
     }
     case CORE::FE::CellType::tri3:
@@ -59,7 +59,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       if (ndim == 2)
         return DefineProblemType<CORE::FE::CellType::tri3>(numdofpernode, disname);
       else
-        dserror("invalid problem dimension for tri3 porofluidmultiphase element!");
+        FOUR_C_THROW("invalid problem dimension for tri3 porofluidmultiphase element!");
       break;
     }
       //  case CORE::FE::CellType::tri6:
@@ -68,7 +68,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       //      return
       //      DefineProblemType<CORE::FE::CellType::tri6>(numdofpernode,disname);
       //    else
-      //      dserror("invalid problem dimension for tri6 porofluidmultiphase element!");
+      //      FOUR_C_THROW("invalid problem dimension for tri6 porofluidmultiphase element!");
       //    break;
       //  }
     case CORE::FE::CellType::line2:
@@ -76,7 +76,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       if (ndim == 1)
         return DefineProblemType<CORE::FE::CellType::line2>(numdofpernode, disname);
       else
-        dserror("invalid problem dimension for line2 porofluidmultiphase element!");
+        FOUR_C_THROW("invalid problem dimension for line2 porofluidmultiphase element!");
       break;
     }
     case CORE::FE::CellType::line3:
@@ -84,7 +84,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       if (ndim == 1)
         return DefineProblemType<CORE::FE::CellType::line3>(numdofpernode, disname);
       else
-        dserror("invalid problem dimension for line3 porofluidmultiphase element!");
+        FOUR_C_THROW("invalid problem dimension for line3 porofluidmultiphase element!");
       break;
     }
     case CORE::FE::CellType::hex8:
@@ -92,7 +92,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       if (ndim == 3)
         return DefineProblemType<CORE::FE::CellType::hex8>(numdofpernode, disname);
       else
-        dserror("invalid problem dimension for hex8 porofluidmultiphase element!");
+        FOUR_C_THROW("invalid problem dimension for hex8 porofluidmultiphase element!");
       break;
     }
     case CORE::FE::CellType::hex27:
@@ -100,7 +100,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       if (ndim == 3)
         return DefineProblemType<CORE::FE::CellType::hex27>(numdofpernode, disname);
       else
-        dserror("invalid problem dimension for hex27 porofluidmultiphase element!");
+        FOUR_C_THROW("invalid problem dimension for hex27 porofluidmultiphase element!");
       break;
     }
     case CORE::FE::CellType::tet4:
@@ -108,7 +108,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       if (ndim == 3)
         return DefineProblemType<CORE::FE::CellType::tet4>(numdofpernode, disname);
       else
-        dserror("invalid problem dimension for tet4 porofluidmultiphase element!");
+        FOUR_C_THROW("invalid problem dimension for tet4 porofluidmultiphase element!");
       break;
     }
     case CORE::FE::CellType::tet10:
@@ -116,11 +116,11 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       if (ndim == 3)
         return DefineProblemType<CORE::FE::CellType::tet10>(numdofpernode, disname);
       else
-        dserror("invalid problem dimension for tet10 porofluidmultiphase element!");
+        FOUR_C_THROW("invalid problem dimension for tet10 porofluidmultiphase element!");
       break;
     }
     default:
-      dserror("Element shape %s not activated. Just do it.",
+      FOUR_C_THROW("Element shape %s not activated. Just do it.",
           CORE::FE::CellTypeToString(distype).c_str());
       break;
   }

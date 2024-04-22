@@ -208,7 +208,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
        beamelementiterator++)
   {
     DRT::Element* beamele = discretizations[0]->gElement(beamelementiterator->first);
-    if (!beamele) dserror("There is no element with gid %i", beamelementiterator->first);
+    if (!beamele) FOUR_C_THROW("There is no element with gid %i", beamelementiterator->first);
     owner = beamele->Owner();
     for (std::vector<int>::const_iterator fluideleIter = beamelementiterator->second.begin();
          fluideleIter != (beamelementiterator->second).end(); fluideleIter++)
@@ -245,7 +245,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
   {
     int gid = elecolmap->GID(i);
     DRT::Element* ele = discretizations[1]->gElement(gid);
-    if (!ele) dserror("Cannot find element with gid %", gid);
+    if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
     element_recvdata.push_back(gid);
   }
 
@@ -262,7 +262,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
       for (unsigned int ele = 0; ele < element_senddata[proc].size(); ele++)
       {
         DRT::Element* element = discretizations[1]->gElement(element_senddata[proc][ele]);
-        if (!element) dserror("Cannot find node with gid %", element_senddata[proc][ele]);
+        if (!element) FOUR_C_THROW("Cannot find node with gid %", element_senddata[proc][ele]);
         for (int node = 0; node < element->NumNode(); node++)
         {
           node_senddata[proc].push_back((element->NodeIds())[node]);
@@ -279,7 +279,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
     {
       int gid = nodecolmap->GID(i);
       DRT::Node* node = discretizations[1]->gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       node_recvdata.push_back(gid);
     }
 

@@ -58,7 +58,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           default:
-            dserror(
+            FOUR_C_THROW(
                 "No valid template parameter for the number of nodes (numnodes = 2,3,4,5 for "
                 "Reissner beams) available!");
             break;
@@ -75,7 +75,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           default:
-            dserror(
+            FOUR_C_THROW(
                 "No valid template parameter combination for the number of nodes and number of "
                 "types of nodal DoFs"
                 "(only numnodes = 2 in combination with numnodalvalues=2 possible so far, i.e. 3rd "
@@ -85,7 +85,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
         break;
       }
       default:
-        dserror(
+        FOUR_C_THROW(
             "No valid template parameter for the number of types of nodal DoFs used for centerline "
             "interpolation!\n"
             "(numnodalvalues = 1, i.e. positions              for Lagrange interpolation,\n"
@@ -122,7 +122,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           default:
-            dserror(
+            FOUR_C_THROW(
                 "No valid template parameter for the number of nodes (numnodes = 2,3,4,5 for "
                 "Reissner beams) available!");
             break;
@@ -139,7 +139,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           default:
-            dserror(
+            FOUR_C_THROW(
                 "No valid template parameter combination for the number of nodes and number of "
                 "types of nodal DoFs"
                 "(only numnodes = 2 in combination with numnodalvalues=2 possible so far, i.e. 3rd "
@@ -149,7 +149,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
         break;
       }
       default:
-        dserror(
+        FOUR_C_THROW(
             "No valid template parameter for the number of types of nodal DoFs used for centerline "
             "interpolation!\n"
             "(numnodalvalues = 1, i.e. positions              for Lagrange interpolation,\n"

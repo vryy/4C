@@ -150,13 +150,13 @@ namespace SSI
     //! returns true if class was setup and setup is still valid
     void CheckIsSetup()
     {
-      if (not IsSetup()) dserror("Setup() was not called.");
+      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! returns true if class was init and init is still valid
     void CheckIsInit()
     {
-      if (not IsInit()) dserror("Init(...) was not called.");
+      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:
@@ -187,7 +187,7 @@ namespace SSI
     void SetMechanicalStressState(DRT::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
     {
-      dserror("only implemented for 'SSICouplingMatchingVolume'");
+      FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
     }
 
     void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
@@ -205,7 +205,7 @@ namespace SSI
     void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
     {
-      dserror("only for matching nodes");
+      FOUR_C_THROW("only for matching nodes");
     };
 
    private:
@@ -241,13 +241,13 @@ namespace SSI
     //! returns true if class was setup and setup is still valid
     void CheckIsSetup()
     {
-      if (not IsSetup()) dserror("Setup() was not called.");
+      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! returns true if class was init and init is still valid
     void CheckIsInit()
     {
-      if (not IsInit()) dserror("Init(...) was not called.");
+      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:
@@ -275,7 +275,7 @@ namespace SSI
     void SetMechanicalStressState(DRT::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
     {
-      dserror("only implemented for 'SSICouplingMatchingVolume'");
+      FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
     }
 
     void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
@@ -293,7 +293,7 @@ namespace SSI
     void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
     {
-      dserror("only for matching nodes");
+      FOUR_C_THROW("only for matching nodes");
     };
 
    private:
@@ -317,13 +317,13 @@ namespace SSI
     //! returns true if class was setup and setup is still valid
     void CheckIsSetup()
     {
-      if (not IsSetup()) dserror("Setup() was not called.");
+      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! returns true if class was init and init is still valid
     void CheckIsInit()
     {
-      if (not IsInit()) dserror("Init(...) was not called.");
+      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:
@@ -351,7 +351,7 @@ namespace SSI
     void SetMechanicalStressState(DRT::Discretization& scatradis,
         Teuchos::RCP<const Epetra_Vector> stress_state, unsigned nds) override
     {
-      dserror("only implemented for 'SSICouplingMatchingVolume'");
+      FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
     }
 
     void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
@@ -386,13 +386,13 @@ namespace SSI
     //! returns true if class was setup and setup is still valid
     void CheckIsSetup()
     {
-      if (not IsSetup()) dserror("Setup() was not called.");
+      if (not IsSetup()) FOUR_C_THROW("Setup() was not called.");
     };
 
     //! returns true if class was init and init is still valid
     void CheckIsInit()
     {
-      if (not IsInit()) dserror("Init(...) was not called.");
+      if (not IsInit()) FOUR_C_THROW("Init(...) was not called.");
     };
 
    public:

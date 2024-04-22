@@ -29,7 +29,7 @@ ADAPTER::FBIFluidMB::FBIFluidMB(const Teuchos::ParameterList& prbdyn, std::strin
           ->FluidField();
   // make sure
   if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true) == Teuchos::null)
-    dserror("Failed to create the correct underlying fluid adapter");
+    FOUR_C_THROW("Failed to create the correct underlying fluid adapter");
 
   return;
 }
@@ -89,7 +89,7 @@ void ADAPTER::FBIFluidMB::NonlinearSolve(
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::RelaxationSolve(
     Teuchos::RCP<Epetra_Vector> idisp, double dt)
 {
-  dserror("RelaxationSolve not yet implemented");
+  FOUR_C_THROW("RelaxationSolve not yet implemented");
   return Teuchos::null;
 }
 

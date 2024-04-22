@@ -106,11 +106,11 @@ void FS3I::PartFS3I::Init()
     aledis->Evaluate(params);
   }
   else
-    dserror("Providing an ALE mesh is not supported for FS3I problems.");
+    FOUR_C_THROW("Providing an ALE mesh is not supported for FS3I problems.");
 
   // std::map<std::pair<std::string,std::string>,std::map<int,int> > clonefieldmatmap =
   // problem->CloningMaterialMap(); if (clonefieldmatmap.size() < 2)
-  //  dserror("At least two material lists required for partitioned FS3I!");
+  //  FOUR_C_THROW("At least two material lists required for partitioned FS3I!");
 
   // determine type of scalar transport
   const INPAR::SCATRA::ImplType impltype_fluid =
@@ -121,14 +121,14 @@ void FS3I::PartFS3I::Init()
   // create discretization for fluid-based scalar transport from and
   // according to fluid discretization
   //---------------------------------------------------------------------
-  if (fluiddis->NumGlobalNodes() == 0) dserror("Fluid discretization is empty!");
+  if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
   // create fluid-based scalar transport elements if fluid-based scalar
   // transport discretization is empty
   if (fluidscatradis->NumGlobalNodes() == 0)
   {
     if (not(volume_fieldcouplings_[0] == INPAR::FS3I::coupling_match))
-      dserror(
+      FOUR_C_THROW(
           "If you clone your fluid-scatra mesh from the fluid use FLUIDSCAL_FIELDCOUPLING "
           "'volume_matching'!");
 
@@ -141,7 +141,7 @@ void FS3I::PartFS3I::Init()
       DRT::ELEMENTS::Transport* element =
           dynamic_cast<DRT::ELEMENTS::Transport*>(fluidscatradis->lColElement(i));
       if (element == nullptr)
-        dserror("Invalid element type!");
+        FOUR_C_THROW("Invalid element type!");
       else
         element->SetImplType(impltype_fluid);
     }
@@ -151,37 +151,37 @@ void FS3I::PartFS3I::Init()
     // care for secondary dof sets:
     // add proxy of fluid degrees of freedom to scatra discretization
     if (fluidscatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
-      dserror("Fluid scatra discretization has illegal number of dofsets!");
+      FOUR_C_THROW("Fluid scatra discretization has illegal number of dofsets!");
   }
   else
   {
     if (not(volume_fieldcouplings_[0] == INPAR::FS3I::coupling_nonmatch))
-      dserror(
+      FOUR_C_THROW(
           "If you have specified the fluid-scalar by TRANSPORT ELEMENTS use "
           "FLUIDSCAL_FIELDCOUPLING 'volume_nonmatching'!");
 
     if (not(impltype_fluid == INPAR::SCATRA::impltype_undefined))
-      dserror(
+      FOUR_C_THROW(
           "Be aware that your FLUIDSCAL_SCATRATYPE will be ignored and the impltype from the "
           "TRANSPORT ELMENTS section will be utilized. Use FLUIDSCAL_SCATRATYPE 'Undefined'!");
 
     volume_coupling_objects_.push_back(CreateVolMortarObject(fluiddis, fluidscatradis));
 
-    dserror("Mortar volume coupling for the fluid-scalar is yet not tested. So be careful!");
+    FOUR_C_THROW("Mortar volume coupling for the fluid-scalar is yet not tested. So be careful!");
   }
 
   //---------------------------------------------------------------------
   // create discretization for structure-based scalar transport from and
   // according to structure discretization
   //---------------------------------------------------------------------
-  if (structdis->NumGlobalNodes() == 0) dserror("Structure discretization is empty!");
+  if (structdis->NumGlobalNodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
 
   // create structure-based scalar transport elements if structure-based
   // scalar transport discretization is empty
   if (structscatradis->NumGlobalNodes() == 0)
   {
     if (not(volume_fieldcouplings_[1] == INPAR::FS3I::coupling_match))
-      dserror(
+      FOUR_C_THROW(
           "If you clone your structure-scatra mesh from the structure use STRUCTSCAL_FIELDCOUPLING "
           "'volume_matching'!");
 
@@ -194,16 +194,16 @@ void FS3I::PartFS3I::Init()
     // care for secondary dof sets:
     // add proxy of structure scatra degrees of freedom to structure discretization
     if (structdis->AddDofSet(structscatradis->GetDofSetProxy()) != 1)
-      dserror("Structure discretization has illegal number of dofsets!");
+      FOUR_C_THROW("Structure discretization has illegal number of dofsets!");
 
     // add proxy of structure degrees of freedom to scatra discretization
     if (structscatradis->AddDofSet(structdis->GetDofSetProxy()) != 1)
-      dserror("Structure scatra discretization has illegal number of dofsets!");
+      FOUR_C_THROW("Structure scatra discretization has illegal number of dofsets!");
   }
   else
   {
     if (not(volume_fieldcouplings_[1] == INPAR::FS3I::coupling_nonmatch))
-      dserror(
+      FOUR_C_THROW(
           "If you have specified the structure-scalar by TRANSPORT2 ELEMENTS use "
           "STRUCTSCAL_FIELDCOUPLING 'volume_nonmatching'!");
 
@@ -213,7 +213,7 @@ void FS3I::PartFS3I::Init()
       if (ADAPTER::GetScaTraImplType(structdis->lColElement(i)) !=
           INPAR::SCATRA::impltype_undefined)
       {
-        dserror(
+        FOUR_C_THROW(
             "Be aware that the ImplType defined for the STRUCTURE Elements will be ignored and the "
             "ImplType from the TRANSPORT2 ELMENTS section will be utilized. Use TYPE 'Undefined' "
             "if "
@@ -226,7 +226,7 @@ void FS3I::PartFS3I::Init()
 
   // safety check
   if (not(volume_coupling_objects_.size() == 2))
-    dserror("Unexpected size of volmortar object vector!");
+    FOUR_C_THROW("Unexpected size of volmortar object vector!");
 
   fluiddis->FillComplete(true, false, false);
   structdis->FillComplete(true, false, false);
@@ -263,7 +263,7 @@ void FS3I::PartFS3I::Init()
     }
     default:
     {
-      dserror("Unknown FSI coupling algorithm");
+      FOUR_C_THROW("Unknown FSI coupling algorithm");
       break;
     }
   }
@@ -279,11 +279,11 @@ void FS3I::PartFS3I::Init()
 
   // check if the linear solver has a valid solver number
   if (linsolver1number == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in "
         "FS3I DYNAMIC to a valid number!");
   if (linsolver2number == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
 
@@ -356,10 +356,10 @@ Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> FS3I::PartFS3I::CreateVolMortarObjec
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux;
   dofsetaux = Teuchos::rcp(
       new DRT::DofSetPredefinedDoFNumber(ndofpernode_scatra, ndofperelement_scatra, 0, true));
-  if (masterdis->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in structure field");
+  if (masterdis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in structure field");
   dofsetaux = Teuchos::rcp(
       new DRT::DofSetPredefinedDoFNumber(ndofpernode_struct, ndofperelement_struct, 0, true));
-  if (slavedis->AddDofSet(dofsetaux) != 1) dserror("unexpected dof sets in scatra field");
+  if (slavedis->AddDofSet(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in scatra field");
 
   // call AssignDegreesOfFreedom also for auxiliary dofsets
   // note: the order of FillComplete() calls determines the gid numbering!
@@ -551,7 +551,7 @@ void FS3I::PartFS3I::SetupSystem()
   const int linsolvernumber = fs3idyn.get<int>("COUPLED_LINEAR_SOLVER");
   // check if LOMA solvers has a valid number
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for FS3I problems. Please set COUPLED_LINEAR_SOLVER in FS3I "
         "DYNAMIC to a valid number!");
 
@@ -561,12 +561,12 @@ void FS3I::PartFS3I::SetupSystem()
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos) dserror("Iterative solver expected");
+  if (solvertype != INPAR::SOLVER::SolverType::belos) FOUR_C_THROW("Iterative solver expected");
 
   const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
       coupledscatrasolvparams, "AZPREC");
   if (azprectype != INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)
-    dserror("Block Gauss-Seidel preconditioner expected");
+    FOUR_C_THROW("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
   scatrasolver_ =
@@ -579,11 +579,11 @@ void FS3I::PartFS3I::SetupSystem()
 
   // check if the linear solver has a valid solver number
   if (linsolver1number == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER1 in "
         "FS3I DYNAMIC to a valid number!");
   if (linsolver2number == (-1))
-    dserror(
+    FOUR_C_THROW(
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
 
@@ -707,7 +707,7 @@ void FS3I::PartFS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
     }
     break;
     default:
-      dserror("Time integration scheme not supported");
+      FOUR_C_THROW("Time integration scheme not supported");
       break;
   }
 
@@ -745,14 +745,14 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
 
   Teuchos::RCP<ADAPTER::FluidFSI> fluid =
       Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fsi_->FluidField());
-  if (fluid == Teuchos::null) dserror("Dynamic cast to ADAPTER::FluidFSI failed!");
+  if (fluid == Teuchos::null) FOUR_C_THROW("Dynamic cast to ADAPTER::FluidFSI failed!");
 
   Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->CalculateWallShearStresses();
 
   if (CORE::UTILS::IntegralValue<INPAR::FLUID::WSSType>(
           GLOBAL::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE") !=
       INPAR::FLUID::wss_standard)
-    dserror("WSS_TYPE not supported for FS3I!");
+    FOUR_C_THROW("WSS_TYPE not supported for FS3I!");
 
   wss.push_back(WallShearStress);
 
@@ -825,7 +825,7 @@ Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarMasterToSlavei(
       return volume_coupling_objects_[i]->ApplyVectorMapping21(mastervector);
       break;
     default:
-      dserror("unknown field coupling type");
+      FOUR_C_THROW("unknown field coupling type");
       return Teuchos::null;
       break;
   }
@@ -846,7 +846,7 @@ Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::VolMortarSlaveToMasteri(
       return volume_coupling_objects_[i]->ApplyVectorMapping12(slavevector);
       break;
     default:
-      dserror("unknown field coupling type");
+      FOUR_C_THROW("unknown field coupling type");
       return Teuchos::null;
       break;
   }

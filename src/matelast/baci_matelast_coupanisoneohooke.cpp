@@ -83,11 +83,11 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::Setup(int numgp, INPUT::LineDefinition* li
     // error path
     else
     {
-      dserror("Reading of element local cosy for anisotropic materials failed");
+      FOUR_C_THROW("Reading of element local cosy for anisotropic materials failed");
     }
   }
   else
-    dserror("INIT mode not implemented");
+    FOUR_C_THROW("INIT mode not implemented");
 }
 
 void MAT::ELASTIC::CoupAnisoNeoHooke::AddStressAnisoPrincipal(const CORE::LINALG::Matrix<6, 1>& rcg,
@@ -114,7 +114,8 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::GetFiberVecs(
 void MAT::ELASTIC::CoupAnisoNeoHooke::SetFiberVecs(const double newgamma,
     const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
-  if ((params_->gamma_ < -90) || (params_->gamma_ > 90)) dserror("Fiber angle not in [-90,90]");
+  if ((params_->gamma_ < -90) || (params_->gamma_ > 90))
+    FOUR_C_THROW("Fiber angle not in [-90,90]");
   // convert
   double gamma = (params_->gamma_ * M_PI) / 180.;
 

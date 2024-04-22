@@ -36,7 +36,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
     act = calc_MPC_state;
   }
   else
-    dserror("Unknown type of action for ConstraintElement3");
+    FOUR_C_THROW("Unknown type of action for ConstraintElement3");
 
   switch (act)
   {
@@ -48,7 +48,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
     case calc_MPC_state:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnod = NumNode();
@@ -63,7 +63,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
         ComputeNormal(xscurr, elementnormal);
         if (abs(elementnormal.Norm2()) < 1E-6)
         {
-          dserror("Bad plane, points almost on a line!");
+          FOUR_C_THROW("Bad plane, points almost on a line!");
         }
 
         elevec3[0] = ComputeNormalDist(xscurr, elementnormal);
@@ -83,14 +83,14 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
           elevec3[0] = ComputeWeightedDistance(xscurr, *direct);
         }
         else
-          dserror("MPC cannot compute state!");
+          FOUR_C_THROW("MPC cannot compute state!");
       }
     }
     break;
     case calc_MPC_stiff:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       CORE::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnod = NumNode();
@@ -107,7 +107,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
         ComputeNormal(xscurr, elementnormal);
         if (abs(elementnormal.Norm2()) < 1E-6)
         {
-          dserror("Bad plane, points almost on a line!");
+          FOUR_C_THROW("Bad plane, points almost on a line!");
         }
         double normaldistance = ComputeNormalDist(xscurr, elementnormal);
 
@@ -138,12 +138,12 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
           elevec3[0] = ComputeWeightedDistance(xscurr, *direct);
         }
         else
-          dserror("MPC cannot compute state!");
+          FOUR_C_THROW("MPC cannot compute state!");
       }
     }
     break;
     default:
-      dserror("Unimplemented type of action");
+      FOUR_C_THROW("Unimplemented type of action");
   }
   return 0;
 
@@ -151,12 +151,12 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
 }  // end of DRT::ELEMENTS::ConstraintElement3::Evaluate
 
 /*----------------------------------------------------------------------*
- * Evaluate Neumann (->dserror) */
+ * Evaluate Neumann (->FOUR_C_THROW) */
 int DRT::ELEMENTS::ConstraintElement3::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("You called Evaluate Neumann of constraint element.");
+  FOUR_C_THROW("You called Evaluate Neumann of constraint element.");
   return 0;
 }
 

@@ -79,7 +79,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau(
     }
     default:
     {
-      dserror("unknown definition for stabilization parameter tau\n");
+      FOUR_C_THROW("unknown definition for stabilization parameter tau\n");
       break;
     }
   }
@@ -484,7 +484,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau1DExact(
   double vel_norm(0.0);
   vel_norm = convelint.Norm2();
 
-  if (diffus < 1e-14) dserror("Invalid diffusion coefficent");
+  if (diffus < 1e-14) FOUR_C_THROW("Invalid diffusion coefficent");
   double epe = 0.5 * densnp * vel_norm * h / diffus;
 
   const double pp = exp(epe);
@@ -561,7 +561,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCharEleLength(
     break;
 
     default:
-      dserror("unknown characteristic element length\n");
+      FOUR_C_THROW("unknown characteristic element length\n");
       break;
   }  // switch (charelelength_)
 
@@ -668,7 +668,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
         double val = gradphi(idim, 0) / phiref;
         kappa_inter += (val * val);
       }
-      //      if (kappa_inter < 1e-10) dserror("Too low value");
+      //      if (kappa_inter < 1e-10) FOUR_C_THROW("Too low value");
 
       // smoothness parameter beta: 1 (smoother layers) or 2 (sharper layers)
       // note for 1.0, this form is equivalent to the Codina form above, except
@@ -814,7 +814,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
         }
         break;
         default:
-          dserror("unknown type of all-scale subgrid diffusivity\n");
+          FOUR_C_THROW("unknown type of all-scale subgrid diffusivity\n");
           break;
       }  // switch (whichassgd)
 
@@ -952,11 +952,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
       DRT::UTILS::FindElementConditions(ele, "FluidLineNeumann", myfluidneumcond);
       break;
     default:
-      dserror("Illegal number of space dimensions: %d", nsd_);
+      FOUR_C_THROW("Illegal number of space dimensions: %d", nsd_);
       break;
   }
 
-  if (myfluidneumcond.size() > 1) dserror("more than one Fluid Neumann condition on one node");
+  if (myfluidneumcond.size() > 1) FOUR_C_THROW("more than one Fluid Neumann condition on one node");
 
   if (myfluidneumcond.size() == 1)
   {
@@ -1002,7 +1002,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
                     .Evaluate((ele->Nodes()[jnode])->X().data(), scatraparatimint_->Time(), isd);
           }
           else
-            dserror("Negative time value in body force calculation: time = %f",
+            FOUR_C_THROW("Negative time value in body force calculation: time = %f",
                 scatraparatimint_->Time());
         }
         else
@@ -1124,7 +1124,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocityVisc(
   }
 
   else
-    dserror("Epsilon(u) is not implemented for the 1D case!");
+    FOUR_C_THROW("Epsilon(u) is not implemented for the 1D case!");
 
   return;
 }  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocityVisc

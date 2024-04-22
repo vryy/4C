@@ -60,7 +60,7 @@ namespace CORE::GEOMETRICSEARCH
   GetKDopPolyhedronRepresentation(const BoundingVolume boundingVolume)
   {
 #ifndef BACI_WITH_ARBORX
-    dserror(
+    FOUR_C_THROW(
         "CORE::GEOMETRICSEARCH::GetKDopPolyhedronRepresentation can only be used with ArborX."
         "To use it, enable ArborX during the configure process.");
 #else
@@ -233,7 +233,8 @@ namespace CORE::GEOMETRICSEARCH
           }
           if (found_starting_point) break;
         }
-        if (!found_starting_point) dserror("A starting point for the polygon could not be found.");
+        if (!found_starting_point)
+          FOUR_C_THROW("A starting point for the polygon could not be found.");
 
         // Starting from the found point loop over the edges of the polygon
         unsigned int offset = 0;
@@ -265,7 +266,7 @@ namespace CORE::GEOMETRICSEARCH
           }
         }
 
-        if (polygon_points.size() == 0) dserror("No polygon points where found.");
+        if (polygon_points.size() == 0) FOUR_C_THROW("No polygon points where found.");
 
         // Check if the start and end point are the same, if so remove the double point
         auto diff = polygon_points.back();

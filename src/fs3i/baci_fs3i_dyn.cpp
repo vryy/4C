@@ -66,7 +66,7 @@ void fs3i_dyn()
     }
     break;
     default:
-      dserror("solution of unknown problemtyp %d requested", probtype);
+      FOUR_C_THROW("solution of unknown problemtyp %d requested", probtype);
       break;
   }
 

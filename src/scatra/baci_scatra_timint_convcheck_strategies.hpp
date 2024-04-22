@@ -61,7 +61,7 @@ namespace SCATRA
         const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
     ) const
     {
-      dserror("Not implemented in base class!");
+      FOUR_C_THROW("Not implemented in base class!");
       return false;
     }
 

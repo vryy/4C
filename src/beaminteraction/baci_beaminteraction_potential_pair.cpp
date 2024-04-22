@@ -137,7 +137,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         }
         default:
         {
-          dserror(
+          FOUR_C_THROW(
               "%d and %d is no valid template parameter combination for the "
               "number of nodes and number of types of nodal DoFs used for centerline "
               "interpolation!",
@@ -165,7 +165,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
           }
         }
         default:
-          dserror(
+          FOUR_C_THROW(
               "%d and %d is no valid template parameter combination for the "
               "number of nodes and number of types of nodal DoFs used for centerline "
               "interpolation!",
@@ -176,7 +176,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "%d and %d is no valid template parameter combination for the "
           "number of nodes and number of types of nodal DoFs used for centerline "
           "interpolation!",
@@ -192,14 +192,14 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::CheckInit() const
 {
-  if (not IsInit()) dserror("Call Init() first!");
+  if (not IsInit()) FOUR_C_THROW("Call Init() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+  if (not IsInit() or not IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -239,7 +239,7 @@ CORE::FE::GaussRule1D BEAMINTERACTION::BeamPotentialPair::GetGaussRule() const
     }
 
     default:
-      dserror("%d Gauss points are not supported yet!", Params()->NumberGaussPoints());
+      FOUR_C_THROW("%d Gauss points are not supported yet!", Params()->NumberGaussPoints());
   }
 
   return CORE::FE::GaussRule1D::undefined;

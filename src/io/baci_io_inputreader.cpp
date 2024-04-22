@@ -115,7 +115,7 @@ namespace INPUT
   bool DatFileReader::ReadSection(std::string name, Teuchos::ParameterList& list)
   {
     if (name.length() < 3 or name[0] != '-' or name[1] != '-')
-      dserror("Illegal section name '%s'", name.c_str());
+      FOUR_C_THROW("Illegal section name '%s'", name.c_str());
 
     // The section name is desired from outside. Thus, we consider it as valid
     knownsections_[name] = true;
@@ -201,7 +201,7 @@ namespace INPUT
 
         std::istringstream stream(l);
         stream >> nname;
-        if (not stream) dserror("Illegal line in section '%s': '%s'", marker.c_str(), l);
+        if (not stream) FOUR_C_THROW("Illegal line in section '%s': '%s'", marker.c_str(), l);
 
         if (nname == "NODE")  // plain old reading of the design nodes from the .dat-file
         {
@@ -219,7 +219,7 @@ namespace INPUT
               stream >> tmp;
               if (tmp.size() != 2 || tmp[0] < 'x' || tmp[0] > 'z' ||
                   (tmp[1] != '+' && tmp[1] != '-'))
-                dserror("Illegal design node definition.");
+                FOUR_C_THROW("Illegal design node definition.");
               dir[tmp[0] - 'x'] = (tmp[1] == '+') ? 1 : -1;
             }
             stream >> dname >> dobj;
@@ -233,7 +233,7 @@ namespace INPUT
               stream >> tmp;
               if (tmp.size() != 2 || tmp[0] < 'x' || tmp[0] > 'z' ||
                   (tmp[1] != '+' && tmp[1] != '-'))
-                dserror("Illegal design node definition.");
+                FOUR_C_THROW("Illegal design node definition.");
               dir[tmp[0] - 'x'] = (tmp[1] == '+') ? 1 : -1;
             }
             stream >> dname >> dobj;
@@ -244,7 +244,7 @@ namespace INPUT
             stream >> disname;
             stream >> tmp;
             if (tmp.size() != 2 || tmp[0] < 'x' || tmp[0] > 'z' || (tmp[1] != '+' && tmp[1] != '-'))
-              dserror("Illegal design node definition.");
+              FOUR_C_THROW("Illegal design node definition.");
             dir[tmp[0] - 'x'] = (tmp[1] == '+') ? 1 : -1;
             stream >> dname >> dobj;
           }
@@ -255,7 +255,7 @@ namespace INPUT
           }
           else
           {
-            dserror("Illegal line in section '%s': '%s'", marker.c_str(), l);
+            FOUR_C_THROW("Illegal line in section '%s': '%s'", marker.c_str(), l);
           }
 
           Teuchos::RCP<DRT::Discretization> actdis = GLOBAL::Problem::Instance()->GetDis(disname);
@@ -315,7 +315,7 @@ namespace INPUT
                 }
               }
               else
-                dserror("Inputreader: Couldn't find domain section for discretization %s !",
+                FOUR_C_THROW("Inputreader: Couldn't find domain section for discretization %s !",
                     disname.c_str());
             }
             // All other processors get this info broadcasted
@@ -347,7 +347,7 @@ namespace INPUT
                 bbox[i + 3] -= tolerance_n;
                 break;
               default:
-                dserror("Invalid BC specification");
+                FOUR_C_THROW("Invalid BC specification");
             }
           }
 
@@ -402,7 +402,7 @@ namespace INPUT
         }
 
         if (dname.substr(0, name.length()) != name)
-          dserror("Illegal line in section '%s': '%s'\n%s found, where %s was expected",
+          FOUR_C_THROW("Illegal line in section '%s': '%s'\n%s found, where %s was expected",
               marker.c_str(), l, dname.substr(0, name.length()).c_str(), name.c_str());
       }
       if (topology.size() > 0)
@@ -465,7 +465,7 @@ namespace INPUT
     }
     else
     {
-      dserror("Unknown discretization name for knotvector input\n");
+      FOUR_C_THROW("Unknown discretization name for knotvector input\n");
     }
 
     // another valid section name was found
@@ -603,7 +603,7 @@ namespace INPUT
     // make sure that we have some Knotvector object to fill
     if (disknots == Teuchos::null)
     {
-      dserror("disknots should have been allocated before");
+      FOUR_C_THROW("disknots should have been allocated before");
     }
 
     //--------------------------------------------------------------------
@@ -748,7 +748,7 @@ namespace INPUT
             actdim++;
             if (actdim > nurbs_dim)
             {
-              dserror(
+              FOUR_C_THROW(
                   "too many knotvectors, we only need one for each dimension (nurbs_dim = %d)\n",
                   nurbs_dim);
             }
@@ -802,8 +802,8 @@ namespace INPUT
             {
               if (n_x_m_x_l[rr] != count_vals[rr])
               {
-                dserror("not enough knots read in dim %d (%d!=NUMKNOTS=%d), nurbs_dim=%d\n", rr,
-                    count_vals[rr], n_x_m_x_l[rr], nurbs_dim);
+                FOUR_C_THROW("not enough knots read in dim %d (%d!=NUMKNOTS=%d), nurbs_dim=%d\n",
+                    rr, count_vals[rr], n_x_m_x_l[rr], nurbs_dim);
               }
             }
 
@@ -831,7 +831,7 @@ namespace INPUT
 
       if (count_read != npatches)
       {
-        dserror("wasn't able to read enough patches\n");
+        FOUR_C_THROW("wasn't able to read enough patches\n");
       }
     }
 
@@ -855,11 +855,12 @@ namespace INPUT
   {
     // safety check: Is there a duplicate of the same parameter?
     if (list.isParameter(key))
-      dserror("Duplicate parameter %s in sublist %s", key.c_str(), list.name().c_str());
+      FOUR_C_THROW("Duplicate parameter %s in sublist %s", key.c_str(), list.name().c_str());
 
-    if (key.empty()) dserror("Internal error: missing key.", key.c_str());
+    if (key.empty()) FOUR_C_THROW("Internal error: missing key.", key.c_str());
     // safety check: Is the parameter without any specified value?
-    if (value.empty()) dserror("Missing value for parameter %s. Fix your input file!", key.c_str());
+    if (value.empty())
+      FOUR_C_THROW("Missing value for parameter %s. Fix your input file!", key.c_str());
 
     {  // try to find an int
       std::stringstream ssi;
@@ -947,7 +948,7 @@ namespace INPUT
     if (comm->MyPID() == 0)
     {
       std::ifstream file(filename_.c_str());
-      if (not file) dserror("unable to open file: %s", filename_.c_str());
+      if (not file) FOUR_C_THROW("unable to open file: %s", filename_.c_str());
 
       std::list<std::string> content;
       bool ignoreline = false;
@@ -991,7 +992,7 @@ namespace INPUT
               if (line.find(i) != std::string::npos)
               {
                 if (excludepositions_.find(i) != excludepositions_.end())
-                  dserror("section '%s' defined more than once", i.c_str());
+                  FOUR_C_THROW("section '%s' defined more than once", i.c_str());
                 std::pair<std::ifstream::pos_type, unsigned int>& p = excludepositions_[i];
                 p.first = file.tellg();
                 p.second = 0;
@@ -1036,7 +1037,7 @@ namespace INPUT
 
       if (inputfile_.size() != static_cast<size_t>(arraysize))
       {
-        dserror(
+        FOUR_C_THROW(
             "internal error in file read: inputfile has %d chars, but was predicted to be %d "
             "chars long",
             inputfile_.size(), arraysize);
@@ -1080,7 +1081,7 @@ namespace INPUT
         }
 
         if (static_cast<int>(lines_.size()) != numrows_ + 1)
-          dserror("line count mismatch: %d lines expected but %d lines received", numrows_ + 1,
+          FOUR_C_THROW("line count mismatch: %d lines expected but %d lines received", numrows_ + 1,
               lines_.size());
       }
 
@@ -1114,14 +1115,14 @@ namespace INPUT
         std::string::size_type loc = line.rfind("--");
         std::string sectionname = line.substr(loc);
         if (positions_.find(sectionname) != positions_.end())
-          dserror("section '%s' defined more than once", sectionname.c_str());
+          FOUR_C_THROW("section '%s' defined more than once", sectionname.c_str());
         positions_[sectionname] = i;
         knownsections_[sectionname] = false;  // initialize as unknown
       }
     }
 
     if (positions_.find("--END") == positions_.end())
-      dserror("end section missing. incomplete dat file?");
+      FOUR_C_THROW("end section missing. incomplete dat file?");
 
     // the following section names are always regarded as valid
     knownsections_["--END"] = true;
@@ -1174,11 +1175,11 @@ namespace INPUT
     }
 
     // we wait till all procs are here. Otherwise a hang up might occur where
-    // one proc ended with dserror but other procs were not finished and waited...
+    // one proc ended with FOUR_C_THROW but other procs were not finished and waited...
     // we also want to have the printing above being finished.
     Comm()->Barrier();
     if (printout)
-      dserror(
+      FOUR_C_THROW(
           "Unknown sections detected. Correct this! Find hints on these unknown sections above.");
 
     return printout;
@@ -1198,14 +1199,14 @@ namespace INPUT
       separator_index = line.find(' ');
 
       if (separator_index == std::string::npos)
-        dserror("Line '%s' with just one word in parameter section", line.c_str());
+        FOUR_C_THROW("Line '%s' with just one word in parameter section", line.c_str());
     }
 
     std::string key = DRT::UTILS::Trim(line.substr(0, separator_index));
     std::string value = DRT::UTILS::Trim(line.substr(separator_index + 1));
 
-    if (key.empty()) dserror("Cannot get key from line '%s'", line.c_str());
-    if (value.empty()) dserror("Cannot get value from line '%s'", line.c_str());
+    if (key.empty()) FOUR_C_THROW("Cannot get key from line '%s'", line.c_str());
+    if (value.empty()) FOUR_C_THROW("Cannot get value from line '%s'", line.c_str());
 
     return {std::move(key), std::move(value)};
   }

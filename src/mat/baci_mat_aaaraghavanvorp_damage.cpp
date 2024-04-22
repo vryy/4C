@@ -147,7 +147,7 @@ void MAT::AaAraghavanvorpDamage::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::AaAraghavanvorpDamage*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -172,7 +172,8 @@ void MAT::AaAraghavanvorpDamage::Unpack(const std::vector<char>& data)
     histglast_->push_back(tmp);
   }
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 
   return;
 }
@@ -402,7 +403,7 @@ void MAT::AaAraghavanvorpDamage::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
 
   double detf = 0.0;  // J
   if (iiinv < 0.0)
-    dserror("fatal failure in aneurysmatic artery wall material");
+    FOUR_C_THROW("fatal failure in aneurysmatic artery wall material");
   else
     detf = sqrt(iiinv);  // determinant of deformation gradient
 

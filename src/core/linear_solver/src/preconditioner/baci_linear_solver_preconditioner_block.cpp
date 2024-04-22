@@ -59,7 +59,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
       Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
           Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
               Teuchos::rcp(matrix, false));
-      if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
+      if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
       Teuchos::ParameterList& inv2 = params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2");
       if (inv2.isSublist("ML Parameters"))
@@ -72,7 +72,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
             Teuchos::rcp(new std::vector<double>(plength, 1.0));
         // TODO: std::vector<double> has zero length for particular cases (e.g. no Lagrange
         // multiplier on this processor)
-        //      -> Teuchos::RCP for the null space is set to nullptr in Fedora 12 -> dserror
+        //      -> Teuchos::RCP for the null space is set to nullptr in Fedora 12 -> FOUR_C_THROW
         //      -> Teuchos::RCP points to a random memory field in Fedora 8 -> Teuchos::RCP for null
         //      space is not nullptr
         // Temporary work around (ehrl, 21.12.11):
@@ -104,7 +104,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
       Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
           Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
               Teuchos::rcp(matrix, false));
-      if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
+      if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
       // this is a fix for the old SIMPLER sublist
       // if(!params_.isSublist("Inverse1") && params_.isSublist("SIMPLER"))
@@ -133,8 +133,8 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
         ndofpernode = inv1.sublist("NodalBlockInformation").get<int>("number of dofs per node", 0);
         nv = inv1.sublist("NodalBlockInformation").get<int>("number of momentum dofs", 0);
         np = inv1.sublist("NodalBlockInformation").get<int>("number of constraint dofs", 0);
-        if (ndofpernode == 0) dserror("cannot read numdf from NodalBlockInformation");
-        if (nv == 0 || np == 0) dserror("nv or np == 0?");
+        if (ndofpernode == 0) FOUR_C_THROW("cannot read numdf from NodalBlockInformation");
+        if (nv == 0 || np == 0) FOUR_C_THROW("nv or np == 0?");
         nlnode = length / ndofpernode;
 
         inv1.sublist("ML Parameters").set("PDE equations", nv);
@@ -194,41 +194,41 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
       Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
           Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
               Teuchos::rcp(matrix, false));
-      if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
+      if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
 
       // Check if we provide everything
-      if (not params_.isSublist("Inverse1")) dserror("Inverse1 sublist of params_ not found");
-      if (not params_.isSublist("Inverse2")) dserror("Inverse2 sublist of params_ not found");
+      if (not params_.isSublist("Inverse1")) FOUR_C_THROW("Inverse1 sublist of params_ not found");
+      if (not params_.isSublist("Inverse2")) FOUR_C_THROW("Inverse2 sublist of params_ not found");
       Teuchos::ParameterList& sublist1 = params_.sublist("Inverse1");
       Teuchos::ParameterList& sublist2 = params_.sublist("Inverse2");
       if (not sublist1.isSublist("MueLu Parameters"))
-        dserror("MueLu Parameters sublist of sublist1 not found");
+        FOUR_C_THROW("MueLu Parameters sublist of sublist1 not found");
       else
       {
         Teuchos::ParameterList& MueLuList = sublist1.sublist("MueLu Parameters");
         if (not MueLuList.isParameter("PDE equations"))
-          dserror("PDE equations not provided for block 1 of 2");
+          FOUR_C_THROW("PDE equations not provided for block 1 of 2");
         if (not MueLuList.isParameter("null space: dimension"))
-          dserror("null space: dimension not provided for block 1 of 2");
+          FOUR_C_THROW("null space: dimension not provided for block 1 of 2");
         if (not MueLuList.isParameter("nullspace"))
-          dserror("nullspace not provided for block 1 of 2");
+          FOUR_C_THROW("nullspace not provided for block 1 of 2");
         if (MueLuList.get<std::string>("xml file", "none") == "none")
-          dserror("xml file not provided for block 1 of 2");
+          FOUR_C_THROW("xml file not provided for block 1 of 2");
       }
       if (not sublist2.isSublist("MueLu Parameters"))
-        dserror("MueLu Parameters sublist of sublist2 not found");
+        FOUR_C_THROW("MueLu Parameters sublist of sublist2 not found");
       else
       {
         Teuchos::ParameterList& MueLuList = sublist1.sublist("MueLu Parameters");
         if (not MueLuList.isParameter("PDE equations"))
-          dserror("PDE equations not provided for block 2 of 2");
+          FOUR_C_THROW("PDE equations not provided for block 2 of 2");
         if (not MueLuList.isParameter("null space: dimension"))
-          dserror("null space: dimension not provided for block 2 of 2");
+          FOUR_C_THROW("null space: dimension not provided for block 2 of 2");
         if (not MueLuList.isParameter("nullspace"))
-          dserror("nullspace not provided for block 2 of 2");
+          FOUR_C_THROW("nullspace not provided for block 2 of 2");
         if (MueLuList.get<std::string>("xml file", "none") == "none")
-          dserror("xml file not provided for block 2 of 2");
+          FOUR_C_THROW("xml file not provided for block 2 of 2");
       }
 
       P_ = Teuchos::rcp(
@@ -244,7 +244,7 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
 
       // P_ = Teuchos::rcp(new CORE::LINALG::SOLVER::SIMPLER_Operator(Teuchos::rcp( matrix, false
       // ),params_,params_.sublist("SIMPLER"),outfile_));
-      dserror("old SIMPLE not supported any more");
+      FOUR_C_THROW("old SIMPLE not supported any more");
     }
   }
 }
@@ -276,7 +276,7 @@ void CORE::LINEAR_SOLVER::BGSPreconditioner::Setup(
       bool haveprec1 = params_.isSublist("Inverse1");
       bool haveprec2 = params_.isSublist("Inverse2");
       if (!haveprec1 or !haveprec2)
-        dserror("individual block solvers for BGS2x2 need to be specified");
+        FOUR_C_THROW("individual block solvers for BGS2x2 need to be specified");
 
       int global_iter = bgslist_.get<int>("global_iter");
       double global_omega = bgslist_.get<double>("global_omega");
@@ -291,7 +291,7 @@ void CORE::LINEAR_SOLVER::BGSPreconditioner::Setup(
           block1_iter, block1_omega, block2_iter, block2_omega, fliporder));
     }
     else
-      dserror("Block Gauss-Seidel BGS2x2 is currently only implemented for a 2x2 system.");
+      FOUR_C_THROW("Block Gauss-Seidel BGS2x2 is currently only implemented for a 2x2 system.");
   }
 }
 

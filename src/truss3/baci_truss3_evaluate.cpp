@@ -41,7 +41,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     // get the action required
     std::string action = params.get<std::string>("action", "calc_none");
     if (action == "calc_none")
-      dserror("No action supplied");
+      FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
       act = ELEMENTS::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
@@ -65,7 +65,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     else
     {
       std::cout << action << std::endl;
-      dserror("Unknown type of action for Truss3");
+      FOUR_C_THROW("Unknown type of action for Truss3");
     }
   }
 
@@ -73,7 +73,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
   {
     case ELEMENTS::struct_calc_ptcstiff:
     {
-      dserror("EvaluatePTC not implemented");
+      FOUR_C_THROW("EvaluatePTC not implemented");
 
       break;
     }
@@ -81,7 +81,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
        displacement and residual values*/
     case ELEMENTS::struct_calc_linstiff:
     {
-      dserror("linear stiffness matrix called, but not implemented");
+      FOUR_C_THROW("linear stiffness matrix called, but not implemented");
 
       break;
     }
@@ -139,7 +139,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     default:
     {
       std::cout << "\ncalled element with action type " << ActionType2String(act);
-      dserror("Unknown type of action for Truss3");
+      FOUR_C_THROW("Unknown type of action for Truss3");
       break;
     }
   }
@@ -154,7 +154,7 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
-  dserror("This method needs to be modified for bio-polymer networks!");
+  FOUR_C_THROW("This method needs to be modified for bio-polymer networks!");
 
   return 0;
 }
@@ -166,7 +166,7 @@ void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<doubl
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& intenergy)
 {
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
-    dserror("only linear elastic material supported for truss element");
+    FOUR_C_THROW("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<doubl
   else  // old structural time integration
   {
     // check length of elevec1
-    if (intenergy.length() < 1) dserror("The given result vector is too short.");
+    if (intenergy.length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
     intenergy(0) = intenergy_calc;
   }
@@ -247,13 +247,13 @@ void DRT::ELEMENTS::Truss3::NlnStiffMass(
       NlnStiffMassEngStr(ele_state, DummyStiffMatrix, massmatrix, DummyForce);
       break;
     default:
-      dserror("Unknown type kintype_ for Truss3");
+      FOUR_C_THROW("Unknown type kintype_ for Truss3");
       break;
   }
 
   // Map element level into global 12 by 12 element
   if (force->length() > 12)
-    dserror("Vector is larger than 12. Please use different mapping strategy!");
+    FOUR_C_THROW("Vector is larger than 12. Please use different mapping strategy!");
   else if (force->length() == 6)
   {
     for (int i = 0; i < 6; i++) (*force)(i) += DummyForce(i);
@@ -271,7 +271,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMass(
   {
     // Map element level into global 12 by 12 element
     if (stiffmatrix->numRows() > 12)
-      dserror("Matrix is larger than 12. Please use different mapping strategy!");
+      FOUR_C_THROW("Matrix is larger than 12. Please use different mapping strategy!");
     else if (stiffmatrix->numRows() == 6)
     {
       for (int i = 0; i < 6; i++)
@@ -332,7 +332,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
     CORE::LINALG::SerialDenseVector& DummyForce)
 {
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
-    dserror("only linear elastic material supported for truss element");
+    FOUR_C_THROW("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
@@ -432,7 +432,7 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
 {
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
-    dserror("only linear elastic material supported for truss element");
+    FOUR_C_THROW("only linear elastic material supported for truss element");
 
   static CORE::LINALG::Matrix<6, 1> truss_disp;
   static CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
@@ -484,7 +484,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 {
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
-    dserror("only linear elastic material supported for truss element");
+    FOUR_C_THROW("only linear elastic material supported for truss element");
 
   Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
   INPAR::STR::StressType iostress;
@@ -537,7 +537,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
       case INPAR::STR::stress_none:
         break;
       default:
-        dserror("Requested stress type not available");
+        FOUR_C_THROW("Requested stress type not available");
         break;
     }
   }
@@ -581,7 +581,7 @@ void DRT::ELEMENTS::Truss3::ExtractElementalVariables(LocationArray& la,
   std::vector<double> disp_ele(la[0].lm_.size());
 
   auto disp = discretization.GetState("displacement");
-  if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
   CORE::FE::ExtractMyValues(*disp, disp_ele, la[0].lm_);
 
   if (ele_state.find("disp") == ele_state.end())

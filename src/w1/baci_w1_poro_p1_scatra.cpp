@@ -88,7 +88,7 @@ void DRT::ELEMENTS::Wall1PoroP1Scatra<distype>::Unpack(const std::vector<char>& 
   my::Unpack(basedata);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 
   return;
 }
@@ -132,7 +132,7 @@ bool DRT::ELEMENTS::Wall1PoroP1Scatra<distype>::ReadElement(
   else if (impltype == "Std")
     impltype_ = INPAR::SCATRA::impltype_std;
   else
-    dserror("Invalid implementation type for Wall1_PoroP1Scatra elements!");
+    FOUR_C_THROW("Invalid implementation type for Wall1_PoroP1Scatra elements!");
 
   return true;
 }
@@ -175,7 +175,7 @@ int DRT::ELEMENTS::Wall1PoroP1Scatra<distype>::UniqueParObjectId() const
     }
     default:
     {
-      dserror("unknown element type");
+      FOUR_C_THROW("unknown element type");
       break;
     }
   }
@@ -200,7 +200,7 @@ DRT::ElementType& DRT::ELEMENTS::Wall1PoroP1Scatra<distype>::ElementType() const
       return DRT::ELEMENTS::WallQuad9PoroP1ScatraType::Instance();
       break;
     default:
-      dserror("unknown element type");
+      FOUR_C_THROW("unknown element type");
       break;
   }
   return DRT::ELEMENTS::WallQuad4PoroP1ScatraType::Instance();

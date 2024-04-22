@@ -156,9 +156,9 @@ namespace FLD
               rlid0 = rowmap10.LID(rgid);
               rlid1 = rowmap11.LID(rgid);
             }
-#ifdef BACI_DEBUG
-            if (rlid0 < 0) dserror("Sparse matrix A does not have global row %d", rgid);
-            if (rlid1 < 0) dserror("Sparse matrix A does not have global row %d", rgid);
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+            if (rlid0 < 0) FOUR_C_THROW("Sparse matrix A does not have global row %d", rgid);
+            if (rlid1 < 0) FOUR_C_THROW("Sparse matrix A does not have global row %d", rgid);
 #endif
             int errone = 0;
             // separate the values of the current row
@@ -185,22 +185,22 @@ namespace FLD
               errone = matrix00_.EpetraMatrix()->SumIntoMyValues(
                   rlid0, nnode * numdim_, values0.data(), localcol00.data());
               if (errone)
-                dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
+                FOUR_C_THROW("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
               errone = matrix01_.EpetraMatrix()->SumIntoMyValues(
                   rlid1, nnode, values1.data(), localcol01.data());
               if (errone)
-                dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
+                FOUR_C_THROW("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
             }
             else
             {  // rowblock 1
               errone = matrix10_.EpetraMatrix()->SumIntoMyValues(
                   rlid0, nnode * numdim_, values0.data(), localcol10.data());
               if (errone)
-                dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
+                FOUR_C_THROW("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
               errone = matrix11_.EpetraMatrix()->SumIntoMyValues(
                   rlid1, nnode, values1.data(), localcol11.data());
               if (errone)
-                dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
+                FOUR_C_THROW("Epetra_CrsMatrix::SumIntoMyValues returned error code %d", errone);
             }
           }  // for (int lrow=0; lrow<ldim; ++lrow)
         }

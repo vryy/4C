@@ -77,7 +77,7 @@ void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
     {
       // safety check
       if (not potentialabsorbingtypes.count(type_i))
-        dserror("thermal absorptivity for particles of type '%s' not possible!",
+        FOUR_C_THROW("thermal absorptivity for particles of type '%s' not possible!",
             PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 
       absorbingtypes_.insert(type_i);
@@ -110,7 +110,7 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
 
   // safety check
   if (function.NumberComponents() != 1)
-    dserror("dimension of function defining heat source is not one!");
+    FOUR_C_THROW("dimension of function defining heat source is not one!");
 
   // iterate over absorbing particle types
   for (const auto& type_i : absorbingtypes_)
@@ -167,7 +167,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::Init()
 
   // safety check
   if (static_cast<int>(direction_.size()) != 3)
-    dserror("dimension (dim = %d) of heat source direction vector is wrong!",
+    FOUR_C_THROW("dimension (dim = %d) of heat source direction vector is wrong!",
         static_cast<int>(direction_.size()));
 
   // normalize heat source direction vector
@@ -285,7 +285,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
 
   // safety check
   if (function.NumberComponents() != 1)
-    dserror("dimension of function defining heat source is not one!");
+    FOUR_C_THROW("dimension of function defining heat source is not one!");
 
   // iterate over absorbing particle types
   for (const auto& type_i : absorbingtypes_)

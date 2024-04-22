@@ -311,7 +311,7 @@ namespace FLD
 
     /// turbulence statistics manager
     Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() override
-    {  // dserror("not implemented");
+    {  // FOUR_C_THROW("not implemented");
       return Teuchos::null;
     }
 

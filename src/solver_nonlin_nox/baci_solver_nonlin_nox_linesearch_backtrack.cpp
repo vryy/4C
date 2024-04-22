@@ -162,7 +162,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
   // catch error of the computeF method
   catch (const char* e)
   {
-    if (not fp_except_.shall_be_caught_) dserror("An exception occurred: %s", e);
+    if (not fp_except_.shall_be_caught_) FOUR_C_THROW("An exception occurred: %s", e);
 
     utils_->out(::NOX::Utils::Warning) << "WARNING: Error caught = " << e << "\n";
 
@@ -213,7 +213,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
     // catch error of the computeF method
     catch (const char* e)
     {
-      if (not fp_except_.shall_be_caught_) dserror("An exception occurred: %s", e);
+      if (not fp_except_.shall_be_caught_) FOUR_C_THROW("An exception occurred: %s", e);
 
       if (utils_->isPrintType(::NOX::Utils::Warning))
         utils_->out() << "WARNING: Error caught = " << e << "\n";
@@ -323,7 +323,7 @@ void NOX::NLN::LineSearch::Backtrack::throwError(
   std::ostringstream msg;
   msg << "ERROR - NOX::NLN::LineSearch::Backtrack::" << functionName << " - " << errorMsg
       << std::endl;
-  dserror(msg.str());
+  FOUR_C_THROW(msg.str());
 }
 
 FOUR_C_NAMESPACE_CLOSE

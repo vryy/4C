@@ -172,7 +172,7 @@ namespace CORE::LINEAR_SOLVER
      */
     int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
     {
-      dserror("Apply does not make sense for CORE::LINALG::SIMPLER_Operator");
+      FOUR_C_THROW("Apply does not make sense for CORE::LINALG::SIMPLER_Operator");
       return (-1);
     }
 
@@ -181,7 +181,7 @@ namespace CORE::LINEAR_SOLVER
     */
     int SetUseTranspose(bool UseTranspose) override
     {
-      dserror("SetUseTranspose not impl.");
+      FOUR_C_THROW("SetUseTranspose not impl.");
       return -1;
     }
 
@@ -190,7 +190,7 @@ namespace CORE::LINEAR_SOLVER
     */
     double NormInf() const override
     {
-      dserror("NormInf not impl.");
+      FOUR_C_THROW("NormInf not impl.");
       return (-1.0);
     }
 
@@ -200,7 +200,7 @@ namespace CORE::LINEAR_SOLVER
     bool UseTranspose() const override
     {
       // TAW: we can safely remove this. The (new) Belos now always checks the UseTransposed flag.
-      // dserror("UseTranspose not impl.");
+      // FOUR_C_THROW("UseTranspose not impl.");
       return false;
     }
 
@@ -209,7 +209,7 @@ namespace CORE::LINEAR_SOLVER
     */
     bool HasNormInf() const override
     {
-      dserror("HasNormInf not impl.");
+      FOUR_C_THROW("HasNormInf not impl.");
       return false;
     }
 

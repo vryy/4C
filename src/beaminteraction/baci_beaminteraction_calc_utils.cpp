@@ -67,7 +67,7 @@ namespace BEAMINTERACTION
       }
 
       if (beameles and othereles)
-        dserror(
+        FOUR_C_THROW(
             "Beam elements and other (solid, rigid sphere) elements sharing the same node is "
             "currently not allowed in BACI!");
 
@@ -108,7 +108,7 @@ namespace BEAMINTERACTION
       }
 
       if (sphereele and othereles)
-        dserror(
+        FOUR_C_THROW(
             "Rigid sphere elements and other (solid, beam) elements sharing "
             "the same node is currently not allowed in BACI!");
 
@@ -428,9 +428,9 @@ namespace BEAMINTERACTION
           DRT::ELEMENTS::Beam3Base* currbeamele =
               dynamic_cast<DRT::ELEMENTS::Beam3Base*>(node->Elements()[j]);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
           if (currbeamele == nullptr)
-            dserror("DESIGN LINE BEAM FILAMENT CONDITIONS only applicable to beam elements.");
+            FOUR_C_THROW("DESIGN LINE BEAM FILAMENT CONDITIONS only applicable to beam elements.");
 #endif
 
           // add element reference length of new element to filament reference length
@@ -499,8 +499,8 @@ namespace BEAMINTERACTION
       // cast to beambase element
       DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele);
 
-#ifdef BACI_DEBUG
-      if (beamele == nullptr) dserror("Dynamic cast to beam3base failed");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if (beamele == nullptr) FOUR_C_THROW("Dynamic cast to beam3base failed");
 #endif
 
       // get current position at binding spot xi
@@ -630,7 +630,8 @@ namespace BEAMINTERACTION
         return local_centerline_dof_indices.size();
       }
       else
-        dserror("GetNumberOfElementCenterlineDof: The given element has to be a beam element.");
+        FOUR_C_THROW(
+            "GetNumberOfElementCenterlineDof: The given element has to be a beam element.");
     }
 
 
@@ -648,13 +649,13 @@ namespace BEAMINTERACTION
       {
         beam_element->CenterlineDofIndicesOfElement(local_centerline_dof_indices);
         if (local_centerline_dof_indices.size() != n_centerline_dof)
-          dserror(
+          FOUR_C_THROW(
               "GetElementCenterlineGIDIndices: The size of the local_centerline_dof_indices (%d) "
               "does not match the number of beam dofs (%d).",
               local_centerline_dof_indices.size(), n_centerline_dof);
       }
       else
-        dserror("GetElementCenterlineGIDIndices: The given element has to be a beam element.");
+        FOUR_C_THROW("GetElementCenterlineGIDIndices: The given element has to be a beam element.");
 
       // Get the GIDs of the whole beam element (including rotational DOFs).
       std::vector<int> lmrow;
@@ -725,7 +726,7 @@ namespace BEAMINTERACTION
           // safety check: dimensions
           if ((unsigned int)eleforce_centerlineDOFs[iele].numRows() !=
               ele_centerlinedofindices[iele].size())
-            dserror(
+            FOUR_C_THROW(
                 "size mismatch! need to assemble %d values of centerline-Dof based "
                 "force vector into element vector but only got %d element-local Dof indices",
                 eleforce_centerlineDOFs[iele].numRows(), ele_centerlinedofindices[iele].size());
@@ -749,7 +750,7 @@ namespace BEAMINTERACTION
             // safety check: dimensions
             if ((unsigned int)elestiff_centerlineDOFs[iele][jele].numRows() !=
                 ele_centerlinedofindices[iele].size())
-              dserror(
+              FOUR_C_THROW(
                   "size mismatch! need to assemble %d row values of centerline-Dof based "
                   "stiffness matrix into element matrix but only got %d element-local Dof indices",
                   elestiff_centerlineDOFs[iele][jele].numRows(),
@@ -757,7 +758,7 @@ namespace BEAMINTERACTION
 
             if ((unsigned int)elestiff_centerlineDOFs[iele][jele].numCols() !=
                 ele_centerlinedofindices[jele].size())
-              dserror(
+              FOUR_C_THROW(
                   "size mismatch! need to assemble %d column values of centerline-Dof based "
                   "stiffness matrix into element matrix but only got %d element-local Dof indices",
                   elestiff_centerlineDOFs[iele][jele].numCols(),
@@ -792,7 +793,7 @@ namespace BEAMINTERACTION
 
       // Safety check: dimensions.
       if ((unsigned int)row_matrix_centerlineDOFs.numCols() != ele_centerlinedofindices.size())
-        dserror(
+        FOUR_C_THROW(
             "Size mismatch! Need to assemble %d col values of centerline-Dof based "
             "stiffness matrix into element matrix but only got %d element-local Dof indices",
             row_matrix_centerlineDOFs.numCols(), ele_centerlinedofindices.size());
@@ -916,7 +917,7 @@ namespace BEAMINTERACTION
         std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>& elestiff)
     {
       // Todo grill 02/17
-      dserror(
+      FOUR_C_THROW(
           "we can not evaluate the tangent stiffness matrix without evaluating "
           "the residual in case of Kirchhoff beam Beam3k. This is because we have a coupled "
           "term and the residual vector is required to compute the full linearization. "
@@ -1180,7 +1181,7 @@ namespace BEAMINTERACTION
         }
         else
         {
-          dserror("eletype multi map extractor cannot yet handle current element type.");
+          FOUR_C_THROW("eletype multi map extractor cannot yet handle current element type.");
         }
       }
 
@@ -1215,11 +1216,11 @@ namespace BEAMINTERACTION
     {
       long long z = 0.5 * (pair.first + pair.second) * (pair.first + pair.second + 1) + pair.second;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (z > std::numeric_limits<long long>::max())
-        dserror(" Your cantor paired value exceeds limit of data type int.");
+        FOUR_C_THROW(" Your cantor paired value exceeds limit of data type int.");
       if (pair != CantorDePairing(z))
-        dserror(
+        FOUR_C_THROW(
             " %i and %i cannot be paired using Cantor pairing function", pair.first, pair.second);
 #endif
 
@@ -1230,9 +1231,9 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     std::pair<int, int> CantorDePairing(long long z)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (8.0 * z > std::numeric_limits<long long>::max())
-        dserror(" Your cantor paired value exceeds limit of data type int.");
+        FOUR_C_THROW(" Your cantor paired value exceeds limit of data type int.");
 #endif
 
       long long w = std::floor((std::sqrt(8.0 * z + 1.0) - 1.0) * 0.5);

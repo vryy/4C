@@ -205,7 +205,7 @@ namespace DRT::ELEMENTS
         const MulfFBarPreparationData<celltype>& mapping_center,
         MulfHistoryData<celltype>& mulf_data_centeroid, MulfHistoryData<celltype>& mulf_data_gp)
     {
-      dserror(
+      FOUR_C_THROW(
           "The full linearization is not yet implemented for the displacement based formulation "
           "with MULF prestressing.");
     }

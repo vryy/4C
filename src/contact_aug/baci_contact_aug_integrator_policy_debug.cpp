@@ -268,7 +268,7 @@ const CONTACT::AUG::Deriv1stMap&
 CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::GetNodalDeriv1st(
     NodeDataContainer& data) const
 {
-  dserror("No active scalar first derivative!");
+  FOUR_C_THROW("No active scalar first derivative!");
   exit(EXIT_FAILURE);
 }
 
@@ -279,7 +279,7 @@ const CONTACT::AUG::Deriv2ndMap&
 CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::GetNodalDeriv2nd(
     NodeDataContainer& data) const
 {
-  dserror("No active scalar second derivative!");
+  FOUR_C_THROW("No active scalar second derivative!");
   exit(EXIT_FAILURE);
 }
 
@@ -718,7 +718,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     std::vector<std::pair<int, double>>& vals = cnode.AugData().Get_DebugVec();
 
     if (vals.size() < my::MASTERDIM)
-      dserror("DebugVec has the wrong dimension! ( size=%d)", vals.size());
+      FOUR_C_THROW("DebugVec has the wrong dimension! ( size=%d)", vals.size());
 
     for (unsigned d = 0; d < my::MASTERDIM; ++d)
     {

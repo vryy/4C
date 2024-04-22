@@ -61,7 +61,7 @@ void STR::TIMINT::ParamsMonitorDBC::Init(
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsMonitorDBC::Setup()
 {
-  dsassert(IsInit(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -72,7 +72,7 @@ void STR::TIMINT::ParamsMonitorDBC::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsMonitorDBC::CheckInitSetup() const
 {
-  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
+  FOUR_C_ASSERT(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

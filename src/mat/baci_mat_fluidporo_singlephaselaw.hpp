@@ -174,7 +174,7 @@ namespace MAT
       /// pressure ids involved in phase law
       const std::vector<int>* PresIds() override
       {
-        dserror(
+        FOUR_C_THROW(
             "The constraint phase law does not have pressure coupling! \n "
             "Combining Saturation DOF and constraint phase law is invalid!");
         return nullptr;
@@ -184,7 +184,7 @@ namespace MAT
       //! evaluate saturation of phase
       double EvaluateSaturation(const std::vector<double>& pressure) override
       {
-        dserror("The constraint phase law does not implement evaluation routines!");
+        FOUR_C_THROW("The constraint phase law does not implement evaluation routines!");
         return 0.0;
       };
 
@@ -192,7 +192,7 @@ namespace MAT
       double EvaluateDerivOfSaturationWrtPressure(
           int doftoderive, const std::vector<double>& pressure) override
       {
-        dserror("The constraint phase law does not implement evaluation routines!");
+        FOUR_C_THROW("The constraint phase law does not implement evaluation routines!");
         return 0.0;
       };
 
@@ -200,21 +200,21 @@ namespace MAT
       double EvaluateSecondDerivOfSaturationWrtPressure(
           int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure) override
       {
-        dserror("The constraint phase law does not implement evaluation routines!");
+        FOUR_C_THROW("The constraint phase law does not implement evaluation routines!");
         return 0.0;
       };
 
       //! evaluate generalized pressure related to phase law
       double EvaluateGenPressure(double saturation) override
       {
-        dserror("The constraint phase law does not implement evaluation routines!");
+        FOUR_C_THROW("The constraint phase law does not implement evaluation routines!");
         return 0.0;
       };
 
       //! evaluate derivative of pressure w.r.t. saturation
       double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation) override
       {
-        dserror("The constraint phase law does not implement evaluation routines!");
+        FOUR_C_THROW("The constraint phase law does not implement evaluation routines!");
         return 0.0;
       };
     };

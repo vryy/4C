@@ -242,7 +242,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
           gnodes[gid] = dis.gNode(gid);
         }
         else
-          dserror("All nodes of known elements must be known. Panic.");
+          FOUR_C_THROW("All nodes of known elements must be known. Panic.");
       }
     }
   }
@@ -298,7 +298,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
           gnodes[gid] = dis.gNode(gid);
         }
         else
-          dserror("All nodes of known elements must be known. Panic.");
+          FOUR_C_THROW("All nodes of known elements must be known. Panic.");
       }
     }
   }
@@ -336,7 +336,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
           gnodes[id][gid] = dis.gNode(gid);
         }
         else
-          dserror("All nodes of known elements must be known. Panic.");
+          FOUR_C_THROW("All nodes of known elements must be known. Panic.");
       }
     }
   }
@@ -494,7 +494,7 @@ bool DRT::UTILS::HaveSameNodes(const DRT::Condition* const condition1,
     matching_conditions = false;
     if (mustmatch)
     {
-      dserror(
+      FOUR_C_THROW(
           "Number of nodes that are defined for both conditions do not match! Did you define the "
           "conditions for the same nodesets?");
     }
@@ -525,7 +525,7 @@ bool DRT::UTILS::HaveSameNodes(const DRT::Condition* const condition1,
         condition1->Print(std::cout);
         std::cout << " is not part of condition: ";
         condition2->Print(std::cout);
-        dserror(
+        FOUR_C_THROW(
             "Did you assign those conditions to the same nodeset? Please check your input file and "
             "fix this inconsistency!");
       }

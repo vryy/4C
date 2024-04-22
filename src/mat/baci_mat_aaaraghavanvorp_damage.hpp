@@ -137,7 +137,7 @@ namespace MAT
     /// shear modulus
     double ShearMod() const
     {
-      dserror("");
+      FOUR_C_THROW("");
       return (6.0 * params_->bulk_ * params_->alpha_) /
              (3.0 * params_->bulk_ - 2 * params_->alpha_);
     }
@@ -156,7 +156,7 @@ namespace MAT
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
-        dserror("element and material kinematics are not compatible");
+        FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object

@@ -29,7 +29,7 @@ XFEM::XfaCouplingManager::XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
       structure_(structure)
 {
   if (idx_.size() != static_cast<std::size_t>(2 + (structure_ != Teuchos::null)))
-    dserror("XFACoupling_Manager required (two + num coupled block) ( %d != %d)",
+    FOUR_C_THROW("XFACoupling_Manager required (two + num coupled block) ( %d != %d)",
         (2 + (structure_ != Teuchos::null)), idx_.size());
 
   if (structure_ != Teuchos::null)
@@ -40,7 +40,7 @@ XFEM::XfaCouplingManager::XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
       if (ale_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size() !=
           structure_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size())
       {
-        dserror("XFACoupling_Manager: For StructAleCoupling NumNodes not equal! (%d != %d)",
+        FOUR_C_THROW("XFACoupling_Manager: For StructAleCoupling NumNodes not equal! (%d != %d)",
             ale_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size(),
             structure_->Discretization()->GetCondition("StructAleCoupling")->GetNodes()->size());
       }

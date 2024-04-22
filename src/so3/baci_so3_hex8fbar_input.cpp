@@ -32,14 +32,14 @@ bool DRT::ELEMENTS::SoHex8fbar::ReadElement(
   linedef->ExtractString("KINEM", buffer);
   if (buffer == "linear")
   {
-    dserror("Only nonlinear kinematics for SO_HEX8FBAR implemented!");
+    FOUR_C_THROW("Only nonlinear kinematics for SO_HEX8FBAR implemented!");
   }
   else if (buffer == "nonlinear")
   {
     kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
-    dserror("Reading SO_HEX8FBAR element failed KINEM unknown");
+    FOUR_C_THROW("Reading SO_HEX8FBAR element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);

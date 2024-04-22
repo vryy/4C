@@ -42,8 +42,8 @@ void CORE::LINALG::SymmetricEigenProblem(
 void CORE::LINALG::SymmetricEigen(CORE::LINALG::SerialDenseMatrix& A,
     CORE::LINALG::SerialDenseVector& L, const bool eval_eigenvectors, const bool postproc)
 {
-  if (A.numRows() != A.numCols()) dserror("Matrix is not square");
-  if (A.numRows() != L.length()) dserror("Dimension of eigenvalues does not match");
+  if (A.numRows() != A.numCols()) FOUR_C_THROW("Matrix is not square");
+  if (A.numRows() != L.length()) FOUR_C_THROW("Dimension of eigenvalues does not match");
 
   double* a = A.values();
   double* w = L.values();
@@ -70,8 +70,8 @@ void CORE::LINALG::SymmetricEigen(CORE::LINALG::SerialDenseMatrix& A,
 
   if (!postproc)
   {
-    if (info > 0) dserror("Lapack algorithm syevd failed");
-    if (info < 0) dserror("Illegal value in Lapack syevd call");
+    if (info > 0) FOUR_C_THROW("Lapack algorithm syevd failed");
+    if (info < 0) FOUR_C_THROW("Illegal value in Lapack syevd call");
   }
   // if we only calculate eigenvalues/eigenvectors for postprocessing,
   // a warning might be sufficient
@@ -209,7 +209,7 @@ double CORE::LINALG::GeneralizedEigen(
   std::vector<double> rscale(N);
   std::vector<double> work0(6 * N);
   dggbal(&job, &N, a, &N, b, &N, &ILO, &IHI, lscale.data(), rscale.data(), work0.data(), &info);
-  if (info != 0) dserror("error dggbal");
+  if (info != 0) FOUR_C_THROW("error dggbal");
 
   job = 'E';
   char COMPQ = 'I';

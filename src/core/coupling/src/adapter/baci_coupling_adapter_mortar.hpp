@@ -149,28 +149,28 @@ feel free to write your own tailored Setup() method.
     //! Access to slave side mortar matrix \f$D\f$
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixD() const
     {
-      if (D_ == Teuchos::null) dserror("D Matrix is null pointer!");
+      if (D_ == Teuchos::null) FOUR_C_THROW("D Matrix is null pointer!");
       return D_;
     };
 
     //! Access to inverse of slave side mortar matrix \f$D^{-1}\f$
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixDinv() const
     {
-      if (Dinv_ == Teuchos::null) dserror("DInv Matrix is null pointer!");
+      if (Dinv_ == Teuchos::null) FOUR_C_THROW("DInv Matrix is null pointer!");
       return Dinv_;
     };
 
     //! Access to master side mortar matrix \f$M\f$
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixM() const
     {
-      if (M_ == Teuchos::null) dserror("M Matrix is null pointer!");
+      if (M_ == Teuchos::null) FOUR_C_THROW("M Matrix is null pointer!");
       return M_;
     };
 
     //! Access to mortar projection operator \f$P\f$
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixP() const
     {
-      if (P_ == Teuchos::null) dserror("P Matrix is null pointer!");
+      if (P_ == Teuchos::null) FOUR_C_THROW("P Matrix is null pointer!");
       return P_;
     };
 
@@ -312,7 +312,7 @@ feel free to write your own tailored Setup() method.
     /// check init and setup call
     virtual void CheckSetup() const
     {
-      if (!IsSetup()) dserror("Call Setup() first!");
+      if (!IsSetup()) FOUR_C_THROW("Call Setup() first!");
     }
 
    private:

@@ -64,7 +64,7 @@ namespace MAT
         CORE::LINALG::Matrix<6, 1>* linmass_disp, CORE::LINALG::Matrix<6, 1>* linmass_vel, int gp,
         int eleGID)
     {
-      dserror("Material of type %d does not support evaluation of nonlinear mass matrix",
+      FOUR_C_THROW("Material of type %d does not support evaluation of nonlinear mass matrix",
           this->MaterialType());
     }
 
@@ -79,7 +79,7 @@ namespace MAT
     virtual void StrainEnergy(
         const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID)
     {
-      dserror("Material of type %d does not support calculation of strain energy",
+      FOUR_C_THROW("Material of type %d does not support calculation of strain energy",
           this->MaterialType());
     }
 
@@ -106,7 +106,8 @@ namespace MAT
         const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
         const int gp, const int eleGID)
     {
-      dserror("Material of type %d does not support evaluation for GEMM", this->MaterialType());
+      FOUR_C_THROW(
+          "Material of type %d does not support evaluation for GEMM", this->MaterialType());
     }
 
     /*!
@@ -167,7 +168,7 @@ namespace MAT
         const double* concentration, const double* temp, double* d_cauchyndir_dT,
         CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
     {
-      dserror("EvaluateCauchyNDirAndDerivatives not implemented for material of type %d",
+      FOUR_C_THROW("EvaluateCauchyNDirAndDerivatives not implemented for material of type %d",
           this->MaterialType());
     }
 
@@ -181,7 +182,7 @@ namespace MAT
     virtual void EvaluateLinearizationOD(const CORE::LINALG::Matrix<3, 3>& defgrd,
         double concentration, CORE::LINALG::Matrix<9, 1>* d_F_dx)
     {
-      dserror(
+      FOUR_C_THROW(
           "EvaluateLinearizationOD not implemented for material of type %d", this->MaterialType());
     }
     //@}

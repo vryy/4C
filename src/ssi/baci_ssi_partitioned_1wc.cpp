@@ -98,7 +98,7 @@ void SSI::SSIPart1WC::DoScatraStep()
 
         // replace old scatra map with new map since ssi map has more dofs
         int err = phinptemp->ReplaceMap(*ScaTraField()->DofRowMap());
-        if (err) dserror("Replacing old scatra map with new scatra map in ssi failed!");
+        if (err) FOUR_C_THROW("Replacing old scatra map with new scatra map in ssi failed!");
 
         // update phinp
         ScaTraField()->Phinp()->Update(1.0, *phinptemp, 0.0);
@@ -114,7 +114,7 @@ void SSI::SSIPart1WC::DoScatraStep()
 
         // replace old scatra map with new map since ssi map has more dofs
         int err = phinptemp->ReplaceMap(*ScaTraField()->DofRowMap());
-        if (err) dserror("Replacing old scatra map with new scatra map in ssi failed!");
+        if (err) FOUR_C_THROW("Replacing old scatra map with new scatra map in ssi failed!");
 
         // update phinp
         ScaTraField()->Phinp()->Update(1.0, *phinptemp, 0.0);
@@ -204,7 +204,7 @@ void SSI::SSIPart1WCSolidToScatra::Init(const Epetra_Comm& comm,
     auto convform = CORE::UTILS::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams, "CONVFORM");
     if (convform != INPAR::SCATRA::convform_conservative)
     {
-      dserror(
+      FOUR_C_THROW(
           "If the scalar tranport problem is solved on the deforming domain, the conservative form "
           "must be "
           "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR "
@@ -223,7 +223,7 @@ void SSI::SSIPart1WCSolidToScatra::Timeloop()
 
   if (StructureField()->Dt() > ScaTraField()->Dt())
   {
-    dserror(
+    FOUR_C_THROW(
         "Timestepsize of scatra should be equal or bigger than solid timestep in solid to scatra "
         "interaction");
   }
@@ -282,7 +282,7 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
 {
   if (StructureField()->Dt() < ScaTraField()->Dt())
   {
-    dserror(
+    FOUR_C_THROW(
         "Timestepsize of solid should be equal or bigger than scatra timestep in scatra to solid "
         "interaction");
   }

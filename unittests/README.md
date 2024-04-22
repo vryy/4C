@@ -21,9 +21,9 @@ Writing a new unit test roughly works like this:
 
 ## Special topics
 
-### Testing for dserror
+### Testing for FOUR_C_THROW
 
-- In unit test executables, `dserror` is automatically replaced by a version that throws a
+- In unit test executables, `FOUR_C_THROW` is automatically replaced by a version that throws a
   `CORE::Exception`.
 - You can test for errors with `EXPECT_THROW(<code_with_error>, CORE::Exception);`
 

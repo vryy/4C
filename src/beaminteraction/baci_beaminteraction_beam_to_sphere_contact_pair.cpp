@@ -65,7 +65,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
   beam_element_ = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1());
 
   if (beam_element_ == nullptr)
-    dserror(
+    FOUR_C_THROW(
         "cast to Beam3Base failed! first element in BeamToSphereContactPair pair"
         " must be a beam element!");
 
@@ -77,7 +77,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
   sphere_element_ = dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(Element2());
 
   if (sphere_element_ == nullptr)
-    dserror(
+    FOUR_C_THROW(
         "cast to Rigidsphere failed! second element in BeamToSphereContactPair pair"
         " must be a Rigidsphere element!");
 
@@ -218,7 +218,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
         // beam centerline representation
   {
     if (numnodes != 2)
-      dserror(
+      FOUR_C_THROW(
           "BeamToSphereContactPair: Check for nodal contact only implemented for 2-noded beam "
           "elements!");
 
@@ -249,7 +249,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
             XiContact = 1.0;  // second node
             break;
           default:
-            dserror("This must not happen!");
+            FOUR_C_THROW("This must not happen!");
             break;
         }
 
@@ -364,7 +364,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Closest
     // norm is not allowed to be too small, else numerical problems occur
     if (norm_delta_x < NORMTOL)
     {
-      dserror("Contact points x1 and x2 are identical. Choose smaller time step!");
+      FOUR_C_THROW("Contact points x1 and x2 are identical. Choose smaller time step!");
     }
 
     // evaluate f at current eta
@@ -382,7 +382,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Closest
     // singular df
     if (abs(df) < COLINEARTOL)
     {
-      dserror("No solution for Closest Point Projection!");
+      FOUR_C_THROW("No solution for Closest Point Projection!");
     }
     // regular df (inversion possible)
     else
@@ -734,7 +734,8 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
         stiffmat22(i, j) += -CORE::FADUTILS::CastToDouble(stiffc2(i, dim1 + j));
     }
 #else
-    dserror("check implementation of AUTOMATICDIFF for BeamToSphereContactPair before using it!");
+    FOUR_C_THROW(
+        "check implementation of AUTOMATICDIFF for BeamToSphereContactPair before using it!");
 
     for (unsigned int j = 0; j < dim1 + dim2; j++)
     {
@@ -747,7 +748,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     }
 
 #ifdef FADCHECKS
-    dserror("check implementation of FADCHECKS for BeamToSphereContactPair before using it!");
+    FOUR_C_THROW("check implementation of FADCHECKS for BeamToSphereContactPair before using it!");
 
     std::cout << "BTSPH Contact Pair: " << Element1()->Id() << " / " << Element2()->Id()
               << std::endl;
@@ -812,7 +813,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
 
   // compute length of normal
   norm = CORE::FADUTILS::VectorNorm<3>(normal);
-  if (norm < NORMTOL) dserror("ERROR: Normal of length zero! --> change time step!");
+  if (norm < NORMTOL) FOUR_C_THROW("ERROR: Normal of length zero! --> change time step!");
 
   // compute unit normal and store it in class variable
   for (unsigned int i = 0; i < 3; i++)
@@ -920,7 +921,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::GetShap
     CORE::FE::shape_function_hermite_1D_deriv2(N1_i_xixi, eta, beamele_reflength_, distype1herm);
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents) "
         "values are valid!");
 
@@ -953,7 +954,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Compute
     L += dx1(i) * dx1(i) + delta_x(i) * ddx1(i);
   }
 
-  if (L == 0) dserror("ERROR: L = 0");
+  if (L == 0) FOUR_C_THROW("ERROR: L = 0");
 
 
   for (unsigned int i = 0; i < 3; ++i)
@@ -1113,11 +1114,11 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ResetSt
     const std::vector<double>& centerline_dofvec_ele2)
 {
   if (centerline_dofvec_ele1.size() != 3 * numnodes * numnodalvalues)
-    dserror("size mismatch! expected %d values for centerline_dofvec_ele1, but got %d",
+    FOUR_C_THROW("size mismatch! expected %d values for centerline_dofvec_ele1, but got %d",
         3 * numnodes * numnodalvalues, centerline_dofvec_ele1.size());
 
   if (centerline_dofvec_ele2.size() != 3)
-    dserror("size mismatch! expected %d values for centerline_dofvec_ele2, but got %d", 3,
+    FOUR_C_THROW("size mismatch! expected %d values for centerline_dofvec_ele2, but got %d", 3,
         centerline_dofvec_ele1.size());
 
   for (unsigned int i = 0; i < 3 * numnodalvalues * numnodalvalues; ++i)

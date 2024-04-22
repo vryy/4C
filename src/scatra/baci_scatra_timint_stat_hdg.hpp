@@ -36,7 +36,7 @@ namespace SCATRA
     /// routine to return time integration specific parameters
     Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList() override
     {
-      dserror("Not yet implemented!");
+      FOUR_C_THROW("Not yet implemented!");
       return Teuchos::null;
     }
 
@@ -63,14 +63,14 @@ namespace SCATRA
     /// dynamic Smagorinsky model
     void DynamicComputationOfCs() override
     {
-      dserror("no turbulence in stationary flows!");
+      FOUR_C_THROW("no turbulence in stationary flows!");
       return;
     };
 
     /// dynamic Vreman model
     void DynamicComputationOfCv() override
     {
-      dserror("no turbulence in stationary flows!");
+      FOUR_C_THROW("no turbulence in stationary flows!");
       return;
     };
 

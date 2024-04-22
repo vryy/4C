@@ -46,7 +46,7 @@ void MAT::ELASTIC::IsoExpoPow::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>
   const double expf = std::exp(k2 * std::pow(modinv(0) - 3., (double)d));
 
   if (d < 1)
-    dserror(
+    FOUR_C_THROW(
         "The Elast_IsoExpoPow - material only works for positive integer exponents (C) larger than "
         "one.");
 

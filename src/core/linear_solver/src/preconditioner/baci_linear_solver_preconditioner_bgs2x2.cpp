@@ -58,7 +58,7 @@ CORE::LINALG::BgS2x2Operator::BgS2x2Operator(Teuchos::RCP<Epetra_Operator> A,
   }
   else
   {
-    dserror("BGS2x2: provided operator is not a BlockSparseMatrix!");
+    FOUR_C_THROW("BGS2x2: provided operator is not a BlockSparseMatrix!");
   }
 
   SetupBlockPreconditioners();

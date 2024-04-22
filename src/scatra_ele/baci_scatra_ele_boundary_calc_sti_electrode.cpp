@@ -75,7 +75,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluat
   Teuchos::RCP<const MAT::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material(1));
   if ((matsoret == Teuchos::null and matfourier == Teuchos::null) or matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluat
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs() * fac;
-    if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     EvaluateS2ICouplingAtIntegrationPoint<distype>(matelectrode, my::ephinp_[0], emastertemp,
         eelchnp_, emasterscatra, pseudo_contact_fac, my::funct_, my::funct_,
@@ -156,7 +156,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
   // interface
   const double eslavetempint = funct_slave.Dot(eslavetempnp);
   const double emastertempint = funct_master.Dot(emastertempnp);
-  if (eslavetempint <= 0.) dserror("Temperature is non-positive!");
+  if (eslavetempint <= 0.) FOUR_C_THROW("Temperature is non-positive!");
   const double eslavephiint = funct_slave.Dot(eslavephinp[0]);
   const double eslavepotint = funct_slave.Dot(eslavephinp[1]);
   const double emasterphiint = funct_master.Dot(emasterphinp[0]);
@@ -303,7 +303,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
 
     default:
     {
-      dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
+      FOUR_C_THROW("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
     }
   }
 }
@@ -324,7 +324,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluat
   Teuchos::RCP<const MAT::Electrode> matelectrode =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material(1));
   if ((matsoret == Teuchos::null and matfourier == Teuchos::null) or matelectrode == Teuchos::null)
-    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+    FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
@@ -368,7 +368,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluat
 
     // evaluate overall integration factor
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
-    if (timefacfac < 0.0) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
 
@@ -424,7 +424,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
   // evaluate dof values at current integration point on present and opposite side of scatra-scatra
   // interface
   const double eslavetempint = funct_slave.Dot(eslavetempnp);
-  if (eslavetempint <= 0.0) dserror("Temperature is non-positive!");
+  if (eslavetempint <= 0.0) FOUR_C_THROW("Temperature is non-positive!");
   const double emastertempint = funct_master.Dot(emastertempnp);
   const double eslavephiint = funct_slave.Dot(eslavephinp[0]);
   const double eslavepotint = funct_slave.Dot(eslavephinp[1]);
@@ -524,7 +524,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
         }
         default:
         {
-          dserror("Unknown primary quantity to calculate derivative");
+          FOUR_C_THROW("Unknown primary quantity to calculate derivative");
         }
       }
       break;
@@ -687,7 +687,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
         }
         default:
         {
-          dserror("Unknown type of primary variable");
+          FOUR_C_THROW("Unknown type of primary variable");
         }
       }
       break;
@@ -702,7 +702,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
 
     default:
     {
-      dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
+      FOUR_C_THROW("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
     }
   }
 }

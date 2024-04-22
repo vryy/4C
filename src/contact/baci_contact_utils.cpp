@@ -39,7 +39,7 @@ int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& contact_c
    * contact problem! */
   if (contact_conditions.size() < 1)
   {
-    if (throw_error) dserror("Not enough contact conditions in discretization");
+    if (throw_error) FOUR_C_THROW("Not enough contact conditions in discretization");
     return -1;
   }
   if (contact_conditions.size() == 1)
@@ -47,7 +47,7 @@ int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& contact_c
     const auto* side = contact_conditions[0]->Get<std::string>("Side");
     if (*side != "Selfcontact")
     {
-      if (throw_error) dserror("Not enough contact conditions in discretization");
+      if (throw_error) FOUR_C_THROW("Not enough contact conditions in discretization");
       return -2;
     }
   }
@@ -112,7 +112,7 @@ void CONTACT::UTILS::GetContactConditionGroups(
     }
 
     // now we should have found a group of conditions
-    if (!foundit) dserror("Cannot find matching contact condition for id %i", groupid1);
+    if (!foundit) FOUR_C_THROW("Cannot find matching contact condition for id %i", groupid1);
 
     // see whether we found this group before
     bool foundbefore = false;
@@ -175,11 +175,11 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vec
       isself[j] = true;
     }
     else
-      dserror("Unknown contact side qualifier!");
+      FOUR_C_THROW("Unknown contact side qualifier!");
   }
 
-  if (!hasslave) dserror("Slave side missing in contact condition group!");
-  if (!hasmaster) dserror("Master side missing in contact condition group!");
+  if (!hasslave) FOUR_C_THROW("Slave side missing in contact condition group!");
+  if (!hasmaster) FOUR_C_THROW("Master side missing in contact condition group!");
 
   // check for self contact group
   if (hasself)
@@ -188,7 +188,7 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vec
     {
       if (!j)
       {
-        dserror(
+        FOUR_C_THROW(
             "ERROR: Inconsistent definition of self contact condition group! You defined one "
             "condition as 'Selfcontact' condition. So all other contact conditions with same ID "
             "need to be defined as 'Selfcontact' as well!");
@@ -220,27 +220,27 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
       else if (*active[j] == "Inactive")
         isactive[j] = false;
       else
-        dserror("Unknown contact init qualifier!");
+        FOUR_C_THROW("Unknown contact init qualifier!");
     }
     else if (isself[j])
     {
       // self contact surf must NOT be initialized as "Active" as this makes no sense
       if (*active[j] == "Active")
-        dserror("Selfcontact surface cannot be active!");
+        FOUR_C_THROW("Selfcontact surface cannot be active!");
       else if (*active[j] == "Inactive")
         isactive[j] = false;
       else
-        dserror("Unknown contact init qualifier!");
+        FOUR_C_THROW("Unknown contact init qualifier!");
     }
     else
     {
       // master sides must NOT be initialized as "Active" as this makes no sense
       if (*active[j] == "Active")
-        dserror("Master side cannot be active!");
+        FOUR_C_THROW("Master side cannot be active!");
       else if (*active[j] == "Inactive")
         isactive[j] = false;
       else
-        dserror("Unknown contact init qualifier!");
+        FOUR_C_THROW("Unknown contact init qualifier!");
     }
 
     // check for two half pass approach
@@ -272,7 +272,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
     {
       if (!is_two_half_pass)
       {
-        dserror(
+        FOUR_C_THROW(
             "ERROR: Inconsistent definition of contact condition group! You set the 'TwoHalfPass' "
             "to true for at least one condition. So all other contact conditions with same ID need "
             "to be defined accordingly!");
@@ -283,14 +283,14 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
     {
       if (!isself[j])
       {
-        dserror(
+        FOUR_C_THROW(
             "Setting 'TwoHalfPass' to true is only reasonable in combination with self contact so "
             "far!");
       }
 
       if (Check_nonsmooth_selfcontactsurface && (!check_nonsmooth_selfcontactsurface[j]))
       {
-        dserror(
+        FOUR_C_THROW(
             "ERROR: Inconsistent definition of contact condition group! You set the "
             "'RefConfCheckNonSmoothSelfContactSurface' to true for at least one condition. So all "
             "other contact conditions with same ID need to be defined accordingly!");
@@ -301,21 +301,22 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
         (problemtype != GLOBAL::ProblemType::fsi_xfem) and
         (problemtype != GLOBAL::ProblemType::fpsi_xfem) and
         (problemtype != GLOBAL::ProblemType::ssi))
-      dserror("two half pass algorithm only implemented in structural, fsi/fpsi and ssi problems");
+      FOUR_C_THROW(
+          "two half pass algorithm only implemented in structural, fsi/fpsi and ssi problems");
     if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
         INPAR::CONTACT::solution_nitsche)
-      dserror("two half pass algorithm only with nitsche contact formulation");
+      FOUR_C_THROW("two half pass algorithm only with nitsche contact formulation");
     if (CORE::UTILS::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
             contact, "NITSCHE_WEIGHTING") != INPAR::CONTACT::NitWgt_harmonic)
-      dserror("two half pass algorithm only with harmonic weighting");
+      FOUR_C_THROW("two half pass algorithm only with harmonic weighting");
   }
 
   if (!Two_half_pass && problemtype == GLOBAL::ProblemType::fsi_xfem)
-    dserror("Nitsche FSI with Contact requires Two_half_pass which is not set!");
+    FOUR_C_THROW("Nitsche FSI with Contact requires Two_half_pass which is not set!");
 
   if ((!Two_half_pass) && Check_nonsmooth_selfcontactsurface)
   {
-    dserror(
+    FOUR_C_THROW(
         "ERROR: 'RefConfCheckNonSmoothSelfContactSurface' is activated, which is only reasonable "
         "for non-smooth self contact surfaces in combination with the two half pass 'TwoHalfPass' "
         "approach so far!");
@@ -324,7 +325,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
   if (Two_half_pass && (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(
                             mortar, "ALGORITHM") != INPAR::MORTAR::algorithm_gpts))
   {
-    dserror(
+    FOUR_C_THROW(
         "ERROR: You activated the two half pass 'TwoHalfPass' approach, but the 'MORTAR COUPLING' "
         "Algorithm is NOT 'GPTS'!");
   }
@@ -333,7 +334,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
   if (Check_nonsmooth_selfcontactsurface &&
       (!CORE::UTILS::IntegralValue<int>(contact, "NONSMOOTH_CONTACT_SURFACE")))
   {
-    dserror(
+    FOUR_C_THROW(
         "ERROR: You activated the self contact condition reference configuration check for "
         "non-smooth contact surfaces, but flag 'NONSMOOTH_CONTACT_SURFACE' in the 'CONTACT "
         "DYNAMIC' section is not true!");
@@ -387,7 +388,8 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
 
   std::ofstream of(full_filepath, std::ios_base::out | std::ios_base::app);
 
-  if (conservation_data.numRows() < 18) dserror("The conservation_data has insufficient size!");
+  if (conservation_data.numRows() < 18)
+    FOUR_C_THROW("The conservation_data has insufficient size!");
 
   of << std::setw(24) << nln_iter << std::setw(24) << interface_id;
   of << std::setprecision(16);
@@ -440,7 +442,7 @@ void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodesAndElements(
           break;
         }
         default:
-          dserror("Unknown dbc_handlin enum %d", dbc_handling);
+          FOUR_C_THROW("Unknown dbc_handlin enum %d", dbc_handling);
           exit(EXIT_FAILURE);
       }
     }

@@ -20,7 +20,7 @@ int CONSTRAINTS::ConstraintDofSet::AssignDegreesOfFreedom(
     const Teuchos::RCP<DRT::Discretization> dis, const int ndofs, const int start)
 {
   // A definite offset is currently not supported.
-  if (start != 0) dserror("right now user specified dof offsets are not supported");
+  if (start != 0) FOUR_C_THROW("right now user specified dof offsets are not supported");
 
   // Add DofSets in order of assignment to list. Once it is there it has its
   // place and will get its starting id from the previous DofSet.

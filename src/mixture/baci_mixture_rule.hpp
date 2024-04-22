@@ -77,7 +77,7 @@ namespace MIXTURE
       /// Override this method and throw error, as only the CreateRule() should be used.
       Teuchos::RCP<MAT::Material> CreateMaterial() final
       {
-        dserror("Cannot create mixture rule from this method. Use CreateRule() instead.");
+        FOUR_C_THROW("Cannot create mixture rule from this method. Use CreateRule() instead.");
         return Teuchos::null;
       }
 
@@ -233,7 +233,7 @@ namespace MIXTURE
      */
     virtual double ReturnMassDensity() const
     {
-      dserror("Rule does not provide the evaluation of a material mass density.");
+      FOUR_C_THROW("Rule does not provide the evaluation of a material mass density.");
       return 0;
     }
 

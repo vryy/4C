@@ -50,7 +50,7 @@ namespace MAT::FLUIDPORO
       structure_tensor.Scale(1. / square_length);
     }
     else
-      dserror("Check for a zero direction vector");
+      FOUR_C_THROW("Check for a zero direction vector");
   }
 
   /*!
@@ -193,8 +193,8 @@ namespace MAT::FLUIDPORO
       const double viscosity = params_->viscosity_;
       const double permeability = params_->permeability_;
 
-      if (viscosity <= 0.0) dserror("zero or negative viscosity");
-      if (permeability <= 0.0) dserror("zero or negative permeability");
+      if (viscosity <= 0.0) FOUR_C_THROW("zero or negative viscosity");
+      if (permeability <= 0.0) FOUR_C_THROW("zero or negative permeability");
 
       // trace of the reaction tensor divided by the dimension
       const double reacoeff = viscosity / permeability;
@@ -350,9 +350,9 @@ namespace MAT::FLUIDPORO
       const double permeability = params_->permeability_;
       const double axial_permeability = params_->axial_permeability_;
 
-      if (viscosity <= 0.0) dserror("zero or negative viscosity");
-      if (permeability <= 0.0) dserror("zero or negative permeability");
-      if (axial_permeability <= 0.0) dserror("zero or negative axial permeability");
+      if (viscosity <= 0.0) FOUR_C_THROW("zero or negative viscosity");
+      if (permeability <= 0.0) FOUR_C_THROW("zero or negative permeability");
+      if (axial_permeability <= 0.0) FOUR_C_THROW("zero or negative axial permeability");
 
       // trace of the 3D reaction tensor divided by 3 (even if the problem is in 2D)
       const double reacoeff = viscosity / 3. * (1. / axial_permeability + 2. / permeability);
@@ -406,11 +406,11 @@ namespace MAT::FLUIDPORO
       const double permeability = params_->permeability_;
       const double axial_permeability = params_->axial_permeability_;
 
-      if (dynamic_viscosity <= 0.0) dserror("zero or negative viscosity");
-      if (permeability <= 0.0) dserror("zero or negative permeability");
-      if (axial_permeability <= 0.0) dserror("zero or negative axial permeability");
+      if (dynamic_viscosity <= 0.0) FOUR_C_THROW("zero or negative viscosity");
+      if (permeability <= 0.0) FOUR_C_THROW("zero or negative permeability");
+      if (axial_permeability <= 0.0) FOUR_C_THROW("zero or negative axial permeability");
       if (anisotropic_permeability_directions.empty())
-        dserror("orthotropy directions not specified");
+        FOUR_C_THROW("orthotropy directions not specified");
 
       reaction_tensor.Clear();
 
@@ -450,10 +450,10 @@ namespace MAT::FLUIDPORO
       const double viscosity = params_->viscosity_;
       const std::vector<double> orthotropic_permeabilities = params_->orthotropic_permeabilities_;
 
-      if (viscosity <= 0.0) dserror("zero or negative viscosity");
+      if (viscosity <= 0.0) FOUR_C_THROW("zero or negative viscosity");
       for (int dim = 0; dim < 3; ++dim)
         if (orthotropic_permeabilities[dim] <= 0.0)
-          dserror("zero or negative permeability in direction " + std::to_string(dim + 1));
+          FOUR_C_THROW("zero or negative permeability in direction " + std::to_string(dim + 1));
 
       // trace of the reaction tensor divided by 3
       const double reacoeff =
@@ -470,7 +470,7 @@ namespace MAT::FLUIDPORO
         const std::vector<std::vector<double>>& anisotropic_permeability_directions,
         [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const override
     {
-      dserror("Use transverse isotropy in 2D!");
+      FOUR_C_THROW("Use transverse isotropy in 2D!");
     };
 
     //! compute reaction tensor for constant material orthotropy - 3D
@@ -482,12 +482,12 @@ namespace MAT::FLUIDPORO
       const double dynamic_viscosity = params_->viscosity_;
       const std::vector<double> orthotropic_permeabilities = params_->orthotropic_permeabilities_;
 
-      if (dynamic_viscosity <= 0.0) dserror("zero or negative viscosity");
+      if (dynamic_viscosity <= 0.0) FOUR_C_THROW("zero or negative viscosity");
       for (int dim = 0; dim < 3; ++dim)
         if (orthotropic_permeabilities[dim] <= 0.0)
-          dserror("zero or negative permeability in direction " + std::to_string(dim + 1));
+          FOUR_C_THROW("zero or negative permeability in direction " + std::to_string(dim + 1));
       if (anisotropic_permeability_directions.empty())
-        dserror("orthotropy directions not specified");
+        FOUR_C_THROW("orthotropy directions not specified");
 
       reaction_tensor.Clear();
 
@@ -511,7 +511,7 @@ namespace MAT::FLUIDPORO
         const double& porosity) const override
     {
       // constant material orthotropy in 2D is not allowed
-      dserror("Use transverse isotropy in 2D!");
+      FOUR_C_THROW("Use transverse isotropy in 2D!");
     };
   };
 
@@ -542,8 +542,8 @@ namespace MAT::FLUIDPORO
       const double viscosity = params_->viscosity_;
       const double permeability = params_->permeability_;
 
-      if (viscosity <= 0.0) dserror("zero or negative viscosity");
-      if (permeability <= 0.0) dserror("zero or negative permeability");
+      if (viscosity <= 0.0) FOUR_C_THROW("zero or negative viscosity");
+      if (permeability <= 0.0) FOUR_C_THROW("zero or negative permeability");
 
       // reaction coefficient computed with the base permeability as a good approximation
       const double reacoeff = viscosity / permeability;
@@ -596,11 +596,12 @@ namespace MAT::FLUIDPORO
       const double dynamic_viscosity = params_->viscosity_;
       const double permeability = params_->permeability_;
 
-      if (dynamic_viscosity <= 0.0) dserror("zero or negative viscosity");
-      if (permeability <= 0.0) dserror("zero or negative permeability");
+      if (dynamic_viscosity <= 0.0) FOUR_C_THROW("zero or negative viscosity");
+      if (permeability <= 0.0) FOUR_C_THROW("zero or negative permeability");
       if (anisotropic_permeability_directions.empty())
-        dserror("orthotropy directions not specified");
-      if (anisotropic_permeability_coeffs.empty()) dserror("orthotropy coefficients not specified");
+        FOUR_C_THROW("orthotropy directions not specified");
+      if (anisotropic_permeability_coeffs.empty())
+        FOUR_C_THROW("orthotropy coefficients not specified");
 
       reaction_tensor.Clear();
 
@@ -675,7 +676,7 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
   else if (*pfuncstring == "Const_Material_Nodal_Orthotropy")
     permeability_func_ = MAT::PAR::const_material_nodal_orthotropic;
   else
-    dserror("Unknown permeability function: %s", pfuncstring->c_str());
+    FOUR_C_THROW("Unknown permeability function: %s", pfuncstring->c_str());
 
   orthotropic_permeabilities_.resize(3, 0.0);
   if (permeability_func_ == MAT::PAR::const_material_orthotropic)
@@ -758,7 +759,7 @@ void MAT::FluidPoro::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoro*>(mat);
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
   }
@@ -766,7 +767,8 @@ void MAT::FluidPoro::Unpack(const std::vector<char>& data)
   // Only execute if not in post-process mode
   if (params_ != nullptr) anisotropy_strategy_ = MAT::FLUIDPORO::CreateAnisotropyStrategy(params_);
 
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 double MAT::FluidPoro::ComputeReactionCoeff() const
@@ -813,7 +815,7 @@ double MAT::FluidPoro::EffectiveViscosity() const
   else if (Type() == PAR::darcy_brinkman)
     viscosity = Viscosity();
   else
-    dserror("Unknown flow type for porous flow");
+    FOUR_C_THROW("Unknown flow type for porous flow");
 
   return viscosity;
 }

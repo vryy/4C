@@ -47,8 +47,8 @@ bool CORE::GEO::CUT::COLOREDGRAPH::ForkFinder::operator()(
 // add connection in the graph
 void CORE::GEO::CUT::COLOREDGRAPH::Graph::Add(int row, int col)
 {
-  if (row >= color_split_ and col >= color_split_) dserror("two lines connected");
-  if (row < color_split_ and col < color_split_) dserror("two facets connected");
+  if (row >= color_split_ and col >= color_split_) FOUR_C_THROW("two lines connected");
+  if (row < color_split_ and col < color_split_) FOUR_C_THROW("two facets connected");
   graph_[row].insert(col);
   graph_[col].insert(row);
 }
@@ -147,8 +147,8 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::TestClosed()
       // In such situations, geometrically two separate volumecells can't be formed
       // Check your cut_mesh from cut_mesh*.pos
       // -------------------------------------------------------------------
-      dserror("open point in colored graph ( facet-id = %d )", i->first);
-      dserror("open point in colored graph");
+      FOUR_C_THROW("open point in colored graph ( facet-id = %d )", i->first);
+      FOUR_C_THROW("open point in colored graph");
     }
   }
 }
@@ -164,7 +164,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::TestFacets()
       plain_int_set& row = i->second;
       if (row.size() < 3)
       {
-        dserror("facets need at least three lines");
+        FOUR_C_THROW("facets need at least three lines");
       }
     }
   }
@@ -207,7 +207,7 @@ namespace CORE::GEO
           int facet = *i;
           if (facet >= graph.Split())
           {
-            dserror("no free facet but free lines");
+            FOUR_C_THROW("no free facet but free lines");
           }
           plain_int_set& row = graph[facet];
           // check if this facet visited connected lines to it
@@ -221,7 +221,7 @@ namespace CORE::GEO
             }
           }
         }
-        dserror("empty free set");
+        FOUR_C_THROW("empty free set");
       }
 
       bool IsValidFacet(plain_int_set& row, const std::vector<int>& visited)
@@ -231,8 +231,8 @@ namespace CORE::GEO
           // if it is visited more than once
           if (visited[line] >= 2)
           {
-            // dserror("Invalid facet!");
-            dserror("Invalid facet");
+            // FOUR_C_THROW("Invalid facet!");
+            FOUR_C_THROW("Invalid facet");
             return false;
           }
         }
@@ -245,10 +245,10 @@ namespace CORE::GEO
         // mark facet and lines
         if (facet >= used.Split())  // means this is a line
         {
-          dserror("This should not happen");
+          FOUR_C_THROW("This should not happen");
         }
         visited[facet] += 1;
-        if (visited[facet] > 1) dserror("facet visited more than once");
+        if (visited[facet] > 1) FOUR_C_THROW("facet visited more than once");
         // iterate over lines connected to this facet
         for (const int& line : row)
         {
@@ -262,7 +262,7 @@ namespace CORE::GEO
           // visit it
           visited[line] += 1;
           // was visited by more than two facets
-          if (visited[line] > 2) dserror("too many facets at line");
+          if (visited[line] > 2) FOUR_C_THROW("too many facets at line");
         }
       }
 
@@ -281,10 +281,10 @@ namespace CORE::GEO
               num_split_lines += 1;
           }
           visited[line] -= 1;
-          if (visited[line] < 0) dserror("too few facets at line");
+          if (visited[line] < 0) FOUR_C_THROW("too few facets at line");
         }
         visited[facet] -= 1;
-        if (visited[facet] < 0) dserror("facet left more than once");
+        if (visited[facet] < 0) FOUR_C_THROW("facet left more than once");
       }
 
       bool VisitFacetDFS(Graph& graph, Graph& used, plain_int_set& free, int facet,
@@ -342,7 +342,7 @@ namespace CORE::GEO
                   // otherwise throw error, we could not find what lines split the volume
                   if (split_trace.size() == 0)
                   {
-                    dserror("no split trace");
+                    FOUR_C_THROW("no split trace");
                   }
 
                   return true;
@@ -449,7 +449,7 @@ namespace CORE::GEO
             }
           }
           filevisited.close();
-          dserror("");
+          FOUR_C_THROW("");
         }
         return false;
       }
@@ -468,7 +468,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets(Graph& graph, Graph& us
 
   if (not VisitFacetDFS(graph, used, free, free_facet, all_lines, visited, split_trace))
   {
-    dserror("Failed to find volume split. DFS search failed");
+    FOUR_C_THROW("Failed to find volume split. DFS search failed");
   }
 
   // iterate over all facets that are visited and check ( only internal should be visited )
@@ -489,7 +489,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets(Graph& graph, Graph& us
     }
     else if (*i > 1)
     {
-      dserror("same facet was visited twice");
+      FOUR_C_THROW("same facet was visited twice");
     }
   }
 }
@@ -541,7 +541,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::SplitSplittrace(const std::vector<int>
     int line_id = *it;
     if (line_id < Split())
     {
-      dserror("Only lines are allowed in the split trace!");
+      FOUR_C_THROW("Only lines are allowed in the split trace!");
     }
     else
     {
@@ -606,7 +606,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::SplitSplittrace(const std::vector<int>
         }
         else
         {
-          dserror(
+          FOUR_C_THROW(
               "Unknown case of the line in split trace connected to %d lines at the same time"
               "It should be 2",
               connected_lines.size());
@@ -669,7 +669,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
   if (facet_row->size() != 2)
   {
     // This might happen and it might be a valid split. How to deal with it?
-    dserror("expect two facets at line");
+    FOUR_C_THROW("expect two facets at line");
   }
 
   plain_int_set::iterator facet_it = facet_row->begin();
@@ -695,7 +695,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
 
     unsigned int n_components = isolated_components.size();
     if (n_components == 1)
-      dserror(
+      FOUR_C_THROW(
           "Number of isolated components of the split trace is, but graph is open anyway. Check "
           "this case");
     else if (n_components > 2)
@@ -730,7 +730,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
       }
       else
       {
-        dserror("open line after graph split");
+        FOUR_C_THROW("open line after graph split");
       }
 
       if (open_cycle != nullptr)
@@ -750,14 +750,14 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
         }
 
         if (c_it == isolated_components.end())
-          dserror(
+          FOUR_C_THROW(
               "Could not find isolated component of the split trace where line belongs to. Check "
               "this case");
 
         const std::vector<int>& isolated_split_trace = *c_it;
 
         plain_int_set& facet_row = at(line);
-        if (facet_row.size() != 2) dserror("Expect two facets at line");
+        if (facet_row.size() != 2) FOUR_C_THROW("Expect two facets at line");
         plain_int_set::iterator i = facet_row.begin();
         int f1 = *i;
         ++i;
@@ -773,7 +773,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
         }
         else
         {
-          dserror("Could fill found the seed facet for cycle creation");
+          FOUR_C_THROW("Could fill found the seed facet for cycle creation");
         }
       }
     }
@@ -873,7 +873,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& use
 
           // this is happens when after finding split trace, both division along it produces same
           // cycles
-          dserror("bad luck");
+          FOUR_C_THROW("bad luck");
 
           cycles_.erase(*ilist);
           found = true;
@@ -889,7 +889,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& use
           if (f >= c().Split()) break;
           if (connection.count(f) == 0 and c1.count(f) > 0 and c2.count(f) > 0)
           {
-            dserror("not a valid split");
+            FOUR_C_THROW("not a valid split");
           }
         }
 
@@ -903,7 +903,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::CycleList::AddPoints(Graph& graph, Graph& use
     }
     if (not found)
     {
-      dserror("did not find volume that contains split facets");
+      FOUR_C_THROW("did not find volume that contains split facets");
     }
   }
 }

@@ -95,7 +95,7 @@ namespace ART
     )
     {
       // each artery integration should overwrite this if used
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
     }
 
 
@@ -106,14 +106,14 @@ namespace ART
     void PrepareLinearSolve() override
     {
       // each artery integration should overwrite this if used
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
     }
 
     /// setup the variables to do a new time step
     void AssembleMatAndRHS() override
     {
       // each artery integration should overwrite this if used
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
     }
 
     /// direct access to system matrix
@@ -129,7 +129,7 @@ namespace ART
     void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc) override
     {
       // each artery integration should overwrite this if used
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       return;
     }
 
@@ -137,7 +137,7 @@ namespace ART
     Teuchos::RCP<const Epetra_Vector> Pressurenp() const override
     {
       // each artery integration should overwrite this if used
-      dserror("not implemented");
+      FOUR_C_THROW("not implemented");
       return Teuchos::null;
     }
     /*!

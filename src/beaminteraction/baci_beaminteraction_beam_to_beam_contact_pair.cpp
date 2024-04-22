@@ -124,13 +124,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
   double l2 = ele2ptr->RefLength();
 
   if (Element1()->ElementType() != Element2()->ElementType())
-    dserror(
+    FOUR_C_THROW(
         "The class BeamToBeamContactPair only works for contact pairs of the same beam element "
         "type!");
 
   if (Element1()->Id() >= Element2()->Id())
   {
-    dserror(
+    FOUR_C_THROW(
         "Element 1 has to have the smaller element-ID. Ele1GID: %d, Ele2GID: %d. Adapt your "
         "contact search!",
         Element1()->Id(), Element2()->Id());
@@ -142,7 +142,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
 
   if (Params()->BeamToBeamContactParams()->GapShift() != 0.0 and
       Params()->BeamToBeamContactParams()->PenaltyLaw() != INPAR::BEAMCONTACT::pl_lpqp)
-    dserror("BEAMS_GAPSHIFTPARAM only possible for penalty law LinPosQuadPen!");
+    FOUR_C_THROW("BEAMS_GAPSHIFTPARAM only possible for penalty law LinPosQuadPen!");
 
   double perpshiftangle1 = Params()->BeamToBeamContactParams()->BeamToBeamPerpShiftingAngle1();
   double parshiftangle2 = Params()->BeamToBeamContactParams()->BeamToBeamPerpShiftingAngle2();
@@ -154,7 +154,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
   //  //Check, if a unique closest point solution can be guaranteed for angles alpha >
   //  BEAMS_PERPSHIFTANGLE1 if((perpshiftangle1<acos(1.0-2*MAXCROSSSECTIONTOCURVATURE)) and
   //  !beamsdebug)
-  //    dserror("Choose larger shifting angle BEAMS_PERPSHIFTANGLE1 in order to enable a unique
+  //    FOUR_C_THROW("Choose larger shifting angle BEAMS_PERPSHIFTANGLE1 in order to enable a unique
   //    CPP!");
 
   double segangle = Params()->BeamToBeamContactParams()->SegmentationAngle();
@@ -180,17 +180,17 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
   //  double deltal1=1.5*l1/(intintervals*gausspoints.nquad);
 
   if (l2 + 1.0e-8 < l1 / intintervals)
-    dserror(
+    FOUR_C_THROW(
         "Length of second (master) beam has to be larger than length of one integration interval "
         "on first (slave) beam!");
 
-  if (gausspoints.nquad > 10) dserror("So far, not more than 10 Gauss points are allowed!");
+  if (gausspoints.nquad > 10) FOUR_C_THROW("So far, not more than 10 Gauss points are allowed!");
 
   // TODO We have not considered the factor of 4 occurring in the formula of maximal Gauss point
   // distance, therefore we have an additional safety factor here...
   // TODO!!!!
   //  if((deltal1>R1_/sin(parshiftangle2)) and !beamsdebug)
-  //    dserror("Not enough Gauss points crossing of beams possible!!!");
+  //    FOUR_C_THROW("Not enough Gauss points crossing of beams possible!!!");
 
 
   issetup_ = true;
@@ -644,7 +644,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
           }
           else  // This can only happen, if both beams are exactly perpendicular AND the master beam
                 // endpoint projects perpendicular on the slave beam!
-            dserror("The very unlikely case orientation==0 is not implemented so far!");
+            FOUR_C_THROW("The very unlikely case orientation==0 is not implemented so far!");
         }
       }
     }
@@ -698,7 +698,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
           if (orientation > 0)  // left boundary
           {
             if (leftsolutionwithinsegment)
-              dserror(
+              FOUR_C_THROW(
                   "Something went wrong here: both boundary nodes of the master beam (discretized "
                   "by one finite element?!?) are prejected as left boundary of the integration "
                   "segment!");
@@ -714,7 +714,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
           else if (orientation < 0)  // right boundary
           {
             if (rightsolutionwithinsegment)
-              dserror(
+              FOUR_C_THROW(
                   "Something went wrong here: both boundary nodes of the master beam (discretized "
                   "by one finite element?!?) are prejected as right boundary of the integration "
                   "segment!");
@@ -729,13 +729,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
           }
           else  // This can only happen, if both beams are exactly perpendicular AND the master beam
                 // endpoint projects perpendicular on the slave beam!
-            dserror("The very unlikely case orientation==0 is not implemented so far!");
+            FOUR_C_THROW("The very unlikely case orientation==0 is not implemented so far!");
         }
       }
     }
   }
   if (leftsolutionwithinsegment and rightsolutionwithinsegment and imin == imax)
-    dserror(
+    FOUR_C_THROW(
         "It is not possible to cut an integration interval from both sides, choose a larger value "
         "intintervals!");
 #endif
@@ -881,7 +881,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
                 const double parallel_pp =
                     Params()->BeamToBeamContactParams()->BeamToBeamLinePenaltyParam();
 
-                if (parallel_pp < 0.0) dserror("BEAMS_BTBLINEPENALTYPARAM not set!");
+                if (parallel_pp < 0.0) FOUR_C_THROW("BEAMS_BTBLINEPENALTYPARAM not set!");
 
                 // Create data container for each Gauss point (in case of small-angle contact the
                 // number of the Gauss point [numgp] and the number of the integration interval
@@ -903,7 +903,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
 #ifdef ENDPOINTSEGMENTATION
   if (iminmax == nullptr or leftrightsolutionwithinsegment == nullptr or
       eta1_leftrightboundary == nullptr)
-    dserror("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
+    FOUR_C_THROW("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
 
   *iminmax = std::make_pair(imin, imax);
   *leftrightsolutionwithinsegment =
@@ -932,7 +932,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 
   if (iminmax == nullptr or leftrightsolutionwithinsegment == nullptr or
       eta1_leftrightboundary == nullptr)
-    dserror("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
+    FOUR_C_THROW("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
 
   int imin = (*iminmax).first;
   int imax = (*iminmax).second;
@@ -1489,7 +1489,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPenal
     }
     case INPAR::BEAMCONTACT::pl_lnqp:  // quadratic regularization for negative gaps
     {
-      if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+      if (g0 == -1.0)
+        FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
       if (gap > -g0)
       {
@@ -1508,7 +1509,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPenal
     }
     case INPAR::BEAMCONTACT::pl_lpqp:  // quadratic regularization for positiv gaps
     {
-      if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+      if (g0 == -1.0)
+        FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
       // Parameter to shift penalty law
       double gbar = Params()->BeamToBeamContactParams()->GapShift();
@@ -1538,11 +1540,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPenal
     }
     case INPAR::BEAMCONTACT::pl_lpcp:  // cubic regularization for positive gaps
     {
-      if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+      if (g0 == -1.0)
+        FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
       // Third parameter for contact force regularization
       double c0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationC0();
-      if (c0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
+      if (c0 == -1.0)
+        FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
 
       // k \in ~[1;3] delivers sensible results representing a parable without turning point
       // k \in ~[3;6] delivers a parable with turning point and consequentely also small negative
@@ -1571,15 +1575,18 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPenal
     }
     case INPAR::BEAMCONTACT::pl_lpdqp:  // double quadratic regularization for positiv gaps
     {
-      if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+      if (g0 == -1.0)
+        FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
       // Third parameter for contact force regularization
       double c0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationC0();
-      if (c0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
+      if (c0 == -1.0)
+        FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_C0!");
 
       // Second parameter for contact force regularization
       double f0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationF0();
-      if (f0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
+      if (f0 == -1.0)
+        FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
 
       double k =
           c0;  // transition between first and second quadratic regularization part: k \in [0;2.0]
@@ -1615,11 +1622,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPenal
     case INPAR::BEAMCONTACT::pl_lpep:  // exponential regularization for positiv gaps. Here g0
                                        // represents the cut off radius!
     {
-      if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+      if (g0 == -1.0)
+        FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
       // Second parameter for contact force regularization
       double f0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationF0();
-      if (f0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
+      if (f0 == -1.0)
+        FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_F0!");
 
       if (gap > 0)
       {
@@ -1681,7 +1690,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPerpP
 
     if (shiftangle1 < 0.0 or shiftangle1 > M_PI / 2.0 or shiftangle2 < 0.0 or
         shiftangle2 > M_PI / 2.0 or shiftangle1 >= shiftangle2)
-      dserror("Invalid choice of shift angles!");
+      FOUR_C_THROW("Invalid choice of shift angles!");
 
     if (CORE::FADUTILS::CastToDouble(s) > s1)
       ppfac = 0.0;
@@ -1706,7 +1715,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcPerpP
         dppfac = -2 * simple_fac * d_simple_fac;
       }
       else
-        dserror("Inadmissible value of CONSISTENTTRANSITION, only the values 1 and 2 are allowed!");
+        FOUR_C_THROW(
+            "Inadmissible value of CONSISTENTTRANSITION, only the values 1 and 2 are allowed!");
 #endif
     }
   }
@@ -1748,7 +1758,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CalcParPe
 
     if (shiftangle1 < 0.0 or shiftangle1 > M_PI / 2.0 or shiftangle2 < 0.0 or
         shiftangle2 > M_PI / 2.0 or shiftangle1 >= shiftangle2)
-      dserror("Invalid choice of shift angles!");
+      FOUR_C_THROW("Invalid choice of shift angles!");
 
     if (CORE::FADUTILS::CastToDouble(s) > s1)
       ppfac = 1.0;
@@ -1827,7 +1837,7 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CreateS
     for (int i = 0; i < numsegment; i++)
     {
       if (numsegment > (int)MAXNUMSEG)
-        dserror(
+        FOUR_C_THROW(
             "Not more segments than MAXNUMSEG per element possible! Increase MAXNUMSEG or apply "
             "finer discretization!");
 
@@ -1866,7 +1876,7 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CreateS
 
 #ifdef NOSEGMENTATION
   if (numsegment > 1)
-    dserror(
+    FOUR_C_THROW(
         "Choose higher SEGANGLE since in the case NOSEGMENTATION only one segment per element is "
         "allowed!");
 #endif
@@ -1906,7 +1916,8 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetMaxA
     case INPAR::BEAMCONTACT::pl_lpqp:
     {
       double g0 = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationG0();
-      if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+      if (g0 == -1.0)
+        FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
       // Parameter to shift penalty law
       double gbar = Params()->BeamToBeamContactParams()->GapShift();
@@ -1921,7 +1932,7 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetMaxA
     {
       maxactivedist = Params()->BeamToBeamContactParams()->BeamToBeamPenaltyLawRegularizationG0();
       if (maxactivedist == -1.0)
-        dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+        FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
       break;
     }
   }
@@ -1972,7 +1983,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CheckSegm
       std::cout << "\n\nsegment midpoint position                = " << rm;
       std::cout << "\n\ndist= " << dist << ", segdist= " << segdist;
 
-      dserror(
+      FOUR_C_THROW(
           "Segmentation in beam contact search (step 2/2, i.e. 'fine' search) failed!\n"
           "Maximal spatial extension of this segment cannot be approximated by a double cone!\n"
           "Check for extremely deformed beam elements and try to avoid this.\n"
@@ -2236,7 +2247,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
             CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(eta2)) <= 1.0)
         {
           this->Print(std::cout);
-          dserror("Beam axis identical, choose smaller time step!");
+          FOUR_C_THROW("Beam axis identical, choose smaller time step!");
         }
         else
         {
@@ -2341,7 +2352,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
       // Initialize g_min with a very large value, at which no active conact should occur!
       double g_min = 1000 * R2_;
       if (CheckContactStatus(g_min))
-        dserror("Are sure that contact should be active at such large gaps?");
+        FOUR_C_THROW("Are sure that contact should be active at such large gaps?");
 
       double alpha_g_min = 0.0;
       // In case no valid point-to-line solution is found in () (pointtolinesolfound=false)
@@ -2428,7 +2439,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
           {
             //              this->Print(std::cout);
             std::cout << "\n|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!\n";
-            //              dserror("|eta1|=1 or |eta2|=1, danger of multiple gauss point
+            //              FOUR_C_THROW("|eta1|=1 or |eta2|=1, danger of multiple gauss point
             //              evaluation!");
           }
 
@@ -2443,7 +2454,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
 
 //... or abort simulation
 #else
-          dserror(
+          FOUR_C_THROW(
               "CPP is not converged, eventhough the corresponding closest point is active! "
               "Decrease the value of SEGANGLE or increase your shifting angles!");
 #endif
@@ -2470,13 +2481,13 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
         {
           //          this->Print(std::cout);
           std::cout << "\n|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!\n";
-          //              dserror("|eta1|=1 or |eta2|=1, danger of multiple gauss point
+          //              FOUR_C_THROW("|eta1|=1 or |eta2|=1, danger of multiple gauss point
           //              evaluation!");
         }
 
         if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(r1_xi)) < 1.0e-8 or
             CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(r2_xi)) < 1.0e-8)
-          dserror("Tangent vector of zero length, choose smaller time step!");
+          FOUR_C_THROW("Tangent vector of zero length, choose smaller time step!");
 
         double angle =
             fabs(BEAMINTERACTION::CalcAngle(CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r1_xi),
@@ -2491,7 +2502,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
         // Newton scheme should find it with the first starting point. Otherwise, the problem may be
         // ill-conditioned!
         if (validpairfound and numstartpoint != 0)
-          dserror(
+          FOUR_C_THROW(
               "Valid CCP solution has not been found with the first starting point. Choose smaller "
               "value of SEGANGLE!");
 
@@ -2667,7 +2678,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PointToLi
                 CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(eta2)) <
             NEIGHBORTOL)
         {
-          dserror("Beam axis identical, choose smaller time step!");
+          FOUR_C_THROW("Beam axis identical, choose smaller time step!");
         }
       }
 
@@ -2755,7 +2766,8 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PointToLi
           df, delta_r, norm_delta_r, r1_xi, r2_xi, r2_xixi, orthogonalprojection);
 
       if (!validlinearization)
-        dserror("Linearization of point to line projection is zero, choose tighter search boxes!");
+        FOUR_C_THROW(
+            "Linearization of point to line projection is zero, choose tighter search boxes!");
 
 #ifdef FADCHECKS
       std::cout << "f: " << f << std::endl;
@@ -2789,7 +2801,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PointToLi
 
       // TODO:
       this->Print(std::cout);
-      dserror(
+      FOUR_C_THROW(
           "Local Newton loop unconverged. Adapt segangle or the shift angles for small-anlge "
           "contact!");
 
@@ -2818,10 +2830,11 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PointToLi
             std::cout << "ID2: " << Element2()->Id() << std::endl;
             std::cout << "eta1: " << eta1 << std::endl;
             std::cout << "eta2: " << eta2 << std::endl;
-            // TODO: In some cases a warning is sufficient, but in general we need the dserror("");
+            // TODO: In some cases a warning is sufficient, but in general we need the
+            // FOUR_C_THROW("");
             std::cout << "Serious Warning!!!!! eta2=1, danger of multiple gauss point evaluation! "
                       << std::endl;
-            // dserror("eta2=1, danger of multiple gauss point evaluation!");
+            // FOUR_C_THROW("eta2=1, danger of multiple gauss point evaluation!");
           }
         }
 
@@ -2838,13 +2851,13 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PointToLi
           if (throw_error)
           {
             this->Print(std::cout);
-            dserror("eta2=-1, danger of multiple gauss point evaluation!");
+            FOUR_C_THROW("eta2=-1, danger of multiple gauss point evaluation!");
           }
         }
 
         if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(r1_xi)) < 1.0e-8 or
             CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(r2_xi)) < 1.0e-8)
-          dserror("Tangent vector of zero length, choose smaller time step!");
+          FOUR_C_THROW("Tangent vector of zero length, choose smaller time step!");
 
         bool relevant_angle = true;
         double angle =
@@ -2865,7 +2878,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PointToLi
         // Newton scheme should find it with the first starting point. Otherwise, the problem may be
         // ill-conditioned!
         if (pairactive and numstartpoint != 0)
-          dserror(
+          FOUR_C_THROW(
               "Valid Point-To-Line solution has not been found with the first starting point. "
               "Choose smaller value of SEGANGLE!");
 
@@ -2984,7 +2997,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CheckUnco
       if (gap < g_min)
       {
         if (cp_at_right_neighbor)
-          dserror(
+          FOUR_C_THROW(
               "This should not happen, that we have a local minimum on the right and on the left "
               "neighbor!");
 
@@ -3028,7 +3041,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateF
   // Check for sensible combinations:
   if ((cpp and (gp or fixedendpointxi or fixedendpointeta)) or
       (gp and (fixedendpointxi or fixedendpointeta)))
-    dserror(
+    FOUR_C_THROW(
         "This is no possible combination of the parameters cpp, gp, fixedendpointxi and "
         "fixedendpointeta!");
 
@@ -3113,7 +3126,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateF
        // eta not!
       ComputeLinEtaFixXi(delta_eta, delta_r, r2_xi, r2_xixi, N1, N2, N2_xi);
 #ifdef ENDPOINTSEGMENTATION
-      dserror("The combination of ENDPOINTSEGMENTATION and CONSISTENTTRANSITION is not possible!");
+      FOUR_C_THROW(
+          "The combination of ENDPOINTSEGMENTATION and CONSISTENTTRANSITION is not possible!");
 #endif
     }
     else if (fixedendpointeta and !fixedendpointxi)  // In case of ENDPOINTPENALTY when the endpoint
@@ -3236,7 +3250,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
   if (basicstiffgap != -1.0)
   {
     if (basicstiffgap < 0.0)
-      dserror("The parameter BEAMS_BASICSTIFFGAP has to be positive!");
+      FOUR_C_THROW("The parameter BEAMS_BASICSTIFFGAP has to be positive!");
     else if (gap < -1.0 * basicstiffgap)
     {
       completestiff = false;
@@ -3458,7 +3472,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
 
 // automatic differentiation for debugging
 #ifdef AUTOMATICDIFF
-    dserror("check implementation of AUTOMATICDIFF for BeamToBeamContactPair before using it!");
+    FOUR_C_THROW(
+        "check implementation of AUTOMATICDIFF for BeamToBeamContactPair before using it!");
 
     CORE::LINALG::Matrix<dim1, 1, TYPE> fc1_FAD(true);
     CORE::LINALG::Matrix<dim2, 1, TYPE> fc2_FAD(true);
@@ -3525,8 +3540,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
             fabs((stiffc1(i, j).val() - stiffc1_FAD(i, j).val()) / stiffc1(i, j).val()) > 1.0e-7)
         {
           // std::cout << std::endl << std::endl << "stiffc1(i,j).val(): " << stiffc1(i,j).val() <<
-          // "   stiffc1_FAD(i,j).val(): " << stiffc1_FAD(i,j).val() << std::endl; dserror("Error in
-          // linearization!");
+          // "   stiffc1_FAD(i,j).val(): " << stiffc1_FAD(i,j).val() << std::endl;
+          // FOUR_C_THROW("Error in linearization!");
         }
       }
       //        std::cout << std::endl;
@@ -3552,8 +3567,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
             fabs((stiffc2(i, j).val() - stiffc2_FAD(i, j).val()) / stiffc2(i, j).val()) > 1.0e-7)
         {
           // std::cout << std::endl << std::endl <<"stiffc2(i,j).val(): " << stiffc2(i,j).val() << "
-          // stiffc2_FAD(i,j).val(): " << stiffc2_FAD(i,j).val() << std::endl; dserror("Error in
-          // linearization!");
+          // stiffc2_FAD(i,j).val(): " << stiffc2_FAD(i,j).val() << std::endl; FOUR_C_THROW("Error
+          // in linearization!");
         }
       }
       //        std::cout << std::endl;
@@ -3643,7 +3658,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
     const double& intfac, const double& d_xi_ele_d_xi_bound, TYPE signed_jacobi_interval)
 {
 #ifndef AUTOMATICDIFF
-  dserror("This method only works with automatic differentiation!");
+  FOUR_C_THROW("This method only works with automatic differentiation!");
 #endif
 
   // get dimensions for vectors fc1 and fc2
@@ -3789,7 +3804,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
   if (!DoNotAssemble)
   {
 #ifndef AUTOMATICDIFF
-    dserror("This method only works with AUTOMATICDIFF");
+    FOUR_C_THROW("This method only works with AUTOMATICDIFF");
 #else
     for (unsigned int j = 0; j < dim1 + dim2; j++)
     {
@@ -3860,7 +3875,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   // invert L by hand
   TYPE det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
   if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(det_L)) < DETERMINANTTOL)
-    dserror("ERROR: Determinant of L = 0");
+    FOUR_C_THROW("ERROR: Determinant of L = 0");
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
   L_inv(1, 0) = -L(1, 0) / det_L;
@@ -3927,7 +3942,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   //  std::cout << "r2_xixi: " << r2_xixi << std::endl;
 
   if (fabs(CORE::FADUTILS::CastToDouble(L)) < COLINEARTOL)
-    dserror("Linearization of point to line projection is zero, choose tighter search boxes!");
+    FOUR_C_THROW("Linearization of point to line projection is zero, choose tighter search boxes!");
 
   for (unsigned int i = 0; i < 3; i++)
   {
@@ -3980,7 +3995,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   L = CORE::FADUTILS::ScalarProduct(r1_xi, r1_xi) + CORE::FADUTILS::ScalarProduct(delta_r, r1_xixi);
 
   if (fabs(CORE::FADUTILS::CastToDouble(L)) < COLINEARTOL)
-    dserror("Linearization of point to line projection is zero, choose tighter search boxes!");
+    FOUR_C_THROW("Linearization of point to line projection is zero, choose tighter search boxes!");
 
   for (unsigned int i = 0; i < 3; i++)
   {
@@ -4362,7 +4377,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetShapeF
     CORE::FE::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2herm);
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents) "
         "values are valid!");
 
@@ -4442,7 +4457,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetShapeF
     }
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents) "
         "values are valid!");
 
@@ -4491,7 +4506,7 @@ BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::r(
     }
   }
   else
-    dserror("This method can only applied to element1_ and element2_!");
+    FOUR_C_THROW("This method can only applied to element1_ and element2_!");
 
   return r;
 }
@@ -4534,7 +4549,7 @@ BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::r_xi(
     }
   }
   else
-    dserror("This method can only applied to element1_ and element2_!");
+    FOUR_C_THROW("This method can only applied to element1_ and element2_!");
 
   return r_xi;
 }
@@ -4773,7 +4788,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeNo
   TYPE norm_delta_r = CORE::FADUTILS::VectorNorm<3>(delta_r);
 
   if (CORE::FADUTILS::CastToDouble(norm_delta_r) < NORMTOL)
-    dserror("ERROR: Normal of length zero! --> change time step!");
+    FOUR_C_THROW("ERROR: Normal of length zero! --> change time step!");
 
   // unit normal
   CORE::LINALG::Matrix<3, 1, TYPE> normal(true);
@@ -4791,7 +4806,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeNo
   if (CORE::FADUTILS::CastToDouble(gap) < -MAXPENETRATIONSAFETYFAC * (R1_ + R2_))
   {
     this->Print(std::cout);
-    dserror("Gap too small, danger of penetration. Choose smaller time step or higher penalty!");
+    FOUR_C_THROW(
+        "Gap too small, danger of penetration. Choose smaller time step or higher penalty!");
   }
 
   return;
@@ -4836,7 +4852,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CheckCont
   else if (penaltylaw == INPAR::BEAMCONTACT::pl_lpqp)
   {
     // penalty laws with regularization for positive gaps
-    if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+    if (g0 == -1.0) FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
     // Parameter to shift penalty law
     double gbar = Params()->BeamToBeamContactParams()->GapShift();
@@ -4853,7 +4869,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CheckCont
            penaltylaw == INPAR::BEAMCONTACT::pl_lpdqp or penaltylaw == INPAR::BEAMCONTACT::pl_lpep)
   {
     // penalty laws with regularization for positive gaps
-    if (g0 == -1.0) dserror("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
+    if (g0 == -1.0) FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
     if (gap < g0)
     {
@@ -4890,13 +4906,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClearClas
 
   //  double kappa_max = timeintparams.get<double>("kappa_max",-1.0);
   //  if(kappa_max<0)
-  //    dserror("Maximal curvature should be a positive value!");
+  //    FOUR_C_THROW("Maximal curvature should be a positive value!");
 
   // TODO
   //  //Check, if maximal curvature bound is exceeded:
   //  double crosssection_to_curvature_ratio = max(R1_,R2_)*kappa_max;
   //  if(crosssection_to_curvature_ratio>MAXCROSSSECTIONTOCURVATURE)
-  //    dserror("Curvature too large. Choose larger value MAXCROSSSECTIONTOCURVATURE and adapt
+  //    FOUR_C_THROW("Curvature too large. Choose larger value MAXCROSSSECTIONTOCURVATURE and adapt
   //    shifting angles!");
 }
 
@@ -5171,7 +5187,7 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetEner
   if (Params()->BeamToBeamContactParams()->PenaltyLaw() != INPAR::BEAMCONTACT::pl_lp and
       Params()->BeamToBeamContactParams()->PenaltyLaw() != INPAR::BEAMCONTACT::pl_qp and
       Params()->BeamToBeamContactParams()->PenaltyLaw() != INPAR::BEAMCONTACT::pl_lpqp)
-    dserror("Contact Energy calculation not implemented for the chosen penalty law!");
+    FOUR_C_THROW("Contact Energy calculation not implemented for the chosen penalty law!");
 
   double energy = 0.0;
 
@@ -5259,7 +5275,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::FADCheckL
   // invert L by hand
   TYPE det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
   if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(det_L)) < DETERMINANTTOL)
-    dserror("ERROR: Determinant of L = 0");
+    FOUR_C_THROW("ERROR: Determinant of L = 0");
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
   L_inv(1, 0) = -L(1, 0) / det_L;
@@ -5338,7 +5354,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 //  //Therefore, all changes within this class are automatically considered and have not to be
 //  //adapted in this finite difference check!
 //  if(fint.GlobalLength()>2*3*numnodes*numnodalvalues)
-//    dserror("So far, this FDCheck only works for simualtions with two elements!!!");
+//    FOUR_C_THROW("So far, this FDCheck only works for simualtions with two elements!!!");
 //
 //  Epetra_Vector fint1(fint);
 //  fint1.PutScalar(0.0);

@@ -34,14 +34,14 @@ bool DRT::ELEMENTS::SoSh8::ReadElement(
   if (buffer == "linear")
   {
     // kintype_ = soh8_linear;
-    dserror("Only nonlinear kinematics for SO_SH8 implemented!");
+    FOUR_C_THROW("Only nonlinear kinematics for SO_SH8 implemented!");
   }
   else if (buffer == "nonlinear")
   {
     kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
   }
   else
-    dserror("Reading SO_HEX8p1j1 element failed KINEM unknown");
+    FOUR_C_THROW("Reading SO_HEX8p1j1 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
@@ -63,7 +63,7 @@ bool DRT::ELEMENTS::SoSh8::ReadElement(
     neas_ = 0;  // number of eas parameters for EAS_SOSH8
   }
   else
-    dserror("Reading of SO_SH8 EAS technology failed");
+    FOUR_C_THROW("Reading of SO_SH8 EAS technology failed");
 
   // read ANS technology flag
   linedef->ExtractString("ANS", buffer);
@@ -77,7 +77,7 @@ bool DRT::ELEMENTS::SoSh8::ReadElement(
     anstype_ = ansnone;
   }
   else
-    dserror("Reading of SO_SH8 ANS technology failed");
+    FOUR_C_THROW("Reading of SO_SH8 ANS technology failed");
 
   linedef->ExtractString("THICKDIR", buffer);
   nodes_rearranged_ = false;
@@ -109,7 +109,7 @@ bool DRT::ELEMENTS::SoSh8::ReadElement(
     nodes_rearranged_ = true;
   }
   else
-    dserror("Reading of SO_SH8 thickness direction failed");
+    FOUR_C_THROW("Reading of SO_SH8 thickness direction failed");
 
   return true;
 }

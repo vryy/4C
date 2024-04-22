@@ -89,7 +89,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateActionOD(DRT::Elemen
 
     default:
     {
-      dserror("Not acting on action %i. Forgot implementation?", action);
+      FOUR_C_THROW("Not acting on action %i. Forgot implementation?", action);
       break;
     }
   }  // switch(action)
@@ -621,7 +621,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvConsODMesh(
   }
 
   else
-    dserror("Shape derivatives not implemented for 1D problems!");
+    FOUR_C_THROW("Shape derivatives not implemented for 1D problems!");
 }
 
 
@@ -736,7 +736,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ApplyShapeDerivsConv(
     }
   }
   else
-    dserror("shapederivatives not implemented for 1D!");
+    FOUR_C_THROW("shapederivatives not implemented for 1D!");
 }
 
 
@@ -934,7 +934,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(
     }
   }
   else
-    dserror("shapederivatives not implemented for 1D!");
+    FOUR_C_THROW("shapederivatives not implemented for 1D!");
 }
 
 /*-------------------------------------------------------------------- *

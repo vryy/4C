@@ -111,7 +111,7 @@ CONTACT::AUG::Strategy::FdDebug* CONTACT::AUG::Strategy::FdDebug::Instance(
  *----------------------------------------------------------------------*/
 void CONTACT::AUG::Strategy::FdDebug::Init(Strategy* strat, const double delta)
 {
-  if (not strat) dserror("nullptr pointer!");
+  if (not strat) FOUR_C_THROW("nullptr pointer!");
 
   strat_ = strat;
   delta_ = delta;
@@ -129,7 +129,7 @@ void CONTACT::AUG::Strategy::FdDebug::Evaluate(
   else
     is_fd_check_ = true;
 
-  if (strat_->Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (strat_->Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   CORE::LINALG::SparseMatrix derivMatrix(*derivMatrixPtr);
 
@@ -152,7 +152,7 @@ void CONTACT::AUG::Strategy::FdDebug::Evaluate(
     {
       int rowId = rhsMap.GID(r);
       if (rowMap.LID(rowId) == -1)
-        dserror(
+        FOUR_C_THROW(
             "ERROR: Row gids of the corresponding rhs-vector and the "
             "derivative matrix do not match!");
 
@@ -188,7 +188,7 @@ void CONTACT::AUG::Strategy::FdDebug::Evaluate(
     for (int r = 0; r < rhsMap.NumMyElements(); ++r)
     {
       const int rowId = rhsMap.GID(r);
-      if (rowId == -1) dserror("Couldn't find the GID for lid %d!", r);
+      if (rowId == -1) FOUR_C_THROW("Couldn't find the GID for lid %d!", r);
       const double val = (*rhsVector)[r];
       fdMatrixNew.Assemble(val, rowId, colId);
     }
@@ -326,7 +326,7 @@ void CONTACT::AUG::Strategy::FdDebug::DoPerturbation(const int gid, const int do
       cnode->xspatial()[2] += delta_;
       break;
     default:
-      dserror("Unsupported case!");
+      FOUR_C_THROW("Unsupported case!");
       exit(EXIT_FAILURE);
   }
 }
@@ -356,7 +356,7 @@ DRT::Node* CONTACT::AUG::Strategy::FdDebug::FindINode(const int gid) const
     node = interface->Discret().gNode(gid);
     if (node) return node;
   }
-  dserror("Node %d not found!", gid);
+  FOUR_C_THROW("Node %d not found!", gid);
   exit(EXIT_FAILURE);
 }
 
@@ -366,7 +366,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::ExtractMatrix(
     const CORE::LINALG::SparseMatrix& source, const Epetra_Map& target_range_map,
     const Epetra_Map& target_domain_map)
 {
-  if (not source.Filled()) dserror("The source matrix must be filled!");
+  if (not source.Filled()) FOUR_C_THROW("The source matrix must be filled!");
 
   const int maxnumentries = source.MaxNumEntries();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> target_ptr =
@@ -393,7 +393,7 @@ void CONTACT::AUG::MultiplyElementwise(const Epetra_Vector& source,
   if (source2targetMap.NumMyElements() != target.Map().NumMyElements())
   {
     const Epetra_Comm& comm = source.Comm();
-    dserror(
+    FOUR_C_THROW(
         "The number of local elements of the source2targetMap and the "
         "target.Map() have to be equal! \n"
         ".........................................................\n"
@@ -412,14 +412,15 @@ void CONTACT::AUG::MultiplyElementwise(const Epetra_Vector& source,
   Epetra_Vector& source_exp = *source_exp_ptr;
   int error = source_exp.ReplaceMap(target.Map());
 
-  if (error) dserror("The source map couldn't be replaced by the target map! (error=%d)", error);
+  if (error)
+    FOUR_C_THROW("The source map couldn't be replaced by the target map! (error=%d)", error);
 
   if (inverse)
     error = target.ReciprocalMultiply(1.0, source_exp, target, 0.0);
   else
     error = target.Multiply(1.0, source_exp, target, 0.0);
 
-  if (error) dserror("The element-wise multiplication failed! (error=%d)", error);
+  if (error) FOUR_C_THROW("The element-wise multiplication failed! (error=%d)", error);
 
   return;
 }

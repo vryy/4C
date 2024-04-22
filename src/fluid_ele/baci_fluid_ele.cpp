@@ -41,7 +41,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidType::Create(
   }
   else if (eletype == "FLUID2" || eletype == "FLUID3")
   {
-    dserror("Fluid element types FLUID2 and FLUID3 are no longer in use. Switch to FLUID.");
+    FOUR_C_THROW("Fluid element types FLUID2 and FLUID3 are no longer in use. Switch to FLUID.");
   }
   return Teuchos::null;
 }
@@ -199,7 +199,7 @@ DRT::ELEMENTS::Fluid::Fluid(const DRT::ELEMENTS::Fluid& old)
 {
   tds_ = Teuchos::null;
   if (old.tds_ != Teuchos::null)
-    dserror("Clone() method for deep copying tds_ not yet implemented!");
+    FOUR_C_THROW("Clone() method for deep copying tds_ not yet implemented!");
   return;
 }
 
@@ -275,14 +275,14 @@ void DRT::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
     tds_ = Teuchos::rcp(new FLD::TDSEleData());
     std::vector<char> pbtest;
     ExtractfromPack(position, data, pbtest);
-    if (pbtest.size() == 0) dserror("Seems no TDS data available");
+    if (pbtest.size() == 0) FOUR_C_THROW("Seems no TDS data available");
     tds_->Unpack(pbtest);
   }
   else
     tds_ = Teuchos::null;
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 

@@ -370,7 +370,7 @@ namespace XFEM
         double sliplength = 0.0;
         GetSlipCoefficient(sliplength, x, cond);
 
-        if (sliplength < 0.0) dserror("The slip length can not be negative.");
+        if (sliplength < 0.0) FOUR_C_THROW("The slip length can not be negative.");
 
         if (sliplength != 0.0)
         {
@@ -480,7 +480,7 @@ namespace XFEM
       }
       else
       {
-        dserror("This option for a projection matrix %d does not exist. \n", projtosurf_);
+        FOUR_C_THROW("This option for a projection matrix %d does not exist. \n", projtosurf_);
       }
 
       // Normalize the smoothed gradient

@@ -86,9 +86,9 @@ namespace PARTICLEENGINE
      */
     inline void CheckAndDecreaseContainerSize()
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (particlestored_ > containersize_)
-        dserror(
+        FOUR_C_THROW(
             "checking size of container not possible: particles stored %d > new container size %d!",
             particlestored_, containersize_);
 #endif
@@ -180,9 +180,10 @@ namespace PARTICLEENGINE
      */
     inline int GetStateDim(ParticleState state)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(state))
-        dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
+        FOUR_C_THROW(
+            "particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif
 
       return statedim_[state];
@@ -209,12 +210,14 @@ namespace PARTICLEENGINE
      */
     inline double* GetPtrToState(ParticleState state, int index)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(state))
-        dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
+        FOUR_C_THROW(
+            "particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 
       if (index < 0 or index > (particlestored_ - 1))
-        dserror("can not return pointer to state of particle as index %d out of bounds!", index);
+        FOUR_C_THROW(
+            "can not return pointer to state of particle as index %d out of bounds!", index);
 #endif
 
       return &((states_[state])[index * statedim_[state]]);
@@ -239,9 +242,10 @@ namespace PARTICLEENGINE
      */
     inline double* CondGetPtrToState(ParticleState state, int index)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (index < 0 or index > (particlestored_ - 1))
-        dserror("can not return pointer to state of particle as index %d out of bounds!", index);
+        FOUR_C_THROW(
+            "can not return pointer to state of particle as index %d out of bounds!", index);
 #endif
 
       if (storedstates_.count(state)) return &((states_[state])[index * statedim_[state]]);
@@ -260,9 +264,9 @@ namespace PARTICLEENGINE
      */
     inline int* GetPtrToGlobalID(int index)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (index < 0 or index > (particlestored_ - 1))
-        dserror(
+        FOUR_C_THROW(
             "can not return pointer to global id of particle as index %d out of bounds!", index);
 #endif
 
@@ -284,9 +288,10 @@ namespace PARTICLEENGINE
      */
     inline void ScaleState(double fac, ParticleState state)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(state))
-        dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
+        FOUR_C_THROW(
+            "particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif
 
       for (int i = 0; i < (particlestored_ * statedim_[state]); ++i) (states_[state])[i] *= fac;
@@ -304,14 +309,17 @@ namespace PARTICLEENGINE
      */
     inline void UpdateState(double facA, ParticleState stateA, double facB, ParticleState stateB)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(stateA))
-        dserror("particle state '%s' not stored in container!", EnumToStateName(stateA).c_str());
+        FOUR_C_THROW(
+            "particle state '%s' not stored in container!", EnumToStateName(stateA).c_str());
 
       if (not storedstates_.count(stateB))
-        dserror("particle state '%s' not stored in container!", EnumToStateName(stateB).c_str());
+        FOUR_C_THROW(
+            "particle state '%s' not stored in container!", EnumToStateName(stateB).c_str());
 
-      if (statedim_[stateA] != statedim_[stateB]) dserror("dimensions of states do not match!");
+      if (statedim_[stateA] != statedim_[stateB])
+        FOUR_C_THROW("dimensions of states do not match!");
 #endif
 
       for (int i = 0; i < (particlestored_ * statedim_[stateA]); ++i)
@@ -328,12 +336,13 @@ namespace PARTICLEENGINE
      */
     inline void SetState(std::vector<double> val, ParticleState state)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(state))
-        dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
+        FOUR_C_THROW(
+            "particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 
       if (statedim_[state] != static_cast<int>(val.size()))
-        dserror("dimensions of states do not match!");
+        FOUR_C_THROW("dimensions of states do not match!");
 #endif
 
       for (int i = 0; i < particlestored_; ++i)
@@ -350,9 +359,10 @@ namespace PARTICLEENGINE
      */
     inline void ClearState(ParticleState state)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not storedstates_.count(state))
-        dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
+        FOUR_C_THROW(
+            "particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif
 
       for (int i = 0; i < (particlestored_ * statedim_[state]); ++i) (states_[state])[i] = 0.0;

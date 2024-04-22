@@ -80,7 +80,7 @@ namespace XFEM
     int GetCouplingDofsetNds(const std::string& name)
     {
       if (not(dofset_coupling_map_.count(name) == 1))
-        dserror("%s -dofset not set in dofset_coupling_map for fluid dis!", name.c_str());
+        FOUR_C_THROW("%s -dofset not set in dofset_coupling_map for fluid dis!", name.c_str());
 
       return dofset_coupling_map_[name];
     }
@@ -101,13 +101,13 @@ namespace XFEM
     /// Check if Init() and Setup() have been called, yet.
     inline void CheckInitSetup() const
     {
-      if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+      if (!IsInit() or !IsSetup()) FOUR_C_THROW("Call Init() and Setup() first!");
     }
 
     /// Check if Init() has been called
     inline void CheckInit() const
     {
-      if (not IsInit()) dserror("Call Init() first!");
+      if (not IsInit()) FOUR_C_THROW("Call Init() first!");
     }
 
     //! cutter dis should be loaded into the cut?
@@ -168,7 +168,7 @@ namespace XFEM
       else if (type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
         return "NAVIER SLIP TWOPHASE BC    / MESH";
       else
-        dserror("unsupported coupling condition type %i", type);
+        FOUR_C_THROW("unsupported coupling condition type %i", type);
 
       return "UNKNOWN";
     }
@@ -186,7 +186,7 @@ namespace XFEM
       else if (strategy == INPAR::XFEM::invalid)
         return "INVALID";
       else
-        dserror("unsupported averaging strategy %i", strategy);
+        FOUR_C_THROW("unsupported averaging strategy %i", strategy);
 
       return "UNKNOWN";
     }
@@ -226,21 +226,21 @@ namespace XFEM
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const DRT::Condition* cond)
     {
-      dserror("EvaluateCouplingConditions should be implemented by derived class");
+      FOUR_C_THROW("EvaluateCouplingConditions should be implemented by derived class");
     };
 
     virtual void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const DRT::Condition* cond)
     {
-      dserror("EvaluateCouplingConditions should be implemented by derived class");
+      FOUR_C_THROW("EvaluateCouplingConditions should be implemented by derived class");
     };
 
     virtual void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
         CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
         const DRT::Condition* cond)
     {
-      dserror("EvaluateCouplingConditionsOldState should be implemented by derived class");
+      FOUR_C_THROW("EvaluateCouplingConditionsOldState should be implemented by derived class");
     };
 
     /// set material pointer for coupling slave side
@@ -277,7 +277,7 @@ namespace XFEM
     {
       UpdateConfigurationMap_GP(kappa_m, visc_m, visc_s, density_m, visc_stab_tang, full_stab, x,
           cond, ele, bele, funct, derxy, rst_slave, normal, vel_m, fulltraction);
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       // Do some safety checks, every combination which is not handled correct by the element level
       // should be caught here ... As this check is done for every Gausspoint, just do this in DEBUG
       // Version ... Feel free the add more checks ...
@@ -290,7 +290,7 @@ namespace XFEM
                   configuration_map_.at(INPAR::XFEM::F_Pen_Col).first)) &&
           fabs(configuration_map_.at(INPAR::XFEM::F_Adj_Col).second -
                configuration_map_.at(INPAR::XFEM::F_Pen_Col).second) > 1e-16)
-        dserror(
+        FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
             cond_name_.c_str());
@@ -300,7 +300,7 @@ namespace XFEM
                   configuration_map_.at(INPAR::XFEM::X_Pen_Col).first)) &&
           fabs(configuration_map_.at(INPAR::XFEM::X_Adj_Col).second -
                configuration_map_.at(INPAR::XFEM::X_Pen_Col).second) > 1e-16)
-        dserror(
+        FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
             cond_name_.c_str());
@@ -310,7 +310,7 @@ namespace XFEM
                   configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).first)) &&
           fabs(configuration_map_.at(INPAR::XFEM::F_Adj_n_Col).second -
                configuration_map_.at(INPAR::XFEM::F_Pen_n_Col).second) > 1e-16)
-        dserror(
+        FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
             cond_name_.c_str());
@@ -320,7 +320,7 @@ namespace XFEM
                   configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).first)) &&
           fabs(configuration_map_.at(INPAR::XFEM::X_Adj_n_Col).second -
                configuration_map_.at(INPAR::XFEM::X_Pen_n_Col).second) > 1e-16)
-        dserror(
+        FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
             cond_name_.c_str());
@@ -330,7 +330,7 @@ namespace XFEM
                   configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).first)) &&
           fabs(configuration_map_.at(INPAR::XFEM::F_Adj_t_Col).second -
                configuration_map_.at(INPAR::XFEM::F_Pen_t_Col).second) > 1e-16)
-        dserror(
+        FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
             cond_name_.c_str());
@@ -340,7 +340,7 @@ namespace XFEM
                   configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).first)) &&
           fabs(configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second -
                configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second) > 1e-16)
-        dserror(
+        FOUR_C_THROW(
             "%s: You should set Scalings for Adjoint and Penalty Column, even if just one is used, "
             "as we support at the moment just equal penalty and adjoint consistent constraints!",
             cond_name_.c_str());
@@ -378,7 +378,7 @@ namespace XFEM
         std::cout << "X_Adj_t_Col/X_Pen_t_Col: "
                   << configuration_map_.at(INPAR::XFEM::X_Adj_t_Col).second << "/"
                   << configuration_map_.at(INPAR::XFEM::X_Pen_t_Col).second << std::endl;
-        dserror(
+        FOUR_C_THROW(
             "%s: Your consistent constraint for Penalty and Adjoint term is not equal, go to "
             "element level and split up velint_diff_ for penalty and adjoint!",
             cond_name_.c_str());
@@ -399,7 +399,7 @@ namespace XFEM
     virtual void GetPenaltyScalingSlave(DRT::Element* coup_ele,  ///< xfluid ele
         double& penscaling_s)                                    ///< penalty scaling slavesided
     {
-      dserror("GetPenaltyScalingSlave not implemented for this coupling object!");
+      FOUR_C_THROW("GetPenaltyScalingSlave not implemented for this coupling object!");
     }
 
     /// get weighting paramters
@@ -414,7 +414,7 @@ namespace XFEM
         DRT::Element* coup_ele,                                          ///< coup_ele ele
         double& kappa_m)  ///< Weight parameter (parameter +/master side)
     {
-      dserror(
+      FOUR_C_THROW(
           "XFEM::CouplingBase: GetCouplingSpecificAverageWeights not implemented for this coupling "
           "object!");
     }

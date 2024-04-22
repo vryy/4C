@@ -42,7 +42,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
   if (id_ < 10)
     filename << 0;
   else if (id_ > 99)
-    dserror("Gmsh output implemented for a maximum of 99 iterations");
+    FOUR_C_THROW("Gmsh output implemented for a maximum of 99 iterations");
   filename << id_;
 
   // construct unique filename for gmsh output
@@ -57,7 +57,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
   else if (step < 10000)
     filename << 0;
   else if (step > 99999)
-    dserror("Gmsh output implemented for a maximum of 99.999 time steps");
+    FOUR_C_THROW("Gmsh output implemented for a maximum of 99.999 time steps");
   filename << step;
 
   // construct unique filename for gmsh output
@@ -68,7 +68,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
     if (iter < 10)
       filename << 0;
     else if (iter > 99)
-      dserror("Gmsh output implemented for a maximum of 99 iterations");
+      FOUR_C_THROW("Gmsh output implemented for a maximum of 99 iterations");
     filename << iter;
   }
   else
@@ -588,9 +588,9 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
       {
         int gid = snoderowmap_->GID(i);
         DRT::Node* node = idiscret_->gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cnode = dynamic_cast<Node*>(node);
-        if (!cnode) dserror("Static Cast to Node* failed");
+        if (!cnode) FOUR_C_THROW("Static Cast to Node* failed");
 
         double nc[3];
         double nn[3];
@@ -712,7 +712,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
   else if (step < 10000)
     filenametn << 0;
   else if (step > 99999)
-    dserror("Gmsh output implemented for a maximum of 99.999 time steps");
+    FOUR_C_THROW("Gmsh output implemented for a maximum of 99.999 time steps");
   filenametn << step;
 
   // construct unique filename for gmsh output
@@ -723,7 +723,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
     if (iter < 10)
       filenametn << 0;
     else if (iter > 99)
-      dserror("Gmsh output implemented for a maximum of 99 iterations");
+      FOUR_C_THROW("Gmsh output implemented for a maximum of 99 iterations");
     filenametn << iter;
   }
 
@@ -882,7 +882,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
   else if (step < 10000)
     filenamectn << 0;
   else if (step > 99999)
-    dserror("Gmsh output implemented for a maximum of 99.999 time steps");
+    FOUR_C_THROW("Gmsh output implemented for a maximum of 99.999 time steps");
   filenamectn << step;
 
   // construct unique filename for gmsh output
@@ -893,7 +893,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
     if (iter < 10)
       filenamectn << 0;
     else if (iter > 99)
-      dserror("Gmsh output implemented for a maximum of 99 iterations");
+      FOUR_C_THROW("Gmsh output implemented for a maximum of 99 iterations");
     filenamectn << iter;
   }
 
@@ -924,7 +924,7 @@ void CONTACT::Interface::VisualizeGmsh(const int step, const int iter)
       {
         if ((int)(binarytree_->CouplingMap()[0]).size() !=
             (int)(binarytree_->CouplingMap()[1]).size())
-          dserror("Binarytree CouplingMap does not have right size!");
+          FOUR_C_THROW("Binarytree CouplingMap does not have right size!");
 
         for (int j = 0; j < (int)((binarytree_->CouplingMap()[0]).size()); j++)
         {
@@ -991,7 +991,7 @@ void CONTACT::Interface::FDCheckNormalDeriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for normals / tangents
   std::vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
@@ -1023,7 +1023,7 @@ void CONTACT::Interface::FDCheckNormalDeriv()
   {
     int jgid = snodecolmapbound_->GID(j);
     DRT::Node* jnode = idiscret_->gNode(jgid);
-    if (!jnode) dserror("Cannot find node with gid %", jgid);
+    if (!jnode) FOUR_C_THROW("Cannot find node with gid %", jgid);
     Node* jcnode = dynamic_cast<Node*>(jnode);
 
     // store reference normals / tangents
@@ -1053,7 +1053,7 @@ void CONTACT::Interface::FDCheckNormalDeriv()
     // now finally get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(i / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     int sdof = snode->Dofs()[i % dim];
@@ -1083,7 +1083,7 @@ void CONTACT::Interface::FDCheckNormalDeriv()
     {
       int kgid = snodecolmapbound_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       // build NEW averaged normal at each slave node
@@ -1256,7 +1256,7 @@ void CONTACT::Interface::FDCheckNormalCPPDeriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for normals / tangents
   std::vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
@@ -1288,7 +1288,7 @@ void CONTACT::Interface::FDCheckNormalCPPDeriv()
   {
     int jgid = snodecolmapbound_->GID(j);
     DRT::Node* jnode = idiscret_->gNode(jgid);
-    if (!jnode) dserror("Cannot find node with gid %", jgid);
+    if (!jnode) FOUR_C_THROW("Cannot find node with gid %", jgid);
     Node* jcnode = dynamic_cast<Node*>(jnode);
 
     if (!jcnode->IsOnEdge()) continue;
@@ -1322,7 +1322,7 @@ void CONTACT::Interface::FDCheckNormalCPPDeriv()
     // now finally get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(i / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     int sdof = snode->Dofs()[i % dim];
@@ -1354,7 +1354,7 @@ void CONTACT::Interface::FDCheckNormalCPPDeriv()
     {
       int kgid = snodecolmapbound_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if (!kcnode->IsOnEdge()) continue;
@@ -1533,7 +1533,7 @@ void CONTACT::Interface::FDCheckNormalCPPDeriv()
     // now finally get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(i / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     int mdof = mnode->Dofs()[i % dim];
@@ -1565,7 +1565,7 @@ void CONTACT::Interface::FDCheckNormalCPPDeriv()
     {
       int kgid = snodecolmapbound_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if (!kcnode->IsOnEdge()) continue;
@@ -1745,7 +1745,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
   std::map<int, double> refD;  // stores dof-wise the entries of D
@@ -1763,7 +1763,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
@@ -1789,7 +1789,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -1824,7 +1824,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if ((int)(kcnode->MoData().GetD().size()) == 0) continue;
@@ -1896,7 +1896,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     int mdof = mnode->Dofs()[fd % dim];
@@ -1931,7 +1931,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if ((int)(kcnode->MoData().GetD().size()) == 0) continue;
@@ -2015,7 +2015,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for M-Matrix entries
   std::map<int, double> refM;  // stores dof-wise the entries of M
@@ -2033,7 +2033,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // typedef std::map<int,std::map<int,double> >::const_iterator CIM;
@@ -2058,7 +2058,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -2093,7 +2093,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if ((int)(kcnode->MoData().GetM().size()) == 0) continue;
@@ -2164,7 +2164,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     int mdof = mnode->Dofs()[fd % dim];
@@ -2199,7 +2199,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if ((int)(kcnode->MoData().GetM().size()) == 0) continue;
@@ -2283,7 +2283,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTXI()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -2299,7 +2299,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTXI()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     refU[i] = cnode->FriData().jump_var()[0];  // txi value
@@ -2317,7 +2317,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTXI()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -2351,7 +2351,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTXI()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
@@ -2371,7 +2371,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTXI()
         if (abs(dev) > 1e-4)
         {
           std::cout << " ***** WARNING ***** ";
-          // dserror("WARNING --- LIN");
+          // FOUR_C_THROW("WARNING --- LIN");
           w++;
         }
         else if (abs(dev) > 1e-5)
@@ -2415,7 +2415,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTXI()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find master node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     int mdof = mnode->Dofs()[fd % dim];
@@ -2449,7 +2449,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTXI()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
@@ -2469,7 +2469,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTXI()
         if (abs(dev) > 1e-4)
         {
           std::cout << " ***** WARNING ***** ";
-          // dserror("WARNING --- LIN");
+          // FOUR_C_THROW("WARNING --- LIN");
           w++;
         }
         else if (abs(dev) > 1e-5)
@@ -2516,7 +2516,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTETA()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -2532,7 +2532,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTETA()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // store gap-values into refG
@@ -2551,7 +2551,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTETA()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -2585,7 +2585,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTETA()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
@@ -2605,7 +2605,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTETA()
         if (abs(dev) > 1e-4)
         {
           std::cout << " ***** WARNING ***** ";
-          // dserror("WARNING --- LIN");
+          // FOUR_C_THROW("WARNING --- LIN");
           w++;
         }
         else if (abs(dev) > 1e-5)
@@ -2649,7 +2649,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTETA()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find master node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     int mdof = mnode->Dofs()[fd % dim];
@@ -2683,7 +2683,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTETA()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
@@ -2703,7 +2703,7 @@ void CONTACT::Interface::FDCheckSlipIncrDerivTETA()
         if (abs(dev) > 1e-4)
         {
           std::cout << " ***** WARNING ***** ";
-          // dserror("WARNING --- LIN");
+          // FOUR_C_THROW("WARNING --- LIN");
           w++;
         }
         else if (abs(dev) > 1e-5)
@@ -2750,7 +2750,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -2768,7 +2768,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     //    if (cnode->Active())
@@ -2787,7 +2787,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     //      {
     //        int gid = mnodefullmap->GID(m);
     //        DRT::Node* mnode = idiscret_->gNode(gid);
-    //        if (!mnode) dserror("Cannot find node with gid %",gid);
+    //        if (!mnode) FOUR_C_THROW("Cannot find node with gid %",gid);
     //        Node* cmnode = dynamic_cast<Node*>(mnode);
     //        const int* mdofs = cmnode->Dofs();
     //        bool hasentry = false;
@@ -2832,7 +2832,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -2873,7 +2873,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if (kcnode->Data().GetAlphaN() < 0.0) continue;
@@ -2894,7 +2894,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
       //        {
       //          int gid = mnodefullmap->GID(m);
       //          DRT::Node* mnode = idiscret_->gNode(gid);
-      //          if (!mnode) dserror("Cannot find node with gid %",gid);
+      //          if (!mnode) FOUR_C_THROW("Cannot find node with gid %",gid);
       //          Node* cmnode = dynamic_cast<Node*>(mnode);
       //          const int* mdofs = cmnode->Dofs();
       //          bool hasentry = false;
@@ -2984,7 +2984,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find master node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     int mdof = mnode->Dofs()[fd % dim];
@@ -3025,7 +3025,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if (kcnode->Data().GetAlphaN() < 0.0) continue;
@@ -3040,7 +3040,7 @@ void CONTACT::Interface::FDCheckAlphaDeriv()
         {
           int gid = mnodefullmap->GID(m);
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* cmnode = dynamic_cast<Node*>(mnode);
           bool hasentry = false;
 
@@ -3123,7 +3123,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3142,7 +3142,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // store gap-values into refG
@@ -3163,7 +3163,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -3204,7 +3204,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       // store gap-values into newG
@@ -3318,7 +3318,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find master node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     int mdof = mnode->Dofs()[fd % dim];
@@ -3359,7 +3359,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if (kcnode->Active())
@@ -3373,7 +3373,7 @@ void CONTACT::Interface::FDCheckGapDerivLTL()
         {
           int gid = mnodefullmap->GID(m);
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* cmnode = dynamic_cast<Node*>(mnode);
           bool hasentry = false;
 
@@ -3505,7 +3505,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3524,7 +3524,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // store gap-values into refG
@@ -3545,7 +3545,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -3586,7 +3586,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       // store gap-values into newG
@@ -3700,7 +3700,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find master node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     int mdof = mnode->Dofs()[fd % dim];
@@ -3741,7 +3741,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if (kcnode->Active())
@@ -3754,7 +3754,7 @@ void CONTACT::Interface::FDCheckJumpDerivLTL()
         {
           int gid = mnodefullmap->GID(m);
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* cmnode = dynamic_cast<Node*>(mnode);
           bool hasentry = false;
 
@@ -3886,7 +3886,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3902,7 +3902,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     if (!cnode->IsOnEdge()) continue;
@@ -3923,7 +3923,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     //      {
     //        int gid = mnodefullmap->GID(m);
     //        DRT::Node* mnode = idiscret_->gNode(gid);
-    //        if (!mnode) dserror("Cannot find node with gid %",gid);
+    //        if (!mnode) FOUR_C_THROW("Cannot find node with gid %",gid);
     //        Node* cmnode = dynamic_cast<Node*>(mnode);
     //        const int* mdofs = cmnode->Dofs();
     //        bool hasentry = false;
@@ -3967,7 +3967,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -4008,7 +4008,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if (!kcnode->IsOnEdge()) continue;
@@ -4029,7 +4029,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
       //        {
       //          int gid = mnodefullmap->GID(m);
       //          DRT::Node* mnode = idiscret_->gNode(gid);
-      //          if (!mnode) dserror("Cannot find node with gid %",gid);
+      //          if (!mnode) FOUR_C_THROW("Cannot find node with gid %",gid);
       //          Node* cmnode = dynamic_cast<Node*>(mnode);
       //          const int* mdofs = cmnode->Dofs();
       //          bool hasentry = false;
@@ -4118,7 +4118,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find master node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     int mdof = mnode->Dofs()[fd % dim];
@@ -4159,7 +4159,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       if (!kcnode->IsOnEdge()) continue;
@@ -4174,7 +4174,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
         {
           int gid = mnodefullmap->GID(m);
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* cmnode = dynamic_cast<Node*>(mnode);
           bool hasentry = false;
 
@@ -4256,7 +4256,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for tangential LM values
   int nrow = snoderowmap_->NumMyElements();
@@ -4271,7 +4271,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     double valxi = 0.0;
@@ -4342,7 +4342,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     {
       int gid = SlaveColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
-      if (!ele) dserror("Cannot find ele with gid %i", gid);
+      if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
       MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
@@ -4354,7 +4354,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / 3);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
@@ -4392,7 +4392,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     {
       int gid1 = snodecolmapbound_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid1);
-      if (!node) dserror("Cannot find node with gid %", gid1);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid1);
       Node* cnode = dynamic_cast<Node*>(node);
 
       // build averaged normal at each slave node
@@ -4408,7 +4408,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     {
       int gid1 = selecolmap_->GID(i);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("Cannot find slave element with gid %", gid1);
+      if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
       // empty vector of master element pointers
@@ -4420,7 +4420,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       {
         int gid2 = selement->MoData().SearchElements()[j];
         DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("Cannot find master element with gid %", gid2);
+        if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
         MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
         melements.push_back(melement);
       }
@@ -4439,7 +4439,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       double valxi = 0.0;
@@ -4544,7 +4544,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     {
       int gid = SlaveColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
-      if (!ele) dserror("Cannot find ele with gid %i", gid);
+      if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
       MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
@@ -4556,7 +4556,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / 3);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find master node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
@@ -4594,7 +4594,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     {
       int gid1 = snodecolmapbound_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid1);
-      if (!node) dserror("Cannot find node with gid %", gid1);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid1);
       Node* cnode = dynamic_cast<Node*>(node);
 
       // build averaged normal at each slave node
@@ -4610,7 +4610,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     {
       int gid1 = selecolmap_->GID(i);
       DRT::Element* ele1 = idiscret_->gElement(gid1);
-      if (!ele1) dserror("Cannot find slave element with gid %", gid1);
+      if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
       // empty vector of master element pointers
@@ -4622,7 +4622,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       {
         int gid2 = selement->MoData().SearchElements()[j];
         DRT::Element* ele2 = idiscret_->gElement(gid2);
-        if (!ele2) dserror("Cannot find master element with gid %", gid2);
+        if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
         MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
         melements.push_back(melement);
       }
@@ -4641,7 +4641,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       double valxi = 0.0;
@@ -4745,7 +4745,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   {
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("Cannot find ele with gid %i", gid);
+    if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
 
     mele->MoData().SearchElements().resize(0);
@@ -4767,7 +4767,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   {
     int gid1 = snodecolmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid1);
-    if (!node) dserror("Cannot find node with gid %", gid1);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid1);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // build averaged normal at each slave node
@@ -4783,7 +4783,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
   {
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
+    if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
 
     // empty vector of master element pointers
@@ -4795,7 +4795,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     {
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("Cannot find master element with gid %", gid2);
+      if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
       melements.push_back(melement);
     }
@@ -4826,7 +4826,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -4842,7 +4842,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     double jumptxi = 0;
@@ -4878,7 +4878,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
       {
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
-        if (!mnode) dserror("Cannot find node with gid %", gid);
+        if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
         FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
         double mik = mmap[cmnode->Id()];
@@ -4922,7 +4922,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     FriNode* snode = dynamic_cast<FriNode*>(node);
 
     // apply finite difference scheme
@@ -4963,7 +4963,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!node) dserror("Cannot find node with gid %", kgid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
@@ -5000,7 +5000,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
@@ -5136,7 +5136,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
     int gid = mnodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find master node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     FriNode* mnode = dynamic_cast<FriNode*>(node);
 
     // apply finite difference scheme
@@ -5177,7 +5177,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
@@ -5214,7 +5214,7 @@ void CONTACT::Interface::FDCheckStickDeriv(
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
@@ -5357,7 +5357,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
@@ -5382,7 +5382,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     double jumptxi = 0;
@@ -5425,7 +5425,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       {
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
-        if (!mnode) dserror("Cannot find node with gid %", gid);
+        if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
         FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
         double mik = mmap[cmnode->Id()];
@@ -5469,7 +5469,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
       refCteta[i] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
     }
     else
-      dserror("Friction law is neiter Tresca nor Coulomb");
+      FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
 
     refCtxi[i] =
         euclidean * ztxi - (frcoeff * (znor - cn * cnode->Data().Getg())) * (ztxi + ct * jumptxi);
@@ -5487,7 +5487,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     FriNode* snode = dynamic_cast<FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -5513,7 +5513,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!node) dserror("Cannot find node with gid %", kgid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
@@ -5556,7 +5556,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           double mik = mmap[cmnode->Id()];
           double mikold = mmapold[cmnode->Id()];
@@ -5599,7 +5599,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        dserror("Friction law is neiter Tresca nor Coulomb");
+        FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->Data().Getg())) * (ztxi + ct * jumptxi);
@@ -5713,7 +5713,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     FriNode* snode = dynamic_cast<FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -5747,7 +5747,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!node) dserror("Cannot find node with gid %", kgid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
@@ -5791,7 +5791,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
@@ -5836,7 +5836,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        dserror("Friction law is neiter Tresca nor Coulomb");
+        FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->Data().Getg())) * (ztxi + ct * jumptxi);
@@ -5952,7 +5952,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     int gid = mnodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find master node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     FriNode* mnode = dynamic_cast<FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -5986,7 +5986,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       double jumptxi = 0;
@@ -6030,7 +6030,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("Cannot find node with gid %", gid);
+          if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
@@ -6074,7 +6074,7 @@ void CONTACT::Interface::FDCheckSlipDeriv(
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        dserror("Friction law is neiter Tresca nor Coulomb");
+        FOUR_C_THROW("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->Data().Getg())) * (ztxi + ct * jumptxi);
@@ -6194,7 +6194,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   std::cout << std::setprecision(14);
 
@@ -6209,7 +6209,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     int dim = cnode->NumDof();
@@ -6250,7 +6250,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / 3);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     int sdof = snode->Dofs()[fd % 3];
@@ -6285,7 +6285,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       int dim = kcnode->NumDof();
@@ -6323,7 +6323,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
           if ((abs(dev) > 1e-2))
           {
             std::cout << " *************** ERROR *************** " << std::endl;
-            // dserror("un-tolerable deviation");
+            // FOUR_C_THROW("un-tolerable deviation");
           }
         }
       }
@@ -6357,7 +6357,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / 3);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     int mdof = mnode->Dofs()[fd % 3];
@@ -6392,7 +6392,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("Cannot find node with gid %", kgid);
+      if (!knode) FOUR_C_THROW("Cannot find node with gid %", kgid);
       Node* kcnode = dynamic_cast<Node*>(knode);
 
       int dim = kcnode->NumDof();
@@ -6431,7 +6431,7 @@ void CONTACT::Interface::FDCheckPenaltyTracNor()
           if ((abs(dev) > 1e-2))
           {
             std::cout << " *************** ERROR *************** " << std::endl;
-            // dserror("un-tolerable deviation");
+            // FOUR_C_THROW("un-tolerable deviation");
           }
         }
       }
@@ -6480,7 +6480,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
+  if (Comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
   double frcoeff = InterfaceParams().get<double>("FRCOEFF");
@@ -6502,7 +6502,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // get some informatiom form the node
@@ -6547,7 +6547,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
       tanplane(1, 1) = 1 - (n[1] * n[1]);
     }
     else
-      dserror("Error: Unknown dimension.");
+      FOUR_C_THROW("Error: Unknown dimension.");
 
     // Evaluate frictional trail traction
     CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
@@ -6618,7 +6618,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / 3);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find slave node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find slave node with gid %", gid);
     Node* snode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
@@ -6657,7 +6657,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!node) dserror("Cannot find node with gid %", kgid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // get some informatiom form the node
@@ -6702,7 +6702,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         tanplane(1, 1) = 1 - (n[1] * n[1]);
       }
       else
-        dserror("Error in AssembleTangentForces: Unknown dimension.");
+        FOUR_C_THROW("Error in AssembleTangentForces: Unknown dimension.");
 
 
       // Evaluate frictional trail traction
@@ -6837,7 +6837,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / 3);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("Cannot find master node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find master node with gid %", gid);
     Node* mnode = dynamic_cast<Node*>(node);
 
     // apply finite difference scheme
@@ -6876,7 +6876,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!node) dserror("Cannot find node with gid %", kgid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // get some informatiom form the node
@@ -6921,7 +6921,7 @@ void CONTACT::Interface::FDCheckPenaltyTracFric()
         tanplane(1, 1) = 1 - (n[1] * n[1]);
       }
       else
-        dserror("Error in AssembleTangentForces: Unknown dimension.");
+        FOUR_C_THROW("Error in AssembleTangentForces: Unknown dimension.");
 
       // Evaluate frictional trail traction
       CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);

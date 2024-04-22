@@ -35,7 +35,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
 {
   // safety check
   if (arterydis_->NumGlobalNodes() == 0)
-    dserror("artery discretization does not seem to have any nodes");
+    FOUR_C_THROW("artery discretization does not seem to have any nodes");
 
   // get the actual coupled DOFs
   // 1) 1D artery discretization
@@ -48,7 +48,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
     // check ascending order
     if (dummy > 0)
       if ((int)(word1 - 1) <= coupleddofs_art_[dummy - 1])
-        dserror("DOFs have to be ordered in ascending order");
+        FOUR_C_THROW("DOFs have to be ordered in ascending order");
     coupleddofs_art_.push_back((int)(word1 - 1));
     dummy++;
   }
@@ -62,7 +62,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
     // check ascending order
     if (dummy > 0)
       if ((int)(word1 - 1) <= coupleddofs_cont_[dummy - 1])
-        dserror("DOFs have to be ordered in ascending order");
+        FOUR_C_THROW("DOFs have to be ordered in ascending order");
     coupleddofs_cont_.push_back((int)(word1 - 1));
     dummy++;
   }
@@ -76,7 +76,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
   }
 
   if (coupleddofs_cont_.size() != coupleddofs_art_.size())
-    dserror("size mismatch between COUPLEDDOFS_ART and COUPLEDDOFS_PORO");
+    FOUR_C_THROW("size mismatch between COUPLEDDOFS_ART and COUPLEDDOFS_PORO");
 
   num_coupled_dofs_ = coupleddofs_cont_.size();
 }

@@ -44,7 +44,7 @@ DRT::ELEMENTS::RedAirBloodScatraImplInterface* DRT::ELEMENTS::RedAirBloodScatraI
       return acinus;
     }
     default:
-      dserror("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
+      FOUR_C_THROW("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
   }
   return nullptr;
 }
@@ -225,7 +225,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
   // check if O2 properties material exists
   if (aid == -1)
   {
-    dserror("A material defining O2 properties in air could not be found");
+    FOUR_C_THROW("A material defining O2 properties in air could not be found");
     exit(1);
   }
   const MAT::PAR::Parameter* amat = GLOBAL::Problem::Instance()->Materials()->ParameterById(aid);
@@ -246,7 +246,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
   // check if O2 properties material exists
   if (bid == -1)
   {
-    dserror("A material defining O2 properties in blood could not be found");
+    FOUR_C_THROW("A material defining O2 properties in blood could not be found");
     exit(1);
   }
   const MAT::PAR::Parameter* bmat = GLOBAL::Problem::Instance()->Materials()->ParameterById(bid);
@@ -375,7 +375,8 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
     // check append iteration step
     if (itr > maxItr)
     {
-      dserror("[Warning in ELEMENT(%d)]: solving for VO2(air/blood) did not converge Error: %f\n",
+      FOUR_C_THROW(
+          "[Warning in ELEMENT(%d)]: solving for VO2(air/blood) did not converge Error: %f\n",
           ele->Id(), fabs(error));
       exit(1);
     }

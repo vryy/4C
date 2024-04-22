@@ -44,7 +44,7 @@
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RELEASE",
-        "BACI_DEBUG": "ON"
+        "FOUR_C_ENABLE_ASSERTIONS": "ON"
       }
     },
     {

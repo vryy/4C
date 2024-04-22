@@ -14,7 +14,7 @@ this option see file scatra_ele_impl.cpp of revision 18836. If this option shoul
 it should not be combined with subgrid diffusivity approaches or artificial diffusion methods, since
 a potential update of the material parameters may overwrite the subgrid diffusivity added to the
 physical one. For avoiding this potential combination, it should be excluded in a loma parameter
-list, where a dserror() should be provided.
+list, where a FOUR_C_THROW() should be provided.
 
 \level 2
 

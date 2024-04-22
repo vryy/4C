@@ -199,7 +199,7 @@ namespace ADAPTER
     INPAR::STR::ConvergenceStatus PerformErrorAction(
         INPAR::STR::ConvergenceStatus nonlinsoldiv) override
     {
-      dserror("You should not be here");
+      FOUR_C_THROW("You should not be here");
       return nonlinsoldiv;
     };
 
@@ -343,7 +343,7 @@ namespace ADAPTER
     */
     Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() override
     {
-      dserror(
+      FOUR_C_THROW(
           "In the new structural timeintegration this method is"
           "no longer needed inside the structure. Since this is"
           "FSI specific, the functionality is shifted to the"
@@ -366,7 +366,7 @@ namespace ADAPTER
     /// Set forces due to interface with fluid, the force is expected external-force-like
     void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce) override
     {
-      dserror(
+      FOUR_C_THROW(
           "This method is deprecated. In the new structural time integration"
           "this functionality is taken over by the problem specific model "
           "evaluators. Remove this method as soon as possible.");
@@ -473,14 +473,14 @@ namespace ADAPTER
     /// are there any spring dashpot bcs?
     bool HaveSpringDashpot() override
     {
-      dserror("This function seems to be unused!");
+      FOUR_C_THROW("This function seems to be unused!");
       return false;
     }
 
     /// get SpringDashpot manager defined in the structure
     Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> GetSpringDashpotManager() override
     {
-      dserror("This function seems to be unused!");
+      FOUR_C_THROW("This function seems to be unused!");
       return Teuchos::null;
     }
 

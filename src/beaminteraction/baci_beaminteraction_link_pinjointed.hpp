@@ -116,7 +116,7 @@ namespace BEAMINTERACTION
     void GetBindingSpotForce(
         int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const override
     {
-      dserror(" needs to be implemented in derived classes.");
+      FOUR_C_THROW(" needs to be implemented in derived classes.");
     }
 
     // get current length of linker

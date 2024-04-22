@@ -95,12 +95,12 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
                 (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
           }
           else
-            dserror("Invalid material!");
+            FOUR_C_THROW("Invalid material!");
         }
       }
 
       else
-        dserror("Invalid material!");
+        FOUR_C_THROW("Invalid material!");
 
       // process electrode kinetics boundary condition
       myelch::CalcElchBoundaryKinetics(
@@ -150,11 +150,11 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
         dmedc_->SetPhasePoro(actsinglemat->Epsilon(), iphase);
       }
       else
-        dserror("Invalid material!");
+        FOUR_C_THROW("Invalid material!");
     }
   }
   else
-    dserror("Invalid material!");
+    FOUR_C_THROW("Invalid material!");
 
   // call base class routine
   my::EvaluateNeumann(ele, params, discretization, condition, la, elevec1, dmedc_->GetPhasePoro(0));
@@ -181,7 +181,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
 
       default:
       {
-        dserror("Closing equation for electric potential not recognized!");
+        FOUR_C_THROW("Closing equation for electric potential not recognized!");
         break;
       }
     }
@@ -249,7 +249,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
 
     default:
     {
-      dserror("Unknown closing equation for electric potential!");
+      FOUR_C_THROW("Unknown closing equation for electric potential!");
       break;
     }
   }
@@ -278,7 +278,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluat
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Evaluation of scatra-scatra interface kinetics for electrochemistry problems with "
           "conforming interface discretization must have an electrode on the slave side and the "
           "electrolyte on the master side.");
@@ -306,7 +306,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluat
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "Evaluation of scatra-scatra interface kinetics for electrochemistry problems with "
           "conforming interface discretization must have an electrode on the slave side and the "
           "electrolyte on the master side.");
@@ -333,7 +333,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::GetVa
         Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(material);
 
     // safety check
-    if (elchmat->NumPhase() != 1) dserror("Only one material phase is allowed at the moment!");
+    if (elchmat->NumPhase() != 1) FOUR_C_THROW("Only one material phase is allowed at the moment!");
 
     // loop over phases
     for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
@@ -350,21 +350,21 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::GetVa
         if (species->MaterialType() == INPAR::MAT::m_newman)
         {
           valence = Teuchos::rcp_static_cast<const MAT::Newman>(species)->Valence();
-          if (abs(valence) < 1.e-14) dserror("Received zero valence!");
+          if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
         }
         else if (species->MaterialType() == INPAR::MAT::m_ion)
         {
           valence = Teuchos::rcp_static_cast<const MAT::Ion>(species)->Valence();
-          if (abs(valence) < 1.e-14) dserror("Received zero valence!");
+          if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
         }
         else
-          dserror("Unknown material species!");
+          FOUR_C_THROW("Unknown material species!");
       }
     }
   }
 
   else
-    dserror("Unknown material!");
+    FOUR_C_THROW("Unknown material!");
 
   return valence;
 }

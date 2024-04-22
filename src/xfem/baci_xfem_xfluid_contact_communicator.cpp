@@ -62,7 +62,7 @@ void XFEM::XFluidContactComm::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWi
   INPAR::XFEM::ConvStabScaling ConvStabScaling =
       CORE::UTILS::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab, "CONV_STAB_SCALING");
   if (ConvStabScaling != INPAR::XFEM::ConvStabScaling_none)
-    dserror("ConvStabScaling not handled correctly!");
+    FOUR_C_THROW("ConvStabScaling not handled correctly!");
 
   extrapolate_to_zero_ = (bool)CORE::UTILS::IntegralValue<int>(
       GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("XFPSI MONOLITHIC"),
@@ -86,7 +86,7 @@ void XFEM::XFluidContactComm::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWi
     mc_.push_back(mcfpi);
     mcfpi_ps_pf_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
         condition_manager->GetMeshCoupling("XFEMSurfFPIMono_ps_pf"));
-    if (mcfpi_ps_pf_ == Teuchos::null) dserror("Couldn't find mcfpi_ps_pf_ object!");
+    if (mcfpi_ps_pf_ == Teuchos::null) FOUR_C_THROW("Couldn't find mcfpi_ps_pf_ object!");
   }
   else
   {
@@ -100,16 +100,16 @@ void XFEM::XFluidContactComm::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWi
                 << " Mesh Coupling Objects! |==" << std::endl;
   }
   else
-    dserror("Didn't find any mesh coupling object!");
+    FOUR_C_THROW("Didn't find any mesh coupling object!");
 
   for (std::size_t mc = 0; mc < mc_.size(); ++mc)
   {
     if (mc_[mc]->GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided &&
         mass_conservation_scaling_ != INPAR::XFEM::MassConservationScaling_only_visc)
-      dserror("The implementation does not what you expect!");
+      FOUR_C_THROW("The implementation does not what you expect!");
     else if (mc_[mc]->GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided &&
              visc_stab_trace_estimate_ != INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue)
-      dserror("The implementation does not what you expect!");
+      FOUR_C_THROW("The implementation does not what you expect!");
   }
 
   my_sele_ids_.clear();
@@ -131,8 +131,8 @@ double XFEM::XFluidContactComm::Get_FSI_Traction(MORTAR::Element* ele,
     double* poropressure)
 {
   gp_on_this_proc = true;
-  if (!fluid_init_) dserror("Fluid not initialized!");
-  if (ele == nullptr) dserror("Contact Element not set!");
+  if (!fluid_init_) FOUR_C_THROW("Fluid not initialized!");
+  if (ele == nullptr) FOUR_C_THROW("Contact Element not set!");
 
   if (parallel_)
   {
@@ -153,7 +153,7 @@ double XFEM::XFluidContactComm::Get_FSI_Traction(MORTAR::Element* ele,
 
   // 1 // get CutSide--> BC --> VolumeCell --> FluidElement --> Check for Dofs
   CORE::GEO::CUT::SideHandle* sidehandle = cutwizard_->GetCutSide(GetSurfSid(ele->Id()));
-  if (sidehandle == nullptr) dserror("Coundn't find Sidehandle for this structural surface!");
+  if (sidehandle == nullptr) FOUR_C_THROW("Coundn't find Sidehandle for this structural surface!");
 
   std::vector<int> nds;
   int eleid;
@@ -202,7 +202,7 @@ double XFEM::XFluidContactComm::Get_FSI_Traction(MORTAR::Element* ele,
   else if (mc_[mcidx_]->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
     Get_Penalty_Param(sele, penalty_fac);
   else
-    dserror(
+    FOUR_C_THROW(
         "Your interface stress averaging strategy is not yet implemented for XFSCI and XFPSCI!");
 
   double visc_m;
@@ -251,7 +251,7 @@ double XFEM::XFluidContactComm::Get_FSI_Traction(MORTAR::Element* ele,
   }
   else
   {
-    dserror("Other Nitsche FSI variant than fluid-sided weighting not implemented yet!");
+    FOUR_C_THROW("Other Nitsche FSI variant than fluid-sided weighting not implemented yet!");
     return 0.0;
   }
 }
@@ -267,7 +267,7 @@ bool XFEM::XFluidContactComm::CheckNitscheContactState(CONTACT::Element* cele,
   else if (contact_strategy_fpi_)
     return contact_strategy_fpi_->CheckNitscheContactState(cele, xsi, full_fsi_traction, gap);
   else
-    dserror("CheckNitscheContactState: Not adequate contact strategy is assigned!");
+    FOUR_C_THROW("CheckNitscheContactState: Not adequate contact strategy is assigned!");
   return false;  // dummy to make compiler happy :)
 }
 
@@ -309,7 +309,7 @@ void XFEM::XFluidContactComm::Get_States(const int fluidele_id, const std::vecto
 
     std::vector<int> lmdisp;
     lmdisp.resize(fluid_nds.size() * 3);
-    if (!ffluidele) dserror("Cast to Fluidelement failed");
+    if (!ffluidele) FOUR_C_THROW("Cast to Fluidelement failed");
     if (ffluidele->IsAle())
     {
       for (std::size_t n = 0; n < fluid_nds.size(); ++n)
@@ -371,7 +371,7 @@ void XFEM::XFluidContactComm::Get_States(const int fluidele_id, const std::vecto
           for (int j = 0; j < 3; ++j) file << xyze(j, i) << ", ";
         file << xyze(0, 7) << ", " << xyze(1, 7) << ", " << xyze(2, 7) << "){1,2,3,4,5,6,7,8};";
         CORE::GEO::CUT::OUTPUT::GmshEndSection(file, true);
-        dserror("Couldn'd compute local coordinate for fluid element (DEBUG_OUT_D007.pos)!");
+        FOUR_C_THROW("Couldn'd compute local coordinate for fluid element (DEBUG_OUT_D007.pos)!");
       }
       pos->LocalCoordinates(fluidele_xsi);
 
@@ -408,7 +408,7 @@ void XFEM::XFluidContactComm::Get_States(const int fluidele_id, const std::vecto
       vderxy_m.MultiplyNT(vel, derxy);
     }
     else
-      dserror("fluidele is not hex8!");
+      FOUR_C_THROW("fluidele is not hex8!");
   }
 
   // 4 // evaluate slave velocity at guasspoint
@@ -432,7 +432,7 @@ void XFEM::XFluidContactComm::Get_States(const int fluidele_id, const std::vecto
     if (isporo_) velpf_s.Multiply(velpfs, funct);
   }
   else
-    dserror("Your Slave Element is not a quad4?!");
+    FOUR_C_THROW("Your Slave Element is not a quad4?!");
 
   return;
 }
@@ -452,7 +452,7 @@ void XFEM::XFluidContactComm::Get_Penalty_Param(DRT::Element* fluidele,
     std::map<int, std::vector<CORE::FE::GaussIntegration>> bintpoints;
 
     CORE::GEO::CUT::ElementHandle* cele = cutwizard_->GetElement(fluidele);
-    if (cele == nullptr) dserror("Couldn't find cut element for ele %d", fluidele->Id());
+    if (cele == nullptr) FOUR_C_THROW("Couldn't find cut element for ele %d", fluidele->Id());
 
     std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
     {
@@ -479,7 +479,7 @@ void XFEM::XFluidContactComm::Get_Penalty_Param(DRT::Element* fluidele,
       }
     }
 
-    if (sit == cell_sets.end()) dserror("Couldn't identify a cell set!");
+    if (sit == cell_sets.end()) FOUR_C_THROW("Couldn't identify a cell set!");
 
     CORE::GEO::CUT::plain_volumecell_set& cells = *sit;
     std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>> element_bcells;
@@ -511,7 +511,7 @@ void XFEM::XFluidContactComm::Get_Penalty_Param(DRT::Element* fluidele,
       penalty_fac = 0.0;
       return;
     }
-    if (fluidele->Shape() != CORE::FE::CellType::hex8) dserror("Add hex8 shapes here!");
+    if (fluidele->Shape() != CORE::FE::CellType::hex8) FOUR_C_THROW("Add hex8 shapes here!");
 
     h_k = XFEM::UTILS::ComputeCharEleLength<CORE::FE::CellType::hex8>(
         fluidele, ele_xyze, condition_manager_, cells, bcells, bintpoints, visc_stab_hk_);
@@ -536,7 +536,7 @@ void XFEM::XFluidContactComm::Get_Penalty_Param(DRT::Element* fluidele,
   Teuchos::RCP<MAT::Material> mat;
   XFEM::UTILS::GetVolumeCellMaterial(fluidele, mat);
   const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-  if (actmat == nullptr) dserror("Cast of Fluidmat failed!");
+  if (actmat == nullptr) FOUR_C_THROW("Cast of Fluidmat failed!");
 
   XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
       penalty_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
@@ -565,9 +565,9 @@ void XFEM::XFluidContactComm::SetupSurfElePtrs(DRT::Discretization& contact_inte
 {
   if (ele_ptrs_already_setup_) return;
 
-  if (!fluid_init_) dserror("fluid not initialized");
+  if (!fluid_init_) FOUR_C_THROW("fluid not initialized");
 
-  if (!mc_.size()) dserror("SetupSurfElePtrs: Don't have any mesh coupling objects ....!");
+  if (!mc_.size()) FOUR_C_THROW("SetupSurfElePtrs: Don't have any mesh coupling objects ....!");
 
   int startgid = condition_manager_->GetMeshCouplingStartGID(
       condition_manager_->GetCouplingIndex(mc_[0]->GetName()));
@@ -601,7 +601,7 @@ void XFEM::XFluidContactComm::SetupSurfElePtrs(DRT::Discretization& contact_inte
   for (int i = 0; i < contact_interface_dis.ElementColMap()->NumMyElements(); ++i)
   {
     CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(contact_interface_dis.lColElement(i));
-    if (!cele) dserror("no contact element or no element at all");
+    if (!cele) FOUR_C_THROW("no contact element or no element at all");
     const int c_parent_id = cele->ParentElementId();
     const int c_parent_surf = cele->FaceParentNumber();
 
@@ -613,7 +613,7 @@ void XFEM::XFluidContactComm::SetupSurfElePtrs(DRT::Discretization& contact_inte
             condition_manager_->GetCouplingIndex(mc_[mc]->GetName()));
         DRT::ELEMENTS::StructuralSurface* fele = dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(
             mc_[mc]->GetCutterDis()->lColElement(j));
-        if (!fele) dserror("no face element or no element at all");
+        if (!fele) FOUR_C_THROW("no face element or no element at all");
         const int f_parent_id = fele->ParentElementId();
         const int f_parent_surf = fele->FaceParentNumber();
         if (c_parent_id == f_parent_id && c_parent_surf == f_parent_surf)
@@ -634,7 +634,7 @@ void XFEM::XFluidContactComm::SetupSurfElePtrs(DRT::Discretization& contact_inte
             condition_manager_->GetCouplingIndex(mcfpi_ps_pf_->GetName()));
         DRT::ELEMENTS::StructuralSurface* fele = dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(
             mcfpi_ps_pf_->GetCutterDis()->lColElement(j));
-        if (!fele) dserror("no face element or no element at all");
+        if (!fele) FOUR_C_THROW("no face element or no element at all");
         const int f_parent_id = fele->ParentElementId();
         const int f_parent_surf = fele->FaceParentNumber();
 
@@ -677,7 +677,7 @@ bool XFEM::XFluidContactComm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& s
     x.Multiply(xyze, funct);
   }
   else
-    dserror("GetFacet: Your solid face is not a quad4, please add your element type here!");
+    FOUR_C_THROW("GetFacet: Your solid face is not a quad4, please add your element type here!");
 
   // 2 //Identify Subside
   CORE::GEO::CUT::Facet* facet = nullptr;
@@ -725,7 +725,7 @@ bool XFEM::XFluidContactComm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& s
     CORE::GEO::CUT::OUTPUT::GmshCoordDump(file, x, -1);
     CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
     CORE::GEO::CUT::OUTPUT::GmshWriteSection(file, "All subsides", subsides, true);
-    dserror("Coundn't identify side (DEBUG_OUT_D001.pos)!");
+    FOUR_C_THROW("Coundn't identify side (DEBUG_OUT_D001.pos)!");
   }
   else
   {
@@ -743,7 +743,7 @@ bool XFEM::XFluidContactComm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& s
       elenormal.Scale(-1.0);  // flip direction
       sele =
           dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(condition_manager_->GetSide(side->Id()));
-      if (!sele) dserror("Couldn't Identify new sele %d", side->Id());
+      if (!sele) FOUR_C_THROW("Couldn't Identify new sele %d", side->Id());
       facets = side->Facets();
     }
 
@@ -810,7 +810,7 @@ bool XFEM::XFluidContactComm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& s
           for (std::size_t tri = 0; tri < triangulation.size(); ++tri)
           {
             if (triangulation[tri].size() != 3)
-              dserror("Triangulation with another number of points than 3 (%d)?",
+              FOUR_C_THROW("Triangulation with another number of points than 3 (%d)?",
                   triangulation[tri].size());
 
             // Compute local coords and take first possible facet ...
@@ -827,7 +827,7 @@ bool XFEM::XFluidContactComm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& s
             {
               pos->LocalCoordinates(tmpxsi);
               if (fabs(tmpxsi(2, 0)) > 1e-3)
-                dserror("To far away from this facet %f!", tmpxsi(2, 0));
+                FOUR_C_THROW("To far away from this facet %f!", tmpxsi(2, 0));
               facet = afacet;
               break;
             }
@@ -859,7 +859,7 @@ bool XFEM::XFluidContactComm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& s
           }
           file.close();
 
-          dserror("Couldn't identify facet (DEBUG_OUT_D004.pos)!");
+          FOUR_C_THROW("Couldn't identify facet (DEBUG_OUT_D004.pos)!");
         }
       }
     }
@@ -876,7 +876,7 @@ bool XFEM::XFluidContactComm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& s
       CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "The selected subside", true);
       CORE::GEO::CUT::OUTPUT::GmshSideDump(file, side);
       CORE::GEO::CUT::OUTPUT::GmshEndSection(file, true);
-      dserror("Side has no facets but is physical (DEBUG_OUT_D005.pos)!");
+      FOUR_C_THROW("Side has no facets but is physical (DEBUG_OUT_D005.pos)!");
     }
   }
 
@@ -899,7 +899,8 @@ bool XFEM::XFluidContactComm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& s
           CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "VC2", true);
           CORE::GEO::CUT::OUTPUT::GmshVolumecellDump(file, facet->Cells()[vc], "sides", true);
           file.close();
-          dserror("Facet has at least two volumecells which are outside (DEBUG_OUT_D006.pos)!");
+          FOUR_C_THROW(
+              "Facet has at least two volumecells which are outside (DEBUG_OUT_D006.pos)!");
         }
         volumecell = facet->Cells()[vc];
         if (parallel_)
@@ -912,7 +913,7 @@ bool XFEM::XFluidContactComm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& s
         }
       }
     }
-    if (!volumecell) dserror("Facet has no volumecell which is outside?");
+    if (!volumecell) FOUR_C_THROW("Facet has no volumecell which is outside?");
   }
 
   nds = volumecell->NodalDofSet();
@@ -960,7 +961,7 @@ CORE::GEO::CUT::Side* XFEM::XFluidContactComm::FindnextPhysicalSide(CORE::LINALG
     std::ofstream file(str.str().c_str());
     CORE::GEO::CUT::OUTPUT::GmshWriteSection(file, "InitSide", initSide);
     CORE::GEO::CUT::OUTPUT::GmshWriteSection(file, "PerFormedSides", performed_sides, true);
-    dserror("Couldn't identify a new side (number of identified physical sides: %d)!",
+    FOUR_C_THROW("Couldn't identify a new side (number of identified physical sides: %d)!",
         physical_sides.size());
   }
 
@@ -974,7 +975,7 @@ CORE::GEO::CUT::Side* XFEM::XFluidContactComm::FindnextPhysicalSide(CORE::LINALG
     std::cout << "The Side pointer is " << newSide << std::endl;
     std::cout << "Couldn't get Sidehandle for side " << newSide->Id() << std::endl;
     // newSide->Print();
-    dserror("Couldn't get Sidehandle for side %f", newSide->Id());
+    FOUR_C_THROW("Couldn't get Sidehandle for side %f", newSide->Id());
   }
 
   CORE::LINALG::SerialDenseMatrix xyzs;
@@ -988,7 +989,7 @@ CORE::GEO::CUT::Side* XFEM::XFluidContactComm::FindnextPhysicalSide(CORE::LINALG
     pos->LocalCoordinates(newxsi);
   }
   else
-    dserror("Not a quad4!");
+    FOUR_C_THROW("Not a quad4!");
   return newSide;
 }
 
@@ -1051,7 +1052,7 @@ void XFEM::XFluidContactComm::Update_physical_sides(CORE::GEO::CUT::Side* side,
   {
     performed_sides.insert(neibs[sid]);
     CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(neibs[sid]->Id());
-    if (!sh) dserror("Couldn't Get Sidehandle %d!", neibs[sid]->Id());
+    if (!sh) FOUR_C_THROW("Couldn't Get Sidehandle %d!", neibs[sid]->Id());
     if (sh->IsunphysicalSubSide(neibs[sid]))
       Update_physical_sides(neibs[sid], performed_sides, physical_sides);
     else
@@ -1170,7 +1171,7 @@ CORE::GEO::CUT::Element* XFEM::XFluidContactComm::GetNextElement(CORE::GEO::CUT:
       CORE::GEO::CUT::plain_element_set pes;
       elementh->CollectElements(pes);
 
-      if (pes.size() != 1) dserror("Collected Elements != 1");
+      if (pes.size() != 1) FOUR_C_THROW("Collected Elements != 1");
 
       CORE::GEO::CUT::Element* element = pes[0];
 
@@ -1198,8 +1199,8 @@ void XFEM::XFluidContactComm::GetCutSideIntegrationPoints(
     int sid, CORE::LINALG::SerialDenseMatrix& coords, std::vector<double>& weights, int& npg)
 {
   CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(GetSurfSid(sid));
-  if (!sh) dserror("Couldn't get SideHandle!");
-  if (sh->Shape() != CORE::FE::CellType::quad4) dserror("Not a quad4!");
+  if (!sh) FOUR_C_THROW("Couldn't get SideHandle!");
+  if (sh->Shape() != CORE::FE::CellType::quad4) FOUR_C_THROW("Not a quad4!");
   const int numnodes_sh = CORE::FE::num_nodes<CORE::FE::CellType::quad4>;
   CORE::LINALG::SerialDenseMatrix xquad;
   sh->Coordinates(xquad);
@@ -1291,7 +1292,7 @@ void XFEM::XFluidContactComm::GetCutSideIntegrationPoints(
         std::cout << "facet->GetSplitCells().size(): " << facet->GetSplitCells().size()
                   << std::endl;
         facet->Print(std::cout);
-        if (!parallel_) dserror("Ignore Facet");
+        if (!parallel_) FOUR_C_THROW("Ignore Facet");
       }
     }
     if (!side->Facets().size())
@@ -1301,7 +1302,7 @@ void XFEM::XFluidContactComm::GetCutSideIntegrationPoints(
         if (parallel_)  // we are on the wrong proc ...
           continue;     // return true;
         else
-          dserror("There are not facets on a physical side?");
+          FOUR_C_THROW("There are not facets on a physical side?");
       }
       else if (side->NumNodes() == 3)
       {
@@ -1331,8 +1332,8 @@ void XFEM::XFluidContactComm::GetCutSideIntegrationPoints(
         }
       }
       else
-        dserror("Unphysical Subside is not a tri3?");  // Cannot happen as these sides are created
-                                                       // by the SelfCut
+        FOUR_C_THROW("Unphysical Subside is not a tri3?");  // Cannot happen as these sides are
+                                                            // created by the SelfCut
     }
   }
 
@@ -1382,7 +1383,7 @@ void XFEM::XFluidContactComm::FillComplete_SeleMap()
 {
   if (!parallel_) return;
   if (cutwizard_ == Teuchos::null)
-    dserror("XFluidContactComm::FillComplete_SeleMap: CutWizard not set!");
+    FOUR_C_THROW("XFluidContactComm::FillComplete_SeleMap: CutWizard not set!");
 
   // We also add all unphysical sides
   for (std::size_t i = 0; i < mortarId_to_sosid_.size(); ++i)
@@ -1390,7 +1391,7 @@ void XFEM::XFluidContactComm::FillComplete_SeleMap()
     if (mortarId_to_sosid_[i] == -1) continue;  // this entry is not set!
     CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(mortarId_to_sosid_[i]);
     if (!sh)
-      dserror("Couldn't get Sidhandle for mortarId %d, soid %d!", i + min_mortar_id_,
+      FOUR_C_THROW("Couldn't get Sidhandle for mortarId %d, soid %d!", i + min_mortar_id_,
           mortarId_to_sosid_[i]);
     if (cutwizard_->GetCutSide(mortarId_to_sosid_[i])->HasunphysicalSubSide())
     {

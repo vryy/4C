@@ -29,17 +29,18 @@ ADAPTER::StructurePoroWrapper::StructurePoroWrapper(
     case FieldWrapper::type_StructureField:
       structure_ = Teuchos::rcp_dynamic_cast<FSIStructureWrapper>(field_);
       if (structure_ == Teuchos::null)
-        dserror("StructurePoroWrapper: Cast from Field to FSIStructureWrapper failed!");
+        FOUR_C_THROW("StructurePoroWrapper: Cast from Field to FSIStructureWrapper failed!");
       poro_ = Teuchos::null;
       break;
     case FieldWrapper::type_PoroField:
       poro_ = Teuchos::rcp_dynamic_cast<POROELAST::Monolithic>(field_);
       if (poro_ == Teuchos::null)
-        dserror("StructurePoroWrapper: Cast from Field to PoroBase failed!");
+        FOUR_C_THROW("StructurePoroWrapper: Cast from Field to PoroBase failed!");
       structure_ = poro_->StructureField();
       break;
     default:
-      dserror("StructurePoroWrapper - FieldWrapper::Fieldtype not available for this wrapper!");
+      FOUR_C_THROW(
+          "StructurePoroWrapper - FieldWrapper::Fieldtype not available for this wrapper!");
       break;
   }
 }
@@ -67,7 +68,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructurePoroWrapper::CombinedDBCMap()
       return poro_->CombinedDBCMap();
       break;
     default:
-      dserror("StructurePoroWrapper: type for this wrapper not considered!");
+      FOUR_C_THROW("StructurePoroWrapper: type for this wrapper not considered!");
       return Teuchos::null;
       break;
   }
@@ -87,8 +88,8 @@ const Teuchos::RCP<POROELAST::Monolithic>& ADAPTER::StructurePoroWrapper::PoroFi
   if (type_ == ADAPTER::FieldWrapper::type_PoroField)
     return poro_;
   else
-    dserror("StructurePoroWrapper - Field not a PoroField!");
-  return poro_;  // do not remove dserror!!! - return just to make complier happy :-)
+    FOUR_C_THROW("StructurePoroWrapper - Field not a PoroField!");
+  return poro_;  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
 }
 
 const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& ADAPTER::StructurePoroWrapper::StructureField()
@@ -96,8 +97,8 @@ const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& ADAPTER::StructurePoroWrapper:
   if (type_ == FieldWrapper::type_PoroField || type_ == FieldWrapper::type_StructureField)
     return structure_;
   else
-    dserror("StructurePoroWrapper - Field not Structural- or Poro-Field!");
-  return structure_;  // do not remove dserror!!! - return just to make complier happy :-)
+    FOUR_C_THROW("StructurePoroWrapper - Field not Structural- or Poro-Field!");
+  return structure_;  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
 }
 
 //! return poro FluidField
@@ -106,8 +107,9 @@ const Teuchos::RCP<ADAPTER::FluidPoro>& ADAPTER::StructurePoroWrapper::FluidFiel
   if (type_ == FieldWrapper::type_PoroField)
     return poro_->FluidField();
   else
-    dserror("StructurePoroWrapper - Field not PoroField (no poro fluid field!");
-  return poro_->FluidField();  // do not remove dserror!!! - return just to make complier happy :-)
+    FOUR_C_THROW("StructurePoroWrapper - Field not PoroField (no poro fluid field!");
+  return poro_
+      ->FluidField();  // do not remove FOUR_C_THROW!!! - return just to make complier happy :-)
 }
 
 //! Insert FSI Condition Vector
@@ -125,7 +127,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructurePoroWrapper::InsertFSICondVector(
       return poro_->Extractor()->InsertVector(tmpcond, 0);  // into structural part = 0
       break;
     default:
-      dserror("StructurePoroWrapper: type for this wrapper not considered!");
+      FOUR_C_THROW("StructurePoroWrapper: type for this wrapper not considered!");
       return Teuchos::null;
       break;
   }

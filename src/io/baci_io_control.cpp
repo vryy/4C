@@ -76,10 +76,10 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
       int length = static_cast<int>(filename_.length());
       std::vector<int> name(filename_.begin(), filename_.end());
       int err = comm.Broadcast(&length, 1, 0);
-      if (err) dserror("communication error");
+      if (err) FOUR_C_THROW("communication error");
       name.resize(length);
       err = comm.Broadcast(name.data(), length, 0);
-      if (err) dserror("communication error");
+      if (err) FOUR_C_THROW("communication error");
       filename_.assign(name.begin(), name.end());
     }
   }
@@ -156,10 +156,10 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
       int length = static_cast<int>(filename_.length());
       std::vector<int> name(filename_.begin(), filename_.end());
       int err = comm.Broadcast(&length, 1, 0);
-      if (err) dserror("communication error");
+      if (err) FOUR_C_THROW("communication error");
       name.resize(length);
       err = comm.Broadcast(name.data(), length, 0);
-      if (err) dserror("communication error");
+      if (err) FOUR_C_THROW("communication error");
       filename_.assign(name.begin(), name.end());
     }
   }
@@ -236,7 +236,7 @@ void IO::OutputControl::NewResultFile(
   if (filename_.rfind("_run_") != std::string::npos)
   {
     size_t pos = filename_.rfind("_run_");
-    if (pos == std::string::npos) dserror("inconsistent file name");
+    if (pos == std::string::npos) FOUR_C_THROW("inconsistent file name");
     filename_ = filename_.substr(0, pos);
   }
 
@@ -283,7 +283,7 @@ void IO::OutputControl::WriteHeader(
 
     controlfile_.open(control_file_name.c_str(), std::ios_base::out);
     if (not controlfile_)
-      dserror("Could not open control file '%s' for writing", control_file_name.c_str());
+      FOUR_C_THROW("Could not open control file '%s' for writing", control_file_name.c_str());
 
     time_t time_value;
     time_value = time(nullptr);
@@ -373,7 +373,7 @@ IO::InputControl::InputControl(const std::string& filename, const Epetra_Comm& c
   // works for parallel, as well as serial applications because we only have an Epetra_MpiComm
   const auto* epetrampicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
   if (!epetrampicomm)
-    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+    FOUR_C_THROW("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
   else
   {
     const MPI_Comm lcomm = epetrampicomm->GetMpiComm();
@@ -415,7 +415,7 @@ int IO::GetLastPossibleRestartStep(IO::InputControl& inputcontrol)
     return map_read_int(map, "step");
   }
 
-  dserror(
+  FOUR_C_THROW(
       "No restart entry in symbol table. "
       "Control file corrupt?\n\nLooking for control file at: %s",
       inputcontrol.FileName().c_str());

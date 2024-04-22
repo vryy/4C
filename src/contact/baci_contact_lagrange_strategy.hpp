@@ -199,7 +199,7 @@ namespace CONTACT
     const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const override
     {
       if ((not redist) and ParRedist())
-        dserror("The original / not redistributed slave normal row map is not available!");
+        FOUR_C_THROW("The original / not redistributed slave normal row map is not available!");
 
       return *gsdofrowmap_;
     }

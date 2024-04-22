@@ -56,7 +56,7 @@ namespace SCATRA
     //! set the velocity field (zero or field by function)
     virtual void SetVelocityField(const int nds)
     {
-      dserror(
+      FOUR_C_THROW(
           "SetVelocityField(...) cannot be used for transport within a multiphase porous medium!"
           " Use SetSolutionFields(...) instead!");
     };
@@ -73,7 +73,7 @@ namespace SCATRA
             false  //!< flag whether the fluid pressure needs to be known for the scatra
     )
     {
-      dserror(
+      FOUR_C_THROW(
           "SetVelocityField(...) cannot be used for transport within a multiphase porous medium!"
           " Use SetSolutionFields(...) instead!");
     };

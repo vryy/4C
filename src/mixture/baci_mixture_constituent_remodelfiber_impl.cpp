@@ -230,7 +230,7 @@ CORE::LINALG::Matrix<6, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::Evaluate
 void MIXTURE::MixtureConstituentRemodelFiberImpl::IntegrateLocalEvolutionEquations(
     const double dt, int gp, int eleGID)
 {
-  dsassert(params_->growth_enabled_,
+  FOUR_C_ASSERT(params_->growth_enabled_,
       "The integration of the local evolution equation should only be called if growth is "
       "enabled!");
 
@@ -300,7 +300,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::EvaluateElasticPart(
     Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
     CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
-  dserror(
+  FOUR_C_THROW(
       "The implicit remodel fiber cannot be evaluated with an additional inelastic deformation. "
       "You can either use the explicit remodel fiber or use a growth strategy without an inelastic "
       "external deformation.");

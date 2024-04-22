@@ -40,7 +40,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::ElementHandle::CreateProject
   const unsigned nen = CORE::FE::num_nodes<distype>;
   const unsigned dim = CORE::FE::dim<distype>;
   CORE::LINALG::Matrix<dim, nen> xie;
-  if (cpoints.size() != nen) dserror("non-matching number of points");
+  if (cpoints.size() != nen) FOUR_C_THROW("non-matching number of points");
 
   // Find the local coordinates of given corner points w.r. to background ElementHandle
   for (unsigned i = 0; i < nen; ++i)
@@ -98,7 +98,7 @@ void CORE::GEO::CUT::ElementHandle::VolumeCellGaussPoints(
       }
       default:
       {
-        dserror("non supported element integration type for given volume-cell %i",
+        FOUR_C_THROW("non supported element integration type for given volume-cell %i",
             vc->ParentElement()->GetElementIntegrationType());
         exit(EXIT_FAILURE);
       }
@@ -193,7 +193,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_Tessellation(
         break;
       }
       default:
-        dserror("unsupported integration cell type ( cell type = %s )",
+        FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
             CORE::FE::CellTypeToString(ic->Shape()).c_str());
         exit(EXIT_FAILURE);
     }
@@ -242,7 +242,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_MomentFitting(
     }
     default:
     {
-      dserror("element handle for this element is not available\n");
+      FOUR_C_THROW("element handle for this element is not available\n");
       break;
     }
   }
@@ -326,7 +326,7 @@ Teuchos::RCP<CORE::FE::GaussPointsComposite> CORE::GEO::CUT::ElementHandle::Gaus
             break;
           }
           default:
-            dserror("unsupported integration cell type ( cell type = %s )",
+            FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
                 CORE::FE::CellTypeToString(ic->Shape()).c_str());
             exit(EXIT_FAILURE);
         }
@@ -363,7 +363,7 @@ void CORE::GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
     //    // safety check
     //    if(sid < 0)
     //    {
-    //      dserror("invalid sid: %i", sid);
+    //      FOUR_C_THROW("invalid sid: %i", sid);
     //    }
     //    else
     //    {
@@ -374,7 +374,7 @@ void CORE::GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
     //      bool is_ls_side = wizard->HasLSCuttingSide( sid );
     //      if ( side==nullptr and !is_ls_side )
     //      {
-    //        dserror( "no side with given id available fo combined mesh and
+    //        FOUR_C_THROW( "no side with given id available fo combined mesh and
     //        level-set cut" );
     //      }
     //    }
@@ -501,7 +501,8 @@ bool CORE::GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints(
        * no integration is necessary and intpoints remains empty */
     }
     else
-      dserror("number of cell_sets for a non-intersected element is invalid: %i", cell_sets.size());
+      FOUR_C_THROW(
+          "number of cell_sets for a non-intersected element is invalid: %i", cell_sets.size());
   }
 
 
@@ -701,7 +702,7 @@ void CORE::GEO::CUT::QuadraticElementHandle::GetIntegrationCells(plain_integrati
 /*----------------------------------------------------------------------*/
 void CORE::GEO::CUT::QuadraticElementHandle::GetBoundaryCells(plain_boundarycell_set& bcells)
 {
-  dserror("Deprecated version!");
+  FOUR_C_THROW("Deprecated version!");
   for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
   {
     Element* e = *i;
@@ -1555,7 +1556,7 @@ void CORE::GEO::CUT::Hex20ElementHandle::LocalCoordinates(
 
     std::cout << "point in xyz: " << xyz << std::endl;
 
-    dserror("local coordinates for hex20 element could not be determined");
+    FOUR_C_THROW("local coordinates for hex20 element could not be determined");
   }
   pos->LocalCoordinates(rst);
 }

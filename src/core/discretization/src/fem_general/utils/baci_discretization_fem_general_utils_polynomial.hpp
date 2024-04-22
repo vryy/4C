@@ -60,8 +60,8 @@ namespace CORE::FE
     {
       long double weight = 1.;
       for (double supportPoint : supportPoints) weight *= nodePoint - supportPoint;
-      dsassert((std::abs(weight) > std::numeric_limits<double>::min() &&
-                   std::abs(weight) < std::numeric_limits<double>::max()),
+      FOUR_C_ASSERT((std::abs(weight) > std::numeric_limits<double>::min() &&
+                        std::abs(weight) < std::numeric_limits<double>::max()),
           "Error in evaluation of polynomial");
       weight_ = 1. / weight;
     }
@@ -102,7 +102,7 @@ namespace CORE::FE
     template <typename M>
     void Evaluate(const double point, M &derivatives) const
     {
-      dsassert(derivatives.numCols() == 1, "Only column vectors supported");
+      FOUR_C_ASSERT(derivatives.numCols() == 1, "Only column vectors supported");
       if (derivatives.numRows() == 1)
       {
         derivatives(0) = Evaluate(point);
@@ -182,7 +182,7 @@ namespace CORE::FE
     template <typename M>
     void Evaluate(const double point, M &derivatives) const
     {
-      dsassert(derivatives.numCols() == 1, "Only column vectors supported");
+      FOUR_C_ASSERT(derivatives.numCols() == 1, "Only column vectors supported");
       if (derivatives.numRows() == 1)
       {
         derivatives(0) = Evaluate(point);
@@ -232,7 +232,7 @@ namespace CORE::FE
         }
         default:
         {
-          dserror("Only derivatives up to order 2 supported");
+          FOUR_C_THROW("Only derivatives up to order 2 supported");
           return 0;
         }
       }
@@ -378,7 +378,7 @@ namespace CORE::FE
      */
     CORE::LINALG::Matrix<nsd_, 1, unsigned int> getIndices(const unsigned int index) const
     {
-      dsassert(index < Size(), "Access out of range");
+      FOUR_C_ASSERT(index < Size(), "Access out of range");
       CORE::LINALG::Matrix<nsd_, 1, unsigned int> indices;
       const unsigned int npoly = polySpace1d_.size();
       switch (nsd_)
@@ -396,7 +396,7 @@ namespace CORE::FE
           indices(2) = index / (npoly * npoly);
           break;
         default:
-          dserror("Invalid dimension");
+          FOUR_C_THROW("Invalid dimension");
           break;
       }
       return indices;
@@ -637,7 +637,7 @@ namespace CORE::FE
                                            new CORE::FE::LagrangeBasis<nsd_>(degree)))
     {
       if (nsd_ != CORE::FE::getDimension(distype))
-        dserror("Dimension of shape does not match template argument nsd_ in PolynomialSpace");
+        FOUR_C_THROW("Dimension of shape does not match template argument nsd_ in PolynomialSpace");
     }
 
     PolynomialSpace(PolynomialSpaceParams params)
@@ -751,7 +751,7 @@ namespace CORE::FE
         return degree + 1;
         break;
       default:
-        dserror("Invalid dimension");
+        FOUR_C_THROW("Invalid dimension");
         return -1;
     }
   }

@@ -58,13 +58,13 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
 
   if (springtype_ != cursurfnormal && coupling_ >= 0)
   {
-    dserror(
+    FOUR_C_THROW(
         "Coupling of spring dashpot to reference surface only possible for DIRECTION "
         "cursurfnormal.");
   }
 
   if (springtype_ == cursurfnormal && coupling_ == -1)
-    dserror("Coupling id necessary for DIRECTION cursurfnormal.");
+    FOUR_C_THROW("Coupling id necessary for DIRECTION cursurfnormal.");
 
   // safety checks of input
   const auto* springstiff = spring_->Get<std::vector<double>>("stiff");
@@ -74,7 +74,7 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
   for (unsigned i = 0; i < (*numfuncnonlinstiff).size(); ++i)
   {
     if ((*numfuncnonlinstiff)[i] != 0 and ((*springstiff)[i] != 0 or (*numfuncstiff)[i] != 0))
-      dserror("Must not apply nonlinear stiffness and linear stiffness");
+      FOUR_C_THROW("Must not apply nonlinear stiffness and linear stiffness");
   }
 
   // ToDo: delete rest until return statement!
@@ -177,7 +177,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
 
         int err = curr.second->Evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-        if (err) dserror("error while evaluating elements");
+        if (err) FOUR_C_THROW("error while evaluating elements");
 
         if (assvec) CORE::LINALG::Assemble(*fint, elevector1, lm, lmowner);
         if (assmat) stiff->Assemble(curr.second->Id(), lmstride, elematrix1, lm, lmowner);
@@ -202,18 +202,19 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
       {
         // get all nodes of this condition and check, if it's just one -> get this node
         const auto* nodes_cond = spring_->GetNodes();
-        if (nodes_cond->size() != 1) dserror("Point Robin condition must be defined on one node.");
+        if (nodes_cond->size() != 1)
+          FOUR_C_THROW("Point Robin condition must be defined on one node.");
         const int node_gid = nodes_cond->at(0);
         auto* node = actdisc_->gNode(node_gid);
 
         // get adjacent element of this node and check if it's just one -> get this element and cast
         // it to truss element
-        if (node->NumElement() != 1) dserror("Node may only have one element");
+        if (node->NumElement() != 1) FOUR_C_THROW("Node may only have one element");
         auto* ele = node->Elements();
         auto* truss_ele = dynamic_cast<DRT::ELEMENTS::Truss3*>(ele[0]);
         if (truss_ele == nullptr)
         {
-          dserror(
+          FOUR_C_THROW(
               "Currently, only Truss Elements are allowed to evaluate point Robin Conditon. Cast "
               "to "
               "Truss Element failed.");
@@ -295,14 +296,14 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "Only 'xyz' for 'DIRECTION' supported in 'DESIGN POINT ROBIN SPRING DASHPOT "
             "CONDITIONS'");
       }
       break;
     }
     default:
-      dserror("Geometry type for spring dashpot must either be either 'Surface' or 'Point'.");
+      FOUR_C_THROW("Geometry type for spring dashpot must either be either 'Surface' or 'Point'.");
   }
 }
 
@@ -315,7 +316,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
     const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> vel,
     const Teuchos::ParameterList& p)
 {
-  if (disp == Teuchos::null) dserror("Cannot find displacement state in discretization");
+  if (disp == Teuchos::null) FOUR_C_THROW("Cannot find displacement state in discretization");
 
   if (springtype_ == cursurfnormal) GetCurNormals(disp, p);
 
@@ -327,7 +328,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
     {
       int gid = node_gid;
       DRT::Node* node = actdisc_->gNode(gid);
-      if (!node) dserror("Cannot find global node %d", gid);
+      if (!node) FOUR_C_THROW("Cannot find global node %d", gid);
 
       // get nodal values
       const double nodalarea = area_[gid];               // nodal area
@@ -348,11 +349,11 @@ void CONSTRAINTS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
       switch (springtype_)
       {
         case xyz:  // spring dashpot acts in every surface dof direction
-          dserror("You should not be here! Use the new consistent EvaluateRobin routine!!!");
+          FOUR_C_THROW("You should not be here! Use the new consistent EvaluateRobin routine!!!");
           break;
 
         case refsurfnormal:  // spring dashpot acts in refnormal direction
-          dserror("You should not be here! Use the new consistent EvaluateRobin routine!!!");
+          FOUR_C_THROW("You should not be here! Use the new consistent EvaluateRobin routine!!!");
           break;
 
         case cursurfnormal:  // spring dashpot acts in curnormal direction
@@ -366,7 +367,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
           {
             if (dof_numfuncstiff != 0)
             {
-              dserror(
+              FOUR_C_THROW(
                   "temporal dependence of stiffness not implemented for current surface "
                   "evaluation");
             }
@@ -374,19 +375,19 @@ void CONSTRAINTS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
           for (int dof_numfuncvisco : *numfuncvisco)
           {
             if (dof_numfuncvisco != 0)
-              dserror(
+              FOUR_C_THROW(
                   "temporal dependence of damping not implemented for current surface evaluation");
           }
           for (int dof_numfuncdisploffset : *numfuncdisploffset)
           {
             if (dof_numfuncdisploffset != 0)
-              dserror(
+              FOUR_C_THROW(
                   "temporal dependence of offset not implemented for current surface evaluation");
           }
           for (int dof_numfuncnonlinstiff : *numfuncnonlinstiff)
           {
             if (dof_numfuncnonlinstiff != 0)
-              dserror("Nonlinear spring not implemented for current surface evaluation");
+              FOUR_C_THROW("Nonlinear spring not implemented for current surface evaluation");
           }
 
           // spring displacement
@@ -405,7 +406,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
                 -nodalarea *
                 (springstiff * (gap - offsetprestr[k] - offset_) + viscosity_ * gapdt) * normal[k];
             const int err = fint.SumIntoGlobalValues(1, &val, &dofs[k]);
-            if (err) dserror("SumIntoGlobalValues failed!");
+            if (err) FOUR_C_THROW("SumIntoGlobalValues failed!");
 
             // store spring stress for output
             out_vec[k] =
@@ -428,7 +429,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& 
     Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
     const Teuchos::RCP<const Epetra_Vector> vel, Teuchos::ParameterList p)
 {
-  if (disp == Teuchos::null) dserror("Cannot find displacement state in discretization");
+  if (disp == Teuchos::null) FOUR_C_THROW("Cannot find displacement state in discretization");
 
   if (springtype_ == cursurfnormal)
   {
@@ -446,7 +447,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& 
     if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
       DRT::Node* node = actdisc_->gNode(node_gid);
-      if (!node) dserror("Cannot find global node %d", node_gid);
+      if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
       // get nodal values
       const double nodalarea = area_[node_gid];               // nodal area
@@ -468,11 +469,11 @@ void CONSTRAINTS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& 
       switch (springtype_)
       {
         case xyz:  // spring dashpot acts in every surface dof direction
-          dserror("You should not be here! Use the new consistent EvaluateRobin routine!!!");
+          FOUR_C_THROW("You should not be here! Use the new consistent EvaluateRobin routine!!!");
           break;
 
         case refsurfnormal:  // spring dashpot acts in refnormal direction
-          dserror("You should not be here! Use the new consistent EvaluateRobin routine!!!");
+          FOUR_C_THROW("You should not be here! Use the new consistent EvaluateRobin routine!!!");
           break;
 
         case cursurfnormal:  // spring dashpot acts in curnormal direction
@@ -486,7 +487,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& 
           {
             if (dof_numfuncstiff != 0)
             {
-              dserror(
+              FOUR_C_THROW(
                   "temporal dependence of stiffness not implemented for current surface "
                   "evaluation");
             }
@@ -494,19 +495,19 @@ void CONSTRAINTS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& 
           for (int dof_numfuncvisco : *numfuncvisco)
           {
             if (dof_numfuncvisco != 0)
-              dserror(
+              FOUR_C_THROW(
                   "temporal dependence of damping not implemented for current surface evaluation");
           }
           for (int dof_numfuncdisploffset : *numfuncdisploffset)
           {
             if (dof_numfuncdisploffset != 0)
-              dserror(
+              FOUR_C_THROW(
                   "temporal dependence of offset not implemented for current surface evaluation");
           }
           for (int dof_numfuncnonlinstiff : *numfuncnonlinstiff)
           {
             if (dof_numfuncnonlinstiff != 0)
-              dserror("Nonlinear spring not implemented for current surface evaluation");
+              FOUR_C_THROW("Nonlinear spring not implemented for current surface evaluation");
           }
 
           // spring displacement
@@ -525,7 +526,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& 
                 -nodalarea *
                 (springstiff * (gap - offsetprestr[k] - offset_) + viscosity_ * gapdt) * normal[k];
             const int err = fint.SumIntoGlobalValues(1, &val, &dofs[k]);
-            if (err) dserror("SumIntoGlobalValues failed!");
+            if (err) FOUR_C_THROW("SumIntoGlobalValues failed!");
 
             // stiffness
             std::map<int, double> dgap = dgap_[node_gid];
@@ -602,7 +603,7 @@ void CONSTRAINTS::SpringDashpot::ResetPrestress(Teuchos::RCP<const Epetra_Vector
       if (actdisc_->NodeRowMap()->MyGID(node_gid))
       {
         DRT::Node* node = actdisc_->gNode(node_gid);
-        if (!node) dserror("Cannot find global node %d", node_gid);
+        if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
         const int numdof = actdisc_->NumDof(0, node);
         assert(numdof == 3);
@@ -637,7 +638,7 @@ void CONSTRAINTS::SpringDashpot::SetRestartOld(Teuchos::RCP<Epetra_MultiVector> 
     if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
       DRT::Node* node = actdisc_->gNode(node_gid);
-      if (!node) dserror("Cannot find global node %d", node_gid);
+      if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
       [[maybe_unused]] const int numdof = actdisc_->NumDof(0, node);
       assert(numdof == 3);
@@ -878,12 +879,12 @@ void CONSTRAINTS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::E
         }
         break;
         case CORE::FE::CellType::nurbs9:
-          dserror(
+          FOUR_C_THROW(
               "Not yet implemented for Nurbs! To do: Apply the correct weighting of the area per "
               "node!");
           break;
         default:
-          dserror("shape type unknown!\n");
+          FOUR_C_THROW("shape type unknown!\n");
           break;
       }
 
@@ -911,7 +912,7 @@ void CONSTRAINTS::SpringDashpot::InitializePrestrOffset()
     if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
       DRT::Node* node = actdisc_->gNode(node_gid);
-      if (!node) dserror("Cannot find global node %d", node_gid);
+      if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
       int numdof = actdisc_->NumDof(0, node);
       std::vector<int> dofs = actdisc_->Dof(0, node);
@@ -947,7 +948,7 @@ void CONSTRAINTS::SpringDashpot::GetCurNormals(
   {
     auto j = gap0_.find(i.first);
     if (j == gap0_.end()) gap_[i.first] = i.second;
-    //      dserror("The maps of reference gap and current gap are inconsistent.");
+    //      FOUR_C_THROW("The maps of reference gap and current gap are inconsistent.");
     else
       gap_[i.first] = i.second - j->second;
 
@@ -972,7 +973,7 @@ void CONSTRAINTS::SpringDashpot::SetSpringType()
     springtype_ = cursurfnormal;
   else
   {
-    dserror(
+    FOUR_C_THROW(
         "Invalid direction option! Choose DIRECTION xyz, DIRECTION refsurfnormal or DIRECTION "
         "cursurfnormal!");
   }

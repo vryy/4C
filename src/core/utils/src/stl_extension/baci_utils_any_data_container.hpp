@@ -69,7 +69,7 @@ namespace CORE::GEN
       /// accessor
       [[nodiscard]] const std::any& TryGet() const
       {
-        if (!data_.has_value()) dserror("The data is empty!");
+        if (!data_.has_value()) FOUR_C_THROW("The data is empty!");
 
         return data_;
       }
@@ -80,7 +80,7 @@ namespace CORE::GEN
       {
         if (data_.has_value())
         {
-          dserror(
+          FOUR_C_THROW(
               "There are already data:\n%s\nAre you sure, that you want "
               "to overwrite them? If yes: Clear the content first. Best practice "
               "is to clear the content right after you finished the "
@@ -235,7 +235,7 @@ namespace CORE::GEN
         }
         default:
         {
-          dserror("Unsupported DataType!");
+          FOUR_C_THROW("Unsupported DataType!");
           exit(EXIT_FAILURE);
         }
       }
@@ -304,7 +304,7 @@ namespace CORE::GEN
           break;
         }
         default:
-          dserror("Unsupported DataType!");
+          FOUR_C_THROW("Unsupported DataType!");
       }
     }
 
@@ -340,7 +340,7 @@ namespace CORE::GEN
         }
         default:
         {
-          dserror("Unsupported DataType!");
+          FOUR_C_THROW("Unsupported DataType!");
           exit(EXIT_FAILURE);
         }
       }
@@ -361,7 +361,8 @@ namespace CORE::GEN
         const unsigned id, const std::vector<AnyData>& any_data_vec) const
     {
       if (id >= any_data_vec.size())
-        dserror("Requested ID #%d exceeds the AnyData vector size (=%d).", id, any_data_vec.size());
+        FOUR_C_THROW(
+            "Requested ID #%d exceeds the AnyData vector size (=%d).", id, any_data_vec.size());
 
 
       return any_data_vec[id].TryGet();

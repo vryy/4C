@@ -91,7 +91,7 @@ namespace DRT
     {
       if (maxnodenumdf > numMyReservedDofsperNode_)
       {
-        dserror("FixedSizeDofSet::GetReservedMaxNumDofperNode: Not enough Dofs reserved!!!");
+        FOUR_C_THROW("FixedSizeDofSet::GetReservedMaxNumDofperNode: Not enough Dofs reserved!!!");
         return;
       }
       maxnodenumdf = numMyReservedDofsperNode_;

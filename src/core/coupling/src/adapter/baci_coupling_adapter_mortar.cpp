@@ -220,7 +220,7 @@ void CORE::ADAPTER::CouplingMortar::CheckSlaveDirichletOverlap(
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // check if this node's dofs are in dbcmap
@@ -242,7 +242,7 @@ void CORE::ADAPTER::CouplingMortar::CheckSlaveDirichletOverlap(
   if (overlap && comm.MyPID() == 0)
   {
     if (comm.MyPID() == 0)
-      dserror(
+      FOUR_C_THROW(
           "Slave boundary and Dirichlet boundary conditions overlap!\n"
           "This leads to an over-constraint problem setup");
   }
@@ -304,7 +304,7 @@ void CORE::ADAPTER::CouplingMortar::SetupInterface(
           (slavedis->NumDof(nds_slave, slavedis->lRowNode(0)) != dof and slavewithale == false and
               slidingale == false)))
   {
-    dserror(
+    FOUR_C_THROW(
         "The size of the coupling vector coupleddof and dof defined in the discretization does not "
         "fit!! \n"
         "dof defined in the discretization: %i \n"
@@ -521,7 +521,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // prepare assembly
@@ -561,7 +561,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   {
     int gid = interface_->MasterRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // prepare assembly
@@ -668,7 +668,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   {
     int gid = interface_->MasterRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // do assembly (overwrite duplicate nodes)
@@ -721,7 +721,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     if (isininterfacecolmap)
     {
       node = interface_->Discret().gNode(gid);
-      if (!node) dserror("Cannot find node with gid %", gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       mtnode = static_cast<MORTAR::Node*>(node);
     }
 
@@ -734,7 +734,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
     if (isinproblemcolmap)
     {
       pnode = slavedis->gNode(gid);
-      if (!pnode) dserror("Cannot find node with gid %", gid);
+      if (!pnode) FOUR_C_THROW("Cannot find node with gid %", gid);
     }
 
     // ... AND standard node in ALE discret if fluid=slave
@@ -748,7 +748,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
       if (isinproblemcolmap2)
       {
         alenode = aledis->gNode(gid);
-        if (slavewithale and not alenode) dserror("Cannot find node with gid %", gid);
+        if (slavewithale and not alenode) FOUR_C_THROW("Cannot find node with gid %", gid);
       }
     }
 
@@ -775,7 +775,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
         for (int k = 0; k < numdim; ++k)
         {
           locindex[k] = (Xslavemodcol.Map()).LID(mtnode->Dofs()[k]);
-          if (locindex[k] < 0) dserror("Did not find dof in map");
+          if (locindex[k] < 0) FOUR_C_THROW("Did not find dof in map");
           Xnew[k] = Xslavemodcol[locindex[k]];
           Xold[k] = mtnode->X()[k];
           if (idisp != Teuchos::null)
@@ -783,7 +783,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
         }
 
         // check is mesh distortion is still OK
-        // (throw a dserror if length of relocation is larger than 80%
+        // (throw a FOUR_C_THROW if length of relocation is larger than 80%
         // of an adjacent element edge -> see Puso, IJNME, 2004)
         const double limit = 0.8;
         double relocation = 0.0;
@@ -799,9 +799,9 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
                             (Xnew[2] - Xold[2]) * (Xnew[2] - Xold[2]));
         }
         else
-          dserror("Problem dimension must be either 2 or 3!");
+          FOUR_C_THROW("Problem dimension must be either 2 or 3!");
         bool isok = mtnode->CheckMeshDistortion(relocation, limit);
-        if (!isok) dserror("Mesh distortion generated by relocation is too large!");
+        if (!isok) FOUR_C_THROW("Mesh distortion generated by relocation is too large!");
       }
     }
 
@@ -860,13 +860,14 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
             // replace respective value in displacement vector
             err = idisp->ReplaceMyValues(1, &value, &dofgid);
             // check whether there was a problem in the replacement process
-            if (err != 0) dserror("error while inserting a value into ALE displacement vector!");
+            if (err != 0)
+              FOUR_C_THROW("error while inserting a value into ALE displacement vector!");
           }
         }
       }
     }
     else
-      dserror("wrong input parameter for mortar-based MESH_RELOCATION!");
+      FOUR_C_THROW("wrong input parameter for mortar-based MESH_RELOCATION!");
   }
 
   //**********************************************************************
@@ -881,7 +882,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // prepare assembly
@@ -917,7 +918,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   {
     int gid = interface_->MasterRowNodes()->GID(j);
     DRT::Node* node = interface_->Discret().gNode(gid);
-    if (!node) dserror("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
 
     // prepare assembly
@@ -960,7 +961,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretizat
   gnorm /= sqrt((double)gnew->GlobalLength());  // scale with length of vector
 
   if (gnorm > tol)
-    dserror(
+    FOUR_C_THROW(
         "Mesh relocation was not successful! \n "
         "Gap norm %e is larger than tolerance %e",
         gnorm, tol);
@@ -999,7 +1000,7 @@ void CORE::ADAPTER::CouplingMortar::CreateP()
   // check
   if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(
           Interface()->InterfaceParams(), "LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
-    dserror("Creation of P operator only for dual shape functions!");
+    FOUR_C_THROW("Creation of P operator only for dual shape functions!");
 
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
@@ -1025,11 +1026,11 @@ void CORE::ADAPTER::CouplingMortar::CreateP()
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
+  if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = Dinv_->ReplaceDiagonalValues(*diag);
-  if (err != 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
+  if (err != 0) FOUR_C_THROW("ReplaceDiagonalValues() failed with error code %d.", err);
 
   // complete inverse D matrix
   Dinv_->Complete();
@@ -1068,9 +1069,9 @@ void CORE::ADAPTER::CouplingMortar::Evaluate(
 {
   // safety checks
   CheckSetup();
-  dsassert(idispma->Map().PointSameAs(*pmasterdofrowmap_),
+  FOUR_C_ASSERT(idispma->Map().PointSameAs(*pmasterdofrowmap_),
       "Map of incoming master vector does not match the stored master dof row map.");
-  dsassert(idispsl->Map().PointSameAs(*pslavedofrowmap_),
+  FOUR_C_ASSERT(idispsl->Map().PointSameAs(*pslavedofrowmap_),
       "Map of incoming slave vector does not match the stored slave dof row map.");
 
   const Epetra_BlockMap stdmap = idispsl->Map();
@@ -1088,10 +1089,10 @@ void CORE::ADAPTER::CouplingMortar::Evaluate(
   Teuchos::RCP<Epetra_Vector> idisp_master_slave = CORE::LINALG::CreateVector(*dofrowmap, true);
   err = idisp_master_slave->Import(*idispma, *master_importer, Add);
   if (err != 0)
-    dserror("Import failed with error code %d. See Epetra source code for details.", err);
+    FOUR_C_THROW("Import failed with error code %d. See Epetra source code for details.", err);
   err = idisp_master_slave->Import(*idispsl, *slaveImporter, Add);
   if (err != 0)
-    dserror("Import failed with error code %d. See Epetra source code for details.", err);
+    FOUR_C_THROW("Import failed with error code %d. See Epetra source code for details.", err);
 
   // set new displacement state in mortar interface
   interface_->SetState(MORTAR::state_new_displacement, *idisp_master_slave);
@@ -1174,7 +1175,7 @@ void CORE::ADAPTER::CouplingMortar::MatrixRowColTransform()
   if (parredist)
   {
     if (pslavedofrowmap_ == Teuchos::null or pmasterdofrowmap_ == Teuchos::null)
-      dserror("Dof maps based on initial parallel distribution are wrong!");
+      FOUR_C_THROW("Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
     D_ = MORTAR::MatrixRowColTransform(D_, pslavedofrowmap_, pslavedofrowmap_);
@@ -1260,15 +1261,15 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
   // safety check
   CheckSetup();
 
-  dsassert(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
+  FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
 
   Epetra_Vector tmp = Epetra_Vector(M_->RowMap());
 
-  if (M_->Multiply(false, *mv, tmp)) dserror("M*mv multiplication failed");
+  if (M_->Multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
   Teuchos::RCP<Epetra_Vector> sv = Teuchos::rcp(new Epetra_Vector(*pslavedofrowmap_));
 
-  if (Dinv_->Multiply(false, tmp, *sv)) dserror("D^{-1}*v multiplication failed");
+  if (Dinv_->Multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
   return sv;
 }
@@ -1282,16 +1283,16 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
   // safety check
   CheckSetup();
 
-  dsassert(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
+  FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
 
   Epetra_MultiVector tmp = Epetra_MultiVector(M_->RowMap(), mv->NumVectors());
 
-  if (M_->Multiply(false, *mv, tmp)) dserror("M*mv multiplication failed");
+  if (M_->Multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
   Teuchos::RCP<Epetra_MultiVector> sv =
       Teuchos::rcp(new Epetra_MultiVector(*pslavedofrowmap_, mv->NumVectors()));
 
-  if (Dinv_->Multiply(false, tmp, *sv)) dserror("D^{-1}*v multiplication failed");
+  if (Dinv_->Multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
   return sv;
 }
@@ -1304,16 +1305,16 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
   // safety check
   CheckSetup();
 
-  dsassert(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
+  FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
 
   Epetra_MultiVector tmp = Epetra_MultiVector(M_->RowMap(), mv->NumVectors());
 
-  if (M_->Multiply(false, *mv, tmp)) dserror("M*mv multiplication failed");
+  if (M_->Multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
   Teuchos::RCP<Epetra_MultiVector> sv =
       Teuchos::rcp(new Epetra_MultiVector(*pslavedofrowmap_, mv->NumVectors()));
 
-  if (Dinv_->Multiply(false, tmp, *sv)) dserror("D^{-1}*v multiplication failed");
+  if (Dinv_->Multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
   return sv;
 }
@@ -1326,15 +1327,15 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
   // safety check
   CheckSetup();
 
-  dsassert(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
+  FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
 
   Epetra_Vector tmp = Epetra_Vector(M_->RowMap());
 
-  if (M_->Multiply(false, *mv, tmp)) dserror("M*mv multiplication failed");
+  if (M_->Multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
   Teuchos::RCP<Epetra_Vector> sv = Teuchos::rcp(new Epetra_Vector(*pslavedofrowmap_));
 
-  if (Dinv_->Multiply(false, tmp, *sv)) dserror("D^{-1}*v multiplication failed");
+  if (Dinv_->Multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
   return sv;
 }
@@ -1345,9 +1346,9 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
 void CORE::ADAPTER::CouplingMortar::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
-#ifdef BACI_DEBUG
-  if (not mv->Map().PointSameAs(P_->ColMap())) dserror("master dof map vector expected");
-  if (not sv->Map().PointSameAs(D_->ColMap())) dserror("slave dof map vector expected");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (not mv->Map().PointSameAs(P_->ColMap())) FOUR_C_THROW("master dof map vector expected");
+  if (not sv->Map().PointSameAs(D_->ColMap())) FOUR_C_THROW("slave dof map vector expected");
 #endif
 
   // safety check
@@ -1374,9 +1375,9 @@ void CORE::ADAPTER::CouplingMortar::MasterToSlave(
 void CORE::ADAPTER::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
-#ifdef BACI_DEBUG
-  if (not mv->Map().PointSameAs(P_->ColMap())) dserror("master dof map vector expected");
-  if (not sv->Map().PointSameAs(D_->ColMap())) dserror("slave dof map vector expected");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (not mv->Map().PointSameAs(P_->ColMap())) FOUR_C_THROW("master dof map vector expected");
+  if (not sv->Map().PointSameAs(D_->ColMap())) FOUR_C_THROW("slave dof map vector expected");
 #endif
 
   // safety check
@@ -1386,7 +1387,7 @@ void CORE::ADAPTER::CouplingMortar::SlaveToMaster(
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
   Teuchos::RCP<Epetra_Vector> tempm = Teuchos::rcp(new Epetra_Vector(*pmasterdofrowmap_));
-  if (M_->Multiply(true, tmp, *tempm)) dserror("M^{T}*sv multiplication failed");
+  if (M_->Multiply(true, tmp, *tempm)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
   std::copy(
@@ -1410,7 +1411,7 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
   Teuchos::RCP<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*pmasterdofrowmap_));
-  if (M_->Multiply(true, tmp, *mv)) dserror("M^{T}*sv multiplication failed");
+  if (M_->Multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;
 }
@@ -1427,7 +1428,7 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
   Teuchos::RCP<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*pmasterdofrowmap_));
-  if (M_->Multiply(true, tmp, *mv)) dserror("M^{T}*sv multiplication failed");
+  if (M_->Multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;
 }
@@ -1445,7 +1446,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
 
   Teuchos::RCP<Epetra_MultiVector> mv =
       Teuchos::rcp(new Epetra_MultiVector(*pmasterdofrowmap_, sv->NumVectors()));
-  if (M_->Multiply(true, tmp, *mv)) dserror("M^{T}*sv multiplication failed");
+  if (M_->Multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;
 }
@@ -1463,7 +1464,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
 
   Teuchos::RCP<Epetra_MultiVector> mv =
       Teuchos::rcp(new Epetra_MultiVector(*pmasterdofrowmap_, sv->NumVectors()));
-  if (M_->Multiply(true, tmp, *mv)) dserror("M^{T}*sv multiplication failed");
+  if (M_->Multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;
 }

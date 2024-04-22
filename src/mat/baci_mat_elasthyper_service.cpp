@@ -454,7 +454,7 @@ void MAT::ElastHyperCheckPolyconvexity(const CORE::LINALG::Matrix<3, 3>& defgrd,
   // --> error if anisotropic material is tested (plastic and viscoelastic materials should not get
   // in here)
   if (properties.anisoprinc || properties.anisomod)
-    dserror(
+    FOUR_C_THROW(
         "This polyconvexity-check is just implemented for isotropic "
         "hyperelastic-materials (do not use for anistropic materials).");
 

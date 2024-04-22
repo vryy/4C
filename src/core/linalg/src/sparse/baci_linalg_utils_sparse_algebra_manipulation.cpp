@@ -31,15 +31,15 @@ void CORE::LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& 
         target.Comm().NumProc() == 1)
     {
       if (source.NumVectors() != target.NumVectors())
-        dserror("number of vectors in source and target not the same!");
+        FOUR_C_THROW("number of vectors in source and target not the same!");
       for (int k = 0; k < source.NumVectors(); ++k)
         for (int i = 0; i < target.Map().NumMyElements(); ++i)
         {
           const int gid = target.Map().GID(i);
-          if (gid < 0) dserror("No gid for i");
+          if (gid < 0) FOUR_C_THROW("No gid for i");
           const int lid = source.Map().LID(gid);
           if (lid < 0) continue;
-          // dserror("No source for target");
+          // FOUR_C_THROW("No source for target");
           (*target(k))[i] = (*source(k))[lid];
         }
       return;
@@ -48,14 +48,14 @@ void CORE::LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& 
     {
       Epetra_Export exporter(source.Map(), target.Map());
       int err = target.Export(source, exporter, Insert);
-      if (err) dserror("Export using exporter returned err=%d", err);
+      if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       return;
     }
     else if (sourceunique && !targetunique)
     {
       Epetra_Import importer(target.Map(), source.Map());
       int err = target.Import(source, importer, Insert);
-      if (err) dserror("Export using importer returned err=%d", err);
+      if (err) FOUR_C_THROW("Export using importer returned err=%d", err);
       return;
     }
     else if (!sourceunique && targetunique)
@@ -69,7 +69,8 @@ void CORE::LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& 
       {
         const int sourcelid = sourcemap.LID(targetmap.GID(targetlid));
         if (sourcelid < 0)
-          dserror("Export of non-unique source failed. Source data not available on target proc");
+          FOUR_C_THROW(
+              "Export of non-unique source failed. Source data not available on target proc");
 
         for (int k = 0; k < source.NumVectors(); ++k)
           (*target(k))[targetlid] = (*source(k))[sourcelid];
@@ -82,14 +83,14 @@ void CORE::LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& 
       // We need a unique in between stage which we have to create artificially.
       // That's nasty.
       // As it is unclear whether this will ever be needed - do it later.
-      dserror("Neither target nor source maps are unique - cannot export");
+      FOUR_C_THROW("Neither target nor source maps are unique - cannot export");
     }
     else
-      dserror("VERY strange");
+      FOUR_C_THROW("VERY strange");
   }
   catch (int error)
   {
-    dserror("Caught an Epetra exception %d", error);
+    FOUR_C_THROW("Caught an Epetra exception %d", error);
   }
 
   return;
@@ -112,7 +113,7 @@ void CORE::LINALG::Export(const Epetra_IntVector& source, Epetra_IntVector& targ
       for (int i = 0; i < target.Map().NumMyElements(); ++i)
       {
         const int gid = target.Map().GID(i);
-        if (gid < 0) dserror("No gid for i");
+        if (gid < 0) FOUR_C_THROW("No gid for i");
         const int lid = source.Map().LID(gid);
         if (lid < 0) continue;
         target[i] = source[lid];
@@ -123,21 +124,21 @@ void CORE::LINALG::Export(const Epetra_IntVector& source, Epetra_IntVector& targ
     {
       Epetra_Export exporter(source.Map(), target.Map());
       int err = target.Export(source, exporter, Insert);
-      if (err) dserror("Export using exporter returned err=%d", err);
+      if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       return;
     }
     else if (sourceunique && !targetunique)
     {
       Epetra_Import importer(target.Map(), source.Map());
       int err = target.Import(source, importer, Insert);
-      if (err) dserror("Export using exporter returned err=%d", err);
+      if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       return;
     }
     else if (!sourceunique && targetunique)
     {
       Epetra_Export exporter(source.Map(), target.Map());
       int err = target.Export(source, exporter, Insert);
-      if (err) dserror("Export using exporter returned err=%d", err);
+      if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
       return;
     }
     else if (!sourceunique && !targetunique)
@@ -146,14 +147,14 @@ void CORE::LINALG::Export(const Epetra_IntVector& source, Epetra_IntVector& targ
       // We need a unique in between stage which we have to create artificially.
       // That's nasty.
       // As it is unclear whether this will ever be needed - do it later.
-      dserror("Neither target nor source maps are unique - cannot export");
+      FOUR_C_THROW("Neither target nor source maps are unique - cannot export");
     }
     else
-      dserror("VERY strange");
+      FOUR_C_THROW("VERY strange");
   }
   catch (int error)
   {
-    dserror("Caught an Epetra exception %d", error);
+    FOUR_C_THROW("Caught an Epetra exception %d", error);
   }
 
   return;
@@ -189,7 +190,7 @@ void CORE::LINALG::ExtractMyVector(const Epetra_Vector& source, Epetra_Vector& t
     const int src_lid = source.Map().LID(target_gid);
     // check if the target_map is a local sub-set of the source map on each proc
     if (src_lid == -1)
-      dserror("Couldn't find the target GID %d in the source map on proc %d.", target_gid,
+      FOUR_C_THROW("Couldn't find the target GID %d in the source map on proc %d.", target_gid,
           source.Comm().MyPID());
 
     target_values[tar_lid] = src_values[src_lid];
@@ -215,7 +216,7 @@ void CORE::LINALG::ExtractMyVector(
     const int src_lid = source.Map().LID(target_gid);
     // check if the target_map is a local sub-set of the source map on each proc
     if (src_lid == -1)
-      dserror("Couldn't find the target GID %d in the source map on proc %d.", target_gid,
+      FOUR_C_THROW("Couldn't find the target GID %d in the source map on proc %d.", target_gid,
           source.Comm().MyPID());
 
     target_values[tar_lid] *= scalar_target;
@@ -229,14 +230,14 @@ bool CORE::LINALG::SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
     Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>>& Ablock,
     Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap)
 {
-  if (A == Teuchos::null) dserror("CORE::LINALG::SplitMatrix2x2: A==null on entry");
+  if (A == Teuchos::null) FOUR_C_THROW("CORE::LINALG::SplitMatrix2x2: A==null on entry");
 
   if (A11rowmap == Teuchos::null && A22rowmap != Teuchos::null)
     A11rowmap = CORE::LINALG::SplitMap(A->RowMap(), *A22rowmap);
   else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
     A22rowmap = CORE::LINALG::SplitMap(A->RowMap(), *A11rowmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
-    dserror("CORE::LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+    FOUR_C_THROW("CORE::LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
   maps[0] = Teuchos::rcp(new Epetra_Map(*A11rowmap));
@@ -281,7 +282,7 @@ bool CORE::LINALG::SplitMatrix2x2(Teuchos::RCP<CORE::LINALG::SparseMatrix> A,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& A11, Teuchos::RCP<CORE::LINALG::SparseMatrix>& A12,
     Teuchos::RCP<CORE::LINALG::SparseMatrix>& A21, Teuchos::RCP<CORE::LINALG::SparseMatrix>& A22)
 {
-  if (A == Teuchos::null) dserror("CORE::LINALG::SplitMatrix2x2: A==null on entry");
+  if (A == Teuchos::null) FOUR_C_THROW("CORE::LINALG::SplitMatrix2x2: A==null on entry");
 
   // check and complete input row maps
   if (A11rowmap == Teuchos::null && A22rowmap != Teuchos::null)
@@ -289,7 +290,7 @@ bool CORE::LINALG::SplitMatrix2x2(Teuchos::RCP<CORE::LINALG::SparseMatrix> A,
   else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
     A22rowmap = CORE::LINALG::SplitMap(A->RowMap(), *A11rowmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
-    dserror("CORE::LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+    FOUR_C_THROW("CORE::LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   // check and complete input domain maps
   if (A11domainmap == Teuchos::null && A22domainmap != Teuchos::null)
@@ -297,7 +298,8 @@ bool CORE::LINALG::SplitMatrix2x2(Teuchos::RCP<CORE::LINALG::SparseMatrix> A,
   else if (A11domainmap != Teuchos::null && A22domainmap == Teuchos::null)
     A22domainmap = CORE::LINALG::SplitMap(A->DomainMap(), *A11domainmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
-    dserror("CORE::LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
+    FOUR_C_THROW(
+        "CORE::LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
 
   // local variables
   std::vector<Teuchos::RCP<const Epetra_Map>> rangemaps(2);
@@ -344,7 +346,7 @@ int CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
 
     // skip rows which are not part of the matrix
     if (not dst_mat.RangeMap().MyGID(rgid))
-      dserror(
+      FOUR_C_THROW(
           "Could not find the row GID %d in the destination matrix RowMap"
           " on proc %d.",
           rgid, dst_mat.Comm().MyPID());
@@ -356,15 +358,15 @@ int CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
       if (err > 0)
       {
         err = dst_mat.InsertGlobalValues(rgid, 1, (diag_values + lid), &rgid);
-        if (err < 0) dserror("InsertGlobalValues error: %d", err);
+        if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
       }
       else if (err < 0)
-        dserror("SumIntoGlobalValues error: %d", err);
+        FOUR_C_THROW("SumIntoGlobalValues error: %d", err);
     }
     else
     {
       const int err = dst_mat.InsertGlobalValues(rgid, 1, (diag_values + lid), &rgid);
-      if (err < 0) dserror("InsertGlobalValues error: %d", err);
+      if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
     }
   }
 
@@ -410,7 +412,7 @@ void CORE::LINALG::InsertGlobalValues(
   else
     err = mat->InsertGlobalValues(GlobalRow, NumEntries, Values, nullptr);
 
-  if (err) dserror("InsertGlobalValues err=%d", err);
+  if (err) FOUR_C_THROW("InsertGlobalValues err=%d", err);
 
   return;
 }
@@ -423,11 +425,11 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::MergeMap(
 {
   // check for unique GIDs and for identity
   // if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
-  //  dserror("CORE::LINALG::MergeMap: One or both input maps are not unique");
+  //  FOUR_C_THROW("CORE::LINALG::MergeMap: One or both input maps are not unique");
   if (map1.SameAs(map2))
   {
     if ((overlap == false) && map1.NumGlobalElements() > 0)
-      dserror("CORE::LINALG::MergeMap: Result map is overlapping");
+      FOUR_C_THROW("CORE::LINALG::MergeMap: Result map is overlapping");
     else
       return Teuchos::rcp(new Epetra_Map(map1));
   }
@@ -444,7 +446,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::MergeMap(
     // check for overlap
     if (map1.MyGID(map2.GID(i)))
     {
-      if (overlap == false) dserror("CORE::LINALG::MergeMap: Result map is overlapping");
+      if (overlap == false) FOUR_C_THROW("CORE::LINALG::MergeMap: Result map is overlapping");
     }
     // add new GIDs to mygids
     else

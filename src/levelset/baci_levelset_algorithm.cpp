@@ -219,7 +219,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
     // set number of element layers around interface where velocity field form Navier-Stokes is kept
     convel_layers_ = levelsetparams_->get<int>("NUM_CONVEL_LAYERS");
     if (convel_layers_ < 1)
-      dserror(
+      FOUR_C_THROW(
           "Set number of element layers around interface where velocity "
           "field form Navier-Stokes should be kept");
   }
@@ -385,7 +385,7 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
         }
         default:
         {
-          dserror("Unknown reinitialization method!");
+          FOUR_C_THROW("Unknown reinitialization method!");
           break;
         }
       }

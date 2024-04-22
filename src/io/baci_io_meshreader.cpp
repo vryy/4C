@@ -62,11 +62,11 @@ void IO::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
     }
     case INPAR::geometry_file:
     {
-      dserror("Unfortunately not yet implemented, but feel free ...");
+      FOUR_C_THROW("Unfortunately not yet implemented, but feel free ...");
       break;
     }
     default:
-      dserror("Unknown geometry source");
+      FOUR_C_THROW("Unknown geometry source");
       break;
   }
 }
@@ -101,7 +101,7 @@ void IO::MeshReader::ReadAndPartition()
     comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
 
     if (max_node_id < comm_->NumProc() && reader_.ExcludedSectionLength(node_section_name_) != 0)
-      dserror("Bad idea: Simulation with %d procs for problem with %d nodes", comm_->NumProc(),
+      FOUR_C_THROW("Bad idea: Simulation with %d procs for problem with %d nodes", comm_->NumProc(),
           max_node_id);
   }
 }
@@ -212,7 +212,7 @@ void IO::MeshReader::Rebalance()
           break;
         }
         default:
-          dserror("Appropriate partitioning has to be set!");
+          FOUR_C_THROW("Appropriate partitioning has to be set!");
       }
     }
     else

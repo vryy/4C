@@ -104,7 +104,7 @@ void XFEM::XfluidTimeintBase::handleVectors(
   newVectors_ = newRowVectorsn;
 
   if (oldVectors_.size() != newVectors_.size())
-    dserror(
+    FOUR_C_THROW(
         "Number of state-vectors at new and old discretization are different!");  // but they have
                                                                                   // different maps
                                                                                   // (row vs col)
@@ -411,7 +411,7 @@ bool XFEM::XfluidTimeintBase::callSideEdgeIntersection(
     }
     default:
     {
-      dserror("unknown side shape");
+      FOUR_C_THROW("unknown side shape");
       break;
     }
   }
@@ -495,7 +495,7 @@ void XFEM::XfluidTimeintBase::callXToXiCoords(const DRT::Element* ele,  /// poin
     else if (state == "dispn")
       CORE::FE::ExtractMyValues(*dispn_, mydispnp, la[0].lm_);
     else
-      dserror("XFEM::XfluidTimeintBase::callXToXiCoords: Undefined state!");
+      FOUR_C_THROW("XFEM::XfluidTimeintBase::callXToXiCoords: Undefined state!");
 
     for (int inode = 0; inode < nen; ++inode)  // number of nodes
     {
@@ -537,7 +537,7 @@ void XFEM::XfluidTimeintBase::callXToXiCoords(
       XToXiCoords<CORE::FE::CellType::tet4>(nodecoords, x, xi, pointInDomain);
       break;
     default:
-      dserror("add your 3D distype and the according transformation!");
+      FOUR_C_THROW("add your 3D distype and the according transformation!");
       break;
   }  // end switch
 
@@ -661,7 +661,7 @@ template void XFEM::XfluidTimeintBase::evalShapeAndDeriv<4, CORE::FE::CellType::
 void XFEM::XfluidTimeintBase::addPBCelements(
     const DRT::Node* node, std::vector<const DRT::Element*>& eles) const
 {
-  dserror("what to do in addPBCelements?");
+  FOUR_C_THROW("what to do in addPBCelements?");
 
   const DRT::Element* const* elements = node->Elements();  // element around current node
 
@@ -705,7 +705,7 @@ void XFEM::XfluidTimeintBase::findPBCNode(
       // coupled node is the (first) slave node
       coupnodegid = pbciter->second[0];
       if (pbciter->second.size() != 1)
-        dserror("this might need to be modified for more than 1 slave per master");
+        FOUR_C_THROW("this might need to be modified for more than 1 slave per master");
     }
     else
     {
@@ -780,7 +780,7 @@ void XFEM::XfluidTimeintBase::sendData(
   lengthSend[0] = dataSend().size();
   int size_one = 1;
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   std::cout << "--- sending " << lengthSend[0] << " bytes: from proc " << myrank_ << " to proc "
             << dest << std::endl;
 #endif
@@ -808,7 +808,7 @@ void XFEM::XfluidTimeintBase::sendData(
   exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
   exporter.Wait(req_data);
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   std::cout << "--- receiving " << lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc "
             << source << std::endl;
 #endif
@@ -967,7 +967,7 @@ XFEM::XfluidStd::XfluidStd(
          data != timeIntData_->end(); data++)
     {
       if (data->startpoint_ == dummyStartpoint)  // startpoint unchanged
-        dserror(
+        FOUR_C_THROW(
             "WARNING! No enriched node on one interface side found!\nThis "
             "indicates that the whole area is at one side of the interface!");
     }  // end loop over nodes
@@ -983,7 +983,7 @@ XFEM::XfluidStd::XfluidStd(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidStd::compute(std::vector<Teuchos::RCP<Epetra_Vector>>& newRowVectorsn)
 {
-  dserror("Unused function! Use a function of the derived classes");
+  FOUR_C_THROW("Unused function! Use a function of the derived classes");
 }
 
 
@@ -1090,7 +1090,7 @@ void XFEM::XfluidStd::getGPValues(DRT::Element* ele,  ///< pointer to element
           ele, xi, nds, dofset, vel, vel_deriv, pres, pres_deriv, vel_vec, compute_deriv);
       break;
     default:
-      dserror("add your 3D distype here!");
+      FOUR_C_THROW("add your 3D distype here!");
       break;
   }  // end switch
 
@@ -1112,7 +1112,7 @@ void XFEM::XfluidStd::getGPValuesT(DRT::Element* ele,  ///< pointer to element
     bool compute_deriv                          ///< shall derivatives be computed?
 ) const
 {
-  if (vel_vec == Teuchos::null) dserror("vector is not filled");
+  if (vel_vec == Teuchos::null) FOUR_C_THROW("vector is not filled");
 
   const int nsd = 3;  // dimension
 
@@ -1129,7 +1129,7 @@ void XFEM::XfluidStd::getGPValuesT(DRT::Element* ele,  ///< pointer to element
   //-------------------------------------------------------
   // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
   if ((int)(nds.size()) != numnode)
-    dserror("size of nds-vector (%d) != numnode(%d)", nds.size(), numnode);
+    FOUR_C_THROW("size of nds-vector (%d) != numnode(%d)", nds.size(), numnode);
 
   std::vector<int> lm;
 
@@ -1333,7 +1333,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
   }
 
   if (points.size() == 0 and sides.size() == 0)
-    dserror("there are no cutting sides for node %d, that cannot be anymore", data.node_.Id());
+    FOUR_C_THROW("there are no cutting sides for node %d, that cannot be anymore", data.node_.Id());
 
   //-------------------------------------
   // initialize data holding information about minimal distance
@@ -1432,7 +1432,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
 
 
   if (data.proj_ == TimeIntData::failed_)
-    dserror("projection of node %d not successful!", n_new->Id());
+    FOUR_C_THROW("projection of node %d not successful!", n_new->Id());
 
 #ifdef DEBUG_TIMINT_STD
   IO::cout << "\n\t => Projection of node lies on (side=0, line=1, point=2, failed=3): "
@@ -1445,7 +1445,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
   {
     DRT::Element* side = boundarydis_->gElement(proj_sid);
 
-    if (side == nullptr) dserror("side with id %d not found ", proj_sid);
+    if (side == nullptr) FOUR_C_THROW("side with id %d not found ", proj_sid);
 
     // side geometry at initial state t^0
     const int numnodes = side->NumNode();
@@ -1480,7 +1480,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
 
       if (sides.size() <= 0)
       {
-        dserror(
+        FOUR_C_THROW(
             "there must be at least one found side adjacent to this line, but there are %d sides",
             sides.size());
       }
@@ -1555,7 +1555,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
         sid_2 = sides[1];
       }
       else
-        dserror("non valid number of sides adjacent to line");
+        FOUR_C_THROW("non valid number of sides adjacent to line");
 
       //---------------------------------------------------------
       // side 1
@@ -1666,7 +1666,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
     const std::string state = "idispn";
 
     Teuchos::RCP<const Epetra_Vector> matrix_state = boundarydis_->GetState(state);
-    if (matrix_state == Teuchos::null) dserror("Cannot get state vector %s", state.c_str());
+    if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
     // extract local values of the global vectors
     std::vector<double> mymatrix(lm.size());
@@ -1698,7 +1698,7 @@ void XFEM::XfluidStd::ProjectAndTrackback(TimeIntData& data)
     );
   }
   else
-    dserror("unknown projection method for tracking back the structural surface point");
+    FOUR_C_THROW("unknown projection method for tracking back the structural surface point");
 
 
   /// set the data
@@ -1721,7 +1721,8 @@ bool XFEM::XfluidStd::FindNearestSurfPoint(
     const std::string state              ///< state n or np?
 )
 {
-  if (vc == nullptr) dserror("do not call FindNearestSurfPoint with Null-Pointer for Volumecell");
+  if (vc == nullptr)
+    FOUR_C_THROW("do not call FindNearestSurfPoint with Null-Pointer for Volumecell");
 
   //--------------------------------------------------------
   // get involved side ids for projection and distance computation
@@ -1781,7 +1782,7 @@ bool XFEM::XfluidStd::ProjectToSurface(
 #endif
 
   if (points.size() == 0 and sides.size() == 0)
-    dserror(
+    FOUR_C_THROW(
         "there are no cutting sides around current point (%d,%d,%d), Projection on surface not "
         "possible here",
         x(0), x(1), x(2));
@@ -1879,7 +1880,7 @@ bool XFEM::XfluidStd::ProjectToSurface(
 
 
   if (proj == TimeIntData::failed_)
-    dserror("projection of point (%d,%d,%d) not successful!", x(0), x(1), x(2));
+    FOUR_C_THROW("projection of point (%d,%d,%d) not successful!", x(0), x(1), x(2));
 
 #ifdef DEBUG_TIMINT_STD
   IO::cout << "\n\t => Projection of node lies on (side=0, line=1, point=2, failed=3): " << proj
@@ -1981,7 +1982,7 @@ void XFEM::XfluidStd::ComputeStartPoint_AVG(
 )
 {
   if (sides.size() != sides_xyze.size() or sides.size() != sides_lm.size())
-    dserror("not equal number of sides, xyze-coordinates or lm-vectors ");
+    FOUR_C_THROW("not equal number of sides, xyze-coordinates or lm-vectors ");
 
   CORE::LINALG::Matrix<3, 1> normal_avg(true);  // averaged normal vector
 
@@ -2065,7 +2066,7 @@ void XFEM::XfluidStd::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to 
         //        lm, proj_x_n, xi_side); break;
         //      }
       default:
-        dserror("unsupported side shape %d", side->Shape());
+        FOUR_C_THROW("unsupported side shape %d", side->Shape());
         break;
     }
   }
@@ -2099,7 +2100,7 @@ void XFEM::XfluidStd::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to 
         //        lm, proj_x_n, xi_side); break;
         //      }
       default:
-        dserror("unsupported side shape %d", side->Shape());
+        FOUR_C_THROW("unsupported side shape %d", side->Shape());
         break;
     }
   }
@@ -2202,7 +2203,7 @@ void XFEM::XfluidStd::call_get_projxn_Line(
         break;
       }
       default:
-        dserror("unsupported line shape %d", line->Shape());
+        FOUR_C_THROW("unsupported line shape %d", line->Shape());
         break;
     }
   }
@@ -2216,7 +2217,7 @@ void XFEM::XfluidStd::call_get_projxn_Line(
         break;
       }
       default:
-        dserror("unsupported line shape %d", line->Shape());
+        FOUR_C_THROW("unsupported line shape %d", line->Shape());
         break;
     }
   }
@@ -2276,7 +2277,7 @@ void XFEM::XfluidStd::addeidisp(
 
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.GetState(state);
-  if (matrix_state == Teuchos::null) dserror("Cannot get state vector %s", state.c_str());
+  if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
@@ -2376,7 +2377,7 @@ void XFEM::XfluidStd::CallProjectOnSide(DRT::Element* side,  ///< pointer to str
         break;
       }
       default:
-        dserror("unsupported side shape %d", side->Shape());
+        FOUR_C_THROW("unsupported side shape %d", side->Shape());
         break;
     }
   }
@@ -2413,7 +2414,7 @@ void XFEM::XfluidStd::CallProjectOnSide(DRT::Element* side,  ///< pointer to str
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist); break;
         //      }
       default:
-        dserror("unsupported side shape %d", side->Shape());
+        FOUR_C_THROW("unsupported side shape %d", side->Shape());
         break;
     }
   }
@@ -2519,7 +2520,7 @@ void XFEM::XfluidStd::CallProjectOnLine(DRT::Element* side,  ///< pointer to str
         break;
       }
       default:
-        dserror("unsupported line shape %d", line->Shape());
+        FOUR_C_THROW("unsupported line shape %d", line->Shape());
         break;
     }
   }
@@ -2540,7 +2541,7 @@ void XFEM::XfluidStd::CallProjectOnLine(DRT::Element* side,  ///< pointer to str
         break;
       }
       default:
-        dserror("unsupported line shape %d", line->Shape());
+        FOUR_C_THROW("unsupported line shape %d", line->Shape());
         break;
     }
   }
@@ -2628,7 +2629,7 @@ void XFEM::XfluidStd::CallProjectOnLine(DRT::Element* side,  ///< pointer to str
     }
     else if (curr_dist < 0)
     {
-      dserror(" no negative distance to line possible");
+      FOUR_C_THROW(" no negative distance to line possible");
     }
   }  // on_line
 
@@ -2766,7 +2767,7 @@ bool XFEM::XfluidStd::ProjectOnSide(
   }
   else
   {
-    dserror("define start side xi-coordinates for unsupported cell type");
+    FOUR_C_THROW("define start side xi-coordinates for unsupported cell type");
   }
 
   const double absTolIncr = 1.0e-9;  // absolute tolerance for the local coordinates increment
@@ -2895,7 +2896,7 @@ bool XFEM::XfluidStd::ProjectOnSide(
     std::cout << "side " << xyze_ << std::endl;
 #endif
 
-    // dserror( "newton scheme in ProjectOnSide not converged! " );
+    // FOUR_C_THROW( "newton scheme in ProjectOnSide not converged! " );
 
     xi_side(0) = INFINITY;
     xi_side(1) = INFINITY;
@@ -3002,7 +3003,7 @@ bool XFEM::XfluidStd::ProjectOnLine(
 
     double line_length = line_dir.Norm2();  // || (x2-x1) ||
 
-    if (line_length < 1e-12) dserror("line has lenght smaller than 1e-12");
+    if (line_length < 1e-12) FOUR_C_THROW("line has lenght smaller than 1e-12");
 
     // 2.0/|| (x2-x1) ||^2 * < x-0.5(x1+x2),x2-x1 >
     xi_line = 2.0 / (line_length * line_length) * line_dir.Dot(dir_tmp);
@@ -3048,7 +3049,7 @@ bool XFEM::XfluidStd::ProjectOnLine(
   }
   else
   {
-    dserror("projection on line just for linear lines implemented!");
+    FOUR_C_THROW("projection on line just for linear lines implemented!");
   }
 
   return on_line;
@@ -3068,7 +3069,7 @@ void XFEM::XfluidStd::ProjectOnPoint(
 )
 {
   Teuchos::RCP<const Epetra_Vector> matrix_state = boundarydis_->GetState(state);
-  if (matrix_state == Teuchos::null) dserror("Cannot get state vector %s", state.c_str());
+  if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
@@ -3136,7 +3137,7 @@ bool XFEM::XfluidStd::WithinLimits(CORE::LINALG::Matrix<3, 1>& xsi_, const doubl
       return (xsi_(0) >= -TOL and xsi_(1) >= -TOL and xsi_(2) >= -1 - TOL and xsi_(2) <= 1 + TOL and
               xsi_(0) + xsi_(1) <= 1 + TOL);
     default:
-      dserror("unsupported element type in XFEM::XFLUID_STD::WithinLimits");
+      FOUR_C_THROW("unsupported element type in XFEM::XFLUID_STD::WithinLimits");
   }
   return false;
 }
@@ -3154,7 +3155,7 @@ void XFEM::XfluidStd::setFinalData()
        data++)
   {
     if (data->state_ != TimeIntData::doneStd_)
-      dserror("when data is set, all computation has to be done");
+      FOUR_C_THROW("when data is set, all computation has to be done");
 
     std::vector<CORE::LINALG::Matrix<nsd, 1>>& velValues(
         data->velValues_);                               // velocities of the node
@@ -3169,13 +3170,14 @@ void XFEM::XfluidStd::setFinalData()
     IO::cout << "dofset at new timestep " << data->nds_np_ << IO::endl;
 #endif
 
-    if (data->nds_np_ == -1) dserror("cannot get dofs for dofset with number %d", data->nds_np_);
+    if (data->nds_np_ == -1)
+      FOUR_C_THROW("cannot get dofs for dofset with number %d", data->nds_np_);
 
     std::vector<int> dofs;
     dofset_new_->Dof(dofs, node, data->nds_np_);
 
     if (dofs.size() != (nsd + 1))
-      dserror("not the right number of dofs %d for this node ", dofs.size());
+      FOUR_C_THROW("not the right number of dofs %d for this node ", dofs.size());
 
 
     // set velocity dofs
@@ -3200,7 +3202,7 @@ void XFEM::XfluidStd::setFinalData()
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidStd::exportStartData()
 {
-  dserror("this function has still to be adapted for XFSI");
+  FOUR_C_THROW("this function has still to be adapted for XFSI");
 
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
 
@@ -3321,7 +3323,7 @@ void XFEM::XfluidStd::exportFinalData()
        data++)
   {
     if (data->state_ != TimeIntData::doneStd_)
-      dserror("All data should be set here, having status 'done'. Thus something is wrong!");
+      FOUR_C_THROW("All data should be set here, having status 'done'. Thus something is wrong!");
     dataVec[data->node_.Owner()].push_back(*data);
   }
 

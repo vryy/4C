@@ -1196,7 +1196,7 @@ namespace DRT
       //! Set the isotropic diffusion coefficient
       virtual void SetIsotropicDiff(const double& diff, const int& k)
       {
-        //      if (diff < 0.0) dserror("negative (physical) diffusivity: %f",0,diff);
+        //      if (diff < 0.0) FOUR_C_THROW("negative (physical) diffusivity: %f",0,diff);
 
         diff_[k] = diff;
       }

@@ -59,7 +59,7 @@ DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterfa
       return FluidIntFaceImpl<CORE::FE::CellType::line3>::Instance();
     }
     default:
-      dserror(
+      FOUR_C_THROW(
           "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
       break;
   }
@@ -119,8 +119,8 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   // do not assemble if no stabilization terms activated for this face
   if (!stab_required) return;
 
-  if (!discretization.Filled()) dserror("FillComplete() was not called");
-  if (!discretization.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!discretization.Filled()) FOUR_C_THROW("FillComplete() was not called");
+  if (!discretization.HaveDofs()) FOUR_C_THROW("AssignDegreesOfFreedom() was not called");
 
   const bool assemblemat = systemmatrix != Teuchos::null;
   const bool assemblevec = systemvector != Teuchos::null;
@@ -198,10 +198,10 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     patch_components_lmowner[field].push_back(owner);
   }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   for (int isd = 0; isd < numdofpernode; isd++)
     if ((int)(patch_components_lm[isd].size()) != numnodeinpatch)
-      dserror("patch_components_lm[%d] has wrong size: size is %i but expected %i", isd,
+      FOUR_C_THROW("patch_components_lm[%d] has wrong size: size is %i but expected %i", isd,
           (int)(patch_components_lm[isd].size()), numnodeinpatch);
 #endif
 
@@ -239,7 +239,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   }
 
   else
-    dserror("unknown matrix pattern");
+    FOUR_C_THROW("unknown matrix pattern");
 
 
   // define element matrices and vectors
@@ -253,14 +253,14 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     int err = elemat_blocks[b].shape(
         numnodeinpatch, numnodeinpatch);  // new shape and init values to zero
 
-    if (err != 0) dserror("element matrix Shape not successful");
+    if (err != 0) FOUR_C_THROW("element matrix Shape not successful");
   }
 
   for (int b = 0; b < numdofpernode; b++)
   {
     int err = elevec_blocks[b].size(numnodeinpatch);  // new size and init values to zero
 
-    if (err != 0) dserror("element matrix Shape not successful");
+    if (err != 0) FOUR_C_THROW("element matrix Shape not successful");
   }
 
 
@@ -270,7 +270,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   int err = EvaluateInternalFaces(intface, material, params, discretization, lm_patch,
       lm_masterToPatch, lm_slaveToPatch, lm_faceToPatch, lm_masterNodeToPatch, lm_slaveNodeToPatch,
       elemat_blocks, elevec_blocks);
-  if (err) dserror("error while evaluating elements");
+  if (err) FOUR_C_THROW("error while evaluating elements");
 
   //---------------------------------------------------------------------------------------
   // assemble systemmatrix
@@ -314,7 +314,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
         }
       }
       else
-        dserror("unknown matrix pattern");
+        FOUR_C_THROW("unknown matrix pattern");
     }
   }
   //---------------------------------------------------------------------------------------
@@ -373,7 +373,7 @@ int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(
       break;
     }
     default:
-      dserror("Unknown type of action for FluidIntFace");
+      FOUR_C_THROW("Unknown type of action for FluidIntFace");
       break;
   }  // end of switch(act)
 

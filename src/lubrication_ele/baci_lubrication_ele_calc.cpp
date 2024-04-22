@@ -61,7 +61,7 @@ DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::LubricationEleCalc(const st
       sflowfac_(0.0),
       sflowfacderiv_(0.0)
 {
-  dsassert(
+  FOUR_C_ASSERT(
       nsd_ >= nsd_ele_, "problem dimension has to be equal or larger than the element dimension!");
 
   return;
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
 
   // get the global vector
   Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel, "av_tang_vel");
-  if (vel.is_null()) dserror("got nullptr pointer for \"av_tang_vel\"");
+  if (vel.is_null()) FOUR_C_THROW("got nullptr pointer for \"av_tang_vel\"");
 
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
 
@@ -222,7 +222,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
     // 1.1 Extract the relative tangential velocity
     // get the global vector
     auto velrel = discretization.GetState(ndsvel, "rel_tang_vel");
-    if (velrel.is_null()) dserror("got nullptr pointer for \"rel_tang_vel\"");
+    if (velrel.is_null()) FOUR_C_THROW("got nullptr pointer for \"rel_tang_vel\"");
 
     const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
 
@@ -245,7 +245,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = 1;  // needs further implementation: params.get<int>("ndsdisp");
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
-    if (dispnp == Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
     const int numdispdofpernode = la[ndsdisp].lm_.size() / nen_;
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
 
   // get the global vector containing the heights
   Teuchos::RCP<const Epetra_Vector> height = discretization.GetState(ndsheight, "height");
-  if (height == Teuchos::null) dserror("Cannot get state vector height");
+  if (height == Teuchos::null) FOUR_C_THROW("Cannot get state vector height");
 
   // determine number of height related dofs per node
   const int numheightdofpernode = la[ndsheight].lm_.size() / nen_;
@@ -290,7 +290,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
 
     // get the global vector containing the heightdots
     auto heightdot = discretization.GetState(ndsheightdot, "heightdot");
-    if (heightdot == Teuchos::null) dserror("Cannot get state vector heightdot");
+    if (heightdot == Teuchos::null) FOUR_C_THROW("Cannot get state vector heightdot");
 
     // determine number of heightdot related dofs per node
     const int numheightdotdofpernode = la[ndsheightdot].lm_.size() / nen_;
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
 
   // get the global vector containing the pressure
   Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
-  if (prenp == Teuchos::null) dserror("Cannot get state vector 'prenp'");
+  if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
 
   // values of pressure field are always in first dofset
   const std::vector<int>& lm = la[0].lm_;
@@ -385,7 +385,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
     if (lubricationpara_->ModifiedReynolds())
     {
       if (lubricationpara_->PureLub())
-        dserror("pure lubrication is not implemented for modified Reynolds equation");
+        FOUR_C_THROW("pure lubrication is not implemented for modified Reynolds equation");
       // calculate relative surface velocity of the contacting bodies at Integration point
       CORE::LINALG::Matrix<nsd_, 1> relvel(true);  // relative surface velocity, initialized to zero
       CalcRelVelAtIntPoint(relvel);
@@ -490,7 +490,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatrixforEHLMon(
 
     if (lubricationpara_->ModifiedReynolds())
     {
-      // dserror("we should not be here");
+      // FOUR_C_THROW("we should not be here");
       // calculate relative surface velocity of the contacting bodies at Integration point
       CORE::LINALG::Matrix<nsd_, 1> relvel(true);  // relative surface velocity, initialized to zero
       CalcRelVelAtIntPoint(relvel);
@@ -634,7 +634,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcPFlowFacAtIntPoint
     const double heightint)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
-    dserror("Classical Reynolds Equ. does NOT need flow factors!");
+    FOUR_C_THROW("Classical Reynolds Equ. does NOT need flow factors!");
   // lubricationvarmanager_->PressureFlowFactor(funct_, derxy_, eprenp_);
   const double roughness = lubricationpara_->RoughnessDeviation();
   const double r = (roughness / heightint);
@@ -654,7 +654,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcSFlowFacAtIntPoint
     double& sflowfac, double& sflowfacderiv, const double heightint)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
-    dserror("Classical Reynolds Equ. does NOT need flow factors!");
+    FOUR_C_THROW("Classical Reynolds Equ. does NOT need flow factors!");
   // lubricationvarmanager_->ShearFlowFactor(sflowfac, sflowfacderiv, heightint);
   const double roughness = lubricationpara_->RoughnessDeviation();
   const double r = (roughness / heightint);
@@ -707,7 +707,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Materials(
       MatLubrication(material, densn, densnp, densam, visc, dvisc, iquad);
       break;
     default:
-      dserror("Material type %i is not supported", material->MaterialType());
+      FOUR_C_THROW("Material type %i is not supported", material->MaterialType());
       break;
   }
   return;
@@ -772,7 +772,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetLaplacianWeakForm(
     const int ui,  //!< node index for the shape function
     const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
 {
-  // dserror("we should not be here");
+  // FOUR_C_THROW("we should not be here");
   val = 0.0;
   for (int j = 0; j < nsd_; j++)
   {
@@ -810,7 +810,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetLaplacianWeakFormRH
     const int vi,                                  //!< node index for the weighting function
     const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
 {
-  // dserror("we should not be here");
+  // FOUR_C_THROW("we should not be here");
   val = 0.0;
   for (int j = 0; j < nsd_; j++)
   {
@@ -878,7 +878,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(
     const double height, const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
-    dserror("There is no pressure flow factor in classical reynolds Equ.");
+    FOUR_C_THROW("There is no pressure flow factor in classical reynolds Equ.");
 
   // Poiseuille term
   const double fac_psl = timefacfac * (1 / (12 * viscosity)) * height * height * height;
@@ -925,7 +925,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(
     const double height, const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
-    dserror("There is no pressure flow factor in classical reynolds Equ.");
+    FOUR_C_THROW("There is no pressure flow factor in classical reynolds Equ.");
   // Poiseuille rhs term
   const double fac_rhs_psl = rhsfac * (1 / (12 * viscosity)) * height * height * height;
 
@@ -971,7 +971,7 @@ template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsSqz(
     CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double heightdot)
 {
-  if (!lubricationpara_->AddSqz()) dserror("You chosed NOT to add the squeeze term! WATCHOUT");
+  if (!lubricationpara_->AddSqz()) FOUR_C_THROW("You chosed NOT to add the squeeze term! WATCHOUT");
   // Squeeze rhs term
   const double fac_rhs_sqz = rhsfac * heightdot;
 
@@ -991,7 +991,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsShear(
     const CORE::LINALG::Matrix<nsd_, 1> velocity, const double sflowfac)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
-    dserror("There is no shear term in classical reynolds Equ.");
+    FOUR_C_THROW("There is no shear term in classical reynolds Equ.");
   // shear rhs term
   const double roughness = lubricationpara_->RoughnessDeviation();
   const double fac_rhs_shear = rhsfac * roughness;
@@ -1025,7 +1025,7 @@ double DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvalShapeFuncAndDeri
   const double det = EvalShapeFuncAndDerivsInParameterSpace();
 
   if (det < 1E-16)
-    dserror("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
+    FOUR_C_THROW("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
 
   // compute global spatial derivatives
   derxy_.Multiply(xij_, deriv_);
@@ -1093,7 +1093,7 @@ double DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvalShapeFuncAndDeri
         xyze_, deriv_red, metrictensor, det, throw_error_if_negative_determinant, &normalvec);
 
     if (det < 1E-16)
-      dserror("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
+      FOUR_C_THROW("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
 
     // transform the derivatives and Jacobians to the higher dimensional coordinates(problem
     // dimension)
@@ -1250,11 +1250,11 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateAction(DRT::Ele
     case LUBRICATION::calc_error:
     {
       // check if length suffices
-      if (elevec1_epetra.length() < 1) dserror("Result vector too short");
+      if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
 
       // need current solution
       Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
-      if (prenp == Teuchos::null) dserror("Cannot get state vector 'prenp'");
+      if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
       CalErrorComparedToAnalytSolution(ele, params, elevec1_epetra);
@@ -1270,7 +1270,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateAction(DRT::Ele
       // need current pressure vector
       // -> extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
-      if (prenp == Teuchos::null) dserror("Cannot get state vector 'prenp'");
+      if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
       CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
       // calculate pressures and domain integral
@@ -1281,7 +1281,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateAction(DRT::Ele
 
     default:
     {
-      dserror("Not acting on this action. Forgot implementation?");
+      FOUR_C_THROW("Not acting on this action. Forgot implementation?");
       break;
     }
   }  // switch(action)
@@ -1298,7 +1298,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalErrorComparedToAnal
     CORE::LINALG::SerialDenseVector& errors)
 {
   if (CORE::UTILS::GetAsEnum<LUBRICATION::Action>(params, "action") != LUBRICATION::calc_error)
-    dserror("How did you get here?");
+    FOUR_C_THROW("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
   // set constants for analytical solution
@@ -1400,7 +1400,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalErrorComparedToAnal
     }
     break;
     default:
-      dserror("Unknown analytical solution!");
+      FOUR_C_THROW("Unknown analytical solution!");
       break;
   }  // switch(errortype)
 
@@ -1432,7 +1432,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalculatePressures(
         if (std::abs(eprenp_(i, 0)) > 1e-14)
           pressures[0] += fac_funct_i / eprenp_(i, 0);
         else
-          dserror("Division by zero");
+          FOUR_C_THROW("Division by zero");
         // for domain volume
         pressures[1] += fac_funct_i;
       }

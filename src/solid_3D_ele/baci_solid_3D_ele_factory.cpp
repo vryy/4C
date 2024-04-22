@@ -38,7 +38,7 @@ namespace
         return fct(std::integral_constant<INPAR::STR::KinemType, INPAR::STR::KinemType::vague>{});
     }
 
-    dserror("Your kinematic type is unknown: %d", kinem_type);
+    FOUR_C_THROW("Your kinematic type is unknown: %d", kinem_type);
   }
 
 
@@ -185,7 +185,7 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
                                 eletech_c, prestress_tech_c>::type();
                           }
 
-                          dserror(
+                          FOUR_C_THROW(
                               "Your element formulation with cell type %s, kinematic type %s,"
                               " elememt technology %s and prestress type %s oes not exist ",
                               CORE::FE::celltype_string<celltype_t()>,

@@ -37,7 +37,7 @@ namespace CONTACT
         void SetPenaltyCorrectionParameter(const double correction_param)
         {
           if (correction_param < 0.0)
-            dserror(
+            FOUR_C_THROW(
                 "The correction parameter must be equal to 0.0 (default) or "
                 "larger! A value of %.4e is not allowed!",
                 correction_param);
@@ -50,7 +50,7 @@ namespace CONTACT
         void SetPenaltyDecreaseCorrectionParameter(const double correction_param)
         {
           if (correction_param < GetPenaltyCorrectionParameter())
-            dserror(
+            FOUR_C_THROW(
                 "The DECREASE CORRECTION PARAMETER must be larger than the"
                 "penalty correction parameter [currently set to %.4e]! A value of "
                 "%.4e is not allowed!",
@@ -76,7 +76,8 @@ namespace CONTACT
 
         LagrangeMultiplierFunction& LagrangeMultiplierFunc()
         {
-          if (lm_func_ptr_.is_null()) dserror("The lm_func_ptr_ is not initialized correctly!");
+          if (lm_func_ptr_.is_null())
+            FOUR_C_THROW("The lm_func_ptr_ is not initialized correctly!");
 
           return *lm_func_ptr_;
         }
@@ -91,7 +92,7 @@ namespace CONTACT
         AUG::PenaltyUpdate& PenaltyUpdate()
         {
           if (penalty_update_ptr_.is_null())
-            dserror("The lm_func_ptr_ is not initialized correctly!");
+            FOUR_C_THROW("The lm_func_ptr_ is not initialized correctly!");
 
           return *penalty_update_ptr_;
         }

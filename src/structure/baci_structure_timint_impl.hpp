@@ -404,7 +404,7 @@ namespace STR
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current
     //! state of the displacement solution
-    void NewtonModified() { dserror("Not impl."); }
+    void NewtonModified() { FOUR_C_THROW("Not impl."); }
 
     //! Do Line search iteration
     //!

@@ -42,7 +42,7 @@ namespace DRT
 
       [[nodiscard]] std::size_t NumberComponents() const override
       {
-        dserror("Number of components not defined for GerstenbergerForwardfacingStep.");
+        FOUR_C_THROW("Number of components not defined for GerstenbergerForwardfacingStep.");
       };
     };
 
@@ -66,7 +66,7 @@ namespace DRT
 
       [[nodiscard]] std::size_t NumberComponents() const override
       {
-        dserror("Number of components not defined for MovingLevelSetCylinder.");
+        FOUR_C_THROW("Number of components not defined for MovingLevelSetCylinder.");
       };
 
      private:
@@ -133,7 +133,7 @@ namespace DRT
 
       [[nodiscard]] std::size_t NumberComponents() const override
       {
-        dserror("Number of components not defined for MovingLSTorus.");
+        FOUR_C_THROW("Number of components not defined for MovingLSTorus.");
       };
 
      protected:
@@ -249,7 +249,7 @@ namespace DRT
 
       [[nodiscard]] std::size_t NumberComponents() const override
       {
-        dserror("Number of components not defined for TaylorCouetteFlow.");
+        FOUR_C_THROW("Number of components not defined for TaylorCouetteFlow.");
       };
 
      private:
@@ -282,7 +282,7 @@ namespace DRT
 
       [[nodiscard]] std::size_t NumberComponents() const override
       {
-        dserror("Number of components not defined for UrquizaBoxFlow.");
+        FOUR_C_THROW("Number of components not defined for UrquizaBoxFlow.");
       };
 
      protected:
@@ -313,7 +313,7 @@ namespace DRT
       std::vector<double> EvaluateSpatialDerivative(
           const double* x, const double t, const std::size_t component) const override
       {
-        dserror("Derivative not implemented for UrquizaBoxFlowForce");
+        FOUR_C_THROW("Derivative not implemented for UrquizaBoxFlowForce");
         return {};
       }
     };
@@ -334,7 +334,7 @@ namespace DRT
       std::vector<double> EvaluateSpatialDerivative(
           const double* x, const double t, const std::size_t component) const override
       {
-        dserror("Derivative not implemented for UrquizaBoxFlowTraction");
+        FOUR_C_THROW("Derivative not implemented for UrquizaBoxFlowTraction");
         return {};
       }
     };

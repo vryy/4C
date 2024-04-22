@@ -91,7 +91,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
   // get the linear solver number
   const int linsolvernumber = adyn->get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
-    dserror(
+    FOUR_C_THROW(
         "No linear solver defined for ALE problems. Please set "
         "LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
@@ -115,7 +115,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
     int coupling = CORE::UTILS::IntegralValue<int>(fpsidyn, "COUPALGO");
     if (coupling == partitioned)
     {
-      dserror("partitioned fpsi solution scheme has not been implemented yet.");
+      FOUR_C_THROW("partitioned fpsi solution scheme has not been implemented yet.");
     }
   }
 
@@ -146,7 +146,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
     }
     default:
     {
-      dserror("Decide, whether ALE_TYPE = '%s' is linear or nonlinear.",
+      FOUR_C_THROW("Decide, whether ALE_TYPE = '%s' is linear or nonlinear.",
           adyn->get<std::string>("ALE_TYPE").c_str());
       break;
     }
@@ -206,7 +206,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "No ALE adapter available yet for your chosen FSI coupling "
             "algorithm!");
       }
@@ -223,7 +223,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "No ALE adapter available yet for your chosen FSI coupling "
             "algorithm!");
       }
@@ -257,7 +257,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
       }
       else
       {
-        dserror(
+        FOUR_C_THROW(
             "No ALE adapter available yet for your chosen FSI coupling "
             "algorithm!");
       }
@@ -285,7 +285,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
       break;
     }
     default:
-      dserror("ALE type not implemented yet!!");
+      FOUR_C_THROW("ALE type not implemented yet!!");
       break;
   }
 

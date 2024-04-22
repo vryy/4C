@@ -83,7 +83,7 @@ void FSI::Algorithm::Setup()
         Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::PartitionedFSI>(fsi_model_ptr));
 
     if (structure_ == Teuchos::null)
-      dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
+      FOUR_C_THROW("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
   }
   else if (sdyn.get<std::string>("INT_STRATEGY") ==
            "Old")  // todo this is the part that should be removed !
@@ -103,12 +103,12 @@ void FSI::Algorithm::Setup()
     structure_->Setup();
 
     if (structure_ == Teuchos::null)
-      dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
+      FOUR_C_THROW("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
     use_old_structure_ = true;
   }
   else
-    dserror(
+    FOUR_C_THROW(
         "Unknown time integration requested!\n"
         "Set parameter INT_STRATEGY to Standard in ---STRUCUTRAL DYNAMIC section!\n"
         "If you want to use yet unsupported elements or you want to do crack simulation,\n"

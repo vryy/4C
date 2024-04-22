@@ -28,11 +28,11 @@ MAT::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
 {
   // check if sizes fit
   if (numreac_ != (int)reacids_->size())
-    dserror("number of materials %d does not fit to size of material vector %d", nummat_,
+    FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
         reacids_->size());
 
   if (numreac_ < 1)
-    dserror("if you don't have reactions, use MAT_matlist instead of MAT_matlist_reactions!");
+    FOUR_C_THROW("if you don't have reactions, use MAT_matlist instead of MAT_matlist_reactions!");
 
   if (not local_)
   {
@@ -45,10 +45,10 @@ MAT::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
 
       // safety check and cast
       if (mat->MaterialType() != INPAR::MAT::m_fluidporo_singlereaction)
-        dserror("only MAT_FluidPoroSingleReaction material valid");
+        FOUR_C_THROW("only MAT_FluidPoroSingleReaction material valid");
       MAT::FluidPoroSingleReaction singlereacmat = static_cast<MAT::FluidPoroSingleReaction&>(*mat);
       if (singlereacmat.TotalNumDof() != this->nummat_)
-        dserror(
+        FOUR_C_THROW(
             "TOTALNUMDOF in MAT_FluidPoroSingleReaction does not correspond to NUMMAT in "
             "MAT_FluidPoroMultiPhaseReactions");
 
@@ -111,7 +111,7 @@ void MAT::FluidPoroMultiPhaseReactions::SetupMatMap()
   {
     const int reacid = *m;
     Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
-    if (mat == Teuchos::null) dserror("Failed to allocate this material");
+    if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
     MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<MAT::Material>>(reacid, mat));
   }
   return;
@@ -177,7 +177,7 @@ void MAT::FluidPoroMultiPhaseReactions::Unpack(const std::vector<char>& data)
         paramsreac_ = dynamic_cast<MAT::PAR::FluidPoroMultiPhaseReactions*>(mat);
       }
       else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
+        FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
 
@@ -188,7 +188,8 @@ void MAT::FluidPoroMultiPhaseReactions::Unpack(const std::vector<char>& data)
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+  if (position != data.size())
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 /*----------------------------------------------------------------------*
@@ -200,7 +201,7 @@ int MAT::FluidPoroMultiPhaseReactions::ReacID(const unsigned index) const
     return paramsreac_->reacids_->at(index);
   else
   {
-    dserror("Index too large");
+    FOUR_C_THROW("Index too large");
     return -1;
   }
 }

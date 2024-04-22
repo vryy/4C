@@ -88,7 +88,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") ==
       INPAR::CONTACT::system_condensed_lagmult)
   {
-    dserror(
+    FOUR_C_THROW(
         "For Contact anyway just the lagrange multiplier can be condensed, "
         "choose SYSTEM = Condensed.");
   }
@@ -102,13 +102,14 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
           "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none &&
       mortarParallelRedistParams.get<int>("MIN_ELEPROC") < 0)
-    dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
+    FOUR_C_THROW(
+        "Minimum number of elements per processor for parallel redistribution must be >= 0");
 
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
           "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_dynamic &&
       mortarParallelRedistParams.get<double>("MAX_BALANCE_EVAL_TIME") < 1.0)
   {
-    dserror(
+    FOUR_C_THROW(
         "Maximum allowed value of load balance for dynamic parallel redistribution must be "
         ">= 1.0");
   }
@@ -118,7 +119,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
           "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none &&
       CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
           INPAR::CONTACT::solution_nitsche)
-    dserror("Parallel redistribution not yet implemented for TSI problems");
+    FOUR_C_THROW("Parallel redistribution not yet implemented for TSI problems");
 
   // ---------------------------------------------------------------------
   // adhesive contact
@@ -127,13 +128,13 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
           INPAR::CONTACT::adhesion_none and
       CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
           INPAR::WEAR::wear_none)
-    dserror("Adhesion combined with wear not yet tested!");
+    FOUR_C_THROW("Adhesion combined with wear not yet tested!");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::AdhesionType>(contact, "ADHESION") !=
           INPAR::CONTACT::adhesion_none and
       CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none)
-    dserror("Adhesion combined with friction not yet tested!");
+    FOUR_C_THROW("Adhesion combined with friction not yet tested!");
 
   // ---------------------------------------------------------------------
   // generally invalid combinations (nts/mortar)
@@ -143,7 +144,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
           CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_nitsche) &&
       contact.get<double>("PENALTYPARAM") <= 0.0)
-    dserror("Penalty parameter eps = 0, must be greater than 0");
+    FOUR_C_THROW("Penalty parameter eps = 0, must be greater than 0");
 
   if ((CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_penalty ||
@@ -152,73 +153,75 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
       CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none &&
       contact.get<double>("PENALTYPARAMTAN") <= 0.0)
-    dserror("Tangential penalty parameter eps = 0, must be greater than 0");
+    FOUR_C_THROW("Tangential penalty parameter eps = 0, must be greater than 0");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       contact.get<double>("PENALTYPARAM") <= 0.0)
-    dserror("Penalty parameter eps = 0, must be greater than 0");
+    FOUR_C_THROW("Penalty parameter eps = 0, must be greater than 0");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none &&
       contact.get<double>("PENALTYPARAMTAN") <= 0.0)
-    dserror("Tangential penalty parameter eps = 0, must be greater than 0");
+    FOUR_C_THROW("Tangential penalty parameter eps = 0, must be greater than 0");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       contact.get<int>("UZAWAMAXSTEPS") < 2)
-    dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
+    FOUR_C_THROW("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       contact.get<double>("UZAWACONSTRTOL") <= 0.0)
-    dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
+    FOUR_C_THROW("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none &&
       contact.get<double>("SEMI_SMOOTH_CT") == 0.0)
-    dserror("Parameter ct = 0, must be greater than 0 for frictional contact");
+    FOUR_C_THROW("Parameter ct = 0, must be greater than 0 for frictional contact");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_augmented &&
       contact.get<double>("SEMI_SMOOTH_CN") <= 0.0)
-    dserror("Regularization parameter cn, must be greater than 0 for contact problems");
+    FOUR_C_THROW("Regularization parameter cn, must be greater than 0 for contact problems");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
           INPAR::CONTACT::friction_tresca &&
       dim == 3 &&
       CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
           INPAR::CONTACT::solution_nitsche)
-    dserror("3D frictional contact with Tresca's law only implemented for nitsche formulation");
+    FOUR_C_THROW(
+        "3D frictional contact with Tresca's law only implemented for nitsche formulation");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none &&
       CORE::UTILS::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON") != 1 && dim == 3)
-    dserror("3D frictional contact only implemented with Semi-smooth Newton");
+    FOUR_C_THROW("3D frictional contact only implemented with Semi-smooth Newton");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           INPAR::CONTACT::solution_augmented &&
       CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none)
-    dserror("Frictional contact is for the augmented Lagrange formulation not yet implemented!");
+    FOUR_C_THROW(
+        "Frictional contact is for the augmented Lagrange formulation not yet implemented!");
 
   if (CORE::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true && dim == 3)
-    dserror("Crosspoints / edge node modification not yet implemented for 3D");
+    FOUR_C_THROW("Crosspoints / edge node modification not yet implemented for 3D");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
           INPAR::CONTACT::friction_tresca &&
       CORE::UTILS::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
     // hopefully coming soon, when Coulomb and Tresca are combined
-    dserror("Frictionless first contact step with Tresca's law not yet implemented");
+    FOUR_C_THROW("Frictionless first contact step with Tresca's law not yet implemented");
 
   if (CORE::UTILS::IntegralValue<INPAR::CONTACT::Regularization>(
           contact, "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none &&
       CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
           INPAR::CONTACT::solution_lagmult)
   {
-    dserror(
+    FOUR_C_THROW(
         "Regularized Contact just available for Dual Mortar Contact with Lagrangean "
         "Multiplier!");
   }
@@ -227,7 +230,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
           contact, "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none &&
       CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
           INPAR::CONTACT::friction_none)
-    dserror("Regularized Contact for contact with friction not implemented yet!");
+    FOUR_C_THROW("Regularized Contact for contact with friction not implemented yet!");
 
   // ---------------------------------------------------------------------
   // warnings
@@ -257,7 +260,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
             INPAR::CONTACT::solution_lagmult &&
         CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_petrovgalerkin)
-      dserror("Petrov-Galerkin approach for LM only with Lagrange multiplier strategy");
+      FOUR_C_THROW("Petrov-Galerkin approach for LM only with Lagrange multiplier strategy");
 
     if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
             INPAR::CONTACT::solution_lagmult &&
@@ -267,7 +270,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
                 INPAR::MORTAR::lagmult_const) &&
         CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") ==
             INPAR::CONTACT::system_condensed)
-      dserror("Condensation of linear system only possible for dual Lagrange multipliers");
+      FOUR_C_THROW("Condensation of linear system only possible for dual Lagrange multipliers");
 
     if (CORE::UTILS::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true &&
         CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
@@ -275,7 +278,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
         CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
             INPAR::MORTAR::shape_standard)
     {
-      dserror(
+      FOUR_C_THROW(
           "Consistent dual shape functions in boundary elements only for Lagrange "
           "multiplier strategy.");
     }
@@ -286,7 +289,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
         (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_dual))
     {
-      dserror(
+      FOUR_C_THROW(
           "Consistent dual shape functions in boundary elements not for purely "
           "element-based integration.");
     }
@@ -295,7 +298,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
             INPAR::CONTACT::solution_augmented &&
         CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_dual)
-      dserror("The augmented Lagrange formulation does not support dual shape functions.");
+      FOUR_C_THROW("The augmented Lagrange formulation does not support dual shape functions.");
 
     // ---------------------------------------------------------------------
     // not (yet) implemented combinations
@@ -304,7 +307,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     if (CORE::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
         CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
             INPAR::MORTAR::lagmult_lin)
-      dserror("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
+      FOUR_C_THROW("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
     // check for self contact
     std::vector<DRT::Condition*> contactConditions(0);
@@ -319,18 +322,19 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
 
     if (self && Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
                     "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
-      dserror("Self contact and parallel redistribution not yet compatible");
+      FOUR_C_THROW("Self contact and parallel redistribution not yet compatible");
 
     if (CORE::UTILS::IntegralValue<int>(contact, "INITCONTACTBYGAP") == true &&
         contact.get<double>("INITCONTACTGAPVALUE") == 0.0)
-      dserror("For initialization of init contact with gap, the INITCONTACTGAPVALUE is needed.");
+      FOUR_C_THROW(
+          "For initialization of init contact with gap, the INITCONTACTGAPVALUE is needed.");
 
     if (CORE::UTILS::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true &&
         CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") !=
             INPAR::MORTAR::lagmult_undefined &&
         distype != CORE::FE::ShapeFunctionType::nurbs)
     {
-      dserror(
+      FOUR_C_THROW(
           "Consistent dual shape functions in boundary elements only for linear shape "
           "functions or NURBS.");
     }
@@ -338,11 +342,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
             INPAR::WEAR::wear_none &&
         CORE::UTILS::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
-      dserror("Frictionless first contact step with wear not yet implemented");
+      FOUR_C_THROW("Frictionless first contact step with wear not yet implemented");
 
     if (problemtype != GLOBAL::ProblemType::ehl &&
         CORE::UTILS::IntegralValue<int>(contact, "REGULARIZED_NORMAL_CONTACT") == true)
-      dserror("Regularized normal contact only implemented for EHL");
+      FOUR_C_THROW("Regularized normal contact only implemented for EHL");
 
     // ---------------------------------------------------------------------
     // Augmented Lagrangian strategy
@@ -352,18 +356,18 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     {
       if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
           INPAR::MORTAR::shape_dual)
-        dserror("AUGEMENTED LAGRANGIAN STRATEGY: No support for dual shape functions.");
+        FOUR_C_THROW("AUGEMENTED LAGRANGIAN STRATEGY: No support for dual shape functions.");
 
       if (not CORE::UTILS::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON"))
       {
-        dserror(
+        FOUR_C_THROW(
             "AUGEMENTED LAGRANGIAN STRATEGY: Support ony for the semi-smooth Newton "
             "case at the moment!");
       }
 
       if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
           INPAR::CONTACT::friction_tresca)
-        dserror("AUGEMENTED LAGRANGIAN STRATEGY: No frictional contact support!");
+        FOUR_C_THROW("AUGEMENTED LAGRANGIAN STRATEGY: No frictional contact support!");
     }
 
     // ---------------------------------------------------------------------
@@ -374,17 +378,17 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
             INPAR::MORTAR::shape_standard &&
         CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") !=
             INPAR::MORTAR::lagmult_const)
-      dserror("Thermal contact only for dual shape functions");
+      FOUR_C_THROW("Thermal contact only for dual shape functions");
 
     if (problemtype == GLOBAL::ProblemType::tsi &&
         CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") !=
             INPAR::CONTACT::system_condensed)
-      dserror("Thermal contact only for dual shape functions with condensed system");
+      FOUR_C_THROW("Thermal contact only for dual shape functions with condensed system");
 
     // no nodal scaling in for thermal-structure-interaction
     if (problemtype == GLOBAL::ProblemType::tsi &&
         tsic.get<double>("TEMP_DAMAGE") <= tsic.get<double>("TEMP_REF"))
-      dserror("damage temperature must be greater than reference temperature");
+      FOUR_C_THROW("damage temperature must be greater than reference temperature");
 
     // ---------------------------------------------------------------------
     // contact with wear
@@ -392,7 +396,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") ==
             INPAR::WEAR::wear_none &&
         wearlist.get<double>("WEARCOEFF") != 0.0)
-      dserror("Wear coefficient only necessary in the context of wear.");
+      FOUR_C_THROW("Wear coefficient only necessary in the context of wear.");
 
     if (problemtype == GLOBAL::ProblemType::structure and
         CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
@@ -400,7 +404,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
         CORE::UTILS::IntegralValue<INPAR::WEAR::WearTimInt>(wearlist, "WEARTIMINT") !=
             INPAR::WEAR::wear_expl)
     {
-      dserror(
+      FOUR_C_THROW(
           "Wear calculation for pure structure problems only with explicit internal state "
           "variable approach reasonable!");
     }
@@ -409,24 +413,24 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
             INPAR::CONTACT::friction_none &&
         CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
             INPAR::WEAR::wear_none)
-      dserror("Wear models only applicable to frictional contact.");
+      FOUR_C_THROW("Wear models only applicable to frictional contact.");
 
     if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
             INPAR::WEAR::wear_none &&
         wearlist.get<double>("WEARCOEFF") <= 0.0)
-      dserror("No valid wear coefficient provided, must be equal or greater 0.0");
+      FOUR_C_THROW("No valid wear coefficient provided, must be equal or greater 0.0");
 
     if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
             INPAR::CONTACT::solution_lagmult &&
         CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
             INPAR::WEAR::wear_none)
-      dserror("Wear model only applicable in combination with Lagrange multiplier strategy.");
+      FOUR_C_THROW("Wear model only applicable in combination with Lagrange multiplier strategy.");
 
     if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
             INPAR::CONTACT::friction_tresca &&
         CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
             INPAR::WEAR::wear_none)
-      dserror("Wear only for Coulomb friction!");
+      FOUR_C_THROW("Wear only for Coulomb friction!");
 
     // ---------------------------------------------------------------------
     // 3D quadratic mortar (choice of interpolation and testing fcts.)
@@ -436,7 +440,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
         CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_dual)
     {
-      dserror(
+      FOUR_C_THROW(
           "No piecewise linear approach (for LM) implemented for quadratic contact with "
           "DUAL shape fct.");
     }
@@ -451,14 +455,14 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
                 INPAR::MORTAR::shape_dual &&
             CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
                 INPAR::MORTAR::shape_petrovgalerkin))
-      dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
+      FOUR_C_THROW("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
     if ((problemtype == GLOBAL::ProblemType::poroelast ||
             problemtype == GLOBAL::ProblemType::fpsi ||
             problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
         Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
             "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
-      dserror(
+      FOUR_C_THROW(
           "POROCONTACT: Parallel Redistribution not implemented yet!");  // Since we use Pointers to
                                                                          // Parent Elements, which
                                                                          // are not copied to other
@@ -469,21 +473,21 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
             problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
         CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
             INPAR::CONTACT::solution_lagmult)
-      dserror("POROCONTACT: Use Lagrangean Strategy for poro contact!");
+      FOUR_C_THROW("POROCONTACT: Use Lagrangean Strategy for poro contact!");
 
     if ((problemtype == GLOBAL::ProblemType::poroelast ||
             problemtype == GLOBAL::ProblemType::fpsi ||
             problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
         CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") !=
             INPAR::CONTACT::friction_none)
-      dserror("POROCONTACT: Friction for poro contact not implemented!");
+      FOUR_C_THROW("POROCONTACT: Friction for poro contact not implemented!");
 
     if ((problemtype == GLOBAL::ProblemType::poroelast ||
             problemtype == GLOBAL::ProblemType::fpsi ||
             problemtype == GLOBAL::ProblemType::fpsi_xfem) &&
         CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") !=
             INPAR::CONTACT::system_condensed)
-      dserror("POROCONTACT: System has to be condensed for poro contact!");
+      FOUR_C_THROW("POROCONTACT: System has to be condensed for poro contact!");
 
     if ((problemtype == GLOBAL::ProblemType::poroelast ||
             problemtype == GLOBAL::ProblemType::fpsi ||
@@ -492,7 +496,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     {
       const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
       if (CORE::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
-        dserror("POROCONTACT: PoroContact with no penetration just tested for 3d (and 2d)!");
+        FOUR_C_THROW("POROCONTACT: PoroContact with no penetration just tested for 3d (and 2d)!");
     }
 
     // ---------------------------------------------------------------------
@@ -501,11 +505,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     auto inttype = CORE::UTILS::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
 
     if (inttype == INPAR::MORTAR::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
-      dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
+      FOUR_C_THROW("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
     if (inttype == INPAR::MORTAR::inttype_elements_BS && mortar.get<int>("NUMGP_PER_DIM") <= 0)
     {
-      dserror(
+      FOUR_C_THROW(
           "Invalid Gauss point number NUMGP_PER_DIM for element-based integration with "
           "boundary segmentation."
           "\nPlease note that the value you have to provide only applies to the element-based "
@@ -517,7 +521,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     if ((inttype == INPAR::MORTAR::inttype_elements ||
             inttype == INPAR::MORTAR::inttype_elements_BS) &&
         mortar.get<int>("NUMGP_PER_DIM") <= 1)
-      dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
+      FOUR_C_THROW("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
   }  // END MORTAR CHECKS
 
   // ---------------------------------------------------------------------
@@ -528,7 +532,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   {
     if (problemtype == GLOBAL::ProblemType::poroelast or problemtype == GLOBAL::ProblemType::fpsi or
         problemtype == GLOBAL::ProblemType::tsi)
-      dserror("NTS only for problem type: structure");
+      FOUR_C_THROW("NTS only for problem type: structure");
   }  // END NTS CHECKS
 
   // ---------------------------------------------------------------------
@@ -541,20 +545,20 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
             INPAR::CONTACT::solution_penalty &&
         CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
             INPAR::CONTACT::solution_nitsche)
-      dserror("GPTS-Algorithm only with penalty or nitsche strategy");
+      FOUR_C_THROW("GPTS-Algorithm only with penalty or nitsche strategy");
 
     if (contact.get<double>("PENALTYPARAM") <= 0.0)
-      dserror("Penalty parameter eps = 0, must be greater than 0");
+      FOUR_C_THROW("Penalty parameter eps = 0, must be greater than 0");
 
     if (CORE::UTILS::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
         INPAR::WEAR::wear_none)
-      dserror("GPTS algorithm not implemented for wear");
+      FOUR_C_THROW("GPTS algorithm not implemented for wear");
 
     if (CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") !=
         INPAR::MORTAR::lagmult_undefined)
-      dserror("GPTS algorithm only implemented for first order interpolation");
+      FOUR_C_THROW("GPTS algorithm only implemented for first order interpolation");
 
-    if (dim != 3) dserror("GPTS algorithm only implemented for 3D contact");
+    if (dim != 3) FOUR_C_THROW("GPTS algorithm only implemented for 3D contact");
   }  // END GPTS CHECKS
 
   // ---------------------------------------------------------------------
@@ -640,7 +644,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
            problemtype == GLOBAL::ProblemType::fpsi or
            problemtype == GLOBAL::ProblemType::fpsi_xfem)
   {
-    dserror(
+    FOUR_C_THROW(
         "Everything which is related to a special time integration scheme has to be moved to the"
         " related scheme. Don't do it here! -- hiermeier 02/2016");
     const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
@@ -657,7 +661,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   }
   else if (problemtype == GLOBAL::ProblemType::fpsi_xfem)
   {
-    dserror(
+    FOUR_C_THROW(
         "Everything which is related to a special time integration scheme has to be moved to the"
         " related scheme. Don't do it here! -- hiermeier 02/2016");
     const Teuchos::ParameterList& porodyn = GLOBAL::Problem::Instance()->PoroelastDynamicParams();
@@ -810,10 +814,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       // check consistency of interface COFs
       for (std::size_t j = 1; j < currentgroup.size(); ++j)
         if (frcoeff[j] != frcoeff[0])
-          dserror("Inconsistency in friction coefficients of interface %i", groupid1);
+          FOUR_C_THROW("Inconsistency in friction coefficients of interface %i", groupid1);
 
       // check for infeasible value of COF
-      if (frcoeff[0] < 0.0) dserror("Negative FrCoeff / FrBound on interface %i", groupid1);
+      if (frcoeff[0] < 0.0) FOUR_C_THROW("Negative FrCoeff / FrBound on interface %i", groupid1);
 
       // add COF locally to contact parameter list of this interface
       if (ftype == INPAR::CONTACT::friction_tresca)
@@ -846,10 +850,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       // check consistency of interface COFs
       for (std::size_t j = 1; j < currentgroup.size(); ++j)
         if (ad_bound[j] != ad_bound[0])
-          dserror("Inconsistency in adhesion bounds of interface %i", groupid1);
+          FOUR_C_THROW("Inconsistency in adhesion bounds of interface %i", groupid1);
 
       // check for infeasible value of COF
-      if (ad_bound[0] < 0.0) dserror("Negative adhesion bound on interface %i", groupid1);
+      if (ad_bound[0] < 0.0) FOUR_C_THROW("Negative adhesion bound on interface %i", groupid1);
 
       // add COF locally to contact parameter list of this interface
       icparams.setEntry("ADHESION_BOUND", static_cast<Teuchos::ParameterEntry>(ad_bound[0]));
@@ -867,7 +871,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     auto redundant = Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
         icparams.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
     if (isanyselfcontact && redundant != INPAR::MORTAR::ExtendGhosting::redundant_all)
-      dserror("Self contact requires fully redundant slave and master storage");
+      FOUR_C_THROW("Self contact requires fully redundant slave and master storage");
 
     // ------------------------------------------------------------------------
     // create the desired interface object
@@ -895,17 +899,17 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     {
       // get all nodes and add them
       const std::vector<int>* nodeids = currentgroup[j]->GetNodes();
-      if (!nodeids) dserror("Condition does not have Node Ids");
+      if (!nodeids) FOUR_C_THROW("Condition does not have Node Ids");
       for (int gid : *nodeids)
       {
         // do only nodes that I have in my discretization
         if (!Discret().HaveGlobalNode(gid)) continue;
         DRT::Node* node = Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %", gid);
+        if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         if (node->NumElement() == 0)
         {
-          dserror(
+          FOUR_C_THROW(
               "surface node without adjacent element detected! "
               "(node-id = %d)",
               node->Id());
@@ -917,7 +921,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           const DRT::Element* adj_ele = node->Elements()[elid];
           if (nurbs != CORE::FE::IsNurbsDisType(adj_ele->Shape()))
           {
-            dserror(
+            FOUR_C_THROW(
                 "There are NURBS and non-NURBS adjacent elements to this "
                 "node. What shall be done?");
           }
@@ -995,7 +999,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
               if (stype == INPAR::CONTACT::solution_lagmult &&
                   constr_direction != INPAR::CONTACT::constr_xyz)
               {
-                dserror(
+                FOUR_C_THROW(
                     "Contact symmetry with Lagrange multiplier method"
                     " only with contact constraints in xyz direction.\n"
                     "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");
@@ -1070,7 +1074,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
                   if (stype == INPAR::CONTACT::solution_lagmult &&
                       constr_direction != INPAR::CONTACT::constr_xyz)
                   {
-                    dserror(
+                    FOUR_C_THROW(
                         "Contact symmetry with Lagrange multiplier method"
                         " only with contact constraints in xyz direction.\n"
                         "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");
@@ -1125,7 +1129,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         Teuchos::RCP<DRT::Element> ele = fool->second;
         if (CORE::FE::IsNurbsDisType(ele->Shape()) != nurbs)
         {
-          dserror(
+          FOUR_C_THROW(
               "All elements of one interface side (i.e. slave or master) "
               "must be NURBS or LAGRANGE elements. A mixed NURBS/Lagrange "
               "discretizations on one side of the interface is currently "
@@ -1144,13 +1148,13 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         if (algo == INPAR::MORTAR::algorithm_gpts)
         {
           const auto* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
-          if (discret == nullptr) dserror("Dynamic cast failed!");
+          if (discret == nullptr) FOUR_C_THROW("Dynamic cast failed!");
           Teuchos::RCP<DRT::FaceElement> faceele =
               Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
-          if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-          if (faceele->ParentElement() == nullptr) dserror("face parent does not exist");
+          if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
+          if (faceele->ParentElement() == nullptr) FOUR_C_THROW("face parent does not exist");
           if (discret->ElementColMap()->LID(faceele->ParentElement()->Id()) == -1)
-            dserror("vol dis does not have parent ele");
+            FOUR_C_THROW("vol dis does not have parent ele");
           cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
         }
 
@@ -1204,7 +1208,7 @@ void CONTACT::STRATEGY::Factory::FullyOverlappingInterfaces(
 
       const int sl_fullsubset_id = IdentifyFullSubset(srownodes_i, srownodes_ii);
       if (sl_fullsubset_id != -1)
-        dserror("Currently the slave element maps are not allowed to overlap!");
+        FOUR_C_THROW("Currently the slave element maps are not allowed to overlap!");
 
       const int ma_fullsubset_id = IdentifyFullSubset(mrownodes_i, mrownodes_ii);
 
@@ -1290,7 +1294,7 @@ int CONTACT::STRATEGY::Factory::IdentifyFullSubset(
     else if (is_fullsubmap != ref_map->MyGID(mysubgids[i]))
     {
       if (throw_if_partial_subset_on_proc)
-        dserror("Partial sub-map detected on proc #%d!", Comm().MyPID());
+        FOUR_C_THROW("Partial sub-map detected on proc #%d!", Comm().MyPID());
       is_fullsubmap = false;
     }
   }
@@ -1465,7 +1469,7 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(enum MORTAR::Element::Phys
   // ints to communicate decision over poro bools between processors on every interface
   // safety check - because there may not be mixed interfaces and structural slave elements
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
-  if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
+  if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
   cele->PhysType() = MORTAR::Element::other;
   std::vector<Teuchos::RCP<DRT::Condition>> poroCondVec;
   discret.GetCondition("PoroCoupling", poroCondVec);
@@ -1481,7 +1485,7 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(enum MORTAR::Element::Phys
         {
           if (mastertype == MORTAR::Element::poro)
           {
-            dserror(
+            FOUR_C_THROW(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
           }
@@ -1494,7 +1498,7 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(enum MORTAR::Element::Phys
     if (cele->PhysType() == MORTAR::Element::other)
     {
       if (mastertype == MORTAR::Element::structure)
-        dserror(
+        FOUR_C_THROW(
             "struct and poro master elements on the same processor - no mixed interface supported");
       cele->PhysType() = MORTAR::Element::structure;
       mastertype = MORTAR::Element::structure;
@@ -1512,7 +1516,7 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(enum MORTAR::Element::Phys
         {
           if (slavetype == MORTAR::Element::structure)
           {
-            dserror(
+            FOUR_C_THROW(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
           }
@@ -1525,7 +1529,7 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(enum MORTAR::Element::Phys
     if (cele->PhysType() == MORTAR::Element::other)
     {
       if (slavetype == MORTAR::Element::poro)
-        dserror(
+        FOUR_C_THROW(
             "struct and poro master elements on the same processor - no mixed interface supported");
       cele->PhysType() = MORTAR::Element::structure;
       slavetype = MORTAR::Element::structure;
@@ -1576,11 +1580,11 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
       {
         if (structslave)
         {
-          dserror(
+          FOUR_C_THROW(
               "struct and poro slave elements in the same problem - no mixed interface "
               "constellations supported");
         }
-        // adjust dserror text, when more than one interface is supported
+        // adjust FOUR_C_THROW text, when more than one interface is supported
         poroslave = true;
         break;
       }
@@ -1588,7 +1592,7 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
       {
         if (poroslave)
         {
-          dserror(
+          FOUR_C_THROW(
               "struct and poro slave elements in the same problem - no mixed interface "
               "constellations supported");
         }
@@ -1597,7 +1601,7 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
       }
       default:
       {
-        dserror("this cannot happen");
+        FOUR_C_THROW("this cannot happen");
         break;
       }
     }
@@ -1613,11 +1617,11 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
       {
         if (structmaster)
         {
-          dserror(
+          FOUR_C_THROW(
               "struct and poro master elements in the same problem - no mixed interface "
               "constellations supported");
         }
-        // adjust dserror text, when more than one interface is supported
+        // adjust FOUR_C_THROW text, when more than one interface is supported
         poromaster = true;
         break;
       }
@@ -1625,7 +1629,7 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
       {
         if (poromaster)
         {
-          dserror(
+          FOUR_C_THROW(
               "struct and poro master elements in the same problem - no mixed interface "
               "constellations supported");
         }
@@ -1634,7 +1638,7 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
       }
       default:
       {
-        dserror("this cannot happen");
+        FOUR_C_THROW("this cannot happen");
         break;
       }
     }
@@ -1696,7 +1700,7 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrateg
     if (params.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
         params.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
     {
-      dserror("This contact strategy is not yet considered!");
+      FOUR_C_THROW("This contact strategy is not yet considered!");
       //      strategy_ptr = Teuchos::rcp(new LagrangeStrategyPoro(
       //          dof_row_map,
       //          node_row_map,
@@ -1731,7 +1735,7 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrateg
   }
   else if (stype == INPAR::CONTACT::solution_uzawa)
   {
-    dserror("This contact strategy is not yet considered!");
+    FOUR_C_THROW("This contact strategy is not yet considered!");
     //    strategy_ptr = Teuchos::rcp(new PenaltyStrategy(
     //        dof_row_map,
     //        node_row_map,
@@ -1806,7 +1810,8 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrateg
   }
   else
   {
-    dserror("Unrecognized strategy: \"%s\"", INPAR::CONTACT::SolvingStrategy2String(stype).c_str());
+    FOUR_C_THROW(
+        "Unrecognized strategy: \"%s\"", INPAR::CONTACT::SolvingStrategy2String(stype).c_str());
   }
 
   // setup the stategy object
@@ -1899,7 +1904,7 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
       IO::cout << "================================================================\n\n";
     }
     else
-      dserror("Invalid system type for contact/meshtying interface smoothing");
+      FOUR_C_THROW("Invalid system type for contact/meshtying interface smoothing");
   }
   else
   {
@@ -1999,7 +2004,7 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
           IO::cout << "================================================================\n\n";
         }
         else
-          dserror("Invalid strategy or shape function type for contact/meshtying");
+          FOUR_C_THROW("Invalid strategy or shape function type for contact/meshtying");
       }
 
       // condensed formulation
@@ -2079,7 +2084,7 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
           IO::cout << "================================================================\n\n";
         }
         else
-          dserror("Invalid strategy or shape function type for contact/meshtying");
+          FOUR_C_THROW("Invalid strategy or shape function type for contact/meshtying");
       }
     }
     else if (algorithm == INPAR::MORTAR::algorithm_nts)
@@ -2108,7 +2113,7 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
     }
     // invalid system type
     else
-      dserror("Invalid system type for contact/meshtying");
+      FOUR_C_THROW("Invalid system type for contact/meshtying");
   }
 }
 

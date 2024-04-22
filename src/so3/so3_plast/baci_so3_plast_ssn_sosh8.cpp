@@ -108,7 +108,7 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
     // get the actual element
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8Plast*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_sh8* failed");
+    if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_)
     {
@@ -154,7 +154,7 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
         case DRT::ELEMENTS::SoSh8Plast::globy:
         case DRT::ELEMENTS::SoSh8Plast::globz:
         {
-          dserror("This should have been replaced by auto(r|s|t)");
+          FOUR_C_THROW("This should have been replaced by auto(r|s|t)");
           break;
         }
         case DRT::ELEMENTS::SoSh8Plast::autor:
@@ -235,13 +235,13 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
             actele->InitJacobianMapping();
           }
           else
-            dserror("Undefined EAS type");
+            FOUR_C_THROW("Undefined EAS type");
           break;
         }
         case DRT::ELEMENTS::SoSh8Plast::none:
           break;
         default:
-          dserror("no thickness direction for So_sh8");
+          FOUR_C_THROW("no thickness direction for So_sh8");
           break;
       }
     }
@@ -273,7 +273,7 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8Plast*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_sh8* failed");
+    if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
     actele->InitJacobianMapping();
   }
 
@@ -384,7 +384,7 @@ void DRT::ELEMENTS::SoSh8Plast::Unpack(const std::vector<char>& data)
   nodes_rearranged_ = ExtractInt(position, data);
 
   if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
   return;
 }
 
@@ -408,7 +408,7 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
   // geometrically linear
   if (buffer == "linear")
   {
-    dserror("no linear kinematics");
+    FOUR_C_THROW("no linear kinematics");
   }
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
@@ -417,7 +417,7 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
     // everything ok
   }
   else
-    dserror("Reading of SO3_PLAST element failed! KINEM unknown");
+    FOUR_C_THROW("Reading of SO3_PLAST element failed! KINEM unknown");
 
   CORE::FE::GaussIntegration ip(CORE::FE::CellType::hex8, 3);
   numgpt_ = ip.NumPoints();
@@ -455,7 +455,7 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
   else if (buffer == "sosh8")
     eastype_ = soh8p_eassosh8;
   else
-    dserror("unknown EAS type for so3_plast");
+    FOUR_C_THROW("unknown EAS type for so3_plast");
 
   // initialize EAS data
   EasInit();
@@ -472,7 +472,7 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
     anstype_ = ansnone_p;
   }
   else
-    dserror("Reading of SO_SH8 ANS technology failed");
+    FOUR_C_THROW("Reading of SO_SH8 ANS technology failed");
 
   linedef->ExtractString("THICKDIR", buffer);
   nodes_rearranged_ = false;
@@ -504,7 +504,7 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
     nodes_rearranged_ = true;
   }
   else
-    dserror("Reading of SO_SH8 thickness direction failed");
+    FOUR_C_THROW("Reading of SO_SH8 thickness direction failed");
 
   // plasticity related stuff
   KbbInv_.resize(numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, plspintype_, true));
@@ -519,7 +519,7 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 
   if (tsi_)
-    dserror(
+    FOUR_C_THROW(
         "no tsi for solid shells.\n"
         "Go back to the revision introducing this error to find a version with TSI.\n"
         "Note: the strain rate used for the Gough Joule effect was not calculated\n"
@@ -580,7 +580,7 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::findthi
     {
       // std::cout << "ID: " << this->Id() << ", has aspect ratio of: ";
       // std::cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << std::endl;
-      // dserror("Solid-Shell element geometry has not a shell aspect ratio");
+      // FOUR_C_THROW("Solid-Shell element geometry has not a shell aspect ratio");
       return undefined;
     }
     thickdir = autor;
@@ -593,7 +593,7 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::findthi
     {
       // std::cout << "ID: " << this->Id() << ", has aspect ratio of: ";
       // std::cout << max_stretch / r_stretch << " , " << max_stretch / t_stretch << std::endl;
-      // dserror("Solid-Shell element geometry has not a shell aspect ratio");
+      // FOUR_C_THROW("Solid-Shell element geometry has not a shell aspect ratio");
       return undefined;
     }
     thickdir = autos;
@@ -606,7 +606,7 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::findthi
     {
       // std::cout << "ID: " << this->Id() << ", has aspect ratio of: ";
       // std::cout << max_stretch / r_stretch << " , " << max_stretch / s_stretch << std::endl;
-      // dserror("Solid-Shell element geometry has not a shell aspect ratio");
+      // FOUR_C_THROW("Solid-Shell element geometry has not a shell aspect ratio");
       return undefined;
     }
     thickdir = autot;
@@ -614,8 +614,8 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::findthi
   }
 
   if (thick_index == -1)
-    dserror("Trouble with thick_index=%d %g,%g,%g,%g", thick_index, r_stretch, s_stretch, t_stretch,
-        max_stretch);
+    FOUR_C_THROW("Trouble with thick_index=%d %g,%g,%g,%g", thick_index, r_stretch, s_stretch,
+        t_stretch, max_stretch);
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord
   CORE::LINALG::Matrix<nsd_, 1> loc_thickvec(true);
@@ -688,7 +688,7 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::enfthic
   const double tol = 0.9;  // should be larger than 1/sqrt(2)=0.707
   // check if parametric co-ordinate is clear
   if (thickdirlocmax < tol * thickdirlocsharp.Norm2())
-    dserror(
+    FOUR_C_THROW(
         "could not clearly identify a parametric direction pointing along enforced thickness "
         "direction");
 
@@ -707,7 +707,7 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::enfthic
   }
   else
   {
-    dserror("Trouble with thick_index=%g", thick_index);
+    FOUR_C_THROW("Trouble with thick_index=%g", thick_index);
   }
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord
@@ -785,7 +785,7 @@ void DRT::ELEMENTS::SoSh8Plast::EvaluateT(
   solve_for_inverseT.SetMatrix(TinvT);
   int err2 = solve_for_inverseT.Factor();
   int err = solve_for_inverseT.Invert();
-  if ((err != 0) && (err2 != 0)) dserror("Inversion of Tinv (Jacobian) failed");
+  if ((err != 0) && (err2 != 0)) FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
   return;
 }
 
@@ -978,7 +978,7 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
     plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
   else
-    dserror("so3_ssn_plast elements only with PlasticElastHyper material");
+    FOUR_C_THROW("so3_ssn_plast elements only with PlasticElastHyper material");
 
   if (eastype_ != soh8p_easnone)
   {
@@ -1096,7 +1096,7 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
                       DerivShapeFunction()(2, inod) * DerivShapeFunction()(0, jnod);  // rt-dir
           }
           else
-            dserror("Cannot build geometric stiffness matrix on your ANS-choice!");
+            FOUR_C_THROW("Cannot build geometric stiffness matrix on your ANS-choice!");
 
           // transformation of local(parameter) space 'back' to global(material) space
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> G_ij_glob;
@@ -1160,7 +1160,7 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
           case soh8p_easnone:
             break;
           default:
-            dserror("Don't know what to do with EAS type %d", eastype_);
+            FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
             break;
         }
       }  // ---------------------------------------------------------------- EAS
@@ -1236,7 +1236,7 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
       case soh8p_easnone:
         break;
       default:
-        dserror("Don't know what to do with EAS type %d", eastype_);
+        FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
         break;
     }
   }
@@ -1256,7 +1256,7 @@ void DRT::ELEMENTS::SoSh8Plast::CalculateBop(CORE::LINALG::Matrix<numstr_, numdo
   SetJac_refe().Multiply(DerivShapeFunction(), Xrefe());
   SetJac_curr().Multiply(DerivShapeFunction(), Xcurr());
 
-  if (gp < 0 || gp > 7) dserror("invalid gp number");
+  if (gp < 0 || gp > 7) FOUR_C_THROW("invalid gp number");
 
   // set up B-Operator in local(parameter) element space including ANS
   CORE::LINALG::Matrix<numstr_, numdofperelement_> bop_loc;
@@ -1310,7 +1310,7 @@ void DRT::ELEMENTS::SoSh8Plast::CalculateBop(CORE::LINALG::Matrix<numstr_, numdo
                                       DerivShapeFunction()(2, inode) * Jac_curr()(0, dim);
       }
       else
-        dserror("Cannot build bop_loc based on your ANS-choice!");
+        FOUR_C_THROW("Cannot build bop_loc based on your ANS-choice!");
     }
   }
 
@@ -1430,7 +1430,7 @@ void DRT::ELEMENTS::SoSh8Plast::AnsStrains(const int gp,
                       Jac_refe()(2, 2) * Jac_refe()(0, 2)));
   }
   else
-    dserror("Cannot build local strains based on your ANS-choice!");
+    FOUR_C_THROW("Cannot build local strains based on your ANS-choice!");
 
   // transformation of local glstrains 'back' to global(material) space
   static CORE::LINALG::Matrix<numstr_, 1> glstrain(false);

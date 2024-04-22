@@ -86,13 +86,13 @@
 
 #if (defined(CONSISTENTANSBEAM3EB) or defined(INEXTENSIBLE) or defined(ORTHOPRESSURE)) and \
     !defined(BEAM3EBAUTOMATICDIFF)
-dserror(
+FOUR_C_THROW(
     "CONSISTENTANSBEAM3EB, INEXTENSIBLE and ORTHOPRESSURE only work in combination with "
     "BEAM3EBAUTOMATICDIFF!");
 #endif
 
 #if defined(INEXTENSIBLE) and !defined(ANS_BEAM3EB)
-dserror(Flag INEXTENSIBLE only possible in combination with flag ANS_BEAM3EB !);
+FOUR_C_THROW(Flag INEXTENSIBLE only possible in combination with flag ANS_BEAM3EB !);
 #endif
 
 FOUR_C_NAMESPACE_OPEN
@@ -489,7 +489,7 @@ namespace DRT::ELEMENTS
         std::vector<double>& dofvec_centerline, bool add_reference_values = false) const override
     {
       if (dofvec.size() != 12)
-        dserror(
+        FOUR_C_THROW(
             "size mismatch: expected 12 values for element state vector and got %d", dofvec.size());
 
       dofvec_centerline.resize(12, 0.0);

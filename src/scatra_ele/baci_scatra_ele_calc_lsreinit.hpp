@@ -268,7 +268,7 @@ namespace DRT
 
       void SetVelocityForCrossWindDiff(const CORE::LINALG::Matrix<NSD, 1> velocity)
       {
-        if (NSD != 3) dserror("Currently only 3d problems supported for crosswind diffusion");
+        if (NSD != 3) FOUR_C_THROW("Currently only 3d problems supported for crosswind diffusion");
 
         // compute tensor for anisotropic artificial diffusion
         // i.e., crosswind diffusion
@@ -357,7 +357,7 @@ namespace DRT
           const CORE::LINALG::Matrix<NSD, NEN>& econvelnp,
           const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ehist)
       {
-        dserror("Setting all members at once is not allowed for reinitialization!");
+        FOUR_C_THROW("Setting all members at once is not allowed for reinitialization!");
         return;
       };
 
@@ -418,14 +418,14 @@ namespace DRT
       //! set convective term of current scalar value
       void AddToConvPhi(const int k, double conv_phi) override
       {
-        dserror("Currently unused!");
+        FOUR_C_THROW("Currently unused!");
         return;
       };
       //{my::conv_phi_[k] += conv_phi;};
       //! set convective term of current scalar value
       void ScaleConvPhi(const int k, double scale) override
       {
-        dserror("Currently unused!");
+        FOUR_C_THROW("Currently unused!");
         return;
       };
       //{my::conv_phi_[k] *= scale;};

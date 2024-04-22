@@ -147,7 +147,7 @@ void NOX::NLN::Solver::PseudoTransient::createScalingOperator()
       // identity matrix
       Teuchos::RCP<const ::NOX::Epetra::Vector> epetraXPtr =
           Teuchos::rcp_dynamic_cast<const ::NOX::Epetra::Vector>(solnPtr->getXPtr());
-      if (epetraXPtr.is_null()) dserror("Cast to ::NOX::Epetra::Vector failed!");
+      if (epetraXPtr.is_null()) FOUR_C_THROW("Cast to ::NOX::Epetra::Vector failed!");
       scalingDiagOpPtr_ =
           Teuchos::rcp(new Epetra_Vector(epetraXPtr->getEpetraVector().Map(), false));
 
@@ -180,12 +180,12 @@ void NOX::NLN::Solver::PseudoTransient::createScalingOperator()
     }
     case NOX::NLN::Solver::PseudoTransient::scale_op_cfl_diagonal:
     {
-      dserror("Not yet implemented!");
+      FOUR_C_THROW("Not yet implemented!");
       break;
     }
     default:
     {
-      dserror("Unknown/unsupported scaling operator type!");
+      FOUR_C_THROW("Unknown/unsupported scaling operator type!");
       break;
     }
   }
@@ -770,7 +770,7 @@ void NOX::NLN::Solver::PseudoTransient::throwError(
     std::ostringstream msg;
     msg << "ERROR - NOX::NLN::Sovler::PseudoTransient::" << functionName << " - " << errorMsg
         << std::endl;
-    dserror(msg.str());
+    FOUR_C_THROW(msg.str());
   }
   throw "NOX Error";
 }
@@ -806,7 +806,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::runPostComputeJacobian(
       // check.
       CORE::LINALG::SparseMatrix* jacPtr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
       if (jacPtr == nullptr)
-        dserror(
+        FOUR_C_THROW(
             "Something strange happened: The jacobian has not the "
             "operator type defined in the linear system object!");
 
@@ -816,7 +816,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::runPostComputeJacobian(
     }
     default:
     {
-      dserror("Unsupported jacobian operator type: %s",
+      FOUR_C_THROW("Unsupported jacobian operator type: %s",
           NOX::NLN::LinSystem::OperatorType2String(jactype).c_str());
       break;
     }
@@ -879,12 +879,12 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modifyJacobian(
     }
     case NOX::NLN::Solver::PseudoTransient::scale_op_cfl_diagonal:
     {
-      dserror("Not yet implemented!");
+      FOUR_C_THROW("Not yet implemented!");
       break;
     }
     default:
     {
-      dserror("Unknown/unsupported scaling operator type!");
+      FOUR_C_THROW("Unknown/unsupported scaling operator type!");
       break;
     }
   }
@@ -944,7 +944,7 @@ NOX::NLN::GROUP::PrePostOp::PseudoTransient::evalPseudoTransientFUpdate(const NO
     }
     default:
     {
-      dserror("Unknown scaling operator type!");
+      FOUR_C_THROW("Unknown scaling operator type!");
       break;
     }
   }

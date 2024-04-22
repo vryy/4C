@@ -43,7 +43,7 @@ STR::MODELEVALUATOR::SpringDashpot::SpringDashpot()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::SpringDashpot::Setup()
 {
-  dsassert(IsInit(), "Init() has not been called, yet!");
+  FOUR_C_ASSERT(IsInit(), "Init() has not been called, yet!");
 
   // get all spring dashpot conditions
   std::vector<Teuchos::RCP<DRT::Condition>> springdashpots;

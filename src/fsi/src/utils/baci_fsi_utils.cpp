@@ -111,7 +111,7 @@ void FSI::UTILS::DumpJacobian(::NOX::Epetra::Interface::Required& interface, dou
         {
           err = jacobian->InsertGlobalValues(gid, 1, &Jc[j], &idx);
         }
-        if (err != 0) dserror("Assembly failed");
+        if (err != 0) FOUR_C_THROW("Assembly failed");
       }
     }
 
@@ -210,7 +210,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
     int err = 0;
     for (meit = istructslideles_.begin(); meit != istructslideles_.end(); meit++)
       err += meit->second.erase((*eit).first);
-    if (!err) dserror("Non sliding interface has to be a subset of FSI-interface or empty");
+    if (!err) FOUR_C_THROW("Non sliding interface has to be a subset of FSI-interface or empty");
   }
 
   int max_id = 0;
@@ -250,7 +250,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
     int err = 0;
     for (meit = ifluidslideles_.begin(); meit != ifluidslideles_.end(); meit++)
       err += meit->second.erase((*eit).first);
-    if (!err) dserror("Non sliding interface has to be a subset of FSI-interface or empty");
+    if (!err) FOUR_C_THROW("Non sliding interface has to be a subset of FSI-interface or empty");
   }
 
   std::map<int, DRT::Node*>::iterator nit;
@@ -260,7 +260,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<DRT::Discretization> struc
     int err = 0;
     for (mnit = ifluidslidnodes_.begin(); mnit != ifluidslidnodes_.end(); mnit++)
       err += mnit->second.erase((*nit).first);
-    if (!err) dserror("Non sliding interface has to be a subset of FSI-interface or empty");
+    if (!err) FOUR_C_THROW("Non sliding interface has to be a subset of FSI-interface or empty");
   }
 
   Teuchos::RCP<Epetra_Map> structdofrowmap;
@@ -332,7 +332,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing(ADAPTER::FSIStructureWrapper& structur
     for (int p = 0; p < dim; p++) finaldxyz[p] = (*idispale)[(lids[p])];
 
     int err = iprojdispale->ReplaceMyValues(dim, finaldxyz.data(), lids.data());
-    if (err == 1) dserror("error while replacing values");
+    if (err == 1) FOUR_C_THROW("error while replacing values");
   }
 
   // merge displacement values of interface nodes (struct+fluid) into idispms_ for mortar
@@ -368,8 +368,9 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idisp
   Teuchos::RCP<Epetra_Import> slave_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *fluiddofrowmap_));
 
-  if (idispms_->Import(*idispstruct, *master_importer, Add)) dserror("Import operation failed.");
-  if (idispms_->Import(*idispfluid, *slave_importer, Add)) dserror("Import operation failed.");
+  if (idispms_->Import(*idispstruct, *master_importer, Add))
+    FOUR_C_THROW("Import operation failed.");
+  if (idispms_->Import(*idispfluid, *slave_importer, Add)) FOUR_C_THROW("Import operation failed.");
 
   // new D,M,Dinv out of disp of struct and fluid side
   coupsf.Evaluate(idispms_);
@@ -408,7 +409,7 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp(
   Teuchos::RCP<Epetra_Vector> idispstep = structure.ExtractInterfaceDispnp();
 
   int err = idispstep->Update(-1.0, *idispn, 1.0);
-  if (err != 0) dserror("ERROR");
+  if (err != 0) FOUR_C_THROW("ERROR");
 
   const int dim = GLOBAL::Problem::Instance()->NDim();
   // get structure and fluid discretizations  and set stated for element evaluation
@@ -451,7 +452,7 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp(
     params.set<std::string>("action", "calc_struct_centerdisp");
     int err = iele->Evaluate(
         params, *structdis, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-    if (err) dserror("error while evaluating elements");
+    if (err) FOUR_C_THROW("error while evaluating elements");
     mylengthcirc += elevector2[0];
 
     // disp of the interface
@@ -466,7 +467,7 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp(
   comm.SumAll(&mylengthcirc, &lengthcirc, 1);
   comm.SumAll(mycenterdisp.data(), centerdisp.data(), dim);
 
-  if (lengthcirc <= 1.0E-6) dserror("Zero interface length!");
+  if (lengthcirc <= 1.0E-6) FOUR_C_THROW("Zero interface length!");
 
   // calculating the final disp of the interface and summation over all time steps
   for (int i = 0; i < dim; i++)
@@ -583,7 +584,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
         searchTree->initializeTreeSlideALE(
             rootBox, structreduelements_[mnit->first], CORE::GEO::TreeType(CORE::GEO::OCTTREE));
       else
-        dserror("wrong dimension");
+        FOUR_C_THROW("wrong dimension");
 
 
       DRT::Node* node = nodeiter->second;
@@ -619,7 +620,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
         }
       }
       else
-        dserror("you should not turn up here!");
+        FOUR_C_THROW("you should not turn up here!");
 
 
       // final displacement of projection
@@ -640,7 +641,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
         maxmindist_ *= 10.0;
 
         // if still no element is found, complain about it!
-        if (closeeles.empty()) dserror("No elements in a large radius! Should not happen!");
+        if (closeeles.empty()) FOUR_C_THROW("No elements in a large radius! Should not happen!");
       }
       // search for the nearest point to project on
       CORE::LINALG::Matrix<3, 1> minDistCoords;
@@ -664,7 +665,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
 
       // store displacement into parallel vector
       int err = iprojdispale->ReplaceMyValues(dim, finaldxyz.data(), lids.data());
-      if (err == 1) dserror("error while replacing values");
+      if (err == 1) FOUR_C_THROW("error while replacing values");
     }
   }
 }
@@ -823,7 +824,7 @@ void FSI::UTILS::SlideAleUtils::Rotation(DRT::Discretization& mtrdis,  ///< flui
       params.set<INPAR::FSI::SlideALEProj>("aletype", aletype_);
       int err = iele->Evaluate(
           params, mtrdis, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-      if (err) dserror("error while evaluating elements");
+      if (err) FOUR_C_THROW("error while evaluating elements");
 
       mylengthcirc += elevector2[0];
       // disp of the interface
@@ -865,7 +866,7 @@ void FSI::UTILS::SlideAleUtils::Rotation(DRT::Discretization& mtrdis,  ///< flui
       params.set<INPAR::FSI::SlideALEProj>("aletype", aletype_);
       int err = iele->Evaluate(
           params, mtrdis, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-      if (err) dserror("error while evaluating elements");
+      if (err) FOUR_C_THROW("error while evaluating elements");
 
       CORE::LINALG::Assemble(*rotfull, elevector1, lm, lmowner);
     }

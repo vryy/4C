@@ -61,7 +61,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Factory::BuildModelEvaluators(
             Teuchos::rcp(new BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential());
         break;
       default:
-        dserror("Not yet implemented!");
+        FOUR_C_THROW("Not yet implemented!");
         break;
     }
   }

@@ -44,7 +44,7 @@ void CORE::COMM::Exporter::ISend(const int frompid, const int topid, const char*
 {
   if (MyPID() != frompid) return;
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Isend((void*)data, dsize, MPI_CHAR, topid, tag, comm->Comm(), &request);
 }
 
@@ -53,7 +53,7 @@ void CORE::COMM::Exporter::ISend(const int frompid, const int topid, const int* 
 {
   if (MyPID() != frompid) return;
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Isend((void*)data, dsize, MPI_INT, topid, tag, comm->Comm(), &request);
 }
 
@@ -62,7 +62,7 @@ void CORE::COMM::Exporter::ISend(const int frompid, const int topid, const doubl
 {
   if (MyPID() != frompid) return;
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Isend((void*)data, dsize, MPI_DOUBLE, topid, tag, comm->Comm(), &request);
 }
 
@@ -70,7 +70,7 @@ void CORE::COMM::Exporter::ReceiveAny(
     int& source, int& tag, std::vector<char>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
   MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
@@ -87,7 +87,7 @@ void CORE::COMM::Exporter::Receive(
     const int source, const int tag, std::vector<char>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
   MPI_Probe(source, tag, comm->Comm(), &status);
@@ -101,7 +101,7 @@ void CORE::COMM::Exporter::ReceiveAny(
     int& source, int& tag, std::vector<int>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
   MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
@@ -118,7 +118,7 @@ void CORE::COMM::Exporter::Receive(
     const int source, const int tag, std::vector<int>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
   MPI_Probe(source, tag, comm->Comm(), &status);
@@ -132,7 +132,7 @@ void CORE::COMM::Exporter::ReceiveAny(
     int& source, int& tag, std::vector<double>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
   MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
@@ -149,7 +149,7 @@ void CORE::COMM::Exporter::Receive(
     const int source, const int tag, std::vector<double>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
   MPI_Probe(source, tag, comm->Comm(), &status);
@@ -163,7 +163,7 @@ void CORE::COMM::Exporter::Allreduce(
     std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op)
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
 
   int length = (int)sendbuff.size();
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
@@ -175,7 +175,7 @@ void CORE::COMM::Exporter::Broadcast(
     const int frompid, std::vector<char>& data, const int tag) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  if (!comm) FOUR_C_THROW("Comm() is not a Epetra_MpiComm\n");
 
   int length = static_cast<int>(data.size());
   MPI_Bcast(&length, 1, MPI_INT, frompid, comm->Comm());
@@ -306,19 +306,19 @@ void CORE::COMM::Exporter::GenericExport(ExporterHelper& helper)
     int tag = 1;
     // do a blocking specific receive
     Receive(source, tag, rnmessages, length);
-    if (length != 2 or tag != 1) dserror("Messages got mixed up");
+    if (length != 2 or tag != 1) FOUR_C_THROW("Messages got mixed up");
 
     // receive the objects
     std::vector<char> recvblock(rnmessages[0]);
     tag = 2;
     ReceiveAny(source, tag, recvblock, length);
-    if (tag != 2) dserror("Messages got mixed up");
+    if (tag != 2) FOUR_C_THROW("Messages got mixed up");
 
     // receive the gids
     std::vector<int> recvgid(rnmessages[1]);
     tag = 3;
     ReceiveAny(source, tag, recvgid, length);
-    if (tag != 3) dserror("Messages got mixed up");
+    if (tag != 3) FOUR_C_THROW("Messages got mixed up");
 
     std::vector<char>::size_type index = 0;
     int j = 0;

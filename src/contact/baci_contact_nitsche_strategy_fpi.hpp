@@ -46,7 +46,7 @@ namespace CONTACT
     {
       if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
           INPAR::CONTACT::friction_none)
-        dserror("NitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
+        FOUR_C_THROW("NitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
     }
 
     //! Shared data constructor
@@ -62,7 +62,7 @@ namespace CONTACT
     {
       if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
           INPAR::CONTACT::friction_none)
-        dserror("NitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
+        FOUR_C_THROW("NitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
     }
     //! Set Contact State and update search tree and normals
     void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;

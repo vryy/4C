@@ -29,7 +29,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetSingleReactionMatFromMultiReactionsMaterial(
 
   // safety check and cast
   if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlereaction)
-    dserror("only poro singleraction material valid");
+    FOUR_C_THROW("only poro singleraction material valid");
 
   return static_cast<MAT::FluidPoroSingleReaction&>(*singlemat);
 }
@@ -46,8 +46,8 @@ const MAT::FluidPoroSinglePhase& POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMa
 
   // safety check and cast
   if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
-    dserror("check at position %i/%i failed, only poro singlephase material valid", phasenum + 1,
-        multiphasemat.NumMat());
+    FOUR_C_THROW("check at position %i/%i failed, only poro singlephase material valid",
+        phasenum + 1, multiphasemat.NumMat());
 
   return static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
 }
@@ -61,7 +61,7 @@ const MAT::FluidPoroSinglePhase& POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMa
   // safety check
   if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
       material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-    dserror("only poro multiphase material valid");
+    FOUR_C_THROW("only poro multiphase material valid");
 
   // cast
   const MAT::FluidPoroMultiPhase& multiphasemat =
@@ -83,7 +83,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMultiMaterial(
 
   // safety check and cast
   if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
-    dserror("check at position %i/%i failed, only poro single vol fraction material valid",
+    FOUR_C_THROW("check at position %i/%i failed, only poro single vol fraction material valid",
         volfracnum + 1, multiphasemat.NumMat());
 
   return static_cast<const MAT::FluidPoroSingleVolFrac&>(*singlemat);
@@ -98,7 +98,7 @@ const MAT::FluidPoroSingleVolFrac& POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFr
   // safety check
   if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
       material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-    dserror("only poro multiphase material valid");
+    FOUR_C_THROW("only poro multiphase material valid");
 
   // cast
   const MAT::FluidPoroMultiPhase& multiphasemat =
@@ -120,7 +120,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMultiMaterial(
 
   // safety check and cast
   if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure)
-    dserror("check at position %i/%i failed, only poro single vol fraction material valid",
+    FOUR_C_THROW("check at position %i/%i failed, only poro single vol fraction material valid",
         volfracnum + 1, multiphasemat.NumMat());
 
   return static_cast<const MAT::FluidPoroVolFracPressure&>(*singlemat);
@@ -136,7 +136,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMaterial(
   // safety check
   if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
       material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
-    dserror("only poro multiphase material valid");
+    FOUR_C_THROW("only poro multiphase material valid");
 
   // cast
   const MAT::FluidPoroMultiPhase& multiphasemat =

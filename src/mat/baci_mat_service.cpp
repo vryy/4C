@@ -35,9 +35,9 @@ template <typename T>
 void MAT::AddtoCmatHolzapfelProduct(
     CORE::LINALG::Matrix<6, 6, T>& cmat, const CORE::LINALG::Matrix<6, 1, T>& invc, const T scalar)
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if (cmat.numRows() != 6 or cmat.numCols() != 6 or invc.numRows() != 6)
-    dserror("Wrong dimensions in function AddtoCmatHolzapfelProduct");
+    FOUR_C_THROW("Wrong dimensions in function AddtoCmatHolzapfelProduct");
 #endif
 
   // and the 'boeppel-product' for the expression d(invc)/dc (see Holzapfel p. 254)
@@ -115,14 +115,15 @@ void MAT::ElastSymTensorMultiplyAddSym(CORE::LINALG::Matrix<6, 6>& C, const doub
     const CORE::LINALG::Matrix<3, 3>& A, const CORE::LINALG::Matrix<3, 3>& B,
     const double ScalarThis)
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check sizes
   if (A.numRows() != A.numCols() || B.numRows() != B.numCols() || A.numRows() != 3 ||
       B.numRows() != 3)
   {
-    dserror("2nd order tensors must be 3 by 3");
+    FOUR_C_THROW("2nd order tensors must be 3 by 3");
   }
-  if (C.numRows() != C.numCols() || C.numRows() != 6) dserror("4th order tensor must be 6 by 6");
+  if (C.numRows() != C.numCols() || C.numRows() != 6)
+    FOUR_C_THROW("4th order tensor must be 6 by 6");
 #endif
 
   // everything in Voigt-Notation
@@ -203,9 +204,9 @@ void MAT::VolumetrifyAndIsochorify(CORE::LINALG::Matrix<6, 1>* pk2vol,
     const CORE::LINALG::Matrix<6, 1>& pk2, const CORE::LINALG::Matrix<6, 6>& cmat)
 {
   // useful call?
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   if ((pk2vol == nullptr) and (cvol == nullptr) and (pk2iso == nullptr) and (ciso == nullptr))
-    dserror("Useful call? Apparently you do not want to compute anything");
+    FOUR_C_THROW("Useful call? Apparently you do not want to compute anything");
 #endif
 
   // right Cauchy--Green tensor
@@ -885,8 +886,8 @@ template <int dim>
 CORE::LINALG::Matrix<6, 6> MAT::PullBackFourTensor(
     const CORE::LINALG::Matrix<dim, dim>& defgr, const CORE::LINALG::Matrix<6, 6>& cMatVoigt)
 {
-#ifdef BACI_DEBUG
-  if (dim != 3) dserror("Current implementation only valid for dim = 3.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (dim != 3) FOUR_C_THROW("Current implementation only valid for dim = 3.");
 #endif
 
   CORE::LINALG::FourTensor<dim> cMatTensor(true);
@@ -965,8 +966,8 @@ template <int dim>
 void MAT::SetupFourTensor(
     CORE::LINALG::FourTensor<dim>& fourTensor, const CORE::LINALG::Matrix<6, 6>& matrixVoigt)
 {
-#ifdef BACI_DEBUG
-  if (dim != 3) dserror("Current implementation only valid for dim = 3.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (dim != 3) FOUR_C_THROW("Current implementation only valid for dim = 3.");
 #endif
   // Setup 4-Tensor from 6x6 Voigt matrix (which has to be the representative of a 4 tensor with at
   // least minor symmetries)
@@ -1062,8 +1063,8 @@ template <int dim>
 void MAT::Setup6x6VoigtMatrix(
     CORE::LINALG::Matrix<6, 6>& matrixVoigt, const CORE::LINALG::FourTensor<dim>& fourTensor)
 {
-#ifdef BACI_DEBUG
-  if (dim != 3) dserror("Current implementation only valid for dim = 3.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  if (dim != 3) FOUR_C_THROW("Current implementation only valid for dim = 3.");
 #endif
 
   // Setup 6x6 Voigt matrix from 4-Tensor

@@ -89,28 +89,29 @@ namespace POROFLUIDMULTIPHASE
     // return arterial network time integrator
     virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt()
     {
-      dserror("ArtNetTimInt() not implemented in base class, wrong mesh tying object?");
+      FOUR_C_THROW("ArtNetTimInt() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
     }
 
     //! access dof row map
     virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const
     {
-      dserror("ArteryDofRowMap() not implemented in base class, wrong mesh tying object?");
+      FOUR_C_THROW("ArteryDofRowMap() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
     }
 
     //! access to block system matrix of artery poro problem
     virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const
     {
-      dserror("ArteryPorofluidSysmat() not implemented in base class, wrong mesh tying object?");
+      FOUR_C_THROW(
+          "ArteryPorofluidSysmat() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
     }
 
     //! right-hand side alias the dynamic force residual for coupled system
     virtual Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const
     {
-      dserror("ArteryPorofluidRHS() not implemented in base class, wrong mesh tying object?");
+      FOUR_C_THROW("ArteryPorofluidRHS() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
     }
 
@@ -133,7 +134,7 @@ namespace POROFLUIDMULTIPHASE
     //! return blood vessel volume fraction
     virtual Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction()
     {
-      dserror(
+      FOUR_C_THROW(
           "BloodVesselVolumeFraction() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
     }

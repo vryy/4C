@@ -31,7 +31,8 @@ ADAPTER::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
 {
   stm_ = Teuchos::rcp_dynamic_cast<STR::TIMINT::Base>(structure_);
 
-  if (stm_ == Teuchos::null) dserror("cast from ADAPTER::Structure to STR::TIMINT::Base failed");
+  if (stm_ == Teuchos::null)
+    FOUR_C_THROW("cast from ADAPTER::Structure to STR::TIMINT::Base failed");
 
   // call the setup once if stm_ has been setup
   if (stm_->IsSetup()) SetupTimeAda();
@@ -82,7 +83,7 @@ void ADAPTER::StructureTimeAda::SetupTimeAda()
   // initialize the local variables
   timeinitial_ = 0.0;
   timefinal_ = sdynparams.get<double>("MAXTIME");
-  if (timefinal_ <= timeinitial_) dserror("MAXTIME is not positive. It is invalid.");
+  if (timefinal_ <= timeinitial_) FOUR_C_THROW("MAXTIME is not positive. It is invalid.");
   timedirect_ = 1.0;
   timestepinitial_ = 0;
   timestepfinal_ = sdynparams.get<int>("NUMSTEP");
@@ -171,7 +172,7 @@ int ADAPTER::StructureTimeAda::Integrate()
 
   // Richardson extrapolation to no avail
   if (MethodAdaptDis() == ada_ident)
-    dserror(
+    FOUR_C_THROW(
         "This combination is not implemented ... Richardson's extrapolation ... Yoshida technique "
         "...");
 
@@ -261,7 +262,7 @@ int ADAPTER::StructureTimeAda::Integrate()
     }
     else
     {
-      dserror("Do not know what to do");
+      FOUR_C_THROW("Do not know what to do");
     }
 
     // calculate stresses, strains and energies
@@ -520,7 +521,7 @@ double ADAPTER::StructureTimeAda::CalculateVectorNorm(const enum INPAR::STR::Vec
   }
   else
   {
-    dserror("Cannot handle vector norm");
+    FOUR_C_THROW("Cannot handle vector norm");
     return 0;
   }
 }
@@ -561,7 +562,7 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureTimeAda::PerformErrorAction(
       Output();
 
       // error and stop the simulation
-      dserror("Nonlinear solver did not converge! ");
+      FOUR_C_THROW("Nonlinear solver did not converge! ");
       break;
 
     case INPAR::STR::divcont_halve_step:
@@ -594,21 +595,21 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureTimeAda::PerformErrorAction(
     case INPAR::STR::divcont_adapt_step:
     case INPAR::STR::divcont_rand_adapt_step:
     case INPAR::STR::divcont_rand_adapt_step_ele_err:
-      dserror(
+      FOUR_C_THROW(
           "Adapt the time step is handled by the adaptive time marching integrator. Use\n"
           "DIVERCONT = continue if you want to adapt the step size.");
       break;
     case INPAR::STR::divcont_repeat_simulation:
-      dserror("No use to repeat a simulation when it failed. Get a coffee instead.");
+      FOUR_C_THROW("No use to repeat a simulation when it failed. Get a coffee instead.");
       break;
     case INPAR::STR::divcont_adapt_penaltycontact:
     case INPAR::STR::divcont_adapt_3D0Dptc_ele_err:
-      dserror(
+      FOUR_C_THROW(
           "DIVERCONT = adapt_penaltycontact/adapt_3D0Dptc_ele_err is yet to be implemented. "
           "Stay tune.");
       break;
     default:
-      dserror("I don't know what to do.");
+      FOUR_C_THROW("I don't know what to do.");
       break;
   }
   return INPAR::STR::conv_success;  // make compiler happy

@@ -113,7 +113,7 @@ bool NOX::NLN::Direction::ModifiedNewton::computeCorrectionDirection(::NOX::Abst
     }
     default:
     {
-      dserror(
+      FOUR_C_THROW(
           "The NOX::NLN::CorrectionType \"%s\" is not yet supported "
           "by the NOX::NLN::Direction::ModifiedNewton object!",
           NOX::NLN::CorrectionType2String(corr_type).c_str());
@@ -266,8 +266,8 @@ bool NOX::NLN::Direction::ModifiedNewton::solveModifiedSystem(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver)
 {
   // sanity check
-  if (not grp.isF()) dserror("At this point the right hand side must be fully evaluated!");
-  if (not grp.isJacobian()) dserror("At this point the jacobian must be fully evaluated!");
+  if (not grp.isF()) FOUR_C_THROW("At this point the right hand side must be fully evaluated!");
+  if (not grp.isJacobian()) FOUR_C_THROW("At this point the jacobian must be fully evaluated!");
 
   // Reset the linear solver tolerance.
   if (useAdjustableForcingTerm_)
@@ -341,7 +341,7 @@ void NOX::NLN::Direction::ModifiedNewton::setStagnationCounter(::NOX::Abstract::
   if (std::abs(prev_dir_nrm2 - dir_nrm2) < 1.0e-3 * prev_dir_nrm2) ++stagnation_counter_;
 
   if (stagnation_counter_ > 3)
-    dserror(
+    FOUR_C_THROW(
         "There has been %d stagnation detected. This indicates that the "
         "modified Newton does no longer help to improve the solvability "
         "of the problem. Thus, the problem might be badly posed.",
@@ -367,7 +367,7 @@ bool NOX::NLN::Direction::ModifiedNewton::modifySystem(
   if (diagonal)
   {
     if (not diagonal->Map().PointSameAs(original_diag_ptr_->Map()))
-      dserror("The provided diagonal vector has the wrong map layout!");
+      FOUR_C_THROW("The provided diagonal vector has the wrong map layout!");
 
     mod_diag_ptr = Teuchos::rcpFromRef(*diagonal);
   }

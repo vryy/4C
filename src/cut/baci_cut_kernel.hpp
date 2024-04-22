@@ -260,7 +260,7 @@ namespace CORE::GEO::CUT::KERNEL
   {
     // sanity check
     if (xsi.Rows() < CORE::FE::dim<elementType>)
-      dserror(
+      FOUR_C_THROW(
           "The given local coordinate has the wrong dimension!\n"
           "xsi.Rows() < Dim <===> %d<%d",
           xsi.Rows(), CORE::FE::dim<elementType>);
@@ -292,7 +292,7 @@ namespace CORE::GEO::CUT::KERNEL
         break;
       }
       default:
-        dserror("unsupported element type: %i | %s", elementType,
+        FOUR_C_THROW("unsupported element type: %i | %s", elementType,
             CORE::FE::CellTypeToString(elementType).c_str());
         break;
     }
@@ -317,7 +317,7 @@ namespace CORE::GEO::CUT::KERNEL
              xsi(1) <= (1.0 - xsi(0)) + tol(2);
     }
     else
-      dserror("This function is only called for triangulated elements");
+      FOUR_C_THROW("This function is only called for triangulated elements");
   }
 
 
@@ -325,7 +325,7 @@ namespace CORE::GEO::CUT::KERNEL
   bool WithinLimits(const T& xsi, const CORE::LINALG::Matrix<dim, 1, floatType>& tol)
   {
     if (xsi.M() < CORE::FE::dim<elementType>)
-      dserror(
+      FOUR_C_THROW(
           "The given local coordinate has the wrong dimension!\n"
           "xsi.Rows() < eleDim <===> %d<%d",
           xsi.M(), CORE::FE::dim<elementType>);
@@ -432,7 +432,7 @@ namespace CORE::GEO::CUT::KERNEL
         break;
       }
       default:
-        dserror("unsupported element type: %i | %s", elementType,
+        FOUR_C_THROW("unsupported element type: %i | %s", elementType,
             CORE::FE::CellTypeToString(elementType).c_str());
         break;
     }  // switch ( elementType )
@@ -452,7 +452,7 @@ namespace CORE::GEO::CUT::KERNEL
   bool WithinLimits(const T& xsi, const floatType& tol)
   {
     if (xsi.M() < CORE::FE::dim<elementType>)
-      dserror(
+      FOUR_C_THROW(
           "The given local coordinate has the wrong dimension!\n"
           "xsi.Rows() < eleDim <===> %d<%d",
           xsi.M(), CORE::FE::dim<elementType>);
@@ -524,7 +524,7 @@ namespace CORE::GEO::CUT::KERNEL
         break;
       }
       default:
-        dserror("unsupported element type: %i | %s", elementType,
+        FOUR_C_THROW("unsupported element type: %i | %s", elementType,
             CORE::FE::CellTypeToString(elementType).c_str());
         break;
     }  // switch ( elementType )
@@ -545,9 +545,9 @@ namespace CORE::GEO::CUT::KERNEL
       unsigned dimSide = CORE::FE::dim<sideType>, class T>
   bool WithinLimitsEmbeddedManifold(const T& xsi_aug, double tol, bool allow_dist, double tol2)
   {
-    if (probDim == 1) dserror("probDim is not allowed to be equal 1!");
+    if (probDim == 1) FOUR_C_THROW("probDim is not allowed to be equal 1!");
     if (xsi_aug.M() != probDim)
-      dserror(
+      FOUR_C_THROW(
           "Wrong dimension of the augmented xsi input variable. \n"
           "The dimension is supposed to be equal to the problem dimension. \n"
           "The last coordinates are holding the distances from the global \n"
@@ -663,7 +663,7 @@ namespace CORE::GEO::CUT::KERNEL
   void SplitQuad4IntoTri3(const T1& xyze_quad4, const unsigned& tri3_id, T2& xyze_tri3)
   {
     if (tri3_id > 1)
-      dserror(
+      FOUR_C_THROW(
           "A QUAD4 is supposed to be split into 2 TRI3 elements, \n"
           "therefore you have the choice between the tri3_id's 0 and 1. \n"
           "Nevertheless, you tried to access the id %d.",
@@ -685,8 +685,8 @@ namespace CORE::GEO::CUT::KERNEL
   template <class T>
   double getAreaTri(const T& xyze, CORE::LINALG::Matrix<3, 1>* normalvec = nullptr)
   {
-    if (xyze.M() != 3) dserror("Currently unsupported element dimension!");
-    if (xyze.N() != 3) dserror("Wrong node number!");
+    if (xyze.M() != 3) FOUR_C_THROW("Currently unsupported element dimension!");
+    if (xyze.N() != 3) FOUR_C_THROW("Wrong node number!");
 
     return getAreaTri(&xyze(0, 0), &xyze(0, 1), &xyze(0, 2), normalvec);
   }
@@ -782,7 +782,8 @@ namespace CORE::GEO::CUT::KERNEL
 
     if (tol == 0.0)
     {
-      dserror("Newton tolerance is cut_kernel for CLN is equal to zero! This should not happen!");
+      FOUR_C_THROW(
+          "Newton tolerance is cut_kernel for CLN is equal to zero! This should not happen!");
     }
 
     return tol;
@@ -802,7 +803,7 @@ namespace CORE::GEO::CUT::KERNEL
       case failed:
         return "FAILED";
       default:
-        dserror("Unknown Newton status!");
+        FOUR_C_THROW("Unknown Newton status!");
         exit(EXIT_FAILURE);
     }
     exit(EXIT_FAILURE);
@@ -886,19 +887,19 @@ namespace CORE::GEO::CUT::KERNEL
 
     double GetTolerance()
     {
-      dserror("Try to get tolerance from EmptyNewtonStrategy!");
+      FOUR_C_THROW("Try to get tolerance from EmptyNewtonStrategy!");
       return 0.0;  // just to make compiler happy!
     }
 
     bool ZeroArea()
     {
-      dserror("Try to get ZeroArea Information from EmptyNewtonStrategy!");
+      FOUR_C_THROW("Try to get ZeroArea Information from EmptyNewtonStrategy!");
       return false;  // just to make compiler happy!
     }
 
     void WritetoGmsh(std::ofstream& file)
     {
-      dserror("Try WritetoGmsh() from EmptyNewtonStrategy!");
+      FOUR_C_THROW("Try WritetoGmsh() from EmptyNewtonStrategy!");
     }
   };  // class EmptyNewtonStrategy
 
@@ -1194,7 +1195,7 @@ namespace CORE::GEO::CUT::KERNEL
 
     floatType GetLocalTolerance(const floatType& real_tolerance)
     {
-      dserror(
+      FOUR_C_THROW(
           "Not impelemented! Have a look at  GetLocalTolerance for ComputeDistance strategy to "
           "find out the idea of implementation!");
       return real_tolerance;
@@ -1409,7 +1410,7 @@ namespace CORE::GEO::CUT::KERNEL
               (elementType == CORE::FE::CellType::line2) ||
               (elementType == CORE::FE::CellType::wedge6)))
       {
-        dserror(
+        FOUR_C_THROW(
             "This type of element %s  is not yet implemented for the CLN calculation. You are "
             "welcome to edit fem_shapefunctions.H file to fix it",
             CORE::FE::CellTypeToString(elementType).c_str());
@@ -1476,7 +1477,7 @@ namespace CORE::GEO::CUT::KERNEL
           cln::float_format_t prec_end = cln::float_format(clnxsi_(i, 0).Value());
           if (prec_beg != prec_end)
           {
-            dserror(
+            FOUR_C_THROW(
                 "There is a loss of cln-precision during computation of Intersection. "
                 "Something is wrong with the conversion");
           }
@@ -1619,7 +1620,7 @@ namespace CORE::GEO::CUT::KERNEL
           std::cout << "It is allocated " << max_num << " times " << std::endl;
         }
         else
-          dserror("This should not be possible!");
+          FOUR_C_THROW("This should not be possible!");
 
         CORE::GEO::CUT::MemorySingleton::getInstance().ResetAllocated();
       }
@@ -1750,7 +1751,7 @@ namespace CORE::GEO::CUT::KERNEL
               probDim, elementType, computeCln>(xsi)
     {
       if (dim != probDim)
-        dserror(
+        FOUR_C_THROW(
             "You called the wrong object! Use the ComputeDistance class "
             "for the embedded case.");
     }
@@ -1906,7 +1907,7 @@ namespace CORE::GEO::CUT::KERNEL
           return CORE::MathOperations<floatType>::sqrt(
               distance_[0] * distance_[0] + distance_[1] * distance_[1]);
         default:
-          dserror("Unsupported probDim and dimSide combination!");
+          FOUR_C_THROW("Unsupported probDim and dimSide combination!");
           exit(EXIT_FAILURE);
       }
       exit(EXIT_FAILURE);
@@ -2106,7 +2107,7 @@ namespace CORE::GEO::CUT::KERNEL
           elementType = 'Q';
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "unsupported element type in GmshSideDump."
               " Please feel free to extend the functionality if necessary.");
       }
@@ -2181,14 +2182,14 @@ namespace CORE::GEO::CUT::KERNEL
 
     enum NormalPlane DetectNormalPlane(const CORE::LINALG::Matrix<probDim, 1, floatType>& n) const
     {
-      if (probDim < 3) dserror("This function makes only sense for the 3-D case!");
+      if (probDim < 3) FOUR_C_THROW("This function makes only sense for the 3-D case!");
 
       if (n(2) == 0.0)
         return normal_in_xy_plane;
       else if (n(0) == 0.0)
         return normal_in_yz_plane;
 
-      dserror("Couldn't detect a feasible plane for the given normal vector!");
+      FOUR_C_THROW("Couldn't detect a feasible plane for the given normal vector!");
       exit(EXIT_FAILURE);
     }
 
@@ -2313,7 +2314,7 @@ namespace CORE::GEO::CUT::KERNEL
           }
           default:
           {
-            dserror("Shouldn't happen!");
+            FOUR_C_THROW("Shouldn't happen!");
             exit(EXIT_FAILURE);
           }
         }
@@ -2396,7 +2397,7 @@ namespace CORE::GEO::CUT::KERNEL
         A.Update(distance[0], B, 1.0);
       }
       else
-        dserror("Unsupported dim <--> probDim relation!");
+        FOUR_C_THROW("Unsupported dim <--> probDim relation!");
       return true;
     }
 
@@ -2478,7 +2479,7 @@ namespace CORE::GEO::CUT::KERNEL
           (sideType == CORE::FE::CellType::hex20) || (sideType == CORE::FE::CellType::tet4) ||
           (sideType == CORE::FE::CellType::pyramid5))
       {
-        dserror(
+        FOUR_C_THROW(
             "This type of element (%s)  is not tested for the CLN calculation. You are welcome "
             "to edit ../fem_general/utils_fem_shapefunctions.H file to fix it. Just "
             "change all the integers occuring there double for CLN to work.",
@@ -2555,7 +2556,7 @@ namespace CORE::GEO::CUT::KERNEL
           cln::float_format_t prec_end = cln::float_format(clnxsi_(i, 0).Value());
           if (prec_beg != prec_end)
           {
-            dserror(
+            FOUR_C_THROW(
                 "There is a loss of cln-precision during computation of Intersection. "
                 "Something is wrong with the conversion");
           }
@@ -2571,7 +2572,7 @@ namespace CORE::GEO::CUT::KERNEL
               clndistance_ = this->SignedDistance()[0];
               break;
             default:
-              dserror("A scalar signed distance value is not available!");
+              FOUR_C_THROW("A scalar signed distance value is not available!");
               exit(EXIT_FAILURE);
           }
         }
@@ -2838,7 +2839,7 @@ namespace CORE::GEO::CUT::KERNEL
           cln_sizes_[iter] = size_max_num;
         }
         else
-          dserror("This should not be possible");
+          FOUR_C_THROW("This should not be possible");
 
         CORE::GEO::CUT::MemorySingleton::getInstance().ResetAllocated();
       }
@@ -2878,8 +2879,8 @@ namespace CORE::GEO::CUT::KERNEL
           // we cat only get signed distance for edge edge intersection
           const CORE::CLN::ClnWrapper distance = Strategy::Distance();
           // some safety checks
-          if (distance < 0.0) dserror("Not possible");
-          if (err <= 0.0) dserror("Error should be equal to basic tolerance!");
+          if (distance < 0.0) FOUR_C_THROW("Not possible");
+          if (err <= 0.0) FOUR_C_THROW("Error should be equal to basic tolerance!");
           if ((distance - err <= 0.0) and (distance + err > 0.0))
             return on;
           else
@@ -2967,7 +2968,7 @@ namespace CORE::GEO::CUT::KERNEL
             distance = this->SignedDistance()[0];
             break;
           default:
-            dserror("A scalar signed distance value is not available!");
+            FOUR_C_THROW("A scalar signed distance value is not available!");
             exit(EXIT_FAILURE);
         }
       }
@@ -3070,7 +3071,7 @@ namespace CORE::GEO::CUT::KERNEL
     PointOnSurfaceLoc GetSideLocationTriangleSplit()
     {
       if (sideType != CORE::FE::CellType::tri3)
-        dserror("This method only works for tri3 side. Current side is %s",
+        FOUR_C_THROW("This method only works for tri3 side. Current side is %s",
             CORE::FE::CellTypeToString(sideType).c_str());
 
       CORE::LINALG::Matrix<dimSide, 1> scaled_tolerance;
@@ -3202,8 +3203,8 @@ namespace CORE::GEO::CUT::KERNEL
           // we cat only get signed distance for edge edge intersection
           const double distance = Strategy::Distance();
           // some safety checks
-          if (distance < 0.0) dserror("Not possible");
-          if (err <= 0.0) dserror("Error should be equal to basic tolerance!");
+          if (distance < 0.0) FOUR_C_THROW("Not possible");
+          if (err <= 0.0) FOUR_C_THROW("Error should be equal to basic tolerance!");
           if ((distance - err <= 0.0) and (distance + err > 0.0))
             return on;
           else
@@ -3662,7 +3663,7 @@ namespace CORE::GEO::CUT::KERNEL
           elementType = 'Q';
           break;
         default:
-          dserror(
+          FOUR_C_THROW(
               "unsupported element type ( % s ) in WritetoGmsh."
               " Please feel free to extend the functionality if necessary.",
               CORE::FE::CellTypeToString(sideType).c_str());
@@ -3807,7 +3808,7 @@ namespace CORE::GEO::CUT::KERNEL
         b.MultiplyTN(B, c);
       }
       else
-        dserror(
+        FOUR_C_THROW(
             "The problem dimension is smaller than the combination of"
             "the side and edge element dimensions. This case is currently "
             "unsupported!");
@@ -3909,7 +3910,7 @@ namespace CORE::GEO::CUT::KERNEL
                   (sideType == CORE::FE::CellType::pyramid5) ||
                   (sideType == CORE::FE::CellType::hex8))))
       {
-        dserror(
+        FOUR_C_THROW(
             "This type of element (%s)  is not tested for the CLN calculation. You are welcome "
             "to edit ../fem_general/utils_fem_shapefunctions.H file to fix it. Just "
             "change all the integers occuring there double for CLN to work.",
@@ -3983,7 +3984,7 @@ namespace CORE::GEO::CUT::KERNEL
           cln::float_format_t prec_end = cln::float_format(clnxsi_(i, 0).Value());
           if (prec_beg != prec_end)
           {
-            dserror(
+            FOUR_C_THROW(
                 "There is a loss of cln-precision during computation of Intersection. "
                 "Something is wrong with the conversion");
           }
@@ -4232,12 +4233,12 @@ namespace CORE::GEO::CUT::KERNEL
               msg << "NOTICE: Intersection point is close to 2 side edges, but too far from "
                      "the corner point"
                   << "\n Distance is " << min_dist;
-              dserror(msg.str());
+              FOUR_C_THROW(msg.str());
             }
           }
         }
         else
-          dserror("This should not be possible!");
+          FOUR_C_THROW("This should not be possible!");
       }
     }
 
@@ -4280,7 +4281,7 @@ namespace CORE::GEO::CUT::KERNEL
           cln_sizes_[iter] = size_max_num;
         }
         else
-          dserror("This should not be possible!");
+          FOUR_C_THROW("This should not be possible!");
 
         CORE::GEO::CUT::MemorySingleton::getInstance().ResetAllocated();
       }
@@ -4443,7 +4444,7 @@ namespace CORE::GEO::CUT::KERNEL
     PointOnSurfaceLoc GetSideLocationTriangleSplit()
     {
       if (sideType != CORE::FE::CellType::tri3)
-        dserror("This method only works for tri3 side. Current side is %s",
+        FOUR_C_THROW("This method only works for tri3 side. Current side is %s",
             CORE::FE::CellTypeToString(sideType).c_str());
 
       double distance_tolerance = TOPOLOGICAL_TOLERANCE;
@@ -4469,7 +4470,7 @@ namespace CORE::GEO::CUT::KERNEL
       if (probDim > dimEdge + dimSide)
         return distance_between_;
       else
-        dserror("This method should only be used for edge-edge intersection");
+        FOUR_C_THROW("This method should only be used for edge-edge intersection");
     }
 
    private:

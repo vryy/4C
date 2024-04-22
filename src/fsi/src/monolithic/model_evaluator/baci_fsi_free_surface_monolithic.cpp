@@ -48,7 +48,8 @@ FSI::MonolithicBaseFS::MonolithicBaseFS(
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
       new ADAPTER::AleBaseAlgorithm(timeparams, GLOBAL::Problem::Instance()->GetDis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
-  if (ale_ == Teuchos::null) dserror("cast from ADAPTER::Ale to ADAPTER::AleFluidWrapper failed");
+  if (ale_ == Teuchos::null)
+    FOUR_C_THROW("cast from ADAPTER::Ale to ADAPTER::AleFluidWrapper failed");
 
   coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
 }
@@ -216,7 +217,8 @@ void FSI::MonolithicMainFS::Timeloop(
     // solve the whole thing
     ::NOX::StatusTest::StatusType status = solver->solve();
 
-    if (status != ::NOX::StatusTest::Converged) dserror("Nonlinear solver failed to converge!");
+    if (status != ::NOX::StatusTest::Converged)
+      FOUR_C_THROW("Nonlinear solver failed to converge!");
 
     // cleanup
     // mat_->Zero();
@@ -545,7 +547,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
           pcomega[0], pciter[0], fpcomega[0], fpciter[0]));
       break;
     default:
-      dserror("Unsupported type of monolithic free surface solver");
+      FOUR_C_THROW("Unsupported type of monolithic free surface solver");
       break;
   }
 }
@@ -572,7 +574,7 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
     // And we are concerned with the u(n) part here.
 
     Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
-    if (a == Teuchos::null) dserror("expect ale block matrix");
+    if (a == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
     // here we extract the free surface submatrices from position 2
     CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 2);
@@ -633,7 +635,7 @@ void FSI::MonolithicFS::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& m
 
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
-  if (a == Teuchos::null) dserror("expect ale block matrix");
+  if (a == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
   // here we extract the free surface submatrices from position 2
   CORE::LINALG::SparseMatrix& aii = a->Matrix(0, 0);
@@ -719,11 +721,11 @@ void FSI::MonolithicFS::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Ep
     if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 1).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
 
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 1);
 
-    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*ax, 1, b);
   }
@@ -743,13 +745,13 @@ void FSI::MonolithicFS::UnscaleSolution(
   {
     Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x, 1);
 
-    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) dserror("ale scaling failed");
+    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*ay, 1, x);
 
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b, 1);
 
-    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) dserror("ale scaling failed");
+    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
 
     Extractor().InsertVector(*ax, 1, b);
 
@@ -759,7 +761,7 @@ void FSI::MonolithicFS::UnscaleSolution(
     if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
         mat.Matrix(1, 0).EpetraMatrix()->LeftScale(*arowsum_) or
         mat.Matrix(0, 1).EpetraMatrix()->RightScale(*acolsum_))
-      dserror("ale scaling failed");
+      FOUR_C_THROW("ale scaling failed");
   }
 }
 
@@ -797,7 +799,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::MonolithicFS::CreateLinearSystem(
   else if (dirParams.get("Method", "User Defined") == "NonlinearCG")
     lsParams = &(dirParams.sublist("Nonlinear CG").sublist("Linear Solver"));
   else
-    dserror("Unknown nonlinear method");
+    FOUR_C_THROW("Unknown nonlinear method");
 
   ::NOX::Epetra::Interface::Jacobian* iJac = this;
   ::NOX::Epetra::Interface::Preconditioner* iPrec = this;
@@ -811,7 +813,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::MonolithicFS::CreateLinearSystem(
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
     default:
-      dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+      FOUR_C_THROW("unsupported linear block solver strategy: %d", linearsolverstrategy_);
       break;
   }
 
@@ -1038,7 +1040,7 @@ FSI::BlockPreconditioningMatrixFS::BlockPreconditioningMatrixFS(
 int FSI::BlockPreconditioningMatrixFS::ApplyInverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  if (UseTranspose()) dserror("no transpose preconditioning");
+  if (UseTranspose()) FOUR_C_THROW("no transpose preconditioning");
 
 #ifdef BLOCKMATRIXMERGE
   MergeSolve(X, Y);

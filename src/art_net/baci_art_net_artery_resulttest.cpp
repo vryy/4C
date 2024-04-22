@@ -54,7 +54,7 @@ void ART::ArteryResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int&
 
   if (isnodeofanybody == 0)
   {
-    dserror("Node %d does not belong to discretization %s", node + 1, dis_->Name().c_str());
+    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, dis_->Name().c_str());
   }
   else
   {
@@ -81,7 +81,7 @@ void ART::ArteryResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int&
         result = (*mysol_)[pnpmap.LID(dis_->Dof(actnode, 1))];
       else
       {
-        dserror("Quantity '%s' not supported in result-test of artery transport problems",
+        FOUR_C_THROW("Quantity '%s' not supported in result-test of artery transport problems",
             position.c_str());
       }
 
@@ -111,7 +111,8 @@ void ART::ArteryResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, i
 
   if (iselementofanybody == 0)
   {
-    dserror("Element %d does not belong to discretization %s", element + 1, dis_->Name().c_str());
+    FOUR_C_THROW(
+        "Element %d does not belong to discretization %s", element + 1, dis_->Name().c_str());
   }
   else
   {
@@ -130,17 +131,17 @@ void ART::ArteryResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, i
       // test result value of single scalar field
       if (quantity == "volflow")
       {
-        if (myelevolflow_ == Teuchos::null) dserror("Element volume flow not available");
+        if (myelevolflow_ == Teuchos::null) FOUR_C_THROW("Element volume flow not available");
         result = (*myelevolflow_)[dis_->ElementRowMap()->LID(actelement->Id())];
       }
       else if (quantity == "radius")
       {
-        if (myeleradius_ == Teuchos::null) dserror("Element radius not available");
+        if (myeleradius_ == Teuchos::null) FOUR_C_THROW("Element radius not available");
         result = (*myeleradius_)[dis_->ElementRowMap()->LID(actelement->Id())];
       }
       else
       {
-        dserror("Quantity '%s' not supported in result-test of artery transport problems",
+        FOUR_C_THROW("Quantity '%s' not supported in result-test of artery transport problems",
             quantity.c_str());
       }
 

@@ -116,7 +116,7 @@ namespace DRT::ELEMENTS
             deformation_gradient,
         const FBarPreparationData<celltype>& preparation_data)
     {
-      dserror(
+      FOUR_C_THROW(
           "The full linearization is not yet implemented for the displacement based formulation "
           "with fbar.");
     }

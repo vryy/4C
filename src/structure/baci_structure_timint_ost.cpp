@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 void STR::TimIntOneStepTheta::VerifyCoeff()
 {
   // check value of theta
-  if ((theta_ <= 0.0) or (theta_ > 1.0)) dserror("theta out of range (0.0,1.0]");
+  if ((theta_ <= 0.0) or (theta_ > 1.0)) FOUR_C_THROW("theta out of range (0.0,1.0]");
 
   // done
   return;
@@ -445,7 +445,7 @@ void STR::TimIntOneStepTheta::EvaluateForceResidual()
   }
   else
   {
-    dserror("Not implemented, yet.");
+    FOUR_C_THROW("Not implemented, yet.");
   }
 
   // ************************** (3) INERTIAL FORCES ***************************
@@ -458,7 +458,7 @@ void STR::TimIntOneStepTheta::EvaluateForceResidual()
   }
   else
   {
-    dserror("Not implemented, yet.");
+    FOUR_C_THROW("Not implemented, yet.");
   }
 
   // ************************** (4) DAMPING FORCES ****************************

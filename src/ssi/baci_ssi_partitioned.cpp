@@ -40,14 +40,14 @@ void SSI::SSIPart::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   // safety check
   if (SSIInterfaceMeshtying() and structparams.get<std::string>("PREDICT") != "TangDis")
   {
-    dserror(
+    FOUR_C_THROW(
         "Must have TangDis predictor for structural field in partitioned scalar-structure "
         "interaction simulations involving scatra-scatra interface coupling! Otherwise, Dirichlet "
         "boundary conditions on master-side degrees of freedom are not transferred to slave-side "
         "degrees of freedom!");
   }
 
-  if (IsScaTraManifold()) dserror("Manifold not implemented for partitioned SSI");
+  if (IsScaTraManifold()) FOUR_C_THROW("Manifold not implemented for partitioned SSI");
 }
 
 /*----------------------------------------------------------------------*/

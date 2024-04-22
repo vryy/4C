@@ -81,7 +81,7 @@ void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyStructureContributions()
   if (!structure_scaled_)
   {
     if (fs_->Scale(GetParams()->GetPenaltyParameter()))
-      dserror("Scaling of the penalty force was unsuccessful!\n");
+      FOUR_C_THROW("Scaling of the penalty force was unsuccessful!\n");
     structure_scaled_ = true;
   }
 }
@@ -94,7 +94,7 @@ void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyFluidContributions()
   {
     if (Cff_->Scale(GetParams()->GetPenaltyParameter()) ||
         ff_->Scale(GetParams()->GetPenaltyParameter()))
-      dserror("Scaling of the penalty force was unsuccessful!\n");
+      FOUR_C_THROW("Scaling of the penalty force was unsuccessful!\n");
     fluid_scaled_ = true;
   }
 }

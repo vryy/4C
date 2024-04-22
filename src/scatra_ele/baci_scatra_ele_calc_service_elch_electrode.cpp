@@ -69,9 +69,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CheckElchEleme
 )
 {
   // safety checks
-  if (ele->Material()->MaterialType() != INPAR::MAT::m_electrode) dserror("Invalid material type!");
+  if (ele->Material()->MaterialType() != INPAR::MAT::m_electrode)
+    FOUR_C_THROW("Invalid material type!");
 
-  if (my::numscal_ != 1) dserror("Invalid number of transported scalars!");
+  if (my::numscal_ != 1) FOUR_C_THROW("Invalid number of transported scalars!");
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CheckElchElementParameter
 
 
@@ -125,7 +126,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateCurre
 
     default:
     {
-      dserror("Invalid flux type!");
+      FOUR_C_THROW("Invalid flux type!");
       break;
     }
   }
@@ -145,13 +146,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
 {
   // safety check
   if (my::numscal_ != 1)
-    dserror("Electrode state of charge can only be computed for one transported scalar!");
+    FOUR_C_THROW("Electrode state of charge can only be computed for one transported scalar!");
 
   // get global state vectors
   const Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp == Teuchos::null) dserror("Cannot get state vector \"phinp\"!");
+  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phinp\"!");
   const Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
-  if (phidtnp == Teuchos::null) dserror("Cannot get state vector \"phidtnp\"!");
+  if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
 
   // extract local nodal values from global state vectors
   CORE::FE::ExtractMyValues(*phinp, my::ephinp_, la[0].lm_);
@@ -191,7 +192,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
 
   // safety check
   if (not my::scatrapara_->IsAle() and scalars.length() != 3)
-    dserror(
+    FOUR_C_THROW(
         "Result vector for electrode state of charge and C rate computation has invalid length!");
 
   // write results for integrals of concentration, its time derivative, and domain into result
@@ -206,7 +207,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
     const int ndsvel = my::scatrapara_->NdsVel();
     // extract velocities
     const Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel, "velocity field");
-    if (vel == Teuchos::null) dserror("Cannot get state vector \"velocity field\"!");
+    if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"velocity field\"!");
     CORE::FE::ExtractMyValues(*vel, my::evelnp_, la[ndsvel].lm_);
 
     // initialize additional variables for integrals related to velocity divergence
@@ -244,7 +245,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
 
     // safety check
     if (scalars.length() != 6)
-      dserror(
+      FOUR_C_THROW(
           "Result vector for electrode state of charge and C rate computation has invalid length!");
 
     // write results for integrals related to velocity divergence into result vector
@@ -285,7 +286,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateFlux(
 
     default:
     {
-      dserror("received illegal flag inside flux evaluation for whole domain");
+      FOUR_C_THROW("received illegal flag inside flux evaluation for whole domain");
       break;
     }
   }

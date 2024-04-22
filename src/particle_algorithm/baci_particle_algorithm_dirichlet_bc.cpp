@@ -139,7 +139,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
 
     // safety check
     if (static_cast<std::size_t>(statedim) != function.NumberComponents())
-      dserror("dimension of function defining dirichlet boundary condition not correct!");
+      FOUR_C_THROW("dimension of function defining dirichlet boundary condition not correct!");
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)

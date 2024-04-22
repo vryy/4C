@@ -35,7 +35,8 @@ void BEAMINTERACTION::BeamToSphereContactParams::Init()
 
   penalty_parameter_ = beam_to_sphere_contact_params_list.get<double>("PENALTY_PARAMETER");
 
-  if (penalty_parameter_ < 0.0) dserror("beam-to-sphere penalty parameter must not be negative!");
+  if (penalty_parameter_ < 0.0)
+    FOUR_C_THROW("beam-to-sphere penalty parameter must not be negative!");
 
 
   isinit_ = true;

@@ -73,7 +73,7 @@ int DRT::ELEMENTS::SoHex8ScatraType::Initialize(DRT::Discretization& dis)
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8, CORE::FE::CellType::hex8>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex8_scatra* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex8_scatra* failed");
     actele->InitElement();
   }
 
@@ -146,7 +146,7 @@ int DRT::ELEMENTS::SoHex8fbarScatraType::Initialize(DRT::Discretization& dis)
     auto* actele = dynamic_cast<
         DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex8fbar, CORE::FE::CellType::hex8>*>(
         dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex8fbar_scatra* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex8fbar_scatra* failed");
     actele->InitElement();
   }
 
@@ -214,7 +214,7 @@ int DRT::ELEMENTS::SoHex27ScatraType::Initialize(DRT::Discretization& dis)
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoHex27, CORE::FE::CellType::hex27>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex27_scatra* failed");
+    if (!actele) FOUR_C_THROW("cast to So_hex27_scatra* failed");
     actele->InitElement();
   }
 
@@ -283,7 +283,7 @@ int DRT::ELEMENTS::SoTet4ScatraType::Initialize(DRT::Discretization& dis)
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet4, CORE::FE::CellType::tet4>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet4_scatra* failed");
+    if (!actele) FOUR_C_THROW("cast to So_tet4_scatra* failed");
     actele->InitElement();
   }
 
@@ -353,7 +353,7 @@ int DRT::ELEMENTS::SoTet10ScatraType::Initialize(DRT::Discretization& dis)
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoTet10, CORE::FE::CellType::tet10>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet10_scatra* failed");
+    if (!actele) FOUR_C_THROW("cast to So_tet10_scatra* failed");
     actele->InitElement();
   }
 
@@ -424,7 +424,7 @@ int DRT::ELEMENTS::SoWeg6ScatraType::Initialize(DRT::Discretization& dis)
     auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3Scatra<DRT::ELEMENTS::SoWeg6, CORE::FE::CellType::wedge6>*>(
             dis.lColElement(i));
-    if (!actele) dserror("cast to So_weg6_scatra* failed");
+    if (!actele) FOUR_C_THROW("cast to So_weg6_scatra* failed");
     actele->InitElement();
   }
 
