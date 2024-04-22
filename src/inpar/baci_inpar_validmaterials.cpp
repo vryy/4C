@@ -4154,7 +4154,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
         return acc;
       };
 
-      return IO::ReadCsvAsLines<mapType, mapType>(file_stream, map_reduction_operation);
+      return IO::ReadFileAsLines<mapType, mapType>(file_stream, map_reduction_operation);
     };
     const std::string print_string = std::string(
         "map of massfraction values retrieved from pattern file with rows in the format \"eleid: "
