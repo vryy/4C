@@ -71,7 +71,7 @@ $CMAKE_COMMAND \
     -D Tpetra_ENABLE_DEPRECATED_CODE:BOOL=OFF \
     -D Tpetra_INST_INT_INT:BOOL=ON \
   -D Trilinos_ENABLE_Xpetra:BOOL=ON \
-    -D Xpetra_ENABLE_DEPRECATED_CODE:BOOL=OFF \
+    -D Xpetra_ENABLE_DEPRECATED_CODE:BOOL=ON \
     -D Xpetra_ENABLE_Epetra:BOOL=ON \
     -D Xpetra_ENABLE_EpetraExt:BOOL=ON \
   -D Trilinos_ENABLE_Zoltan:BOOL=ON \
