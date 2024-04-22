@@ -14,7 +14,7 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 #include "baci_global_data.hpp"
 #include "baci_io_control.hpp"
-#include "baci_io_csv_reader.hpp"
+#include "baci_io_file_reader.hpp"
 #include "baci_io_linedefinition.hpp"
 #include "baci_utils_cubic_spline_interpolation.hpp"
 #include "baci_utils_function.hpp"

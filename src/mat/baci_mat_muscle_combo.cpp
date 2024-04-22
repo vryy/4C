@@ -34,13 +34,13 @@ namespace
   {
     if (activation_type == INPAR::MAT::ActivationType::function_of_space_time)
     {
-      auto actFunctId = *matdata->Get<int>("ACTFUNCT");
+      auto actFunctId = *matdata->Get<int>("FUNCTID");
       if (actFunctId <= 0) dserror("Function id must be positive");
       return actFunctId;
     }
-    else if (activation_type == INPAR::MAT::ActivationType::map_from_csv)
+    else if (activation_type == INPAR::MAT::ActivationType::map)
     {
-      return *matdata->Get<const ActivationMapType>("ACTCSV");
+      return *matdata->Get<const ActivationMapType>("MAPFILE");
     }
     else
       return std::monostate{};
@@ -54,10 +54,9 @@ namespace
           function_id - 1);
     }
 
-    MAT::MuscleCombo::ActivationEvaluatorVariant operator()(
-        const ActivationMapType& activation_csv_data_map) const
+    MAT::MuscleCombo::ActivationEvaluatorVariant operator()(const ActivationMapType& map) const
     {
-      return &activation_csv_data_map;
+      return &map;
     }
 
     MAT::MuscleCombo::ActivationEvaluatorVariant operator()(const std::monostate& /*unused*/) const
@@ -70,17 +69,17 @@ namespace
 
   struct ActivationEvalVisitor
   {
-    double operator()(const ActivationMapType*& csvMap) const
+    double operator()(const ActivationMapType*& map) const
     {
-      // use one-based element ids in the csv files (corresponding to the ones in the dat-file)
-      return MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(
-          Popt_, *csvMap, t_tot_, eleGID_ + 1);
+      // use one-based element ids in the pattern file (corresponding to the ones in the dat-file)
+      return MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByMap(
+          Popt_, *map, t_tot_, eleGID_ + 1);
     }
 
-    double operator()(const CORE::UTILS::FunctionOfSpaceTime*& spaceTimeFunction) const
+    double operator()(const CORE::UTILS::FunctionOfSpaceTime*& function) const
     {
       return MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(
-          Popt_, *spaceTimeFunction, t_tot_, element_center_reference_coordinates_);
+          Popt_, *function, t_tot_, element_center_reference_coordinates_);
     }
 
     double operator()(const std::monostate& /*unused*/) const
@@ -111,7 +110,6 @@ MAT::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<MAT::PAR::Material> matdata)
       activationParams_(GetActivationParams(matdata, activationType_)),
       density_(*matdata->Get<double>("DENS"))
 {
-  printf("ACTEVALTYOPE IS %d", *matdata->Get<int>("ACTEVALTYPE"));
   // error handling for parameter ranges
   // passive material parameters
   if (alpha_ <= 0.0) dserror("Material parameter ALPHA must be greater zero");

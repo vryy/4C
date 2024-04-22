@@ -1,11 +1,11 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*! \file
-\brief Read csv input
+\brief Read files
 \level 1
 */
 /*-----------------------------------------------------------------------------------------------*/
-#ifndef FOUR_C_IO_CSV_READER_HPP
-#define FOUR_C_IO_CSV_READER_HPP
+#ifndef FOUR_C_IO_FILE_READER_HPP
+#define FOUR_C_IO_FILE_READER_HPP
 
 /*-----------------------------------------------------------------------------------------------*/
 #include "baci_config.hpp"
@@ -42,24 +42,25 @@ namespace IO
       int number_of_columns, std::istream& csv_stream);
 
   /*!
-   * @brief Read a @p csv_stream line by line and parse each line into an object of type @p T using
-   * `IO::StringConverter<T>::Parse(line_string)`. Return a vector containing all those objects.
+   * @brief Read a @p input_stream line by line and parse each line into an object of type @p T
+   * using `IO::StringConverter<T>::Parse(line_string)`. Return a vector containing all those
+   * objects.
    *
-   * @param[in] csv_stream csv input stream
+   * @param[in] input_stream input stream
    * @tparam T type of object one line is read into
    */
   template <typename T>
-  std::vector<T> ReadCsvAsLines(std::istream& csv_stream);
+  std::vector<T> ReadFileAsLines(std::istream& input_stream);
 
   /*!
-   * @brief Read a @p csv_stream line by line and parse each line into an object of type @p T using
-   * `IO::StringConverter<T>::Parse(line_string)`. The parsed objects are then reduced into another
-   * object of @p ReturnType. This process is also known as a `fold` over the data.
-   * The user can specify which @p operation should be performed by supplying a callable that takes
-   * the already accumulated data of type @p ReturnType and the result of parsing a single CSV line
-   * into a type @p T.
+   * @brief Read an @p input_stream line by line and parse each line into an object of type @p T
+   * using `IO::StringConverter<T>::Parse(line_string)`. The parsed objects are then reduced into
+   * another object of @p ReturnType. This process is also known as a `fold` over the data. The user
+   * can specify which @p operation should be performed by supplying a callable that takes the
+   * already accumulated data of type @p ReturnType and the result of parsing a single line into a
+   * type @p T.
    *
-   * Assume you have a csv stream, where each line follows the pattern `"key:val_1,val_2,val_3"`.
+   * Assume you have an input stream, where each line follows the pattern `"key:val_1,val_2,val_3"`.
    * Those lines can be parsed into objects of type `T = std::map<int, std::array<int, 3>>`.
    * You want to create an `std::map<int,int>` containing the sum of values for each key.
    * Hence, you need an operation (e.g., a lambda function) that creates a `std::map<int, int>`
@@ -77,15 +78,15 @@ namespace IO
    * };
    * @endcode
    *
-   * The desired map could then be read from the csv_stream:
+   * The desired map could then be read from the input_stream:
    *
    * @code {.cpp}
    * using ReducedType = std::map<int, int>;
    * using T = std::map<int, std::array<int, 3>>;
-   * ReducedType read_data = IO::ReadCsvAsLines<T, ReducedType>(csv_stream, operator);
+   * ReducedType read_data = IO::ReadFileAsLines<T, ReducedType>(input_stream, operator);
    * @endcode
    *
-   * @param[in] csv_stream csv input stream
+   * @param[in] input_stream input stream
    * @param[in] operation Binary operation function object that is apply to create the operated data
    *                      from the parsed data. Its signature must be:
    *                      @code {.cpp}
@@ -95,12 +96,12 @@ namespace IO
    * @tparam ReturnType type of the result created through the binary operation
    */
   template <typename T, typename ReturnType, typename BinaryOperation>
-  ReturnType ReadCsvAsLines(std::istream& csv_stream, BinaryOperation operation);
+  ReturnType ReadFileAsLines(std::istream& input_stream, BinaryOperation operation);
 
   template <typename T>
-  std::vector<T> ReadCsvAsLines(std::istream& csv_stream)
+  std::vector<T> ReadFileAsLines(std::istream& input_stream)
   {
-    return ReadCsvAsLines<T, std::vector<T>>(csv_stream,
+    return ReadFileAsLines<T, std::vector<T>>(input_stream,
         [](std::vector<T>&& accumulator, T&& next)
         {
           accumulator.emplace_back(std::move(next));
@@ -109,13 +110,13 @@ namespace IO
   }
 
   template <typename T, typename ReturnType, typename BinaryOperation>
-  ReturnType ReadCsvAsLines(std::istream& csv_stream, BinaryOperation operation)
+  ReturnType ReadFileAsLines(std::istream& input_stream, BinaryOperation operation)
   {
     std::string line_str;
     ReturnType operated_data;
 
-    // read lines of csv file
-    while (std::getline(csv_stream, line_str))
+    // read lines of file
+    while (std::getline(input_stream, line_str))
     {
       // do not read in line if it is a header
       if (line_str[0] == '#') continue;
@@ -129,7 +130,7 @@ namespace IO
       catch (...)
       {
         dserror(
-            "Could not read line '%s' from csv file. Likely the string's pattern is not "
+            "Could not read line '%s' from file. Likely the string's pattern is not "
             "convertible to an object of type %s",
             line_str.c_str(), CORE::UTILS::TryDemangle(typeid(T).name()).c_str());
       }

@@ -271,16 +271,16 @@ namespace MAT::UTILS::MUSCLE
 
   /*!
    * @brief Evaluate the time- and space-dependent optimal (i.e. maximal) active stress through
-   * a csv mapping function ft defined in the input file (MAP_FROM_CSV). This
-   * function takes a csv file as input. The csv file specifies activation values at corresponding
-   * times for each element id. Those values need to be definited according to the following line
-   * string pattern: global element id: time_0, activation_0; time_1, activation_1; ....
+   * a map with element-wise defined activation values. The path to the file defining the map is
+   * given as the parameter MAP_FILE. The file specifies activation values at corresponding times
+   * for each element id. Those values need to be definited according to the following line string
+   * pattern: global element id: time_0, activation_0; time_1, activation_1; ....
    *
-   * The mapping function ft is evaluated at a given time and element id. Evaluating the
-   * activation_function at the element id (key) returns a vector of pairs (value). Those vector
-   * entries correspond to a time-"activation value"-pair. The activation at the current time
-   * t_current is found via linear interpolation between the prescribed time-"activation
-   * value"-pairs.
+   * The time- and space-dependent activation function ft is computed by accessing the
+   * activation_map for a given element id and time. Evaluating the activation_map at the element id
+   * (key) returns a vector of pairs (value). Those vector entries correspond to a time-"activation
+   * value"-pair. The activation at the current time t_current is found via linear interpolation
+   * between the prescribed time-"activation value"-pairs.
    *
    * The time-dependent optimal active stress is obtained by sigma_opt = sigma_max * ft
    *
@@ -291,7 +291,7 @@ namespace MAT::UTILS::MUSCLE
    * @param[out]    sigma_max_ft Time-/space-dependent optimal active stress for the given element
    *                             id and t_current
    */
-  double EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
+  double EvaluateTimeSpaceDependentActiveStressByMap(const double sigma_max,
       const std::unordered_map<int, std::vector<std::pair<double, double>>> &activation_map,
       const double t_current, const int activation_map_key);
 
