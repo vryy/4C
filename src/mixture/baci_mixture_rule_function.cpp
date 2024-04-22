@@ -57,7 +57,7 @@ MIXTURE::PAR::FunctionMixtureRule::FunctionMixtureRule(
 
 std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::FunctionMixtureRule::CreateRule()
 {
-  return std::unique_ptr<MIXTURE::FunctionMixtureRule>(new MIXTURE::FunctionMixtureRule(this));
+  return std::make_unique<MIXTURE::FunctionMixtureRule>(this);
 }
 
 MIXTURE::FunctionMixtureRule::FunctionMixtureRule(MIXTURE::PAR::FunctionMixtureRule* params)
@@ -88,8 +88,8 @@ void MIXTURE::FunctionMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
     const int eleGID)
 {
   // define temporary matrices
-  static CORE::LINALG::Matrix<6, 1> cstress;
-  static CORE::LINALG::Matrix<6, 6> ccmat;
+  CORE::LINALG::Matrix<6, 1> cstress;
+  CORE::LINALG::Matrix<6, 6> ccmat;
 
   // initialize sum of mass fractions for validity check
   double sum = 0.0;

@@ -22,6 +22,7 @@
 #include "baci_mixture_prestress_strategy_iterative.hpp"
 #include "baci_mixture_rule_function.hpp"
 #include "baci_mixture_rule_growthremodel.hpp"
+#include "baci_mixture_rule_map.hpp"
 #include "baci_mixture_rule_simple.hpp"
 
 #include <Sacado.hpp>
@@ -1199,6 +1200,8 @@ template MIXTURE::PAR::ConstantPrestressStrategy* MAT::CreateMaterialParameterIn
 template MIXTURE::PAR::IterativePrestressStrategy* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);
 template MIXTURE::PAR::FunctionMixtureRule* MAT::CreateMaterialParameterInstance(
+    Teuchos::RCP<MAT::PAR::Material> curmat);
+template MIXTURE::PAR::MapMixtureRule* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);
 template MIXTURE::PAR::SimpleMixtureRule* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);

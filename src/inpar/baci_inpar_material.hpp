@@ -298,6 +298,7 @@ namespace INPAR
                                       ///< happens mainly in the direction of the smallest
                                       ///< stiffness)
       mix_rule_function,              ///< Function rule for the mixture model
+      mix_rule_map,                   ///< Map rule for the mixture model
       mix_rule_simple,                ///< Simple rule for the mixture model
       mix_rule_growthremodel,         ///< Homogenized constrained mixture
       mix_prestress_strategy_cylinder,     ///< Prestress strategy for a cylinder
