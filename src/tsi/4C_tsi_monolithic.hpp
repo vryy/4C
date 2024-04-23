@@ -222,6 +222,8 @@ namespace TSI
     void PrepareOutput() override;
     //@}
 
+    void PrepareContactStrategy() override;
+
     //! convergence check for Newton solver
     bool ConvergenceCheck(int itnum, int itmax, double ittol);
 

@@ -1195,6 +1195,18 @@ namespace STR
         var_type_ = var_type;
       }
 
+      //! set coupling mode enumerator
+      [[nodiscard]] enum INPAR::CONTACT::CouplingScheme GetCouplingScheme() const override
+      {
+        return coupling_scheme_;
+      }
+
+      //! set coupling mode enumerator
+      void SetCouplingScheme(const enum INPAR::CONTACT::CouplingScheme scheme) override
+      {
+        coupling_scheme_ = scheme;
+      }
+
       /*! \brief Get time step number from which the current simulation has been restarted
        *
        * Equal to 0 if no restart has been performed.
@@ -1270,6 +1282,8 @@ namespace STR
       enum MORTAR::ActionType mortar_action_;
 
       enum INPAR::CONTACT::VariationalApproach var_type_;
+
+      enum INPAR::CONTACT::CouplingScheme coupling_scheme_;
 
       Teuchos::RCP<const STR::MODELEVALUATOR::Data> str_data_ptr_;
 

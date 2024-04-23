@@ -134,7 +134,6 @@ namespace THR
     {
       contact_params_interface_ = params_interface;
     }
-    }
 
     //! prepare time step
     void PrepareTimeStep() override = 0;
@@ -627,6 +626,7 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
+
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -137,7 +137,7 @@ namespace TSI
 
     //! Prepare a ptr to the contact strategy from the structural field,
     //! store it in tsi and hand it to the thermal field
-    void PrepareContactStrategy();
+    virtual void PrepareContactStrategy();
 
     //! Access to the dof coupling for matching grid TSI
     CORE::ADAPTER::Coupling& StructureThermoCoupling() { return *coupST_; }

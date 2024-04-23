@@ -161,7 +161,6 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
   // structural and thermal contact
   PrepareContactStrategy();
-
 }  // Monolithic()
 
 
@@ -2782,6 +2781,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
 }  // CalculateNeckingTSIResults()
 
 /*----------------------------------------------------------------------*
+ |                                                                      |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::PrepareOutput()
 {
@@ -2794,7 +2794,23 @@ void TSI::Monolithic::PrepareOutput()
   // reset states
   StructureField()->Discretization()->ClearState(true);
 }
-/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::PrepareContactStrategy()
+{
+  TSI::Algorithm::PrepareContactStrategy();
+
+  if (contact_strategy_nitsche_ != Teuchos::null)
+  {
+    const auto& model_eval = StructureField()->ModelEvaluator(INPAR::STR::model_structure);
+    const auto cparams = model_eval.EvalData().ContactPtr();
+    auto cparams_new = cparams;
+    cparams_new->SetCouplingScheme(INPAR::CONTACT::CouplingScheme::monolithic);
+    ThermoField()->SetNitscheContactParameters(cparams_new);
+  }
+}
 
 /*----------------------------------------------------------------------*
  |                                                                      |

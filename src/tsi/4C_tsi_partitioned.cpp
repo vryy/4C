@@ -88,15 +88,6 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // structural and thermal contact
   PrepareContactStrategy();
 
-  if (contact_strategy_nitsche_ != Teuchos::null)
-  {
-    ThermoField()->SetNitscheContactStrategy(contact_strategy_nitsche_);
-
-    const auto& model_eval = StructureField()->ModelEvaluator(BACI::INPAR::STR::model_structure);
-    const auto cparams = model_eval.EvalData().ContactPtr();
-    ThermoField()->SetNitscheContactParameters(cparams);
-  }
-
 #ifdef TSIPARTITIONEDASOUTPUT
   // now check if the two dofmaps are available and then bye bye
   std::cout << "structure dofmap" << std::endl;
@@ -130,14 +121,6 @@ void TSI::Partitioned::ReadRestart(int step)
 
   // structural and thermal contact
   PrepareContactStrategy();
-
-  if (contact_strategy_nitsche_ != Teuchos::null)
-  {
-    ThermoField()->SetNitscheContactStrategy(contact_strategy_nitsche_);
-    const auto& model_eval = StructureField()->ModelEvaluator(BACI::INPAR::STR::model_structure);
-    const auto cparams = model_eval.EvalData().ContactPtr();
-    ThermoField()->SetNitscheContactParameters(cparams);
-  }
 }  // ReadRestart()
 
 
@@ -1324,6 +1307,24 @@ void TSI::Partitioned::PrepareOutput()
   StructureField()->Discretization()->ClearState(true);
 
 }  // PrepareOutput()
+
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void TSI::Partitioned::PrepareContactStrategy()
+{
+  TSI::Algorithm::PrepareContactStrategy();
+
+  if (contact_strategy_nitsche_ != Teuchos::null)
+  {
+    const auto& model_eval = StructureField()->ModelEvaluator(INPAR::STR::model_structure);
+    const auto cparams = model_eval.EvalData().ContactPtr();
+    auto cparams_new = cparams;
+    cparams_new->SetCouplingScheme(INPAR::CONTACT::CouplingScheme::partitioning);
+    ThermoField()->SetNitscheContactParameters(cparams_new);
+  }
+}  // PrepareContactStrategy()
 
 
 /*----------------------------------------------------------------------*

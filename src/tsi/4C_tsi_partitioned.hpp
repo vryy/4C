@@ -91,6 +91,8 @@ namespace TSI
     void Update() override;
     //@}
 
+    void PrepareContactStrategy() override;
+
     //! @name Solve
 
     //! solve temperature equations for current time step

@@ -35,6 +35,7 @@ namespace INPAR
   namespace CONTACT
   {
     enum VariationalApproach : int;
+    enum class CouplingScheme : int;
   }  // namespace CONTACT
 }  // namespace INPAR
 
@@ -86,9 +87,15 @@ namespace CONTACT
     //! get the variational approach type
     virtual enum INPAR::CONTACT::VariationalApproach GetVariationalApproachType() const = 0;
 
-    //! get the variational approach type
+    //! set the variational approach type
     virtual void SetVariationalApproachType(
         const enum INPAR::CONTACT::VariationalApproach var_type) = 0;
+
+    //! set the coupling approach mode
+    virtual enum INPAR::CONTACT::CouplingScheme GetCouplingScheme() const = 0;
+
+    //! set the coupling scheme
+    virtual void SetCouplingScheme(const enum INPAR::CONTACT::CouplingScheme scheme) = 0;
   };
 }  // namespace CONTACT
 

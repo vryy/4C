@@ -25,6 +25,7 @@ STR::MODELEVALUATOR::ContactData::ContactData()
       issetup_(false),
       mortar_action_(MORTAR::eval_none),
       var_type_(INPAR::CONTACT::var_unknown),
+      coupling_scheme_(INPAR::CONTACT::CouplingScheme::unknown),
       str_data_ptr_(Teuchos::null)
 {
   // empty constructor
