@@ -153,7 +153,7 @@ void XFEM::MeshCouplingFPI::SetupConfigurationMap()
     {
       // Configuration of Consistency Terms
 
-      if (!Sub_tang_)
+      if (!sub_tang_)
       {
         configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
         configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
@@ -171,7 +171,7 @@ void XFEM::MeshCouplingFPI::SetupConfigurationMap()
       configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
       configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
 
-      if (!Sub_tang_)
+      if (!sub_tang_)
       {
         configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
         configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
@@ -190,7 +190,7 @@ void XFEM::MeshCouplingFPI::SetupConfigurationMap()
       configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
       configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
 
-      if (!Sub_tang_)
+      if (!sub_tang_)
       {
         configuration_map_[INPAR::XFEM::F_Con_t_Row] =
             std::pair<bool, double>(true, 1.0);  //+sign for penalty!
@@ -214,10 +214,10 @@ void XFEM::MeshCouplingFPI::SetupConfigurationMap()
       configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
       configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
 
-      if (!Sub_tang_)
+      if (!sub_tang_)
       {
         configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
-        if (full_BJ_)
+        if (full_bj_)
           configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
       }
 
@@ -227,7 +227,7 @@ void XFEM::MeshCouplingFPI::SetupConfigurationMap()
       configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
       configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
       configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
-      if (full_BJ_)
+      if (full_bj_)
         configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
       break;
     }
@@ -279,7 +279,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
     double trperm = CalctrPermeability(bele, porosity, J);
 
 
-    static double sliplength = trperm / (BJ_coeff_);
+    static double sliplength = trperm / (bj_coeff_);
 
     static double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
 
@@ -299,16 +299,16 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
       case MeshCouplingFPI::ps_ps:
       {
         configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = 1.0 - porosity;
-        if (!Sub_tang_)
+        if (!sub_tang_)
         {
           configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = 1.0 - full_BJ_ * porosity;
+          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = 1.0 - full_bj_ * porosity;
           configuration_map_[INPAR::XFEM::FStr_Adj_t_Col].second = sliplength;
         }
         configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
         configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab;
         configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = 1.0 - porosity;
-        if (!Sub_tang_)
+        if (!sub_tang_)
         {
           configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
           configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = stabnit;
@@ -323,24 +323,24 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
 
           // does nothing but should just be done in case we don't use the adjoint
           configuration_map_[INPAR::XFEM::F_Adj_t_Col].second = 1.0;
-          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = 1.0 - full_BJ_ * porosity;
+          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = 1.0 - full_bj_ * porosity;
         }
 
-        configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = 1.0 - full_BJ_ * porosity;
+        configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = 1.0 - full_bj_ * porosity;
         break;
       }
       case MeshCouplingFPI::ps_pf:
       {
         configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = porosity;
-        if (!Sub_tang_)
+        if (!sub_tang_)
         {
           configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = full_BJ_ * porosity;
+          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = full_bj_ * porosity;
         }
         configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
         configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab;
         configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = porosity;
-        if (!Sub_tang_)
+        if (!sub_tang_)
         {
           configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
           configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = stabnit;
@@ -351,9 +351,9 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
           configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = 1. / sliplength;
 
           // does nothing but should just be done in case we don't use the adjoint
-          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = full_BJ_ * porosity;
+          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = full_bj_ * porosity;
         }
-        configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = full_BJ_ * porosity;
+        configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = full_bj_ * porosity;
         break;
       }
       case MeshCouplingFPI::pf_ps:
@@ -408,7 +408,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
+#ifdef BACI_DEBUG
   FOUR_C_ASSERT(xf_c_comm_ != Teuchos::null,
       "UpdateConfigurationMap_GP_Contact but no Xfluid Contact Communicator assigned!");
 #endif
@@ -434,7 +434,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
 
   double trperm = CalctrPermeability(bele, porosity, J);
 
-  double sliplength = trperm / (BJ_coeff_);
+  double sliplength = trperm / (bj_coeff_);
 
   if ((gap - MIN_h * h_scaling_) * (MAX_sliplength + scaling) <
       h_scaling_)  // larger than maximal allows sliplength
@@ -480,7 +480,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
     {
       configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = 1.0 - porosity;
       configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-      configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = 1.0 - full_BJ_ * porosity;
+      configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = 1.0 - full_bj_ * porosity;
       configuration_map_[INPAR::XFEM::FStr_Adj_t_Col].second = sliplength;
 
       configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
@@ -506,21 +506,21 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
       configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
       configuration_map_[INPAR::XFEM::F_Con_t_Row].second = -stabnit;  //+sign for penalty!
       configuration_map_[INPAR::XFEM::F_Con_t_Col].second = sliplength / dynvisc;
-      configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = 1.0 - full_BJ_ * porosity;
+      configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = 1.0 - full_bj_ * porosity;
       break;
     }
     case MeshCouplingFPI::ps_pf:
     {
       configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = porosity;
       configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-      configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = full_BJ_ * porosity;
+      configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = full_bj_ * porosity;
       configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
       configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = porosity;
 
       configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
       configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = stabnit;
 
-      configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = full_BJ_ * porosity;
+      configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = full_bj_ * porosity;
       if (pure_fsi)
       {
         configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
@@ -733,17 +733,17 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
     const bool contact = (*cond->Get<std::string>("Contact") == "contact_yes");
     if (i != conditions_XFPI.begin())
     {
-      if (fabs(BJ_coeff_ - *cond->Get<double>("bj_coeff")) > 1e-16)
+      if (fabs(bj_coeff_ - *cond->Get<double>("bj_coeff")) > 1e-16)
         FOUR_C_THROW(
             "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
             "conditions, with different BJ_coeff!");
 
-      if (full_BJ_ != full_BJ)
+      if (full_bj_ != full_BJ)
         FOUR_C_THROW(
             "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
             "conditions, with different BJ Variant!");
 
-      if (Sub_tang_ != Sub_tang)
+      if (sub_tang_ != Sub_tang)
         FOUR_C_THROW(
             "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
             "conditions, with different BJ Method!");
@@ -754,9 +754,9 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
             "conditions, with different contact specification!");
     }
 
-    BJ_coeff_ = *cond->Get<double>("bj_coeff");
-    full_BJ_ = full_BJ;
-    Sub_tang_ = Sub_tang;
+    bj_coeff_ = *cond->Get<double>("bj_coeff");
+    full_bj_ = full_BJ;
+    sub_tang_ = Sub_tang;
     contact_ = contact;
     i++;
   }
@@ -789,7 +789,7 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
                                        .get<double>("POROCONTACTFPSI_FULLPCFRACTION");
   }
 
-  if (!full_BJ_)
+  if (!full_bj_)
   {
     if (coupled_field_ == XFEM::MeshCouplingFPI::ps_ps)
       std::cout << "==| XFEM::MeshCouplingFPI: Actual FPI Formulation is Beavers Joseph Saffmann"
@@ -801,7 +801,7 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
       std::cout << "==| XFEM::MeshCouplingFPI: Actual FPI Formulation is Beavers Joseph"
                 << std::flush;
   }
-  if (!Sub_tang_)
+  if (!sub_tang_)
   {
     if (coupled_field_ == XFEM::MeshCouplingFPI::ps_ps)
       std::cout << " -- by tangential Nitsche formulation! |==" << std::endl;
@@ -817,7 +817,7 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
     std::cout << "==| XFEM::MeshCouplingFPI: Formulation with contact! |==" << std::endl;
   }
 
-  if (contact_ && Sub_tang_)
+  if (contact_ && sub_tang_)
     FOUR_C_THROW(
         "XFEM::MeshCouplingFPI: Combination Contact with Substituion for BJ/BJS not tested!");
 }

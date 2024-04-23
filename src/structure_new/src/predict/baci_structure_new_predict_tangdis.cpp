@@ -32,7 +32,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::PREDICT::TangDis::TangDis() : dbc_incr_ptr_(Teuchos::null), applyLinearReactionForces_(false)
+STR::PREDICT::TangDis::TangDis()
+    : dbc_incr_ptr_(Teuchos::null), apply_linear_reaction_forces_(false)
 {
   // empty constructor
 }
@@ -88,9 +89,9 @@ void STR::PREDICT::TangDis::Compute(::NOX::Abstract::Group& grp)
   // Compute F and jacobian and apply the linear reaction forces due to changing
   // Dirichlet boundary conditions.
   // ---------------------------------------------------------------------------
-  applyLinearReactionForces_ = true;
+  apply_linear_reaction_forces_ = true;
   grp_ptr->computeFandJacobian();
-  applyLinearReactionForces_ = false;
+  apply_linear_reaction_forces_ = false;
 
   // ---------------------------------------------------------------------------
   // Check if we are using a Newton direction
@@ -151,7 +152,7 @@ const Epetra_Vector& STR::PREDICT::TangDis::GetDbcIncr() const
  *----------------------------------------------------------------------------*/
 const bool& STR::PREDICT::TangDis::IsApplyLinearReactionForces() const
 {
-  return applyLinearReactionForces_;
+  return apply_linear_reaction_forces_;
 }
 
 /*----------------------------------------------------------------------------*
@@ -162,7 +163,7 @@ bool STR::PREDICT::TangDis::PreApplyForceExternal(Epetra_Vector& fextnp) const
 
   if (GetType() != INPAR::STR::pred_tangdis_constfext) return false;
 
-  if (applyLinearReactionForces_)
+  if (apply_linear_reaction_forces_)
   {
     fextnp.Scale(1.0, *GlobalState().GetFextN());
     return true;

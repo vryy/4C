@@ -167,7 +167,7 @@ namespace NOX
         const double primal_high_acc_fac_;
 
         /// see base class for more info
-        bool useAdjustableForcingTerm_ = false;
+        bool use_adjustable_forcing_term_ = false;
 
         /// Unmodified diagonal of the primal system matrix block
         Teuchos::RCP<const Epetra_Vector> original_diag_ptr_ = Teuchos::null;

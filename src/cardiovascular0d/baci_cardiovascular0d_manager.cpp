@@ -59,8 +59,8 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
       v_n_(Teuchos::null),
       v_np_(Teuchos::null),
       v_m_(Teuchos::null),
-      cv0ddof_T_N_(Teuchos::null),
-      cv0ddof_T_NP_(Teuchos::null),
+      cv0ddof_t_n_(Teuchos::null),
+      cv0ddof_t_np_(Teuchos::null),
       cardvasc0d_res_m_(Teuchos::null),
       cardvasc0d_df_n_(Teuchos::null),
       cardvasc0d_df_np_(Teuchos::null),
@@ -68,26 +68,26 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
       cardvasc0d_f_n_(Teuchos::null),
       cardvasc0d_f_np_(Teuchos::null),
       cardvasc0d_f_m_(Teuchos::null),
-      T_period_(cv0dparams.get("T_PERIOD", -1.0)),
+      t_period_(cv0dparams.get("T_PERIOD", -1.0)),
       eps_periodic_(cv0dparams.get("EPS_PERIODIC", 1.0e-16)),
       is_periodic_(false),
       cycle_error_(1.0),
-      numCardiovascular0DID_(0),
-      Cardiovascular0DID_(0),
-      offsetID_(10000),
-      currentID_(false),
+      num_cardiovascular0_did_(0),
+      cardiovascular0_did_(0),
+      offset_id_(10000),
+      current_id_(false),
       havecardiovascular0d_(false),
       cardvasc0d_model_(
-          Teuchos::rcp(new Cardiovascular0D4ElementWindkessel(actdisc_, "", currentID_))),
+          Teuchos::rcp(new Cardiovascular0D4ElementWindkessel(actdisc_, "", current_id_))),
       cardvasc0d_4elementwindkessel_(Teuchos::rcp(new Cardiovascular0D4ElementWindkessel(
-          actdisc_, "Cardiovascular0D4ElementWindkesselStructureCond", currentID_))),
+          actdisc_, "Cardiovascular0D4ElementWindkesselStructureCond", current_id_))),
       cardvasc0d_arterialproxdist_(Teuchos::rcp(new Cardiovascular0DArterialProxDist(
-          actdisc_, "Cardiovascular0DArterialProxDistStructureCond", currentID_))),
+          actdisc_, "Cardiovascular0DArterialProxDistStructureCond", current_id_))),
       cardvasc0d_syspulcirculation_(Teuchos::rcp(new Cardiovascular0DSysPulCirculation(
-          actdisc_, "Cardiovascular0DSysPulCirculationStructureCond", currentID_))),
+          actdisc_, "Cardiovascular0DSysPulCirculationStructureCond", current_id_))),
       cardvascrespir0d_syspulperiphcirculation_(
           Teuchos::rcp(new CardiovascularRespiratory0DSysPulPeriphCirculation(actdisc_,
-              "CardiovascularRespiratory0DSysPulPeriphCirculationStructureCond", currentID_))),
+              "CardiovascularRespiratory0DSysPulPeriphCirculationStructureCond", current_id_))),
       solver_(Teuchos::null),
       cardiovascular0dstiffness_(Teuchos::null),
       mat_dcardvasc0d_dd_(Teuchos::null),
@@ -149,14 +149,14 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
   {
     cardvasc0d_model_ = cardvasc0d_4elementwindkessel_;
     // dof vector for ONE 0D cardiovascular condition of this type: [p  q  s]^T
-    numCardiovascular0DID_ =
+    num_cardiovascular0_did_ =
         3 * cardvasc0d_4elementwindkessel_->GetCardiovascular0DCondition().size();
   }
   if (cardvasc0d_arterialproxdist_->HaveCardiovascular0D())
   {
     cardvasc0d_model_ = cardvasc0d_arterialproxdist_;
     // dof vector for ONE 0D cardiovascular condition of this type: [p_v  p_arp  q_arp  p_ard]^T
-    numCardiovascular0DID_ =
+    num_cardiovascular0_did_ =
         4 * cardvasc0d_arterialproxdist_->GetCardiovascular0DCondition().size();
   }
   if (cardvasc0d_syspulcirculation_->HaveCardiovascular0D())
@@ -165,7 +165,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
     // dof vector for 0D cardiovascular condition of this type:
     // [p_at_l  q_vin_l  q_vout_l  p_v_l  p_ar_sys  q_ar_sys  p_ven_sys  q_ven_sys  p_at_r  q_vin_r
     // q_vout_r  p_v_r  p_ar_pul  q_ar_pul  p_ven_pul  q_ven_pul]^T
-    numCardiovascular0DID_ = 16;
+    num_cardiovascular0_did_ = 16;
   }
 
   if (cardvascrespir0d_syspulperiphcirculation_->HaveCardiovascular0D())
@@ -175,10 +175,10 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
     switch (cardvasc0d_model_->GetRespiratoryModel())
     {
       case INPAR::CARDIOVASCULAR0D::resp_none:
-        numCardiovascular0DID_ = 34;
+        num_cardiovascular0_did_ = 34;
         break;
       case INPAR::CARDIOVASCULAR0D::resp_standard:
-        numCardiovascular0DID_ = 82;
+        num_cardiovascular0_did_ = 82;
         break;
       default:
         FOUR_C_THROW("Undefined respiratory_model!");
@@ -196,11 +196,11 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
       cardvascrespir0d_syspulperiphcirculation_->HaveCardiovascular0D())
   {
     cardiovascular0ddofset_ = Teuchos::rcp(new Cardiovascular0DDofSet());
-    cardiovascular0ddofset_->AssignDegreesOfFreedom(actdisc_, numCardiovascular0DID_, 0, mor_);
+    cardiovascular0ddofset_->AssignDegreesOfFreedom(actdisc_, num_cardiovascular0_did_, 0, mor_);
     cardiovascular0ddofset_full_ = Teuchos::rcp(new Cardiovascular0DDofSet());
     cardiovascular0ddofset_full_->AssignDegreesOfFreedom(
-        actdisc_, numCardiovascular0DID_, 0, Teuchos::null);
-    offsetID_ = cardiovascular0ddofset_->FirstGID();
+        actdisc_, num_cardiovascular0_did_, 0, Teuchos::null);
+    offset_id_ = cardiovascular0ddofset_->FirstGID();
 
     cardiovascular0dmap_full_ =
         Teuchos::rcp(new Epetra_Map(*(cardiovascular0ddofset_full_->DofRowMap())));
@@ -216,8 +216,8 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
     v_n_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     v_np_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     v_m_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
-    cv0ddof_T_N_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
-    cv0ddof_T_NP_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
+    cv0ddof_t_n_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
+    cv0ddof_t_np_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     cardvasc0d_res_m_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     cardvasc0d_df_n_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     cardvasc0d_df_np_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
@@ -226,12 +226,12 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
     cardvasc0d_f_np_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     cardvasc0d_f_m_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
 
-    cardiovascular0dstiffness_ = Teuchos::rcp(
-        new CORE::LINALG::SparseMatrix(*cardiovascular0dmap_, numCardiovascular0DID_, false, true));
+    cardiovascular0dstiffness_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+        *cardiovascular0dmap_, num_cardiovascular0_did_, false, true));
     mat_dcardvasc0d_dd_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-        *(actdisc_->DofRowMap()), numCardiovascular0DID_, false, true));
+        *(actdisc_->DofRowMap()), num_cardiovascular0_did_, false, true));
     mat_dstruct_dcv0ddof_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-        *(actdisc_->DofRowMap()), numCardiovascular0DID_, false, true));
+        *(actdisc_->DofRowMap()), num_cardiovascular0_did_, false, true));
 
     Teuchos::ParameterList p;
     const double time = strparams.get<double>("total time", 0.0);
@@ -262,14 +262,14 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
     cardvasc0d_f_np_->PutScalar(0.0);
     cardvasc0d_f_m_->PutScalar(0.0);
 
-    cv0ddof_T_N_->PutScalar(0.0);
-    cv0ddof_T_NP_->PutScalar(0.0);
+    cv0ddof_t_n_->PutScalar(0.0);
+    cv0ddof_t_np_->PutScalar(0.0);
 
     cardiovascular0dstiffness_->Zero();
 
     p.set("total time", time);
-    p.set("OffsetID", offsetID_);
-    p.set("NumberofID", numCardiovascular0DID_);
+    p.set("OffsetID", offset_id_);
+    p.set("NumberofID", num_cardiovascular0_did_);
     p.set("scale_timint", sc_timint);
     p.set("time_step_size", ts_size);
     actdisc_->SetState("displacement", disp);
@@ -315,8 +315,8 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
 
     v_np_->Update(1.0, *v_n_, 0.0);
 
-    cv0ddof_T_N_->Update(1.0, *cv0ddof_np_, 0.0);
-    cv0ddof_T_NP_->Update(1.0, *cv0ddof_np_, 0.0);
+    cv0ddof_t_n_->Update(1.0, *cv0ddof_np_, 0.0);
+    cv0ddof_t_np_->Update(1.0, *cv0ddof_np_, 0.0);
 
 
     // Create resulttest
@@ -352,8 +352,8 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(const double time,
 
   // other parameters that might be needed by the elements
   p.set("total time", time);
-  p.set("OffsetID", offsetID_);
-  p.set("NumberofID", numCardiovascular0DID_);
+  p.set("OffsetID", offset_id_);
+  p.set("NumberofID", num_cardiovascular0_did_);
   p.set("new disp", disp);
   p.set("scale_timint", sc_strtimint);
   p.set("scale_theta", theta_);
@@ -428,11 +428,11 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(const double time,
 
 void UTILS::Cardiovascular0DManager::UpdateTimeStep()
 {
-  if (T_period_ > 0.0 and ModuloIsRealtiveZero(totaltime_, T_period_, totaltime_))
+  if (t_period_ > 0.0 and ModuloIsRealtiveZero(totaltime_, t_period_, totaltime_))
   {
-    cv0ddof_T_NP_->Update(1.0, *cv0ddof_np_, 0.0);
+    cv0ddof_t_np_->Update(1.0, *cv0ddof_np_, 0.0);
     CheckPeriodic();
-    cv0ddof_T_N_->Update(1.0, *cv0ddof_T_NP_, 0.0);
+    cv0ddof_t_n_->Update(1.0, *cv0ddof_t_np_, 0.0);
   }
 
   cv0ddof_n_->Update(1.0, *cv0ddof_np_, 0.0);
@@ -441,7 +441,7 @@ void UTILS::Cardiovascular0DManager::UpdateTimeStep()
   cardvasc0d_df_n_->Update(1.0, *cardvasc0d_df_np_, 0.0);
   cardvasc0d_f_n_->Update(1.0, *cardvasc0d_f_np_, 0.0);
 
-  if (T_period_ > 0.0) printf("Cycle error (error in periodicity): %10.6e \n", cycle_error_);
+  if (t_period_ > 0.0) printf("Cycle error (error in periodicity): %10.6e \n", cycle_error_);
 
   if (is_periodic_)
   {
@@ -458,11 +458,11 @@ void UTILS::Cardiovascular0DManager::CheckPeriodic()  // not yet thoroughly test
       Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   Teuchos::RCP<Epetra_Vector> cv0ddof_T_NP_red =
       Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
-  CORE::LINALG::Export(*cv0ddof_T_N_, *cv0ddof_T_N_red);
-  CORE::LINALG::Export(*cv0ddof_T_NP_, *cv0ddof_T_NP_red);
+  CORE::LINALG::Export(*cv0ddof_t_n_, *cv0ddof_T_N_red);
+  CORE::LINALG::Export(*cv0ddof_t_np_, *cv0ddof_T_NP_red);
 
   std::vector<double> vals;
-  for (int j = 0; j < numCardiovascular0DID_; j++)
+  for (int j = 0; j < num_cardiovascular0_did_; j++)
   {
     //    if(j<34 or j>53) // exclude oscillatory lung dofs
     vals.push_back(fabs(
@@ -707,28 +707,28 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
 
   if (myrank_ == 0)
   {
-    for (unsigned int i = 0; i < currentID_.size(); ++i)
+    for (unsigned int i = 0; i < current_id_.size(); ++i)
     {
       if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D())
       {
-        printf("Cardiovascular0D output id%2d:\n", currentID_[i]);
-        printf("%2d p: %10.16e \n", currentID_[i], (*cv0ddof_m_red)[3 * i]);
-        printf("%2d V: %10.16e \n", currentID_[i], (*v_m_red)[3 * i]);
+        printf("Cardiovascular0D output id%2d:\n", current_id_[i]);
+        printf("%2d p: %10.16e \n", current_id_[i], (*cv0ddof_m_red)[3 * i]);
+        printf("%2d V: %10.16e \n", current_id_[i], (*v_m_red)[3 * i]);
       }
       if (cardvasc0d_arterialproxdist_->HaveCardiovascular0D())
       {
-        printf("Cardiovascular0D output id%2d:\n", currentID_[i]);
-        printf("%2d p_v: %10.16e \n", currentID_[i], (*cv0ddof_m_red)[4 * i]);
-        printf("%2d p_ar_prox: %10.16e \n", currentID_[i], (*cv0ddof_m_red)[4 * i + 1]);
-        printf("%2d q_ar_prox: %10.16e \n", currentID_[i], (*cv0ddof_m_red)[4 * i + 2]);
-        printf("%2d p_ar_dist: %10.16e \n", currentID_[i], (*cv0ddof_m_red)[4 * i + 3]);
-        printf("%2d V_v: %10.16e \n", currentID_[i], (*v_m_red)[4 * i]);
+        printf("Cardiovascular0D output id%2d:\n", current_id_[i]);
+        printf("%2d p_v: %10.16e \n", current_id_[i], (*cv0ddof_m_red)[4 * i]);
+        printf("%2d p_ar_prox: %10.16e \n", current_id_[i], (*cv0ddof_m_red)[4 * i + 1]);
+        printf("%2d q_ar_prox: %10.16e \n", current_id_[i], (*cv0ddof_m_red)[4 * i + 2]);
+        printf("%2d p_ar_dist: %10.16e \n", current_id_[i], (*cv0ddof_m_red)[4 * i + 3]);
+        printf("%2d V_v: %10.16e \n", current_id_[i], (*v_m_red)[4 * i]);
         if (enhanced_output_ and !(init))
         {
-          printf("%2d dp_v/dt: %10.16e \n", currentID_[i], (*dcv0ddof_m_red)[4 * i]);
-          printf("%2d dp_ar_prox/dt: %10.16e \n", currentID_[i], (*dcv0ddof_m_red)[4 * i + 1]);
-          printf("%2d dq_ar_prox/dt: %10.16e \n", currentID_[i], (*dcv0ddof_m_red)[4 * i + 2]);
-          printf("%2d dp_ar_dist/dt: %10.16e \n", currentID_[i], (*dcv0ddof_m_red)[4 * i + 3]);
+          printf("%2d dp_v/dt: %10.16e \n", current_id_[i], (*dcv0ddof_m_red)[4 * i]);
+          printf("%2d dp_ar_prox/dt: %10.16e \n", current_id_[i], (*dcv0ddof_m_red)[4 * i + 1]);
+          printf("%2d dq_ar_prox/dt: %10.16e \n", current_id_[i], (*dcv0ddof_m_red)[4 * i + 2]);
+          printf("%2d dp_ar_dist/dt: %10.16e \n", current_id_[i], (*dcv0ddof_m_red)[4 * i + 3]);
         }
       }
     }

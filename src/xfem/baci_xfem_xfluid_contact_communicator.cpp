@@ -51,7 +51,7 @@ void XFEM::XFluidContactComm::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWi
   visc_stab_hk_ =
       CORE::UTILS::IntegralValue<INPAR::XFEM::ViscStabHk>(params_xf_stab, "VISC_STAB_HK");
   nit_stab_gamma_ = params_xf_stab.get<double>("NIT_STAB_FAC");
-  is_pseudo_2D_ = (bool)CORE::UTILS::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
+  is_pseudo_2_d_ = (bool)CORE::UTILS::IntegralValue<int>(params_xf_stab, "IS_PSEUDO_2D");
   mass_conservation_scaling_ = CORE::UTILS::IntegralValue<INPAR::XFEM::MassConservationScaling>(
       params_xf_stab, "MASS_CONSERVATION_SCALING");
   mass_conservation_combination_ =
@@ -531,7 +531,7 @@ void XFEM::XFluidContactComm::Get_Penalty_Param(DRT::Element* fluidele,
   double kappa_s = 1.0 - kappa_m;
   double visc_stab_fac = 0.0;
   mc_[mcidx_]->Get_ViscPenalty_Stabfac(fluidele, nullptr, kappa_m, kappa_s, inv_h_k, visc_stab_fac,
-      dummy, nit_stab_gamma_, nit_stab_gamma_, is_pseudo_2D_, visc_stab_trace_estimate_);
+      dummy, nit_stab_gamma_, nit_stab_gamma_, is_pseudo_2_d_, visc_stab_trace_estimate_);
 
   Teuchos::RCP<MAT::Material> mat;
   XFEM::UTILS::GetVolumeCellMaterial(fluidele, mat);
@@ -591,12 +591,12 @@ void XFEM::XFluidContactComm::SetupSurfElePtrs(DRT::Discretization& contact_inte
     if (max_surf_gid < mcfpi_ps_pf_->GetCutterDis()->ElementColMap()->MaxAllGID() + startgid)
       max_surf_gid = mcfpi_ps_pf_->GetCutterDis()->ElementColMap()->MaxAllGID() + startgid;
   }
-  soSurfId_to_mortar_ele_.resize(max_surf_gid - min_surf_id_ + 1, nullptr);
+  so_surf_id_to_mortar_ele_.resize(max_surf_gid - min_surf_id_ + 1, nullptr);
   min_mortar_id_ = contact_interface_dis.ElementColMap()->MinAllGID();
   const int max_mortar_gid = contact_interface_dis.ElementColMap()->MaxAllGID();
-  mortarId_to_soSurf_ele_.resize(max_mortar_gid - min_mortar_id_ + 1, nullptr);
-  mortarId_to_somc_.resize(max_mortar_gid - min_mortar_id_ + 1, -1);
-  mortarId_to_sosid_.resize(max_mortar_gid - min_mortar_id_ + 1, -1);
+  mortar_id_to_so_surf_ele_.resize(max_mortar_gid - min_mortar_id_ + 1, nullptr);
+  mortar_id_to_somc_.resize(max_mortar_gid - min_mortar_id_ + 1, -1);
+  mortar_id_to_sosid_.resize(max_mortar_gid - min_mortar_id_ + 1, -1);
 
   for (int i = 0; i < contact_interface_dis.ElementColMap()->NumMyElements(); ++i)
   {
@@ -618,11 +618,11 @@ void XFEM::XFluidContactComm::SetupSurfElePtrs(DRT::Discretization& contact_inte
         const int f_parent_surf = fele->FaceParentNumber();
         if (c_parent_id == f_parent_id && c_parent_surf == f_parent_surf)
         {
-          mortarId_to_soSurf_ele_[cele->Id() - min_mortar_id_] = fele;
-          mortarId_to_somc_[cele->Id() - min_mortar_id_] = mc;
-          mortarId_to_sosid_[cele->Id() - min_mortar_id_] = fele->Id() + startgid;
+          mortar_id_to_so_surf_ele_[cele->Id() - min_mortar_id_] = fele;
+          mortar_id_to_somc_[cele->Id() - min_mortar_id_] = mc;
+          mortar_id_to_sosid_[cele->Id() - min_mortar_id_] = fele->Id() + startgid;
 
-          soSurfId_to_mortar_ele_[fele->Id() - min_surf_id_ + startgid] = cele;
+          so_surf_id_to_mortar_ele_[fele->Id() - min_surf_id_ + startgid] = cele;
         }
       }
     }
@@ -642,7 +642,7 @@ void XFEM::XFluidContactComm::SetupSurfElePtrs(DRT::Discretization& contact_inte
         {
           // mortarId_to_soSurf_ele_[cele->Id()-min_mortar_id_]=fele; //we dont need this connection
           // as this is already available from ps_ps
-          soSurfId_to_mortar_ele_[fele->Id() - min_surf_id_ + startgid] = cele;
+          so_surf_id_to_mortar_ele_[fele->Id() - min_surf_id_ + startgid] = cele;
         }
       }
     }
@@ -1386,16 +1386,16 @@ void XFEM::XFluidContactComm::FillComplete_SeleMap()
     FOUR_C_THROW("XFluidContactComm::FillComplete_SeleMap: CutWizard not set!");
 
   // We also add all unphysical sides
-  for (std::size_t i = 0; i < mortarId_to_sosid_.size(); ++i)
+  for (std::size_t i = 0; i < mortar_id_to_sosid_.size(); ++i)
   {
-    if (mortarId_to_sosid_[i] == -1) continue;  // this entry is not set!
-    CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(mortarId_to_sosid_[i]);
+    if (mortar_id_to_sosid_[i] == -1) continue;  // this entry is not set!
+    CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(mortar_id_to_sosid_[i]);
     if (!sh)
       FOUR_C_THROW("Couldn't get Sidhandle for mortarId %d, soid %d!", i + min_mortar_id_,
-          mortarId_to_sosid_[i]);
-    if (cutwizard_->GetCutSide(mortarId_to_sosid_[i])->HasunphysicalSubSide())
+          mortar_id_to_sosid_[i]);
+    if (cutwizard_->GetCutSide(mortar_id_to_sosid_[i])->HasunphysicalSubSide())
     {
-      my_sele_ids_.insert(GetContactEle(mortarId_to_sosid_[i])->Id());
+      my_sele_ids_.insert(GetContactEle(mortar_id_to_sosid_[i])->Id());
     }
   }
   std::vector<int> my_sele_ids(my_sele_ids_.begin(), my_sele_ids_.end());

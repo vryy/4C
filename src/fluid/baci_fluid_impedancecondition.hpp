@@ -176,7 +176,7 @@ namespace FLD
       /*!
       \brief return relative error of last cycle
       */
-      double getWKrelerror() { return WKrelerror_; }
+      double getWKrelerror() { return w_krelerror_; }
 
      private:
       //! fluid discretization
@@ -195,7 +195,7 @@ namespace FLD
       const double period_;
 
       //! 'material' parameters required for artery tree
-      const double R1_, R2_, C_;
+      const double r1_, r2_, c_;
 
       //! curve number
       const int functnum_;
@@ -207,22 +207,22 @@ namespace FLD
       Teuchos::RCP<CORE::LINALG::SparseOperator> impedancetbcsysmat_;
 
       //! Pressure at time step n+1
-      double P_np_;
+      double p_np_;
 
       //! Pressure at time step n
-      double P_n_;
+      double p_n_;
 
       //! Flux at time step n+1
-      double Q_np_;
+      double q_np_;
 
       //! Flux at time step n
-      double Q_n_;
+      double q_n_;
 
       //! variable describing the relative error between pressure at (n+1)T and at (n)T
-      double WKrelerror_;
+      double w_krelerror_;
 
       //! Pressure at beginning of the period
-      double P_0_;
+      double p_0_;
     };  // class FluidImpedanceBc
 
   }  // namespace UTILS

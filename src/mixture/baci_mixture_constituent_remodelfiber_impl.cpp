@@ -102,8 +102,8 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::RegisterAnisotropyExtensions(
 
 void MIXTURE::MixtureConstituentRemodelFiberImpl::Initialize()
 {
-  dgrowthscalardC_.resize(NumGP());
-  dlambdardC_.resize(NumGP());
+  dgrowthscalard_c_.resize(NumGP());
+  dlambdard_c_.resize(NumGP());
   remodel_fiber_.clear();
   std::shared_ptr<const RemodelFiberMaterial<double>> material =
       params_->fiber_material_->CreateRemodelFiberMaterial();
@@ -221,7 +221,7 @@ CORE::LINALG::Matrix<6, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::Evaluate
   {
     const double dpk2dlambdar = remodel_fiber_[gp].EvaluateDCurrentFiberPK2StressDLambdar();
     cmat.MultiplyNN(2.0 * dpk2dlambdar, anisotropy_extension_.GetStructuralTensor_stress(gp, 0),
-        dlambdardC_[gp], 1.0);
+        dlambdard_c_[gp], 1.0);
   }
 
   return cmat;
@@ -274,8 +274,8 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::IntegrateLocalEvolutionEquatio
     dlambdardR(i) = K(1, i);
   }
 
-  dgrowthscalardC_[gp].Multiply(-1.0, dgrowthscalardR, dRdC);
-  dlambdardC_[gp].Multiply(-1.0, dlambdardR, dRdC);
+  dgrowthscalard_c_[gp].Multiply(-1.0, dgrowthscalardR, dRdC);
+  dlambdard_c_[gp].Multiply(-1.0, dlambdardR, dRdC);
 }
 
 void MIXTURE::MixtureConstituentRemodelFiberImpl::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
@@ -315,7 +315,7 @@ CORE::LINALG::Matrix<1, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::GetDGrow
     int gp, int eleGID) const
 {
   if (!params_->growth_enabled_) return CORE::LINALG::Matrix<1, 6>(true);
-  return dgrowthscalardC_[gp];
+  return dgrowthscalard_c_[gp];
 }
 
 double MIXTURE::MixtureConstituentRemodelFiberImpl::EvaluateDepositionStretch(

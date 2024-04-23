@@ -91,7 +91,7 @@ namespace PARTICLEINTERACTION
         double a, double b, double c, double d, double& gap_intersect) const;
 
     //! hamaker constant
-    const double hamaker_constant;
+    const double hamaker_constant_;
   };
 
   class DEMAdhesionLawRegDMT : public DEMAdhesionLawBase

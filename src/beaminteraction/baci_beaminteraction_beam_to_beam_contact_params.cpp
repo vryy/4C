@@ -22,20 +22,20 @@ BEAMINTERACTION::BeamToBeamContactParams::BeamToBeamContactParams()
       issetup_(false),
       strategy_(INPAR::BEAMCONTACT::bstr_none),
       penalty_law_(INPAR::BEAMCONTACT::pl_lp),
-      BTB_penalty_law_regularization_G0_(-1.0),
-      BTB_penalty_law_regularization_F0_(-1.0),
-      BTB_penalty_law_regularization_C0_(-1.0),
+      btb_penalty_law_regularization_g0_(-1.0),
+      btb_penalty_law_regularization_f0_(-1.0),
+      btb_penalty_law_regularization_c0_(-1.0),
       gap_shift_(0.0),
-      BTB_point_penalty_param_(-1.0),
-      BTB_line_penalty_param_(-1.0),
-      BTB_perp_shifting_angle1_(-1.0),
-      BTB_perp_shifting_angle2_(-1.0),
-      BTB_parallel_shifting_angle1_(-1.0),
-      BTB_parallel_shifting_angle2_(-1.0),
+      btb_point_penalty_param_(-1.0),
+      btb_line_penalty_param_(-1.0),
+      btb_perp_shifting_angle1_(-1.0),
+      btb_perp_shifting_angle2_(-1.0),
+      btb_parallel_shifting_angle1_(-1.0),
+      btb_parallel_shifting_angle2_(-1.0),
       segangle_(-1.0),
       num_integration_intervals_(0),
-      BTB_basicstiff_gap_(-1.0),
-      BTB_endpoint_penalty_(false)
+      btb_basicstiff_gap_(-1.0),
+      btb_endpoint_penalty_(false)
 {
   // empty constructor
 }
@@ -66,15 +66,15 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
       beam_contact_params_list, "BEAMS_PENALTYLAW");
 
   /****************************************************************************/
-  BTB_penalty_law_regularization_G0_ = beam_contact_params_list.get<double>("BEAMS_PENREGPARAM_G0");
-  BTB_penalty_law_regularization_F0_ = beam_contact_params_list.get<double>("BEAMS_PENREGPARAM_F0");
-  BTB_penalty_law_regularization_C0_ = beam_contact_params_list.get<double>("BEAMS_PENREGPARAM_C0");
+  btb_penalty_law_regularization_g0_ = beam_contact_params_list.get<double>("BEAMS_PENREGPARAM_G0");
+  btb_penalty_law_regularization_f0_ = beam_contact_params_list.get<double>("BEAMS_PENREGPARAM_F0");
+  btb_penalty_law_regularization_c0_ = beam_contact_params_list.get<double>("BEAMS_PENREGPARAM_C0");
 
   // Todo check and refine these safety checks
   if (penalty_law_ != INPAR::BEAMCONTACT::pl_lp and penalty_law_ != INPAR::BEAMCONTACT::pl_qp)
   {
-    if (BTB_penalty_law_regularization_G0_ == -1.0 or BTB_penalty_law_regularization_F0_ == -1.0 or
-        BTB_penalty_law_regularization_C0_ == -1.0)
+    if (btb_penalty_law_regularization_g0_ == -1.0 or btb_penalty_law_regularization_f0_ == -1.0 or
+        btb_penalty_law_regularization_c0_ == -1.0)
       FOUR_C_THROW(
           "Regularized penalty law chosen, but not all regularization parameters are set!");
   }
@@ -87,9 +87,9 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
     FOUR_C_THROW("BEAMS_GAPSHIFTPARAM only possible for penalty law LinPosQuadPen!");
 
   /****************************************************************************/
-  BTB_point_penalty_param_ = beam_contact_params_list.get<double>("BEAMS_BTBPENALTYPARAM");
+  btb_point_penalty_param_ = beam_contact_params_list.get<double>("BEAMS_BTBPENALTYPARAM");
 
-  if (BTB_point_penalty_param_ < 0.0)
+  if (btb_point_penalty_param_ < 0.0)
     FOUR_C_THROW("beam-to-beam point penalty parameter must not be negative!");
 
 
@@ -97,9 +97,9 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
   if (CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_SEGCON"))
   {
     /****************************************************************************/
-    BTB_line_penalty_param_ = beam_contact_params_list.get<double>("BEAMS_BTBLINEPENALTYPARAM");
+    btb_line_penalty_param_ = beam_contact_params_list.get<double>("BEAMS_BTBLINEPENALTYPARAM");
 
-    if (BTB_line_penalty_param_ < 0.0)
+    if (btb_line_penalty_param_ < 0.0)
       FOUR_C_THROW(
           "You chose all-angle-beam contact algorithm: thus, beam-to-beam line"
           " penalty parameter must not be negative!");
@@ -107,29 +107,29 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
     /****************************************************************************/
     // Todo find more verbose and expressive naming
     // note: conversion from degrees (input parameter) to radians (class variable) done here!
-    BTB_perp_shifting_angle1_ =
+    btb_perp_shifting_angle1_ =
         beam_contact_params_list.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * M_PI;
-    BTB_perp_shifting_angle2_ =
+    btb_perp_shifting_angle2_ =
         beam_contact_params_list.get<double>("BEAMS_PERPSHIFTANGLE2") / 180.0 * M_PI;
 
-    BTB_parallel_shifting_angle1_ =
+    btb_parallel_shifting_angle1_ =
         beam_contact_params_list.get<double>("BEAMS_PARSHIFTANGLE1") / 180.0 * M_PI;
-    BTB_parallel_shifting_angle2_ =
+    btb_parallel_shifting_angle2_ =
         beam_contact_params_list.get<double>("BEAMS_PARSHIFTANGLE2") / 180.0 * M_PI;
 
-    if (BTB_perp_shifting_angle1_ < 0.0 or BTB_perp_shifting_angle2_ < 0.0 or
-        BTB_parallel_shifting_angle1_ < 0.0 or BTB_parallel_shifting_angle2_ < 0.0)
+    if (btb_perp_shifting_angle1_ < 0.0 or btb_perp_shifting_angle2_ < 0.0 or
+        btb_parallel_shifting_angle1_ < 0.0 or btb_parallel_shifting_angle2_ < 0.0)
       FOUR_C_THROW(
           "You chose all-angle-beam contact algorithm: thus, shifting angles for"
           " beam-to-beam contact fade must be >= 0 degrees");
 
-    if (BTB_perp_shifting_angle1_ > 0.5 * M_PI or BTB_perp_shifting_angle2_ > 0.5 * M_PI or
-        BTB_parallel_shifting_angle1_ > 0.5 * M_PI or BTB_parallel_shifting_angle2_ > 0.5 * M_PI)
+    if (btb_perp_shifting_angle1_ > 0.5 * M_PI or btb_perp_shifting_angle2_ > 0.5 * M_PI or
+        btb_parallel_shifting_angle1_ > 0.5 * M_PI or btb_parallel_shifting_angle2_ > 0.5 * M_PI)
       FOUR_C_THROW(
           "You chose all-angle-beam contact algorithm: thus, Shifting angles for"
           " beam-to-beam contact fade must be <= 90 degrees");
 
-    if (BTB_parallel_shifting_angle2_ <= BTB_perp_shifting_angle1_)
+    if (btb_parallel_shifting_angle2_ <= btb_perp_shifting_angle1_)
       FOUR_C_THROW("No angle overlap between large-angle and small-angle contact!");
 
     /****************************************************************************/
@@ -147,10 +147,10 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
 
   /****************************************************************************/
   // Todo check need and usage of this parameter
-  BTB_basicstiff_gap_ = beam_contact_params_list.get<double>("BEAMS_BASICSTIFFGAP");
+  btb_basicstiff_gap_ = beam_contact_params_list.get<double>("BEAMS_BASICSTIFFGAP");
 
   /****************************************************************************/
-  BTB_endpoint_penalty_ =
+  btb_endpoint_penalty_ =
       CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_ENDPOINTPENALTY");
 
   /****************************************************************************/
@@ -198,7 +198,7 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
     FOUR_C_THROW("BEAMS_MAXDISISCALEFAC and BEAMS_MAXDELTADISSCALEFAC currently not supported!");
 
   /****************************************************************************/
-  if (BTB_basicstiff_gap_ != -1.0) FOUR_C_THROW("BEAMS_BASICSTIFFGAP currently not supported!");
+  if (btb_basicstiff_gap_ != -1.0) FOUR_C_THROW("BEAMS_BASICSTIFFGAP currently not supported!");
 
   /****************************************************************************/
   if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(

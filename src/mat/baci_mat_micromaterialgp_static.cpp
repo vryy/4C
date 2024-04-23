@@ -36,7 +36,7 @@ std::map<int, int> MAT::MicroMaterialGP::microstaticcounter_;
 
 MAT::MicroMaterialGP::MicroMaterialGP(
     const int gp, const int ele_ID, const bool eleowner, const int microdisnum, const double V0)
-    : gp_(gp), ele_ID_(ele_ID), microdisnum_(microdisnum)
+    : gp_(gp), ele_id_(ele_ID), microdisnum_(microdisnum)
 {
   GLOBAL::Problem* microproblem = GLOBAL::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
@@ -45,8 +45,8 @@ MAT::MicroMaterialGP::MicroMaterialGP(
   lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
   oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
   oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
-  oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
-  oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+  old_kaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+  old_kda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
 
   // data must be consistent between micro and macro input file
   const Teuchos::ParameterList& sdyn_macro = GLOBAL::Problem::Instance()->StructuralDynamicParams();
@@ -211,13 +211,13 @@ std::string MAT::MicroMaterialGP::NewResultFilePath(const std::string& newprefix
     const std::filesystem::path recombined_path = parent_path / filen_name;
 
     std::ostringstream s;
-    s << recombined_path.string() << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
+    s << recombined_path.string() << "_el" << ele_id_ << "_gp" << gp_ << "-" << number;
     newfilename = s.str();
   }
   else
   {
     std::ostringstream s;
-    s << newprefix << "_el" << ele_ID_ << "_gp" << gp_;
+    s << newprefix << "_el" << ele_id_ << "_gp" << gp_;
     newfilename = s.str();
   }
   return newfilename;
@@ -243,8 +243,8 @@ void MAT::MicroMaterialGP::EasInit()
       p.set("lastalpha", lastalpha_);
       p.set("oldalpha", oldalpha_);
       p.set("oldfeas", oldfeas_);
-      p.set("oldKaainv", oldKaainv_);
-      p.set("oldKda", oldKda_);
+      p.set("oldKaainv", old_kaainv_);
+      p.set("oldKda", old_kda_);
 
       CORE::LINALG::SerialDenseMatrix elematrix1;
       CORE::LINALG::SerialDenseMatrix elematrix2;
@@ -281,7 +281,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(CORE::LINALG::Matrix<3, 3>* de
 
   // set displacements and EAS data of last step
   microstatic->SetState(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
-      oldKaainv_, oldKda_);
+      old_kaainv_, old_kda_);
 
   // set current time, time step size and step number
   microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
@@ -334,7 +334,7 @@ void MAT::MicroMaterialGP::PrepareOutput()
   plstrain_ = Teuchos::rcp(new std::vector<char>());
 
   microstatic->SetState(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
-      oldKaainv_, oldKda_);
+      old_kaainv_, old_kda_);
   microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
   microstatic->PrepareOutput();
 }
@@ -347,7 +347,7 @@ void MAT::MicroMaterialGP::Output()
 
   // set displacements and EAS data of last step
   microstatic->SetState(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
-      oldKaainv_, oldKda_);
+      old_kaainv_, old_kda_);
   microstatic->Output(micro_output_, time_, step_, dt_);
 
   // we don't need these containers anymore

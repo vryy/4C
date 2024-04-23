@@ -85,13 +85,13 @@ namespace CORE::GEO
       Mesh& mesh_;
 
       //! reference facet identified for this volumecell
-      Facet* refFacet_;
+      Facet* ref_facet_;
 
       //! true if the reference plane is on a facet of volumecell
-      bool isRef_;
+      bool is_ref_;
 
       //! Points that define the reference plane used for this volumecell
-      std::vector<Point*> refPtsGmsh_;
+      std::vector<Point*> ref_pts_gmsh_;
     };
   }  // namespace CUT
 }  // namespace CORE::GEO

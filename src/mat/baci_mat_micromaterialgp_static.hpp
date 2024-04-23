@@ -75,7 +75,7 @@ namespace MAT
     void ResetTimeAndStep();
 
     /// get ele id
-    int eleID() { return ele_ID_; }
+    int eleID() { return ele_id_; }
 
     /// get density
     double Density() const { return density_; }
@@ -86,7 +86,7 @@ namespace MAT
     const int gp_;
 
     /// corresponding macroscale element
-    const int ele_ID_;
+    const int ele_id_;
 
     /// corresponding microstructure discretization number
     const int microdisnum_;
@@ -112,8 +112,8 @@ namespace MAT
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha_;
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha_;
     Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKaainv_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKda_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> old_kaainv_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> old_kda_;
 
     /// my stresses and strains
     Teuchos::RCP<std::vector<char>> stress_;

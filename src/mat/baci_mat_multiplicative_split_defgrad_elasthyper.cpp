@@ -842,7 +842,7 @@ void MAT::MultiplicativeSplitDefgradElastHyper::SetConcentrationGP(const double 
 void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgradElastHyper* params)
 {
   facdefgradin_.clear();
-  iFinj_.clear();
+  i_finj_.clear();
 
   // get inelastic deformation gradient factors and assign them to their source
   for (int inelastic_matnum : *(params->inel_defgradfacids_))
@@ -854,7 +854,7 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgradEla
     facdefgradin_.push_back(temppair);
   }
 
-  iFinj_.resize(facdefgradin_.size());
+  i_finj_.resize(facdefgradin_.size());
 
   // safety checks
   // get the scatra structure control parameter list
@@ -906,7 +906,7 @@ void MAT::InelasticFactorsHandler::EvaluateInverseInelasticDefGrad(
     facdefgradin_[i].second->EvaluateInverseInelasticDefGrad(defgrad, iFinp);
 
     // store inelastic deformation gradient of p-th inelastic contribution
-    iFinj_[i].second = iFinp;
+    i_finj_[i].second = iFinp;
 
     // update inverse inelastic deformation gradient
     iFinM.Multiply(iFin_init_store, iFinp);

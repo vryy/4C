@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
    -------------------------------------------------------------------- */
 CORE::LINALG::LinalgProjectedOperator::LinalgProjectedOperator(Teuchos::RCP<Epetra_Operator> A,
     bool project, Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
-    : project_(project), A_(A), projector_(projector)
+    : project_(project), a_(A), projector_(projector)
 {
   if (project_ && (projector == Teuchos::null))
     FOUR_C_THROW("Kernel projection enabled but got no projector object");
@@ -40,7 +40,7 @@ int CORE::LINALG::LinalgProjectedOperator::Apply(
   int ierr = 0;
 
   // Apply the operator
-  ierr = A_->Apply(X, Y);
+  ierr = a_->Apply(X, Y);
 
   // if necessary, project out matrix kernel
   if (project_)

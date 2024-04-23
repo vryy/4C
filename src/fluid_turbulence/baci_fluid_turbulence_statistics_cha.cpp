@@ -679,14 +679,14 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   sumrho_ = Teuchos::rcp(new std::vector<double>);
   sumrho_->resize(size, 0.0);
 
-  sumT_ = Teuchos::rcp(new std::vector<double>);
-  sumT_->resize(size, 0.0);
+  sum_t_ = Teuchos::rcp(new std::vector<double>);
+  sum_t_->resize(size, 0.0);
 
   sumrhou_ = Teuchos::rcp(new std::vector<double>);
   sumrhou_->resize(size, 0.0);
 
-  sumrhouT_ = Teuchos::rcp(new std::vector<double>);
-  sumrhouT_->resize(size, 0.0);
+  sumrhou_t_ = Teuchos::rcp(new std::vector<double>);
+  sumrhou_t_->resize(size, 0.0);
 
   // now the second order moments
   sumsqu_ = Teuchos::rcp(new std::vector<double>);
@@ -704,8 +704,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   sumsqrho_ = Teuchos::rcp(new std::vector<double>);
   sumsqrho_->resize(size, 0.0);
 
-  sumsqT_ = Teuchos::rcp(new std::vector<double>);
-  sumsqT_->resize(size, 0.0);
+  sumsq_t_ = Teuchos::rcp(new std::vector<double>);
+  sumsq_t_->resize(size, 0.0);
 
   sumuv_ = Teuchos::rcp(new std::vector<double>);
   sumuv_->resize(size, 0.0);
@@ -716,14 +716,14 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   sumvw_ = Teuchos::rcp(new std::vector<double>);
   sumvw_->resize(size, 0.0);
 
-  sumuT_ = Teuchos::rcp(new std::vector<double>);
-  sumuT_->resize(size, 0.0);
+  sumu_t_ = Teuchos::rcp(new std::vector<double>);
+  sumu_t_->resize(size, 0.0);
 
-  sumvT_ = Teuchos::rcp(new std::vector<double>);
-  sumvT_->resize(size, 0.0);
+  sumv_t_ = Teuchos::rcp(new std::vector<double>);
+  sumv_t_->resize(size, 0.0);
 
-  sumwT_ = Teuchos::rcp(new std::vector<double>);
-  sumwT_->resize(size, 0.0);
+  sumw_t_ = Teuchos::rcp(new std::vector<double>);
+  sumw_t_->resize(size, 0.0);
 
   // arrays for point based averaging
   // --------------------------------
@@ -810,18 +810,18 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     // ----------------------------------
 
     // means for the Smagorinsky constant
-    sumCs_ = Teuchos::rcp(new std::vector<double>);
-    sumCs_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_cs_ = Teuchos::rcp(new std::vector<double>);
+    sum_cs_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumCs_ = Teuchos::rcp(new std::vector<double>);
-    incrsumCs_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_cs_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_cs_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for (Cs*delta)^2
-    sumCs_delta_sq_ = Teuchos::rcp(new std::vector<double>);
-    sumCs_delta_sq_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_cs_delta_sq_ = Teuchos::rcp(new std::vector<double>);
+    sum_cs_delta_sq_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumCs_delta_sq_ = Teuchos::rcp(new std::vector<double>);
-    incrsumCs_delta_sq_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_cs_delta_sq_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_cs_delta_sq_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for the effective viscosity
     sumvisceff_ = Teuchos::rcp(new std::vector<double>);
@@ -831,18 +831,18 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     incrsumvisceff_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for Prt
-    sumPrt_ = Teuchos::rcp(new std::vector<double>);
-    sumPrt_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_prt_ = Teuchos::rcp(new std::vector<double>);
+    sum_prt_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumPrt_ = Teuchos::rcp(new std::vector<double>);
-    incrsumPrt_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_prt_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_prt_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for (Cs*delta)^2/Prt
-    sumCs_delta_sq_Prt_ = Teuchos::rcp(new std::vector<double>);
-    sumCs_delta_sq_Prt_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_cs_delta_sq_prt_ = Teuchos::rcp(new std::vector<double>);
+    sum_cs_delta_sq_prt_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumCs_delta_sq_Prt_ = Teuchos::rcp(new std::vector<double>);
-    incrsumCs_delta_sq_Prt_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_cs_delta_sq_prt_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_cs_delta_sq_prt_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for the effective diffusivity
     sumdiffeff_ = Teuchos::rcp(new std::vector<double>);
@@ -852,18 +852,18 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     incrsumdiffeff_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for Ci
-    sumCi_ = Teuchos::rcp(new std::vector<double>);
-    sumCi_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_ci_ = Teuchos::rcp(new std::vector<double>);
+    sum_ci_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumCi_ = Teuchos::rcp(new std::vector<double>);
-    incrsumCi_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_ci_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_ci_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for (Ci*delta)^2
-    sumCi_delta_sq_ = Teuchos::rcp(new std::vector<double>);
-    sumCi_delta_sq_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_ci_delta_sq_ = Teuchos::rcp(new std::vector<double>);
+    sum_ci_delta_sq_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumCi_delta_sq_ = Teuchos::rcp(new std::vector<double>);
-    incrsumCi_delta_sq_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_ci_delta_sq_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_ci_delta_sq_->resize(nodeplanes_->size() - 1, 0.0);
   }
 
   //----------------------------------------------------------------------
@@ -875,41 +875,41 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   {
     // vectors for statistics computation (sums and increments)
     // means for N
-    sumN_stream_ = Teuchos::rcp(new std::vector<double>);
-    sumN_stream_->resize(nodeplanes_->size() - 1, 0.0);
-    sumN_normal_ = Teuchos::rcp(new std::vector<double>);
-    sumN_normal_->resize(nodeplanes_->size() - 1, 0.0);
-    sumN_span_ = Teuchos::rcp(new std::vector<double>);
-    sumN_span_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_n_stream_ = Teuchos::rcp(new std::vector<double>);
+    sum_n_stream_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_n_normal_ = Teuchos::rcp(new std::vector<double>);
+    sum_n_normal_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_n_span_ = Teuchos::rcp(new std::vector<double>);
+    sum_n_span_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumN_stream_ = Teuchos::rcp(new std::vector<double>);
-    incrsumN_stream_->resize(nodeplanes_->size() - 1, 0.0);
-    incrsumN_normal_ = Teuchos::rcp(new std::vector<double>);
-    incrsumN_normal_->resize(nodeplanes_->size() - 1, 0.0);
-    incrsumN_span_ = Teuchos::rcp(new std::vector<double>);
-    incrsumN_span_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_n_stream_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_n_stream_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_n_normal_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_n_normal_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_n_span_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_n_span_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for B
-    sumB_stream_ = Teuchos::rcp(new std::vector<double>);
-    sumB_stream_->resize(nodeplanes_->size() - 1, 0.0);
-    sumB_normal_ = Teuchos::rcp(new std::vector<double>);
-    sumB_normal_->resize(nodeplanes_->size() - 1, 0.0);
-    sumB_span_ = Teuchos::rcp(new std::vector<double>);
-    sumB_span_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_b_stream_ = Teuchos::rcp(new std::vector<double>);
+    sum_b_stream_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_b_normal_ = Teuchos::rcp(new std::vector<double>);
+    sum_b_normal_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_b_span_ = Teuchos::rcp(new std::vector<double>);
+    sum_b_span_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumB_stream_ = Teuchos::rcp(new std::vector<double>);
-    incrsumB_stream_->resize(nodeplanes_->size() - 1, 0.0);
-    incrsumB_normal_ = Teuchos::rcp(new std::vector<double>);
-    incrsumB_normal_->resize(nodeplanes_->size() - 1, 0.0);
-    incrsumB_span_ = Teuchos::rcp(new std::vector<double>);
-    incrsumB_span_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_b_stream_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_b_stream_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_b_normal_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_b_normal_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_b_span_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_b_span_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for C_sgs
-    sumCsgs_ = Teuchos::rcp(new std::vector<double>);
-    sumCsgs_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_csgs_ = Teuchos::rcp(new std::vector<double>);
+    sum_csgs_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumCsgs_ = Teuchos::rcp(new std::vector<double>);
-    incrsumCsgs_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_csgs_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_csgs_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for subgrid viscosity
     // if used in combination with eddy viscosity model
@@ -921,25 +921,25 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
 
     // vectors for statistics computation (sums and increments)
     // means for Nphi
-    sumNphi_ = Teuchos::rcp(new std::vector<double>);
-    sumNphi_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_nphi_ = Teuchos::rcp(new std::vector<double>);
+    sum_nphi_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumNphi_ = Teuchos::rcp(new std::vector<double>);
-    incrsumNphi_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_nphi_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_nphi_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for D
-    sumDphi_ = Teuchos::rcp(new std::vector<double>);
-    sumDphi_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_dphi_ = Teuchos::rcp(new std::vector<double>);
+    sum_dphi_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumDphi_ = Teuchos::rcp(new std::vector<double>);
-    incrsumDphi_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_dphi_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_dphi_->resize(nodeplanes_->size() - 1, 0.0);
 
     // means for C_sgs_phi
-    sumCsgs_phi_ = Teuchos::rcp(new std::vector<double>);
-    sumCsgs_phi_->resize(nodeplanes_->size() - 1, 0.0);
+    sum_csgs_phi_ = Teuchos::rcp(new std::vector<double>);
+    sum_csgs_phi_->resize(nodeplanes_->size() - 1, 0.0);
 
-    incrsumCsgs_phi_ = Teuchos::rcp(new std::vector<double>);
-    incrsumCsgs_phi_->resize(nodeplanes_->size() - 1, 0.0);
+    incrsum_csgs_phi_ = Teuchos::rcp(new std::vector<double>);
+    incrsum_csgs_phi_->resize(nodeplanes_->size() - 1, 0.0);
   }
 
   //----------------------------------------------------------------------
@@ -1090,10 +1090,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     sumabssvelaf_ = Teuchos::rcp(new std::vector<double>);
     sumabssvelaf_->resize((nodeplanes_->size() - 1), 0.0);
 
-    sumresC_ = Teuchos::rcp(new std::vector<double>);
-    sumresC_->resize(nodeplanes_->size() - 1, 0.0);
-    sumresC_sq_ = Teuchos::rcp(new std::vector<double>);
-    sumresC_sq_->resize(nodeplanes_->size() - 1, 0.0);
+    sumres_c_ = Teuchos::rcp(new std::vector<double>);
+    sumres_c_->resize(nodeplanes_->size() - 1, 0.0);
+    sumres_c_sq_ = Teuchos::rcp(new std::vector<double>);
+    sumres_c_sq_->resize(nodeplanes_->size() - 1, 0.0);
 
     sumspressnp_ = Teuchos::rcp(new std::vector<double>);
     sumspressnp_->resize(nodeplanes_->size() - 1, 0.0);
@@ -1108,10 +1108,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     sumstrle_->resize(nodeplanes_->size() - 1, 0.0);
     sumgradle_ = Teuchos::rcp(new std::vector<double>);
     sumgradle_->resize(nodeplanes_->size() - 1, 0.0);
-    sumtauM_ = Teuchos::rcp(new std::vector<double>);
-    sumtauM_->resize(nodeplanes_->size() - 1, 0.0);
-    sumtauC_ = Teuchos::rcp(new std::vector<double>);
-    sumtauC_->resize(nodeplanes_->size() - 1, 0.0);
+    sumtau_m_ = Teuchos::rcp(new std::vector<double>);
+    sumtau_m_->resize(nodeplanes_->size() - 1, 0.0);
+    sumtau_c_ = Teuchos::rcp(new std::vector<double>);
+    sumtau_c_->resize(nodeplanes_->size() - 1, 0.0);
 
     summk_ = Teuchos::rcp(new std::vector<double>);
     summk_->resize(nodeplanes_->size() - 1, 0.0);
@@ -1210,12 +1210,12 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
 
 
     // means for comparison of of residual and dissipation
-    sumresS_ = Teuchos::rcp(new std::vector<double>);
-    sumresS_->resize(nodeplanes_->size() - 1, 0.0);
-    sumresS_sq_ = Teuchos::rcp(new std::vector<double>);
-    sumresS_sq_->resize(nodeplanes_->size() - 1, 0.0);
-    sumtauS_ = Teuchos::rcp(new std::vector<double>);
-    sumtauS_->resize(nodeplanes_->size() - 1, 0.0);
+    sumres_s_ = Teuchos::rcp(new std::vector<double>);
+    sumres_s_->resize(nodeplanes_->size() - 1, 0.0);
+    sumres_s_sq_ = Teuchos::rcp(new std::vector<double>);
+    sumres_s_sq_->resize(nodeplanes_->size() - 1, 0.0);
+    sumtau_s_ = Teuchos::rcp(new std::vector<double>);
+    sumtau_s_->resize(nodeplanes_->size() - 1, 0.0);
 
     sum_scatra_eps_supg_ = Teuchos::rcp(new std::vector<double>);
     sum_scatra_eps_supg_->resize(nodeplanes_->size() - 1, 0.0);
@@ -1480,16 +1480,16 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
 
   if (smagorinsky_)
   {
-    for (unsigned rr = 0; rr < (*incrsumCs_).size(); ++rr)
+    for (unsigned rr = 0; rr < (*incrsum_cs_).size(); ++rr)
     {
-      (*sumCs_)[rr] += (*incrsumCs_)[rr];
-      (*sumCs_delta_sq_)[rr] += (*incrsumCs_delta_sq_)[rr];
+      (*sum_cs_)[rr] += (*incrsum_cs_)[rr];
+      (*sum_cs_delta_sq_)[rr] += (*incrsum_cs_delta_sq_)[rr];
       (*sumvisceff_)[rr] += (*incrsumvisceff_)[rr];
-      (*sumPrt_)[rr] += (*incrsumPrt_)[rr];
-      (*sumCs_delta_sq_Prt_)[rr] += (*incrsumCs_delta_sq_Prt_)[rr];
+      (*sum_prt_)[rr] += (*incrsum_prt_)[rr];
+      (*sum_cs_delta_sq_prt_)[rr] += (*incrsum_cs_delta_sq_prt_)[rr];
       (*sumdiffeff_)[rr] += (*incrsumdiffeff_)[rr];
-      (*sumCi_)[rr] += (*incrsumCi_)[rr];
-      (*sumCi_delta_sq_)[rr] += (*incrsumCi_delta_sq_)[rr];
+      (*sum_ci_)[rr] += (*incrsum_ci_)[rr];
+      (*sum_ci_delta_sq_)[rr] += (*incrsum_ci_delta_sq_)[rr];
     }
   }
 
@@ -1638,16 +1638,16 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(const Teuchos::RCP<const Epe
 
   if (smagorinsky_)
   {
-    for (unsigned rr = 0; rr < (*incrsumCs_).size(); ++rr)
+    for (unsigned rr = 0; rr < (*incrsum_cs_).size(); ++rr)
     {
-      (*sumCs_)[rr] += (*incrsumCs_)[rr];
-      (*sumCs_delta_sq_)[rr] += (*incrsumCs_delta_sq_)[rr];
+      (*sum_cs_)[rr] += (*incrsum_cs_)[rr];
+      (*sum_cs_delta_sq_)[rr] += (*incrsum_cs_delta_sq_)[rr];
       (*sumvisceff_)[rr] += (*incrsumvisceff_)[rr];
-      (*sumPrt_)[rr] += (*incrsumPrt_)[rr];
-      (*sumCs_delta_sq_Prt_)[rr] += (*incrsumCs_delta_sq_Prt_)[rr];
+      (*sum_prt_)[rr] += (*incrsum_prt_)[rr];
+      (*sum_cs_delta_sq_prt_)[rr] += (*incrsum_cs_delta_sq_prt_)[rr];
       (*sumdiffeff_)[rr] += (*incrsumdiffeff_)[rr];
-      (*sumCi_)[rr] += (*incrsumCi_)[rr];
-      (*sumCi_delta_sq_)[rr] += (*incrsumCi_delta_sq_)[rr];
+      (*sum_ci_)[rr] += (*incrsum_ci_)[rr];
+      (*sum_ci_delta_sq_)[rr] += (*incrsum_ci_delta_sq_)[rr];
     }
   }
 
@@ -1796,16 +1796,16 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(const Teuchos::RCP<const E
 
   if (smagorinsky_)
   {
-    for (unsigned rr = 0; rr < (*incrsumCs_).size(); ++rr)
+    for (unsigned rr = 0; rr < (*incrsum_cs_).size(); ++rr)
     {
-      (*sumCs_)[rr] += (*incrsumCs_)[rr];
-      (*sumCs_delta_sq_)[rr] += (*incrsumCs_delta_sq_)[rr];
+      (*sum_cs_)[rr] += (*incrsum_cs_)[rr];
+      (*sum_cs_delta_sq_)[rr] += (*incrsum_cs_delta_sq_)[rr];
       (*sumvisceff_)[rr] += (*incrsumvisceff_)[rr];
-      (*sumPrt_)[rr] += (*incrsumPrt_)[rr];
-      (*sumCs_delta_sq_Prt_)[rr] += (*incrsumCs_delta_sq_Prt_)[rr];
+      (*sum_prt_)[rr] += (*incrsum_prt_)[rr];
+      (*sum_cs_delta_sq_prt_)[rr] += (*incrsum_cs_delta_sq_prt_)[rr];
       (*sumdiffeff_)[rr] += (*incrsumdiffeff_)[rr];
-      (*sumCi_)[rr] += (*incrsumCi_)[rr];
-      (*sumCi_delta_sq_)[rr] += (*incrsumCi_delta_sq_)[rr];
+      (*sum_ci_)[rr] += (*incrsum_ci_)[rr];
+      (*sum_ci_delta_sq_)[rr] += (*incrsum_ci_delta_sq_)[rr];
     }
   }
 
@@ -2238,23 +2238,23 @@ void FLD::TurbulenceStatisticsCha::EvaluateLomaIntegralMeanValuesInPlanes(const 
     (*sumw_)[i] += (*globsumw)[i] / (*globarea)[i];
     (*sump_)[i] += (*globsump)[i] / (*globarea)[i];
     (*sumrho_)[i] += (*globsumrho)[i] / (*globarea)[i];
-    (*sumT_)[i] += (*globsumT)[i] / (*globarea)[i];
+    (*sum_t_)[i] += (*globsumT)[i] / (*globarea)[i];
     (*sumrhou_)[i] += (*globsumrhou)[i] / (*globarea)[i];
-    (*sumrhouT_)[i] += (*globsumrhouT)[i] / (*globarea)[i];
+    (*sumrhou_t_)[i] += (*globsumrhouT)[i] / (*globarea)[i];
 
     (*sumsqu_)[i] += (*globsumsqu)[i] / (*globarea)[i];
     (*sumsqv_)[i] += (*globsumsqv)[i] / (*globarea)[i];
     (*sumsqw_)[i] += (*globsumsqw)[i] / (*globarea)[i];
     (*sumsqp_)[i] += (*globsumsqp)[i] / (*globarea)[i];
     (*sumsqrho_)[i] += (*globsumsqrho)[i] / (*globarea)[i];
-    (*sumsqT_)[i] += (*globsumsqT)[i] / (*globarea)[i];
+    (*sumsq_t_)[i] += (*globsumsqT)[i] / (*globarea)[i];
 
     (*sumuv_)[i] += (*globsumuv)[i] / (*globarea)[i];
     (*sumuw_)[i] += (*globsumuw)[i] / (*globarea)[i];
     (*sumvw_)[i] += (*globsumvw)[i] / (*globarea)[i];
-    (*sumuT_)[i] += (*globsumuT)[i] / (*globarea)[i];
-    (*sumvT_)[i] += (*globsumvT)[i] / (*globarea)[i];
-    (*sumwT_)[i] += (*globsumwT)[i] / (*globarea)[i];
+    (*sumu_t_)[i] += (*globsumuT)[i] / (*globarea)[i];
+    (*sumv_t_)[i] += (*globsumvT)[i] / (*globarea)[i];
+    (*sumw_t_)[i] += (*globsumwT)[i] / (*globarea)[i];
   }
 
   return;
@@ -2451,20 +2451,20 @@ void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
     (*sumv_)[i] += (*globsumv)[i] / (*globarea)[i];
     (*sumw_)[i] += (*globsumw)[i] / (*globarea)[i];
     (*sump_)[i] += (*globsump)[i] / (*globarea)[i];
-    (*sumT_)[i] += (*globsumphi)[i] / (*globarea)[i];
+    (*sum_t_)[i] += (*globsumphi)[i] / (*globarea)[i];
 
     (*sumsqu_)[i] += (*globsumsqu)[i] / (*globarea)[i];
     (*sumsqv_)[i] += (*globsumsqv)[i] / (*globarea)[i];
     (*sumsqw_)[i] += (*globsumsqw)[i] / (*globarea)[i];
     (*sumsqp_)[i] += (*globsumsqp)[i] / (*globarea)[i];
-    (*sumsqT_)[i] += (*globsumsqphi)[i] / (*globarea)[i];
+    (*sumsq_t_)[i] += (*globsumsqphi)[i] / (*globarea)[i];
 
     (*sumuv_)[i] += (*globsumuv)[i] / (*globarea)[i];
     (*sumuw_)[i] += (*globsumuw)[i] / (*globarea)[i];
     (*sumvw_)[i] += (*globsumvw)[i] / (*globarea)[i];
-    (*sumuT_)[i] += (*globsumuphi)[i] / (*globarea)[i];
-    (*sumvT_)[i] += (*globsumvphi)[i] / (*globarea)[i];
-    (*sumwT_)[i] += (*globsumwphi)[i] / (*globarea)[i];
+    (*sumu_t_)[i] += (*globsumuphi)[i] / (*globarea)[i];
+    (*sumv_t_)[i] += (*globsumvphi)[i] / (*globarea)[i];
+    (*sumw_t_)[i] += (*globsumwphi)[i] / (*globarea)[i];
   }
 
   return;
@@ -2747,14 +2747,14 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   // viscosity and (Cs_delta)^2
   for (unsigned rr = 0; rr < global_incr_Cs_sum->size(); ++rr)
   {
-    (*incrsumCs_)[rr] = (*global_incr_Cs_sum)[rr];
-    (*incrsumCs_delta_sq_)[rr] = (*global_incr_Cs_delta_sq_sum)[rr];
+    (*incrsum_cs_)[rr] = (*global_incr_Cs_sum)[rr];
+    (*incrsum_cs_delta_sq_)[rr] = (*global_incr_Cs_delta_sq_sum)[rr];
     (*incrsumvisceff_)[rr] = (*global_incr_visceff_sum)[rr];
-    (*incrsumPrt_)[rr] = (*global_incr_Prt_sum)[rr];
-    (*incrsumCs_delta_sq_Prt_)[rr] = (*global_incr_Cs_delta_sq_Prt_sum)[rr];
+    (*incrsum_prt_)[rr] = (*global_incr_Prt_sum)[rr];
+    (*incrsum_cs_delta_sq_prt_)[rr] = (*global_incr_Cs_delta_sq_Prt_sum)[rr];
     (*incrsumdiffeff_)[rr] = (*global_incr_diffeff_sum)[rr];
-    (*incrsumCi_)[rr] = (*global_incr_Ci_sum)[rr];
-    (*incrsumCi_delta_sq_)[rr] = (*global_incr_Ci_delta_sq_sum)[rr];
+    (*incrsum_ci_)[rr] = (*global_incr_Ci_sum)[rr];
+    (*incrsum_ci_delta_sq_)[rr] = (*global_incr_Ci_delta_sq_sum)[rr];
   }
 
   // reinitialise to zero for next element call
@@ -2967,19 +2967,19 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   // subgrid viscosity
   for (unsigned rr = 0; rr < global_incr_N_stream_sum->size(); ++rr)
   {
-    (*incrsumN_stream_)[rr] = (*global_incr_N_stream_sum)[rr];
-    (*incrsumN_normal_)[rr] = (*global_incr_N_normal_sum)[rr];
-    (*incrsumN_span_)[rr] = (*global_incr_N_span_sum)[rr];
-    (*incrsumB_stream_)[rr] = (*global_incr_B_normal_sum)[rr];
-    (*incrsumB_normal_)[rr] = (*global_incr_B_normal_sum)[rr];
-    (*incrsumB_span_)[rr] = (*global_incr_B_span_sum)[rr];
-    (*incrsumCsgs_)[rr] = (*global_incr_Csgs_sum)[rr];
+    (*incrsum_n_stream_)[rr] = (*global_incr_N_stream_sum)[rr];
+    (*incrsum_n_normal_)[rr] = (*global_incr_N_normal_sum)[rr];
+    (*incrsum_n_span_)[rr] = (*global_incr_N_span_sum)[rr];
+    (*incrsum_b_stream_)[rr] = (*global_incr_B_normal_sum)[rr];
+    (*incrsum_b_normal_)[rr] = (*global_incr_B_normal_sum)[rr];
+    (*incrsum_b_span_)[rr] = (*global_incr_B_span_sum)[rr];
+    (*incrsum_csgs_)[rr] = (*global_incr_Csgs_sum)[rr];
     (*incrsumsgvisc_)[rr] = (*global_incr_sgvisc_sum)[rr];
     if (withscatra)
     {
-      (*incrsumNphi_)[rr] = (*global_incr_Nphi_sum)[rr];
-      (*incrsumDphi_)[rr] = (*global_incr_Dphi_sum)[rr];
-      (*incrsumCsgs_phi_)[rr] = (*global_incr_Csgs_phi_sum)[rr];
+      (*incrsum_nphi_)[rr] = (*global_incr_Nphi_sum)[rr];
+      (*incrsum_dphi_)[rr] = (*global_incr_Dphi_sum)[rr];
+      (*incrsum_csgs_phi_)[rr] = (*global_incr_Csgs_phi_sum)[rr];
     }
   }
 
@@ -3016,21 +3016,21 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   }
 
   // add increment of last iteration to the sum of all values
-  for (unsigned rr = 0; rr < (*incrsumN_stream_).size(); ++rr)
+  for (unsigned rr = 0; rr < (*incrsum_n_stream_).size(); ++rr)
   {
-    (*sumN_stream_)[rr] += (*incrsumN_stream_)[rr];
-    (*sumN_normal_)[rr] += (*incrsumN_normal_)[rr];
-    (*sumN_span_)[rr] += (*incrsumN_span_)[rr];
-    (*sumB_stream_)[rr] += (*incrsumB_stream_)[rr];
-    (*sumB_normal_)[rr] += (*incrsumB_normal_)[rr];
-    (*sumB_span_)[rr] += (*incrsumB_span_)[rr];
-    (*sumCsgs_)[rr] += (*incrsumCsgs_)[rr];
+    (*sum_n_stream_)[rr] += (*incrsum_n_stream_)[rr];
+    (*sum_n_normal_)[rr] += (*incrsum_n_normal_)[rr];
+    (*sum_n_span_)[rr] += (*incrsum_n_span_)[rr];
+    (*sum_b_stream_)[rr] += (*incrsum_b_stream_)[rr];
+    (*sum_b_normal_)[rr] += (*incrsum_b_normal_)[rr];
+    (*sum_b_span_)[rr] += (*incrsum_b_span_)[rr];
+    (*sum_csgs_)[rr] += (*incrsum_csgs_)[rr];
     (*sumsgvisc_)[rr] += (*incrsumsgvisc_)[rr];
     if (withscatra)
     {
-      (*sumNphi_)[rr] += (*incrsumNphi_)[rr];
-      (*sumDphi_)[rr] += (*incrsumDphi_)[rr];
-      (*sumCsgs_phi_)[rr] += (*incrsumCsgs_phi_)[rr];
+      (*sum_nphi_)[rr] += (*incrsum_nphi_)[rr];
+      (*sum_dphi_)[rr] += (*incrsum_dphi_)[rr];
+      (*sum_csgs_phi_)[rr] += (*incrsum_csgs_phi_)[rr];
     }
   }
 
@@ -3435,13 +3435,13 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       (*sumstrle_)[rr] += (*global_incrstrle)[rr];
       (*sumgradle_)[rr] += (*global_incrgradle)[rr];
 
-      (*sumtauM_)[rr] += (*global_incrtauM)[rr];
-      (*sumtauC_)[rr] += (*global_incrtauC)[rr];
+      (*sumtau_m_)[rr] += (*global_incrtauM)[rr];
+      (*sumtau_c_)[rr] += (*global_incrtauC)[rr];
 
       (*summk_)[rr] += (*global_incrmk)[rr];
 
-      (*sumresC_)[rr] += (*global_incrresC)[rr];
-      (*sumresC_sq_)[rr] += (*global_incrresC_sq)[rr];
+      (*sumres_c_)[rr] += (*global_incrresC)[rr];
+      (*sumres_c_sq_)[rr] += (*global_incrresC_sq)[rr];
       (*sumspressnp_)[rr] += (*global_incrspressnp)[rr];
       (*sumspressnp_sq_)[rr] += (*global_incrspressnp_sq)[rr];
 
@@ -3670,10 +3670,10 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
       for (int rr = 0; rr < presize; ++rr)
       {
-        (*sumtauS_)[rr] += (*global_scatra_incrtauS)[rr];
+        (*sumtau_s_)[rr] += (*global_scatra_incrtauS)[rr];
 
-        (*sumresS_)[rr] += (*global_scatra_incrresS)[rr];
-        (*sumresS_sq_)[rr] += (*global_scatra_incrresS_sq)[rr];
+        (*sumres_s_)[rr] += (*global_scatra_incrresS)[rr];
+        (*sumres_s_sq_)[rr] += (*global_scatra_incrresS_sq)[rr];
 
         (*sum_scatra_eps_supg_)[rr] += (*global_scatra_incr_eps_supg)[rr];
         (*sum_scatra_eps_cross_)[rr] += (*global_scatra_incr_eps_cross)[rr];
@@ -3943,29 +3943,29 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       (*log_Cs) << "   (Ci*hk)^2 ";
       (*log_Cs) << &std::endl;
       (*log_Cs) << std::scientific;
-      for (unsigned rr = 0; rr < sumCs_->size(); ++rr)
+      for (unsigned rr = 0; rr < sum_cs_->size(); ++rr)
       {
         // we associate the value with the midpoint of the element layer
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << 0.5 * ((*nodeplanes_)[rr + 1] + (*nodeplanes_)[rr]) << "  ";
 
         // the five values to be visualized
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_)[rr]) / (numele_ * numsamp_)
-                  << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCs_delta_sq_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_cs_)[rr]) / (numele_ * numsamp_) << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4)
+                  << ((*sum_cs_delta_sq_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << ((*sumvisceff_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumPrt_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_prt_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCs_delta_sq_Prt_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_cs_delta_sq_prt_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << ((*sumdiffeff_)[rr]) / (numele_ * numsamp_) << "  ";
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_)[rr]) / (numele_ * numsamp_)
-                  << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCi_delta_sq_)[rr]) / (numele_ * numsamp_) << &std::endl;
+                  << ((*sum_ci_)[rr]) / (numele_ * numsamp_) << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4)
+                  << ((*sum_ci_delta_sq_)[rr]) / (numele_ * numsamp_) << &std::endl;
       }
       log_Cs->flush();
     }  // end smagorinsky_
@@ -3997,7 +3997,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       (*log_mf) << "    sgvisc   ";
       (*log_mf) << &std::endl;
       (*log_mf) << std::scientific;
-      for (unsigned rr = 0; rr < sumN_stream_->size(); ++rr)
+      for (unsigned rr = 0; rr < sum_n_stream_->size(); ++rr)
       {
         // we associate the value with the midpoint of the element layer
         (*log_mf) << std::setw(11) << std::setprecision(4)
@@ -4005,19 +4005,19 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
 
         // the three values to be visualised
         (*log_mf) << std::setw(11) << std::setprecision(4)
-                  << ((*sumN_stream_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_n_stream_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4)
-                  << ((*sumN_normal_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_n_normal_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4)
-                  << ((*sumN_span_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_n_span_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4)
-                  << ((*sumB_stream_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_b_stream_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4)
-                  << ((*sumB_normal_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_b_normal_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4)
-                  << ((*sumB_span_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_b_span_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCsgs_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_csgs_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4)
                   << ((*sumsgvisc_)[rr]) / (numele_ * numsamp_) << &std::endl;
       }
@@ -4150,19 +4150,19 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
                    << (*sumabssvelaf_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumresC_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumres_c_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sumspressnp_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumresC_sq_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumres_c_sq_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sumspressnp_sq_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumtauM_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumtau_m_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumtauC_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumtau_c_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sum_eps_pspg_)[rr] / (numele_ * numsamp_) << "  ";
@@ -4382,29 +4382,29 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       (*log_Cs) << "   (Ci*hk)^2 ";
       (*log_Cs) << &std::endl;
       (*log_Cs) << std::scientific;
-      for (unsigned rr = 0; rr < sumCs_->size(); ++rr)
+      for (unsigned rr = 0; rr < sum_cs_->size(); ++rr)
       {
         // we associate the value with the midpoint of the element layer
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << 0.5 * ((*nodeplanes_)[rr + 1] + (*nodeplanes_)[rr]) << "  ";
 
         // the five values to be visualized
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_)[rr]) / (numele_ * numsamp_)
-                  << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCs_delta_sq_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_cs_)[rr]) / (numele_ * numsamp_) << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4)
+                  << ((*sum_cs_delta_sq_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << ((*sumvisceff_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumPrt_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_prt_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCs_delta_sq_Prt_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_cs_delta_sq_prt_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << ((*sumdiffeff_)[rr]) / (numele_ * numsamp_) << "  ";
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_)[rr]) / (numele_ * numsamp_)
-                  << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCi_delta_sq_)[rr]) / (numele_ * numsamp_) << &std::endl;
+                  << ((*sum_ci_)[rr]) / (numele_ * numsamp_) << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4)
+                  << ((*sum_ci_delta_sq_)[rr]) / (numele_ * numsamp_) << &std::endl;
       }
       log_Cs->flush();
     }  // end smagorinsky_
@@ -4535,19 +4535,19 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
                    << (*sumabssvelaf_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumresC_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumres_c_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sumspressnp_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumresC_sq_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumres_c_sq_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sumspressnp_sq_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumtauM_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumtau_m_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumtauC_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumtau_c_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sum_eps_pspg_)[rr] / (numele_ * numsamp_) << "  ";
@@ -4740,21 +4740,21 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumw_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sump_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumrho_)[i] / aux;
-      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumT_)[i] / aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sum_t_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumrhou_)[i] / aux;
-      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumrhouT_)[i] / aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumrhou_t_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqu_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqv_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqw_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqp_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqrho_)[i] / aux;
-      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqT_)[i] / aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsq_t_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuv_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuw_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumvw_)[i] / aux;
-      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuT_)[i] / aux;
-      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumvT_)[i] / aux;
-      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumwT_)[i] / aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumu_t_)[i] / aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumv_t_)[i] / aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumw_t_)[i] / aux;
       (*log) << "\n";
     }
     log->flush();
@@ -4891,19 +4891,19 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
                    << (*sumabssvelaf_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumresC_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumres_c_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sumspressnp_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumresC_sq_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumres_c_sq_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sumspressnp_sq_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumtauM_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumtau_m_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumtauC_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumtau_c_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sum_eps_pspg_)[rr] / (numele_ * numsamp_) << "  ";
@@ -5023,11 +5023,11 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
                           << 0.5 * ((*nodeplanes_)[rr + 1] + (*nodeplanes_)[rr]) << "  ";
 
         (*log_res_scatra) << std::setw(11) << std::setprecision(4)
-                          << (*sumresS_)[rr] / (numele_ * numsamp_) << "  ";
+                          << (*sumres_s_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res_scatra) << std::setw(11) << std::setprecision(4)
-                          << (*sumresS_sq_)[rr] / (numele_ * numsamp_) << "  ";
+                          << (*sumres_s_sq_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res_scatra) << std::setw(11) << std::setprecision(4)
-                          << (*sumtauS_)[rr] / (numele_ * numsamp_) << "  ";
+                          << (*sumtau_s_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res_scatra) << std::setw(11) << std::setprecision(4)
                           << (*sum_scatra_eps_supg_)[rr] / (numele_ * numsamp_) << "  ";
@@ -5087,29 +5087,29 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       (*log_Cs) << "   (Ci*hk)^2 ";
       (*log_Cs) << &std::endl;
       (*log_Cs) << std::scientific;
-      for (unsigned rr = 0; rr < sumCs_->size(); ++rr)
+      for (unsigned rr = 0; rr < sum_cs_->size(); ++rr)
       {
         // we associate the value with the midpoint of the element layer
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << 0.5 * ((*nodeplanes_)[rr + 1] + (*nodeplanes_)[rr]) << "  ";
 
         // the five values to be visualized
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_)[rr]) / (numele_ * numsamp_)
-                  << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCs_delta_sq_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_cs_)[rr]) / (numele_ * numsamp_) << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4)
+                  << ((*sum_cs_delta_sq_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << ((*sumvisceff_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumPrt_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_prt_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCs_delta_sq_Prt_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_cs_delta_sq_prt_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << ((*sumdiffeff_)[rr]) / (numele_ * numsamp_) << "  ";
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_)[rr]) / (numele_ * numsamp_)
-                  << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCi_delta_sq_)[rr]) / (numele_ * numsamp_) << &std::endl;
+                  << ((*sum_ci_)[rr]) / (numele_ * numsamp_) << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4)
+                  << ((*sum_ci_delta_sq_)[rr]) / (numele_ * numsamp_) << &std::endl;
       }
       log_Cs->flush();
     }  // end smagorinsky_
@@ -5229,18 +5229,18 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumv_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumw_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sump_)[i] / aux;
-      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumT_)[i] / aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sum_t_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqu_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqv_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqw_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqp_)[i] / aux;
-      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsqT_)[i] / aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumsq_t_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuv_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuw_)[i] / aux;
       (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumvw_)[i] / aux;
-      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumuT_)[i] / aux;
-      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumvT_)[i] / aux;
-      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumwT_)[i] / aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumu_t_)[i] / aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumv_t_)[i] / aux;
+      (*log) << "   " << std::setw(17) << std::setprecision(10) << (*sumw_t_)[i] / aux;
       (*log) << "\n";
     }
     log->flush();
@@ -5377,19 +5377,19 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
                    << (*sumabssvelaf_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumresC_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumres_c_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sumspressnp_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumresC_sq_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumres_c_sq_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sumspressnp_sq_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumtauM_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumtau_m_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res) << std::setw(11) << std::setprecision(4)
-                   << (*sumtauC_)[rr] / (numele_ * numsamp_) << "  ";
+                   << (*sumtau_c_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res) << std::setw(11) << std::setprecision(4)
                    << (*sum_eps_pspg_)[rr] / (numele_ * numsamp_) << "  ";
@@ -5509,11 +5509,11 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
                           << 0.5 * ((*nodeplanes_)[rr + 1] + (*nodeplanes_)[rr]) << "  ";
 
         (*log_res_scatra) << std::setw(11) << std::setprecision(4)
-                          << (*sumresS_)[rr] / (numele_ * numsamp_) << "  ";
+                          << (*sumres_s_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res_scatra) << std::setw(11) << std::setprecision(4)
-                          << (*sumresS_sq_)[rr] / (numele_ * numsamp_) << "  ";
+                          << (*sumres_s_sq_)[rr] / (numele_ * numsamp_) << "  ";
         (*log_res_scatra) << std::setw(11) << std::setprecision(4)
-                          << (*sumtauS_)[rr] / (numele_ * numsamp_) << "  ";
+                          << (*sumtau_s_)[rr] / (numele_ * numsamp_) << "  ";
 
         (*log_res_scatra) << std::setw(11) << std::setprecision(4)
                           << (*sum_scatra_eps_supg_)[rr] / (numele_ * numsamp_) << "  ";
@@ -5575,23 +5575,23 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       (*log_mf) << "    sgvisc   ";
       (*log_mf) << &std::endl;
       (*log_mf) << std::scientific;
-      for (unsigned rr = 0; rr < sumN_stream_->size(); ++rr)
+      for (unsigned rr = 0; rr < sum_n_stream_->size(); ++rr)
       {
         // we associate the value with the midpoint of the element layer
         (*log_mf) << std::setw(11) << std::setprecision(4)
                   << 0.5 * ((*nodeplanes_)[rr + 1] + (*nodeplanes_)[rr]) << "  ";
 
         // the values to be visualised
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumN_stream_)[rr]) / aux << "  ";
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumN_normal_)[rr]) / aux << "  ";
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumN_span_)[rr]) / aux << "  ";
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumB_stream_)[rr]) / aux << "  ";
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumB_normal_)[rr]) / aux << "  ";
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumB_span_)[rr]) / aux << "  ";
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumCsgs_)[rr]) / aux << "  ";
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumNphi_)[rr]) / aux << "  ";
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumDphi_)[rr]) / aux << "  ";
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumCsgs_phi_)[rr]) / aux << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sum_n_stream_)[rr]) / aux << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sum_n_normal_)[rr]) / aux << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sum_n_span_)[rr]) / aux << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sum_b_stream_)[rr]) / aux << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sum_b_normal_)[rr]) / aux << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sum_b_span_)[rr]) / aux << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sum_csgs_)[rr]) / aux << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sum_nphi_)[rr]) / aux << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sum_dphi_)[rr]) / aux << "  ";
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sum_csgs_phi_)[rr]) / aux << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumsgvisc_)[rr]) / aux
                   << &std::endl;
       }
@@ -5628,29 +5628,29 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       (*log_Cs) << "   (Ci*hk)^2 ";
       (*log_Cs) << &std::endl;
       (*log_Cs) << std::scientific;
-      for (unsigned rr = 0; rr < sumCs_->size(); ++rr)
+      for (unsigned rr = 0; rr < sum_cs_->size(); ++rr)
       {
         // we associate the value with the midpoint of the element layer
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << 0.5 * ((*nodeplanes_)[rr + 1] + (*nodeplanes_)[rr]) << "  ";
 
         // the five values to be visualized
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_)[rr]) / (numele_ * numsamp_)
-                  << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCs_delta_sq_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_cs_)[rr]) / (numele_ * numsamp_) << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4)
+                  << ((*sum_cs_delta_sq_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << ((*sumvisceff_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumPrt_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_prt_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCs_delta_sq_Prt_)[rr]) / (numele_ * numsamp_) << "  ";
+                  << ((*sum_cs_delta_sq_prt_)[rr]) / (numele_ * numsamp_) << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
                   << ((*sumdiffeff_)[rr]) / (numele_ * numsamp_) << "  ";
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_)[rr]) / (numele_ * numsamp_)
-                  << "  ";
         (*log_Cs) << std::setw(11) << std::setprecision(4)
-                  << ((*sumCi_delta_sq_)[rr]) / (numele_ * numsamp_) << &std::endl;
+                  << ((*sum_ci_)[rr]) / (numele_ * numsamp_) << "  ";
+        (*log_Cs) << std::setw(11) << std::setprecision(4)
+                  << ((*sum_ci_delta_sq_)[rr]) / (numele_ * numsamp_) << &std::endl;
       }
       log_Cs->flush();
     }  // end smagorinsky_
@@ -5690,21 +5690,21 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
     (*sumw_)[i] = 0.0;
     (*sump_)[i] = 0.0;
     (*sumrho_)[i] = 0.0;
-    (*sumT_)[i] = 0.0;
+    (*sum_t_)[i] = 0.0;
 
     (*sumsqu_)[i] = 0.0;
     (*sumsqv_)[i] = 0.0;
     (*sumsqw_)[i] = 0.0;
     (*sumsqp_)[i] = 0.0;
     (*sumsqrho_)[i] = 0.0;
-    (*sumsqT_)[i] = 0.0;
+    (*sumsq_t_)[i] = 0.0;
 
     (*sumuv_)[i] = 0.0;
     (*sumuw_)[i] = 0.0;
     (*sumvw_)[i] = 0.0;
-    (*sumuT_)[i] = 0.0;
-    (*sumvT_)[i] = 0.0;
-    (*sumwT_)[i] = 0.0;
+    (*sumu_t_)[i] = 0.0;
+    (*sumv_t_)[i] = 0.0;
+    (*sumw_t_)[i] = 0.0;
 
     (*pointsumu_)[i] = 0.0;
     (*pointsumv_)[i] = 0.0;
@@ -5723,37 +5723,37 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
   // reset sampling for dynamic Smagorinsky model
   if (smagorinsky_)
   {
-    for (unsigned rr = 0; rr < sumCs_->size(); ++rr)
+    for (unsigned rr = 0; rr < sum_cs_->size(); ++rr)
     {
       // reset value
-      (*sumCs_)[rr] = 0.0;
-      (*sumCs_delta_sq_)[rr] = 0.0;
+      (*sum_cs_)[rr] = 0.0;
+      (*sum_cs_delta_sq_)[rr] = 0.0;
       (*sumvisceff_)[rr] = 0.0;
-      (*sumPrt_)[rr] = 0.0;
-      (*sumCs_delta_sq_Prt_)[rr] = 0.0;
+      (*sum_prt_)[rr] = 0.0;
+      (*sum_cs_delta_sq_prt_)[rr] = 0.0;
       (*sumdiffeff_)[rr] = 0.0;
-      (*sumCi_)[rr] = 0.0;
-      (*sumCi_delta_sq_)[rr] = 0.0;
+      (*sum_ci_)[rr] = 0.0;
+      (*sum_ci_delta_sq_)[rr] = 0.0;
     }
   }  // end smagorinsky_
 
   // reset sampling for multifractal subgrid scales
   if (multifractal_)
   {
-    for (unsigned rr = 0; rr < sumN_stream_->size(); ++rr)
+    for (unsigned rr = 0; rr < sum_n_stream_->size(); ++rr)
     {
       // reset value
-      (*sumN_stream_)[rr] = 0.0;
-      (*sumN_normal_)[rr] = 0.0;
-      (*sumN_span_)[rr] = 0.0;
-      (*sumB_stream_)[rr] = 0.0;
-      (*sumB_normal_)[rr] = 0.0;
-      (*sumB_span_)[rr] = 0.0;
-      (*sumCsgs_)[rr] = 0.0;
+      (*sum_n_stream_)[rr] = 0.0;
+      (*sum_n_normal_)[rr] = 0.0;
+      (*sum_n_span_)[rr] = 0.0;
+      (*sum_b_stream_)[rr] = 0.0;
+      (*sum_b_normal_)[rr] = 0.0;
+      (*sum_b_span_)[rr] = 0.0;
+      (*sum_csgs_)[rr] = 0.0;
       (*sumsgvisc_)[rr] = 0.0;
-      (*sumNphi_)[rr] = 0.0;
-      (*sumDphi_)[rr] = 0.0;
-      (*sumCsgs_phi_)[rr] = 0.0;
+      (*sum_nphi_)[rr] = 0.0;
+      (*sum_dphi_)[rr] = 0.0;
+      (*sum_csgs_phi_)[rr] = 0.0;
     }
   }  // end multifractal_
 
@@ -5788,7 +5788,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
         (*sum_reystress_)[6 * rr + mm] = 0.0;
       }
     }
-    for (unsigned rr = 0; rr < sumresC_->size(); ++rr)
+    for (unsigned rr = 0; rr < sumres_c_->size(); ++rr)
     {
       (*sumabsres_)[rr] = 0.0;
       (*sumabssvelaf_)[rr] = 0.0;
@@ -5798,8 +5798,8 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sumstrle_)[rr] = 0.0;
       (*sumgradle_)[rr] = 0.0;
 
-      (*sumtauM_)[rr] = 0.0;
-      (*sumtauC_)[rr] = 0.0;
+      (*sumtau_m_)[rr] = 0.0;
+      (*sumtau_c_)[rr] = 0.0;
 
       (*summk_)[rr] = 0.0;
 
@@ -5816,15 +5816,15 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sum_eps_mfsrey_)[rr] = 0.0;
       (*sum_eps_avm3_)[rr] = 0.0;
 
-      (*sumresC_)[rr] = 0.0;
+      (*sumres_c_)[rr] = 0.0;
       (*sumspressnp_)[rr] = 0.0;
 
-      (*sumresC_sq_)[rr] = 0.0;
+      (*sumres_c_sq_)[rr] = 0.0;
       (*sumspressnp_sq_)[rr] = 0.0;
     }
-    for (unsigned rr = 0; rr < sumresC_->size(); ++rr)
+    for (unsigned rr = 0; rr < sumres_c_->size(); ++rr)
     {
-      (*sumtauS_)[rr] = 0.0;
+      (*sumtau_s_)[rr] = 0.0;
 
       (*sum_scatra_eps_supg_)[rr] = 0.0;
       (*sum_scatra_eps_cross_)[rr] = 0.0;
@@ -5837,8 +5837,8 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sum_scatra_eps_mfsrey_)[rr] = 0.0;
       (*sum_scatra_eps_avm3_)[rr] = 0.0;
 
-      (*sumresS_)[rr] = 0.0;
-      (*sumresS_sq_)[rr] = 0.0;
+      (*sumres_s_)[rr] = 0.0;
+      (*sumres_s_sq_)[rr] = 0.0;
     }
   }  // end subgrid_dissipation_
 

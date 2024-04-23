@@ -130,7 +130,7 @@ namespace MAT
 
       /// mixed structural tensor (symmetric) \f$\frac{1}{2}(a1 \otimes a2 + a2 \otimes a1)\f$ in
       /// stress like Voigt notation
-      std::vector<CORE::LINALG::Matrix<6, 1>> A1A2_;
+      std::vector<CORE::LINALG::Matrix<6, 1>> a1_a2_;
     };
 
     /*!
@@ -222,7 +222,7 @@ namespace MAT
       MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params_;
 
       /// Special anisotropic behavior
-      CoupAnisoExpoTwoCoupAnisoExtension anisotropyExtension_;
+      CoupAnisoExpoTwoCoupAnisoExtension anisotropy_extension_;
     };  // namespace PAR
 
   }  // namespace ELASTIC

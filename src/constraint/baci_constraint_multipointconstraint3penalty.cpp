@@ -64,7 +64,7 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
     }
 
     int nummyele = 0;
-    int numele = eletocondID_.size();
+    int numele = eletocond_id_.size();
     if (!actdisc_->Comm().MyPID())
     {
       nummyele = numele;
@@ -293,7 +293,7 @@ CONSTRAINTS::MPConstraint3Penalty::CreateDiscretizationFromCondition(
         newdis->AddElement(constraintele);
       }
       // save the connection between element and condition
-      eletocondID_[nodeiter + startID] = *(*conditer)->Get<int>("ConditionID");
+      eletocond_id_[nodeiter + startID] = *(*conditer)->Get<int>("ConditionID");
       eletocondvecindex_[nodeiter + startID] = index;
     }
     // adjust starting ID for next condition, in this case nodeiter=ngid.size(), hence the counter
@@ -359,7 +359,7 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Dis
     // some useful data for computation
     DRT::Element* actele = disc->lColElement(i);
     int eid = actele->Id();
-    int condID = eletocondID_.find(eid)->second;
+    int condID = eletocond_id_.find(eid)->second;
     DRT::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
     params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 
@@ -446,7 +446,7 @@ void CONSTRAINTS::MPConstraint3Penalty::EvaluateError(Teuchos::RCP<DRT::Discreti
     // some useful data for computation
     DRT::Element* actele = disc->lColElement(i);
     int eid = actele->Id();
-    int condID = eletocondID_.find(eid)->second;
+    int condID = eletocond_id_.find(eid)->second;
     DRT::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
     params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
 

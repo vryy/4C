@@ -131,7 +131,7 @@ namespace MIXTURE
      *
      * \return const MAT::SummandProperties& Reference to the summand properties
      */
-    const MAT::SummandProperties& SummandProperties() { return summandProperties_; }
+    const MAT::SummandProperties& SummandProperties() { return summand_properties_; }
 
     /*!
      * \brief Method that is called to setup the constituent once before the start of the simulation
@@ -178,15 +178,15 @@ namespace MIXTURE
     const MAT::CylinderCoordinateSystemAnisotropyExtension&
     CylinderCoordinateSystemAnisotropyExtension() const
     {
-      return cosyAnisotropyExtension_;
+      return cosy_anisotropy_extension_;
     }
 
-    std::shared_ptr<MIXTURE::PrestressStrategy> PrestressStrategy() { return prestressStrategy_; }
+    std::shared_ptr<MIXTURE::PrestressStrategy> PrestressStrategy() { return prestress_strategy_; }
 
    private:
     /// @name Flags to specify the elastic formulations (initialize with false)
     //@{
-    MAT::SummandProperties summandProperties_;  ///< holder for formulation specification
+    MAT::SummandProperties summand_properties_;  ///< holder for formulation specification
     //@}
 
     /// my material parameters
@@ -199,10 +199,10 @@ namespace MIXTURE
     std::vector<CORE::LINALG::Matrix<3, 3>> prestretch_;
 
     /// AnisotropyExtension that handles the management of cylinder coordinate systems
-    MAT::CylinderCoordinateSystemAnisotropyExtension cosyAnisotropyExtension_;
+    MAT::CylinderCoordinateSystemAnisotropyExtension cosy_anisotropy_extension_;
 
     /// Strategy for prestressing the constituent
-    std::shared_ptr<MIXTURE::PrestressStrategy> prestressStrategy_;
+    std::shared_ptr<MIXTURE::PrestressStrategy> prestress_strategy_;
   };
 
 }  // namespace MIXTURE

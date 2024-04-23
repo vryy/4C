@@ -232,8 +232,8 @@ namespace FPSI
     // Evaluate is called first time!
     bool isfirstcall_;
 
-    Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap_;
-    Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap_;
+    Teuchos::RCP<std::map<int, int>> fluid_poro_fluid_interface_map_;
+    Teuchos::RCP<std::map<int, int>> poro_fluid_fluid_interface_map_;
 
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
         couplingrowtransform_;  /// g_fpsi || F->PF transform (FPSI)

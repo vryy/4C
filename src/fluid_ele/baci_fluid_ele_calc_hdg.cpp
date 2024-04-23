@@ -80,8 +80,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
       shapesface_ = Teuchos::rcp(new CORE::FE::ShapeValuesFace<distype>(svfparams));
     }
 
-    if (localSolver_ == Teuchos::null)
-      localSolver_ = Teuchos::rcp(new LocalSolver(ele, *shapes_, *shapesface_, usescompletepoly_));
+    if (local_solver_ == Teuchos::null)
+      local_solver_ = Teuchos::rcp(new LocalSolver(ele, *shapes_, *shapesface_, usescompletepoly_));
   }
   else
     FOUR_C_THROW("Only works for HDG fluid elements");
@@ -105,8 +105,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   ebofoaf_.PutScalar(0);
   eprescpgaf_.PutScalar(0);
   escabofoaf_.PutScalar(0);
-  FluidEleCalc<distype>::BodyForce(ele, localSolver_->fldparatimint_->Time(),
-      localSolver_->fldpara_->PhysicalType(), ebofoaf_, eprescpgaf_, escabofoaf_);
+  FluidEleCalc<distype>::BodyForce(ele, local_solver_->fldparatimint_->Time(),
+      local_solver_->fldpara_->PhysicalType(), ebofoaf_, eprescpgaf_, escabofoaf_);
 
   // interior body force vector if applicable
   interiorebofoaf_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_, 0.0);
@@ -122,21 +122,21 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   const Teuchos::ParameterList& fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   int corrtermfuncnum = fluidparams.get<int>("CORRTERMFUNCNO");
   if (corrtermfuncnum > 0)
-    localSolver_->ComputeCorrectionTerm(interiorecorrectionterm_, corrtermfuncnum);
+    local_solver_->ComputeCorrectionTerm(interiorecorrectionterm_, corrtermfuncnum);
 
   // interior body force term for the weakly compressible benchmark if applicable
   interiorebodyforce_.resize(nsd_ * shapes_->ndofs_, 0.0);
   int bodyforcefuncnum = fluidparams.get<int>("BODYFORCEFUNCNO");
-  if (bodyforcefuncnum > 0) localSolver_->ComputeBodyForce(interiorebodyforce_, bodyforcefuncnum);
+  if (bodyforcefuncnum > 0) local_solver_->ComputeBodyForce(interiorebodyforce_, bodyforcefuncnum);
 
   ReadGlobalVectors(*ele, discretization, lm, updateLocally);
 
   // solves the local problem of the nonlinear iteration before
   if (updateLocally)
   {
-    localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_,
-        interiorebofoaf_, elevec1, interiorecorrectionterm_, interiorebodyforce_);
-    localSolver_->ComputeInteriorMatrices(mat, false);
+    local_solver_->ComputeInteriorResidual(mat, interior_val_, interior_acc_, trace_val_[0],
+        ebofoaf_, interiorebofoaf_, elevec1, interiorecorrectionterm_, interiorebodyforce_);
+    local_solver_->ComputeInteriorMatrices(mat, false);
 
     FOUR_C_ASSERT(nfaces_ == static_cast<unsigned int>(ele->NumFace()), "Internal error");
 
@@ -144,33 +144,33 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     for (unsigned int f = 0; f < nfaces_; ++f)
     {
       shapesface_->EvaluateFace(*ele, f);
-      localSolver_->ComputeFaceResidual(f, mat, interiorVal_, traceVal_, elevec1);
-      localSolver_->ComputeFaceMatrices(f, mat, false, elemat1);
+      local_solver_->ComputeFaceResidual(f, mat, interior_val_, trace_val_, elevec1);
+      local_solver_->ComputeFaceMatrices(f, mat, false, elemat1);
     }
 
-    localSolver_->EliminateVelocityGradient(elemat1);
-    localSolver_->SolveResidual();
-    UpdateSecondarySolution(*ele, discretization, localSolver_->gUpd, localSolver_->upUpd);
+    local_solver_->EliminateVelocityGradient(elemat1);
+    local_solver_->SolveResidual();
+    UpdateSecondarySolution(*ele, discretization, local_solver_->gUpd, local_solver_->upUpd);
   }
 
   elemat1.putScalar(0.0);
   elevec1.putScalar(0.0);
-  localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_,
+  local_solver_->ComputeInteriorResidual(mat, interior_val_, interior_acc_, trace_val_[0], ebofoaf_,
       interiorebofoaf_, elevec1, interiorecorrectionterm_, interiorebodyforce_);
-  localSolver_->ComputeInteriorMatrices(mat, updateLocally);
+  local_solver_->ComputeInteriorMatrices(mat, updateLocally);
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     shapesface_->EvaluateFace(*ele, f);
-    localSolver_->ComputeFaceResidual(f, mat, interiorVal_, traceVal_, elevec1);
-    localSolver_->ComputeFaceMatrices(f, mat, updateLocally, elemat1);
+    local_solver_->ComputeFaceResidual(f, mat, interior_val_, trace_val_, elevec1);
+    local_solver_->ComputeFaceMatrices(f, mat, updateLocally, elemat1);
   }
 
-  if (!updateLocally) localSolver_->EliminateVelocityGradient(elemat1);
+  if (!updateLocally) local_solver_->EliminateVelocityGradient(elemat1);
 
-  localSolver_->CondenseLocalPart(elemat1, elevec1);
+  local_solver_->CondenseLocalPart(elemat1, elevec1);
 
-  if (not localSolver_->fldparatimint_->IsStationary())
-    elevec1.scale(1. / localSolver_->fldparatimint_->AlphaF());
+  if (not local_solver_->fldparatimint_->IsStationary())
+    elevec1.scale(1. / local_solver_->fldparatimint_->AlphaF());
 
   return 0;
 }
@@ -182,20 +182,20 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::ReadGlobalVectors(const DRT::Eleme
     DRT::Discretization& discretization, const std::vector<int>& lm, const bool updateLocally)
 {
   // read the HDG solution vector (for traces)
-  traceVal_.resize(1 + nfaces_ * nsd_ * shapesface_->nfdofs_);
-  interiorVal_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
-  interiorAcc_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
-  FOUR_C_ASSERT(lm.size() == traceVal_.size(), "Internal error");
+  trace_val_.resize(1 + nfaces_ * nsd_ * shapesface_->nfdofs_);
+  interior_val_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
+  interior_acc_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
+  FOUR_C_ASSERT(lm.size() == trace_val_.size(), "Internal error");
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("velaf");
-  CORE::FE::ExtractMyValues(*matrix_state, traceVal_, lm);
+  CORE::FE::ExtractMyValues(*matrix_state, trace_val_, lm);
 
   // read the interior values from solution vector
   matrix_state = discretization.GetState(1, "intvelaf");
   std::vector<int> localDofs = discretization.Dof(1, &ele);
-  CORE::FE::ExtractMyValues(*matrix_state, interiorVal_, localDofs);
+  CORE::FE::ExtractMyValues(*matrix_state, interior_val_, localDofs);
 
   matrix_state = discretization.GetState(1, "intaccam");
-  CORE::FE::ExtractMyValues(*matrix_state, interiorAcc_, localDofs);
+  CORE::FE::ExtractMyValues(*matrix_state, interior_acc_, localDofs);
 }
 
 
@@ -217,7 +217,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::UpdateSecondarySolution(const DRT:
 
   double valfac;
   double accfac;
-  if (localSolver_->fldparatimint_
+  if (local_solver_->fldparatimint_
           ->IsStationary())  // TODO als this distinction shouldn't be here. The problem is that the
                              // HDG approach was meant for the GenAlpha Time integration scheme
   {
@@ -226,9 +226,9 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::UpdateSecondarySolution(const DRT:
   }
   else
   {
-    valfac = 1. / localSolver_->fldparatimint_->AlphaF();
-    accfac = localSolver_->fldparatimint_->AlphaM() * valfac /
-             (localSolver_->fldparatimint_->Dt() * localSolver_->fldparatimint_->Gamma());
+    valfac = 1. / local_solver_->fldparatimint_->AlphaF();
+    accfac = local_solver_->fldparatimint_->AlphaM() * valfac /
+             (local_solver_->fldparatimint_->Dt() * local_solver_->fldparatimint_->Gamma());
   }
 
   for (unsigned int i = 0; i < localDofs.size(); ++i)
@@ -241,9 +241,9 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::UpdateSecondarySolution(const DRT:
 
     // write the update back into the local vectors (when doing local update,
     // we do not re-read from the global vectors)
-    interiorVal_[i] += update;
+    interior_val_[i] += update;
 
-    interiorAcc_[i] += update * accfac;
+    interior_acc_[i] += update * accfac;
   }
 }
 
@@ -319,7 +319,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(DRT::ELEMENTS::Fluid* 
   InitializeShapes(ele);
 
   shapes_->Evaluate(*ele);
-  const double time = localSolver_->fldparatimint_->Time();
+  const double time = local_solver_->fldparatimint_->Time();
 
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intvelnp");
   std::vector<int> localDofs = discretization.Dof(1, ele);
@@ -466,9 +466,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
 
         // shfunct contains the evaluation of the sFUNCTION x*x+y*yhape functions in the quadrature
         // points massPart is a temporary matrix without weights on all quadrature points
-        localSolver_->massPart(i, q) = shapes_->shfunct(i, q);
+        local_solver_->massPart(i, q) = shapes_->shfunct(i, q);
         // massPartW is the mass matrix that has been weighted with quadrature weights given by fac
-        localSolver_->massPartW(i, q) = shapes_->shfunct(i, q) * fac;
+        local_solver_->massPartW(i, q) = shapes_->shfunct(i, q) * fac;
 
         // RHS part
         // We have to project every component of every field and therefore instead
@@ -500,7 +500,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
     // the previously compute part of the integral to give the same result
     // In this way we avoid a cycle through the shape functions
     CORE::LINALG::multiplyNT(
-        localSolver_->massMat, localSolver_->massPart, localSolver_->massPartW);
+        local_solver_->massMat, local_solver_->massPart, local_solver_->massPartW);
 
     // Creating and solving a system of the form Ax = b where
     // A is a matrix and x and b are vectors
@@ -509,7 +509,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
     using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     // Setting A matrix
-    inverseMass.setMatrix(Teuchos::rcpFromRef(localSolver_->massMat));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat));
     // localMat is, in this case, used both as the RHS and as the unknown vector
     // localMat is placed in the memory where elevec2 was and therefore it takes
     // its place as result vector
@@ -926,7 +926,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   CORE::LINALG::SerialDenseMatrix locations;
-#ifdef FOUR_C_ENABLE_ASSERTIONS
+#ifdef BACI_DEBUG
   locations.shape(3, 125);
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
@@ -956,7 +956,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
 
   CORE::FE::PolynomialSpaceTensor<nsd_, CORE::FE::LagrangePolynomial> poly(poly1d);
 
-#ifdef FOUR_C_ENABLE_ASSERTIONS
+#ifdef BACI_DEBUG
   // check if we have the right number of polynomials
   if (poly.Size() != 125) FOUR_C_THROW("wrong number of polynomials");
 #endif
@@ -989,7 +989,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
           sum += values(k) * elevec2(6 * k + d);
         f(d) = sum;
 
-#ifdef FOUR_C_ENABLE_ASSERTIONS
+#ifdef BACI_DEBUG
         // check plausibility via comparison of quadrature coordinates
         sum = 0.0;
         for (unsigned int k = 0; k < numsamppoints * numsamppoints * numsamppoints; ++k)
@@ -1006,21 +1006,21 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
       for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
       {
         // mass matrix part
-        localSolver_->massPart(i, q) = shapes_->shfunct(i, q);
-        localSolver_->massPartW(i, q) = shapes_->shfunct(i, q) * fac;
+        local_solver_->massPart(i, q) = shapes_->shfunct(i, q);
+        local_solver_->massPartW(i, q) = shapes_->shfunct(i, q) * fac;
 
         for (unsigned int d = 0; d < nsd_; ++d)
           localMat(i, nsd_ * nsd_ + d) += shapes_->shfunct(i, q) * f(d) * fac;
       }
     }
     CORE::LINALG::multiplyNT(
-        localSolver_->massMat, localSolver_->massPart, localSolver_->massPartW);
+        local_solver_->massMat, local_solver_->massPart, local_solver_->massPartW);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
     using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
     using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-    inverseMass.setMatrix(Teuchos::rcpFromRef(localSolver_->massMat));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat));
     inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
     inverseMass.solve();
   }
@@ -1042,7 +1042,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   CORE::LINALG::SerialDenseMatrix locations;
-#ifdef FOUR_C_ENABLE_ASSERTIONS
+#ifdef BACI_DEBUG
   locations.shape(3, 125);
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
@@ -1100,7 +1100,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
           sum += values(k) * elevec2(6 * k + d);
         f(d) = sum;
 
-#ifdef FOUR_C_ENABLE_ASSERTIONS
+#ifdef BACI_DEBUG
         // check plausibility via comparison of quadrature coordinates
         sum = 0.0;
         for (unsigned int k = 0; k < numsamppoints * numsamppoints * numsamppoints; ++k)
@@ -1117,21 +1117,21 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
       for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
       {
         // mass matrix part
-        localSolver_->massPart(i, q) = shapes_->shfunct(i, q);
-        localSolver_->massPartW(i, q) = shapes_->shfunct(i, q) * fac;
+        local_solver_->massPart(i, q) = shapes_->shfunct(i, q);
+        local_solver_->massPartW(i, q) = shapes_->shfunct(i, q) * fac;
 
         for (unsigned int d = 0; d < nsd_; ++d)
           localMat(i, nsd_ * nsd_ + d) += shapes_->shfunct(i, q) * f(d) * fac;
       }
     }
     CORE::LINALG::multiplyNT(
-        localSolver_->massMat, localSolver_->massPart, localSolver_->massPartW);
+        local_solver_->massMat, local_solver_->massPart, local_solver_->massPartW);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
     using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
     using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-    inverseMass.setMatrix(Teuchos::rcpFromRef(localSolver_->massMat));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat));
     inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
     inverseMass.solve();
   }
@@ -1341,7 +1341,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMEN
   shapes_->Evaluate(*ele);
 
   // get time
-  const double time = localSolver_->fldparatimint_->Time();
+  const double time = local_solver_->fldparatimint_->Time();
 
   // initialize variables
   CORE::LINALG::Matrix<nsd_, 1> u(true);
@@ -2547,11 +2547,11 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalResiduals(DRT::ELEMENTS:
   centre_x /= 4;
   centre_y /= 4;
   std::cout << "centre = (" << centre_x << "," << centre_y << ")" << std::endl;
-  for (unsigned int i = 0; i < localSolver_->ndofs_; ++i)
+  for (unsigned int i = 0; i < local_solver_->ndofs_; ++i)
   {
-    double Res_ux = localSolver_->upRes(0 * localSolver_->ndofs_ + i);
-    double Res_uy = localSolver_->upRes(1 * localSolver_->ndofs_ + i);
-    double Res_p = localSolver_->upRes(nsd_ * localSolver_->ndofs_ + i);
+    double Res_ux = local_solver_->upRes(0 * local_solver_->ndofs_ + i);
+    double Res_uy = local_solver_->upRes(1 * local_solver_->ndofs_ + i);
+    double Res_p = local_solver_->upRes(nsd_ * local_solver_->ndofs_ + i);
     // The residuals include the velocity gradient residuals
     std::cout << "Res_uxC = ";
     if (Res_ux >= 0) std::cout << " ";
@@ -2564,7 +2564,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalResiduals(DRT::ELEMENTS:
     std::cout << Res_p;
     std::cout << std::endl;
   }
-  double Res_lambda = localSolver_->upRes((nsd_ + 1) * localSolver_->ndofs_);
+  double Res_lambda = local_solver_->upRes((nsd_ + 1) * local_solver_->ndofs_);
   std::cout << "Res_lambdaC = ";
   if (Res_lambda >= 0) std::cout << " ";
   std::cout << Res_lambda << std::endl;
@@ -2589,19 +2589,19 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalVariables(DRT::ELEMENTS:
   centre_x /= 4;
   centre_y /= 4;
   std::cout << "centre = (" << centre_x << "," << centre_y << ")" << std::endl;
-  for (unsigned int i = 0; i < localSolver_->ndofs_; ++i)
+  for (unsigned int i = 0; i < local_solver_->ndofs_; ++i)
   {
-    double Lxx = interiorVal_[(0) * localSolver_->ndofs_ + i];
-    double Lxy = interiorVal_[(1) * localSolver_->ndofs_ + i];
-    double Lyx = interiorVal_[(2) * localSolver_->ndofs_ + i];
-    double Lyy = interiorVal_[(3) * localSolver_->ndofs_ + i];
-    double ux = interiorVal_[(nsd_ * nsd_ + 0) * localSolver_->ndofs_ + i];
-    double uy = interiorVal_[(nsd_ * nsd_ + 1) * localSolver_->ndofs_ + i];
-    double p = interiorVal_[(nsd_ * nsd_ + nsd_) * localSolver_->ndofs_ + i];
+    double Lxx = interior_val_[(0) * local_solver_->ndofs_ + i];
+    double Lxy = interior_val_[(1) * local_solver_->ndofs_ + i];
+    double Lyx = interior_val_[(2) * local_solver_->ndofs_ + i];
+    double Lyy = interior_val_[(3) * local_solver_->ndofs_ + i];
+    double ux = interior_val_[(nsd_ * nsd_ + 0) * local_solver_->ndofs_ + i];
+    double uy = interior_val_[(nsd_ * nsd_ + 1) * local_solver_->ndofs_ + i];
+    double p = interior_val_[(nsd_ * nsd_ + nsd_) * local_solver_->ndofs_ + i];
     std::cout << "Lxx = " << Lxx << "  Lxy = " << Lxy << "  Lyx = " << Lyx << "  Lyy = " << Lyy
               << "  ux = " << ux << "  uy = " << uy << "  p = " << p << std::endl;
   }
-  double lambda = interiorVal_[(nsd_ * nsd_ + nsd_ + 1) * localSolver_->ndofs_];
+  double lambda = interior_val_[(nsd_ * nsd_ + nsd_ + 1) * local_solver_->ndofs_];
   std::cout << "lambda = " << lambda << std::endl;
   std::cout << "------------------------------------------------------------------------------"
             << std::endl;
@@ -2614,13 +2614,13 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalCorrection(
 {
   std::cout << "ELEMENT ID = " << ele->Id() << " "
             << "---------------------------------------------------------------" << std::endl;
-  for (unsigned int i = 0; i < localSolver_->ndofs_; ++i)
+  for (unsigned int i = 0; i < local_solver_->ndofs_; ++i)
   {
     std::cout << "xyz = (";
     double x[nsd_];
     for (unsigned int d = 0; d < nsd_; ++d)
     {
-      x[d] = localSolver_->shapes_.nodexyzreal[i][d];
+      x[d] = local_solver_->shapes_.nodexyzreal[i][d];
       std::cout << x[d];
       if (d < nsd_ - 1) std::cout << ",\t";
     }
@@ -2639,19 +2639,19 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalBodyForce(
 {
   std::cout << "ELEMENT ID = " << ele->Id() << " "
             << "---------------------------------------------------------------" << std::endl;
-  for (unsigned int i = 0; i < localSolver_->ndofs_; ++i)
+  for (unsigned int i = 0; i < local_solver_->ndofs_; ++i)
   {
     std::cout << "xyz = (";
     double x[nsd_];
     for (unsigned int d = 0; d < nsd_; ++d)
     {
-      x[d] = localSolver_->shapes_.nodexyzreal[i][d];
+      x[d] = local_solver_->shapes_.nodexyzreal[i][d];
       std::cout << x[d];
       if (d < nsd_ - 1) std::cout << ",\t";
     }
     std::cout << ")";
-    double fx = interiorebodyforce[0 * localSolver_->ndofs_ + i];
-    double fy = interiorebodyforce[1 * localSolver_->ndofs_ + i];
+    double fx = interiorebodyforce[0 * local_solver_->ndofs_ + i];
+    double fy = interiorebodyforce[1 * local_solver_->ndofs_ + i];
     std::cout << "\tfx = " << fx << "  fy = " << fy << std::endl;
   }
   std::cout << "------------------------------------------------------------------------------"

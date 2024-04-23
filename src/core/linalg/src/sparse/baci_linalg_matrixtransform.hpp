@@ -203,7 +203,7 @@ namespace CORE::LINALG
 
    private:
     /// object that does the actual work
-    MatrixLogicalSplitAndTransform transformer;
+    MatrixLogicalSplitAndTransform transformer_;
   };
 
 
@@ -260,7 +260,7 @@ namespace CORE::LINALG
 
    private:
     /// object that does the actual work
-    MatrixLogicalSplitAndTransform transformer;
+    MatrixLogicalSplitAndTransform transformer_;
   };
 
 
@@ -306,7 +306,7 @@ namespace CORE::LINALG
 
    private:
     /// object that does the actual work
-    MatrixLogicalSplitAndTransform transformer;
+    MatrixLogicalSplitAndTransform transformer_;
   };
 
 }  // namespace CORE::LINALG

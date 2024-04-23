@@ -65,7 +65,7 @@ namespace XFEM
     //! cutter dis should be loaded into the cut?
     bool CutGeometry() override { return (coupled_field_ == MeshCouplingFPI::ps_ps); }
 
-    bool isBJ() const { return full_BJ_; }
+    bool isBJ() const { return full_bj_; }
 
     void SetFullState(
         Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<const Epetra_Vector> pres)
@@ -242,8 +242,8 @@ namespace XFEM
     MeshCouplingFPI::CoupledField coupled_field_;
 
     //! Full BJ Variant or BJSaffmann?
-    bool full_BJ_;
-    bool Sub_tang_;
+    bool full_bj_;
+    bool sub_tang_;
 
     Teuchos::RCP<const Epetra_Vector> fulldispnp_;
     Teuchos::RCP<const Epetra_Vector> fullpres_;
@@ -251,7 +251,7 @@ namespace XFEM
     //! map from structural x dof to pres dof of a node!
     std::map<int, int> lm_struct_x_lm_pres_;
 
-    double BJ_coeff_;
+    double bj_coeff_;
 
     //! flag for contact
     bool contact_;

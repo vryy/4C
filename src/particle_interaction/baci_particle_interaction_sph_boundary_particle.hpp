@@ -100,10 +100,10 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::StatesOfTypesToRefresh boundarystatestorefresh_;
 
     //! contributions of neighboring particles
-    std::vector<std::vector<double>> sumj_Wij_;
-    std::vector<std::vector<double>> sumj_press_j_Wij_;
-    std::vector<std::vector<std::vector<double>>> sumj_dens_j_r_ij_Wij_;
-    std::vector<std::vector<std::vector<double>>> sumj_vel_j_Wij_;
+    std::vector<std::vector<double>> sumj_wij_;
+    std::vector<std::vector<double>> sumj_press_j_wij_;
+    std::vector<std::vector<std::vector<double>>> sumj_dens_j_r_ij_wij_;
+    std::vector<std::vector<std::vector<double>>> sumj_vel_j_wij_;
   };
 
 }  // namespace PARTICLEINTERACTION

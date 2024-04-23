@@ -57,47 +57,48 @@ MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(const Teuchos::RCP<MAT::PAR::Mat
 MAT::ELASTIC::CoupAnisoExpo::CoupAnisoExpo(MAT::ELASTIC::PAR::CoupAnisoExpo* params)
     : MAT::ELASTIC::CoupAnisoExpoBase(params),
       params_(params),
-      anisotropyExtension_(params_->init_, params->gamma_, params_->adapt_angle_ != 0,
+      anisotropy_extension_(params_->init_, params->gamma_, params_->adapt_angle_ != 0,
           params_->StructuralTensorStrategy(), params->fiber_id_)
 {
-  anisotropyExtension_.RegisterNeededTensors(FiberAnisotropyExtension<1>::FIBER_VECTORS |
-                                             FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
-                                             FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
+  anisotropy_extension_.RegisterNeededTensors(
+      FiberAnisotropyExtension<1>::FIBER_VECTORS |
+      FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
+      FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
 void MAT::ELASTIC::CoupAnisoExpo::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
 {
-  anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
+  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
 }
 
 void MAT::ELASTIC::CoupAnisoExpo::PackSummand(CORE::COMM::PackBuffer& data) const
 {
-  anisotropyExtension_.PackAnisotropy(data);
+  anisotropy_extension_.PackAnisotropy(data);
 }
 
 void MAT::ELASTIC::CoupAnisoExpo::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  anisotropyExtension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.UnpackAnisotropy(data, position);
 }
 
 void MAT::ELASTIC::CoupAnisoExpo::GetFiberVecs(
     std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
-  if (anisotropyExtension_.FibersInitialized())
-    fibervecs.push_back(anisotropyExtension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT));
+  if (anisotropy_extension_.FibersInitialized())
+    fibervecs.push_back(anisotropy_extension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT));
 }
 
 void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(const double newgamma,
     const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
-  anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
+  anisotropy_extension_.SetFiberVecs(newgamma, locsys, defgrd);
 }
 
 void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(const CORE::LINALG::Matrix<3, 1>& fibervec)
 {
-  anisotropyExtension_.SetFiberVecs(fibervec);
+  anisotropy_extension_.SetFiberVecs(fibervec);
 }
 
 FOUR_C_NAMESPACE_CLOSE

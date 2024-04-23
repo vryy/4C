@@ -161,10 +161,10 @@ namespace BEAMINTERACTION
     Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors2_;
 
     //! cross section radius of first beam
-    double R1_;
+    double r1_;
 
     //! cross section radius of second beam
-    double R2_;
+    double r2_;
 
     //! Maximal gap at which a contact can become active
     double maxactivegap_;

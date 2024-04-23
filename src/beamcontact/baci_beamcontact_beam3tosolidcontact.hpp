@@ -326,7 +326,7 @@ namespace CONTACT
     /*!
     \brief Get debugging data at Gauss points for Gmsh
     */
-    std::vector<GmshDebugPoint> GetGmshDebugPoints() override { return gmshDebugPoints_; };
+    std::vector<GmshDebugPoint> GetGmshDebugPoints() override { return gmsh_debug_points_; };
 
 
     //@}
@@ -426,7 +426,7 @@ namespace CONTACT
     }
 
     //! Vector containing structs for Gmsh debug
-    std::vector<GmshDebugPoint> gmshDebugPoints_;
+    std::vector<GmshDebugPoint> gmsh_debug_points_;
 
 
     //@}

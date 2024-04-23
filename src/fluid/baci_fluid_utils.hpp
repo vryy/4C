@@ -386,22 +386,22 @@ namespace FLD
       const int numdim_;
 
       /// filtering matrix for wall shear stress
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> SepEnr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> sep_enr_;
 
       /// wss calculation type
-      const INPAR::FLUID::WSSType WssType_;
+      const INPAR::FLUID::WSSType wss_type_;
 
       /// weighted sum of all prior stresses
-      Teuchos::RCP<Epetra_Vector> SumStresses_;
+      Teuchos::RCP<Epetra_Vector> sum_stresses_;
 
       /// weighted sum of all prior wss
-      Teuchos::RCP<Epetra_Vector> SumWss_;
+      Teuchos::RCP<Epetra_Vector> sum_wss_;
 
       /// time the stresses are averaged for
-      double SumDtStresses_;
+      double sum_dt_stresses_;
 
       /// time the wss are averaged for
-      double SumDtWss_;
+      double sum_dt_wss_;
 
       bool isinit_;
     };

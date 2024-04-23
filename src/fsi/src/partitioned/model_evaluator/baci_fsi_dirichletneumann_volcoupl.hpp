@@ -158,7 +158,7 @@ namespace FSI
     int dim_;
 
     //! Searchtree for mortar evaluations
-    Teuchos::RCP<CORE::GEO::SearchTree> searchTree_;
+    Teuchos::RCP<CORE::GEO::SearchTree> search_tree_;
 
     //! Dop normals for search algorithm
     CORE::LINALG::Matrix<9, 3> dopnormals_;
@@ -166,7 +166,7 @@ namespace FSI
     std::map<int, std::vector<int>> fluidaleelemap_;
 
     std::map<int, std::vector<int>> fluidalenodemap_;
-    std::map<int, std::vector<int>> fluidalenodeFSImap_;
+    std::map<int, std::vector<int>> fluidalenode_fs_imap_;
   };
 
 

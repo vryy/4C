@@ -34,11 +34,11 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
     : alphaa_(0.0),
       alphac_(0.0),
       conditiontype_(DRT::Condition::ConditionType::none),
-      convtolimplicitBV_(-1.0),
+      convtolimplicit_bv_(-1.0),
       density_(-1.0),
       molar_heat_capacity_(-1.0),
       is_pseudo_contact_(false),
-      itemaxmimplicitBV_(-1),
+      itemaxmimplicit_bv_(-1),
       kineticmodel_(-1),
       kr_(-1.0),
       molarmass_(-1.0),
@@ -206,12 +206,12 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetChargeTransferConstant(
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetConvTolIterNum(
     Teuchos::ParameterList& parameters)
 {
-  convtolimplicitBV_ =
+  convtolimplicit_bv_ =
       parameters.get<double>("CONVTOL_IMPLBUTLERVOLMER", std::numeric_limits<double>::infinity());
-  if (convtolimplicitBV_ <= 0.0) FOUR_C_THROW("Tolerance of convergence must be positive!");
-  itemaxmimplicitBV_ =
+  if (convtolimplicit_bv_ <= 0.0) FOUR_C_THROW("Tolerance of convergence must be positive!");
+  itemaxmimplicit_bv_ =
       parameters.get<int>("ITEMAX_IMPLBUTLERVOLMER", std::numeric_limits<int>::infinity());
-  if (itemaxmimplicitBV_ <= 0) FOUR_C_THROW("Maximum number of iterations must be positive!");
+  if (itemaxmimplicit_bv_ <= 0) FOUR_C_THROW("Maximum number of iterations must be positive!");
 }
 
 /*----------------------------------------------------------------------*

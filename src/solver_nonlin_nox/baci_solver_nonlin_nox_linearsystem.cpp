@@ -63,7 +63,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
       prePostOperatorPtr_(Teuchos::null),
-      jacPtr_(jacobian)
+      jac_ptr_(jacobian)
 {
   // Jacobian operator is supplied
   jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
@@ -98,7 +98,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
       prePostOperatorPtr_(Teuchos::null),
-      jacPtr_(jacobian)
+      jac_ptr_(jacobian)
 {
   // Jacobian operator is supplied
   jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
@@ -132,7 +132,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
       prePostOperatorPtr_(Teuchos::null),
-      jacPtr_(jacobian)
+      jac_ptr_(jacobian)
 {
   // Jacobian operator is supplied
   jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
@@ -165,7 +165,7 @@ NOX::NLN::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
       prePostOperatorPtr_(Teuchos::null),
-      jacPtr_(jacobian)
+      jac_ptr_(jacobian)
 {
   // Jacobian operator is supplied
   jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
@@ -567,7 +567,7 @@ void NOX::NLN::LinearSystem::SetJacobianOperatorForSolve(
   if (jacType_ != NOX::NLN::AUX::GetOperatorType(*solveJacOp))
     throwError("SetJacobianOperatorForSolve", "wrong operator type!");
 
-  jacPtr_ = Teuchos::rcp_const_cast<CORE::LINALG::SparseOperator>(solveJacOp);
+  jac_ptr_ = Teuchos::rcp_const_cast<CORE::LINALG::SparseOperator>(solveJacOp);
   return;
 }
 
@@ -634,7 +634,7 @@ void NOX::NLN::LinearSystem::setPrecOperatorForSolve(
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::DestroyJacobian()
 {
-  jacPtr_ = Teuchos::null;
+  jac_ptr_ = Teuchos::null;
   return true;
 }
 

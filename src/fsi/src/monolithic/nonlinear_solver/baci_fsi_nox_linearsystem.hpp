@@ -141,17 +141,17 @@ namespace NOX::FSI
 
     ::NOX::Utils utils_;
 
-    Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> jacInterfacePtr_;
-    Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> precInterfacePtr_;
-    OperatorType jacType_;
-    mutable Teuchos::RCP<Epetra_Operator> jacPtr_;
-    mutable Teuchos::RCP<Epetra_Operator> precPtr_;
+    Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> jac_interface_ptr_;
+    Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> prec_interface_ptr_;
+    OperatorType jac_type_;
+    mutable Teuchos::RCP<Epetra_Operator> jac_ptr_;
+    mutable Teuchos::RCP<Epetra_Operator> prec_ptr_;
     Teuchos::RCP<::NOX::Epetra::Scaling> scaling_;
-    mutable Teuchos::RCP<::NOX::Epetra::Vector> tmpVectorPtr_;
+    mutable Teuchos::RCP<::NOX::Epetra::Vector> tmp_vector_ptr_;
 
-    bool outputSolveDetails_;
-    bool zeroInitialGuess_;
-    bool manualScaling_;
+    bool output_solve_details_;
+    bool zero_initial_guess_;
+    bool manual_scaling_;
 
     /// index of Newton iteration
     int callcount_;

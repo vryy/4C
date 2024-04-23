@@ -51,7 +51,7 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     : Algorithm(comm),
       idispn_(Teuchos::null),
       iveln_(Teuchos::null),
-      rawGraph_(Teuchos::null),
+      raw_graph_(Teuchos::null),
       counter_(7),
       mfresitemax_(0),
       coupsfm_(Teuchos::null),
@@ -635,7 +635,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
       FOUR_C_THROW("unsupported difference type '%s'", dt.c_str());
 
     FD = Teuchos::rcp(new ::NOX::Epetra::FiniteDifference(
-        printParams, interface, noxSoln, rawGraph_, beta, alpha));
+        printParams, interface, noxSoln, raw_graph_, beta, alpha));
     FD->setDifferenceMethod(dtype);
 
     iJac = FD;
@@ -687,7 +687,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::CreateLinearSystem(
 
     Teuchos::RCP<::NOX::Epetra::FiniteDifference> precFD =
         Teuchos::rcp(new ::NOX::Epetra::FiniteDifference(
-            printParams, interface, noxSoln, rawGraph_, beta, alpha));
+            printParams, interface, noxSoln, raw_graph_, beta, alpha));
     iPrec = precFD;
     M = precFD;
 

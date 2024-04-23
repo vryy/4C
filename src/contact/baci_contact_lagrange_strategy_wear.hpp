@@ -413,20 +413,20 @@ namespace WEAR
     Teuchos::RCP<CORE::LINALG::SparseMatrix> lintlm_;    // Lin T w.r.t. lm: (T*n)
     Teuchos::RCP<CORE::LINALG::SparseMatrix> linedis_;   // Lin E w.r.t. displ: Lin(E*w)
     Teuchos::RCP<CORE::LINALG::SparseMatrix>
-        linslipW_;  // global matrix containing derivatives (LM) of slip condition
-    Teuchos::RCP<Epetra_Vector> inactiveWearRhs_;  // inactive wear rhs: -w_i
-    Teuchos::RCP<Epetra_Vector> WearCondRhs_;      // rhs wear condition: -E*w_i + k*T*n*lm_i
+        linslip_w_;  // global matrix containing derivatives (LM) of slip condition
+    Teuchos::RCP<Epetra_Vector> inactive_wear_rhs_;  // inactive wear rhs: -w_i
+    Teuchos::RCP<Epetra_Vector> wear_cond_rhs_;      // rhs wear condition: -E*w_i + k*T*n*lm_i
 
     // discrete wear algorithm (MASTER)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> twmatrixM_;  // global Mortar wear matrix T
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ematrixM_;   // global Mortar wear matrix E
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintdisM_;   // Lin T w.r.t. displ: Lin(T*n*lm)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintlmM_;    // Lin T w.r.t. lm: (T*n)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> linedisM_;   // Lin E w.r.t. displ: Lin(E*w)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> twmatrix_m_;  // global Mortar wear matrix T
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ematrix_m_;   // global Mortar wear matrix E
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintdis_m_;   // Lin T w.r.t. displ: Lin(T*n*lm)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintlm_m_;    // Lin T w.r.t. lm: (T*n)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> linedis_m_;   // Lin E w.r.t. displ: Lin(E*w)
     Teuchos::RCP<CORE::LINALG::SparseMatrix>
-        linslipWM_;  // global matrix containing derivatives (LM) of slip condition
-    Teuchos::RCP<Epetra_FEVector> inactiveWearRhsM_;  // inactive wear rhs: -w_i
-    Teuchos::RCP<Epetra_FEVector> WearCondRhsM_;      // rhs wear condition: -E*w_i + k*T*n*lm_i
+        linslip_wm_;  // global matrix containing derivatives (LM) of slip condition
+    Teuchos::RCP<Epetra_FEVector> inactive_wear_rhs_m_;  // inactive wear rhs: -w_i
+    Teuchos::RCP<Epetra_FEVector> wear_cond_rhs_m_;      // rhs wear condition: -E*w_i + k*T*n*lm_i
 
     // matrix blocks for recovering
     Teuchos::RCP<CORE::LINALG::SparseMatrix> dnblock_;

@@ -31,9 +31,9 @@ FLD::Vreman::Vreman(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::Parameter
       params_(params),
       physicaltype_(CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
 {
-  Boxf_ = Teuchos::rcp(new FLD::Boxfilter(discret_, params_));
+  boxf_ = Teuchos::rcp(new FLD::Boxfilter(discret_, params_));
   // Initialize Boxfilter
-  Boxf_->InitializeVreman();
+  boxf_->InitializeVreman();
 
   return;
 }
@@ -46,10 +46,10 @@ void FLD::Vreman::AddScatra(Teuchos::RCP<DRT::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
-  Boxfsc_ = Teuchos::rcp(new FLD::Boxfilter(scatradiscret_, params_));
+  boxfsc_ = Teuchos::rcp(new FLD::Boxfilter(scatradiscret_, params_));
 
   // Initialize Boxfilter
-  Boxfsc_->InitializeVremanScatra(scatradiscret_);
+  boxfsc_->InitializeVremanScatra(scatradiscret_);
 
   return;
 }
@@ -75,13 +75,13 @@ void FLD::Vreman::ApplyFilterForDynamicComputationOfCv(
 
 
   // perform filtering
-  Boxf_->ApplyFilter(velocity, scalar, thermpress, dirichtoggle);
+  boxf_->ApplyFilter(velocity, scalar, thermpress, dirichtoggle);
 
   // get fitered fields
-  Boxf_->GetFilteredVremanStrainrate(col_filtered_strainrate_);
-  Boxf_->GetFilteredVremanAlphaij(col_filtered_alphaij_);
-  Boxf_->GetExpression(col_filtered_expression_);
-  Boxf_->GetAlpha2(col_filtered_alpha2_);
+  boxf_->GetFilteredVremanStrainrate(col_filtered_strainrate_);
+  boxf_->GetFilteredVremanAlphaij(col_filtered_alphaij_);
+  boxf_->GetExpression(col_filtered_expression_);
+  boxf_->GetAlpha2(col_filtered_alpha2_);
 
   // compute Cv
   Cv_ = DynVremanComputeCv();
@@ -103,11 +103,11 @@ void FLD::Vreman::ApplyFilterForDynamicComputationOfDt(
 
 
   // perform filtering
-  Boxfsc_->ApplyFilterScatra(scalar, thermpress, dirichtoggle, ndsvel);
-  Boxfsc_->GetFilteredPhi(col_filtered_phi_);
-  Boxfsc_->GetFilteredPhi2(col_filtered_phi2_);
-  Boxfsc_->GetFilteredPhiexpression(col_filtered_phiexpression_);
-  Boxfsc_->GetFilteredVremanAlphaijsc(col_filtered_alphaijsc_);
+  boxfsc_->ApplyFilterScatra(scalar, thermpress, dirichtoggle, ndsvel);
+  boxfsc_->GetFilteredPhi(col_filtered_phi_);
+  boxfsc_->GetFilteredPhi2(col_filtered_phi2_);
+  boxfsc_->GetFilteredPhiexpression(col_filtered_phiexpression_);
+  boxfsc_->GetFilteredVremanAlphaijsc(col_filtered_alphaijsc_);
   DynVremanComputeDt(extraparams);
   return;
 }

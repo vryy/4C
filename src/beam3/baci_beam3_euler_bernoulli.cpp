@@ -275,18 +275,18 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner)
       isinit_(false),
       jacobi_(0.0),
       firstcall_(true),
-      Ekin_(0.0),
-      Eint_(0.0),
-      L_(CORE::LINALG::Matrix<3, 1>(true)),
-      P_(CORE::LINALG::Matrix<3, 1>(true)),
+      ekin_(0.0),
+      eint_(0.0),
+      l_(CORE::LINALG::Matrix<3, 1>(true)),
+      p_(CORE::LINALG::Matrix<3, 1>(true)),
       t0_(CORE::LINALG::Matrix<3, 2>(true)),
       t_(CORE::LINALG::Matrix<3, 2>(true)),
       kappa_max_(0.0),
       epsilon_max_(0.0),
-      axial_strain_GP_(0),
-      curvature_GP_(0),
-      axial_force_GP_(0),
-      bending_moment_GP_(0)
+      axial_strain_gp_(0),
+      curvature_gp_(0),
+      axial_force_gp_(0),
+      bending_moment_gp_(0)
 {
 #if defined(INEXTENSIBLE)
   if (ANSVALUES != 3 or NODALDOFS != 2)
@@ -301,18 +301,18 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old)
     : DRT::ELEMENTS::Beam3Base(old),
       isinit_(old.isinit_),
       jacobi_(old.jacobi_),
-      Ekin_(old.Ekin_),
-      Eint_(old.Eint_),
-      L_(old.L_),
-      P_(old.P_),
+      ekin_(old.ekin_),
+      eint_(old.eint_),
+      l_(old.l_),
+      p_(old.p_),
       t0_(old.t0_),
       t_(old.t_),
       kappa_max_(old.kappa_max_),
       epsilon_max_(old.epsilon_max_),
-      axial_strain_GP_(old.axial_strain_GP_),
-      curvature_GP_(old.curvature_GP_),
-      axial_force_GP_(old.axial_force_GP_),
-      bending_moment_GP_(old.bending_moment_GP_)
+      axial_strain_gp_(old.axial_strain_gp_),
+      curvature_gp_(old.curvature_gp_),
+      axial_force_gp_(old.axial_force_gp_),
+      bending_moment_gp_(old.bending_moment_gp_)
 {
 }
 
@@ -352,19 +352,19 @@ void DRT::ELEMENTS::Beam3eb::Pack(CORE::COMM::PackBuffer& data) const
   // add all class variables
   AddtoPack(data, jacobi_);
   AddtoPack(data, isinit_);
-  AddtoPack(data, Ekin_);
-  AddtoPack(data, Eint_);
+  AddtoPack(data, ekin_);
+  AddtoPack(data, eint_);
   AddtoPack(data, Tref_);
-  AddtoPack<3, 1>(data, L_);
-  AddtoPack<3, 1>(data, P_);
+  AddtoPack<3, 1>(data, l_);
+  AddtoPack<3, 1>(data, p_);
   AddtoPack<3, 2>(data, t0_);
   AddtoPack<3, 2>(data, t_);
   AddtoPack(data, kappa_max_);
   AddtoPack(data, epsilon_max_);
-  AddtoPack(data, axial_strain_GP_);
-  AddtoPack(data, curvature_GP_);
-  AddtoPack(data, axial_force_GP_);
-  AddtoPack(data, bending_moment_GP_);
+  AddtoPack(data, axial_strain_gp_);
+  AddtoPack(data, curvature_gp_);
+  AddtoPack(data, axial_force_gp_);
+  AddtoPack(data, bending_moment_gp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -383,19 +383,19 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
   // extract all class variables of beam3 element
   ExtractfromPack(position, data, jacobi_);
   isinit_ = ExtractInt(position, data);
-  ExtractfromPack(position, data, Ekin_);
-  ExtractfromPack(position, data, Eint_);
+  ExtractfromPack(position, data, ekin_);
+  ExtractfromPack(position, data, eint_);
   ExtractfromPack(position, data, Tref_);
-  ExtractfromPack<3, 1>(position, data, L_);
-  ExtractfromPack<3, 1>(position, data, P_);
+  ExtractfromPack<3, 1>(position, data, l_);
+  ExtractfromPack<3, 1>(position, data, p_);
   ExtractfromPack<3, 2>(position, data, t0_);
   ExtractfromPack<3, 2>(position, data, t_);
   ExtractfromPack(position, data, kappa_max_);
   ExtractfromPack(position, data, epsilon_max_);
-  ExtractfromPack(position, data, axial_strain_GP_);
-  ExtractfromPack(position, data, curvature_GP_);
-  ExtractfromPack(position, data, axial_force_GP_);
-  ExtractfromPack(position, data, bending_moment_GP_);
+  ExtractfromPack(position, data, axial_strain_gp_);
+  ExtractfromPack(position, data, curvature_gp_);
+  ExtractfromPack(position, data, axial_force_gp_);
+  ExtractfromPack(position, data, bending_moment_gp_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -443,17 +443,17 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
 
     // assure correct size of strain and stress resultant class variables and fill them
     // with zeros (by definition, the reference configuration is undeformed and stress-free)
-    axial_strain_GP_.resize(gausspoints.nquad);
-    std::fill(axial_strain_GP_.begin(), axial_strain_GP_.end(), 0.0);
+    axial_strain_gp_.resize(gausspoints.nquad);
+    std::fill(axial_strain_gp_.begin(), axial_strain_gp_.end(), 0.0);
 
-    curvature_GP_.resize(gausspoints.nquad);
-    std::fill(curvature_GP_.begin(), curvature_GP_.end(), 0.0);
+    curvature_gp_.resize(gausspoints.nquad);
+    std::fill(curvature_gp_.begin(), curvature_gp_.end(), 0.0);
 
-    axial_force_GP_.resize(gausspoints.nquad);
-    std::fill(axial_force_GP_.begin(), axial_force_GP_.end(), 0.0);
+    axial_force_gp_.resize(gausspoints.nquad);
+    std::fill(axial_force_gp_.begin(), axial_force_gp_.end(), 0.0);
 
-    bending_moment_GP_.resize(gausspoints.nquad);
-    std::fill(bending_moment_GP_.begin(), bending_moment_GP_.end(), 0.0);
+    bending_moment_gp_.resize(gausspoints.nquad);
+    std::fill(bending_moment_gp_.begin(), bending_moment_gp_.end(), 0.0);
 
 
     // create Matrix for the derivates of the shapefunctions at the GP

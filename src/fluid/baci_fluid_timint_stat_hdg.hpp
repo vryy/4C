@@ -102,7 +102,7 @@ namespace FLD
    private:
     ///< Keep track of whether we do the first assembly because we reconstruct the local HDG
     ///< solution as part of assembly
-    bool firstAssembly_;
+    bool first_assembly_;
 
 
   };  // class TimIntStationaryHDG

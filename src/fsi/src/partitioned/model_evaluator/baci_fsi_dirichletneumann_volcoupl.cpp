@@ -299,9 +299,9 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
 
       double dist = 1.0e12;
       int id = -1;
-      for (size_t k = 0; k < fluidalenodeFSImap_[it->first].size(); ++k)
+      for (size_t k = 0; k < fluidalenode_fs_imap_[it->first].size(); ++k)
       {
-        int gidfsi = fluidalenodeFSImap_[it->first][k];
+        int gidfsi = fluidalenode_fs_imap_[it->first][k];
         DRT::Node* fluidnodeFSI = fluidale->FluidField()->Discretization()->gNode(gidfsi);
 
         double gposFSI[3] = {fluidnodeFSI->X()[0], fluidnodeFSI->X()[1], fluidnodeFSI->X()[2]};
@@ -459,12 +459,12 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
   }
 
   // init of 3D search tree
-  searchTree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
+  search_tree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // find the bounding box of the elements and initialize the search tree
   const CORE::LINALG::Matrix<3, 2> rootBox =
       CORE::GEO::getXAABBofDis(*fluidale->FluidField()->Discretization(), currentpositions);
-  searchTree_->initializeTree(
+  search_tree_->initializeTree(
       rootBox, *fluidale->FluidField()->Discretization(), CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
 
@@ -537,7 +537,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
       }
     }
     fluidalenodemap_[it->first] = localnodeids;
-    fluidalenodeFSImap_[it->first] = localnodeidsFSI;
+    fluidalenode_fs_imap_[it->first] = localnodeidsFSI;
   }
 
   std::cout << "ALE elements found: " << fluidaleelemap_.size() << std::endl;
@@ -675,7 +675,7 @@ std::vector<int> FSI::VolCorrector::Search(
 
   //**********************************************************
   // search for near elements to the background node's coord
-  searchTree_->searchCollisions(currentKDOPs, queryKDOP, 0, gid);
+  search_tree_->searchCollisions(currentKDOPs, queryKDOP, 0, gid);
 
   for (std::set<int>::iterator iter = gid.begin(); iter != gid.end(); ++iter) gids.push_back(*iter);
 

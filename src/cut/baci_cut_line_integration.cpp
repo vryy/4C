@@ -62,7 +62,7 @@ double LineIntegration::integrate_line()
     double drs = 0.0;
     Transform(end_pts_, eta(0, 0), actCoord, normaltemp, drs);
 
-    if (bcellInt_ == false)  // integration over volumecell
+    if (bcell_int_ == false)  // integration over volumecell
     {
       double linein = base_func_line_int(actCoord, inte_num_, alpha_);
       inte = inte + weight * linein * drs;
@@ -70,11 +70,11 @@ double LineIntegration::integrate_line()
     else  // integration over boundarycell
     {
       double linein = 0.0;
-      if (intType_ == CORE::GEO::CUT::proj_x)
+      if (int_type_ == CORE::GEO::CUT::proj_x)
         linein = base_func_surfX(actCoord, inte_num_, alpha_);
-      else if (intType_ == CORE::GEO::CUT::proj_y)
+      else if (int_type_ == CORE::GEO::CUT::proj_y)
         linein = base_func_surfY(actCoord, inte_num_, alpha_);
-      else if (intType_ == CORE::GEO::CUT::proj_z)
+      else if (int_type_ == CORE::GEO::CUT::proj_z)
         linein = base_func_surfZ(actCoord, inte_num_, alpha_);
       else
         FOUR_C_THROW("Integration type unspecified");

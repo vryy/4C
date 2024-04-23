@@ -112,25 +112,25 @@ namespace FLD
       /*!
       \brief all single coupling conditions
       */
-      std::map<const int, Teuchos::RCP<FluidCouplingBc>> coup_map3D_;
+      std::map<const int, Teuchos::RCP<FluidCouplingBc>> coup_map3_d_;
 
       //! map of coupling variables returned by the reduced-D model at time step n+1
-      Teuchos::RCP<std::map<std::string, double>> mapRed_Dnp_;
+      Teuchos::RCP<std::map<std::string, double>> map_red_dnp_;
 
       //! map of coupling variables returned by the reduced-D model at time step n
-      Teuchos::RCP<std::map<std::string, double>> mapRed_Dn_;
+      Teuchos::RCP<std::map<std::string, double>> map_red_dn_;
 
       //! map of coupling variables returned by the 3-D model at time step n+1
-      Teuchos::RCP<std::map<std::string, double>> map3_Dnp_;
+      Teuchos::RCP<std::map<std::string, double>> map3_dnp_;
 
       //! map of coupling variables returned by the 3-D model at time step n
-      Teuchos::RCP<std::map<std::string, double>> map3_Dn_;
+      Teuchos::RCP<std::map<std::string, double>> map3_dn_;
 
       //! 3D fluid discretization
-      Teuchos::RCP<DRT::Discretization> discret3D_;
+      Teuchos::RCP<DRT::Discretization> discret3_d_;
 
       //! Reduced-D artery network discretization
-      Teuchos::RCP<DRT::Discretization> discret_redD_;
+      Teuchos::RCP<DRT::Discretization> discret_red_d_;
 
       //! Reduced-D artery network time integration
       //  Teuchos::RCP<ART::ArtNetExplicitTimeInt>              ArtExpTime_integ_;
@@ -156,24 +156,24 @@ namespace FLD
           Teuchos::RCP<DRT::Discretization> dis_redD, Teuchos::RCP<red_D_time_int> time_intg,
           IO::DiscretizationWriter& output, double dt_3d, double dt_rm)
           : FluidCouplingWrapperBase(dis_3D, dis_redD, output, dt_3d, dt_rm),
-            reduced_D_time_integ_(time_intg)
+            reduced_d_time_integ_(time_intg)
       {
       }
 
       void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>& params) override
       {
-        reduced_D_time_integ_->Integrate(true, params);
+        reduced_d_time_integ_->Integrate(true, params);
       }
 
-      void SaveState() override { reduced_D_time_integ_->SaveState(); }
+      void SaveState() override { reduced_d_time_integ_->SaveState(); }
 
-      void LoadState() override { reduced_D_time_integ_->LoadState(); }
+      void LoadState() override { reduced_d_time_integ_->LoadState(); }
 
-      void TimeUpdate() override { reduced_D_time_integ_->TimeUpdate(); }
+      void TimeUpdate() override { reduced_d_time_integ_->TimeUpdate(); }
 
      private:
       //! Reduced-D artery network time integration
-      Teuchos::RCP<red_D_time_int> reduced_D_time_integ_;
+      Teuchos::RCP<red_D_time_int> reduced_d_time_integ_;
     };
 
     //--------------------------------------------------------------------
@@ -295,10 +295,10 @@ namespace FLD
       int myrank_;
 
       //! 3D fluid discretization
-      Teuchos::RCP<DRT::Discretization> discret_3D_;
+      Teuchos::RCP<DRT::Discretization> discret_3_d_;
 
       //! fluid discretization
-      Teuchos::RCP<DRT::Discretization> discret_redD_;
+      Teuchos::RCP<DRT::Discretization> discret_red_d_;
 
       //! the output writer
       IO::DiscretizationWriter& output_;

@@ -78,28 +78,28 @@ namespace EXODUS
     std::string GetTitle() const;
 
     //! Get ElementBlock map
-    std::map<int, Teuchos::RCP<ElementBlock>> GetElementBlocks() const { return elementBlocks_; }
+    std::map<int, Teuchos::RCP<ElementBlock>> GetElementBlocks() const { return element_blocks_; }
 
     //! Get Number of ElementBlocks
-    int GetNumElementBlocks() const { return elementBlocks_.size(); }
+    int GetNumElementBlocks() const { return element_blocks_.size(); }
 
     //! Get one ElementBlock
     Teuchos::RCP<ElementBlock> GetElementBlock(const int id) const;
 
     //! Get NodeSet map
-    std::map<int, NodeSet> GetNodeSets() const { return nodeSets_; }
+    std::map<int, NodeSet> GetNodeSets() const { return node_sets_; }
 
     //! Get Number of NodeSets
-    int GetNumNodeSets() const { return nodeSets_.size(); }
+    int GetNumNodeSets() const { return node_sets_.size(); }
 
     //! Get one NodeSet
     NodeSet GetNodeSet(const int id) const;
 
     //! Get SideSet map
-    std::map<int, SideSet> GetSideSets() const { return sideSets_; }
+    std::map<int, SideSet> GetSideSets() const { return side_sets_; }
 
     //! Get Number of SideSets
-    int GetNumSideSets() const { return sideSets_.size(); }
+    int GetNumSideSets() const { return side_sets_.size(); }
 
     //! Get one SideSet
     SideSet GetSideSet(const int id) const;
@@ -181,11 +181,11 @@ namespace EXODUS
    private:
     Teuchos::RCP<std::map<int, std::vector<double>>> nodes_;
 
-    std::map<int, Teuchos::RCP<ElementBlock>> elementBlocks_;
+    std::map<int, Teuchos::RCP<ElementBlock>> element_blocks_;
 
-    std::map<int, NodeSet> nodeSets_;
+    std::map<int, NodeSet> node_sets_;
 
-    std::map<int, SideSet> sideSets_;
+    std::map<int, SideSet> side_sets_;
 
     //! number of dimensions
     int num_dim_;

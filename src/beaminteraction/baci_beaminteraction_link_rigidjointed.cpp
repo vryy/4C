@@ -27,7 +27,7 @@ BEAMINTERACTION::BeamLinkRigidJointedType BEAMINTERACTION::BeamLinkRigidJointedT
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamLinkRigidJointed::BeamLinkRigidJointed()
-    : BeamLink(), bspottriad1_(true), bspottriad2_(true), Lambdarel1_(true), Lambdarel2_(true)
+    : BeamLink(), bspottriad1_(true), bspottriad2_(true), lambdarel1_(true), lambdarel2_(true)
 {
 }
 
@@ -38,8 +38,8 @@ BEAMINTERACTION::BeamLinkRigidJointed::BeamLinkRigidJointed(
     : BeamLink(old),
       bspottriad1_(old.bspottriad1_),
       bspottriad2_(old.bspottriad2_),
-      Lambdarel1_(old.Lambdarel1_),
-      Lambdarel2_(old.Lambdarel2_)
+      lambdarel1_(old.lambdarel1_),
+      lambdarel2_(old.lambdarel2_)
 {
   return;
 }
@@ -188,8 +188,8 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
   /* store relative rotation matrix between triads of connecting element and
    * the material triads of the "parent elements"; these remain constant over
    * the entire life of this connection (expressed in material frame!) */
-  Lambdarel1_.MultiplyTN(inittriad[0], linkeletriad);
-  Lambdarel2_.MultiplyTN(inittriad[1], linkeletriad);
+  lambdarel1_.MultiplyTN(inittriad[0], linkeletriad);
+  lambdarel2_.MultiplyTN(inittriad[1], linkeletriad);
 
   isinit_ = true;
 }
@@ -221,9 +221,9 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Pack(CORE::COMM::PackBuffer& data) c
   // bspottriad2_
   AddtoPack(data, bspottriad2_);
   // Lambdarel1_
-  AddtoPack(data, Lambdarel1_);
+  AddtoPack(data, lambdarel1_);
   // Lambdarel2_
-  AddtoPack(data, Lambdarel2_);
+  AddtoPack(data, lambdarel2_);
 
   return;
 }
@@ -246,9 +246,9 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Unpack(const std::vector<char>& data
   // bspottriad2_
   ExtractfromPack(position, data, bspottriad2_);
   // Lambdarel1_
-  ExtractfromPack(position, data, Lambdarel1_);
+  ExtractfromPack(position, data, lambdarel1_);
   // Lambdarel2_
-  ExtractfromPack(position, data, Lambdarel2_);
+  ExtractfromPack(position, data, lambdarel2_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -272,11 +272,11 @@ void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
    * Note: constant rotation in material frame, therefore multiplication from right
    *       side */
   CORE::LINALG::Matrix<3, 3, double> currenttriad(true);
-  currenttriad.Multiply(bspottriad[0], Lambdarel1_);
+  currenttriad.Multiply(bspottriad[0], lambdarel1_);
   CORE::LARGEROTATIONS::triadtoquaternion<double>(currenttriad, bspottriad1_);
 
   currenttriad.Clear();
-  currenttriad.Multiply(bspottriad[1], Lambdarel2_);
+  currenttriad.Multiply(bspottriad[1], lambdarel2_);
   CORE::LARGEROTATIONS::triadtoquaternion<double>(currenttriad, bspottriad2_);
 }
 

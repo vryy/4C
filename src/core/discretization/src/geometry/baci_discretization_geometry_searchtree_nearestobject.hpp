@@ -88,7 +88,7 @@ namespace CORE::GEO
     /*!
     \brief Return object type
      */
-    inline ObjectType getObjectType() const { return objectType_; }
+    inline ObjectType getObjectType() const { return object_type_; }
 
     /*!
     \brief Return label
@@ -100,7 +100,7 @@ namespace CORE::GEO
      */
     inline CORE::LINALG::Matrix<3, 1> getPhysCoord() const
     {
-      if (objectType_ == NOTYPE_OBJECT)
+      if (object_type_ == NOTYPE_OBJECT)
         FOUR_C_THROW("no object type and physical coordinates are set");
       return physcoord_;
     }
@@ -108,16 +108,16 @@ namespace CORE::GEO
 
    private:
     //! ObjectType NOTYPE SURFACE LINE NODE
-    ObjectType objectType_;
+    ObjectType object_type_;
 
     //! id of node
-    int nodeId_;
+    int node_id_;
 
     //! id of line
-    int lineId_;
+    int line_id_;
 
     //! id of surface
-    int surfId_;
+    int surf_id_;
 
     //! label of object
     int label_;

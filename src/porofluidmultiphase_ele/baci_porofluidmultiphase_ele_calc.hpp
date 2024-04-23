@@ -273,7 +273,7 @@ namespace DRT
       //! determinant of jacobian "dx/ds"
       double det_;
       //! determinant of deformation gradient "dx/dX"
-      double J_;
+      double j_;
 
       /*========================================================================*/
       //! @name scalar degrees of freedom and related

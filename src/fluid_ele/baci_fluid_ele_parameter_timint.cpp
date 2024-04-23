@@ -53,8 +53,8 @@ DRT::ELEMENTS::FluidEleParameterTimInt::FluidEleParameterTimInt()
       theta_(0.0),
       omtheta_(0.0),
       gamma_(0.0),
-      alphaF_(0.0),
-      alphaM_(0.0),
+      alpha_f_(0.0),
+      alpha_m_(0.0),
       afgdt_(1.0),
       timefacrhs_(1.0),
       timefacpre_(1.0)
@@ -151,38 +151,38 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter(Teuchos::Pa
     if (is_genalpha_)
     {
       gamma_ = params.get<double>("gamma", -1.0);
-      alphaF_ = params.get<double>("alphaF", -1.0);
-      alphaM_ = params.get<double>("alphaM", -1.0);
+      alpha_f_ = params.get<double>("alphaF", -1.0);
+      alpha_m_ = params.get<double>("alphaM", -1.0);
     }
     else
     {
       gamma_ = theta_;
-      alphaF_ = 1.0;
-      alphaM_ = 1.0;
+      alpha_f_ = 1.0;
+      alpha_m_ = 1.0;
     }
 
     // if not generalized-alpha: afgdt = theta * dt_ = timefac_
     // Peter's generalized alpha: timefacmat_u_ for velocity terms
-    afgdt_ = alphaF_ * gamma_ * dt_;
+    afgdt_ = alpha_f_ * gamma_ * dt_;
 
     // timeint_gen_alpha = p(n+1) (Peter's genalpha)
     if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
     {
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
-      timefacpre_ = gamma_ / alphaM_ * dt_;
-      timefacrhs_ = gamma_ / alphaM_ * dt_;
+      timefacpre_ = gamma_ / alpha_m_ * dt_;
+      timefacrhs_ = gamma_ / alpha_m_ * dt_;
     }
     else if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
     {
-      timefacpre_ = gamma_ * alphaF_ / alphaM_ * dt_;
-      timefacrhs_ = gamma_ / alphaM_ * dt_;
+      timefacpre_ = gamma_ * alpha_f_ / alpha_m_ * dt_;
+      timefacrhs_ = gamma_ / alpha_m_ * dt_;
     }
     else
     {
       // if not generalized-alpha: timefacmat_p_=theta * dt_ = timefac_
-      timefacpre_ = gamma_ * alphaF_ / alphaM_ * dt_;
+      timefacpre_ = gamma_ * alpha_f_ / alpha_m_ * dt_;
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
-      timefacrhs_ = gamma_ * alphaF_ / alphaM_ * dt_;
+      timefacrhs_ = gamma_ * alpha_f_ / alpha_m_ * dt_;
 
       // set flag, time integration scheme
       ostalgo_ =
@@ -217,16 +217,16 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter(Teuchos::Pa
     timefacrhs_ = 1.0;
   }
 
-  if (dt_ < 0.0 or theta_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or gamma_ < 0.0 or alphaF_ < 0.0 or
-      alphaM_ < 0.0)
+  if (dt_ < 0.0 or theta_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or gamma_ < 0.0 or
+      alpha_f_ < 0.0 or alpha_m_ < 0.0)
   {
     std::cout << "dt_: " << dt_ << std::endl;
     std::cout << "theta_ " << theta_ << std::endl;
     std::cout << "time_ " << time_ << std::endl;
     std::cout << "omtheta_ " << omtheta_ << std::endl;
     std::cout << "gamma_ " << gamma_ << std::endl;
-    std::cout << "alphaF_ " << alphaF_ << std::endl;
-    std::cout << "alphaM_ " << alphaM_ << std::endl;
+    std::cout << "alphaF_ " << alpha_f_ << std::endl;
+    std::cout << "alphaM_ " << alpha_m_ << std::endl;
     FOUR_C_THROW("Negative (or no) time-integration parameter or time-step length supplied");
   }
 }
@@ -259,9 +259,9 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::PrintFluidTimeParameter()
   //! generalised-alpha parameter (connecting velocity and acceleration)
   std::cout << "|    gamma:                  " << gamma_ << std::endl;
   //! generalised-alpha parameter (velocity)
-  std::cout << "|    alpha_F:                " << alphaF_ << std::endl;
+  std::cout << "|    alpha_F:                " << alpha_f_ << std::endl;
   //! generalised-alpha parameter (acceleration)
-  std::cout << "|    alpha_M:                " << alphaM_ << std::endl;
+  std::cout << "|    alpha_M:                " << alpha_m_ << std::endl;
   //! generalised-alpha parameter, alphaF_*gamma_*dt_
   std::cout << "|    time factor mat_u:      " << afgdt_ << std::endl;
   //! time integration factor for the right hand side (boundary elements)

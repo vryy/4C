@@ -262,7 +262,7 @@ MyocardInada::MyocardInada(const double eps0_deriv_myocard, const std::string ti
     : tools_(), s0_(29, 0.0), s_(29, 0.0), r_(29, 0.0), a_(82, 0.0), c_(63, 0.0)
 
 {
-  VOI_ = 0;
+  voi_ = 0;
   eps0_deriv_ = eps0_deriv_myocard;
 
   if (tissue == "AN")
@@ -944,7 +944,7 @@ double MyocardInada::GetIonicCurrents(const int k) const
  *----------------------------------------------------------------------*/
 void MyocardInada::Update(const double phi, const double dt)
 {
-  VOI_ += dt;
+  voi_ += dt;
   // update initial values for next time step
   for (int i = 0; i < 29; i++) s0_[i] = s_[i];
 

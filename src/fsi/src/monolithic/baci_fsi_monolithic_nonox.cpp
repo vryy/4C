@@ -61,22 +61,22 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
   tolinc_ = fsimono.get<double>("CONVTOL");
   tolfres_ = fsimono.get<double>("CONVTOL");
 
-  TOL_DIS_RES_L2_ = fsimono.get<double>("TOL_DIS_RES_L2");
-  TOL_DIS_RES_INF_ = fsimono.get<double>("TOL_DIS_RES_INF");
-  TOL_DIS_INC_L2_ = fsimono.get<double>("TOL_DIS_INC_L2");
-  TOL_DIS_INC_INF_ = fsimono.get<double>("TOL_DIS_INC_INF");
-  TOL_FSI_RES_L2_ = fsimono.get<double>("TOL_FSI_RES_L2");
-  TOL_FSI_RES_INF_ = fsimono.get<double>("TOL_FSI_RES_INF");
-  TOL_FSI_INC_L2_ = fsimono.get<double>("TOL_FSI_INC_L2");
-  TOL_FSI_INC_INF_ = fsimono.get<double>("TOL_FSI_INC_INF");
-  TOL_PRE_RES_L2_ = fsimono.get<double>("TOL_PRE_RES_L2");
-  TOL_PRE_RES_INF_ = fsimono.get<double>("TOL_PRE_RES_INF");
-  TOL_PRE_INC_L2_ = fsimono.get<double>("TOL_PRE_INC_L2");
-  TOL_PRE_INC_INF_ = fsimono.get<double>("TOL_PRE_INC_INF");
-  TOL_VEL_RES_L2_ = fsimono.get<double>("TOL_VEL_RES_L2");
-  TOL_VEL_RES_INF_ = fsimono.get<double>("TOL_VEL_RES_INF");
-  TOL_VEL_INC_L2_ = fsimono.get<double>("TOL_VEL_INC_L2");
-  TOL_VEL_INC_INF_ = fsimono.get<double>("TOL_VEL_INC_INF");
+  tol_dis_res_l2_ = fsimono.get<double>("TOL_DIS_RES_L2");
+  tol_dis_res_inf_ = fsimono.get<double>("TOL_DIS_RES_INF");
+  tol_dis_inc_l2_ = fsimono.get<double>("TOL_DIS_INC_L2");
+  tol_dis_inc_inf_ = fsimono.get<double>("TOL_DIS_INC_INF");
+  tol_fsi_res_l2_ = fsimono.get<double>("TOL_FSI_RES_L2");
+  tol_fsi_res_inf_ = fsimono.get<double>("TOL_FSI_RES_INF");
+  tol_fsi_inc_l2_ = fsimono.get<double>("TOL_FSI_INC_L2");
+  tol_fsi_inc_inf_ = fsimono.get<double>("TOL_FSI_INC_INF");
+  tol_pre_res_l2_ = fsimono.get<double>("TOL_PRE_RES_L2");
+  tol_pre_res_inf_ = fsimono.get<double>("TOL_PRE_RES_INF");
+  tol_pre_inc_l2_ = fsimono.get<double>("TOL_PRE_INC_L2");
+  tol_pre_inc_inf_ = fsimono.get<double>("TOL_PRE_INC_INF");
+  tol_vel_res_l2_ = fsimono.get<double>("TOL_VEL_RES_L2");
+  tol_vel_res_inf_ = fsimono.get<double>("TOL_VEL_RES_INF");
+  tol_vel_inc_l2_ = fsimono.get<double>("TOL_VEL_INC_L2");
+  tol_vel_inc_inf_ = fsimono.get<double>("TOL_VEL_INC_INF");
   // set tolerances for nonlinear solver
 }
 
@@ -237,13 +237,13 @@ bool FSI::MonolithicNoNOX::Converged()
       break;
     case INPAR::FSI::convnorm_rel:
       convinc =
-          (((normstrincL2_ / ns_) < TOL_DIS_INC_L2_) and ((normstrincInf_) < TOL_DIS_INC_INF_) and
-              ((norminterfaceincL2_ / ni_) < TOL_FSI_INC_L2_) and
-              ((norminterfaceincInf_) < TOL_FSI_INC_INF_) and
-              ((normflvelincL2_ / nfv_) < TOL_VEL_INC_L2_) and
-              ((normflvelincInf_) < TOL_VEL_INC_INF_) and
-              ((normflpresincL2_ / nfp_) < TOL_PRE_INC_L2_) and
-              ((normflpresincInf_) < TOL_PRE_INC_INF_));
+          (((normstrincL2_ / ns_) < tol_dis_inc_l2_) and ((normstrincInf_) < tol_dis_inc_inf_) and
+              ((norminterfaceincL2_ / ni_) < tol_fsi_inc_l2_) and
+              ((norminterfaceincInf_) < tol_fsi_inc_inf_) and
+              ((normflvelincL2_ / nfv_) < tol_vel_inc_l2_) and
+              ((normflvelincInf_) < tol_vel_inc_inf_) and
+              ((normflpresincL2_ / nfp_) < tol_pre_inc_l2_) and
+              ((normflpresincInf_) < tol_pre_inc_inf_));
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
@@ -261,13 +261,13 @@ bool FSI::MonolithicNoNOX::Converged()
       break;
     case INPAR::FSI::convnorm_rel:
       convfres =
-          (((normstrrhsL2_ / ns_) < TOL_DIS_RES_L2_) and ((normstrrhsInf_) < TOL_DIS_RES_INF_) and
-              ((norminterfacerhsL2_ / ni_) < TOL_FSI_RES_L2_) and
-              ((norminterfacerhsInf_) < TOL_FSI_RES_INF_) and
-              ((normflvelrhsL2_ / nfv_) < TOL_VEL_RES_L2_) and
-              ((normflvelrhsInf_) < TOL_VEL_RES_INF_) and
-              ((normflpresrhsL2_ / nfp_) < TOL_PRE_RES_L2_) and
-              ((normflpresrhsInf_) < TOL_PRE_RES_INF_));
+          (((normstrrhsL2_ / ns_) < tol_dis_res_l2_) and ((normstrrhsInf_) < tol_dis_res_inf_) and
+              ((norminterfacerhsL2_ / ni_) < tol_fsi_res_l2_) and
+              ((norminterfacerhsInf_) < tol_fsi_res_inf_) and
+              ((normflvelrhsL2_ / nfv_) < tol_vel_res_l2_) and
+              ((normflvelrhsInf_) < tol_vel_res_inf_) and
+              ((normflpresrhsL2_ / nfp_) < tol_pre_res_l2_) and
+              ((normflpresrhsInf_) < tol_pre_res_inf_));
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");

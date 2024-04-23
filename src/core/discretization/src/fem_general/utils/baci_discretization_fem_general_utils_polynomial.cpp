@@ -137,13 +137,14 @@ namespace CORE::FE
   void PolynomialSpaceTensor<nsd_, POLY>::Evaluate(
       const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
   {
-    const unsigned int size = polySpace1d_.size();
+    const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20];
     for (unsigned int i = 0; i < size; ++i)
-      for (unsigned int d = 0; d < nsd_; ++d) evaluation[d][i] = polySpace1d_[i].Evaluate(point(d));
+      for (unsigned int d = 0; d < nsd_; ++d)
+        evaluation[d][i] = poly_space1d_[i].Evaluate(point(d));
 
     switch (nsd_)
     {
@@ -177,7 +178,7 @@ namespace CORE::FE
       const CORE::LINALG::Matrix<nsd_, 1> &point,
       CORE::LINALG::SerialDenseMatrix &derivatives) const
   {
-    const unsigned int size = polySpace1d_.size();
+    const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
@@ -186,7 +187,7 @@ namespace CORE::FE
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        polySpace1d_[i].Evaluate(point(d), eval);
+        poly_space1d_[i].Evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
         gradient[d][i] = eval(1);
       }
@@ -233,7 +234,7 @@ namespace CORE::FE
       const CORE::LINALG::Matrix<nsd_, 1> &point,
       CORE::LINALG::SerialDenseMatrix &derivatives) const
   {
-    const unsigned int size = polySpace1d_.size();
+    const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
@@ -242,7 +243,7 @@ namespace CORE::FE
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        polySpace1d_[i].Evaluate(point(d), eval);
+        poly_space1d_[i].Evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
         gradient[d][i] = eval(1);
         hessian[d][i] = eval(2);
@@ -298,7 +299,7 @@ namespace CORE::FE
   {
     matrix.shape(nsd_, Size());
 
-    const unsigned int size = polySpace1d_.size();
+    const unsigned int size = poly_space1d_.size();
     switch (nsd_)
     {
       case 3:
@@ -306,22 +307,25 @@ namespace CORE::FE
           for (unsigned int j = 0; j < size; ++j)
             for (unsigned int k = 0; k < size; ++k)
             {
-              matrix(0, renumbering_[i * size * size + j * size + k]) = polySpace1d_[k].NodePoint();
-              matrix(1, renumbering_[i * size * size + j * size + k]) = polySpace1d_[j].NodePoint();
-              matrix(2, renumbering_[i * size * size + j * size + k]) = polySpace1d_[i].NodePoint();
+              matrix(0, renumbering_[i * size * size + j * size + k]) =
+                  poly_space1d_[k].NodePoint();
+              matrix(1, renumbering_[i * size * size + j * size + k]) =
+                  poly_space1d_[j].NodePoint();
+              matrix(2, renumbering_[i * size * size + j * size + k]) =
+                  poly_space1d_[i].NodePoint();
             }
         break;
       case 2:
         for (unsigned int j = 0; j < size; ++j)
           for (unsigned int k = 0; k < size; ++k)
           {
-            matrix(0, renumbering_[j * size + k]) = polySpace1d_[k].NodePoint();
-            matrix(1, renumbering_[j * size + k]) = polySpace1d_[j].NodePoint();
+            matrix(0, renumbering_[j * size + k]) = poly_space1d_[k].NodePoint();
+            matrix(1, renumbering_[j * size + k]) = poly_space1d_[j].NodePoint();
           }
         break;
       case 1:
         for (unsigned int k = 0; k < size; ++k)
-          matrix(0, renumbering_[k]) = polySpace1d_[k].NodePoint();
+          matrix(0, renumbering_[k]) = poly_space1d_[k].NodePoint();
         break;
       default:
         FOUR_C_THROW("Invalid dimension");
@@ -338,13 +342,14 @@ namespace CORE::FE
   void PolynomialSpaceComplete<nsd_, POLY>::Evaluate(
       const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
   {
-    const unsigned int size = polySpace1d_.size();
+    const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20];
     for (unsigned int i = 0; i < size; ++i)
-      for (unsigned int d = 0; d < nsd_; ++d) evaluation[d][i] = polySpace1d_[i].Evaluate(point(d));
+      for (unsigned int d = 0; d < nsd_; ++d)
+        evaluation[d][i] = poly_space1d_[i].Evaluate(point(d));
 
     unsigned int c = 0;
     switch (nsd_)
@@ -380,7 +385,7 @@ namespace CORE::FE
       const CORE::LINALG::Matrix<nsd_, 1> &point,
       CORE::LINALG::SerialDenseMatrix &derivatives) const
   {
-    const unsigned int size = polySpace1d_.size();
+    const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
@@ -389,7 +394,7 @@ namespace CORE::FE
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        polySpace1d_[i].Evaluate(point(d), eval);
+        poly_space1d_[i].Evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
         gradient[d][i] = eval(1);
       }
@@ -440,7 +445,7 @@ namespace CORE::FE
       const CORE::LINALG::Matrix<nsd_, 1> &point,
       CORE::LINALG::SerialDenseMatrix &derivatives) const
   {
-    const unsigned int size = polySpace1d_.size();
+    const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
@@ -449,7 +454,7 @@ namespace CORE::FE
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        polySpace1d_[i].Evaluate(point(d), eval);
+        poly_space1d_[i].Evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
         gradient[d][i] = eval(1);
         hessian[d][i] = eval(2);
@@ -502,7 +507,7 @@ namespace CORE::FE
   {
     matrix.shape(nsd_, Size());
 
-    const unsigned int size = polySpace1d_.size();
+    const unsigned int size = poly_space1d_.size();
     unsigned int c = 0;
     switch (nsd_)
     {
@@ -511,22 +516,22 @@ namespace CORE::FE
           for (unsigned int j = 0; j < size - i; ++j)
             for (unsigned int k = 0; k < size - i - j; ++k, ++c)
             {
-              matrix(0, renumbering_[c]) = polySpace1d_[k].NodePoint();
-              matrix(1, renumbering_[c]) = polySpace1d_[j].NodePoint();
-              matrix(2, renumbering_[c]) = polySpace1d_[i].NodePoint();
+              matrix(0, renumbering_[c]) = poly_space1d_[k].NodePoint();
+              matrix(1, renumbering_[c]) = poly_space1d_[j].NodePoint();
+              matrix(2, renumbering_[c]) = poly_space1d_[i].NodePoint();
             }
         break;
       case 2:
         for (unsigned int j = 0; j < size; ++j)
           for (unsigned int k = 0; k < size - j; ++k, ++c)
           {
-            matrix(0, renumbering_[c]) = polySpace1d_[k].NodePoint();
-            matrix(1, renumbering_[c]) = polySpace1d_[j].NodePoint();
+            matrix(0, renumbering_[c]) = poly_space1d_[k].NodePoint();
+            matrix(1, renumbering_[c]) = poly_space1d_[j].NodePoint();
           }
         break;
       case 1:
         for (unsigned int k = 0; k < size; ++k, ++c)
-          matrix(0, renumbering_[c]) = polySpace1d_[k].NodePoint();
+          matrix(0, renumbering_[c]) = poly_space1d_[k].NodePoint();
         break;
       default:
         FOUR_C_THROW("Invalid dimension");
@@ -542,8 +547,8 @@ namespace CORE::FE
       const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
   {
     legendre_.Evaluate(point, values);
-    vandermondeFactor_.setVectors(Teuchos::rcpFromRef(values), Teuchos::rcpFromRef(values));
-    vandermondeFactor_.solve();
+    vandermonde_factor_.setVectors(Teuchos::rcpFromRef(values), Teuchos::rcpFromRef(values));
+    vandermonde_factor_.solve();
   }
 
 
@@ -555,11 +560,11 @@ namespace CORE::FE
     legendre_.Evaluate_deriv1(point, derivatives);
     for (unsigned int d = 0; d < nsd_; ++d)
     {
-      for (unsigned int i = 0; i < Size(); ++i) evaluateVec_(i, 0) = derivatives(d, i);
-      vandermondeFactor_.setVectors(
-          Teuchos::rcpFromRef(evaluateVec_), Teuchos::rcpFromRef(evaluateVec_));
-      vandermondeFactor_.solve();
-      for (unsigned int i = 0; i < Size(); ++i) derivatives(d, i) = evaluateVec_(i, 0);
+      for (unsigned int i = 0; i < Size(); ++i) evaluate_vec_(i, 0) = derivatives(d, i);
+      vandermonde_factor_.setVectors(
+          Teuchos::rcpFromRef(evaluate_vec_), Teuchos::rcpFromRef(evaluate_vec_));
+      vandermonde_factor_.solve();
+      for (unsigned int i = 0; i < Size(); ++i) derivatives(d, i) = evaluate_vec_(i, 0);
     }
   }
 
@@ -572,11 +577,11 @@ namespace CORE::FE
     legendre_.Evaluate_deriv2(point, derivatives);
     for (unsigned int d = 0; d < (nsd_ * (nsd_ + 1)) / 2; ++d)
     {
-      for (unsigned int i = 0; i < Size(); ++i) evaluateVec_(i, 0) = derivatives(d, i);
-      vandermondeFactor_.setVectors(
-          Teuchos::rcpFromRef(evaluateVec_), Teuchos::rcpFromRef(evaluateVec_));
-      vandermondeFactor_.solve();
-      for (unsigned int i = 0; i < Size(); ++i) derivatives(d, i) = evaluateVec_(i, 0);
+      for (unsigned int i = 0; i < Size(); ++i) evaluate_vec_(i, 0) = derivatives(d, i);
+      vandermonde_factor_.setVectors(
+          Teuchos::rcpFromRef(evaluate_vec_), Teuchos::rcpFromRef(evaluate_vec_));
+      vandermonde_factor_.solve();
+      for (unsigned int i = 0; i < Size(); ++i) derivatives(d, i) = evaluate_vec_(i, 0);
     }
   }
 
@@ -585,18 +590,18 @@ namespace CORE::FE
   template <>
   void LagrangeBasisTet<2>::FillFeketePoints(const unsigned int degree)
   {
-    feketePoints_.shape(2, Size(degree));
+    fekete_points_.shape(2, Size(degree));
 
     if (degree == 0)
     {
-      feketePoints_(0, 0) = 1. / 3.;
-      feketePoints_(1, 0) = 1. / 3.;
+      fekete_points_(0, 0) = 1. / 3.;
+      fekete_points_(1, 0) = 1. / 3.;
     }
     else if (degree == 1)
     {
       std::array<double, 6> list = {0, 0, 1, 0, 0, 1};
       for (unsigned int i = 0; i < 3; ++i)
-        for (unsigned int d = 0; d < 2; ++d) feketePoints_(d, i) = list[i * 2 + d];
+        for (unsigned int d = 0; d < 2; ++d) fekete_points_(d, i) = list[i * 2 + d];
     }
     else
     {
@@ -608,7 +613,7 @@ namespace CORE::FE
           wb_points, myTri, degree, 0, Intrepid::POINTTYPE_WARPBLEND);
 
       for (unsigned int i = 0; i < Size(degree); ++i)
-        for (int j = 0; j < 2; ++j) feketePoints_(j, i) = wb_points(i, j);
+        for (int j = 0; j < 2; ++j) fekete_points_(j, i) = wb_points(i, j);
     }
   }
 
@@ -617,13 +622,13 @@ namespace CORE::FE
   template <>
   void LagrangeBasisTet<3>::FillFeketePoints(const unsigned int degree)
   {
-    feketePoints_.shape(3, Size(degree));
+    fekete_points_.shape(3, Size(degree));
     unsigned int c = 0;
     if (degree == 0)
     {
-      feketePoints_(0, 0) = 0.25;
-      feketePoints_(1, 0) = 0.25;
-      feketePoints_(2, 0) = 0.25;
+      fekete_points_(0, 0) = 0.25;
+      fekete_points_(1, 0) = 0.25;
+      fekete_points_(2, 0) = 0.25;
     }
     else if (degree == 1)
     {
@@ -631,9 +636,9 @@ namespace CORE::FE
         for (unsigned int j = 0; j <= 1 - i; ++j)
           for (unsigned int k = 0; k <= 1 - i - j; ++k, ++c)
           {
-            feketePoints_(0, c) = (double)k / degree;
-            feketePoints_(1, c) = (double)j / degree;
-            feketePoints_(2, c) = (double)i / degree;
+            fekete_points_(0, c) = (double)k / degree;
+            fekete_points_(1, c) = (double)j / degree;
+            fekete_points_(2, c) = (double)i / degree;
           }
     }
     else
@@ -646,7 +651,7 @@ namespace CORE::FE
           wb_points, myTet, degree, 0, Intrepid::POINTTYPE_WARPBLEND);
 
       for (unsigned int i = 0; i < Size(degree); ++i)
-        for (int j = 0; j < 3; ++j) feketePoints_(j, i) = wb_points(i, j);
+        for (int j = 0; j < 3; ++j) fekete_points_(j, i) = wb_points(i, j);
     }
   }
 
@@ -671,22 +676,22 @@ namespace CORE::FE
     CORE::LINALG::Matrix<nsd_, 1> point;
     for (unsigned int i = 0; i < Size(); ++i)
     {
-      for (unsigned int d = 0; d < nsd_; ++d) point(d, 0) = feketePoints_(d, i);
+      for (unsigned int d = 0; d < nsd_; ++d) point(d, 0) = fekete_points_(d, i);
 
       legendre_.Evaluate(point, values);
       for (unsigned int j = 0; j < Size(); ++j) vandermonde_(j, i) = values(j);
     }
 
-    vandermondeFactor_.setMatrix(Teuchos::rcpFromRef(vandermonde_));
-    vandermondeFactor_.factor();
-    evaluateVec_.shape(Size(), 1);
+    vandermonde_factor_.setMatrix(Teuchos::rcpFromRef(vandermonde_));
+    vandermonde_factor_.factor();
+    evaluate_vec_.shape(Size(), 1);
 
 
     // Sanity check: Polynomials should be nodal in the Fekete points
-#ifdef FOUR_C_ENABLE_ASSERTIONS
+#ifdef BACI_DEBUG
     for (unsigned int i = 0; i < Size(); ++i)
     {
-      for (unsigned int d = 0; d < nsd_; ++d) point(d, 0) = feketePoints_(d, i);
+      for (unsigned int d = 0; d < nsd_; ++d) point(d, 0) = fekete_points_(d, i);
 
       Evaluate(point, values);
       for (unsigned int j = 0; j < Size(); ++j)
@@ -705,9 +710,9 @@ namespace CORE::FE
   void CORE::FE::LagrangeBasisTet<nsd_>::FillUnitNodePoints(
       CORE::LINALG::SerialDenseMatrix &matrix) const
   {
-    matrix.shape(feketePoints_.numRows(), feketePoints_.numCols());
-    for (int i = 0; i < feketePoints_.numCols(); ++i)
-      for (int j = 0; j < feketePoints_.numRows(); ++j) matrix(j, i) = feketePoints_(j, i);
+    matrix.shape(fekete_points_.numRows(), fekete_points_.numCols());
+    for (int i = 0; i < fekete_points_.numCols(); ++i)
+      for (int j = 0; j < fekete_points_.numRows(); ++j) matrix(j, i) = fekete_points_(j, i);
   }
 
   template <int nsd_>

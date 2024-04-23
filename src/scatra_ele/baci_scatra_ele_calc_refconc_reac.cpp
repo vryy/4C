@@ -23,9 +23,9 @@ DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::ScaTraEleCalcRefConcReac(
     : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
       DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(
           numdofpernode, numscal, disname),
-      J_(1.0),
-      C_inv_(true),
-      dJdX_(true)
+      j_(1.0),
+      c_inv_(true),
+      d_jd_x_(true)
 {
   return;
 }
@@ -62,7 +62,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetAdvancedReactionTerms(
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::ReaManager();
 
   remanager->AddToReaBodyForce(
-      matreaclist->CalcReaBodyForceTerm(k, my::scatravarmanager_->Phinp(), gpcoord, 1.0 / J_) * J_,
+      matreaclist->CalcReaBodyForceTerm(k, my::scatravarmanager_->Phinp(), gpcoord, 1.0 / j_) * j_,
       k);
 
   matreaclist->CalcReaBodyForceDerivMatrix(
@@ -106,10 +106,10 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetInternalVariablesForMa
 
   // inverse of jacobian "dx/dX"
   CORE::LINALG::Matrix<nsd_, nsd_> F_inv(true);
-  J_ = F_inv.Invert(F);
+  j_ = F_inv.Invert(F);
 
   // calculate inverse of cauchy-green stress tensor
-  C_inv_.MultiplyNT(F_inv, F_inv);
+  c_inv_.MultiplyNT(F_inv, F_inv);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // calculate derivative dJ/dX by finite differences
@@ -133,9 +133,9 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetInternalVariablesForMa
 
     // inverse of transposed jacobian "ds/dX"
     const double J_epsilon = F_epsilon.Determinant();
-    const double dJdX_i = (J_epsilon - J_) / epsilon;
+    const double dJdX_i = (J_epsilon - j_) / epsilon;
 
-    dJdX_(i, 0) = dJdX_i;
+    d_jd_x_(i, 0) = dJdX_i;
   }
 
   return;
@@ -148,7 +148,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
     CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
-  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens(C_inv_);
+  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens(c_inv_);
   Diff_tens.Scale(my::diffmanager_->GetIsotropicDiff(k));
 
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -175,8 +175,8 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
 
 
 
-  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens2(C_inv_);
-  Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k) / J_);
+  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens2(c_inv_);
+  Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k) / j_);
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -187,7 +187,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
     {
       for (unsigned i = 0; i < nsd_; i++)
       {
-        laplawf2 += my::derxy_(j, vi) * Diff_tens2(j, i) * dJdX_(i);
+        laplawf2 += my::derxy_(j, vi) * Diff_tens2(j, i) * d_jd_x_(i);
       }
     }
 
@@ -212,7 +212,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
   /////////////////////////////////////////////////////////////////////
   // \D* \grad c_0 \times \grad \phi ...
   /////////////////////////////////////////////////////////////////////
-  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens(C_inv_);
+  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens(c_inv_);
   Diff_tens.Scale(my::diffmanager_->GetIsotropicDiff(k));
 
   const CORE::LINALG::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
@@ -237,8 +237,8 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
   /////////////////////////////////////////////////////////////////////
   // ... + \D* c_0/J * \grad J \times \grad \phi
   /////////////////////////////////////////////////////////////////////
-  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens2(C_inv_);
-  Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k) / J_ * my::scatravarmanager_->Phinp(k));
+  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens2(c_inv_);
+  Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k) / j_ * my::scatravarmanager_->Phinp(k));
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -250,7 +250,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
     {
       for (unsigned i = 0; i < nsd_; i++)
       {
-        laplawf2 += my::derxy_(j, vi) * Diff_tens2(j, i) * dJdX_(i);
+        laplawf2 += my::derxy_(j, vi) * Diff_tens2(j, i) * d_jd_x_(i);
       }
     }
 

@@ -23,12 +23,12 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(DRT::Discretization& discret,
     const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
     : SelfBinaryTree(discret, iparams, elements, dim, eps),
-      Two_half_pass_(iparams.get<bool>("Two_half_pass")),
-      Check_nonsmooth_selfcontactsurface_(iparams.get<bool>("Check_nonsmooth_selfcontactsurface")),
-      Searchele_AllProc_(iparams.get<bool>("Searchele_AllProc"))
+      two_half_pass_(iparams.get<bool>("Two_half_pass")),
+      check_nonsmooth_selfcontactsurface_(iparams.get<bool>("Check_nonsmooth_selfcontactsurface")),
+      searchele_all_proc_(iparams.get<bool>("Searchele_AllProc"))
 {
   // safety check
-  if (!Two_half_pass_) FOUR_C_THROW("Only implemented for the two half pass approach so far!");
+  if (!two_half_pass_) FOUR_C_THROW("Only implemented for the two half pass approach so far!");
 
   return;
 }
@@ -42,7 +42,7 @@ void CONTACT::UnbiasedSelfBinaryTree::AddTreeNodesToContactPairs(
   bool addcontactpair(true);
 
   // check reference configuration for non smooth self contact
-  if (Two_half_pass_ and Check_nonsmooth_selfcontactsurface_)
+  if (two_half_pass_ and check_nonsmooth_selfcontactsurface_)
     addcontactpair = RoughCheckRefConfig(treenode1->Elelist()[0], treenode2->Elelist()[0]);
 
   if (addcontactpair)
@@ -515,7 +515,7 @@ void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
   //**********************************************************************
   // optional STEP 6: communicate Searchelements to all Procs
   //**********************************************************************
-  if (Searchele_AllProc_) CommunicateSearchElementsAllProcs();
+  if (searchele_all_proc_) CommunicateSearchElementsAllProcs();
 
   // define the search elements based on the contact pairs map
   while (!ContactPairs().empty())

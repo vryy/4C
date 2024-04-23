@@ -475,7 +475,7 @@ namespace MAT
     //@{
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Growth* Parameter() const override { return paramsVolumetric_; }
+    MAT::PAR::Growth* Parameter() const override { return params_volumetric_; }
 
     //@}
 
@@ -490,7 +490,7 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::Growth* paramsVolumetric_;
+    MAT::PAR::Growth* params_volumetric_;
 
     /// a reference direction (i.e., a fiber direction or a surface normal etc...), for anisotropic
     /// growth laws
@@ -506,7 +506,7 @@ namespace MAT
 
     /// history of growth matrix, needed for anisotropic scalar-dependent growth in current radial
     /// direction...
-    std::vector<CORE::LINALG::Matrix<3, 3>> F_g_hist_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> f_g_hist_;
 
   };  // class GrowthVolumetric
 

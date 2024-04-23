@@ -87,7 +87,7 @@ namespace XFEM
           visc_stab_trace_estimate_(INPAR::XFEM::ViscStab_TraceEstimate_CT_div_by_hk),
           visc_stab_hk_(INPAR::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf),
           nit_stab_gamma_(-1),
-          is_pseudo_2D_(false),
+          is_pseudo_2_d_(false),
           mass_conservation_scaling_(INPAR::XFEM::MassConservationScaling_only_visc),
           mass_conservation_combination_(INPAR::XFEM::MassConservationCombination_sum),
           dt_(-1),
@@ -95,10 +95,10 @@ namespace XFEM
           parallel_(false),
           min_surf_id_(-1),
           min_mortar_id_(-1),
-          soSurfId_to_mortar_ele_(std::vector<CONTACT::Element*>()),
-          mortarId_to_soSurf_ele_(std::vector<DRT::ELEMENTS::StructuralSurface*>()),
-          mortarId_to_somc_(std::vector<int>()),
-          mortarId_to_sosid_(std::vector<int>()),
+          so_surf_id_to_mortar_ele_(std::vector<CONTACT::Element*>()),
+          mortar_id_to_so_surf_ele_(std::vector<DRT::ELEMENTS::StructuralSurface*>()),
+          mortar_id_to_somc_(std::vector<int>()),
+          mortar_id_to_sosid_(std::vector<int>()),
           extrapolate_to_zero_(false),
           my_sele_ids_(std::set<int>()),
           contact_ele_rowmap_fluidownerbased_(Teuchos::null),
@@ -157,25 +157,25 @@ namespace XFEM
     bool IsRegisteredSurface(const int soSurfId)
     {
       return (soSurfId >= min_surf_id_ &&
-              soSurfId < ((int)soSurfId_to_mortar_ele_.size() + min_surf_id_));
+              soSurfId < ((int)so_surf_id_to_mortar_ele_.size() + min_surf_id_));
     }
 
     /// Get the contact element for this solid surface id
     CONTACT::Element* GetContactEle(const int soSurfId)
     {
-      return soSurfId_to_mortar_ele_.at(soSurfId - min_surf_id_);
+      return so_surf_id_to_mortar_ele_.at(soSurfId - min_surf_id_);
     }
     /// Get the solid surface element for the contact element id
     DRT::ELEMENTS::StructuralSurface* GetSurfEle(const int mortarId)
     {
-      return mortarId_to_soSurf_ele_.at(mortarId - min_mortar_id_);
+      return mortar_id_to_so_surf_ele_.at(mortarId - min_mortar_id_);
     }
 
     /// Get the mesh coupling id for the contact element id
-    int GetSurfMc(const int mortarId) { return mortarId_to_somc_.at(mortarId - min_mortar_id_); }
+    int GetSurfMc(const int mortarId) { return mortar_id_to_somc_.at(mortarId - min_mortar_id_); }
 
     /// Get the solid surface element if for the contact element id
-    int GetSurfSid(const int mortarId) { return mortarId_to_sosid_.at(mortarId - min_mortar_id_); }
+    int GetSurfSid(const int mortarId) { return mortar_id_to_sosid_.at(mortarId - min_mortar_id_); }
 
     /// Setup Interface element connection vectors based on points
     void SetupSurfElePtrs(DRT::Discretization& contact_interface_dis);
@@ -315,7 +315,7 @@ namespace XFEM
     /// reference penalty parameter for FSI-Nit-Pen
     double nit_stab_gamma_;
     /// pseudo 2D flag for 2D simulation with one element in z-direction
-    bool is_pseudo_2D_;
+    bool is_pseudo_2_d_;
     /// mass conservation scaline on FSI-Nit-Pen
     INPAR::XFEM::MassConservationScaling mass_conservation_scaling_;
     /// How to combine the contribution on FSI-Nit-Pen
@@ -333,13 +333,13 @@ namespace XFEM
     /// Min Mortar Element Id
     int min_mortar_id_;
     /// Vector for translation of Structural Surface Id to Contact Element
-    std::vector<CONTACT::Element*> soSurfId_to_mortar_ele_;
+    std::vector<CONTACT::Element*> so_surf_id_to_mortar_ele_;
     /// Vector for translation of Mortar Element Id to Structural Surface
-    std::vector<DRT::ELEMENTS::StructuralSurface*> mortarId_to_soSurf_ele_;
+    std::vector<DRT::ELEMENTS::StructuralSurface*> mortar_id_to_so_surf_ele_;
     /// Vector for translation of Mortar Element Id to Mesh Coupling Object Id
-    std::vector<int> mortarId_to_somc_;
+    std::vector<int> mortar_id_to_somc_;
     /// Vector for translation of Mortar Element Id to Structural Surface Id
-    std::vector<int> mortarId_to_sosid_;
+    std::vector<int> mortar_id_to_sosid_;
 
     /// Fluid traction in extrapolation zone goes to zero
     bool extrapolate_to_zero_;

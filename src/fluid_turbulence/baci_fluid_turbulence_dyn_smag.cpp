@@ -35,7 +35,7 @@ FLD::DynSmagFilter::DynSmagFilter(
   apply_dynamic_smagorinsky_ = false;
   homdir_ = false;
   special_flow_homdir_ = "not_specified";
-  calc_Ci_ = false;
+  calc_ci_ = false;
 
   // -------------------------------------------------------------------
   // initialise the turbulence model
@@ -92,7 +92,7 @@ FLD::DynSmagFilter::DynSmagFilter(
             if (discret_->Comm().MyPID() == 0)
               std::cout << "------->  Ci is determined dynamically" << std::endl;
 
-            calc_Ci_ = true;
+            calc_ci_ = true;
           }
           else
           {
@@ -101,7 +101,7 @@ FLD::DynSmagFilter::DynSmagFilter(
                         << params_.sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA")
                         << std::endl;
 
-            calc_Ci_ = false;
+            calc_ci_ = false;
           }
         }
         else
@@ -109,7 +109,7 @@ FLD::DynSmagFilter::DynSmagFilter(
           if (discret_->Comm().MyPID() == 0)
             std::cout << "------->  Ci is not included for loma problem" << std::endl;
 
-          calc_Ci_ = false;
+          calc_ci_ = false;
 
           if (params_.sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") > 0.0)
             FOUR_C_THROW(
@@ -120,7 +120,7 @@ FLD::DynSmagFilter::DynSmagFilter(
     }
   }
 
-  Boxf_ = Teuchos::rcp(new FLD::Boxfilter(discret_, params_));
+  boxf_ = Teuchos::rcp(new FLD::Boxfilter(discret_, params_));
 
   return;
 }
@@ -134,8 +134,8 @@ void FLD::DynSmagFilter::AddScatra(Teuchos::RCP<DRT::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
-  Boxfsc_ = Teuchos::rcp(new FLD::Boxfilter(scatradiscret_, params_));
-  Boxfsc_->AddScatra(scatradiscret_);
+  boxfsc_ = Teuchos::rcp(new FLD::Boxfilter(scatradiscret_, params_));
+  boxfsc_->AddScatra(scatradiscret_);
 
   return;
 }
@@ -156,7 +156,7 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
 
 
   // perform filtering
-  Boxf_->ApplyFilter(velocity, scalar, thermpress, dirichtoggle);
+  boxf_->ApplyFilter(velocity, scalar, thermpress, dirichtoggle);
 
   if (apply_dynamic_smagorinsky_)
   {
@@ -164,18 +164,18 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
     col_filtered_reynoldsstress_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
     col_filtered_modeled_subgrid_stress_ =
         Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
-    Boxf_->GetFilteredVelocity(col_filtered_vel_);
-    Boxf_->GetFilteredReynoldsStress(col_filtered_reynoldsstress_);
-    Boxf_->GetFilteredModeledSubgridStress(col_filtered_modeled_subgrid_stress_);
+    boxf_->GetFilteredVelocity(col_filtered_vel_);
+    boxf_->GetFilteredReynoldsStress(col_filtered_reynoldsstress_);
+    boxf_->GetFilteredModeledSubgridStress(col_filtered_modeled_subgrid_stress_);
 
     if (physicaltype_ == INPAR::FLUID::loma)
     {
       col_filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
       col_filtered_dens_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
       col_filtered_dens_strainrate_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
-      Boxf_->GetFilteredDensVelocity(col_filtered_dens_vel_);
-      Boxf_->GetDensity(col_filtered_dens_);
-      Boxf_->GetDensityStrainrate(col_filtered_dens_strainrate_);
+      boxf_->GetFilteredDensVelocity(col_filtered_dens_vel_);
+      boxf_->GetDensity(col_filtered_dens_);
+      boxf_->GetDensityStrainrate(col_filtered_dens_strainrate_);
     }
   }
 
@@ -221,7 +221,7 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
   const Epetra_Map* nodecolmap = scatradiscret_->NodeColMap();
 
   // perform filtering
-  Boxfsc_->ApplyFilterScatra(scalar, thermpress, dirichtoggle, ndsvel);
+  boxfsc_->ApplyFilterScatra(scalar, thermpress, dirichtoggle, ndsvel);
   col_filtered_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
   col_filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
   col_filtered_dens_vel_temp_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
@@ -229,13 +229,13 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
   col_filtered_temp_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
   col_filtered_dens_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
   col_filtered_dens_temp_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
-  Boxfsc_->GetFilteredVelocity(col_filtered_vel_);
-  Boxfsc_->GetFilteredDensVelocity(col_filtered_dens_vel_);
-  Boxfsc_->GetFilteredDensVelocityTemp(col_filtered_dens_vel_temp_);
-  Boxfsc_->GetFilteredDensRateofstrainTemp(col_filtered_dens_rateofstrain_temp_);
-  Boxfsc_->GetTemp(col_filtered_temp_);
-  Boxfsc_->GetDensity(col_filtered_dens_);
-  Boxfsc_->GetDensTemp(col_filtered_dens_temp_);
+  boxfsc_->GetFilteredVelocity(col_filtered_vel_);
+  boxfsc_->GetFilteredDensVelocity(col_filtered_dens_vel_);
+  boxfsc_->GetFilteredDensVelocityTemp(col_filtered_dens_vel_temp_);
+  boxfsc_->GetFilteredDensRateofstrainTemp(col_filtered_dens_rateofstrain_temp_);
+  boxfsc_->GetTemp(col_filtered_temp_);
+  boxfsc_->GetDensity(col_filtered_dens_);
+  boxfsc_->GetDensTemp(col_filtered_dens_temp_);
   // number of elements per layer
   // required for calculation of mean Prt in turbulent channel flow
   int numele_layer = 0;

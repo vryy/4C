@@ -127,7 +127,7 @@ namespace NOX
       Teuchos::RCP<::NOX::Utils> utils_;
 
       //! Temporary Vector pointer used to compute directional derivatives
-      Teuchos::RCP<::NOX::Abstract::Vector> vecPtr_;
+      Teuchos::RCP<::NOX::Abstract::Vector> vec_ptr_;
     };
 
 

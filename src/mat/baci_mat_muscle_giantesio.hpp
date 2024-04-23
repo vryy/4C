@@ -317,16 +317,16 @@ namespace MAT
     MAT::PAR::MuscleGiantesio* params_{};
 
     /// Fibre stretch of the previous timestep
-    double lambdaMOld_;
+    double lambda_m_old_;
 
     /// Activation level of the previous timestep
-    double omegaaOld_;
+    double omegaa_old_;
 
     /// Holder for anisotropic behavior
     MAT::Anisotropy anisotropy_;
 
     /// Anisotropy extension holder
-    MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
+    MAT::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };  // end class Muscle_Giantesio
 
 }  // end namespace MAT

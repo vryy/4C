@@ -32,8 +32,8 @@ FOUR_C_NAMESPACE_OPEN
 CORE::ADAPTER::MortarVolCoupl::MortarVolCoupl()
     : issetup_(false),
       isinit_(false),
-      P12_(Teuchos::null),
-      P21_(Teuchos::null),
+      p12_(Teuchos::null),
+      p21_(Teuchos::null),
       masterdis_(Teuchos::null),
       slavedis_(Teuchos::null),
       coupleddof12_(nullptr),
@@ -121,8 +121,8 @@ void CORE::ADAPTER::MortarVolCoupl::Setup(const Teuchos::ParameterList& params)
     FOUR_C_THROW("ERROR: Chosen coupling not implemented!!!");
 
   // get the P operators
-  P12_ = coupdis->GetPMatrix12();
-  P21_ = coupdis->GetPMatrix21();
+  p12_ = coupdis->GetPMatrix12();
+  p21_ = coupdis->GetPMatrix21();
 
   /***********************************************************
    * Assign materials                                        *
@@ -211,8 +211,8 @@ Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::ApplyVectorMapp
   CheckSetup();
   CheckInit();
 
-  Teuchos::RCP<Epetra_Vector> mapvec = CORE::LINALG::CreateVector(P12_->RowMap(), true);
-  int err = P12_->Multiply(false, *vec, *mapvec);
+  Teuchos::RCP<Epetra_Vector> mapvec = CORE::LINALG::CreateVector(p12_->RowMap(), true);
+  int err = p12_->Multiply(false, *vec, *mapvec);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   return mapvec;
@@ -228,8 +228,8 @@ Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::ApplyVectorMapp
   CheckSetup();
   CheckInit();
 
-  Teuchos::RCP<Epetra_Vector> mapvec = CORE::LINALG::CreateVector(P21_->RowMap(), true);
-  int err = P21_->Multiply(false, *vec, *mapvec);
+  Teuchos::RCP<Epetra_Vector> mapvec = CORE::LINALG::CreateVector(p21_->RowMap(), true);
+  int err = p21_->Multiply(false, *vec, *mapvec);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   return mapvec;
@@ -245,7 +245,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::ApplyMat
   CheckSetup();
   CheckInit();
 
-  return CORE::LINALG::MLMultiply(*mat, false, *P12_, false, false, false, true);
+  return CORE::LINALG::MLMultiply(*mat, false, *p12_, false, false, false, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -258,7 +258,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::ApplyMat
   CheckSetup();
   CheckInit();
 
-  return CORE::LINALG::MLMultiply(*mat, false, *P21_, false, false, false, true);
+  return CORE::LINALG::MLMultiply(*mat, false, *p21_, false, false, false, true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -271,7 +271,7 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
   CheckInit();
 
   // create vector
-  Teuchos::RCP<Epetra_Vector> sv = CORE::LINALG::CreateVector(P21_->RowMap(), true);
+  Teuchos::RCP<Epetra_Vector> sv = CORE::LINALG::CreateVector(p21_->RowMap(), true);
   // project
   MasterToSlave(mv, sv);
 
@@ -283,9 +283,9 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
 void CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not mv->Map().PointSameAs(P21_->DomainMap())) FOUR_C_THROW("master dof map vector expected");
-  if (not sv->Map().PointSameAs(P21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
+#ifdef BACI_DEBUG
+  if (not mv->Map().PointSameAs(p21_->DomainMap())) FOUR_C_THROW("master dof map vector expected");
+  if (not sv->Map().PointSameAs(p21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
   if (sv->NumVectors() != mv->NumVectors())
     FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
 #endif
@@ -295,10 +295,10 @@ void CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
   CheckInit();
 
   // slave vector with auxiliary dofmap
-  Epetra_MultiVector sv_aux(P21_->RowMap(), sv->NumVectors());
+  Epetra_MultiVector sv_aux(p21_->RowMap(), sv->NumVectors());
 
   // project
-  int err = P21_->Multiply(false, *mv, sv_aux);
+  int err = p21_->Multiply(false, *mv, sv_aux);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
@@ -322,7 +322,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
 
   // create vector
   Teuchos::RCP<Epetra_MultiVector> sv =
-      Teuchos::rcp(new Epetra_MultiVector(P21_->RowMap(), mv->NumVectors()));
+      Teuchos::rcp(new Epetra_MultiVector(p21_->RowMap(), mv->NumVectors()));
   // project
   MasterToSlave(mv, sv);
 
@@ -339,7 +339,7 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
   CheckInit();
 
   // create vector
-  Teuchos::RCP<Epetra_Vector> mv = CORE::LINALG::CreateVector(P12_->RowMap(), true);
+  Teuchos::RCP<Epetra_Vector> mv = CORE::LINALG::CreateVector(p12_->RowMap(), true);
   // project
   SlaveToMaster(sv, mv);
 
@@ -358,7 +358,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
 
   // create vector
   Teuchos::RCP<Epetra_MultiVector> mv =
-      Teuchos::rcp(new Epetra_MultiVector(P12_->RowMap(), sv->NumVectors()));
+      Teuchos::rcp(new Epetra_MultiVector(p12_->RowMap(), sv->NumVectors()));
   // project
   SlaveToMaster(sv, mv);
 
@@ -371,9 +371,9 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
 void CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not mv->Map().PointSameAs(P12_->RowMap())) FOUR_C_THROW("master dof map vector expected");
-  if (not sv->Map().PointSameAs(P21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
+#ifdef BACI_DEBUG
+  if (not mv->Map().PointSameAs(p12_->RowMap())) FOUR_C_THROW("master dof map vector expected");
+  if (not sv->Map().PointSameAs(p21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
   if (sv->NumVectors() != mv->NumVectors())
     FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
 #endif
@@ -383,10 +383,10 @@ void CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
   CheckInit();
 
   // master vector with auxiliary dofmap
-  Epetra_MultiVector mv_aux(P12_->RowMap(), mv->NumVectors());
+  Epetra_MultiVector mv_aux(p12_->RowMap(), mv->NumVectors());
 
   // project
-  int err = P12_->Multiply(false, *sv, mv_aux);
+  int err = p12_->Multiply(false, *sv, mv_aux);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
@@ -406,7 +406,7 @@ Teuchos::RCP<const Epetra_Map> CORE::ADAPTER::MortarVolCoupl::MasterDofMap() con
   CheckSetup();
   CheckInit();
 
-  return Teuchos::rcpFromRef(P12_->RowMap());
+  return Teuchos::rcpFromRef(p12_->RowMap());
 }
 
 
@@ -417,7 +417,7 @@ Teuchos::RCP<const Epetra_Map> CORE::ADAPTER::MortarVolCoupl::SlaveDofMap() cons
   // safety check
   CheckSetup();
 
-  return Teuchos::rcpFromRef(P21_->RowMap());
+  return Teuchos::rcpFromRef(p21_->RowMap());
 }
 
 FOUR_C_NAMESPACE_CLOSE

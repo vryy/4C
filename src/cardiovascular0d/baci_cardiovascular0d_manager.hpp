@@ -354,8 +354,8 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> v_n_;               ///< vol vector at t_{n}
     Teuchos::RCP<Epetra_Vector> v_np_;              ///< vol vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> v_m_;               ///< vol vector at mid-point
-    Teuchos::RCP<Epetra_Vector> cv0ddof_T_N_;       ///< cvdof vector at periodic time T_{N}
-    Teuchos::RCP<Epetra_Vector> cv0ddof_T_NP_;      ///< cvdof vector at periodic time T_{N+1}
+    Teuchos::RCP<Epetra_Vector> cv0ddof_t_n_;       ///< cvdof vector at periodic time T_{N}
+    Teuchos::RCP<Epetra_Vector> cv0ddof_t_np_;      ///< cvdof vector at periodic time T_{N+1}
     Teuchos::RCP<Epetra_Vector>
         cardvasc0d_res_m_;  ///< Cardiovascular0D full rhs vector, at t_{n+theta}
     Teuchos::RCP<Epetra_Vector>
@@ -370,15 +370,15 @@ namespace UTILS
                                                    ///< non-derivatives, at t_{n+1}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_f_m_;   ///< Cardiovascular0D rhs part associated with
                                                    ///< non-derivatives, at t_{n+theta}
-    const double T_period_;                        ///< periodic time
+    const double t_period_;                        ///< periodic time
     const double eps_periodic_;                    ///< tolerance for periodic state
-    bool is_periodic_;            ///< true, if periodic state is reached, false otherwise
-    double cycle_error_;          ///< perdiodicity error
-    int numCardiovascular0DID_;   ///< number of Cardiovascular0D bcs
-    int Cardiovascular0DID_;      ///< smallest Cardiovascular0D bc id
-    int offsetID_;                ///< smallest Cardiovascular0D bc id
-    std::vector<int> currentID_;  ///< bc id
-    bool havecardiovascular0d_;   ///< are there Cardiovascular0D bcs at all?
+    bool is_periodic_;             ///< true, if periodic state is reached, false otherwise
+    double cycle_error_;           ///< perdiodicity error
+    int num_cardiovascular0_did_;  ///< number of Cardiovascular0D bcs
+    int cardiovascular0_did_;      ///< smallest Cardiovascular0D bc id
+    int offset_id_;                ///< smallest Cardiovascular0D bc id
+    std::vector<int> current_id_;  ///< bc id
+    bool havecardiovascular0d_;    ///< are there Cardiovascular0D bcs at all?
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_model_;
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_4elementwindkessel_;
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_arterialproxdist_;

@@ -75,10 +75,10 @@ namespace NOX
 
        private:
         //! map of NOX::NLN::CONSTRAINT::Interface::Required objects
-        NOX::NLN::CONSTRAINT::ReqInterfaceMap iConstr_;
+        NOX::NLN::CONSTRAINT::ReqInterfaceMap i_constr_;
 
         //! map of NOX::NLN::CONSTRAINT::Interface::Preconditioner objects
-        NOX::NLN::CONSTRAINT::PrecInterfaceMap iConstrPrec_;
+        NOX::NLN::CONSTRAINT::PrecInterfaceMap i_constr_prec_;
 
       };  // class LinearSystem
     }     // namespace MESHTYING

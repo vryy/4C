@@ -34,7 +34,7 @@ namespace CORE::LINALG
     //! constructor that initializes a 4-tensor object with only zero entries if setZero is true
     explicit FourTensor(const bool setZero = true)
     {
-      if (setZero) fourTensor_ = {{{{}}}};
+      if (setZero) four_tensor_ = {{{{}}}};
     };
 
     //! @name Access methods
@@ -47,7 +47,7 @@ namespace CORE::LINALG
      */
     inline std::array<std::array<std::array<std::array<double, dim>, dim>, dim>, dim>& Get()
     {
-      return fourTensor_;
+      return four_tensor_;
     }
 
     /*!
@@ -58,7 +58,7 @@ namespace CORE::LINALG
     inline const std::array<std::array<std::array<std::array<double, dim>, dim>, dim>, dim>&
     GetConst() const
     {
-      return fourTensor_;
+      return four_tensor_;
     }
 
     /*!
@@ -86,7 +86,7 @@ namespace CORE::LINALG
 
    private:
     // 4-tensor
-    std::array<std::array<std::array<std::array<double, dim>, dim>, dim>, dim> fourTensor_;
+    std::array<std::array<std::array<std::array<double, dim>, dim>, dim>, dim> four_tensor_;
   };
 
   template <int dim>

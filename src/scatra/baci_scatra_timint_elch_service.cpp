@@ -272,7 +272,7 @@ SCATRA::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
           *cccvhalfcyclecondition.Get<std::vector<int>>("AdaptiveTimeSteppingPhaseOnOff")),
       cutoffcrate_(*cccvhalfcyclecondition.Get<double>("CutoffCRate")),
       cutoffvoltage_(*cccvhalfcyclecondition.Get<double>("CutoffVoltage")),
-      halfcycleconditionID_(*cccvhalfcyclecondition.Get<int>("ConditionID")),
+      halfcyclecondition_id_(*cccvhalfcyclecondition.Get<int>("ConditionID")),
       phase_cccv_(INPAR::ELCH::CCCVHalfCyclePhase::undefined),
       relaxendtime_(-1.0),
       relaxtime_(*cccvhalfcyclecondition.Get<double>("RelaxTime"))

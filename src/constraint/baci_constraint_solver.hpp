@@ -141,7 +141,7 @@ namespace CONSTRAINTS
     );
 
     Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
-    int maxIter_;                                ///< number of maximal iterations
+    int max_iter_;                               ///< number of maximal iterations
     double iterationparam_;                      ///< parameter for Uzawa algorithm
     double minparam_;                            ///< minimal possible parameter for Uzawa algorithm
     double iterationtol_;                        ///< tolerance

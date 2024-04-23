@@ -138,7 +138,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
   Teuchos::RCP<CORE::LINALG::MapExtractor> extractor;
   extractor->Setup(*conman_->GetConstraintMap(), emptymap, conman_->GetConstraintMap());
   conman_->UseBlockMatrix(extractor, StructureField()->Interface());
-  sconT_ =
+  scon_t_ =
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *StructureField()->Interface(), *extractor, 81, false, true));
 
@@ -268,12 +268,12 @@ void FSI::ConstrMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   {
     for (int colblock = 0; colblock < scon.Cols(); ++colblock)
     {
-      sconT_->Matrix(colblock, rowblock).Add(scon.Matrix(rowblock, colblock), true, 1.0, 0.0);
+      scon_t_->Matrix(colblock, rowblock).Add(scon.Matrix(rowblock, colblock), true, 1.0, 0.0);
     }
   }
-  sconT_->Complete();
+  scon_t_->Complete();
 
-  CORE::LINALG::SparseMatrix& csig = sconT_->Matrix(0, 1);
+  CORE::LINALG::SparseMatrix& csig = scon_t_->Matrix(0, 1);
 
   rhs = Teuchos::rcp(new Epetra_Vector(csig.RowMap()));
   csig.Apply(*sveln, *rhs);
@@ -370,10 +370,10 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(
   {
     for (int colblock = 0; colblock < scon.Cols(); ++colblock)
     {
-      sconT_->Matrix(colblock, rowblock).Add(scon.Matrix(rowblock, colblock), true, 1.0, 0.0);
+      scon_t_->Matrix(colblock, rowblock).Add(scon.Matrix(rowblock, colblock), true, 1.0, 0.0);
     }
   }
-  sconT_->Complete();
+  scon_t_->Complete();
 
 
   scon.Complete();
@@ -383,9 +383,9 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(
   (*scgitransform_)(scon.Matrix(1, 0), 1. / scale, CORE::ADAPTER::CouplingMasterConverter(coupsf),
       mat.Matrix(1, 3));
 
-  mat.Assign(3, 0, CORE::LINALG::View, sconT_->Matrix(0, 0));
+  mat.Assign(3, 0, CORE::LINALG::View, scon_t_->Matrix(0, 0));
 
-  (*csigtransform_)(*coupsf.MasterDofMap(), sconT_->Matrix(0, 1).ColMap(), sconT_->Matrix(0, 1),
+  (*csigtransform_)(*coupsf.MasterDofMap(), scon_t_->Matrix(0, 1).ColMap(), scon_t_->Matrix(0, 1),
       1. / timescale, CORE::ADAPTER::CouplingMasterConverter(coupsf), mat.Matrix(3, 1), true);
 
   /*----------------------------------------------------------------------*/

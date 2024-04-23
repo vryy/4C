@@ -158,7 +158,7 @@ CORE::GEO::CUT::Element::Element(
   parent_id_ = -1;  // initialize with non-reasonable negative element Id
 
   // shadow elements are initialized separately
-  isShadow_ = false;
+  is_shadow_ = false;
 
   boundingvolume_ = Teuchos::rcp(BoundingBox::Create(*this));
 }
@@ -168,12 +168,12 @@ CORE::GEO::CUT::Element::Element(
  *-----------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Element::setQuadCorners(Mesh& mesh, const std::vector<int>& nodeids)
 {
-  if (not isShadow_) FOUR_C_THROW("You can't set Quad-corners for non-shadow element\n");
+  if (not is_shadow_) FOUR_C_THROW("You can't set Quad-corners for non-shadow element\n");
 
   for (unsigned i = 0; i < nodeids.size(); i++)
   {
     Node* n1 = mesh.GetNode(nodeids[i]);
-    quadCorners_.push_back(n1);
+    quad_corners_.push_back(n1);
   }
 }
 
@@ -183,9 +183,9 @@ void CORE::GEO::CUT::Element::setQuadCorners(Mesh& mesh, const std::vector<int>&
  *----------------------------------------------------------------------------------------------------*/
 std::vector<CORE::GEO::CUT::Node*> CORE::GEO::CUT::Element::getQuadCorners()
 {
-  if ((not isShadow_) or quadCorners_.size() == 0)
+  if ((not is_shadow_) or quad_corners_.size() == 0)
     FOUR_C_THROW("what?! you want Quadratic element corners for linear element?\n");
-  return quadCorners_;
+  return quad_corners_;
 }
 
 /*--------------------------------------------------------------------*
@@ -1058,9 +1058,9 @@ bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>
 void CORE::GEO::CUT::Element::LocalCoordinatesQuad(
     const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
-  if (not isShadow_) FOUR_C_THROW("This is not a shadow elemenet\n");
+  if (not is_shadow_) FOUR_C_THROW("This is not a shadow elemenet\n");
 
-  Teuchos::RCP<Position> pos = Position::Create(quadCorners_, xyz, getQuadShape());
+  Teuchos::RCP<Position> pos = Position::Create(quad_corners_, xyz, getQuadShape());
 
   bool success = pos->Compute();
   if (success)

@@ -29,10 +29,10 @@ NOX::FSI::Newton::Newton(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::Par
 {
   // needed because ::NOX::Direction::Newton::Newton() does not call
   // NOX::FSI::Newton::reset()
-  paramsPtr = &params;
+  params_ptr_ = &params;
 
   // adaptive tolerance settings for linear solver
-  Teuchos::ParameterList& lsParams = paramsPtr->sublist("Newton").sublist("Linear Solver");
+  Teuchos::ParameterList& lsParams = params_ptr_->sublist("Newton").sublist("Linear Solver");
   plaintol_ = lsParams.get<double>("base tolerance");             // relative tolerance
   better_ = lsParams.get<double>("adaptive distance");            // adaptive distance
   verbosity_ = lsParams.get<INPAR::FSI::Verbosity>("verbosity");  // verbosity level
@@ -44,9 +44,9 @@ NOX::FSI::Newton::Newton(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::Par
 bool NOX::FSI::Newton::reset(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
-  paramsPtr = &params;
+  params_ptr_ = &params;
 
-  Teuchos::ParameterList& lsParams = paramsPtr->sublist("Newton").sublist("Linear Solver");
+  Teuchos::ParameterList& lsParams = params_ptr_->sublist("Newton").sublist("Linear Solver");
   plaintol_ = lsParams.get<double>("base tolerance");
 
   return ::NOX::Direction::Newton::reset(gd, params);
@@ -60,7 +60,7 @@ bool NOX::FSI::Newton::compute(
 {
   TEUCHOS_FUNC_TIME_MONITOR("NOX::FSI::Newton::compute");
 
-  Teuchos::ParameterList& lsParams = paramsPtr->sublist("Newton").sublist("Linear Solver");
+  Teuchos::ParameterList& lsParams = params_ptr_->sublist("Newton").sublist("Linear Solver");
   lsParams.set<std::string>("Convergence Test", "r0");
 
   // do adaptive linear solver tolerance

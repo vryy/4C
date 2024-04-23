@@ -94,38 +94,38 @@ namespace NOX
         FloatingPointException fp_except_;
 
         //! inner iteration counter
-        int lsIters_;
+        int ls_iters_;
 
         //! Printing Utilities
         Teuchos::RCP<::NOX::Utils> utils_;
 
         //! Merit function
-        Teuchos::RCP<::NOX::MeritFunction::Generic> meritFunctionPtr_;
+        Teuchos::RCP<::NOX::MeritFunction::Generic> merit_function_ptr_;
 
         //! Current step pointer, points to the step variable of the
         //! NOX::NLN::Solver::LineSearchBased class
-        double* stepPtr_;
+        double* step_ptr_;
 
         //! Default step
-        double defaultStep_;
+        double default_step_;
 
         //! line search reduction factor
-        double reductionFactor_;
+        double reduction_factor_;
 
         //! inner status test checktype
-        ::NOX::StatusTest::CheckType checkType_;
+        ::NOX::StatusTest::CheckType check_type_;
 
         //! inner status type
         NOX::NLN::INNER::StatusTest::StatusType status_;
 
         //! search direction
-        Teuchos::RCP<const ::NOX::Abstract::Vector> searchDirectionPtr_;
+        Teuchos::RCP<const ::NOX::Abstract::Vector> search_direction_ptr_;
 
         //! outer convergence tests
-        Teuchos::RCP<::NOX::StatusTest::Generic> outerTestsPtr_;
+        Teuchos::RCP<::NOX::StatusTest::Generic> outer_tests_ptr_;
 
         //! line search stopping tests
-        Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTestsPtr_;
+        Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> inner_tests_ptr_;
       };
     }  // namespace LineSearch
   }    // namespace NLN

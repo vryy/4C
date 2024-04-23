@@ -188,7 +188,7 @@ namespace SCATRA
 
      private:
       /// boundary cell vector
-      CORE::GEO::BoundaryIntCells listBoundaryIntCellsperEle_;
+      CORE::GEO::BoundaryIntCells list_boundary_int_cellsper_ele_;
 
       // boundary cell pointer vector
       CORE::GEO::BoundaryIntCellPtrs boundary_cells_per_ele_;
@@ -208,7 +208,7 @@ namespace SCATRA
     inline CORE::GEO::BoundaryIntCells&
     Intersection::BoundaryIntCellsPerEle<CORE::GEO::BoundaryIntCells>()
     {
-      return listBoundaryIntCellsperEle_;
+      return list_boundary_int_cellsper_ele_;
     }
 
     /*----------------------------------------------------------------------------*/

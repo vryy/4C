@@ -174,7 +174,7 @@ namespace PARTICLEINTERACTION
     const double alphamin_;
 
     //! factor of dependence of surface tension coefficient on temperature
-    const double alphaT_;
+    const double alpha_t_;
 
     //! surface tension coefficient reference temperature
     const double surf_ref_temp_;
@@ -192,16 +192,16 @@ namespace PARTICLEINTERACTION
     const double trans_ref_temp_;
 
     //! transition temperature difference for surface tension evaluation
-    const double trans_dT_surf_;
+    const double trans_d_t_surf_;
 
     //! transition temperature difference for marangoni evaluation
-    const double trans_dT_mara_;
+    const double trans_d_t_mara_;
 
     //! transition temperature difference for curvature evaluation
-    const double trans_dT_curv_;
+    const double trans_d_t_curv_;
 
     //! transition temperature difference for wetting evaluation
-    const double trans_dT_wet_;
+    const double trans_d_t_wet_;
   };
 
 }  // namespace PARTICLEINTERACTION

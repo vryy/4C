@@ -30,7 +30,7 @@ void ADAPTER::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,
   FBIConstraintBridge::Setup(beam_map, fluid_map, fluidmatrix, fluidmeshtying);
   fs_ = Teuchos::rcp(new Epetra_FEVector(*beam_map));
   ff_ = Teuchos::rcp(new Epetra_FEVector(*fluid_map));
-  Cff_ = fluidmatrix;
+  cff_ = fluidmatrix;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -45,8 +45,8 @@ void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
           discretization1, discretization2, *(GetPairs()), GetParams(), assemblystrategy_);
   // compute and assembly the coupling matrices and vectors
   assembly_manager->EvaluateForceStiff(
-      *discretization1, *discretization2, ff_, fs_, Cff_, Css_, Csf_, Cfs_, fluid_vel, beam_vel);
-  Cff_->Complete();
+      *discretization1, *discretization2, ff_, fs_, cff_, css_, csf_, cfs_, fluid_vel, beam_vel);
+  cff_->Complete();
 
   // Unset the dirichlet flag in case we were doing a fluid solve
   UnsetWeakDirichletFlag();
@@ -56,7 +56,7 @@ void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
 void ADAPTER::FBIConstraintBridgePenalty::ResetBridge()
 {
   fs_->PutScalar(0.0);
-  Cff_->Reset();
+  cff_->Reset();
   ff_->PutScalar(0.0);
   fluid_scaled_ = false;
   structure_scaled_ = false;
@@ -92,7 +92,7 @@ void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyFluidContributions()
 {
   if (!fluid_scaled_)
   {
-    if (Cff_->Scale(GetParams()->GetPenaltyParameter()) ||
+    if (cff_->Scale(GetParams()->GetPenaltyParameter()) ||
         ff_->Scale(GetParams()->GetPenaltyParameter()))
       FOUR_C_THROW("Scaling of the penalty force was unsuccessful!\n");
     fluid_scaled_ = true;

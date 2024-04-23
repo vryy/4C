@@ -228,7 +228,7 @@ namespace MAT
     bool setup_;
 
     /// Flag for each gauss point whether the mixture rule and constituents are pre-evaluated
-    std::vector<bool> isPreEvaluated_;
+    std::vector<bool> is_pre_evaluated_;
 
     /// Holder for anisotropic materials
     Anisotropy anisotropy_;

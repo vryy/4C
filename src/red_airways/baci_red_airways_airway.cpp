@@ -99,10 +99,10 @@ DRT::ELEMENTS::RedAirway::RedAirway(int id, int owner) : DRT::Element(id, owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirway::RedAirway(const DRT::ELEMENTS::RedAirway& old)
     : DRT::Element(old),
-      elemType_(old.elemType_),
+      elem_type_(old.elem_type_),
       resistance_(old.resistance_),
-      elemsolvingType_(old.elemsolvingType_),
-      airwayParams_(old.airwayParams_)
+      elemsolving_type_(old.elemsolving_type_),
+      airway_params_(old.airway_params_)
 {
 }
 
@@ -151,26 +151,26 @@ void DRT::ELEMENTS::RedAirway::Pack(CORE::COMM::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
 
-  AddtoPack(data, elemType_);
+  AddtoPack(data, elem_type_);
   AddtoPack(data, resistance_);
-  AddtoPack(data, elemsolvingType_);
+  AddtoPack(data, elemsolving_type_);
 
-  AddtoPack(data, airwayParams_.power_velocity_profile);
-  AddtoPack(data, airwayParams_.wall_elasticity);
-  AddtoPack(data, airwayParams_.poisson_ratio);
-  AddtoPack(data, airwayParams_.wall_thickness);
-  AddtoPack(data, airwayParams_.area);
-  AddtoPack(data, airwayParams_.viscous_Ts);
-  AddtoPack(data, airwayParams_.viscous_phase_shift);
-  AddtoPack(data, airwayParams_.branch_length);
-  AddtoPack(data, airwayParams_.generation);
+  AddtoPack(data, airway_params_.power_velocity_profile);
+  AddtoPack(data, airway_params_.wall_elasticity);
+  AddtoPack(data, airway_params_.poisson_ratio);
+  AddtoPack(data, airway_params_.wall_thickness);
+  AddtoPack(data, airway_params_.area);
+  AddtoPack(data, airway_params_.viscous_Ts);
+  AddtoPack(data, airway_params_.viscous_phase_shift);
+  AddtoPack(data, airway_params_.branch_length);
+  AddtoPack(data, airway_params_.generation);
 
-  AddtoPack(data, airwayParams_.airway_coll);
-  AddtoPack(data, airwayParams_.s_close);
-  AddtoPack(data, airwayParams_.s_open);
-  AddtoPack(data, airwayParams_.p_crit_open);
-  AddtoPack(data, airwayParams_.p_crit_close);
-  AddtoPack(data, airwayParams_.open_init);
+  AddtoPack(data, airway_params_.airway_coll);
+  AddtoPack(data, airway_params_.s_close);
+  AddtoPack(data, airway_params_.s_open);
+  AddtoPack(data, airway_params_.p_crit_open);
+  AddtoPack(data, airway_params_.p_crit_close);
+  AddtoPack(data, airway_params_.open_init);
 
   return;
 }
@@ -191,26 +191,26 @@ void DRT::ELEMENTS::RedAirway::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
 
-  ExtractfromPack(position, data, elemType_);
+  ExtractfromPack(position, data, elem_type_);
   ExtractfromPack(position, data, resistance_);
-  ExtractfromPack(position, data, elemsolvingType_);
+  ExtractfromPack(position, data, elemsolving_type_);
 
-  ExtractfromPack(position, data, airwayParams_.power_velocity_profile);
-  ExtractfromPack(position, data, airwayParams_.wall_elasticity);
-  ExtractfromPack(position, data, airwayParams_.poisson_ratio);
-  ExtractfromPack(position, data, airwayParams_.wall_thickness);
-  ExtractfromPack(position, data, airwayParams_.area);
-  ExtractfromPack(position, data, airwayParams_.viscous_Ts);
-  ExtractfromPack(position, data, airwayParams_.viscous_phase_shift);
-  ExtractfromPack(position, data, airwayParams_.branch_length);
-  ExtractfromPack(position, data, airwayParams_.generation);
+  ExtractfromPack(position, data, airway_params_.power_velocity_profile);
+  ExtractfromPack(position, data, airway_params_.wall_elasticity);
+  ExtractfromPack(position, data, airway_params_.poisson_ratio);
+  ExtractfromPack(position, data, airway_params_.wall_thickness);
+  ExtractfromPack(position, data, airway_params_.area);
+  ExtractfromPack(position, data, airway_params_.viscous_Ts);
+  ExtractfromPack(position, data, airway_params_.viscous_phase_shift);
+  ExtractfromPack(position, data, airway_params_.branch_length);
+  ExtractfromPack(position, data, airway_params_.generation);
 
-  ExtractfromPack(position, data, airwayParams_.airway_coll);
-  ExtractfromPack(position, data, airwayParams_.s_close);
-  ExtractfromPack(position, data, airwayParams_.s_open);
-  ExtractfromPack(position, data, airwayParams_.p_crit_open);
-  ExtractfromPack(position, data, airwayParams_.p_crit_close);
-  ExtractfromPack(position, data, airwayParams_.open_init);
+  ExtractfromPack(position, data, airway_params_.airway_coll);
+  ExtractfromPack(position, data, airway_params_.s_close);
+  ExtractfromPack(position, data, airway_params_.s_open);
+  ExtractfromPack(position, data, airway_params_.p_crit_open);
+  ExtractfromPack(position, data, airway_params_.p_crit_close);
+  ExtractfromPack(position, data, airway_params_.open_init);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -244,7 +244,7 @@ bool DRT::ELEMENTS::RedAirway::VisData(const std::string& name, std::vector<doub
 
 const DRT::REDAIRWAYS::AirwayParams& DRT::ELEMENTS::RedAirway::GetAirwayParams() const
 {
-  return airwayParams_;
+  return airway_params_;
 }
 
 /*----------------------------------------------------------------------*

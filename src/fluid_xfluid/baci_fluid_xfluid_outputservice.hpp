@@ -262,13 +262,13 @@ namespace FLD
     const bool gmsh_debug_out_;         ///< Gmsh debug output (increment, residual, etc.)
     const bool gmsh_debug_out_screen_;  ///< print information about output to screen
     const bool
-        gmsh_EOS_out_;  ///< output for edge-oriented stabilization and ghost-penalty stabilization
+        gmsh_eos_out_;  ///< output for edge-oriented stabilization and ghost-penalty stabilization
     const bool gmsh_discret_out_;  ///< output of XFEM discretization
     const int gmsh_step_diff_;     ///< no. of kept steps
     //@}
 
     //! integration approach
-    const INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy_;
+    const INPAR::CUT::VCellGaussPts volume_cell_gauss_point_by_;
 
     //! include elements with inside position?
     const bool include_inner_;

@@ -188,8 +188,8 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::Discretization> dis
         GLOBAL::Problem::Instance()->StructuralDynamicParams().get<double>("PRESTRESSTIME");
     prestresstype_ = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
         GLOBAL::Problem::Instance()->StructuralDynamicParams(), "PRESTRESS");
-    prestressDisplacementTolerance_ = sdynparams.get<double>("PRESTRESSTOLDISP");
-    prestressMinNumberOfLoadSteps_ = sdynparams.get<int>("PRESTRESSMINLOADSTEPS");
+    prestress_displacement_tolerance_ = sdynparams.get<double>("PRESTRESSTOLDISP");
+    prestress_min_number_of_load_steps_ = sdynparams.get<int>("PRESTRESSMINLOADSTEPS");
     predtype_ = CORE::UTILS::IntegralValue<INPAR::STR::PredEnum>(sdynparams, "PREDICT");
     nlnsolvertype_ = CORE::UTILS::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams, "NLNSOL");
     divergenceaction_ = CORE::UTILS::IntegralValue<INPAR::STR::DivContAct>(sdynparams, "DIVERCONT");

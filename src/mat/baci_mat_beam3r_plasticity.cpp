@@ -107,48 +107,48 @@ MAT::BeamPlasticMaterial<T>::BeamPlasticMaterial(
 template <typename T>
 void MAT::BeamPlasticMaterial<T>::Setup(int numgp_force, int numgp_moment)
 {
-  cN_eff_.resize(numgp_force);
-  cM_eff_.resize(numgp_moment);
+  c_n_eff_.resize(numgp_force);
+  c_m_eff_.resize(numgp_moment);
   gammaplastconv_.resize(numgp_force);
   gammaplastnew_.resize(numgp_force);
   gammaplastaccum_.resize(numgp_force);
   kappaplastconv_.resize(numgp_moment);
   kappaplastnew_.resize(numgp_moment);
   kappaplastaccum_.resize(numgp_moment);
-  effyieldstressN_.resize(numgp_force);
-  effyieldstressM_.resize(numgp_moment);
-  deltaKappaplast_.resize(numgp_moment);
-  normstressM_.resize(numgp_moment);
-  deltastressM_.resize(numgp_moment);
+  effyieldstress_n_.resize(numgp_force);
+  effyieldstress_m_.resize(numgp_moment);
+  delta_kappaplast_.resize(numgp_moment);
+  normstress_m_.resize(numgp_moment);
+  deltastress_m_.resize(numgp_moment);
   kappaelast_.resize(numgp_moment);
   kappaelastflow_.resize(numgp_moment);
   elastic_curvature_.resize(numgp_moment);
-  deltaGammaplast_.resize(numgp_force);
-  deltastressN_.resize(numgp_force);
-  stressN_.resize(numgp_force);
+  delta_gammaplast_.resize(numgp_force);
+  deltastress_n_.resize(numgp_force);
+  stress_n_.resize(numgp_force);
 
   for (int gp = 0; gp < numgp_force; gp++)
   {
-    cN_eff_[gp] = CORE::LINALG::Matrix<3, 3, T>(true);
+    c_n_eff_[gp] = CORE::LINALG::Matrix<3, 3, T>(true);
     gammaplastconv_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
     gammaplastnew_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
     gammaplastaccum_[gp] = 0;
-    effyieldstressN_[gp] = 0;
-    deltaKappaplast_[gp] = 0;
-    deltaGammaplast_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
-    deltastressN_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
-    stressN_[gp] = 0;
+    effyieldstress_n_[gp] = 0;
+    delta_kappaplast_[gp] = 0;
+    delta_gammaplast_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
+    deltastress_n_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
+    stress_n_[gp] = 0;
   }
 
   for (int gp = 0; gp < numgp_moment; gp++)
   {
-    cM_eff_[gp] = CORE::LINALG::Matrix<3, 3, T>(true);
+    c_m_eff_[gp] = CORE::LINALG::Matrix<3, 3, T>(true);
     kappaplastconv_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
     kappaplastnew_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
     kappaplastaccum_[gp] = 0;
-    effyieldstressM_[gp] = 0;
-    normstressM_[gp] = 0;
-    deltastressM_[gp] = 0;
+    effyieldstress_m_[gp] = 0;
+    normstress_m_[gp] = 0;
+    deltastress_m_[gp] = 0;
     kappaelast_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
     kappaelastflow_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
     elastic_curvature_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
@@ -254,16 +254,16 @@ void MAT::BeamPlasticMaterial<T>::EvaluateForceContributionsToStress(
     stressN.Multiply(CN, Gammaelast);
 
     // check if yield stress is surpassed
-    if (std::abs(stressN(0)) > effyieldstressN_[gp])
+    if (std::abs(stressN(0)) > effyieldstress_n_[gp])
     {
       // compute plastic strain increment
-      deltastressN_[gp](0) = std::abs(stressN(0)) - effyieldstressN_[gp];
+      deltastress_n_[gp](0) = std::abs(stressN(0)) - effyieldstress_n_[gp];
 
-      deltaGammaplast_[gp](0) =
-          ((CN(0, 0) - cN_eff_[gp](0, 0)) / CN(0, 0) * deltastressN_[gp](0) / CN(0, 0)) *
+      delta_gammaplast_[gp](0) =
+          ((CN(0, 0) - c_n_eff_[gp](0, 0)) / CN(0, 0) * deltastress_n_[gp](0) / CN(0, 0)) *
           CORE::FADUTILS::Signum(stressN(0));
 
-      gammaplastnew_[gp](0) = gammaplastconv_[gp](0) + deltaGammaplast_[gp](0);
+      gammaplastnew_[gp](0) = gammaplastconv_[gp](0) + delta_gammaplast_[gp](0);
 
       // update elastic strain and stress
       for (int i = 0; i < 3; i++)
@@ -273,7 +273,7 @@ void MAT::BeamPlasticMaterial<T>::EvaluateForceContributionsToStress(
 
       stressN.Multiply(CN, Gammaelast);
     }
-    stressN_[gp] = std::abs(stressN(0));
+    stress_n_[gp] = std::abs(stressN(0));
   }
   //*************End: Plasticity of strains in axial direction
 }
@@ -320,23 +320,24 @@ void MAT::BeamPlasticMaterial<T>::EvaluateMomentContributionsToStress(
     stressM.Multiply(CM, kappaelast_[gp]);
 
     // compute norm of moment vector
-    normstressM_[gp] = stressM.Norm2();
+    normstress_m_[gp] = stressM.Norm2();
 
     // compute fraction that exceeds the current yield moment
-    deltastressM_[gp] = normstressM_[gp] - effyieldstressM_[gp];
+    deltastress_m_[gp] = normstress_m_[gp] - effyieldstress_m_[gp];
 
     // check if yield moment is surpassed
-    if (deltastressM_[gp] > 0.0)
+    if (deltastress_m_[gp] > 0.0)
     {
       // compute plastic curvature increment
-      deltaKappaplast_[gp] =
-          (CM(1, 1) - cM_eff_[gp](1, 1)) / CM(1, 1) * deltastressM_[gp] / CM(1, 1);
+      delta_kappaplast_[gp] =
+          (CM(1, 1) - c_m_eff_[gp](1, 1)) / CM(1, 1) * deltastress_m_[gp] / CM(1, 1);
 
       // update plastic curvature
       for (int i = 0; i < 3; i++)
       {
-        kappaplastnew_[gp](i) = kappaplastconv_[gp](i) +
-                                deltaKappaplast_[gp] * kappaelast_[gp](i) / kappaelast_[gp].Norm2();
+        kappaplastnew_[gp](i) = kappaplastconv_[gp](i) + delta_kappaplast_[gp] *
+                                                             kappaelast_[gp](i) /
+                                                             kappaelast_[gp].Norm2();
       }
 
       // update elastic curvature
@@ -347,7 +348,7 @@ void MAT::BeamPlasticMaterial<T>::EvaluateMomentContributionsToStress(
 
       // update moment vector and its norm
       stressM.Multiply(CM, kappaelast_[gp]);
-      normstressM_[gp] = stressM.Norm2();
+      normstress_m_[gp] = stressM.Norm2();
     }
 
     // if torsional plasticity is turned off, the moment needs to be recomputed using the full
@@ -374,9 +375,9 @@ void MAT::BeamPlasticMaterial<T>::ComputeConstitutiveParameter(
     // If plasticity for axial strains is enabled, get hardening constitutive parameters
     if (this->Params().GetYieldStressN() >= 0)
     {
-      GetHardeningConstitutiveMatrixOfForcesMaterialFrame(cN_eff_[gp]);
-      GetEffectiveYieldStressN(
-          effyieldstressN_[gp], this->Params().GetYieldStressN(), C_N(0, 0), cN_eff_[gp](0, 0), gp);
+      GetHardeningConstitutiveMatrixOfForcesMaterialFrame(c_n_eff_[gp]);
+      GetEffectiveYieldStressN(effyieldstress_n_[gp], this->Params().GetYieldStressN(), C_N(0, 0),
+          c_n_eff_[gp](0, 0), gp);
     }
   }
   for (unsigned int gp = 0; gp < numgp_moment_; gp++)
@@ -384,9 +385,9 @@ void MAT::BeamPlasticMaterial<T>::ComputeConstitutiveParameter(
     // If plasticity for curvatures is enabled, get hardening constitutive parameters
     if (this->Params().GetYieldStressM() >= 0)
     {
-      GetHardeningConstitutiveMatrixOfMomentsMaterialFrame(cM_eff_[gp]);
-      GetEffectiveYieldStressM(
-          effyieldstressM_[gp], this->Params().GetYieldStressM(), C_M(1, 1), cM_eff_[gp](1, 1), gp);
+      GetHardeningConstitutiveMatrixOfMomentsMaterialFrame(c_m_eff_[gp]);
+      GetEffectiveYieldStressM(effyieldstress_m_[gp], this->Params().GetYieldStressM(), C_M(1, 1),
+          c_m_eff_[gp](1, 1), gp);
     }
   }
 }
@@ -401,10 +402,10 @@ void MAT::BeamPlasticMaterial<T>::Update()
   {
     gammaplastaccum_[gp] += std::abs(gammaplastconv_[gp](0) - gammaplastnew_[gp](0));
     gammaplastconv_[gp] = gammaplastnew_[gp];
-    cN_eff_[gp].putScalar(0.0);
-    effyieldstressN_[gp] = 0.0;
-    deltaGammaplast_[gp].putScalar(0.0);
-    deltastressN_[gp].putScalar(0.0);
+    c_n_eff_[gp].putScalar(0.0);
+    effyieldstress_n_[gp] = 0.0;
+    delta_gammaplast_[gp].putScalar(0.0);
+    deltastress_n_[gp].putScalar(0.0);
   }
   for (unsigned int gp = 0; gp < numgp_moment_; gp++)
   {
@@ -415,14 +416,14 @@ void MAT::BeamPlasticMaterial<T>::Update()
                                       (kappaplastconv_[gp](2) - kappaplastnew_[gp](2)) *
                                           (kappaplastconv_[gp](2) - kappaplastnew_[gp](2)));
     kappaplastconv_[gp] = kappaplastnew_[gp];
-    cM_eff_[gp].putScalar(0.0);
-    effyieldstressM_[gp] = 0.0;
+    c_m_eff_[gp].putScalar(0.0);
+    effyieldstress_m_[gp] = 0.0;
     kappaelast_[gp].putScalar(0.0);
     kappaelastflow_[gp].putScalar(0.0);
     elastic_curvature_[gp].putScalar(0.0);
-    deltaKappaplast_[gp] = 0.0;
-    normstressM_[gp] = 0.0;
-    deltastressM_[gp] = 0.0;
+    delta_kappaplast_[gp] = 0.0;
+    normstress_m_[gp] = 0.0;
+    deltastress_m_[gp] = 0.0;
   }
 }
 
@@ -536,7 +537,7 @@ void MAT::BeamPlasticMaterial<T>::GetStiffnessMatrixOfMoments(
   /* compute spatial stresses and constitutive matrix from material ones according to Jelenic
    * 1999, page 148, paragraph between (2.22) and (2.23) and Romero 2004, (3.10)*/
 
-  if (this->Params().GetYieldStressM() < 0 || normstressM_[gp] + 10e-10 < effyieldstressM_[gp])
+  if (this->Params().GetYieldStressM() < 0 || normstress_m_[gp] + 10e-10 < effyieldstress_m_[gp])
     MAT::BeamElastHyperMaterial<T>::GetStiffnessMatrixOfMoments(stiffM, C_M, gp);
   else
   {
@@ -575,12 +576,12 @@ void MAT::BeamPlasticMaterial<T>::GetStiffnessMatrixOfMoments(
       {
         stiffM(i, j) =
             C_M(1, 1) *
-            ((deltaKappaplast_[gp] / normKappaelastflow - (1.0 - cM_eff_[gp](1, 1) / C_M(1, 1))) *
+            ((delta_kappaplast_[gp] / normKappaelastflow - (1.0 - c_m_eff_[gp](1, 1) / C_M(1, 1))) *
                 elastic_curvature_[gp](i) * elastic_curvature_[gp](j));
 
         if (i == j)
           stiffM(i, j) =
-              stiffM(i, j) + C_M(1, 1) * (1.0 - deltaKappaplast_[gp] / normKappaelastflow);
+              stiffM(i, j) + C_M(1, 1) * (1.0 - delta_kappaplast_[gp] / normKappaelastflow);
       }
     }
     // if torsional plasticity is turned off, the first entry of the stiffness matrix is that of
@@ -598,13 +599,13 @@ template <typename T>
 void MAT::BeamPlasticMaterial<T>::GetStiffnessMatrixOfForces(
     CORE::LINALG::Matrix<3, 3, T>& stiffN, const CORE::LINALG::Matrix<3, 3, T>& C_N, const int gp)
 {
-  if (this->Params().GetYieldStressN() < 0.0 || stressN_[gp] < effyieldstressN_[gp])
+  if (this->Params().GetYieldStressN() < 0.0 || stress_n_[gp] < effyieldstress_n_[gp])
   {
     stiffN = C_N;
   }
   else
   {
-    stiffN = cN_eff_[gp];
+    stiffN = c_n_eff_[gp];
   }
 }
 

@@ -47,14 +47,14 @@ CORE::LINALG::BgS2x2Operator::BgS2x2Operator(Teuchos::RCP<Epetra_Operator> A,
     list1_ = list2;
   }
 
-  A_ = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(A);
-  if (A_ != Teuchos::null)
+  a_ = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(A);
+  if (a_ != Teuchos::null)
   {
     // Make a shallow copy of the block matrix as the preconditioners on the
     // blocks will be reused and the next assembly will replace the block
     // matrices.
-    A_ = A_->Clone(View);
-    mmex_ = A_->RangeExtractor();
+    a_ = a_->Clone(View);
+    mmex_ = a_->RangeExtractor();
   }
   else
   {
@@ -72,15 +72,15 @@ CORE::LINALG::BgS2x2Operator::BgS2x2Operator(Teuchos::RCP<Epetra_Operator> A,
 void CORE::LINALG::BgS2x2Operator::SetupBlockPreconditioners()
 {
   Teuchos::RCP<CORE::LINALG::Solver> s1 =
-      Teuchos::rcp(new CORE::LINALG::Solver(list1_, A_->Comm(), false));
+      Teuchos::rcp(new CORE::LINALG::Solver(list1_, a_->Comm(), false));
   solver1_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(s1));
-  const CORE::LINALG::SparseMatrix& Op11 = A_->Matrix(firstind_, firstind_);
+  const CORE::LINALG::SparseMatrix& Op11 = a_->Matrix(firstind_, firstind_);
   solver1_->Setup(Op11.EpetraMatrix());
 
   Teuchos::RCP<CORE::LINALG::Solver> s2 =
-      Teuchos::rcp(new CORE::LINALG::Solver(list2_, A_->Comm(), false));
+      Teuchos::rcp(new CORE::LINALG::Solver(list2_, a_->Comm(), false));
   solver2_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(s2));
-  const CORE::LINALG::SparseMatrix& Op22 = A_->Matrix(secind_, secind_);
+  const CORE::LINALG::SparseMatrix& Op22 = a_->Matrix(secind_, secind_);
   solver2_->Setup(Op22.EpetraMatrix());
 
   return;
@@ -101,20 +101,20 @@ int CORE::LINALG::BgS2x2Operator::ApplyInverse(
       Teuchos::rcp(new Epetra_MultiVector(y2->Map(), y2->NumVectors()));
 
   Teuchos::RCP<Epetra_MultiVector> tmpx1 =
-      Teuchos::rcp(new Epetra_MultiVector(A_->DomainMap(firstind_), y1->NumVectors()));
+      Teuchos::rcp(new Epetra_MultiVector(a_->DomainMap(firstind_), y1->NumVectors()));
   Teuchos::RCP<Epetra_MultiVector> tmpx2 =
-      Teuchos::rcp(new Epetra_MultiVector(A_->DomainMap(secind_), y2->NumVectors()));
+      Teuchos::rcp(new Epetra_MultiVector(a_->DomainMap(secind_), y2->NumVectors()));
 
-  const CORE::LINALG::SparseMatrix& Op11 = A_->Matrix(firstind_, firstind_);
-  const CORE::LINALG::SparseMatrix& Op22 = A_->Matrix(secind_, secind_);
-  const CORE::LINALG::SparseMatrix& Op12 = A_->Matrix(firstind_, secind_);
-  const CORE::LINALG::SparseMatrix& Op21 = A_->Matrix(secind_, firstind_);
+  const CORE::LINALG::SparseMatrix& Op11 = a_->Matrix(firstind_, firstind_);
+  const CORE::LINALG::SparseMatrix& Op22 = a_->Matrix(secind_, secind_);
+  const CORE::LINALG::SparseMatrix& Op12 = a_->Matrix(firstind_, secind_);
+  const CORE::LINALG::SparseMatrix& Op21 = a_->Matrix(secind_, firstind_);
 
   // outer Richardson loop
   for (int run = 0; run < global_iter_; ++run)
   {
-    Teuchos::RCP<Epetra_MultiVector> x1 = A_->DomainExtractor().ExtractVector(X, firstind_);
-    Teuchos::RCP<Epetra_MultiVector> x2 = A_->DomainExtractor().ExtractVector(X, secind_);
+    Teuchos::RCP<Epetra_MultiVector> x1 = a_->DomainExtractor().ExtractVector(X, firstind_);
+    Teuchos::RCP<Epetra_MultiVector> x2 = a_->DomainExtractor().ExtractVector(X, secind_);
 
     // ----------------------------------------------------------------
     // first block

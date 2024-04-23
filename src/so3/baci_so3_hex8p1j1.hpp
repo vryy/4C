@@ -175,13 +175,13 @@ namespace DRT
       {
         // K_pt = N_p * N_t * detJ * w(gp)
 
-        K_pt_ = 0.0;
+        k_pt_ = 0.0;
 
         const static std::vector<double> gpweights = soh8_weights();
 
         for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
         {
-          K_pt_ -= detJ_[gp] * gpweights[gp];
+          k_pt_ -= detJ_[gp] * gpweights[gp];
         }
       };
 
@@ -280,15 +280,15 @@ namespace DRT
       // don't want = operator
       SoHex8P1J1& operator=(const SoHex8P1J1& old);
 
-      CORE::LINALG::Matrix<1, NUMDOF_SOH8> K_pu_;
-      CORE::LINALG::Matrix<1, NUMDOF_SOH8> K_tu_;
-      CORE::LINALG::Matrix<1, 1> R_t_;
-      CORE::LINALG::Matrix<1, 1> R_p_;
+      CORE::LINALG::Matrix<1, NUMDOF_SOH8> k_pu_;
+      CORE::LINALG::Matrix<1, NUMDOF_SOH8> k_tu_;
+      CORE::LINALG::Matrix<1, 1> r_t_;
+      CORE::LINALG::Matrix<1, 1> r_p_;
 
       CORE::LINALG::Matrix<6, 1> m_;
-      CORE::LINALG::Matrix<6, 6> Identity6_;
-      CORE::LINALG::Matrix<6, 6> I_d_;
-      CORE::LINALG::Matrix<6, 6> I_0_;
+      CORE::LINALG::Matrix<6, 6> identity6_;
+      CORE::LINALG::Matrix<6, 6> i_d_;
+      CORE::LINALG::Matrix<6, 6> i_0_;
 
 
       /// @name Discontinuous primary field variables
@@ -303,13 +303,13 @@ namespace DRT
       CORE::LINALG::Matrix<1, 1> dt_;  ///< jacobian increment
       //@}
 
-      double K_pt_{};
-      double K_tt_{};
+      double k_pt_{};
+      double k_tt_{};
       CORE::LINALG::Matrix<1, 1> p_temp_;
       CORE::LINALG::Matrix<1, 1> t_temp_;
 
-      CORE::LINALG::Matrix<24, 24> K_uu_;
-      CORE::LINALG::Matrix<24, 1> F_u_;
+      CORE::LINALG::Matrix<24, 24> k_uu_;
+      CORE::LINALG::Matrix<24, 1> f_u_;
     };
 
 

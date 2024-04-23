@@ -35,7 +35,7 @@ BEAMINTERACTION::BeamLink::BeamLink()
       timelinkwasset_(-1.0),
       reflength_(-1.0)
 {
-  bspotIds_.clear();
+  bspot_ids_.clear();
 }
 
 /*----------------------------------------------------------------------*
@@ -45,7 +45,7 @@ BEAMINTERACTION::BeamLink::BeamLink(const BEAMINTERACTION::BeamLink& old)
       isinit_(old.isinit_),
       issetup_(old.issetup_),
       id_(old.id_),
-      bspotIds_(old.bspotIds_),
+      bspot_ids_(old.bspot_ids_),
       bspotpos1_(old.bspotpos1_),
       bspotpos2_(old.bspotpos2_),
       linkertype_(old.linkertype_),
@@ -65,7 +65,7 @@ void BEAMINTERACTION::BeamLink::Init(const int id, const std::vector<std::pair<i
   issetup_ = false;
 
   id_ = id;
-  bspotIds_ = eleids;
+  bspot_ids_ = eleids;
 
   bspotpos1_ = initpos[0];
   bspotpos2_ = initpos[1];
@@ -109,7 +109,7 @@ void BEAMINTERACTION::BeamLink::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, id_);
 
   // add eleids_
-  AddtoPack(data, bspotIds_);
+  AddtoPack(data, bspot_ids_);
   // bspotpos1_
   AddtoPack(data, bspotpos1_);
   // bspotpos2_
@@ -140,7 +140,7 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, id_);
 
   // eleids_
-  ExtractfromPack(position, data, bspotIds_);
+  ExtractfromPack(position, data, bspot_ids_);
   // bspotpos1
   ExtractfromPack(position, data, bspotpos1_);
   // bspotpos2

@@ -573,10 +573,10 @@ namespace CONTACT
     int numstep_;
 
     //! cross section radius of first beam
-    const double R1_;
+    const double r1_;
 
     //! cross section radius of second beam
-    const double R2_;
+    const double r2_;
 
     //! Maximal gap at which a contact can become active
     const double maxactivegap_;

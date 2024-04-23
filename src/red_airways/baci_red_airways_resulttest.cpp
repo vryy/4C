@@ -32,7 +32,7 @@ AIRWAY::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airwa
   myelemsol_acinivol_ = airways.AciniVolume();
   myelemsol_airwayvol_ = airways.AirwayVolume();
   myelemsol_open_ = airways.Open();
-  myelemsol_openingTrajectory_ = airways.OpeningTrajectory();
+  myelemsol_opening_trajectory_ = airways.OpeningTrajectory();
 }
 
 /*----------------------------------------------------------------------*/
@@ -153,7 +153,7 @@ void AIRWAY::RedAirwayResultTest::TestElement(
       }
       else if (position == "opening_trajectory")
       {
-        result = (*myelemsol_openingTrajectory_)[elementmap.LID(actelement->Id())];
+        result = (*myelemsol_opening_trajectory_)[elementmap.LID(actelement->Id())];
       }
       else
       {

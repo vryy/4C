@@ -338,7 +338,7 @@ void XFEM::ConditionManager::Setup()
 
 void XFEM::ConditionManager::Create()
 {
-  numglobal_coupling_sides = 0;
+  numglobal_coupling_sides_ = 0;
   mesh_coupl_start_gid_.reserve(mesh_coupl_.size());
   levelset_gid_ = -1;
 
@@ -352,11 +352,11 @@ void XFEM::ConditionManager::Create()
     if (mc_cutdis == Teuchos::null) FOUR_C_THROW("cutter dis is Teuchos::null");
 
     // set current number of global coupling sides as start index for global id this coupling object
-    mesh_coupl_start_gid_[mc] = numglobal_coupling_sides;
+    mesh_coupl_start_gid_[mc] = numglobal_coupling_sides_;
 
     // increase total number of sides with number of global side elements of this mesh coupling
     // object
-    numglobal_coupling_sides += mc_cutdis->NumGlobalElements();
+    numglobal_coupling_sides_ += mc_cutdis->NumGlobalElements();
   }
 
   //--------------------------------------------------------
@@ -365,8 +365,8 @@ void XFEM::ConditionManager::Create()
   if (levelset_coupl_.size() > 0)
   {
     // add one global levelset side used in the cut library
-    levelset_gid_ = numglobal_coupling_sides;
-    numglobal_coupling_sides += 1;
+    levelset_gid_ = numglobal_coupling_sides_;
+    numglobal_coupling_sides_ += 1;
 
     bg_phinp_ = CORE::LINALG::CreateVector(*bg_dis_->NodeRowMap(), true);
 

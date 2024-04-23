@@ -463,10 +463,10 @@ namespace MAT
     MAT::PAR::CrystalPlasticity* params_;
 
     //! Gauss point number
-    int gp;
+    int gp_;
 
     //! time increment
-    double dt;
+    double dt_;
 
     //! indicator whether the material model has been initialized already
     bool isinit_ = false;

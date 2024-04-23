@@ -301,7 +301,7 @@ namespace STR
       const int& GetMyRank() const
       {
         CheckInit();
-        return myRank_;
+        return my_rank_;
       };
 
       ///@}
@@ -942,7 +942,7 @@ namespace STR
       Teuchos::RCP<const Epetra_Comm> comm_;
 
       /// ID of actual processor in parallel
-      int myRank_;
+      int my_rank_;
 
       ///@}
 

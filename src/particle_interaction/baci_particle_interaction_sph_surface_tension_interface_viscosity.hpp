@@ -139,7 +139,7 @@ namespace PARTICLEINTERACTION
     const double trans_ref_temp_;
 
     //! transition temperature difference for interface viscosity evaluation
-    const double trans_dT_intvisc_;
+    const double trans_d_t_intvisc_;
   };
 
 }  // namespace PARTICLEINTERACTION

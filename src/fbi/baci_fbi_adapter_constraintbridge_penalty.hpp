@@ -71,16 +71,16 @@ namespace ADAPTER
     void PrepareFluidSolve() override { SetWeakDirichletFlag(); };
 
     /// Matrix containing only structure side contributions \f$C_{ss}\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCss() const override { return Css_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCss() const override { return css_; };
 
     /// Matrix containing only fluid side contributions \f$C_{ff}\f$
-    Teuchos::RCP<const CORE::LINALG::SparseOperator> GetCff() const override { return Cff_; };
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> GetCff() const override { return cff_; };
 
     /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCfs() const override { return Cfs_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCfs() const override { return cfs_; };
 
     /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCsf() const override { return Csf_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCsf() const override { return csf_; };
 
     /// Negative RHS coupling contribution for the fluid partition \f$f_f\f$
     Teuchos::RCP<const Epetra_FEVector> GetFluidCouplingResidual() const override { return ff_; };
@@ -96,10 +96,10 @@ namespace ADAPTER
      *
      */
     FBIConstraintBridgePenalty()
-        : Css_(Teuchos::null),
-          Cff_(Teuchos::null),
-          Cfs_(Teuchos::null),
-          Csf_(Teuchos::null),
+        : css_(Teuchos::null),
+          cff_(Teuchos::null),
+          cfs_(Teuchos::null),
+          csf_(Teuchos::null),
           ff_(Teuchos::null),
           fs_(Teuchos::null),
           fluid_scaled_(false),
@@ -125,16 +125,16 @@ namespace ADAPTER
 
    private:
     /// Coupling matrix containing only structure side contributions \f$C_ss\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> Css_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> css_;
 
     /// Coupling matrix containing only fluid side contributions \f$C_ff\f$
-    Teuchos::RCP<CORE::LINALG::SparseOperator> Cff_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> cff_;
 
     /// Coupling matrix containing mixed fluid side contributions \f$C_fs\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> Cfs_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> cfs_;
 
     /// Coupling matrix containing mixed structure side contributions \f$C_sf\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> Csf_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> csf_;
 
     /// Force vector acting on the fluid side \f$f_f\f$
     Teuchos::RCP<Epetra_FEVector> ff_;

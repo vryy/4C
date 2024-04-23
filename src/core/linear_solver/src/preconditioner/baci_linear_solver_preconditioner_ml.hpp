@@ -31,7 +31,7 @@ namespace CORE::LINEAR_SOLVER
         Epetra_MultiVector* b) override;
 
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return P_; }
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return p_; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     std::string getParameterListName() const override { return "ML Parameters"; }
@@ -40,10 +40,10 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::ParameterList& mllist_;
 
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<Epetra_RowMatrix> Pmatrix_;
+    Teuchos::RCP<Epetra_RowMatrix> pmatrix_;
 
     /// preconditioner
-    Teuchos::RCP<Epetra_Operator> P_;
+    Teuchos::RCP<Epetra_Operator> p_;
   };
 }  // namespace CORE::LINEAR_SOLVER
 

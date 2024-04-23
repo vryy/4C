@@ -107,10 +107,10 @@ namespace FLD
     const std::string statistics_outfilename_;
 
     //! positions for evaluation
-    std::vector<double> posEvaluation_;
+    std::vector<double> pos_evaluation_;
 
     //! positions for evaluation of actual mesh
-    std::vector<double> actPosEvaluation_;
+    std::vector<double> act_pos_evaluation_;
 
     //! Toggle vectors
     Teuchos::RCP<Epetra_Vector> togglew_;

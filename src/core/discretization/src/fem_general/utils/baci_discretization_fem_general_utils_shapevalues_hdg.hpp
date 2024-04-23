@@ -264,7 +264,7 @@ namespace CORE::FE
     std::vector<std::vector<int>> faceNodeOrder;  /// numbering of nodes belonging to faces
 
    private:
-    CORE::LINALG::SerialDenseVector faceValues;  /// Evaluated basis functions on face
+    CORE::LINALG::SerialDenseVector face_values_;  /// Evaluated basis functions on face
 
     /*!
     \brief Computes the face reference system considering the ordering of the master element

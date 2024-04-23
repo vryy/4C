@@ -37,11 +37,11 @@ void CORE::LINEAR_SOLVER::IFPACKPreconditioner::Setup(
 
     // free old matrix first
     prec_ = Teuchos::null;
-    Pmatrix_ = Teuchos::null;
+    pmatrix_ = Teuchos::null;
 
     // create a copy of the scaled matrix
     // so we can reuse the preconditioner
-    Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
+    pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
 
     // get the type of ifpack preconditioner from solver parameter list
     std::string prectype = solverlist_.get("Preconditioner Type", "ILU");
@@ -49,7 +49,7 @@ void CORE::LINEAR_SOLVER::IFPACKPreconditioner::Setup(
 
     // create the preconditioner
     Ifpack Factory;
-    prec_ = Teuchos::rcp(Factory.Create(prectype, Pmatrix_.get(), overlap));
+    prec_ = Teuchos::rcp(Factory.Create(prectype, pmatrix_.get(), overlap));
 
     if (prec_.is_null())
       FOUR_C_THROW("Creation of IFPACK preconditioner of type '%s' failed.", prectype.c_str());

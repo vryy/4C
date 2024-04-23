@@ -123,7 +123,7 @@ namespace CORE::COMM
         NestedParallelismType npType);
 
     /// return group id
-    int GroupId() const { return groupId_; }
+    int GroupId() const { return group_id_; }
 
     /// return number of groups
     int NumGroups() const { return ngroup_; }
@@ -150,11 +150,11 @@ namespace CORE::COMM
     Teuchos::RCP<Epetra_Comm> SubComm() const { return subcomm_; }
 
     /// return nested parallelism type
-    NestedParallelismType NpType() const { return npType_; }
+    NestedParallelismType NpType() const { return np_type_; }
 
    private:
     /// group id
-    int groupId_;
+    int group_id_;
 
     /// number of groups
     int ngroup_;
@@ -172,7 +172,7 @@ namespace CORE::COMM
     Teuchos::RCP<Epetra_Comm> subcomm_;
 
     /// nested parallelism type
-    NestedParallelismType npType_;
+    NestedParallelismType np_type_;
   };
 
 

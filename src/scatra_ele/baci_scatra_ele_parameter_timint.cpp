@@ -46,7 +46,7 @@ DRT::ELEMENTS::ScaTraEleParameterTimInt::ScaTraEleParameterTimInt()
       timefac_(0.0),
       timefacrhs_(0.0),
       timefacrhstau_(0.0),
-      alphaF_(0.0)
+      alpha_f_(0.0)
 {
 }
 
@@ -79,7 +79,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(Teuchos::ParameterLi
   //-----------------------------------------------------
 
   timefac_ = 1.0;
-  alphaF_ = 1.0;
+  alpha_f_ = 1.0;
   timefacrhs_ = 1.0;
   timefacrhstau_ = 1.0;
 
@@ -89,8 +89,8 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(Teuchos::ParameterLi
 
     if (is_genalpha_)
     {
-      alphaF_ = parameters.get<double>("alpha_F");
-      timefac_ *= alphaF_;
+      alpha_f_ = parameters.get<double>("alpha_F");
+      timefac_ *= alpha_f_;
     }
     if (timefac_ < 0.0) FOUR_C_THROW("time factor is negative.");
   }
@@ -99,9 +99,9 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(Teuchos::ParameterLi
   {
     if (is_genalpha_)
     {
-      timefacrhs_ = timefac_ / alphaF_;
+      timefacrhs_ = timefac_ / alpha_f_;
       timefacrhstau_ = timefacrhs_;
-      if (not is_incremental_) timefacrhs_ *= (1.0 - alphaF_);
+      if (not is_incremental_) timefacrhs_ *= (1.0 - alpha_f_);
     }
     else
     {

@@ -110,10 +110,10 @@ void CONTACT::NodeDataContainer::Unpack(
 CONTACT::AUG::NodeDataContainer::NodeDataContainer(Node& parentNode)
     : mentries_(-1),
       kappa_(1.0e12),
-      wGap_(1.0e12),
-      augA_(1.0e12),
-      d_augA_(0),
-      parentNode_(parentNode)
+      w_gap_(1.0e12),
+      aug_a_(1.0e12),
+      d_aug_a_(0),
+      parent_node_(parentNode)
 {
 }
 
@@ -121,7 +121,7 @@ CONTACT::AUG::NodeDataContainer::NodeDataContainer(Node& parentNode)
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::NodeDataContainer::NodeDataContainer(
     Node& parentNode, const int slMaElementAreaRatio, const bool isTriangleOnMaster)
-    : kappa_(1.0e12), wGap_(1.0e12), augA_(1.0e12), parentNode_(parentNode)
+    : kappa_(1.0e12), w_gap_(1.0e12), aug_a_(1.0e12), parent_node_(parentNode)
 {
   mentries_ = ApproximateMEntries(slMaElementAreaRatio, isTriangleOnMaster);
 }
@@ -134,7 +134,7 @@ int CONTACT::AUG::NodeDataContainer::ApproximateMEntries(
   // number of adjacent slave elements
   // The max function catches the rare case of a pure ghost node, i.e. the node
   // belongs to a different proc than all surrounding elements/nodes on this proc
-  const int numSlEle = std::max(parentNode_.NumElement(), 1);
+  const int numSlEle = std::max(parent_node_.NumElement(), 1);
 
   // numSlEle slave elements project approximately into numMaEle if there is no
   // off-set
@@ -159,7 +159,7 @@ int CONTACT::AUG::NodeDataContainer::ApproximateMEntries(
   numMaEle += numMaSurrounding + numCorner;
 
   // approximate number of dentries per element
-  const int dentries_per_element = parentNode_.GetNumDentries() / numSlEle;
+  const int dentries_per_element = parent_node_.GetNumDentries() / numSlEle;
 
   // approximate number of mentries
   double mentries = dentries_per_element * numMaEle;
@@ -177,12 +177,12 @@ void CONTACT::AUG::NodeDataContainer::Setup()
   if (mentries_ == -1) FOUR_C_THROW("mentries_ must be initialized!");
 
   //  const int linsize = parentNode_.GetLinsize();
-  const int dentries = parentNode_.GetNumDentries();
+  const int dentries = parent_node_.GetNumDentries();
 
-  d_augA_.resize(dentries);
+  d_aug_a_.resize(dentries);
   d_kappa_.resize(dentries);
 
-  CORE::GEN::reset(dentries, dd_augA_);
+  CORE::GEN::reset(dentries, dd_aug_a_);
   CORE::GEN::reset(dentries, dd_kappa_);
 
   d_wgap_sl_.resize(dentries);
@@ -204,9 +204,9 @@ void CONTACT::AUG::NodeDataContainer::Pack(CORE::COMM::PackBuffer& data) const
   // add kappa_
   CORE::COMM::ParObject::AddtoPack(data, kappa_);
   // add grow_
-  CORE::COMM::ParObject::AddtoPack(data, wGap_);
+  CORE::COMM::ParObject::AddtoPack(data, w_gap_);
   // add augA_
-  CORE::COMM::ParObject::AddtoPack(data, augA_);
+  CORE::COMM::ParObject::AddtoPack(data, aug_a_);
 
   // no need to pack derivs_
   // (these will evaluated new anyway)
@@ -224,9 +224,9 @@ void CONTACT::AUG::NodeDataContainer::Unpack(
   // kappa_
   CORE::COMM::ParObject::ExtractfromPack(position, data, kappa_);
   // grow_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, wGap_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, w_gap_);
   // augA_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, augA_);
+  CORE::COMM::ParObject::ExtractfromPack(position, data, aug_a_);
 
   return;
 }

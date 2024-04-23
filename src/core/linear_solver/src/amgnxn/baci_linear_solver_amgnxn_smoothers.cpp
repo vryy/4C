@@ -77,7 +77,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::BgsSmoother::Solve(
         if (k != 0 or not InitialGuessIsZero or j < i)
         {
           BlockedVector Yj = Y.GetBlockedVector(superblocks_[j]);
-          BlockedMatrix Aij = A_->GetBlockedMatrix(superblocks_[i], superblocks_[j]);
+          BlockedMatrix Aij = a_->GetBlockedMatrix(superblocks_[i], superblocks_[j]);
           Aij.Apply(Yj, DXitmp);
           DXi.Update(-1.0, DXitmp, 1.0);
         }
@@ -85,7 +85,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::BgsSmoother::Solve(
 
       BlockedVector Yi = Y.GetBlockedVector(superblocks_[i]);
       BlockedVector DYi = Yi.DeepCopy();  // TODO we only need a new vector
-      BlockedMatrix Aii = A_->GetBlockedMatrix(superblocks_[i], superblocks_[i]);
+      BlockedMatrix Aii = a_->GetBlockedMatrix(superblocks_[i], superblocks_[i]);
       Richardson(smoothers_[i], Aii, DXi, DYi, iters_[i], omegas_[i], true);
 
       if (k != 0 or not InitialGuessIsZero)
@@ -106,65 +106,65 @@ void CORE::LINEAR_SOLVER::AMGNXN::SimpleSmoother::Solve(
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::SimpleSmoother::Solve");
 
-  BlockedVector Yp = Y.GetBlockedVector(BlocksPred_);
-  BlockedVector Ys = Y.GetBlockedVector(BlocksSchur_);
-  const BlockedVector Xp = X.GetBlockedVector(BlocksPred_);
-  const BlockedVector Xs = X.GetBlockedVector(BlocksSchur_);
+  BlockedVector Yp = Y.GetBlockedVector(blocks_pred_);
+  BlockedVector Ys = Y.GetBlockedVector(blocks_schur_);
+  const BlockedVector Xp = X.GetBlockedVector(blocks_pred_);
+  const BlockedVector Xs = X.GetBlockedVector(blocks_schur_);
 
   // we need to allocate this dummy vectors only once
-  if (Xp_tmp_ == Teuchos::null)
+  if (xp_tmp_ == Teuchos::null)
   {
-    Xp_tmp_ = X.GetBlockedVector(BlocksPred_).DeepCopyRCP();
-    Xs_tmp_ = X.GetBlockedVector(BlocksSchur_).DeepCopyRCP();
-    Yp_tmp_ = Y.GetBlockedVector(BlocksPred_).DeepCopyRCP();
-    DXp_ = X.GetBlockedVector(BlocksPred_).DeepCopyRCP();
-    DXs_ = X.GetBlockedVector(BlocksSchur_).DeepCopyRCP();
-    DYs_ = Ys.DeepCopyRCP();
+    xp_tmp_ = X.GetBlockedVector(blocks_pred_).DeepCopyRCP();
+    xs_tmp_ = X.GetBlockedVector(blocks_schur_).DeepCopyRCP();
+    yp_tmp_ = Y.GetBlockedVector(blocks_pred_).DeepCopyRCP();
+    d_xp_ = X.GetBlockedVector(blocks_pred_).DeepCopyRCP();
+    d_xs_ = X.GetBlockedVector(blocks_schur_).DeepCopyRCP();
+    d_ys_ = Ys.DeepCopyRCP();
   }
 
-  BlockedMatrix App = A_->GetBlockedMatrix(BlocksPred_, BlocksPred_);
-  BlockedMatrix Aps = A_->GetBlockedMatrix(BlocksPred_, BlocksSchur_);
-  BlockedMatrix Asp = A_->GetBlockedMatrix(BlocksSchur_, BlocksPred_);
-  BlockedMatrix Ass = A_->GetBlockedMatrix(BlocksSchur_, BlocksSchur_);
+  BlockedMatrix App = a_->GetBlockedMatrix(blocks_pred_, blocks_pred_);
+  BlockedMatrix Aps = a_->GetBlockedMatrix(blocks_pred_, blocks_schur_);
+  BlockedMatrix Asp = a_->GetBlockedMatrix(blocks_schur_, blocks_pred_);
+  BlockedMatrix Ass = a_->GetBlockedMatrix(blocks_schur_, blocks_schur_);
 
 
   for (unsigned k = 0; k < iter_; k++)
   {
     // Extract blocks
-    DXp_->Update(1.0, Xp, 0.0);
-    DXs_->Update(1.0, Xs, 0.0);
+    d_xp_->Update(1.0, Xp, 0.0);
+    d_xs_->Update(1.0, Xs, 0.0);
 
     // Predictor equation
     if (k != 0 or not InitialGuessIsZero)
     {
-      Aps.Apply(Ys, *Xp_tmp_);
-      DXp_->Update(-1.0, *Xp_tmp_, 1.0);  // Xp = Xp -  Aps*Ys;
-      SmooApp_->Solve(*DXp_, Yp, false);  // Yp  = App^-1(Xp  - Aps*Ys)
+      Aps.Apply(Ys, *xp_tmp_);
+      d_xp_->Update(-1.0, *xp_tmp_, 1.0);   // Xp = Xp -  Aps*Ys;
+      smoo_app_->Solve(*d_xp_, Yp, false);  // Yp  = App^-1(Xp  - Aps*Ys)
     }
     else
-      SmooApp_->Solve(*DXp_, Yp, true);  // Yp  = App^-1(Xp)
+      smoo_app_->Solve(*d_xp_, Yp, true);  // Yp  = App^-1(Xp)
 
     // Compute Schur complement equation
-    Asp.Apply(Yp, *Xs_tmp_);
-    DXs_->Update(-1.0, *Xs_tmp_, 1.0);  // Xs = Xs - Asp*Yp
+    Asp.Apply(Yp, *xs_tmp_);
+    d_xs_->Update(-1.0, *xs_tmp_, 1.0);  // Xs = Xs - Asp*Yp
     if (k != 0 or not InitialGuessIsZero)
     {
-      Ass.Apply(Ys, *Xs_tmp_);
-      DXs_->Update(-1.0, *Xs_tmp_, 1.0);  // Xs = Xs - Asp*Yp - Ass*Ys
+      Ass.Apply(Ys, *xs_tmp_);
+      d_xs_->Update(-1.0, *xs_tmp_, 1.0);  // Xs = Xs - Asp*Yp - Ass*Ys
     }
     // DYs.PutScalar(0.0);
-    SmooSchur_->Solve(*DXs_, *DYs_, true);  // DYs = S^-1(Xs - Asp*Yp - Ass*Ys)
+    smoo_schur_->Solve(*d_xs_, *d_ys_, true);  // DYs = S^-1(Xs - Asp*Yp - Ass*Ys)
 
     // Schur update
     if (k != 0 or not InitialGuessIsZero)
-      Ys.Update(alpha_, *DYs_, 1.0);  // Ys = Ys + alpha*DYs
+      Ys.Update(alpha_, *d_ys_, 1.0);  // Ys = Ys + alpha*DYs
     else
-      Ys.Update(alpha_, *DYs_, 0.0);  // Ys = alpha*DYs
+      Ys.Update(alpha_, *d_ys_, 0.0);  // Ys = alpha*DYs
 
     // Predictor update
-    Aps.Apply(*DYs_, *Xp_tmp_);               // Xp_tmp = A12*DYs
-    invApp_->Apply(*Xp_tmp_, *Yp_tmp_);       // Yp_tmp = App^-1*Aps*DYs
-    Yp.Update(-1.0 * alpha_, *Yp_tmp_, 1.0);  // Yp = Yp - alpha*App^-1*Aps*DYs
+    Aps.Apply(*d_ys_, *xp_tmp_);              // Xp_tmp = A12*DYs
+    inv_app_->Apply(*xp_tmp_, *yp_tmp_);      // Yp_tmp = App^-1*Aps*DYs
+    Yp.Update(-1.0 * alpha_, *yp_tmp_, 1.0);  // Yp = Yp - alpha*App^-1*Aps*DYs
   }
 }
 
@@ -188,28 +188,28 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix matrix)
   // Set matrix
   block_sparse_matrix_ = matrix.GetBlockSparseMatrix(CORE::LINALG::View);
   sparse_matrix_ = block_sparse_matrix_->Merge();
-  A_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(sparse_matrix_->EpetraMatrix());
-  Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_);
+  a_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(sparse_matrix_->EpetraMatrix());
+  Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(a_);
   if (crsA == Teuchos::null) FOUR_C_THROW("Houston, something went wrong in merging the matrix");
 
   // Set sol vector and rhs
   x_ = Teuchos::rcp(
-      new Epetra_MultiVector(A_->OperatorDomainMap(), 1));  // TODO this one might cause problems
-  b_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorRangeMap(), 1));
+      new Epetra_MultiVector(a_->OperatorDomainMap(), 1));  // TODO this one might cause problems
+  b_ = Teuchos::rcp(new Epetra_MultiVector(a_->OperatorRangeMap(), 1));
 
   // Create linear solver
   Teuchos::ParameterList solvparams;
   CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
       "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solvparams, A_->Comm()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solvparams, a_->Comm()));
 
   // Set up solver
   CORE::LINALG::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
-  solver_->Setup(A_, x_, b_, solver_params);
+  solver_->Setup(a_, x_, b_, solver_params);
 
-  isSetUp_ = true;
+  is_set_up_ = true;
 }
 
 /*------------------------------------------------------------------------------*/
@@ -221,7 +221,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Solve(
   // Seems that we are allocating too many vectors
 
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::MergeAndSolve::Solve");
-  if (not(isSetUp_)) FOUR_C_THROW("The MergeAndSolve class should be set up before calling Apply");
+  if (not(is_set_up_))
+    FOUR_C_THROW("The MergeAndSolve class should be set up before calling Apply");
 
   const CORE::LINALG::MultiMapExtractor& range_ex = block_sparse_matrix_->RangeExtractor();
   const CORE::LINALG::MultiMapExtractor& domain_ex = block_sparse_matrix_->DomainExtractor();
@@ -234,7 +235,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Solve(
 
   b_->Update(1., Xmv, 0.);
   CORE::LINALG::SolverParams solver_params;
-  solver_->Solve(A_, x_, b_, solver_params);
+  solver_->Solve(a_, x_, b_, solver_params);
   Ymv.Update(1., *x_, 0.);
 
   for (int i = 0; i < X.GetNumBlocks(); i++) domain_ex.ExtractVector(Ymv, i, *(Y.GetVector(i)));
@@ -249,7 +250,7 @@ CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::CoupledAmg(Teuchos::RCP<AMGNXN::Blocked
     std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data,
     const Teuchos::ParameterList& amgnxn_params, const Teuchos::ParameterList& smoothers_params,
     const Teuchos::ParameterList& muelu_params)
-    : A_(std::move(A)),
+    : a_(std::move(A)),
       num_pdes_(std::move(num_pdes)),
       null_spaces_dim_(std::move(null_spaces_dim)),
       null_spaces_data_(std::move(null_spaces_data)),
@@ -272,7 +273,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::Setup()
 
 
 
-  if (A_->GetMatrix(0, 0)->Comm().MyPID() != 0) verbosity = "off";
+  if (a_->GetMatrix(0, 0)->Comm().MyPID() != 0) verbosity = "off";
 
   if (verbosity == "on")
   {
@@ -284,7 +285,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::Setup()
   }
 
   // recover the muelu params
-  int NumBlocks = A_->GetNumRows();
+  int NumBlocks = a_->GetNumRows();
   for (int i = 0; i < NumBlocks; i++)
   {
     // recover the name of the list
@@ -323,8 +324,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::Setup()
   int num_levels_amg = amgnxn_params_.get<int>("number of levels", 20);
   // if(num_levels_amg==-1)
   //  FOUR_C_THROW("Missing \"number of levels\" in your xml file");
-  H_ = Teuchos::rcp(new AMGNXN::Hierarchies(
-      A_, muelu_lists_, num_pdes_, null_spaces_dim_, null_spaces_data_, num_levels_amg, verbosity));
+  h_ = Teuchos::rcp(new AMGNXN::Hierarchies(
+      a_, muelu_lists_, num_pdes_, null_spaces_dim_, null_spaces_data_, num_levels_amg, verbosity));
 
   if (verbosity == "on")
   {
@@ -333,8 +334,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::Setup()
     std::cout << std::endl;
   }
 
-  M_ = Teuchos::rcp(new AMGNXN::MonolithicHierarchy(H_, amgnxn_params_, smoothers_params_));
-  V_ = M_->BuildVCycle();
+  m_ = Teuchos::rcp(new AMGNXN::MonolithicHierarchy(h_, amgnxn_params_, smoothers_params_));
+  v_ = m_->BuildVCycle();
 
   if (verbosity == "on")
   {
@@ -354,7 +355,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::Solve(
 {
   if (!is_setup_flag_) FOUR_C_THROW("Solve cannot be called without a previous set up");
 
-  V_->Solve(X, Y, InitialGuessIsZero);
+  v_->Solve(X, Y, InitialGuessIsZero);
 }
 
 
@@ -387,7 +388,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluSmootherWrapper::Apply(
           Yex);
 
   // Apply underlying smoother
-  S_->Apply(*Yx, *Xx, InitialGuessIsZero);
+  s_->Apply(*Yx, *Xx, InitialGuessIsZero);
 
   // Convert to Epetra
   const Teuchos::RCP<Epetra_MultiVector>& Ye =
@@ -401,9 +402,9 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluSmootherWrapper::Apply(
 /*------------------------------------------------------------------------------*/
 CORE::LINEAR_SOLVER::AMGNXN::MueluHierarchyWrapper::MueluHierarchyWrapper(
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H)
-    : H_(std::move(H))
+    : h_(std::move(H))
 {
-  P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
+  p_ = Teuchos::rcp(new MueLu::EpetraOperator(h_));
 }
 
 
@@ -414,7 +415,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluHierarchyWrapper::Apply(
 {
   if (InitialGuessIsZero)
     Y.PutScalar(0.0);  // TODO Remove when you are sure that ApplyInverse will zero out Y.
-  P_->ApplyInverse(X, Y);
+  p_->ApplyInverse(X, Y);
 }
 
 /*------------------------------------------------------------------------------*/
@@ -507,7 +508,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::Setup()
   BuildHierarchy();
 
   // Create the V-cycle
-  P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
+  p_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
 
   double elaptime = timer.totalElapsedTime(true);
   if (muelu_list_.sublist("Hierarchy").get<std::string>("verbosity", "None") != "None" and
@@ -523,7 +524,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::Apply(
 {
   if (InitialGuessIsZero)
     Y.PutScalar(0.0);  // TODO Remove when you are sure that ApplyInverse will zero out Y.
-  P_->ApplyInverse(X, Y);
+  p_->ApplyInverse(X, Y);
 }
 
 
@@ -652,12 +653,12 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
   // Build vcycle
   int NumSweeps = 1;
   int FirstLevel = 0;
-  V_ = Teuchos::rcp(new VcycleSingle(NumLevels, NumSweeps, FirstLevel));
-  V_->SetOperators(Avec);
-  V_->SetProjectors(Pvec);
-  V_->SetRestrictors(Rvec);
-  V_->SetPreSmoothers(SvecPre);
-  V_->SetPosSmoothers(SvecPos);
+  v_ = Teuchos::rcp(new VcycleSingle(NumLevels, NumSweeps, FirstLevel));
+  v_->SetOperators(Avec);
+  v_->SetProjectors(Pvec);
+  v_->SetRestrictors(Rvec);
+  v_->SetPreSmoothers(SvecPre);
+  v_->SetPosSmoothers(SvecPos);
 
 
   double elaptime = timer.totalElapsedTime(true);
@@ -674,7 +675,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Apply(
 {
   if (InitialGuessIsZero)
     Y.PutScalar(0.0);  // TODO Remove when you are sure that ApplyInverse will zero out Y.
-  V_->Apply(X, Y, InitialGuessIsZero);
+  v_->Apply(X, Y, InitialGuessIsZero);
 }
 
 
@@ -682,7 +683,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Apply(
 /*------------------------------------------------------------------------------*/
 CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapper::IfpackWrapper(
     Teuchos::RCP<CORE::LINALG::SparseMatrixBase> A, Teuchos::ParameterList& list)
-    : A_(std::move(A))
+    : a_(std::move(A))
 {
   // Determine the preconditioner type
   type_ = list.get<std::string>("type", "none");
@@ -710,10 +711,10 @@ CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapper::IfpackWrapper(
 
   // Create smoother
   Ifpack Factory;
-  Arow_ = Teuchos::rcp_dynamic_cast<Epetra_RowMatrix>(A_->EpetraMatrix());
-  if (Arow_ == Teuchos::null)
+  arow_ = Teuchos::rcp_dynamic_cast<Epetra_RowMatrix>(a_->EpetraMatrix());
+  if (arow_ == Teuchos::null)
     FOUR_C_THROW("Something wrong. Be sure that the given matrix is not a block matrix");
-  prec_ = Factory.Create(type_, Arow_.get(), overlap);
+  prec_ = Factory.Create(type_, arow_.get(), overlap);
 
 
   // Set parameter list and setup
@@ -739,7 +740,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapper::Apply(
   else
   {
     Epetra_MultiVector DX(X.Map(), X.NumVectors(), false);
-    A_->Apply(Y, DX);
+    a_->Apply(Y, DX);
     DX.Update(1.0, X, -1.0);
     Epetra_MultiVector DY(Y.Map(), X.NumVectors(), false);
     prec_->ApplyInverse(DX, DY);
@@ -751,10 +752,10 @@ void CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapper::Apply(
 /*------------------------------------------------------------------------------*/
 CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::DirectSolverWrapper()
     : solver_(Teuchos::null),
-      A_(Teuchos::null),
+      a_(Teuchos::null),
       x_(Teuchos::null),
       b_(Teuchos::null),
-      isSetUp_(false)
+      is_set_up_(false)
 {
 }
 
@@ -766,13 +767,13 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> matrix, Teuchos::RCP<Teuchos::ParameterList> params)
 {
   // Set matrix
-  A_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(matrix->EpetraMatrix());
-  Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_);
+  a_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(matrix->EpetraMatrix());
+  Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(a_);
   if (crsA == Teuchos::null) FOUR_C_THROW("Something wrong");
 
   // Set sol vector and rhs
-  x_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorDomainMap(), 1));
-  b_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorRangeMap(), 1));
+  x_ = Teuchos::rcp(new Epetra_MultiVector(a_->OperatorDomainMap(), 1));
+  b_ = Teuchos::rcp(new Epetra_MultiVector(a_->OperatorRangeMap(), 1));
 
   // Create linear solver. Default solver: UMFPACK
   const auto solvertype = params->get<std::string>("solver", "umfpack");
@@ -790,15 +791,15 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
   else
     FOUR_C_THROW("Solver type not supported as direct solver in AMGNXN framework");
 
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(*params, A_->Comm()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(*params, a_->Comm()));
 
   // Set up solver
   CORE::LINALG::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
-  solver_->Setup(A_, x_, b_, solver_params);
+  solver_->Setup(a_, x_, b_, solver_params);
 
-  isSetUp_ = true;
+  is_set_up_ = true;
 }
 
 
@@ -807,12 +808,12 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
 void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
-  if (not(isSetUp_))
+  if (not(is_set_up_))
     FOUR_C_THROW("The DirectSolverWrapper class should be set up before calling Apply");
 
   b_->Update(1., X, 0.);
   CORE::LINALG::SolverParams solver_params;
-  solver_->Solve(A_, x_, b_, solver_params);
+  solver_->Solve(a_, x_, b_, solver_params);
   Y.Update(1., *x_, 0.);
 }
 

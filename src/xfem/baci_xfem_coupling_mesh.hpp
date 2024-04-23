@@ -296,7 +296,7 @@ namespace XFEM
     bool init_volcoupling_;
 
     //! when should the local eigenvalue problem be updated
-    INPAR::XFEM::TraceEstimateEigenvalueUpdate traceEstimate_eigenvalue_update_;
+    INPAR::XFEM::TraceEstimateEigenvalueUpdate trace_estimate_eigenvalue_update_;
 
     //! last reset of local eigenvalue problem
     int reset_step_;

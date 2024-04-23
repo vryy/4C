@@ -175,8 +175,8 @@ namespace BEAMINTERACTION
     //! triads representing the (constant) relative rotation between the two nodal triads of the
     //! linker element
     // and cross-section orientation of its connection sites (a.k.a. binding spots)
-    CORE::LINALG::Matrix<3, 3> Lambdarel1_;
-    CORE::LINALG::Matrix<3, 3> Lambdarel2_;
+    CORE::LINALG::Matrix<3, 3> lambdarel1_;
+    CORE::LINALG::Matrix<3, 3> lambdarel2_;
 
     //@}
   };

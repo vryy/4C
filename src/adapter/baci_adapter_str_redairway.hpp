@@ -63,8 +63,8 @@ namespace ADAPTER
     /// map of coupling IDs
     Teuchos::RCP<Epetra_Map> coupmap_;
 
-    std::map<int, double> Vn_;
-    std::map<int, double> Vnp_;
+    std::map<int, double> vn_;
+    std::map<int, double> vnp_;
   };
 
 }  // namespace ADAPTER

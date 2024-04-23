@@ -97,10 +97,10 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::Setup(
   const int typevectorsize = *(--boundarytypes_.end()) + 1;
 
   // allocate memory to hold contributions of neighboring particles
-  sumj_Wij_.resize(typevectorsize);
-  sumj_press_j_Wij_.resize(typevectorsize);
-  sumj_dens_j_r_ij_Wij_.resize(typevectorsize);
-  sumj_vel_j_Wij_.resize(typevectorsize);
+  sumj_wij_.resize(typevectorsize);
+  sumj_press_j_wij_.resize(typevectorsize);
+  sumj_dens_j_r_ij_wij_.resize(typevectorsize);
+  sumj_vel_j_wij_.resize(typevectorsize);
 }
 
 void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
@@ -120,10 +120,10 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
     const int particlestored = container_i->ParticlesStored();
 
     // allocate memory
-    sumj_Wij_[type_i].assign(particlestored, 0.0);
-    sumj_press_j_Wij_[type_i].assign(particlestored, 0.0);
-    sumj_dens_j_r_ij_Wij_[type_i].assign(particlestored, std::vector<double>(3, 0.0));
-    sumj_vel_j_Wij_[type_i].assign(particlestored, std::vector<double>(3, 0.0));
+    sumj_wij_[type_i].assign(particlestored, 0.0);
+    sumj_press_j_wij_[type_i].assign(particlestored, 0.0);
+    sumj_dens_j_r_ij_wij_[type_i].assign(particlestored, std::vector<double>(3, 0.0));
+    sumj_vel_j_wij_[type_i].assign(particlestored, std::vector<double>(3, 0.0));
   }
 
   // get relevant particle pair indices
@@ -161,13 +161,13 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
       const double* press_j = container_j->GetPtrToState(PARTICLEENGINE::Pressure, particle_j);
 
       // sum contribution of neighboring particle j
-      sumj_Wij_[type_i][particle_i] += particlepair.Wij_;
-      sumj_press_j_Wij_[type_i][particle_i] += press_j[0] * particlepair.Wij_;
+      sumj_wij_[type_i][particle_i] += particlepair.Wij_;
+      sumj_press_j_wij_[type_i][particle_i] += press_j[0] * particlepair.Wij_;
 
       const double fac = dens_j[0] * particlepair.absdist_ * particlepair.Wij_;
-      UTILS::VecAddScale(sumj_dens_j_r_ij_Wij_[type_i][particle_i].data(), fac, particlepair.e_ij_);
+      UTILS::VecAddScale(sumj_dens_j_r_ij_wij_[type_i][particle_i].data(), fac, particlepair.e_ij_);
 
-      UTILS::VecAddScale(sumj_vel_j_Wij_[type_i][particle_i].data(), particlepair.Wij_, vel_j);
+      UTILS::VecAddScale(sumj_vel_j_wij_[type_i][particle_i].data(), particlepair.Wij_, vel_j);
     }
 
     // evaluate contribution of neighboring fluid particle i
@@ -183,13 +183,13 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
       const double* press_i = container_i->GetPtrToState(PARTICLEENGINE::Pressure, particle_i);
 
       // sum contribution of neighboring particle i
-      sumj_Wij_[type_j][particle_j] += particlepair.Wji_;
-      sumj_press_j_Wij_[type_j][particle_j] += press_i[0] * particlepair.Wji_;
+      sumj_wij_[type_j][particle_j] += particlepair.Wji_;
+      sumj_press_j_wij_[type_j][particle_j] += press_i[0] * particlepair.Wji_;
 
       const double fac = -dens_i[0] * particlepair.absdist_ * particlepair.Wji_;
-      UTILS::VecAddScale(sumj_dens_j_r_ij_Wij_[type_j][particle_j].data(), fac, particlepair.e_ij_);
+      UTILS::VecAddScale(sumj_dens_j_r_ij_wij_[type_j][particle_j].data(), fac, particlepair.e_ij_);
 
-      UTILS::VecAddScale(sumj_vel_j_Wij_[type_j][particle_j].data(), particlepair.Wji_, vel_i);
+      UTILS::VecAddScale(sumj_vel_j_wij_[type_j][particle_j].data(), particlepair.Wji_, vel_i);
     }
   }
 
@@ -208,7 +208,7 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // set modified boundary particle states
-      if (sumj_Wij_[type_i][particle_i] > 0.0)
+      if (sumj_wij_[type_i][particle_i] > 0.0)
       {
         // get pointer to particle states
         const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
@@ -223,18 +223,18 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
         UTILS::VecSet(relacc, gravity.data());
         UTILS::VecSub(relacc, acc_i);
 
-        const double inv_sumj_Wij = 1.0 / sumj_Wij_[type_i][particle_i];
+        const double inv_sumj_Wij = 1.0 / sumj_wij_[type_i][particle_i];
 
         // set modified boundary pressure
         boundarypress_i[0] =
-            (sumj_press_j_Wij_[type_i][particle_i] +
-                UTILS::VecDot(relacc, sumj_dens_j_r_ij_Wij_[type_i][particle_i].data())) *
+            (sumj_press_j_wij_[type_i][particle_i] +
+                UTILS::VecDot(relacc, sumj_dens_j_r_ij_wij_[type_i][particle_i].data())) *
             inv_sumj_Wij;
 
         // set modified boundary velocity
         UTILS::VecSetScale(boundaryvel_i, 2.0, vel_i);
         UTILS::VecAddScale(
-            boundaryvel_i, -inv_sumj_Wij, sumj_vel_j_Wij_[type_i][particle_i].data());
+            boundaryvel_i, -inv_sumj_Wij, sumj_vel_j_wij_[type_i][particle_i].data());
       }
     }
   }

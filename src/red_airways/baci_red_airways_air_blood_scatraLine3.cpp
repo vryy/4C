@@ -85,7 +85,7 @@ DRT::ELEMENTS::RedAirBloodScatraLine3::RedAirBloodScatraLine3(int id, int owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAirBloodScatraLine3::RedAirBloodScatraLine3(
     const DRT::ELEMENTS::RedAirBloodScatraLine3& old)
-    : DRT::Element(old), elemParams_(old.elemParams_), generation_(old.generation_)
+    : DRT::Element(old), elem_params_(old.elem_params_), generation_(old.generation_)
 {
 }
 
@@ -137,8 +137,8 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3::Pack(CORE::COMM::PackBuffer& data) c
 
   std::map<std::string, double>::const_iterator it;
 
-  AddtoPack(data, (int)(elemParams_.size()));
-  for (it = elemParams_.begin(); it != elemParams_.end(); it++)
+  AddtoPack(data, (int)(elem_params_.size()));
+  for (it = elem_params_.begin(); it != elem_params_.end(); it++)
   {
     AddtoPack(data, it->first);
     AddtoPack(data, it->second);
@@ -174,7 +174,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3::Unpack(const std::vector<char>& data
     double val;
     ExtractfromPack(position, data, name);
     ExtractfromPack(position, data, val);
-    elemParams_[name] = val;
+    elem_params_[name] = val;
   }
 
 
@@ -226,13 +226,13 @@ bool DRT::ELEMENTS::RedAirBloodScatraLine3::VisData(
 void DRT::ELEMENTS::RedAirBloodScatraLine3::getParams(std::string name, double& var)
 {
   std::map<std::string, double>::iterator it;
-  it = elemParams_.find(name);
-  if (it == elemParams_.end())
+  it = elem_params_.find(name);
+  if (it == elem_params_.end())
   {
     FOUR_C_THROW("[%s] is not found with in the element variables", name.c_str());
     exit(1);
   }
-  var = elemParams_[name];
+  var = elem_params_[name];
 }
 
 /*----------------------------------------------------------------------*

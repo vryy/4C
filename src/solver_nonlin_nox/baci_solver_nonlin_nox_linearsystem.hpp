@@ -243,17 +243,17 @@ namespace NOX
       /// access the jacobian
       inline CORE::LINALG::SparseOperator& Jacobian() const
       {
-        if (jacPtr_.is_null()) throwError("JacPtr", "JacPtr is nullptr!");
+        if (jac_ptr_.is_null()) throwError("JacPtr", "JacPtr is nullptr!");
 
-        return *jacPtr_;
+        return *jac_ptr_;
       }
 
       /// access the jacobian (read-only)
       inline const Teuchos::RCP<CORE::LINALG::SparseOperator>& JacobianPtr() const
       {
-        if (jacPtr_.is_null()) throwError("JacPtr", "JacPtr is nullptr!");
+        if (jac_ptr_.is_null()) throwError("JacPtr", "JacPtr is nullptr!");
 
-        return jacPtr_;
+        return jac_ptr_;
       }
 
       //! PURE VIRTUAL FUNCTIONS: These functions have to be defined in the derived
@@ -382,7 +382,7 @@ namespace NOX
        *
        *  Use the provided accessors to access this member. Direct access is prohibited
        *  due to the pointer management by changing states (e.g. XFEM). */
-      Teuchos::RCP<CORE::LINALG::SparseOperator> jacPtr_;
+      Teuchos::RCP<CORE::LINALG::SparseOperator> jac_ptr_;
     };
   }  // namespace NLN
 }  // namespace NOX

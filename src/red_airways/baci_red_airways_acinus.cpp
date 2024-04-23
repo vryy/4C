@@ -98,9 +98,9 @@ DRT::ELEMENTS::RedAcinus::RedAcinus(int id, int owner) : DRT::Element(id, owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedAcinus::RedAcinus(const DRT::ELEMENTS::RedAcinus& old)
     : DRT::Element(old),
-      elemType_(old.elemType_),
-      resistance_(old.elemType_),
-      acinusParams_(old.acinusParams_)
+      elem_type_(old.elem_type_),
+      resistance_(old.elem_type_),
+      acinus_params_(old.acinus_params_)
 {
 }
 
@@ -152,14 +152,14 @@ void DRT::ELEMENTS::RedAcinus::Pack(CORE::COMM::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
 
-  AddtoPack(data, elemType_);
+  AddtoPack(data, elem_type_);
   AddtoPack(data, resistance_);
 
-  AddtoPack(data, acinusParams_.volume_relaxed);
-  AddtoPack(data, acinusParams_.alveolar_duct_volume);
-  AddtoPack(data, acinusParams_.area);
-  AddtoPack(data, acinusParams_.volume_init);
-  AddtoPack(data, acinusParams_.generation);
+  AddtoPack(data, acinus_params_.volume_relaxed);
+  AddtoPack(data, acinus_params_.alveolar_duct_volume);
+  AddtoPack(data, acinus_params_.area);
+  AddtoPack(data, acinus_params_.volume_init);
+  AddtoPack(data, acinus_params_.generation);
 
   return;
 }
@@ -180,14 +180,14 @@ void DRT::ELEMENTS::RedAcinus::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
 
-  ExtractfromPack(position, data, elemType_);
+  ExtractfromPack(position, data, elem_type_);
   ExtractfromPack(position, data, resistance_);
 
-  ExtractfromPack(position, data, acinusParams_.volume_relaxed);
-  ExtractfromPack(position, data, acinusParams_.alveolar_duct_volume);
-  ExtractfromPack(position, data, acinusParams_.area);
-  ExtractfromPack(position, data, acinusParams_.volume_init);
-  ExtractfromPack(position, data, acinusParams_.generation);
+  ExtractfromPack(position, data, acinus_params_.volume_relaxed);
+  ExtractfromPack(position, data, acinus_params_.alveolar_duct_volume);
+  ExtractfromPack(position, data, acinus_params_.area);
+  ExtractfromPack(position, data, acinus_params_.volume_init);
+  ExtractfromPack(position, data, acinus_params_.generation);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -270,13 +270,13 @@ bool DRT::ELEMENTS::RedAcinus::VisData(const std::string& name, std::vector<doub
 
 void DRT::ELEMENTS::RedAcinus::UpdateRelaxedVolume(double newVol)
 {
-  acinusParams_.volume_relaxed = newVol;
+  acinus_params_.volume_relaxed = newVol;
 }
 
 
 const DRT::REDAIRWAYS::AcinusParams& DRT::ELEMENTS::RedAcinus::GetAcinusParams() const
 {
-  return acinusParams_;
+  return acinus_params_;
 }
 
 /*----------------------------------------------------------------------*

@@ -47,7 +47,7 @@ namespace CORE::GEN
      *  @param reserve The number of elements that are preallocated
      */
     Pairedmatrix(size_t reserve)
-        : base_type(reserve, Key(), inner_pairedvector_type(reserve)), _max_row_capacity(reserve)
+        : base_type(reserve, Key(), inner_pairedvector_type(reserve)), max_row_capacity_(reserve)
     {
     }
 
@@ -56,7 +56,7 @@ namespace CORE::GEN
      *          number of entries. Use resize as soon as you know the necessary
      *          number of elements.
      */
-    Pairedmatrix() : base_type(), _max_row_capacity(0) {}
+    Pairedmatrix() : base_type(), max_row_capacity_(0) {}
 
     /**
      *  @brief  constructor creates no elements, but reserves the maximum
@@ -66,7 +66,7 @@ namespace CORE::GEN
      *  @param default_T   default value for the data within the pair
      */
     Pairedmatrix(size_t reserve, Key default_key, inner_pairedvector_type default_T)
-        : base_type(reserve, default_key, default_T), _max_row_capacity(default_T.capacity())
+        : base_type(reserve, default_key, default_T), max_row_capacity_(default_T.capacity())
     {
     }
 
@@ -77,7 +77,7 @@ namespace CORE::GEN
      *  @param[in] type   Apply this copy type.
      */
     Pairedmatrix(const inner_pairedvector_type& source, enum GEN::CopyType type = DeepCopy)
-        : base_type(), _max_row_capacity(0)
+        : base_type(), max_row_capacity_(0)
     {
       const size_t src_max_row_capacity = maxRowCapacity(source);
       clear(default_pair(src_max_row_capacity));
@@ -113,15 +113,15 @@ namespace CORE::GEN
      *
      *  \author hiermeier \date 07/17
      */
-    void clear() { clear(_max_row_capacity); }
+    void clear() { clear(max_row_capacity_); }
 
     void clear(const pair_type& x) { base_type::clear(x); }
 
     void resize(size_t new_size)
     {
-      if (new_size > _max_row_capacity) _max_row_capacity = new_size;
+      if (new_size > max_row_capacity_) max_row_capacity_ = new_size;
 
-      base_type::resize(new_size, default_pair(_max_row_capacity));
+      base_type::resize(new_size, default_pair(max_row_capacity_));
     }
 
     void resize(size_t new_size, const pair_type& x) { base_type::resize(new_size, x); }
@@ -215,7 +215,7 @@ namespace CORE::GEN
 
     inline void resize(const size_t new_size, const size_t row_capacity)
     {
-      _max_row_capacity = row_capacity;
+      max_row_capacity_ = row_capacity;
       base_type::resize(new_size, default_pair(row_capacity));
     }
 
@@ -237,7 +237,7 @@ namespace CORE::GEN
     }
 
    private:
-    size_t _max_row_capacity;
+    size_t max_row_capacity_;
   };  // class pairedmatrix
 
   /*--------------------------------------------------------------------------*/

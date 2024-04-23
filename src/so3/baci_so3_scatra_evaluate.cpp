@@ -76,7 +76,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterL
       for (int igp = 0; igp < numgpt_; ++igp)
       {
         // detJrefpar_wgp = det(dX/dr) * w_gp to calculate volume in reference configuration
-        const double detJrefpar_wgp = detJ_[igp] * intpoints_.qwgt[igp];
+        const double detJrefpar_wgp = det_j_[igp] * intpoints_.qwgt[igp];
 
         volume_ref += detJrefpar_wgp;
 
@@ -325,7 +325,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Locat
 
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 . N_rst
-    N_XYZ.Multiply(invJ_[gp], deriv);
+    N_XYZ.Multiply(inv_j_[gp], deriv);
 
     // (material) deformation gradient
     // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
@@ -369,7 +369,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Locat
     /*==== end of call material law ===============================================*/
 
     // k_dS = B^T . dS/dc * detJ * N * w(gp)
-    const double detJ_w = detJ_[gp] * intpoints_.qwgt[gp];
+    const double detJ_w = det_j_[gp] * intpoints_.qwgt[gp];
     CORE::LINALG::Matrix<numdofperelement_, 1> BdSdc(true);
     BdSdc.MultiplyTN(detJ_w, bop, dSdc);
 
@@ -473,8 +473,8 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::InitElement()
 {
   // resize gauss point coordinates, inverse of the jacobian and determinant of the jacobian
   xsi_.resize(numgpt_);
-  invJ_.resize(numgpt_);
-  detJ_.resize(numgpt_);
+  inv_j_.resize(numgpt_);
+  det_j_.resize(numgpt_);
 
   // calculate coordinates in reference (material) configuration
   CORE::LINALG::Matrix<numnod_, numdim_> xrefe;
@@ -506,12 +506,12 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::InitElement()
                  [ X_,t  Y_,t  Z_,t ]
      */
 
-    invJ_[gp].Multiply(deriv, xrefe);
+    inv_j_[gp].Multiply(deriv, xrefe);
     // here Jacobian is inverted and det(J) is calculated
-    detJ_[gp] = invJ_[gp].Invert();
+    det_j_[gp] = inv_j_[gp].Invert();
 
     // make sure determinant of jacobian is positive
-    if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
+    if (det_j_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", det_j_[gp]);
   }
 }
 

@@ -121,8 +121,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::InitializeShapes(
     // check if only one scalar is defined
     if (numscal_ > 1) FOUR_C_THROW("Not implemented for multiple scalars");
 
-    if (localSolver_ == Teuchos::null)
-      localSolver_ =
+    if (local_solver_ == Teuchos::null)
+      local_solver_ =
           Teuchos::rcp(new LocalSolver(ele, *shapes_, *shapesface_, usescompletepoly_, disname, 1));
   }
   else
@@ -151,13 +151,14 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Evaluate(DRT::Element* el
   GetMaterialParams(ele);
 
   elevec1.putScalar(0.0);
-  if (!localSolver_->scatrapara_->SemiImplicit())
+  if (!local_solver_->scatrapara_->SemiImplicit())
   {
     elemat1.putScalar(0.0);
-    localSolver_->AddDiffMat(elemat1, hdgele);
-    localSolver_->AddReacMat(elemat1, hdgele);
+    local_solver_->AddDiffMat(elemat1, hdgele);
+    local_solver_->AddReacMat(elemat1, hdgele);
   }
-  localSolver_->ComputeResidual(params, elevec1, elemat1, interiorPhin_, tracenm_, tracen_, hdgele);
+  local_solver_->ComputeResidual(
+      params, elevec1, elemat1, interiorPhin_, tracenm_, tracen_, hdgele);
 
   return 0;
 }
@@ -236,11 +237,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
         ElementInit(ele);
         ReadGlobalVectors(ele, discretization, la);
         PrepareMaterialParams(ele);
-        localSolver_->ComputeMatrices(ele);
-        localSolver_->CondenseLocalPart(hdgele);
+        local_solver_->ComputeMatrices(ele);
+        local_solver_->CondenseLocalPart(hdgele);
       }
       elemat1_epetra.putScalar(0.0);
-      localSolver_->AddDiffMat(elemat1_epetra, hdgele);
+      local_solver_->AddDiffMat(elemat1_epetra, hdgele);
 
       break;
     }
@@ -289,7 +290,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
         int nfdofs = CORE::FE::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(parameter)->Size();
         sumindex += nfdofs;
       }
-      localSolver_->ComputeNeumannBC(ele, params, face, elevec1_epetra, sumindex);
+      local_solver_->ComputeNeumannBC(ele, params, face, elevec1_epetra, sumindex);
       break;
     }
     case SCATRA::Action::calc_padaptivity:
@@ -1403,7 +1404,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterialParams(
 
   DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
   for (unsigned int i = 0; i < (*difftensor).size(); ++i)
-    localSolver_->PrepareMaterialParameter(hdgele, (*difftensor)[i]);
+    local_solver_->PrepareMaterialParameter(hdgele, (*difftensor)[i]);
 
 
 
@@ -1445,7 +1446,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
     Materials(material, 0, difftensor, ivecn, ivecnp, ivecnpderiv);
 
   DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
-  localSolver_->SetMaterialParameter(hdgele, ivecn, ivecnp, ivecnpderiv);
+  local_solver_->SetMaterialParameter(hdgele, ivecn, ivecnp, ivecnpderiv);
 
 
 
@@ -1521,10 +1522,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
   for (unsigned int i = 0; i < hdgele->ndofs_ * nsd_; ++i)
     tempinteriorgradphin(i) = interiorPhin_(hdgele->ndofs_ + i);
 
-  double dt = localSolver_->scatraparatimint_->Dt();
-  double theta = localSolver_->scatraparatimint_->TimeFac() * (1 / dt);
-  const double time = localSolver_->scatraparatimint_->Time();
-  bool source = localSolver_->scatrapara_->IsEMD();
+  double dt = local_solver_->scatraparatimint_->Dt();
+  double theta = local_solver_->scatraparatimint_->TimeFac() * (1 / dt);
+  const double time = local_solver_->scatraparatimint_->Time();
+  bool source = local_solver_->scatrapara_->IsEMD();
 
   CORE::LINALG::SerialDenseVector tempVec1(hdgele->ndofs_);
   if (theta != 1.0)
@@ -1541,12 +1542,12 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
 
   // Reaction term
   CORE::LINALG::SerialDenseVector tempVecI(hdgele->ndofs_);
-  if (!localSolver_->scatrapara_->SemiImplicit())
+  if (!local_solver_->scatrapara_->SemiImplicit())
   {
     tempVecI = hdgele->Ivecnp_;
     if (source)
     {
-      localSolver_->ComputeSource(hdgele, tempVecI, time + dt);
+      local_solver_->ComputeSource(hdgele, tempVecI, time + dt);
     }
     tempVecI.scale(-dt * theta);
     tempVec1 += tempVecI;
@@ -1555,7 +1556,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
       tempVecI = hdgele->Ivecn_;
       if (source)
       {
-        localSolver_->ComputeSource(hdgele, tempVecI, time);
+        local_solver_->ComputeSource(hdgele, tempVecI, time);
       }
       tempVecI.scale(-dt * (1.0 - theta));
       tempVec1 += tempVecI;
@@ -1566,7 +1567,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
     tempVecI = hdgele->Ivecn_;
     if (source)
     {
-      localSolver_->ComputeSource(hdgele, tempVecI, time);
+      local_solver_->ComputeSource(hdgele, tempVecI, time);
     }
     tempVecI.scale(-dt);
     tempVec1 += tempVecI;

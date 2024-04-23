@@ -210,7 +210,7 @@ namespace MAT
       double tauc_n_;
 
       /// Special anisotropic behavior
-      DefaultAnisotropyExtension<1> anisotropyExtension_;
+      DefaultAnisotropyExtension<1> anisotropy_extension_;
     };
 
   }  // namespace ELASTIC

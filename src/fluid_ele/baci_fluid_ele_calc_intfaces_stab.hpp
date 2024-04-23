@@ -974,9 +974,9 @@ namespace DRT
       CORE::LINALG::Matrix<nsd_, iel> xyze_;
 
       //! linearisation of convection, convective part for parent element
-      CORE::LINALG::Matrix<piel, 1> p_conv_c;
+      CORE::LINALG::Matrix<piel, 1> p_conv_c_;
       //! linearisation of convection, convective part for neighbor element
-      CORE::LINALG::Matrix<niel, 1> n_conv_c;
+      CORE::LINALG::Matrix<niel, 1> n_conv_c_;
 
 
       // shape functions and derivatives, mapping from reference element to actual geometry
@@ -1150,25 +1150,25 @@ namespace DRT
       double tau_div_;  ///< stabilization factor for coupled divergence jump stabilization term
       double tau_p_;    ///< stabilization factor for pressure gradient jump stabilization term
 
-      double tau_u_GP1_visc_reaction_;  ///< 1st order viscous and reactive stabilization factor for
-                                        ///< ghost penalty stabilization factor for velocity
-                                        ///< gradient jump ghost-penalty term
-      double tau_u_GP1_;    ///< 1st order stabilization factor for component-wise velocity gradient
-                            ///< jump higher-order ghost penalty stabilization terms
-      double tau_div_GP1_;  ///< 1st order stabilization factor for coupled divergence jump
-                            ///< higher-order ghost penalty stabilization term
-      double tau_p_GP1_;    ///< 1st order stabilization factor for pressure gradient jump
-                            ///< higher-order ghost penalty stabilization term
+      double tau_u_gp_1_visc_reaction_;  ///< 1st order viscous and reactive stabilization factor
+                                         ///< for ghost penalty stabilization factor for velocity
+                                         ///< gradient jump ghost-penalty term
+      double tau_u_gp_1_;  ///< 1st order stabilization factor for component-wise velocity gradient
+                           ///< jump higher-order ghost penalty stabilization terms
+      double tau_div_gp_1_;  ///< 1st order stabilization factor for coupled divergence jump
+                             ///< higher-order ghost penalty stabilization term
+      double tau_p_gp_1_;    ///< 1st order stabilization factor for pressure gradient jump
+                             ///< higher-order ghost penalty stabilization term
 
-      double tau_u_GP2_visc_reaction_;  ///< 2nd order viscous and reactive stabilization factor for
-                                        ///< ghost penalty stabilization factor for velocity
-                                        ///< gradient jump ghost-penalty term
-      double tau_u_GP2_;    ///< 2nd order stabilization factor for component-wise velocity gradient
-                            ///< jump higher-order ghost penalty stabilization terms
-      double tau_div_GP2_;  ///< 2nd order stabilization factor for coupled divergence jump
-                            ///< higher-order ghost penalty stabilization term
-      double tau_p_GP2_;    ///< 2nd order stabilization factor for pressure gradient jump
-                            ///< higher-order ghost penalty stabilization term
+      double tau_u_gp_2_visc_reaction_;  ///< 2nd order viscous and reactive stabilization factor
+                                         ///< for ghost penalty stabilization factor for velocity
+                                         ///< gradient jump ghost-penalty term
+      double tau_u_gp_2_;  ///< 2nd order stabilization factor for component-wise velocity gradient
+                           ///< jump higher-order ghost penalty stabilization terms
+      double tau_div_gp_2_;  ///< 2nd order stabilization factor for coupled divergence jump
+                             ///< higher-order ghost penalty stabilization term
+      double tau_p_gp_2_;    ///< 2nd order stabilization factor for pressure gradient jump
+                             ///< higher-order ghost penalty stabilization term
 
       double tau_vel_1st_final_;  ///< final scaling for 1st order velocity cips and gps
       double tau_pre_1st_final_;  ///< final scaling for 1st order pressure cips and gps

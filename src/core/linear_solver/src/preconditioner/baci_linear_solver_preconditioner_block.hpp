@@ -32,14 +32,14 @@ namespace CORE::LINEAR_SOLVER
         Epetra_MultiVector* b) override;
 
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return P_; }
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return p_; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     std::string getParameterListName() const override { return "CheapSIMPLE Parameters"; }
 
    private:
     Teuchos::ParameterList& params_;
-    Teuchos::RCP<Epetra_Operator> P_;
+    Teuchos::RCP<Epetra_Operator> p_;
   };
 
   /// General purpose block gauss-seidel preconditioner
@@ -55,7 +55,7 @@ namespace CORE::LINEAR_SOLVER
         Epetra_MultiVector* b) override;
 
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return P_; }
+    Teuchos::RCP<Epetra_Operator> PrecOperator() const override { return p_; }
 
     /// return name of sublist in paramterlist which contains parameters for preconditioner
     std::string getParameterListName() const override { return "BGS Parameters"; }
@@ -63,7 +63,7 @@ namespace CORE::LINEAR_SOLVER
    private:
     Teuchos::ParameterList& params_;
     Teuchos::ParameterList& bgslist_;
-    Teuchos::RCP<Epetra_Operator> P_;
+    Teuchos::RCP<Epetra_Operator> p_;
   };
 }  // namespace CORE::LINEAR_SOLVER
 

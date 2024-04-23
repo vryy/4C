@@ -146,8 +146,8 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
     const plain_interface_set& interfaces, int dim, const Teuchos::RCP<const Epetra_Comm>& comm,
     int maxdof)
     : CONTACT::AbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params, dim, comm, 0.0, maxdof),
-      augDataPtr_(Teuchos::rcp_dynamic_cast<CONTACT::AUG::DataContainer>(data_ptr, true)),
-      augData_(*augDataPtr_)
+      aug_data_ptr_(Teuchos::rcp_dynamic_cast<CONTACT::AUG::DataContainer>(data_ptr, true)),
+      aug_data_(*aug_data_ptr_)
 {
   // store values of the parameter list
   const Teuchos::ParameterList& p_aug = params.sublist("AUGMENTED");
@@ -177,7 +177,7 @@ CONTACT::AUG::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
         "The \"ADD_INACTIVE_FORCE_CONTRIBUTIONS\" option is only supported "
         "by the complete variational approach.");
 
-  Data().SetPotential(Teuchos::rcp(new Potential(*this, *augDataPtr_)));
+  Data().SetPotential(Teuchos::rcp(new Potential(*this, *aug_data_ptr_)));
 
   Data().SetMatrixRowColTransformer(Teuchos::rcp(new MORTAR::MatrixRowColTransformer(4)));
 

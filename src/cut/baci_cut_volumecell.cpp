@@ -47,7 +47,7 @@ CORE::GEO::CUT::VolumeCell::VolumeCell(const plain_facet_set& facets,
       position_(Point::undecided),
       facets_(facets),
       volume_(0.0),
-      isNegligibleSmall_(false)
+      is_negligible_small_(false)
 {
   for (plain_facet_set::const_iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
@@ -1059,12 +1059,12 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::GaussPointsFitti
   Teuchos::RCP<CORE::FE::CollectedGaussPoints> cgp =
       Teuchos::rcp(new CORE::FE::CollectedGaussPoints(0));
 
-  for (unsigned i = 0; i < gausPts_.size(); i++)
+  for (unsigned i = 0; i < gaus_pts_.size(); i++)
   {
     CORE::LINALG::Matrix<3, 1> xe, xei;
-    xe(0, 0) = gausPts_[i][0];
-    xe(1, 0) = gausPts_[i][1];
-    xe(2, 0) = gausPts_[i][2];
+    xe(0, 0) = gaus_pts_[i][0];
+    xe(1, 0) = gaus_pts_[i][1];
+    xe(2, 0) = gaus_pts_[i][2];
 
     cgp->Append(xe, weights_(i));
   }
@@ -1182,8 +1182,8 @@ void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
                                                          // solving moment fitting equations
       {
         BoundarycellIntegration bcell_inte(elem, fac, posi, BaseNos);
-        Bcellweights_ = bcell_inte.GenerateBoundaryCellIntegrationRule();
-        BcellgausPts_ = bcell_inte.getBcellGaussPointLocation();
+        bcellweights_ = bcell_inte.GenerateBoundaryCellIntegrationRule();
+        bcellgaus_pts_ = bcell_inte.getBcellGaussPointLocation();
 
         // the boundarycell integration is carriedout in the local coord of the element
         // to project the coordinates of Gauss points, shape functions of element can be used
@@ -1200,20 +1200,20 @@ void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
         double areaGlobal = bcellGlobal.integrate_facet();
         double jaco = areaGlobal / areaLocal;
 
-        int numBcellpts = BcellgausPts_.size();
+        int numBcellpts = bcellgaus_pts_.size();
         Teuchos::RCP<CORE::FE::CollectedGaussPoints> cgp =
             Teuchos::rcp(new CORE::FE::CollectedGaussPoints(numBcellpts));
 
         CORE::LINALG::Matrix<3, 1> xeLocal, xeGlobal;
-        for (unsigned i = 0; i < BcellgausPts_.size(); i++)
+        for (unsigned i = 0; i < bcellgaus_pts_.size(); i++)
         {
-          xeLocal(0, 0) = BcellgausPts_[i][0];
-          xeLocal(1, 0) = BcellgausPts_[i][1];
-          xeLocal(2, 0) = BcellgausPts_[i][2];
+          xeLocal(0, 0) = bcellgaus_pts_[i][0];
+          xeLocal(1, 0) = bcellgaus_pts_[i][1];
+          xeLocal(2, 0) = bcellgaus_pts_[i][2];
 
           elem->GlobalCoordinates(xeLocal, xeGlobal);
 
-          cgp->Append(xeGlobal, Bcellweights_(i) * jaco);
+          cgp->Append(xeGlobal, bcellweights_(i) * jaco);
         }
 
         CORE::LINALG::Matrix<3, 1> normal;
@@ -1461,9 +1461,9 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::GenerateInternal
         (DIRECTDIV_GAUSSRULE - 1));  // internal gauss rule for interval (-1,1)
 
     // x-coordinate of main Gauss point is projected in the reference plane
-    double xbegin =
-        (RefEqnPlane_[3] - RefEqnPlane_[1] * etaFacet(1, 0) - RefEqnPlane_[2] * etaFacet(2, 0)) /
-        RefEqnPlane_[0];
+    double xbegin = (ref_eqn_plane_[3] - ref_eqn_plane_[1] * etaFacet(1, 0) -
+                        ref_eqn_plane_[2] * etaFacet(2, 0)) /
+                    ref_eqn_plane_[0];
 
     double jac = fabs(xbegin - etaFacet(0, 0)) * 0.5;  // jacobian for 1D transformation rule
 
@@ -1568,15 +1568,15 @@ void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
         "If the Volume Cell consists of less than 4 facets, it can't span a volume in 3D?");
   // return;
 
-  isNegligibleSmall_ = false;
+  is_negligible_small_ = false;
 
 
   DirectDivergence dd(this, elem, Position(), mesh);
 
-  RefEqnPlane_.reserve(4);  // it has to store a,b,c,d in ax+by+cz=d
+  ref_eqn_plane_.reserve(4);  // it has to store a,b,c,d in ax+by+cz=d
 
   Teuchos::RCP<CORE::FE::GaussPoints> gp =
-      dd.VCIntegrationRule(RefEqnPlane_);  // compute main gauss points
+      dd.VCIntegrationRule(ref_eqn_plane_);  // compute main gauss points
   gp_ = GenerateInternalGaussRule(gp);  // compute internal gauss points for every main gauss point
 
   // compute volume of this cell
@@ -1591,7 +1591,7 @@ void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
     if (isNegVol)
     {
       gp_.reset();
-      isNegligibleSmall_ = true;
+      is_negligible_small_ = true;
     }
   }
 

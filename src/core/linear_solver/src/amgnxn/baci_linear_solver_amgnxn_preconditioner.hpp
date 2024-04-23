@@ -49,8 +49,8 @@ namespace CORE::LINEAR_SOLVER
 
    private:
     // Private variables
-    Teuchos::RCP<Epetra_Operator> P_;                      // The underlying preconditioner object
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A_;  // A own copy of the system matrix
+    Teuchos::RCP<Epetra_Operator> p_;                      // The underlying preconditioner object
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a_;  // A own copy of the system matrix
     Teuchos::ParameterList &params_;
 
   };  // AMGnxn_Preconditioner
@@ -135,18 +135,18 @@ namespace CORE::LINEAR_SOLVER
     }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Comm &Comm() const override { return A_->Comm(); }
+    const Epetra_Comm &Comm() const override { return a_->Comm(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Map &OperatorDomainMap() const override { return A_->OperatorDomainMap(); }
+    const Epetra_Map &OperatorDomainMap() const override { return a_->OperatorDomainMap(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Map &OperatorRangeMap() const override { return A_->OperatorRangeMap(); }
+    const Epetra_Map &OperatorRangeMap() const override { return a_->OperatorRangeMap(); }
 
     void Setup();
 
    private:
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a_;
     std::vector<Teuchos::ParameterList> muelu_lists_;
     std::vector<int> num_pdes_;
     std::vector<int> null_spaces_dim_;
@@ -157,7 +157,7 @@ namespace CORE::LINEAR_SOLVER
 
     bool is_setup_flag_;
 
-    Teuchos::RCP<AMGNXN::CoupledAmg> V_;
+    Teuchos::RCP<AMGNXN::CoupledAmg> v_;
 
   };  // class AMGnxn_Operator
 
@@ -206,18 +206,18 @@ namespace CORE::LINEAR_SOLVER
     }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Comm &Comm() const override { return A_->Comm(); }
+    const Epetra_Comm &Comm() const override { return a_->Comm(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Map &OperatorDomainMap() const override { return A_->OperatorDomainMap(); }
+    const Epetra_Map &OperatorDomainMap() const override { return a_->OperatorDomainMap(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Map &OperatorRangeMap() const override { return A_->OperatorRangeMap(); }
+    const Epetra_Map &OperatorRangeMap() const override { return a_->OperatorRangeMap(); }
 
     void Setup();  // TODO
 
    private:
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a_;
     std::vector<int> num_pdes_;
     std::vector<int> null_spaces_dim_;
     std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data_;
@@ -225,8 +225,8 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::ParameterList smoothers_params_;
 
     bool is_setup_flag_;
-    Teuchos::RCP<AMGNXN::BlockedSmoother> S_;
-    Teuchos::RCP<AMGNXN::GenericSmoother> Sbase_;
+    Teuchos::RCP<AMGNXN::BlockedSmoother> s_;
+    Teuchos::RCP<AMGNXN::GenericSmoother> sbase_;
 
   };  // class BlockSmoother_Operator
 
@@ -273,24 +273,24 @@ namespace CORE::LINEAR_SOLVER
     }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Comm &Comm() const override { return A_->Comm(); }
+    const Epetra_Comm &Comm() const override { return a_->Comm(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Map &OperatorDomainMap() const override { return A_->OperatorDomainMap(); }
+    const Epetra_Map &OperatorDomainMap() const override { return a_->OperatorDomainMap(); }
 
     // Only required to properly define an Epetra_Operator, not should be used!
-    const Epetra_Map &OperatorRangeMap() const override { return A_->OperatorRangeMap(); }
+    const Epetra_Map &OperatorRangeMap() const override { return a_->OperatorRangeMap(); }
 
     void Setup();  // TODO
 
    private:
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> Asp_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> asp_;
     Teuchos::ParameterList amgnxn_params_;
     Teuchos::ParameterList smoothers_params_;
 
     bool is_setup_flag_;
-    Teuchos::RCP<AMGNXN::IfpackWrapper> S_;
+    Teuchos::RCP<AMGNXN::IfpackWrapper> s_;
 
   };  // class Merged_Operator
 

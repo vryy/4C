@@ -44,10 +44,10 @@ MIXTURE::PAR::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase
 MIXTURE::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
     MIXTURE::PAR::MixtureConstituentElastHyperBase* params, int id)
     : MixtureConstituent(params, id),
-      summandProperties_(),
+      summand_properties_(),
       params_(params),
       potsum_(0),
-      cosyAnisotropyExtension_()
+      cosy_anisotropy_extension_()
 {
   // Create summands
   for (const auto& matid : *params_->matids_)
@@ -60,8 +60,8 @@ MIXTURE::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
   // Create Prestress strategy
   if (params->GetPrestressingMatId() > 0)
   {
-    prestressStrategy_ = MIXTURE::PAR::PrestressStrategy::Factory(params->GetPrestressingMatId())
-                             ->CreatePrestressStrategy();
+    prestress_strategy_ = MIXTURE::PAR::PrestressStrategy::Factory(params->GetPrestressingMatId())
+                              ->CreatePrestressStrategy();
   }
 }
 
@@ -74,13 +74,13 @@ void MIXTURE::MixtureConstituentElastHyperBase::PackConstituent(CORE::COMM::Pack
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   CORE::COMM::ParObject::AddtoPack(data, matid);
-  summandProperties_.Pack(data);
+  summand_properties_.Pack(data);
 
   CORE::COMM::ParObject::AddtoPack(data, prestretch_);
 
-  cosyAnisotropyExtension_.PackAnisotropy(data);
+  cosy_anisotropy_extension_.PackAnisotropy(data);
 
-  if (prestressStrategy_ != nullptr) prestressStrategy_->Pack(data);
+  if (prestress_strategy_ != nullptr) prestress_strategy_->Pack(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -122,20 +122,21 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
     }
   }
 
-  summandProperties_.Unpack(position, data);
+  summand_properties_.Unpack(position, data);
 
   CORE::COMM::ParObject::ExtractfromPack(position, data, prestretch_);
 
-  cosyAnisotropyExtension_.UnpackAnisotropy(data, position);
+  cosy_anisotropy_extension_.UnpackAnisotropy(data, position);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     if (params_->GetPrestressingMatId() > 0)
     {
-      prestressStrategy_ = MIXTURE::PAR::PrestressStrategy::Factory(params_->GetPrestressingMatId())
-                               ->CreatePrestressStrategy();
+      prestress_strategy_ =
+          MIXTURE::PAR::PrestressStrategy::Factory(params_->GetPrestressingMatId())
+              ->CreatePrestressStrategy();
 
-      prestressStrategy_->Unpack(position, data);
+      prestress_strategy_->Unpack(position, data);
     }
 
     // make sure the referenced materials in material list have quick access parameters
@@ -159,7 +160,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::RegisterAnisotropyExtensions(
   // Setup summands
   for (const auto& summand : potsum_) summand->RegisterAnisotropyExtensions(anisotropy);
 
-  anisotropy.RegisterAnisotropyExtension(cosyAnisotropyExtension_);
+  anisotropy.RegisterAnisotropyExtension(cosy_anisotropy_extension_);
 }
 
 // Reads the element from the input file
@@ -172,9 +173,9 @@ void MIXTURE::MixtureConstituentElastHyperBase::ReadElement(
   for (const auto& summand : potsum_) summand->Setup(numgp, linedef);
 
   // find out which formulations are used
-  MAT::ElastHyperProperties(potsum_, summandProperties_);
+  MAT::ElastHyperProperties(potsum_, summand_properties_);
 
-  if (summandProperties_.viscoGeneral)
+  if (summand_properties_.viscoGeneral)
   {
     FOUR_C_THROW("Never use viscoelastic materials in Elasthyper-Toolbox.");
   }
@@ -192,7 +193,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::Update(CORE::LINALG::Matrix<3, 3
   // do nothing in the default case
   if (params_->GetPrestressingMatId() > 0)
   {
-    prestressStrategy_->Update(cosyAnisotropyExtension_.GetCoordinateSystemProvider(gp), *this,
+    prestress_strategy_->Update(cosy_anisotropy_extension_.GetCoordinateSystemProvider(gp), *this,
         defgrd, prestretch_[gp], params, gp, eleGID);
   }
 }
@@ -205,7 +206,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::Setup(
   {
     prestretch_.resize(NumGP());
 
-    prestressStrategy_->Setup(*this, params, NumGP(), eleGID);
+    prestress_strategy_->Setup(*this, params, NumGP(), eleGID);
   }
 }
 
@@ -215,8 +216,8 @@ void MIXTURE::MixtureConstituentElastHyperBase::PreEvaluate(
   // do nothing in the default case
   if (params_->GetPrestressingMatId() > 0)
   {
-    prestressStrategy_->EvaluatePrestress(mixtureRule,
-        cosyAnisotropyExtension_.GetCoordinateSystemProvider(gp), *this, prestretch_[gp], params,
+    prestress_strategy_->EvaluatePrestress(mixtureRule,
+        cosy_anisotropy_extension_.GetCoordinateSystemProvider(gp), *this, prestretch_[gp], params,
         gp, eleGID);
   }
 }
@@ -224,7 +225,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::PreEvaluate(
 void MIXTURE::MixtureConstituentElastHyperBase::RegisterOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
-  if (prestressStrategy_ != nullptr)
+  if (prestress_strategy_ != nullptr)
   {
     names_and_size["mixture_constituent_" + std::to_string(Id()) + "_elasthyper_prestretch"] = 9;
   }
@@ -233,7 +234,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::RegisterOutputDataNames(
 bool MIXTURE::MixtureConstituentElastHyperBase::EvaluateOutputData(
     const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
-  if (prestressStrategy_ != nullptr &&
+  if (prestress_strategy_ != nullptr &&
       name == "mixture_constituent_" + std::to_string(Id()) + "_elasthyper_prestretch")
   {
     for (int gp = 0; gp < NumGP(); ++gp)

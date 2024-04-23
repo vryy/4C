@@ -719,7 +719,7 @@ namespace MORTAR
     {
       if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
 
-      return interfaceData_->PSNodeRowMap();
+      return interface_data_->PSNodeRowMap();
     }
 
     /*!
@@ -743,7 +743,7 @@ namespace MORTAR
     {
       if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
 
-      return interfaceData_->PMNodeRowMap();
+      return interface_data_->PMNodeRowMap();
     }
 
     /*!
@@ -899,7 +899,7 @@ namespace MORTAR
     {
       if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
 
-      return interfaceData_->PSDofRowMap();
+      return interface_data_->PSDofRowMap();
     }
 
     /*!
@@ -935,7 +935,7 @@ namespace MORTAR
     {
       if (not Filled()) FOUR_C_THROW("MORTAR::Interface::FillComplete was not called");
 
-      return interfaceData_->PMDofRowMap();
+      return interface_data_->PMDofRowMap();
     }
 
     /*!
@@ -1312,8 +1312,8 @@ namespace MORTAR
     */
     void PrintShapeFcn() { std::cout << shapefcn_ << std::endl; };
 
-    void SetPoroFlag(bool poro) { interfaceData_->IsPoro() = poro; }
-    void SetPoroType(INPAR::MORTAR::Problemtype type) { interfaceData_->PoroType() = type; }
+    void SetPoroFlag(bool poro) { interface_data_->IsPoro() = poro; }
+    void SetPoroType(INPAR::MORTAR::Problemtype type) { interface_data_->PoroType() = type; }
     void SetEhlFlag(bool ehl) { ehl_ = ehl; }
 
     //@}
@@ -1711,7 +1711,7 @@ namespace MORTAR
     \brief Get a const reference to internal interface data
 
     */
-    const InterfaceDataContainer& InterfaceData() const { return *interfaceData_; }
+    const InterfaceDataContainer& InterfaceData() const { return *interface_data_; }
 
    private:
     /*!
@@ -1729,7 +1729,7 @@ namespace MORTAR
     void SetShapeFunctionType();
 
     /// pointer to the interface data object
-    Teuchos::RCP<InterfaceDataContainer> interfaceData_;
+    Teuchos::RCP<InterfaceDataContainer> interface_data_;
 
    protected:
     /** @name References to the interface data container content

@@ -278,7 +278,7 @@ namespace SSI
     const int relax_lin_solver_iter_step_;
 
     //! all OD evaluation is in here
-    Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructureOffDiagcoupling_;
+    Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructure_off_diagcoupling_;
 
     //! algebraic solver for global system of equations
     Teuchos::RCP<CORE::LINALG::Solver> solver_;

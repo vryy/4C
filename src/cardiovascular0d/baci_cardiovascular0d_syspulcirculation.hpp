@@ -118,61 +118,61 @@ namespace UTILS
 
    private:
     // parameters
-    double R_arvalve_max_l_;       ///< maximum aortic valve resistance
-    double R_arvalve_min_l_;       ///< minimum aortic valve resistance
-    double R_atvalve_max_l_;       ///< maximum mitral valve resistance
-    double R_atvalve_min_l_;       ///< minimum mitral valve resistance
-    double R_arvalve_max_r_;       ///< maximum pulmonary valve resistance
-    double R_arvalve_min_r_;       ///< minimum pulmonary valve resistance
-    double R_atvalve_max_r_;       ///< maximum tricuspid valve resistance
-    double R_atvalve_min_r_;       ///< minimum tricuspid valve resistance
-    int Atrium_act_curve_l_;       ///< left atrial activation curve (ONLY for ATRIUM_MODEL "0D"!)
-    int Atrium_act_curve_r_;       ///< right atrial activation curve (ONLY for ATRIUM_MODEL "0D"!)
-    int Ventricle_act_curve_l_;    ///< left ventricular activation curve (ONLY for VENTRICLE_MODEL
+    double r_arvalve_max_l_;       ///< maximum aortic valve resistance
+    double r_arvalve_min_l_;       ///< minimum aortic valve resistance
+    double r_atvalve_max_l_;       ///< maximum mitral valve resistance
+    double r_atvalve_min_l_;       ///< minimum mitral valve resistance
+    double r_arvalve_max_r_;       ///< maximum pulmonary valve resistance
+    double r_arvalve_min_r_;       ///< minimum pulmonary valve resistance
+    double r_atvalve_max_r_;       ///< maximum tricuspid valve resistance
+    double r_atvalve_min_r_;       ///< minimum tricuspid valve resistance
+    int atrium_act_curve_l_;       ///< left atrial activation curve (ONLY for ATRIUM_MODEL "0D"!)
+    int atrium_act_curve_r_;       ///< right atrial activation curve (ONLY for ATRIUM_MODEL "0D"!)
+    int ventricle_act_curve_l_;    ///< left ventricular activation curve (ONLY for VENTRICLE_MODEL
                                    ///< "0D"!)
-    int Ventricle_act_curve_r_;    ///< right ventricular activation curve (ONLY for VENTRICLE_MODEL
+    int ventricle_act_curve_r_;    ///< right ventricular activation curve (ONLY for VENTRICLE_MODEL
                                    ///< "0D"!)
-    int Atrium_prescr_E_curve_l_;  ///< left atrial elastance prescription curve (ONLY for
+    int atrium_prescr_e_curve_l_;  ///< left atrial elastance prescription curve (ONLY for
                                    ///< ATRIUM_MODEL "prescribed"!)
-    int Atrium_prescr_E_curve_r_;  ///< right atrial elastance prescription curve (ONLY for
+    int atrium_prescr_e_curve_r_;  ///< right atrial elastance prescription curve (ONLY for
                                    ///< ATRIUM_MODEL "prescribed"!)
-    int Ventricle_prescr_E_curve_l_;  ///< left ventricular elastance prescription curve (ONLY for
+    int ventricle_prescr_e_curve_l_;  ///< left ventricular elastance prescription curve (ONLY for
                                       ///< VENTRICLE_MODEL "prescribed"!)
-    int Ventricle_prescr_E_curve_r_;  ///< right ventricular elastance prescription curve (ONLY for
+    int ventricle_prescr_e_curve_r_;  ///< right ventricular elastance prescription curve (ONLY for
                                       ///< VENTRICLE_MODEL "prescribed"!)
-    double E_at_max_l_;               ///< maximum left atrial elastance (for 0D atria)
-    double E_at_min_l_;               ///< minimum left atrial elastance (for 0D atria)
-    double E_at_max_r_;               ///< maximum right atrial elastance (for 0D atria)
-    double E_at_min_r_;               ///< minimum right atrial elastance (for 0D atria)
-    double E_v_max_l_;                ///< maximum left ventricular elastance (for 0D ventricles)
-    double E_v_min_l_;                ///< minimum left ventricular elastance (for 0D ventricles)
-    double E_v_max_r_;                ///< maximum right ventricular elastance (for 0D ventricles)
-    double E_v_min_r_;                ///< minimum right ventricular elastance (for 0D ventricles)
-    double C_ar_sys_;                 ///< systemic arterial compliance
-    double R_ar_sys_;                 ///< systemic arterial resistance
-    double L_ar_sys_;                 ///< systemic arterial inertance
-    double Z_ar_sys_;                 ///< systemic arterial impedance
-    double C_ar_pul_;                 ///< pulmonary arterial compliance
-    double R_ar_pul_;                 ///< pulmonary arterial resistance
-    double L_ar_pul_;                 ///< pulmonary arterial inertance
-    double Z_ar_pul_;                 ///< pulmonary arterial impedance
-    double C_ven_sys_;                ///< systemic venous compliance
-    double R_ven_sys_;                ///< systemic venous resistance
-    double L_ven_sys_;                ///< systemic venous inertance
-    double C_ven_pul_;                ///< pulmonary venous compliance
-    double R_ven_pul_;                ///< pulmonary venous resistance
-    double L_ven_pul_;                ///< pulmonary venous inertance
+    double e_at_max_l_;               ///< maximum left atrial elastance (for 0D atria)
+    double e_at_min_l_;               ///< minimum left atrial elastance (for 0D atria)
+    double e_at_max_r_;               ///< maximum right atrial elastance (for 0D atria)
+    double e_at_min_r_;               ///< minimum right atrial elastance (for 0D atria)
+    double e_v_max_l_;                ///< maximum left ventricular elastance (for 0D ventricles)
+    double e_v_min_l_;                ///< minimum left ventricular elastance (for 0D ventricles)
+    double e_v_max_r_;                ///< maximum right ventricular elastance (for 0D ventricles)
+    double e_v_min_r_;                ///< minimum right ventricular elastance (for 0D ventricles)
+    double c_ar_sys_;                 ///< systemic arterial compliance
+    double r_ar_sys_;                 ///< systemic arterial resistance
+    double l_ar_sys_;                 ///< systemic arterial inertance
+    double z_ar_sys_;                 ///< systemic arterial impedance
+    double c_ar_pul_;                 ///< pulmonary arterial compliance
+    double r_ar_pul_;                 ///< pulmonary arterial resistance
+    double l_ar_pul_;                 ///< pulmonary arterial inertance
+    double z_ar_pul_;                 ///< pulmonary arterial impedance
+    double c_ven_sys_;                ///< systemic venous compliance
+    double r_ven_sys_;                ///< systemic venous resistance
+    double l_ven_sys_;                ///< systemic venous inertance
+    double c_ven_pul_;                ///< pulmonary venous compliance
+    double r_ven_pul_;                ///< pulmonary venous resistance
+    double l_ven_pul_;                ///< pulmonary venous inertance
 
     // unstressed 0D volumes - for post-processing only, since all 0D equations are formulated in
     // terms of fluxes!
-    double V_v_l_u_;      ///< unstressed left ventricular volume (for 0D ventricles)
-    double V_at_l_u_;     ///< unstressed left atrial volume (for 0D atria)
-    double V_ar_sys_u_;   ///< unstressed systemic arterial volume
-    double V_ven_sys_u_;  ///< unstressed systemic venous volume
-    double V_v_r_u_;      ///< dead right ventricular volume (at zero pressure) (for 0D ventricles)
-    double V_at_r_u_;     ///< dead right atrial volume (at zero pressure) (for 0D atria)
-    double V_ar_pul_u_;   ///< unstressed pulmonary arterial volume
-    double V_ven_pul_u_;  ///< unstressed pulmonary venous volume
+    double v_v_l_u_;      ///< unstressed left ventricular volume (for 0D ventricles)
+    double v_at_l_u_;     ///< unstressed left atrial volume (for 0D atria)
+    double v_ar_sys_u_;   ///< unstressed systemic arterial volume
+    double v_ven_sys_u_;  ///< unstressed systemic venous volume
+    double v_v_r_u_;      ///< dead right ventricular volume (at zero pressure) (for 0D ventricles)
+    double v_at_r_u_;     ///< dead right atrial volume (at zero pressure) (for 0D atria)
+    double v_ar_pul_u_;   ///< unstressed pulmonary arterial volume
+    double v_ven_pul_u_;  ///< unstressed pulmonary venous volume
 
     // don't want = operator, cctor and destructor
 

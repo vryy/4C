@@ -90,11 +90,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
   // -------------------------------------------------------------------
   // create empty D and M matrices (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  D_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+  d_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       *(arterydis_->DofRowMap()), 27, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  M_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+  m_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       *(arterydis_->DofRowMap()), 27, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  kappaInv_ = Teuchos::rcp(new Epetra_FEVector(*arterydis_->DofRowMap(), true));
+  kappa_inv_ = Teuchos::rcp(new Epetra_FEVector(*arterydis_->DofRowMap(), true));
 
   // full map of continous and artery dofs
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
@@ -109,7 +109,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
   FEmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       *fullmap_, 81, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
-  FErhs_ = Teuchos::rcp(new Epetra_FEVector(*fullmap_));
+  fe_rhs_ = Teuchos::rcp(new Epetra_FEVector(*fullmap_));
 
   // check global map extractor
   globalex_->CheckForValidMapExtractor();
@@ -423,13 +423,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
   // reset
   if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp)
   {
-    D_->Zero();
-    M_->Zero();
-    kappaInv_->PutScalar(0.0);
+    d_->Zero();
+    m_->Zero();
+    kappa_inv_->PutScalar(0.0);
   }
 
   FEmat_->Zero();
-  FErhs_->PutScalar(0.0);
+  fe_rhs_->PutScalar(0.0);
 
   // resulting discrete element force vectors of the two interacting elements
   std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
@@ -496,9 +496,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
     EvaluateAdditionalLinearizationofIntegratedDiam();
   }
 
-  if (FErhs_->GlobalAssemble(Add, false) != 0)
+  if (fe_rhs_->GlobalAssemble(Add, false) != 0)
     FOUR_C_THROW("GlobalAssemble of right hand side failed");
-  rhs->Update(1.0, *FErhs_, 0.0);
+  rhs->Update(1.0, *fe_rhs_, 0.0);
 
   FEmat_->Complete();
   Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockartery =
@@ -542,8 +542,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
   FEmat_->FEAssemble(elemat[1][0], lmrow2, lmrow1);
   FEmat_->FEAssemble(elemat[1][1], lmrow2, lmrow2);
 
-  FErhs_->SumIntoGlobalValues(elevec[0].length(), lmrow1.data(), elevec[0].values());
-  FErhs_->SumIntoGlobalValues(elevec[1].length(), lmrow2.data(), elevec[1].values());
+  fe_rhs_->SumIntoGlobalValues(elevec[0].length(), lmrow1.data(), elevec[0].values());
+  fe_rhs_->SumIntoGlobalValues(elevec[1].length(), lmrow2.data(), elevec[1].values());
 }
 
 /*----------------------------------------------------------------------*
@@ -565,9 +565,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FEAssemble
   ele1->LocationVector(*arterydis_, lmrow1, lmrowowner1, lmstride);
   ele2->LocationVector(*contdis_, lmrow2, lmrowowner2, lmstride);
 
-  D_->FEAssemble(D_ele, lmrow1, lmrow1);
-  M_->FEAssemble(M_ele, lmrow1, lmrow2);
-  kappaInv_->SumIntoGlobalValues(Kappa_ele.length(), lmrow1.data(), Kappa_ele.values());
+  d_->FEAssemble(D_ele, lmrow1, lmrow1);
+  m_->FEAssemble(M_ele, lmrow1, lmrow2);
+  kappa_inv_->SumIntoGlobalValues(Kappa_ele.length(), lmrow1.data(), Kappa_ele.values());
 }
 
 /*----------------------------------------------------------------------*
@@ -579,30 +579,30 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SumDMIntoG
   InvertKappa();
 
   // complete
-  D_->Complete();
-  M_->Complete(*contdis_->DofRowMap(), *arterydis_->DofRowMap());
+  d_->Complete();
+  m_->Complete(*contdis_->DofRowMap(), *arterydis_->DofRowMap());
 
   // get kappa matrix
   Teuchos::RCP<CORE::LINALG::SparseMatrix> kappaInvMat =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*new Epetra_Vector(Copy, *kappaInv_, 0)));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*new Epetra_Vector(Copy, *kappa_inv_, 0)));
   kappaInvMat->Complete();
 
   // kappa^{-1}*M
   Teuchos::RCP<CORE::LINALG::SparseMatrix> km =
-      CORE::LINALG::MLMultiply(*kappaInvMat, false, *M_, false, false, false, true);
+      CORE::LINALG::MLMultiply(*kappaInvMat, false, *m_, false, false, false, true);
   // kappa^{-1}*D
   Teuchos::RCP<CORE::LINALG::SparseMatrix> kd =
-      CORE::LINALG::MLMultiply(*kappaInvMat, false, *D_, false, false, false, true);
+      CORE::LINALG::MLMultiply(*kappaInvMat, false, *d_, false, false, false, true);
 
   // D^T*kappa^{-1}*D
   Teuchos::RCP<CORE::LINALG::SparseMatrix> dtkd =
-      CORE::LINALG::MLMultiply(*D_, true, *kd, false, false, false, true);
+      CORE::LINALG::MLMultiply(*d_, true, *kd, false, false, false, true);
   // D^T*kappa^{-1}*M
   Teuchos::RCP<CORE::LINALG::SparseMatrix> dtkm =
-      CORE::LINALG::MLMultiply(*D_, true, *km, false, false, false, true);
+      CORE::LINALG::MLMultiply(*d_, true, *km, false, false, false, true);
   // M^T*kappa^{-1}*M
   Teuchos::RCP<CORE::LINALG::SparseMatrix> mtkm =
-      CORE::LINALG::MLMultiply(*M_, true, *km, false, false, false, true);
+      CORE::LINALG::MLMultiply(*m_, true, *km, false, false, false, true);
 
   // add matrices
   sysmat->Matrix(0, 0).Add(*mtkm, false, pp_ * timefacrhs_cont_, 1.0);
@@ -639,18 +639,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SumDMIntoG
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::InvertKappa()
 {
   // global assemble
-  if (kappaInv_->GlobalAssemble(Add, false) != 0)
+  if (kappa_inv_->GlobalAssemble(Add, false) != 0)
     FOUR_C_THROW("GlobalAssemble of kappaInv_ failed");
 
   // invert (pay attention to protruding elements)
   for (int i = 0; i < arterydis_->DofRowMap()->NumMyElements(); ++i)
   {
     const int artdofgid = arterydis_->DofRowMap()->GID(i);
-    const double kappaVal = (*kappaInv_)[0][kappaInv_->Map().LID(artdofgid)];
+    const double kappaVal = (*kappa_inv_)[0][kappa_inv_->Map().LID(artdofgid)];
     if (fabs(kappaVal) > KAPPAINVTOL)
-      kappaInv_->ReplaceGlobalValue(artdofgid, 0, 1.0 / kappaVal);
+      kappa_inv_->ReplaceGlobalValue(artdofgid, 0, 1.0 / kappaVal);
     else
-      kappaInv_->ReplaceGlobalValue(artdofgid, 0, 0.0);
+      kappa_inv_->ReplaceGlobalValue(artdofgid, 0, 0.0);
   }
 }
 

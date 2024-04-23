@@ -60,26 +60,27 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     //! @name member variables
 
     //! Map of the Corner Node IDs Ni
-    std::map<std::string, DRT::Node*> rveRefNodeMap_;
+    std::map<std::string, DRT::Node*> rve_ref_node_map_;
 
     //! RVE reference length vectors
     std::array<double, 2> r_xmxp_, r_ymyp_;
 
     //! Vector with all Conditions
-    std::vector<Teuchos::RCP<DRT::Condition>> pointLinearCoupledEquationConditions_,
-        pointPeriodicRveRefConditions_, linePeriodicRveConditions_, surfacePeriodicRveConditions_;
+    std::vector<Teuchos::RCP<DRT::Condition>> point_linear_coupled_equation_conditions_,
+        point_periodic_rve_ref_conditions_, line_periodic_rve_conditions_,
+        surface_periodic_rve_conditions_;
 
     //! Tolerance for the opposing edge node search
-    double nodeSearchToler_ = 0.25;  // #ToDo: Add .dat parameter
+    double node_search_toler_ = 0.25;  // #ToDo: Add .dat parameter
 
     //! Parameter List for the rveType
-    Teuchos::ParameterList mpcParameterList_;
+    Teuchos::ParameterList mpc_parameter_list_;
 
     //! Dimension of the rve boundary
-    enum INPAR::RVE_MPC::RveDimension rveDim_;
+    enum INPAR::RVE_MPC::RveDimension rve_dim_;
 
     //! Type of reference vector definition
-    enum INPAR::RVE_MPC::RveReferenceDeformationDefinition rveRefType_;
+    enum INPAR::RVE_MPC::RveReferenceDeformationDefinition rve_ref_type_;
 
     //@}
 

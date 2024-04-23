@@ -56,7 +56,7 @@ namespace CORE::FE
      \brief Constructor.
      */
     LagrangePolynomial(const std::vector<double> &supportPoints, const double nodePoint)
-        : supportPoints_(supportPoints), nodePoint_(nodePoint)
+        : support_points_(supportPoints), node_point_(nodePoint)
     {
       long double weight = 1.;
       for (double supportPoint : supportPoints) weight *= nodePoint - supportPoint;
@@ -70,7 +70,9 @@ namespace CORE::FE
      \brief Copy constructor
      */
     LagrangePolynomial(const LagrangePolynomial &other)
-        : supportPoints_(other.supportPoints_), nodePoint_(other.nodePoint_), weight_(other.weight_)
+        : support_points_(other.support_points_),
+          node_point_(other.node_point_),
+          weight_(other.weight_)
     {
     }
 
@@ -79,8 +81,8 @@ namespace CORE::FE
      */
     LagrangePolynomial &operator=(const LagrangePolynomial &other)
     {
-      supportPoints_ = other.supportPoints_;
-      nodePoint_ = other.nodePoint_;
+      support_points_ = other.support_points_;
+      node_point_ = other.node_point_;
       weight_ = other.weight_;
       return *this;
     }
@@ -91,7 +93,7 @@ namespace CORE::FE
     [[nodiscard]] double Evaluate(const double point) const
     {
       double value = weight_;
-      for (double supportPoint : supportPoints_) value *= point - supportPoint;
+      for (double supportPoint : support_points_) value *= point - supportPoint;
       return value;
     }
 
@@ -112,7 +114,7 @@ namespace CORE::FE
       // compute the value and derivatives by expanding the derivatives
       derivatives(0) = weight_;
       for (unsigned int k = 1; k < derivatives.numRows(); ++k) derivatives(k) = 0;
-      for (double supportPoint : supportPoints_)
+      for (double supportPoint : support_points_)
       {
         const double v = point - supportPoint;
         for (int k = derivatives.numRows() - 1; k > 0; --k)
@@ -127,11 +129,11 @@ namespace CORE::FE
       }
     }
 
-    [[nodiscard]] double NodePoint() const { return nodePoint_; }
+    [[nodiscard]] double NodePoint() const { return node_point_; }
 
    private:
-    std::vector<double> supportPoints_;
-    double nodePoint_;
+    std::vector<double> support_points_;
+    double node_point_;
     double weight_;
   };
 
@@ -321,7 +323,7 @@ namespace CORE::FE
     /*
      \brief Constructor from a vector of one-dimensional polynomials
      */
-    PolynomialSpaceTensor(const std::vector<POLY> polySpace1d) : polySpace1d_(polySpace1d)
+    PolynomialSpaceTensor(const std::vector<POLY> polySpace1d) : poly_space1d_(polySpace1d)
     {
       // renumbering is included in case we want to use these polynomials also
       // for standard finite elements
@@ -344,7 +346,7 @@ namespace CORE::FE
     /*
      \brief Return the number of polynomials (over all dimensions)
      */
-    std::size_t Size() const override { return Size(polySpace1d_.size() - 1); }
+    std::size_t Size() const override { return Size(poly_space1d_.size() - 1); }
 
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
@@ -380,7 +382,7 @@ namespace CORE::FE
     {
       FOUR_C_ASSERT(index < Size(), "Access out of range");
       CORE::LINALG::Matrix<nsd_, 1, unsigned int> indices;
-      const unsigned int npoly = polySpace1d_.size();
+      const unsigned int npoly = poly_space1d_.size();
       switch (nsd_)
       {
         case 1:
@@ -408,7 +410,7 @@ namespace CORE::FE
     void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
 
    private:
-    std::vector<POLY> polySpace1d_;
+    std::vector<POLY> poly_space1d_;
     std::vector<int> renumbering_;
   };
 
@@ -431,7 +433,7 @@ namespace CORE::FE
     /*
      \brief Constructor from a vector of one-dimensional polynomials
      */
-    PolynomialSpaceComplete(const std::vector<POLY> polySpace1d) : polySpace1d_(polySpace1d)
+    PolynomialSpaceComplete(const std::vector<POLY> polySpace1d) : poly_space1d_(polySpace1d)
     {
       renumbering_.resize(Size());
       for (unsigned int i = 0; i < renumbering_.size(); ++i) renumbering_[i] = i;
@@ -455,7 +457,7 @@ namespace CORE::FE
     /*
      \brief Return the number of polynomials (over all dimensions)
      */
-    std::size_t Size() const override { return Size(polySpace1d_.size() - 1); }
+    std::size_t Size() const override { return Size(poly_space1d_.size() - 1); }
 
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
@@ -481,7 +483,7 @@ namespace CORE::FE
     void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
 
    private:
-    std::vector<POLY> polySpace1d_;
+    std::vector<POLY> poly_space1d_;
     std::vector<int> renumbering_;
   };
 
@@ -604,9 +606,9 @@ namespace CORE::FE
     void ComputeVandermondeMatrices(const unsigned int degree);
 
     CORE::LINALG::SerialDenseMatrix vandermonde_;
-    mutable Teuchos::SerialDenseSolver<ordinalType, scalarType> vandermondeFactor_;
-    mutable CORE::LINALG::SerialDenseMatrix evaluateVec_;
-    CORE::LINALG::SerialDenseMatrix feketePoints_;
+    mutable Teuchos::SerialDenseSolver<ordinalType, scalarType> vandermonde_factor_;
+    mutable CORE::LINALG::SerialDenseMatrix evaluate_vec_;
+    CORE::LINALG::SerialDenseMatrix fekete_points_;
     LegendreBasis<nsd_> legendre_;
   };
 

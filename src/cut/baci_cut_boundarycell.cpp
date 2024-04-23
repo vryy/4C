@@ -424,7 +424,7 @@ CORE::FE::GaussIntegration CORE::GEO::CUT::Quad4BoundaryCell::gaussRule(int cuba
  *----------------------------------------------------------------------------*/
 CORE::FE::GaussIntegration CORE::GEO::CUT::ArbitraryBoundaryCell::gaussRule(int cubaturedegree)
 {
-  return gaussRule_;
+  return gauss_rule_;
 }
 
 /*----------------------------------------------------------------------------*

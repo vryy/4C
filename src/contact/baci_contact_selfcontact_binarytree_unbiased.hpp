@@ -126,11 +126,11 @@ namespace CONTACT
     UnbiasedSelfBinaryTree(const SelfBinaryTree& old) = delete;
 
     //! use two half pass approach
-    const bool Two_half_pass_;
+    const bool two_half_pass_;
     //! perform reference configuration check for non-smooth self contact
-    const bool Check_nonsmooth_selfcontactsurface_;
+    const bool check_nonsmooth_selfcontactsurface_;
     //! the contact pairs are communicated to all processors
-    const bool Searchele_AllProc_;
+    const bool searchele_all_proc_;
   };  // class UnbiasedSelfBinaryTree
 }  // namespace CONTACT
 

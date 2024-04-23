@@ -164,43 +164,43 @@ namespace NOX
       Teuchos::RCP<Teuchos::ParameterList> nlnparams_;
 
       /// optimization problem type (unconstrained, constrained, etc.)
-      OptimizationProblemType optType_;
+      OptimizationProblemType opt_type_;
 
       /// map containing all linear solvers
-      const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>> linSolvers_;
+      const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>> lin_solvers_;
 
       /// required interface pointer
-      Teuchos::RCP<::NOX::Epetra::Interface::Required> iReqPtr_;
+      Teuchos::RCP<::NOX::Epetra::Interface::Required> i_req_ptr_;
 
       /// jacobian interface pointer
-      Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> iJacPtr_;
+      Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> i_jac_ptr_;
 
       /// preconditioner interface pointer
-      Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> iPrecPtr_;
+      Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> i_prec_ptr_;
 
       /// map of required interface pointer for constrained problems
-      NOX::NLN::CONSTRAINT::ReqInterfaceMap iConstr_;
+      NOX::NLN::CONSTRAINT::ReqInterfaceMap i_constr_;
 
       /// map of preconditioner interface pointer for constrained problems
-      NOX::NLN::CONSTRAINT::PrecInterfaceMap iConstrPrec_;
+      NOX::NLN::CONSTRAINT::PrecInterfaceMap i_constr_prec_;
 
       /// scaling object (for the linear system)
-      Teuchos::RCP<::NOX::Epetra::Scaling> iScale_;
+      Teuchos::RCP<::NOX::Epetra::Scaling> i_scale_;
 
       /// merit function pointer
-      Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr_;
+      Teuchos::RCP<::NOX::MeritFunction::Generic> mrt_fct_ptr_;
 
       /// user provided direction factory
       Teuchos::RCP<::NOX::Direction::UserDefinedFactory> direction_factory_;
 
       /// pre/post operator pointer for the NOX::NLN::Solver pre/post operator
-      Teuchos::RCP<::NOX::Observer> prePostOpPtr_;
+      Teuchos::RCP<::NOX::Observer> pre_post_op_ptr_;
 
       /// True if it is a constrained problem
-      bool isConstrained_;
+      bool is_constrained_;
 
       /// output object
-      Teuchos::RCP<::NOX::Utils> noxUtils_;
+      Teuchos::RCP<::NOX::Utils> nox_utils_;
     };  // namespace GlobalData
   }     // namespace NLN
 }  // namespace NOX

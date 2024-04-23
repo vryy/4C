@@ -151,8 +151,8 @@ namespace FLD
     //
 
     // Boxfilter
-    Teuchos::RCP<FLD::Boxfilter> Boxf_;
-    Teuchos::RCP<FLD::Boxfilter> Boxfsc_;
+    Teuchos::RCP<FLD::Boxfilter> boxf_;
+    Teuchos::RCP<FLD::Boxfilter> boxfsc_;
 
     //! the discretization
     Teuchos::RCP<DRT::Discretization> discret_;
@@ -166,7 +166,7 @@ namespace FLD
     bool homdir_;
     std::string special_flow_homdir_;
     bool apply_dynamic_smagorinsky_;
-    bool calc_Ci_;
+    bool calc_ci_;
     //@}
 
     //! @name special scatra variables

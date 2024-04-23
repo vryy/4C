@@ -19,13 +19,13 @@ FOUR_C_NAMESPACE_OPEN
 void ADAPTER::FieldWrapper::PrepareTimeStep()
 {
   field_->PrepareTimeStep();
-  if (NOXCorrection_) ResetStepinc();
+  if (nox_correction_) ResetStepinc();
 }
 
 
 void ADAPTER::FieldWrapper::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
-  if (NOXCorrection_) GetIterinc(disiterinc);
+  if (nox_correction_) GetIterinc(disiterinc);
   field_->UpdateStateIncrementally(disiterinc);
 }
 
@@ -34,7 +34,7 @@ void ADAPTER::FieldWrapper::UpdateStateIncrementally(Teuchos::RCP<const Epetra_V
 /-----------------------------------------------------------------------*/
 void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
-  if (NOXCorrection_) GetIterinc(disiterinc);
+  if (nox_correction_) GetIterinc(disiterinc);
   field_->Evaluate(disiterinc);
 }
 
@@ -43,7 +43,7 @@ void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 /-----------------------------------------------------------------------*/
 void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter)
 {
-  if (NOXCorrection_) GetIterinc(disiterinc);
+  if (nox_correction_) GetIterinc(disiterinc);
   field_->Evaluate(disiterinc, firstiter);
 }
 

@@ -51,14 +51,14 @@ MAT::ELASTIC::PAR::IsoMuscleBlemker::IsoMuscleBlemker(
 
 MAT::ELASTIC::IsoMuscleBlemker::IsoMuscleBlemker(MAT::ELASTIC::PAR::IsoMuscleBlemker* params)
     : params_(params),
-      anisotropyExtension_(true, 0.0, false,
+      anisotropy_extension_(true, 0.0, false,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0})
 
 {
   // initialize fiber directions and structural tensor
-  anisotropyExtension_.RegisterNeededTensors(
+  anisotropy_extension_.RegisterNeededTensors(
       MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR |
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
@@ -66,18 +66,18 @@ MAT::ELASTIC::IsoMuscleBlemker::IsoMuscleBlemker(MAT::ELASTIC::PAR::IsoMuscleBle
 
 void MAT::ELASTIC::IsoMuscleBlemker::PackSummand(CORE::COMM::PackBuffer& data) const
 {
-  anisotropyExtension_.PackAnisotropy(data);
+  anisotropy_extension_.PackAnisotropy(data);
 }
 
 void MAT::ELASTIC::IsoMuscleBlemker::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  anisotropyExtension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.UnpackAnisotropy(data, position);
 }
 
 void MAT::ELASTIC::IsoMuscleBlemker::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
 {
-  anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
+  anisotropy.RegisterAnisotropyExtension(anisotropy_extension_);
 }
 
 void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const CORE::LINALG::Matrix<6, 1>& rcg,
@@ -98,8 +98,8 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const CORE::LINALG::
   modC.Update(incJ, C, 0.0);
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  CORE::LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
-  CORE::LINALG::Matrix<6, 1> Mv = anisotropyExtension_.GetStructuralTensor_stress(gp, 0);
+  CORE::LINALG::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
+  CORE::LINALG::Matrix<6, 1> Mv = anisotropy_extension_.GetStructuralTensor_stress(gp, 0);
 
   // compute modified invariants modI1, modI4 and modI5
   double modI1 = modC(0, 0) + modC(1, 1) + modC(2, 2);

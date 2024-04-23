@@ -75,11 +75,11 @@ namespace MAT
      * \return true
      * \return false
      */
-    bool IsDefined() const { return isDefined_; }
+    bool IsDefined() const { return is_defined_; }
 
     const CORE::LINALG::Matrix<3, 1>& GetRad() const override
     {
-      if (!isDefined_)
+      if (!is_defined_)
       {
         FOUR_C_THROW("The coordinate system is not yet defined.");
       }
@@ -88,7 +88,7 @@ namespace MAT
 
     const CORE::LINALG::Matrix<3, 1>& GetAxi() const override
     {
-      if (!isDefined_)
+      if (!is_defined_)
       {
         FOUR_C_THROW("The coordinate system is not yet defined.");
       }
@@ -97,7 +97,7 @@ namespace MAT
 
     const CORE::LINALG::Matrix<3, 1>& GetCir() const override
     {
-      if (!isDefined_)
+      if (!is_defined_)
       {
         FOUR_C_THROW("The coordinate system is not yet defined.");
       }
@@ -113,7 +113,7 @@ namespace MAT
 
    private:
     /// Flag whether coordinate system is already set
-    bool isDefined_ = false;
+    bool is_defined_ = false;
 
     /*!
      * \brief Unit vector in radial direction

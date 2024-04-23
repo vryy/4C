@@ -274,12 +274,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   }
 
   // prepare data storage for visualization
-  centerline_coords_GP1_.resize(numgp_perelement);
-  centerline_coords_GP2_.resize(numgp_perelement);
-  forces_pot_GP1_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
-  forces_pot_GP2_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
-  moments_pot_GP1_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
-  moments_pot_GP2_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
+  centerline_coords_gp_1_.resize(numgp_perelement);
+  centerline_coords_gp_2_.resize(numgp_perelement);
+  forces_pot_gp_1_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
+  forces_pot_gp_2_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
+  moments_pot_gp_1_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
+  moments_pot_gp_2_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
 
   for (unsigned int isegment1 = 0; isegment1 < num_integration_segments; ++isegment1)
   {
@@ -327,7 +327,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
         ComputeCenterlinePosition(r1, N1_i[igp1], ele1pos_);
 
         // store for visualization
-        centerline_coords_GP1_[igp1_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r1);
+        centerline_coords_gp_1_[igp1_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r1);
 
         double jacobifac1 = BeamElement1()->GetJacobiFacAtXi(xi_GP1);
 
@@ -348,7 +348,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
           ComputeCenterlinePosition(r2, N2_i[igp2], ele2pos_);
 
           // store for visualization
-          centerline_coords_GP2_[igp2_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r2);
+          centerline_coords_gp_2_[igp2_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r2);
 
           double jacobifac2 = BeamElement2()->GetJacobiFacAtXi(xi_GP2);
 
@@ -417,11 +417,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
           }
 
           // store for visualization
-          forces_pot_GP1_[igp1_total].Update(
+          forces_pot_gp_1_[igp1_total].Update(
               1.0 * prefactor * q1 * q2 * CORE::FADUTILS::CastToDouble(norm_dist_exp1) *
                   jacobifac2 * jacobifactor_segment2 * gausspoints.qwgt[igp2],
               CORE::FADUTILS::CastToDouble<T, 3, 1>(dist), 1.0);
-          forces_pot_GP2_[igp2_total].Update(
+          forces_pot_gp_2_[igp2_total].Update(
               -1.0 * prefactor * q1 * q2 * CORE::FADUTILS::CastToDouble(norm_dist_exp1) *
                   jacobifac1 * jacobifactor_segment1 * gausspoints.qwgt[igp1],
               CORE::FADUTILS::CastToDouble<T, 3, 1>(dist), 1.0);
@@ -681,12 +681,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
   // prepare data storage for visualization
-  centerline_coords_GP1_.resize(numgp_perelement);
-  centerline_coords_GP2_.resize(numgp_perelement);
-  forces_pot_GP1_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
-  forces_pot_GP2_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
-  moments_pot_GP1_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
-  moments_pot_GP2_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
+  centerline_coords_gp_1_.resize(numgp_perelement);
+  centerline_coords_gp_2_.resize(numgp_perelement);
+  forces_pot_gp_1_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
+  forces_pot_gp_2_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
+  moments_pot_gp_1_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
+  moments_pot_gp_2_.resize(numgp_perelement, CORE::LINALG::Matrix<3, 1, double>(true));
 
   // auxiliary variables
   CORE::LINALG::Matrix<3, 1, T> fpot_tmp(true);
@@ -740,7 +740,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         ComputeCenterlinePosition(r1, N1_i[igp1], ele1pos_);
 
         // store for visualization
-        centerline_coords_GP1_[igp1_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r1);
+        centerline_coords_gp_1_[igp1_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r1);
 
         double jacobifac1 = BeamElement1()->GetJacobiFacAtXi(xi_GP1);
 
@@ -761,7 +761,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           ComputeCenterlinePosition(r2, N2_i[igp2], ele2pos_);
 
           // store for visualization
-          centerline_coords_GP2_[igp2_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r2);
+          centerline_coords_gp_2_[igp2_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r2);
 
           double jacobifac2 = BeamElement2()->GetJacobiFacAtXi(xi_GP2);
 
@@ -898,12 +898,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           }
 
           // store for visualization
-          forces_pot_GP1_[igp1_total].Update(
+          forces_pot_gp_1_[igp1_total].Update(
               1.0 * prefactor * q1 * q2 * CORE::FADUTILS::CastToDouble(gap_exp1) /
                   CORE::FADUTILS::CastToDouble(norm_dist) * jacobifac2 * jacobifactor_segment2 *
                   gausspoints.qwgt[igp2],
               CORE::FADUTILS::CastToDouble<T, 3, 1>(dist), 1.0);
-          forces_pot_GP2_[igp2_total].Update(
+          forces_pot_gp_2_[igp2_total].Update(
               -1.0 * prefactor * q1 * q2 * CORE::FADUTILS::CastToDouble(gap_exp1) /
                   CORE::FADUTILS::CastToDouble(norm_dist) * jacobifac1 * jacobifactor_segment1 *
                   gausspoints.qwgt[igp1],
@@ -1278,12 +1278,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
   // prepare data storage for visualization
-  centerline_coords_GP1_.resize(numgp_total);
-  centerline_coords_GP2_.resize(numgp_total);
-  forces_pot_GP1_.resize(numgp_total, CORE::LINALG::Matrix<3, 1, double>(true));
-  forces_pot_GP2_.resize(numgp_total, CORE::LINALG::Matrix<3, 1, double>(true));
-  moments_pot_GP1_.resize(numgp_total, CORE::LINALG::Matrix<3, 1, double>(true));
-  moments_pot_GP2_.resize(numgp_total, CORE::LINALG::Matrix<3, 1, double>(true));
+  centerline_coords_gp_1_.resize(numgp_total);
+  centerline_coords_gp_2_.resize(numgp_total);
+  forces_pot_gp_1_.resize(numgp_total, CORE::LINALG::Matrix<3, 1, double>(true));
+  forces_pot_gp_2_.resize(numgp_total, CORE::LINALG::Matrix<3, 1, double>(true));
+  moments_pot_gp_1_.resize(numgp_total, CORE::LINALG::Matrix<3, 1, double>(true));
+  moments_pot_gp_2_.resize(numgp_total, CORE::LINALG::Matrix<3, 1, double>(true));
 
 
   CORE::LINALG::Matrix<3, 1, double> moment_pot_tmp(true);
@@ -1335,7 +1335,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       t_slave.Update(1.0 / norm_r_xi_slave, r_xi_slave);
 
       // store for visualization
-      centerline_coords_GP1_[igp_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r_slave);
+      centerline_coords_gp_1_[igp_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r_slave);
 
       rho1rho2_JacFac_GaussWeight = rho1 * rho2 * jacobifactor_segment *
                                     BeamElement1()->GetJacobiFacAtXi(xi_GP) * gausspoints.qwgt[igp];
@@ -1432,7 +1432,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       //*********************** END DEBUG *****************************************
 
       // store for visualization
-      centerline_coords_GP2_[igp_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r_master);
+      centerline_coords_gp_2_[igp_total] = CORE::FADUTILS::CastToDouble<T, 3, 1>(r_master);
 
       // distance vector between unilateral closest points
       dist_ul.Update(1.0, r_slave, -1.0, r_master);
@@ -1507,9 +1507,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
                 force_pot_master_GP, r_slave, r_xi_slave, t_slave, r_master, r_xi_master,
                 r_xixi_master, t_master, alpha, cos_alpha, dist_ul, xi_master_partial_r_slave,
                 xi_master_partial_r_master, xi_master_partial_r_xi_master,
-                prefactor_visualization_data, forces_pot_GP1_[igp_total],
-                forces_pot_GP2_[igp_total], moments_pot_GP1_[igp_total],
-                moments_pot_GP2_[igp_total], rho1rho2_JacFac_GaussWeight, N_i_slave[igp],
+                prefactor_visualization_data, forces_pot_gp_1_[igp_total],
+                forces_pot_gp_2_[igp_total], moments_pot_gp_1_[igp_total],
+                moments_pot_gp_2_[igp_total], rho1rho2_JacFac_GaussWeight, N_i_slave[igp],
                 N_i_xi_slave[igp], N_i_master, N_i_xi_master))
           continue;
       }
@@ -1719,11 +1719,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
         // store for visualization
-        forces_pot_GP1_[igp_total].Update(
+        forces_pot_gp_1_[igp_total].Update(
             prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_deriv_gap_ul),
             CORE::FADUTILS::CastToDouble<T, 3, 1>(gap_ul_deriv_r_slave), 1.0);
 
-        forces_pot_GP1_[igp_total].Update(
+        forces_pot_gp_1_[igp_total].Update(
             prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha),
             CORE::FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_slave), 1.0);
 
@@ -1741,14 +1741,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         moment_pot_tmp.Multiply(1.0 / CORE::FADUTILS::CastToDouble(norm_r_xi_slave),
             spin_pseudo_moment_tmp, CORE::FADUTILS::CastToDouble<T, 3, 1>(t_slave));
 
-        moments_pot_GP1_[igp_total].Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
+        moments_pot_gp_1_[igp_total].Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
 
 
-        forces_pot_GP2_[igp_total].Update(
+        forces_pot_gp_2_[igp_total].Update(
             prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_deriv_gap_ul),
             CORE::FADUTILS::CastToDouble<T, 3, 1>(gap_ul_deriv_r_master), 1.0);
 
-        forces_pot_GP2_[igp_total].Update(
+        forces_pot_gp_2_[igp_total].Update(
             prefactor_visualization_data * CORE::FADUTILS::CastToDouble(pot_ia_deriv_cos_alpha),
             CORE::FADUTILS::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_master), 1.0);
 
@@ -1761,7 +1761,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         moment_pot_tmp.Multiply(1.0 / CORE::FADUTILS::CastToDouble(norm_r_xi_master),
             spin_pseudo_moment_tmp, CORE::FADUTILS::CastToDouble<T, 3, 1>(t_master));
 
-        moments_pot_GP2_[igp_total].Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
+        moments_pot_gp_2_[igp_total].Update(prefactor_visualization_data, moment_pot_tmp, 1.0);
 
 
 
@@ -3615,10 +3615,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Rese
   // reset interaction potential as well as interaction forces and moments of this pair
   interaction_potential_ = 0.0;
 
-  for (auto& forcevec : forces_pot_GP1_) forcevec.Clear();
-  for (auto& forcevec : forces_pot_GP2_) forcevec.Clear();
-  for (auto& momentvec : moments_pot_GP1_) momentvec.Clear();
-  for (auto& momentvec : moments_pot_GP2_) momentvec.Clear();
+  for (auto& forcevec : forces_pot_gp_1_) forcevec.Clear();
+  for (auto& forcevec : forces_pot_gp_2_) forcevec.Clear();
+  for (auto& momentvec : moments_pot_gp_1_) momentvec.Clear();
+  for (auto& momentvec : moments_pot_gp_2_) momentvec.Clear();
 }
 
 /*-----------------------------------------------------------------------------------------------*

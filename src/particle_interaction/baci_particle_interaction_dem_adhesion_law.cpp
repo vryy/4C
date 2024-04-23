@@ -80,7 +80,7 @@ void PARTICLEINTERACTION::DEMAdhesionLawBase::Setup(const double& k_normal)
 PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::DEMAdhesionLawVdWDMT(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMAdhesionLawBase(params),
-      hamaker_constant(params_dem_.get<double>("ADHESION_HAMAKER"))
+      hamaker_constant_(params_dem_.get<double>("ADHESION_HAMAKER"))
 {
   // empty constructor
 }
@@ -91,7 +91,7 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::Init()
   DEMAdhesionLawBase::Init();
 
   // safety check
-  if (hamaker_constant <= 0.0) FOUR_C_THROW("negative hamaker constant!");
+  if (hamaker_constant_ <= 0.0) FOUR_C_THROW("negative hamaker constant!");
 }
 
 void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
@@ -119,16 +119,16 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
           : 0.0;
 
   // determine offset gap
-  const double gap_offset = std::sqrt(hamaker_constant * r_eff / (6.0 * adhesionforce_pulloff));
+  const double gap_offset = std::sqrt(hamaker_constant_ * r_eff / (6.0 * adhesionforce_pulloff));
 
   double gap_intersect_min = 0.0;
   if (not adhesion_vdW_curve_shift_)
   {
     if (slope == 0)
-      gap_intersect_min = std::sqrt(hamaker_constant * r_eff / (6.0 * adhesionforce_pulloff));
+      gap_intersect_min = std::sqrt(hamaker_constant_ * r_eff / (6.0 * adhesionforce_pulloff));
     else
       CalculateIntersectionGap(slope, adhesionforce_pulloff, 0.0,
-          -(1.0 / 6.0) * hamaker_constant * r_eff, gap_intersect_min);
+          -(1.0 / 6.0) * hamaker_constant_ * r_eff, gap_intersect_min);
   }
 
   // compute adhesion force (assume deformation phase)
@@ -145,9 +145,9 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
   else
   {
     if (adhesion_vdW_curve_shift_)
-      adhesionforce_temp = hamaker_constant * r_eff / (6.0 * UTILS::Pow<2>(gap + gap_offset));
+      adhesionforce_temp = hamaker_constant_ * r_eff / (6.0 * UTILS::Pow<2>(gap + gap_offset));
     else
-      adhesionforce_temp = hamaker_constant * r_eff / (6.0 * UTILS::Pow<2>(gap));
+      adhesionforce_temp = hamaker_constant_ * r_eff / (6.0 * UTILS::Pow<2>(gap));
   }
 
   if (adhesion_vdW_curve_shift_)
@@ -159,9 +159,9 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
     else
     {
       const double gap_max =
-          std::sqrt(hamaker_constant * r_eff / (6.0 * adhesionforce)) - gap_offset;
+          std::sqrt(hamaker_constant_ * r_eff / (6.0 * adhesionforce)) - gap_offset;
       if (gap >= gap_max)
-        adhesionforce = hamaker_constant * r_eff / (6.0 * UTILS::Pow<2>(gap + gap_offset));
+        adhesionforce = hamaker_constant_ * r_eff / (6.0 * UTILS::Pow<2>(gap + gap_offset));
     }
   }
   else
@@ -173,8 +173,8 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
     }
     else
     {
-      const double gap_max = std::sqrt(hamaker_constant * r_eff / (6.0 * adhesionforce));
-      if (gap >= gap_max) adhesionforce = hamaker_constant * r_eff / (6.0 * UTILS::Pow<2>(gap));
+      const double gap_max = std::sqrt(hamaker_constant_ * r_eff / (6.0 * adhesionforce));
+      if (gap >= gap_max) adhesionforce = hamaker_constant_ * r_eff / (6.0 * UTILS::Pow<2>(gap));
     }
   }
 }

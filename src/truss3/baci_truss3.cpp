@@ -93,7 +93,7 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
       jacobinode_(),
       kintype_(KinematicType::tr3_totlag),
       material_(0),
-      X_()
+      x_()
 {
 }
 /*----------------------------------------------------------------------*
@@ -112,7 +112,7 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
       jacobinode_(old.jacobinode_),
       kintype_(old.kintype_),
       material_(old.material_),
-      X_(old.X_)
+      x_(old.x_)
 
 {
 }
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::Truss3::Pack(CORE::COMM::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
   AddtoPack(data, isinit_);
-  AddtoPack<6, 1>(data, X_);
+  AddtoPack<6, 1>(data, x_);
   AddtoPack<1, 3>(data, diff_disp_ref_);
   AddtoPack(data, material_);
   AddtoPack(data, lrefe_);
@@ -174,7 +174,7 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
   isinit_ = ExtractInt(position, data);
-  ExtractfromPack<6, 1>(position, data, X_);
+  ExtractfromPack<6, 1>(position, data, x_);
   ExtractfromPack<1, 3>(position, data, diff_disp_ref_);
   ExtractfromPack(position, data, material_);
   ExtractfromPack(position, data, lrefe_);
@@ -307,11 +307,11 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xr
   if (!isinit_)
   {
     // setting reference coordinates
-    for (int i = 0; i < 6; ++i) X_(i) = xrefe[i];
+    for (int i = 0; i < 6; ++i) x_(i) = xrefe[i];
 
     // length in reference configuration
-    lrefe_ = std::sqrt((X_(3) - X_(0)) * (X_(3) - X_(0)) + (X_(4) - X_(1)) * (X_(4) - X_(1)) +
-                       (X_(5) - X_(2)) * (X_(5) - X_(2)));
+    lrefe_ = std::sqrt((x_(3) - x_(0)) * (x_(3) - x_(0)) + (x_(4) - x_(1)) * (x_(4) - x_(1)) +
+                       (x_(5) - x_(2)) * (x_(5) - x_(2)));
 
     // set jacobi determinants for integration of mass matrix and at nodes
     jacobimass_.resize(2);
@@ -330,9 +330,9 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xr
 void DRT::ELEMENTS::Truss3::ScaleReferenceLength(double scalefac)
 {
   // scale length in reference configuration
-  X_(3) = X_(0) + (scalefac * (X_(3) - X_(0)));
-  X_(4) = X_(1) + (scalefac * (X_(4) - X_(1)));
-  X_(5) = X_(2) + (scalefac * (X_(5) - X_(2)));
+  x_(3) = x_(0) + (scalefac * (x_(3) - x_(0)));
+  x_(4) = x_(1) + (scalefac * (x_(4) - x_(1)));
+  x_(5) = x_(2) + (scalefac * (x_(5) - x_(2)));
 
   lrefe_ *= scalefac;
 

@@ -39,63 +39,63 @@ UTILS::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(
           "SYS-PUL CIRCULATION PARAMETERS");
 
   // set all 0D model parameters
-  R_arvalve_max_l_ = artvensyspulpar.get("R_arvalve_max_l", 0.0);
-  R_arvalve_min_l_ = artvensyspulpar.get("R_arvalve_min_l", 0.0);
-  R_atvalve_max_l_ = artvensyspulpar.get("R_atvalve_max_l", 0.0);
-  R_atvalve_min_l_ = artvensyspulpar.get("R_atvalve_min_l", 0.0);
-  R_arvalve_max_r_ = artvensyspulpar.get("R_arvalve_max_r", 0.0);
-  R_arvalve_min_r_ = artvensyspulpar.get("R_arvalve_min_r", 0.0);
-  R_atvalve_max_r_ = artvensyspulpar.get("R_atvalve_max_r", 0.0);
-  R_atvalve_min_r_ = artvensyspulpar.get("R_atvalve_min_r", 0.0);
-  Atrium_act_curve_l_ = artvensyspulpar.get(
+  r_arvalve_max_l_ = artvensyspulpar.get("R_arvalve_max_l", 0.0);
+  r_arvalve_min_l_ = artvensyspulpar.get("R_arvalve_min_l", 0.0);
+  r_atvalve_max_l_ = artvensyspulpar.get("R_atvalve_max_l", 0.0);
+  r_atvalve_min_l_ = artvensyspulpar.get("R_atvalve_min_l", 0.0);
+  r_arvalve_max_r_ = artvensyspulpar.get("R_arvalve_max_r", 0.0);
+  r_arvalve_min_r_ = artvensyspulpar.get("R_arvalve_min_r", 0.0);
+  r_atvalve_max_r_ = artvensyspulpar.get("R_atvalve_max_r", 0.0);
+  r_atvalve_min_r_ = artvensyspulpar.get("R_atvalve_min_r", 0.0);
+  atrium_act_curve_l_ = artvensyspulpar.get(
       "Atrium_act_curve_l", -1);  // left atrial activation curve (ONLY for ATRIUM_MODEL "0D"!)
-  Atrium_act_curve_r_ = artvensyspulpar.get(
+  atrium_act_curve_r_ = artvensyspulpar.get(
       "Atrium_act_curve_r", -1);  // right atrial activation curve (ONLY for ATRIUM_MODEL "0D"!)
-  Ventricle_act_curve_l_ = artvensyspulpar.get("Ventricle_act_curve_l",
+  ventricle_act_curve_l_ = artvensyspulpar.get("Ventricle_act_curve_l",
       -1);  // left ventricular activation curve (ONLY for VENTRICLE_MODEL "0D"!)
-  Ventricle_act_curve_r_ = artvensyspulpar.get("Ventricle_act_curve_r",
+  ventricle_act_curve_r_ = artvensyspulpar.get("Ventricle_act_curve_r",
       -1);  // right ventricular activation curve (ONLY for VENTRICLE_MODEL "0D"!)
-  Atrium_prescr_E_curve_l_ = artvensyspulpar.get("Atrium_prescr_E_curve_l",
+  atrium_prescr_e_curve_l_ = artvensyspulpar.get("Atrium_prescr_E_curve_l",
       -1);  // left atrial elastance prescription curve (ONLY for ATRIUM_MODEL "prescribed"!)
-  Atrium_prescr_E_curve_r_ = artvensyspulpar.get("Atrium_prescr_E_curve_r",
+  atrium_prescr_e_curve_r_ = artvensyspulpar.get("Atrium_prescr_E_curve_r",
       -1);  // right atrial elastance prescription curve (ONLY for ATRIUM_MODEL "prescribed"!)
-  Ventricle_prescr_E_curve_l_ = artvensyspulpar.get(
+  ventricle_prescr_e_curve_l_ = artvensyspulpar.get(
       "Ventricle_prescr_E_curve_l", -1);  // left ventricular elastance prescription curve (ONLY for
                                           // VENTRICLE_MODEL "prescribed"!)
-  Ventricle_prescr_E_curve_r_ = artvensyspulpar.get(
+  ventricle_prescr_e_curve_r_ = artvensyspulpar.get(
       "Ventricle_prescr_E_curve_r", -1);  // right ventricular elastance prescription curve (ONLY
                                           // for VENTRICLE_MODEL "prescribed"!)
-  E_at_max_l_ = artvensyspulpar.get("E_at_max_l", 0.0);
-  E_at_min_l_ = artvensyspulpar.get("E_at_min_l", 0.0);
-  E_at_max_r_ = artvensyspulpar.get("E_at_max_r", 0.0);
-  E_at_min_r_ = artvensyspulpar.get("E_at_min_r", 0.0);
-  E_v_max_l_ = artvensyspulpar.get("E_v_max_l", 0.0);
-  E_v_min_l_ = artvensyspulpar.get("E_v_min_l", 0.0);
-  E_v_max_r_ = artvensyspulpar.get("E_v_max_r", 0.0);
-  E_v_min_r_ = artvensyspulpar.get("E_v_min_r", 0.0);
-  C_ar_sys_ = artvensyspulpar.get("C_ar_sys", 0.0);
-  R_ar_sys_ = artvensyspulpar.get("R_ar_sys", 0.0);
-  L_ar_sys_ = artvensyspulpar.get("L_ar_sys", 0.0);
-  Z_ar_sys_ = artvensyspulpar.get("Z_ar_sys", 0.0);
-  C_ar_pul_ = artvensyspulpar.get("C_ar_pul", 0.0);
-  R_ar_pul_ = artvensyspulpar.get("R_ar_pul", 0.0);
-  L_ar_pul_ = artvensyspulpar.get("L_ar_pul", 0.0);
-  Z_ar_pul_ = artvensyspulpar.get("Z_ar_pul", 0.0);
-  C_ven_sys_ = artvensyspulpar.get("C_ven_sys", 0.0);
-  R_ven_sys_ = artvensyspulpar.get("R_ven_sys", 0.0);
-  L_ven_sys_ = artvensyspulpar.get("L_ven_sys", 0.0);
-  C_ven_pul_ = artvensyspulpar.get("C_ven_pul", 0.0);
-  R_ven_pul_ = artvensyspulpar.get("R_ven_pul", 0.0);
-  L_ven_pul_ = artvensyspulpar.get("L_ven_pul", 0.0);
+  e_at_max_l_ = artvensyspulpar.get("E_at_max_l", 0.0);
+  e_at_min_l_ = artvensyspulpar.get("E_at_min_l", 0.0);
+  e_at_max_r_ = artvensyspulpar.get("E_at_max_r", 0.0);
+  e_at_min_r_ = artvensyspulpar.get("E_at_min_r", 0.0);
+  e_v_max_l_ = artvensyspulpar.get("E_v_max_l", 0.0);
+  e_v_min_l_ = artvensyspulpar.get("E_v_min_l", 0.0);
+  e_v_max_r_ = artvensyspulpar.get("E_v_max_r", 0.0);
+  e_v_min_r_ = artvensyspulpar.get("E_v_min_r", 0.0);
+  c_ar_sys_ = artvensyspulpar.get("C_ar_sys", 0.0);
+  r_ar_sys_ = artvensyspulpar.get("R_ar_sys", 0.0);
+  l_ar_sys_ = artvensyspulpar.get("L_ar_sys", 0.0);
+  z_ar_sys_ = artvensyspulpar.get("Z_ar_sys", 0.0);
+  c_ar_pul_ = artvensyspulpar.get("C_ar_pul", 0.0);
+  r_ar_pul_ = artvensyspulpar.get("R_ar_pul", 0.0);
+  l_ar_pul_ = artvensyspulpar.get("L_ar_pul", 0.0);
+  z_ar_pul_ = artvensyspulpar.get("Z_ar_pul", 0.0);
+  c_ven_sys_ = artvensyspulpar.get("C_ven_sys", 0.0);
+  r_ven_sys_ = artvensyspulpar.get("R_ven_sys", 0.0);
+  l_ven_sys_ = artvensyspulpar.get("L_ven_sys", 0.0);
+  c_ven_pul_ = artvensyspulpar.get("C_ven_pul", 0.0);
+  r_ven_pul_ = artvensyspulpar.get("R_ven_pul", 0.0);
+  l_ven_pul_ = artvensyspulpar.get("L_ven_pul", 0.0);
 
-  V_v_l_u_ = artvensyspulpar.get("V_v_l_u", 0.0);
-  V_at_l_u_ = artvensyspulpar.get("V_at_l_u", 0.0);
-  V_ar_sys_u_ = artvensyspulpar.get("V_ar_sys_u", 0.0);
-  V_ven_sys_u_ = artvensyspulpar.get("V_ven_sys_u", 0.0);
-  V_v_r_u_ = artvensyspulpar.get("V_v_r_u", 0.0);
-  V_at_r_u_ = artvensyspulpar.get("V_at_r_u", 0.0);
-  V_ar_pul_u_ = artvensyspulpar.get("V_ar_pul_u", 0.0);
-  V_ven_pul_u_ = artvensyspulpar.get("V_ven_pul_u", 0.0);
+  v_v_l_u_ = artvensyspulpar.get("V_v_l_u", 0.0);
+  v_at_l_u_ = artvensyspulpar.get("V_at_l_u", 0.0);
+  v_ar_sys_u_ = artvensyspulpar.get("V_ar_sys_u", 0.0);
+  v_ven_sys_u_ = artvensyspulpar.get("V_ven_sys_u", 0.0);
+  v_v_r_u_ = artvensyspulpar.get("V_v_r_u", 0.0);
+  v_at_r_u_ = artvensyspulpar.get("V_at_r_u", 0.0);
+  v_ar_pul_u_ = artvensyspulpar.get("V_ar_pul_u", 0.0);
+  v_ven_pul_u_ = artvensyspulpar.get("V_ven_pul_u", 0.0);
 }
 
 
@@ -153,13 +153,13 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   // 0D atrial activation
   double y_at_l_np = 0.0;
   double y_at_r_np = 0.0;
-  if (Atrium_act_curve_l_ >= 0 && usetime)
+  if (atrium_act_curve_l_ >= 0 && usetime)
     y_at_l_np = GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfTime>(Atrium_act_curve_l_ - 1)
+                    ->FunctionById<CORE::UTILS::FunctionOfTime>(atrium_act_curve_l_ - 1)
                     .Evaluate(tim);
-  if (Atrium_act_curve_r_ >= 0 && usetime)
+  if (atrium_act_curve_r_ >= 0 && usetime)
     y_at_r_np = GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfTime>(Atrium_act_curve_r_ - 1)
+                    ->FunctionById<CORE::UTILS::FunctionOfTime>(atrium_act_curve_r_ - 1)
                     .Evaluate(tim);
   // 0D time-varying atrial elastance
   double E_at_l_np = 0.;
@@ -168,13 +168,13 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   // 0D ventricular activation
   double y_v_l_np = 0.0;
   double y_v_r_np = 0.0;
-  if (Ventricle_act_curve_l_ >= 0 && usetime)
+  if (ventricle_act_curve_l_ >= 0 && usetime)
     y_v_l_np = GLOBAL::Problem::Instance()
-                   ->FunctionById<CORE::UTILS::FunctionOfTime>(Ventricle_act_curve_l_ - 1)
+                   ->FunctionById<CORE::UTILS::FunctionOfTime>(ventricle_act_curve_l_ - 1)
                    .Evaluate(tim);
-  if (Ventricle_act_curve_r_ >= 0 && usetime)
+  if (ventricle_act_curve_r_ >= 0 && usetime)
     y_v_r_np = GLOBAL::Problem::Instance()
-                   ->FunctionById<CORE::UTILS::FunctionOfTime>(Ventricle_act_curve_r_ - 1)
+                   ->FunctionById<CORE::UTILS::FunctionOfTime>(ventricle_act_curve_r_ - 1)
                    .Evaluate(tim);
   // 0D time-varying ventricular elastance
   double E_v_l_np = 0.;
@@ -183,26 +183,26 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   // prescribed atrial elastances
   double E_at_l_prescr_np = 0.0;
   double E_at_r_prescr_np = 0.0;
-  if (Atrium_prescr_E_curve_l_ >= 0 && usetime)
+  if (atrium_prescr_e_curve_l_ >= 0 && usetime)
     E_at_l_prescr_np = GLOBAL::Problem::Instance()
-                           ->FunctionById<CORE::UTILS::FunctionOfTime>(Atrium_prescr_E_curve_l_ - 1)
+                           ->FunctionById<CORE::UTILS::FunctionOfTime>(atrium_prescr_e_curve_l_ - 1)
                            .Evaluate(tim);
-  if (Atrium_prescr_E_curve_r_ >= 0 && usetime)
+  if (atrium_prescr_e_curve_r_ >= 0 && usetime)
     E_at_r_prescr_np = GLOBAL::Problem::Instance()
-                           ->FunctionById<CORE::UTILS::FunctionOfTime>(Atrium_prescr_E_curve_r_ - 1)
+                           ->FunctionById<CORE::UTILS::FunctionOfTime>(atrium_prescr_e_curve_r_ - 1)
                            .Evaluate(tim);
   // prescribed ventricular elastances
   double E_v_l_prescr_np = 0.0;
   double E_v_r_prescr_np = 0.0;
-  if (Ventricle_prescr_E_curve_l_ >= 0 && usetime)
+  if (ventricle_prescr_e_curve_l_ >= 0 && usetime)
     E_v_l_prescr_np =
         GLOBAL::Problem::Instance()
-            ->FunctionById<CORE::UTILS::FunctionOfTime>(Ventricle_prescr_E_curve_l_ - 1)
+            ->FunctionById<CORE::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_l_ - 1)
             .Evaluate(tim);
-  if (Ventricle_prescr_E_curve_r_ >= 0 && usetime)
+  if (ventricle_prescr_e_curve_r_ >= 0 && usetime)
     E_v_r_prescr_np =
         GLOBAL::Problem::Instance()
-            ->FunctionById<CORE::UTILS::FunctionOfTime>(Ventricle_prescr_E_curve_r_ - 1)
+            ->FunctionById<CORE::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_r_ - 1)
             .Evaluate(tim);
 
 
@@ -210,8 +210,8 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   {
     case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
     {
-      E_at_l_np = (E_at_max_l_ - E_at_min_l_) * y_at_l_np + E_at_min_l_;
-      E_at_r_np = (E_at_max_r_ - E_at_min_r_) * y_at_r_np + E_at_min_r_;
+      E_at_l_np = (e_at_max_l_ - e_at_min_l_) * y_at_l_np + e_at_min_l_;
+      E_at_r_np = (e_at_max_r_ - e_at_min_r_) * y_at_r_np + e_at_min_r_;
     }
     break;
     case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
@@ -235,8 +235,8 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   {
     case INPAR::CARDIOVASCULAR0D::ventr_elastance_0d:
     {
-      E_v_l_np = (E_v_max_l_ - E_v_min_l_) * y_v_l_np + E_v_min_l_;
-      E_v_r_np = (E_v_max_r_ - E_v_min_r_) * y_v_r_np + E_v_min_r_;
+      E_v_l_np = (e_v_max_l_ - e_v_min_l_) * y_v_l_np + e_v_min_l_;
+      E_v_r_np = (e_v_max_r_ - e_v_min_r_) * y_v_r_np + e_v_min_r_;
     }
     break;
     case INPAR::CARDIOVASCULAR0D::ventr_structure_3d:
@@ -362,31 +362,31 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
         break;
     }
 
-    if (p_v_l_np < p_at_l_np) R_atvalve_l = R_atvalve_min_l_;
-    if (p_v_l_np >= p_at_l_np) R_atvalve_l = R_atvalve_max_l_;
+    if (p_v_l_np < p_at_l_np) R_atvalve_l = r_atvalve_min_l_;
+    if (p_v_l_np >= p_at_l_np) R_atvalve_l = r_atvalve_max_l_;
 
-    if (p_v_l_np < p_ar_sys_np) R_arvalve_l = R_arvalve_max_l_;
-    if (p_v_l_np >= p_ar_sys_np) R_arvalve_l = R_arvalve_min_l_;
+    if (p_v_l_np < p_ar_sys_np) R_arvalve_l = r_arvalve_max_l_;
+    if (p_v_l_np >= p_ar_sys_np) R_arvalve_l = r_arvalve_min_l_;
 
-    if (p_v_r_np < p_at_r_np) R_atvalve_r = R_atvalve_min_r_;
-    if (p_v_r_np >= p_at_r_np) R_atvalve_r = R_atvalve_max_r_;
+    if (p_v_r_np < p_at_r_np) R_atvalve_r = r_atvalve_min_r_;
+    if (p_v_r_np >= p_at_r_np) R_atvalve_r = r_atvalve_max_r_;
 
-    if (p_v_r_np < p_ar_pul_np) R_arvalve_r = R_arvalve_max_r_;
-    if (p_v_r_np >= p_ar_pul_np) R_arvalve_r = R_arvalve_min_r_;
+    if (p_v_r_np < p_ar_pul_np) R_arvalve_r = r_arvalve_max_r_;
+    if (p_v_r_np >= p_ar_pul_np) R_arvalve_r = r_arvalve_min_r_;
 
     df_np[1] = 0.;
     df_np[3] = 0.;
-    df_np[4] = C_ar_sys_ * (p_ar_sys_np - Z_ar_sys_ * q_vout_l_np);
-    df_np[5] = (L_ar_sys_ / R_ar_sys_) * q_ar_sys_np;
-    df_np[6] = C_ven_sys_ * p_ven_sys_np;
-    df_np[7] = (L_ven_sys_ / R_ven_sys_) * q_ven_sys_np;
+    df_np[4] = c_ar_sys_ * (p_ar_sys_np - z_ar_sys_ * q_vout_l_np);
+    df_np[5] = (l_ar_sys_ / r_ar_sys_) * q_ar_sys_np;
+    df_np[6] = c_ven_sys_ * p_ven_sys_np;
+    df_np[7] = (l_ven_sys_ / r_ven_sys_) * q_ven_sys_np;
 
     df_np[9] = 0.;
     df_np[11] = 0.;
-    df_np[12] = C_ar_pul_ * (p_ar_pul_np - Z_ar_pul_ * q_vout_r_np);
-    df_np[13] = (L_ar_pul_ / R_ar_pul_) * q_ar_pul_np;
-    df_np[14] = C_ven_pul_ * p_ven_pul_np;
-    df_np[15] = (L_ven_pul_ / R_ven_pul_) * q_ven_pul_np;
+    df_np[12] = c_ar_pul_ * (p_ar_pul_np - z_ar_pul_ * q_vout_r_np);
+    df_np[13] = (l_ar_pul_ / r_ar_pul_) * q_ar_pul_np;
+    df_np[14] = c_ven_pul_ * p_ven_pul_np;
+    df_np[15] = (l_ven_pul_ / r_ven_pul_) * q_ven_pul_np;
 
     f_np[0] = -q_ven_pul_np + q_vin_l_np;
     // atrioventricular valve - mitral
@@ -395,9 +395,9 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     // semilunar valve - aortic
     f_np[3] = (p_v_l_np - p_ar_sys_np) / R_arvalve_l - q_vout_l_np;
     f_np[4] = -q_vout_l_np + q_ar_sys_np;
-    f_np[5] = (p_ven_sys_np - p_ar_sys_np + Z_ar_sys_ * q_vout_l_np) / R_ar_sys_ + q_ar_sys_np;
+    f_np[5] = (p_ven_sys_np - p_ar_sys_np + z_ar_sys_ * q_vout_l_np) / r_ar_sys_ + q_ar_sys_np;
     f_np[6] = -q_ar_sys_np + q_ven_sys_np;
-    f_np[7] = (p_at_r_np - p_ven_sys_np) / R_ven_sys_ + q_ven_sys_np;
+    f_np[7] = (p_at_r_np - p_ven_sys_np) / r_ven_sys_ + q_ven_sys_np;
 
     f_np[8] = -q_ven_sys_np + q_vin_r_np;
     // atrioventricular valve - tricuspid
@@ -406,9 +406,9 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     // semilunar valve - pulmonary
     f_np[11] = (p_v_r_np - p_ar_pul_np) / R_arvalve_r - q_vout_r_np;
     f_np[12] = -q_vout_r_np + q_ar_pul_np;
-    f_np[13] = (p_ven_pul_np - p_ar_pul_np + Z_ar_pul_ * q_vout_r_np) / R_ar_pul_ + q_ar_pul_np;
+    f_np[13] = (p_ven_pul_np - p_ar_pul_np + z_ar_pul_ * q_vout_r_np) / r_ar_pul_ + q_ar_pul_np;
     f_np[14] = -q_ar_pul_np + q_ven_pul_np;
-    f_np[15] = (p_at_l_np - p_ven_pul_np) / R_ven_pul_ + q_ven_pul_np;
+    f_np[15] = (p_at_l_np - p_ven_pul_np) / r_ven_pul_ + q_ven_pul_np;
   }
 
 
@@ -462,25 +462,25 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     wkstiff(3, 2) = -theta;
 
     // arterial mass balance - systemic
-    wkstiff(4, 4) = C_ar_sys_ / ts_size;
-    wkstiff(4, 2) = -theta - C_ar_sys_ * Z_ar_sys_ / ts_size;
+    wkstiff(4, 4) = c_ar_sys_ / ts_size;
+    wkstiff(4, 2) = -theta - c_ar_sys_ * z_ar_sys_ / ts_size;
     wkstiff(4, 5) = theta;
 
     // arterial linear momentum balance - systemic
-    wkstiff(5, 5) = L_ar_sys_ / (R_ar_sys_ * ts_size) + theta;
-    wkstiff(5, 2) = Z_ar_sys_ * theta / R_ar_sys_;
-    wkstiff(5, 4) = -theta / R_ar_sys_;
-    wkstiff(5, 6) = theta / R_ar_sys_;
+    wkstiff(5, 5) = l_ar_sys_ / (r_ar_sys_ * ts_size) + theta;
+    wkstiff(5, 2) = z_ar_sys_ * theta / r_ar_sys_;
+    wkstiff(5, 4) = -theta / r_ar_sys_;
+    wkstiff(5, 6) = theta / r_ar_sys_;
 
     // venous mass balance - systemic
-    wkstiff(6, 6) = C_ven_sys_ / ts_size;
+    wkstiff(6, 6) = c_ven_sys_ / ts_size;
     wkstiff(6, 5) = -theta;
     wkstiff(6, 7) = theta;
 
     // venous linear momentum balance - systemic
-    wkstiff(7, 7) = L_ven_sys_ / (R_ven_sys_ * ts_size) + theta;
-    wkstiff(7, 6) = -theta / R_ven_sys_;
-    wkstiff(7, 8) = theta / R_ven_sys_;
+    wkstiff(7, 7) = l_ven_sys_ / (r_ven_sys_ * ts_size) + theta;
+    wkstiff(7, 6) = -theta / r_ven_sys_;
+    wkstiff(7, 8) = theta / r_ven_sys_;
 
 
     // atrium - right
@@ -502,25 +502,25 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     wkstiff(11, 10) = -theta;
 
     // arterial mass balance - pulmonary
-    wkstiff(12, 12) = C_ar_pul_ / ts_size;
-    wkstiff(12, 10) = -theta - C_ar_pul_ * Z_ar_pul_ / ts_size;
+    wkstiff(12, 12) = c_ar_pul_ / ts_size;
+    wkstiff(12, 10) = -theta - c_ar_pul_ * z_ar_pul_ / ts_size;
     wkstiff(12, 13) = theta;
 
     // arterial linear momentum balance - pulmonary
-    wkstiff(13, 13) = L_ar_pul_ / (R_ar_pul_ * ts_size) + theta;
-    wkstiff(13, 10) = Z_ar_pul_ * theta / R_ar_pul_;
-    wkstiff(13, 12) = -theta / R_ar_pul_;
-    wkstiff(13, 14) = theta / R_ar_pul_;
+    wkstiff(13, 13) = l_ar_pul_ / (r_ar_pul_ * ts_size) + theta;
+    wkstiff(13, 10) = z_ar_pul_ * theta / r_ar_pul_;
+    wkstiff(13, 12) = -theta / r_ar_pul_;
+    wkstiff(13, 14) = theta / r_ar_pul_;
 
     // venous mass balance - pulmonary
-    wkstiff(14, 14) = C_ven_pul_ / ts_size;
+    wkstiff(14, 14) = c_ven_pul_ / ts_size;
     wkstiff(14, 13) = -theta;
     wkstiff(14, 15) = theta;
 
     // venous linear momentum balance - pulmonary
-    wkstiff(15, 15) = L_ven_pul_ / (R_ven_pul_ * ts_size) + theta;
-    wkstiff(15, 14) = -theta / R_ven_pul_;
-    wkstiff(15, 0) = theta / R_ven_pul_;
+    wkstiff(15, 15) = l_ven_pul_ / (r_ven_pul_ * ts_size) + theta;
+    wkstiff(15, 14) = -theta / r_ven_pul_;
+    wkstiff(15, 0) = theta / r_ven_pul_;
 
 
     sysmat1->UnComplete();
@@ -576,27 +576,27 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
         atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_prescribed)
     {
       // 0D left atrial volume
-      (*sysvec5)[0] = p_at_l_np / E_at_l_np + V_at_l_u_;
+      (*sysvec5)[0] = p_at_l_np / E_at_l_np + v_at_l_u_;
       // 0D right atrial volume
-      (*sysvec5)[8] = p_at_r_np / E_at_r_np + V_at_r_u_;
+      (*sysvec5)[8] = p_at_r_np / E_at_r_np + v_at_r_u_;
     }
     if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d or
         ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_prescribed)
     {
       // 0D left ventricular volume
-      (*sysvec5)[2] = p_v_l_np / E_v_l_np + V_v_l_u_;
+      (*sysvec5)[2] = p_v_l_np / E_v_l_np + v_v_l_u_;
       // 0D right ventricular volume
-      (*sysvec5)[10] = p_v_r_np / E_v_r_np + V_v_r_u_;
+      (*sysvec5)[10] = p_v_r_np / E_v_r_np + v_v_r_u_;
     }
     // systemic arterial compartment volume
-    (*sysvec5)[4] = C_ar_sys_ * (p_ar_sys_np - Z_ar_sys_ * q_vout_l_np) + V_ar_sys_u_;
+    (*sysvec5)[4] = c_ar_sys_ * (p_ar_sys_np - z_ar_sys_ * q_vout_l_np) + v_ar_sys_u_;
     // systemic venous compartment volume
-    (*sysvec5)[6] = C_ven_sys_ * p_ven_sys_np + V_ven_sys_u_;
+    (*sysvec5)[6] = c_ven_sys_ * p_ven_sys_np + v_ven_sys_u_;
 
     // pulmonary arterial compartment volume
-    (*sysvec5)[12] = C_ar_pul_ * (p_ar_pul_np - Z_ar_pul_ * q_vout_r_np) + V_ar_pul_u_;
+    (*sysvec5)[12] = c_ar_pul_ * (p_ar_pul_np - z_ar_pul_ * q_vout_r_np) + v_ar_pul_u_;
     // pulmonary venous compartment volume
-    (*sysvec5)[14] = C_ven_pul_ * p_ven_pul_np + V_ven_pul_u_;
+    (*sysvec5)[14] = c_ven_pul_ * p_ven_pul_np + v_ven_pul_u_;
   }
 
 

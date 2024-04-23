@@ -264,8 +264,8 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
   }
 
   // Resize matrix for x1statlocations and x2statlocations coordinates
-  x1statlocations.reshape(numx1statlocations_, 1);
-  x2statlocations.reshape(numx1statlocations_, numx2coor_);
+  x1statlocations_.reshape(numx1statlocations_, 1);
+  x2statlocations_.reshape(numx1statlocations_, numx2coor_);
 
 #ifndef SAMP_ALL
   x1elemlengthhalf_ = (x1max_ - x1min_) / (numx1coor_ - 1);
@@ -288,7 +288,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
 #ifdef SAMP_ALL
   for (int x1line = 0; x1line < numx1statlocations_; ++x1line)
   {
-    x1statlocations(x1line, 0) = x1setstatlocations_->at(x1line);
+    x1statlocations_(x1line, 0) = x1setstatlocations_->at(x1line);
   }
 #endif
 
@@ -305,8 +305,8 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
     {
       DRT::Node* node = discret_->lRowNode(i);
       if (node->X()[2] < +2e-9 && node->X()[2] > -2e-9 &&
-          node->X()[0] < x1statlocations(x1stat, 0) + 2e-9 &&
-          node->X()[0] > x1statlocations(x1stat, 0) - 2e-9)
+          node->X()[0] < x1statlocations_(x1stat, 0) + 2e-9 &&
+          node->X()[0] > x1statlocations_(x1stat, 0) - 2e-9)
       {
         x2statlocat.insert(node->X()[1]);
       }
@@ -393,7 +393,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
          x2locc != x2statlocat.end(); ++x2locc)
     {
       x2it += 1;
-      x2statlocations(x1stat, x2it) = *x2locc;
+      x2statlocations_(x1stat, x2it) = *x2locc;
     }
   }
 
@@ -514,10 +514,10 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
   {
     // current x2-coordinate of respective wall
     // constant offset from wall at the middle bottom; has to be adapted for different statlocations
-    double x2cwall = x2statlocations(k, 1);
-    double x1cwall = x1statlocations(k, 0);
-    double x2cwall_puw = x2statlocations(k, numx2coor_ - 1);
-    double x2cwall_plw = x2statlocations(k, 0);
+    double x2cwall = x2statlocations_(k, 1);
+    double x1cwall = x1statlocations_(k, 0);
+    double x2cwall_puw = x2statlocations_(k, numx2coor_ - 1);
+    double x2cwall_plw = x2statlocations_(k, 0);
 
     // toggle vectors are one in the position of a dof of this node,
     toggleu_->PutScalar(0.0);
@@ -662,8 +662,8 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
   {
     // current x2-coordinate of respective wall
     // constant offset from wall at the middle bottom; has to be adapted for different statlocations
-    double x2cwall = x2statlocations(k, 0);
-    double x1cwall = x1statlocations(k, 0);
+    double x2cwall = x2statlocations_(k, 0);
+    double x1cwall = x1statlocations_(k, 0);
 
     // toggle vectors are one in the position of a dof of this node,
     // else 0
@@ -748,10 +748,10 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
         DRT::Node* node = discret_->lRowNode(nn);
 
         // this is the node
-        if (node->X()[0] < x1statlocations(x1nodnum, 0) + 2e-5 &&
-            node->X()[0] > x1statlocations(x1nodnum, 0) - 2e-5 &&
-            node->X()[1] < x2statlocations(x1nodnum, x2line) + 2e-9 &&
-            node->X()[1] > x2statlocations(x1nodnum, x2line) -
+        if (node->X()[0] < x1statlocations_(x1nodnum, 0) + 2e-5 &&
+            node->X()[0] > x1statlocations_(x1nodnum, 0) - 2e-5 &&
+            node->X()[1] < x2statlocations_(x1nodnum, x2line) + 2e-9 &&
+            node->X()[1] > x2statlocations_(x1nodnum, x2line) -
                                2e-9)  // the last node in x3 direction has to be sampled
         {
           std::vector<int> dof = discret_->Dof(node);
@@ -874,7 +874,7 @@ void FLD::TurbulenceStatisticsPh::DumpStatistics(int step)
     for (int i = 0; i < numx1statlocations_; ++i)
     {
       double lwx1u = (*x1sumu_)(i, 0) / numsamp_;
-      double dist = x2statlocations(i, 1) - x2statlocations(i, 0);
+      double dist = x2statlocations_(i, 1) - x2statlocations_(i, 0);
       double lwx1duxdy = lwx1u / dist;
       double lwx1p = (*x1sump_)(i, 0) / numsamp_;
       double uwx1p = (*x1sump_)(i, 1) / numsamp_;
@@ -883,7 +883,7 @@ void FLD::TurbulenceStatisticsPh::DumpStatistics(int step)
       double fz = (*x1sumf_)(i, 2) / numsamp_;
       double f = std::sqrt(fx * fx + fy * fy + fz * fz);
       if (fx < 0.0) f *= -1.0;  // recover sign
-      (*log) << " " << std::setw(11) << std::setprecision(4) << x1statlocations(i, 0);
+      (*log) << " " << std::setw(11) << std::setprecision(4) << x1statlocations_(i, 0);
       (*log) << "   " << std::setw(11) << std::setprecision(4) << lwx1duxdy;
       (*log) << "   " << std::setw(11) << std::setprecision(4) << lwx1p;
       (*log) << "   " << std::setw(11) << std::setprecision(4) << uwx1p;
@@ -896,7 +896,7 @@ void FLD::TurbulenceStatisticsPh::DumpStatistics(int step)
     {
       // current x1-coordinate
       double x1 = 1.0e20;
-      x1 = x1statlocations(i, 0);
+      x1 = x1statlocations_(i, 0);
 
       (*log) << "\n\n\n";
       (*log) << "# line in x2-direction at x1 = " << std::setw(11) << std::setprecision(4) << x1
@@ -926,7 +926,7 @@ void FLD::TurbulenceStatisticsPh::DumpStatistics(int step)
         double x2uv = (*x2sumuv_)(i, j) / numsamp_ - x2u * x2v;
         double x2uw = (*x2sumuw_)(i, j) / numsamp_ - x2u * x2w;
         double x2vw = (*x2sumvw_)(i, j) / numsamp_ - x2v * x2w;
-        (*log) << " " << std::setw(11) << std::setprecision(4) << x2statlocations(i, j);
+        (*log) << " " << std::setw(11) << std::setprecision(4) << x2statlocations_(i, j);
         (*log) << "   " << std::setw(11) << std::setprecision(4) << x2u;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << x2v;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << x2w;

@@ -132,7 +132,7 @@ namespace FS3I
     Teuchos::RCP<Epetra_Vector> tangtractionone_;
     Teuchos::RCP<Epetra_Vector> tangtractiontwo_;
 
-    std::vector<double> nvector;
+    std::vector<double> nvector_;
 
     // coefficients used in the calculation of the displacement due to growth
     // fluxcoef_ multiply the scalar influx at the interface,
@@ -147,34 +147,34 @@ namespace FS3I
     //// growth time parameters
 
     // number of steps
-    int nstep_bio;
+    int nstep_bio_;
 
     // current step
-    int step_bio;
+    int step_bio_;
 
     // time step size
-    double dt_bio;
+    double dt_bio_;
 
     // total time of the outer loop
-    double time_bio;
+    double time_bio_;
 
 
     //// scatra and fsi time parameters
 
     // number of steps
-    int nstep_fsi;
+    int nstep_fsi_;
 
     // current step
-    int step_fsi;
+    int step_fsi_;
 
     // time step size
-    double dt_fsi;
+    double dt_fsi_;
 
     // total time of the inner loop
-    double time_fsi;
+    double time_fsi_;
 
     // maximum time
-    double maxtime_fsi;
+    double maxtime_fsi_;
 
     // total time
     double time_;
@@ -198,16 +198,16 @@ namespace FS3I
     Teuchos::RCP<Epetra_Vector> struiveln_;
 
     /// total structure displacement due to growth
-    Teuchos::RCP<Epetra_Vector> struct_growth_disp;
+    Teuchos::RCP<Epetra_Vector> struct_growth_disp_;
 
     /// total fluid displacement due to growth
-    Teuchos::RCP<Epetra_Vector> fluid_growth_disp;
+    Teuchos::RCP<Epetra_Vector> fluid_growth_disp_;
 
     /// total scatra structure displacement due to growth
-    Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp;
+    Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp_;
 
     /// total scatra fluid displacement due to growth
-    Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp;
+    Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp_;
   };
 
 }  // namespace FS3I

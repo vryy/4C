@@ -114,38 +114,38 @@ class MyocardMinimal : public MyocardGeneral
   std::vector<double> s_;  /// slow inward current
 
   /// ionic currents MV
-  std::vector<double> Jfi_;  /// fast inward current
-  std::vector<double> Jso_;  /// slow outward current
-  std::vector<double> Jsi_;  /// slow inward current
+  std::vector<double> jfi_;  /// fast inward current
+  std::vector<double> jso_;  /// slow outward current
+  std::vector<double> jsi_;  /// slow inward current
 
   /// model parameters
   double u_o_;       // = 0.0;
   double u_u_;       // = 1.55;//1.58;
-  double Theta_v_;   // = 0.3;
-  double Theta_w_;   // = 0.13;//0.015;
-  double Theta_vm_;  // = 0.006;//0.015;
-  double Theta_o_;   // = 0.006;
-  double Tau_v1m_;   // = 60.0;
-  double Tau_v2m_;   // = 1150.0;
-  double Tau_vp_;    // = 1.4506;
-  double Tau_w1m_;   // = 60.0;//70.0;
-  double Tau_w2m_;   // = 15.0;//20.0;
+  double theta_v_;   // = 0.3;
+  double theta_w_;   // = 0.13;//0.015;
+  double theta_vm_;  // = 0.006;//0.015;
+  double theta_o_;   // = 0.006;
+  double tau_v1m_;   // = 60.0;
+  double tau_v2m_;   // = 1150.0;
+  double tau_vp_;    // = 1.4506;
+  double tau_w1m_;   // = 60.0;//70.0;
+  double tau_w2m_;   // = 15.0;//20.0;
   double k_wm_;      // = 65.0;
   double u_wm_;      // = 0.03;
-  double Tau_wp_;    // = 200.0;//280.0;
-  double Tau_fi_;    // = 0.11;
-  double Tau_o1_;    // = 400.0;//6.0;
-  double Tau_o2_;    // = 6.0;
-  double Tau_so1_;   // = 30.0181;//43.0;
-  double Tau_so2_;   // = 0.9957;//0.2;
+  double tau_wp_;    // = 200.0;//280.0;
+  double tau_fi_;    // = 0.11;
+  double tau_o1_;    // = 400.0;//6.0;
+  double tau_o2_;    // = 6.0;
+  double tau_so1_;   // = 30.0181;//43.0;
+  double tau_so2_;   // = 0.9957;//0.2;
   double k_so_;      // = 2.0458;//2.0;
   double u_so_;      // = 0.65;
-  double Tau_s1_;    // = 2.7342;
-  double Tau_s2_;    // = 16.0;//3.0;
+  double tau_s1_;    // = 2.7342;
+  double tau_s2_;    // = 16.0;//3.0;
   double k_s_;       // = 2.0994;
   double u_s_;       // = 0.9087;
-  double Tau_si_;    // = 1.8875;//2.8723;
-  double Tau_winf_;  // = 0.07;
+  double tau_si_;    // = 1.8875;//2.8723;
+  double tau_winf_;  // = 0.07;
   double w_infs_;    // = 0.94;
 
   // Variables for electromechanical coupling

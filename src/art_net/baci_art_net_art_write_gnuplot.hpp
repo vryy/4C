@@ -115,7 +115,7 @@ namespace ART
       Teuchos::RCP<std::ofstream> fout_;
 
       //! the Artery number
-      int ArteryNum_;
+      int artery_num_;
 
 
     };  // class ArtWriteGnuplot

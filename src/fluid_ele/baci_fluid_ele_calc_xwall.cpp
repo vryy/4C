@@ -51,8 +51,8 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::FluidEleCalcXWall()
       deriv_(true),
       deriv2_(true),
       k_(0.41),
-      B_(5.17),
-      expmkmb_(exp(-k_ * B_)),
+      b_(5.17),
+      expmkmb_(exp(-k_ * b_)),
       mk_(-1.0)
 {
 }
@@ -744,7 +744,7 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::SpaldingsLaw(double d
 
   if (yplus >
       11.0)  // this is approximately where the intersection of log law and linear region lies
-    psi = log(yplus) + B_ * k_;
+    psi = log(yplus) + b_ * k_;
   else
     psi = yplus * k_;
 

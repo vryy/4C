@@ -79,9 +79,9 @@ namespace DRT
       //! generalised-alpha parameter (connecting velocity and acceleration)
       double Gamma() { return gamma_; };
       //! generalised-alpha parameter (velocity)
-      double AlphaF() { return alphaF_; };
+      double AlphaF() { return alpha_f_; };
       //! generalised-alpha parameter (acceleration)
-      double AlphaM() { return alphaM_; };
+      double AlphaM() { return alpha_m_; };
       //! generalised-alpha parameter, alphaF_*gamma_*dt_
       double Afgdt() { return afgdt_; };
       //! generalised-alpha parameter, gamma_/alphaM_*dt_
@@ -128,9 +128,9 @@ namespace DRT
       //! generalised-alpha parameter (connecting velocity and acceleration)
       double gamma_;
       //! generalised-alpha parameter (velocity)
-      double alphaF_;
+      double alpha_f_;
       //! generalised-alpha parameter (acceleration)
-      double alphaM_;
+      double alpha_m_;
       //! generalised-alpha parameter, alphaF_*gamma_*dt_
       double afgdt_;
       //! generalised-alpha parameter, gamma_/alphaM_*dt_

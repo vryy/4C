@@ -54,7 +54,7 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
     centerline_hermite_ = false;
 
   // read whether automatic differentiation via Sacado::Fad package shall be used
-  useFAD_ = linedef->HaveNamed("FAD") ? true : false;
+  use_fad_ = linedef->HaveNamed("FAD") ? true : false;
 
 
   // store nodal triads according to input file

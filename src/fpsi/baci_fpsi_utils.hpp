@@ -81,17 +81,17 @@ namespace FPSI
     //! access methods
     Teuchos::RCP<std::map<int, int>> Get_Fluid_PoroFluid_InterfaceMap()
     {
-      return Fluid_PoroFluid_InterfaceMap;
+      return fluid_poro_fluid_interface_map_;
     };
     Teuchos::RCP<std::map<int, int>> Get_PoroFluid_Fluid_InterfaceMap()
     {
-      return PoroFluid_Fluid_InterfaceMap;
+      return poro_fluid_fluid_interface_map_;
     };
 
    private:
     //! interface maps
-    Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap;
-    Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap;
+    Teuchos::RCP<std::map<int, int>> fluid_poro_fluid_interface_map_;
+    Teuchos::RCP<std::map<int, int>> poro_fluid_fluid_interface_map_;
 
   };  // class Utils
 

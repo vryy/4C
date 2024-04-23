@@ -56,9 +56,9 @@ FPSI::MonolithicPlain::MonolithicPlain(const Epetra_Comm& comm,
 
   fgitransform1_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
   fgitransform2_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
-  Cfgtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
-  Cfptransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
-  Cfptransform2_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
+  cfgtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
+  cfptransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
+  cfptransform2_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
 
   figtransform1_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
   figtransform2_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
@@ -104,7 +104,7 @@ FPSI::MonolithicPlain::MonolithicPlain(const Epetra_Comm& comm,
   {
     FOUR_C_THROW("Allocation of 'fgitransform2_' failed.");
   }
-  if (Cfgtransform_ == Teuchos::null)
+  if (cfgtransform_ == Teuchos::null)
   {
     FOUR_C_THROW("Allocation of 'Cfgtransform_' failed.");
   }
@@ -488,7 +488,7 @@ void FPSI::MonolithicPlain::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBas
     // Complete for the Matrix Transformation Object (Already everything filled into the pf part!)
     FPSICoupl()->C_fa().Complete(*AleField()->Interface()->OtherMap(), *FluidField()->DofRowMap());
 
-    (*Cfgtransform_)(FPSICoupl()->C_fa(), (1.0 - stiparam) / (1.0 - ftiparam) * scale,
+    (*cfgtransform_)(FPSICoupl()->C_fa(), (1.0 - stiparam) / (1.0 - ftiparam) * scale,
         CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
         mat.Matrix(structure_block_, ale_i_block_),
         true);  // Addmatrix
@@ -500,14 +500,14 @@ void FPSI::MonolithicPlain::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBas
     // overlapping interfaces)
     FPSICoupl()->C_fp().Complete();
 
-    (*Cfptransform_)(FPSICoupl()->C_fp().Matrix(
+    (*cfptransform_)(FPSICoupl()->C_fp().Matrix(
                          0, 0),  //--> also the coupling terms from c_ff are inside here!!!
         (1.0 - stiparam) / (1.0 - ftiparam) * scale,
         CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),
         mat.Matrix(structure_block_, structure_block_),
         true);  // Addmatrix
 
-    (*Cfptransform2_)(FPSICoupl()->C_fp().Matrix(
+    (*cfptransform2_)(FPSICoupl()->C_fp().Matrix(
                           0, 1),  //--> also the coupling terms from c_ff are inside here!!!
         (1.0 - stiparam) / (1.0 - ftiparam) * scale,
         CORE::ADAPTER::CouplingSlaveConverter(coupsf_fsi),

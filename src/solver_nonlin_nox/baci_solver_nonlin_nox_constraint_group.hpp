@@ -138,7 +138,7 @@ namespace NOX
 
        private:
         // constraint interface map
-        ReqInterfaceMap userConstraintInterfaces_;
+        ReqInterfaceMap user_constraint_interfaces_;
       };  // class Group
     }     // end namespace CONSTRAINT
   }       // namespace NLN

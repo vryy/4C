@@ -85,14 +85,14 @@ void DRT::ELEMENTS::SoHex8P1J1Type::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::SoHex8P1J1::SoHex8P1J1(int id, int owner) : DRT::ELEMENTS::SoHex8(id, owner)
 {
-  K_pu_.PutScalar(0.0);
-  K_tu_.PutScalar(0.0);
+  k_pu_.PutScalar(0.0);
+  k_tu_.PutScalar(0.0);
 
-  R_t_.PutScalar(0.0);
-  R_p_.PutScalar(0.0);
+  r_t_.PutScalar(0.0);
+  r_p_.PutScalar(0.0);
 
-  K_tt_ = 0.0;
-  K_pt_ = 0.0;
+  k_tt_ = 0.0;
+  k_pt_ = 0.0;
 
   p_.PutScalar(0.0);
   p_o_.PutScalar(0.0);
@@ -106,24 +106,24 @@ DRT::ELEMENTS::SoHex8P1J1::SoHex8P1J1(int id, int owner) : DRT::ELEMENTS::SoHex8
     m_(i, 0) = 1.0;
   }
 
-  Identity6_.PutScalar(0.0);
+  identity6_.PutScalar(0.0);
   for (int i = 0; i < 6; ++i)
   {
-    Identity6_(i, i) = 1.0;
+    identity6_(i, i) = 1.0;
   }
 
-  I_d_ = Identity6_;
-  I_d_.MultiplyNT(-1.0 / 3.0, m_, m_, 1.0);
+  i_d_ = identity6_;
+  i_d_.MultiplyNT(-1.0 / 3.0, m_, m_, 1.0);
 
-  I_0_.PutScalar(0.0);
+  i_0_.PutScalar(0.0);
 
   for (int i = 0; i < 3; ++i)
   {
-    I_0_(i, i) = 1.0;
+    i_0_(i, i) = 1.0;
   }
   for (int i = 3; i < 6; ++i)
   {
-    I_0_(i, i) = 0.5;
+    i_0_(i, i) = 0.5;
   }
 
   Teuchos::RCP<const Teuchos::ParameterList> params =

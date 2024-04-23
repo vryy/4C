@@ -49,25 +49,25 @@ DRT::ELEMENTS::ScaTraEleParameterTurbulence::ScaTraEleParameterTurbulence(
       scalarforcing_(INPAR::FLUID::scalarforcing_no),
       fssgd_(false),
       whichfssgd_(INPAR::SCATRA::fssugrdiff_no),
-      Cs_(0.0),
+      cs_(0.0),
       tpn_(0.0),
-      Cs_av_(false),
-      Csgs_sgvel_(0.0),
+      cs_av_(false),
+      csgs_sgvel_(0.0),
       alpha_(0.0),
-      calc_N_(false),
-      N_vel_(0.0),
+      calc_n_(false),
+      n_vel_(0.0),
       refvel_(INPAR::FLUID::strainrate),
       reflength_(INPAR::FLUID::cube_edge),
       c_nu_(0.0),
       nwl_(false),
       nwl_scatra_(false),
       beta_(false),
-      BD_gp_(false),
-      Csgs_sgphi_(0.0),
+      bd_gp_(false),
+      csgs_sgphi_(0.0),
       c_diff_(0.0),
       mfs_conservative_(false),
-      meanCai_(0.0),
-      adapt_Csgs_phi_(false),
+      mean_cai_(0.0),
+      adapt_csgs_phi_(false),
       turbinflow_(false),
       timintparams_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname))
 {
@@ -145,26 +145,26 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
   if (turbmodel_ != INPAR::FLUID::no_model or (timintparams_->IsIncremental() and fssgd_))
   {
     // get Smagorinsky constant and turbulent Prandtl number
-    Cs_ = sgvisclist.get<double>("C_SMAGORINSKY");
+    cs_ = sgvisclist.get<double>("C_SMAGORINSKY");
     tpn_ = sgvisclist.get<double>("C_TURBPRANDTL");
     if (tpn_ <= 1.0E-16) FOUR_C_THROW("Turbulent Prandtl number should be larger than zero!");
 
-    Cs_av_ = CORE::UTILS::IntegralValue<int>(sgvisclist, "C_SMAGORINSKY_AVERAGED");
+    cs_av_ = CORE::UTILS::IntegralValue<int>(sgvisclist, "C_SMAGORINSKY_AVERAGED");
 
     if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
-      Cs_ = turbulencelist.get<double>("Dt_vreman", 1.0);
+      cs_ = turbulencelist.get<double>("Dt_vreman", 1.0);
 
     // get model parameters
     if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     {
       // necessary parameters for subgrid-scale velocity estimation
-      Csgs_sgvel_ = mfslist.get<double>("CSGS");
+      csgs_sgvel_ = mfslist.get<double>("CSGS");
       if (mfslist.get<std::string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
         alpha_ = 3.0;
       else
         FOUR_C_THROW("Scale-Separtion method not supported!");
-      calc_N_ = CORE::UTILS::IntegralValue<int>(mfslist, "CALC_N");
-      N_vel_ = mfslist.get<double>("N");
+      calc_n_ = CORE::UTILS::IntegralValue<int>(mfslist, "CALC_N");
+      n_vel_ = mfslist.get<double>("N");
       if (mfslist.get<std::string>("REF_VELOCITY") == "strainrate")
         refvel_ = INPAR::FLUID::strainrate;
       else if (mfslist.get<std::string>("REF_VELOCITY") == "resolved")
@@ -188,16 +188,16 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
       c_nu_ = mfslist.get<double>("C_NU");
       nwl_ = CORE::UTILS::IntegralValue<int>(mfslist, "NEAR_WALL_LIMIT");
       // necessary parameters for subgrid-scale scalar estimation
-      Csgs_sgphi_ = mfslist.get<double>("CSGS_PHI");
+      csgs_sgphi_ = mfslist.get<double>("CSGS_PHI");
       c_diff_ = mfslist.get<double>("C_DIFF");
       nwl_scatra_ = CORE::UTILS::IntegralValue<int>(mfslist, "NEAR_WALL_LIMIT_CSGS_PHI");
       // general parameters
       beta_ = mfslist.get<double>("BETA");
       if (beta_ != 0.0) FOUR_C_THROW("Lhs terms for mfs not included! Fixed-point iteration only!");
       if (mfslist.get<std::string>("EVALUATION_B") == "element_center")
-        BD_gp_ = false;
+        bd_gp_ = false;
       else if (mfslist.get<std::string>("EVALUATION_B") == "integration_point")
-        BD_gp_ = true;
+        bd_gp_ = true;
       else
         FOUR_C_THROW("Unknown evaluation point!");
       if (mfslist.get<std::string>("CONVFORM") == "convective")
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTurbulence::SetParameters(
       else
         FOUR_C_THROW("Unknown form of convective term!");
 
-      adapt_Csgs_phi_ = CORE::UTILS::IntegralValue<bool>(mfslist, "ADAPT_CSGS_PHI");
+      adapt_csgs_phi_ = CORE::UTILS::IntegralValue<bool>(mfslist, "ADAPT_CSGS_PHI");
     }
   }
 

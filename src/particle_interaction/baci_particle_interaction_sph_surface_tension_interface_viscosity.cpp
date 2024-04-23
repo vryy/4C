@@ -35,7 +35,7 @@ PARTICLEINTERACTION::SPHInterfaceViscosity::SPHInterfaceViscosity(
       artvisc_lg_int_(params_sph_.get<double>("INTERFACE_VISCOSITY_LIQUIDGAS")),
       artvisc_sl_int_(params_sph_.get<double>("INTERFACE_VISCOSITY_SOLIDLIQUID")),
       trans_ref_temp_(params_sph_.get<double>("TRANS_REF_TEMPERATURE")),
-      trans_dT_intvisc_(params_sph_.get<double>("TRANS_DT_INTVISC"))
+      trans_d_t_intvisc_(params_sph_.get<double>("TRANS_DT_INTVISC"))
 {
   // empty constructor
 }
@@ -54,7 +54,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::Init()
   boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
 
   // safety check
-  if (trans_dT_intvisc_ > 0.0)
+  if (trans_d_t_intvisc_ > 0.0)
   {
     if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
@@ -193,12 +193,12 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityPartic
     // evaluate transition factor above reference temperature
     double tempfac_i = 1.0;
     double tempfac_j = 1.0;
-    if (trans_dT_intvisc_ > 0.0)
+    if (trans_d_t_intvisc_ > 0.0)
     {
       tempfac_i =
-          UTILS::CompLinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
+          UTILS::CompLinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_d_t_intvisc_);
       tempfac_j =
-          UTILS::CompLinTrans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
+          UTILS::CompLinTrans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_d_t_intvisc_);
     }
 
     // compute artificial viscosity
@@ -317,9 +317,9 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::
 
     // evaluate transition factor above reference temperature
     double tempfac_i = 1.0;
-    if (trans_dT_intvisc_ > 0.0)
+    if (trans_d_t_intvisc_ > 0.0)
       tempfac_i =
-          UTILS::CompLinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
+          UTILS::CompLinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_d_t_intvisc_);
 
     // compute artificial viscosity
     const double artvisc_i =

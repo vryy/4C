@@ -235,7 +235,7 @@ namespace FSI
         Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp);
 
     //! connection of interface dofs for finite differences
-    Teuchos::RCP<Epetra_CrsGraph> rawGraph_;
+    Teuchos::RCP<Epetra_CrsGraph> raw_graph_;
 
     //! counters on how many times the residuum was called in a time step
     /*!

@@ -60,8 +60,8 @@ CORE::GEO::CutWizard::CutWizard(const Teuchos::RCP<DRT::Discretization>& backdis
       do_mesh_intersection_(false),
       do_levelset_intersection_(false),
       level_set_sid_(-1),
-      VCellgausstype_(INPAR::CUT::VCellGaussPts_Tessellation),
-      BCellgausstype_(INPAR::CUT::BCellGaussPts_Tessellation),
+      v_cellgausstype_(INPAR::CUT::VCellGaussPts_Tessellation),
+      b_cellgausstype_(INPAR::CUT::BCellGaussPts_Tessellation),
       gmsh_output_(false),
       tetcellsonly_(false),
       screenoutput_(false),
@@ -81,8 +81,8 @@ CORE::GEO::CutWizard::CutWizard(const Epetra_Comm& comm)
       do_mesh_intersection_(false),
       do_levelset_intersection_(false),
       level_set_sid_(-1),
-      VCellgausstype_(INPAR::CUT::VCellGaussPts_Tessellation),
-      BCellgausstype_(INPAR::CUT::BCellGaussPts_Tessellation),
+      v_cellgausstype_(INPAR::CUT::VCellGaussPts_Tessellation),
+      b_cellgausstype_(INPAR::CUT::BCellGaussPts_Tessellation),
       gmsh_output_(false),
       tetcellsonly_(false),
       screenoutput_(false),
@@ -110,8 +110,8 @@ void CORE::GEO::CutWizard::SetOptions(
     bool screenoutput   //!< print screen output
 )
 {
-  VCellgausstype_ = VCellgausstype;
-  BCellgausstype_ = BCellgausstype;
+  v_cellgausstype_ = VCellgausstype;
+  b_cellgausstype_ = BCellgausstype;
   gmsh_output_ = gmsh_output;
   tetcellsonly_ = tetcellsonly;
   screenoutput_ = screenoutput;
@@ -631,7 +631,7 @@ void CORE::GEO::CutWizard::Run_Cut(
 
     // perform tessellation or moment fitting on the mesh
     intersection_->Cut_Finalize(
-        include_inner, VCellgausstype_, BCellgausstype_, tetcellsonly_, screenoutput_);
+        include_inner, v_cellgausstype_, b_cellgausstype_, tetcellsonly_, screenoutput_);
 
     // just for time measurement
     comm_.Barrier();

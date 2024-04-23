@@ -113,7 +113,7 @@ namespace CONSTRAINTS
     /*!
          \brief Return number of constraints
     */
-    int GetNumberOfConstraints() const { return numConstrID_; };
+    int GetNumberOfConstraints() const { return num_constr_id_; };
 
     /*!
      \brief Scale all lagrange multipliers by a double d
@@ -121,7 +121,7 @@ namespace CONSTRAINTS
     void ScaleLagrMult(double d  ///< scale factor
     )
     {
-      lagrMultVec_->Scale(d);
+      lagr_mult_vec_->Scale(d);
       return;
     };
 
@@ -172,7 +172,7 @@ namespace CONSTRAINTS
     //! Return the additional rectangular matrix, constructed for lagrange multiplier evaluation
     Teuchos::RCP<CORE::LINALG::SparseOperator> GetConstrMatrix()  // const
     {
-      return constrMatrix_;
+      return constr_matrix_;
     };
 
     /*!
@@ -181,18 +181,18 @@ namespace CONSTRAINTS
     double GetLagrMult(int i  ///< ID of constraint of interest
     ) const
     {
-      return (*lagrMultVec_)[i];
+      return (*lagr_mult_vec_)[i];
     };
 
     /*!
       \brief Return lagrange multiplier vector
     */
-    Teuchos::RCP<Epetra_Vector> GetLagrMultVector() const { return lagrMultVec_; };
+    Teuchos::RCP<Epetra_Vector> GetLagrMultVector() const { return lagr_mult_vec_; };
 
     /*!
       \brief Return lagrange multiplier of last converged step
     */
-    Teuchos::RCP<Epetra_Vector> GetLagrMultVectorOld() const { return lagrMultVecOld_; };
+    Teuchos::RCP<Epetra_Vector> GetLagrMultVectorOld() const { return lagr_mult_vec_old_; };
 
     /*!
      \brief Return if there are constraints
@@ -254,8 +254,8 @@ namespace CONSTRAINTS
     void SetLagrMultVector(Teuchos::RCP<Epetra_Vector> newlagrmult  ///< new lagrange multipliers
     )
     {
-      lagrMultVec_->Update(1.0, *newlagrmult, 0.0);
-      lagrMultVecOld_->Update(1.0, *newlagrmult, 0.0);
+      lagr_mult_vec_->Update(1.0, *newlagrmult, 0.0);
+      lagr_mult_vec_old_->Update(1.0, *newlagrmult, 0.0);
       return;
     }
 
@@ -292,19 +292,19 @@ namespace CONSTRAINTS
     Teuchos::RCP<Epetra_Vector> actvalues_;  ///< current values of constrained structures
     Teuchos::RCP<Epetra_Vector>
         constrainterr_;  ///< vector with deflection between reference and current values
-    Teuchos::RCP<Epetra_Vector> monitorvalues_;     ///< current values of monitored structures
-    Teuchos::RCP<Epetra_Vector> initialmonvalues_;  ///< initial values of monitored structures
-    Teuchos::RCP<Epetra_Vector> monitortypes_;      ///< vector containing type of monitors
-    int offsetID_;                                  ///< smallest constraint boundary condition ID
-    int maxConstrID_;                               ///< max number of constraints
-    int numConstrID_;                               ///< number of constraint boundary conditions
-    int numMonitorID_;                              ///< smallest monitor boundary condition ID
-    int minMonitorID_;                              ///< number monitor boundary condition ID
-    Teuchos::RCP<Epetra_Vector> fact_;              ///< vector with current time curve values
-    Teuchos::RCP<Epetra_Vector> lagrMultVec_;       ///< lagrange multipliers
-    Teuchos::RCP<Epetra_Vector> lagrMultVecOld_;    ///< lagrange multipliers
-    Teuchos::RCP<CORE::LINALG::SparseOperator> constrMatrix_;  ///< additional rectangular matrix
-    bool haveconstraint_;                                      ///< are there constraints at all?
+    Teuchos::RCP<Epetra_Vector> monitorvalues_;      ///< current values of monitored structures
+    Teuchos::RCP<Epetra_Vector> initialmonvalues_;   ///< initial values of monitored structures
+    Teuchos::RCP<Epetra_Vector> monitortypes_;       ///< vector containing type of monitors
+    int offset_id_;                                  ///< smallest constraint boundary condition ID
+    int max_constr_id_;                              ///< max number of constraints
+    int num_constr_id_;                              ///< number of constraint boundary conditions
+    int num_monitor_id_;                             ///< smallest monitor boundary condition ID
+    int min_monitor_id_;                             ///< number monitor boundary condition ID
+    Teuchos::RCP<Epetra_Vector> fact_;               ///< vector with current time curve values
+    Teuchos::RCP<Epetra_Vector> lagr_mult_vec_;      ///< lagrange multipliers
+    Teuchos::RCP<Epetra_Vector> lagr_mult_vec_old_;  ///< lagrange multipliers
+    Teuchos::RCP<CORE::LINALG::SparseOperator> constr_matrix_;  ///< additional rectangular matrix
+    bool haveconstraint_;                                       ///< are there constraints at all?
     bool havelagrconstr_;  ///< are there constraints controlled by Lagrange multiplier?
     bool havepenaconstr_;  ///< are there constraints controlled by Penalty approach?
     bool havemonitor_;     ///< are there monitor conditions?

@@ -59,9 +59,9 @@ namespace CONTACT
       /// @name Accessors
       /// @{
 
-      inline double& PenBound() { return penBound_; }
+      inline double& PenBound() { return pen_bound_; }
 
-      inline double PenBound() const { return penBound_; }
+      inline double PenBound() const { return pen_bound_; }
 
       inline double& Ct() { return ct_; }
 
@@ -102,18 +102,18 @@ namespace CONTACT
         return var_type_;
       }
 
-      inline int SlMaElementAreaRatio() const { return slMaElementAreaRatio_; }
+      inline int SlMaElementAreaRatio() const { return sl_ma_element_area_ratio_; }
 
       inline void SetSlMaElementAreaRatio(int slMaElementAreaRatio)
       {
-        slMaElementAreaRatio_ = slMaElementAreaRatio;
+        sl_ma_element_area_ratio_ = slMaElementAreaRatio;
       }
 
-      inline bool IsTriangleOnMaster() const { return isTriangleOnMaster_; }
+      inline bool IsTriangleOnMaster() const { return is_triangle_on_master_; }
 
       inline void SetIsTriangleOnMaster(bool isTriangleOnMaster)
       {
-        isTriangleOnMaster_ = isTriangleOnMaster;
+        is_triangle_on_master_ = isTriangleOnMaster;
       }
 
 
@@ -149,16 +149,16 @@ namespace CONTACT
 
      private:
       //! interface penetration bound
-      double penBound_;
+      double pen_bound_;
 
       /// ct regularization value. Currently unused.
       double ct_;
 
       /// ratio between the maximal slave element area and the minimal master element area
-      int slMaElementAreaRatio_;
+      int sl_ma_element_area_ratio_;
 
       /// is there a triangle shaped element on one of the interfaces?
-      bool isTriangleOnMaster_;
+      bool is_triangle_on_master_;
 
       /// has setup been called?
       bool issetup_;
@@ -217,14 +217,14 @@ namespace CONTACT
       /// share the data with other derived interfaces via copy constructor
       Teuchos::RCP<AUG::InterfaceDataContainer> SharedInterfaceDataPtr() const
       {
-        return interfaceData_ptr_;
+        return interface_data_ptr_;
       }
 
       //! Get row map of slave normal dofs
       Teuchos::RCP<Epetra_Map> SlaveRowNDofs() const
       {
         if (Filled())
-          return interfaceData_.SNDofRowMap();
+          return interface_data_.SNDofRowMap();
         else
           FOUR_C_THROW("CONTACT::AugmentedInterface::FillComplete was not called");
         exit(EXIT_FAILURE);
@@ -234,14 +234,14 @@ namespace CONTACT
       Teuchos::RCP<Epetra_Map> SlaveRowTDofs() const
       {
         if (Filled())
-          return interfaceData_.STDofRowMap();
+          return interface_data_.STDofRowMap();
         else
           FOUR_C_THROW("CONTACT::AugmentedInterface::FillComplete was not called");
         exit(EXIT_FAILURE);
       }
 
       //! Returns the penetration bound of the current interface.
-      inline double PenetrationBound() const { return interfaceData_.PenBound(); };
+      inline double PenetrationBound() const { return interface_data_.PenBound(); };
 
       //! @}
 
@@ -419,7 +419,7 @@ namespace CONTACT
       /// return the variational approach type (complete, incomplete, etc.)
       INPAR::CONTACT::VariationalApproach GetVariationalApproachType() const
       {
-        return interfaceData_.VariationalApproachType();
+        return interface_data_.VariationalApproachType();
       }
 
       /// derived
@@ -514,10 +514,10 @@ namespace CONTACT
        *                                                        hiermeier 03/17 */
 
       /// pointer to the interface data object
-      Teuchos::RCP<AUG::InterfaceDataContainer> interfaceData_ptr_;
+      Teuchos::RCP<AUG::InterfaceDataContainer> interface_data_ptr_;
 
       /// reference to the interface data object
-      AUG::InterfaceDataContainer& interfaceData_;
+      AUG::InterfaceDataContainer& interface_data_;
 
     };  // class Interface
 
@@ -596,17 +596,17 @@ namespace CONTACT
         /// return a reference the interface data object (read-only)
         inline const InterfaceDataContainer& IData() const
         {
-          if (not interfaceData_ptr_)
+          if (not interface_data_ptr_)
             FOUR_C_THROW(
                 "The interface data pointer has not been initialized "
                 "correctly!");
 
-          return *interfaceData_ptr_;
+          return *interface_data_ptr_;
         }
 
        private:
         Interface* inter_;
-        InterfaceDataContainer* interfaceData_ptr_;
+        InterfaceDataContainer* interface_data_ptr_;
 
        protected:
         DRT::Discretization& idiscret_;

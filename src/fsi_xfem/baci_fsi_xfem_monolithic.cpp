@@ -79,20 +79,20 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       tolfres_(fsimono_.get<double>("CONVTOL")),
       /// set tolerances for nonlinear solver
       /// tolerances for structural displacements
-      TOL_DIS_RES_L2_(fsimono_.get<double>("TOL_DIS_RES_L2")),
-      TOL_DIS_RES_INF_(fsimono_.get<double>("TOL_DIS_RES_INF")),
-      TOL_DIS_INC_L2_(fsimono_.get<double>("TOL_DIS_INC_L2")),
-      TOL_DIS_INC_INF_(fsimono_.get<double>("TOL_DIS_INC_INF")),
+      tol_dis_res_l2_(fsimono_.get<double>("TOL_DIS_RES_L2")),
+      tol_dis_res_inf_(fsimono_.get<double>("TOL_DIS_RES_INF")),
+      tol_dis_inc_l2_(fsimono_.get<double>("TOL_DIS_INC_L2")),
+      tol_dis_inc_inf_(fsimono_.get<double>("TOL_DIS_INC_INF")),
       /// tolerances for fluid pressure
-      TOL_PRE_RES_L2_(fsimono_.get<double>("TOL_PRE_RES_L2")),
-      TOL_PRE_RES_INF_(fsimono_.get<double>("TOL_PRE_RES_INF")),
-      TOL_PRE_INC_L2_(fsimono_.get<double>("TOL_PRE_INC_L2")),
-      TOL_PRE_INC_INF_(fsimono_.get<double>("TOL_PRE_INC_INF")),
+      tol_pre_res_l2_(fsimono_.get<double>("TOL_PRE_RES_L2")),
+      tol_pre_res_inf_(fsimono_.get<double>("TOL_PRE_RES_INF")),
+      tol_pre_inc_l2_(fsimono_.get<double>("TOL_PRE_INC_L2")),
+      tol_pre_inc_inf_(fsimono_.get<double>("TOL_PRE_INC_INF")),
       /// tolerances for fluid velocity
-      TOL_VEL_RES_L2_(fsimono_.get<double>("TOL_VEL_RES_L2")),
-      TOL_VEL_RES_INF_(fsimono_.get<double>("TOL_VEL_RES_INF")),
-      TOL_VEL_INC_L2_(fsimono_.get<double>("TOL_VEL_INC_L2")),
-      TOL_VEL_INC_INF_(fsimono_.get<double>("TOL_VEL_INC_INF")),
+      tol_vel_res_l2_(fsimono_.get<double>("TOL_VEL_RES_L2")),
+      tol_vel_res_inf_(fsimono_.get<double>("TOL_VEL_RES_INF")),
+      tol_vel_inc_l2_(fsimono_.get<double>("TOL_VEL_INC_L2")),
+      tol_vel_inc_inf_(fsimono_.get<double>("TOL_VEL_INC_INF")),
       nd_newton_damping_((bool)CORE::UTILS::IntegralValue<int>(xfpsimono_, "ND_NEWTON_DAMPING")),
       nd_newton_incmax_damping_(nd_newton_damping_),
       nd_levels_(3),
@@ -1331,26 +1331,26 @@ void FSI::MonolithicXFEM::BuildCovergenceNorms()
   rhs_->Norm2(&normrhs_);
 
   // structural Dofs
-  Extractor_MergedPoro().ExtractVector(rhs_, structp_block_)->Norm2(&normstrrhsL2_);
-  Extractor_MergedPoro().ExtractVector(rhs_, structp_block_)->NormInf(&normstrrhsInf_);
+  Extractor_MergedPoro().ExtractVector(rhs_, structp_block_)->Norm2(&normstrrhs_l2_);
+  Extractor_MergedPoro().ExtractVector(rhs_, structp_block_)->NormInf(&normstrrhs_inf_);
 
   // fluid velocity Dofs
   fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_, fluid_block_), 0)
-      ->Norm2(&normflvelrhsL2_);
+      ->Norm2(&normflvelrhs_l2_);
   fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_, fluid_block_), 0)
-      ->NormInf(&normflvelrhsInf_);
+      ->NormInf(&normflvelrhs_inf_);
 
   // fluid pressure Dofs
   fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_, fluid_block_), 1)
-      ->Norm2(&normflpresrhsL2_);
+      ->Norm2(&normflpresrhs_l2_);
   fluidvelpresextract.ExtractVector(Extractor().ExtractVector(rhs_, fluid_block_), 1)
-      ->NormInf(&normflpresrhsInf_);
+      ->NormInf(&normflpresrhs_inf_);
 
   if (StructurePoro()->isPoro())
   {
     // porofluid Dofs
-    Extractor().ExtractVector(rhs_, fluidp_block_)->Norm2(&normpflvelrhsL2_);
-    Extractor().ExtractVector(rhs_, fluidp_block_)->NormInf(&normpflvelrhsInf_);
+    Extractor().ExtractVector(rhs_, fluidp_block_)->Norm2(&normpflvelrhs_l2_);
+    Extractor().ExtractVector(rhs_, fluidp_block_)->NormInf(&normpflvelrhs_inf_);
   }
 
 
@@ -1362,27 +1362,27 @@ void FSI::MonolithicXFEM::BuildCovergenceNorms()
   iterinc_->Norm2(&norminc_);
 
   // structural Dofs
-  Extractor_MergedPoro().ExtractVector(iterinc_, structp_block_)->Norm2(&normstrincL2_);
-  Extractor_MergedPoro().ExtractVector(iterinc_, structp_block_)->NormInf(&normstrincInf_);
-  Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(&normstrincdispInf_);
+  Extractor_MergedPoro().ExtractVector(iterinc_, structp_block_)->Norm2(&normstrinc_l2_);
+  Extractor_MergedPoro().ExtractVector(iterinc_, structp_block_)->NormInf(&normstrinc_inf_);
+  Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(&normstrincdisp_inf_);
 
   // fluid velocity Dofs
   fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluid_block_), 0)
-      ->Norm2(&normflvelincL2_);
+      ->Norm2(&normflvelinc_l2_);
   fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluid_block_), 0)
-      ->NormInf(&normflvelincInf_);
+      ->NormInf(&normflvelinc_inf_);
 
   // fluid pressure Dofs
   fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluid_block_), 1)
-      ->Norm2(&normflpresincL2_);
+      ->Norm2(&normflpresinc_l2_);
   fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluid_block_), 1)
-      ->NormInf(&normflpresincInf_);
+      ->NormInf(&normflpresinc_inf_);
 
   if (StructurePoro()->isPoro())
   {
     // porofluid Dofs
-    Extractor().ExtractVector(iterinc_, fluidp_block_)->Norm2(&normpflvelincL2_);
-    Extractor().ExtractVector(iterinc_, fluidp_block_)->NormInf(&normpflvelincInf_);
+    Extractor().ExtractVector(iterinc_, fluidp_block_)->Norm2(&normpflvelinc_l2_);
+    Extractor().ExtractVector(iterinc_, fluidp_block_)->NormInf(&normpflvelinc_inf_);
   }
 
 
@@ -1578,14 +1578,14 @@ bool FSI::MonolithicXFEM::Evaluate()
 
     if (cut_evaluate_dynamic_)
     {
-      if (normstrincdispInf_ / std::min(nd_act_scaling_, nd_inc_scaling_) < cut_evaluate_mintol_ &&
+      if (normstrincdisp_inf_ / std::min(nd_act_scaling_, nd_inc_scaling_) < cut_evaluate_mintol_ &&
           (iter_ > cut_evaluate_miniter_ || iter_outer_ > cut_evaluate_miniter_))
       {
         FluidField()->Set_EvaluateCut(false);
 
         if (Comm().MyPID() == 0)
           IO::cout << "==| Do not evaluate CUT for this iteration as disp_inc: "
-                   << normstrincdispInf_ / std::min(nd_act_scaling_, nd_inc_scaling_) << " < "
+                   << normstrincdisp_inf_ / std::min(nd_act_scaling_, nd_inc_scaling_) << " < "
                    << cut_evaluate_mintol_ << " |==" << IO::endl;
       }
       else
@@ -1672,11 +1672,11 @@ bool FSI::MonolithicXFEM::Converged()
       break;
     case INPAR::FSI::convnorm_rel:
       convinc =
-          (((normstrincL2_ / ns_) < TOL_DIS_INC_L2_) and ((normstrincInf_) < TOL_DIS_INC_INF_) and
-              ((normflvelincL2_ / nfv_) < TOL_VEL_INC_L2_) and
-              ((normflvelincInf_) < TOL_VEL_INC_INF_) and
-              ((normflpresincL2_ / nfp_) < TOL_PRE_INC_L2_) and
-              ((normflpresincInf_) < TOL_PRE_INC_INF_));
+          (((normstrinc_l2_ / ns_) < tol_dis_inc_l2_) and ((normstrinc_inf_) < tol_dis_inc_inf_) and
+              ((normflvelinc_l2_ / nfv_) < tol_vel_inc_l2_) and
+              ((normflvelinc_inf_) < tol_vel_inc_inf_) and
+              ((normflpresinc_l2_ / nfp_) < tol_pre_inc_l2_) and
+              ((normflpresinc_inf_) < tol_pre_inc_inf_));
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
@@ -1695,11 +1695,11 @@ bool FSI::MonolithicXFEM::Converged()
       break;
     case INPAR::FSI::convnorm_rel:
       convfres =
-          (((normstrrhsL2_ / ns_) < TOL_DIS_RES_L2_) and ((normstrrhsInf_) < TOL_DIS_RES_INF_) and
-              ((normflvelrhsL2_ / nfv_) < TOL_VEL_RES_L2_) and
-              ((normflvelrhsInf_) < TOL_VEL_RES_INF_) and
-              ((normflpresrhsL2_ / nfp_) < TOL_PRE_RES_L2_) and
-              ((normflpresrhsInf_) < TOL_PRE_RES_INF_));
+          (((normstrrhs_l2_ / ns_) < tol_dis_res_l2_) and ((normstrrhs_inf_) < tol_dis_res_inf_) and
+              ((normflvelrhs_l2_ / nfv_) < tol_vel_res_l2_) and
+              ((normflvelrhs_inf_) < tol_vel_res_inf_) and
+              ((normflpresrhs_l2_ / nfp_) < tol_pre_res_l2_) and
+              ((normflpresrhs_inf_) < tol_pre_res_inf_));
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
@@ -2493,9 +2493,9 @@ void FSI::MonolithicXFEM::PrintNewtonIterText()
       IO::cout << "             " << (normrhs_) << IO::endl;
       break;
     case INPAR::FSI::convnorm_rel:
-      IO::cout << "|" << (normstrrhsL2_ / ns_) << "|" << (normflvelrhsL2_ / nfv_) << "|"
-               << (normflpresrhsL2_ / nfp_) << "|" << (normstrrhsInf_) << "|" << (normflvelrhsInf_)
-               << "|" << (normflpresrhsInf_);
+      IO::cout << "|" << (normstrrhs_l2_ / ns_) << "|" << (normflvelrhs_l2_ / nfv_) << "|"
+               << (normflpresrhs_l2_ / nfp_) << "|" << (normstrrhs_inf_) << "|"
+               << (normflvelrhs_inf_) << "|" << (normflpresrhs_inf_);
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
@@ -2511,9 +2511,9 @@ void FSI::MonolithicXFEM::PrintNewtonIterText()
       IO::cout << "             " << (norminc_) << IO::endl;
       break;
     case INPAR::FSI::convnorm_rel:
-      IO::cout << "|" << (normstrincL2_ / ns_) << "|" << (normflvelincL2_ / nfv_) << "|"
-               << (normflpresincL2_ / nfp_) << "|" << (normstrincInf_) << "|" << (normflvelincInf_)
-               << "|" << (normflpresincInf_) << "|" << IO::endl;
+      IO::cout << "|" << (normstrinc_l2_ / ns_) << "|" << (normflvelinc_l2_ / nfv_) << "|"
+               << (normflpresinc_l2_ / nfp_) << "|" << (normstrinc_inf_) << "|"
+               << (normflvelinc_inf_) << "|" << (normflpresinc_inf_) << "|" << IO::endl;
       break;
     case INPAR::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");

@@ -212,7 +212,7 @@ namespace IO
     int num_output_proc_;
 
     //! file access property list for HDF5 files
-    hid_t H5Plist_;
+    hid_t h5_plist_;
   };
 }  // namespace IO
 

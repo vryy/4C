@@ -94,31 +94,31 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
   {
     case ELEMAG::project_field:
     {
-      localSolver_->ProjectField(hdgele, params, elevec1, elevec2);
+      local_solver_->ProjectField(hdgele, params, elevec1, elevec2);
       break;
     }
     case ELEMAG::project_electric_from_scatra_field:
     {
       ElementInit(hdgele, params);
-      localSolver_->ProjectElectricFieldFromScatra(hdgele, params, mat, elevec1);
+      local_solver_->ProjectElectricFieldFromScatra(hdgele, params, mat, elevec1);
       break;
     }
     case ELEMAG::compute_error:
     {
       // Postprocess the solution only if required
-      if (params.get<bool>("postprocess")) localSolver_->PostProcessing(*hdgele);
+      if (params.get<bool>("postprocess")) local_solver_->PostProcessing(*hdgele);
 
-      localSolver_->ComputeError(hdgele, params, elevec1);
+      local_solver_->ComputeError(hdgele, params, elevec1);
       break;
     }
     case ELEMAG::project_field_test:
     {
-      localSolver_->ProjectFieldTest(hdgele, params, elevec1, elevec2);
+      local_solver_->ProjectFieldTest(hdgele, params, elevec1, elevec2);
       break;
     }
     case ELEMAG::project_field_test_trace:
     {
-      localSolver_->ProjectFieldTestTrace(hdgele, params, elevec1);
+      local_solver_->ProjectFieldTestTrace(hdgele, params, elevec1);
 
       break;
     }
@@ -129,7 +129,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
       if (params.isParameter("faceconsider"))
       {
         // ElementInit(hdgele, params);
-        localSolver_->ProjectDirichField(hdgele, params, elevec1);
+        local_solver_->ProjectDirichField(hdgele, params, elevec1);
       }
       break;
     }
@@ -173,7 +173,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
       }
       ReadGlobalVectors(hdgele, discretization, lm);
       if (!params.isParameter("nodeindices"))
-        localSolver_->ComputeAbsorbingBC(
+        local_solver_->ComputeAbsorbingBC(
             discretization, hdgele, params, mat, face, elemat1, sumindex, elevec1);
       else
         FOUR_C_THROW("why would you set an absorbing LINE in THREE dimensions?");
@@ -208,15 +208,15 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
 
       ReadGlobalVectors(hdgele, discretization, lm);
       elevec1.putScalar(0.0);
-      localSolver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_, tau);
+      local_solver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_, tau);
 
       // if (!resonly)
-      localSolver_->CondenseLocalPart(elemat1);
+      local_solver_->CondenseLocalPart(elemat1);
 
       // Make the matrix symmetric if the element contains dirichlet faces
-      localSolver_->Symmetrify(*hdgele, elemat1);
+      local_solver_->Symmetrify(*hdgele, elemat1);
 
-      localSolver_->ComputeResidual(params, elevec1, dt, *hdgele);
+      local_solver_->ComputeResidual(params, elevec1, dt, *hdgele);
 
       break;
     }
@@ -245,7 +245,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
       ReadGlobalVectors(hdgele, discretization, lm);
 
       elevec1.putScalar(0.0);
-      localSolver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_, tau);
+      local_solver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_, tau);
       /* Could be useful for optimization purposes
       if(!allelesequal)
         localSolver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_);
@@ -327,9 +327,9 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InitializeShapes(
     shapesface_ = Teuchos::rcp(new CORE::FE::ShapeValuesFace<distype>(svfparams));
   }
 
-  if (localSolver_ == Teuchos::null || localSolver_->ndofs_ != shapes_->ndofs_)
+  if (local_solver_ == Teuchos::null || local_solver_->ndofs_ != shapes_->ndofs_)
   {
-    localSolver_ =
+    local_solver_ =
         Teuchos::rcp(new LocalSolver(ele, *shapes_, shapesface_, dyna_, *postproc_shapes_));
   }
 }
@@ -345,13 +345,13 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ReadGlobalVectors(
   DRT::ELEMENTS::ElemagDiff* elemagele = static_cast<DRT::ELEMENTS::ElemagDiff*>(ele);
 
   // read vectors from element storage
-  interiorElectricnm_.size(elemagele->eleinteriorElectricnm1_.numRows());
-  interiorElectricnp_.size(elemagele->eleinteriorElectric_.numRows());
-  interiorMagneticnp_.size(elemagele->eleinteriorMagnetic_.numRows());
+  interior_electricnm_.size(elemagele->eleinteriorElectricnm1_.numRows());
+  interior_electricnp_.size(elemagele->eleinteriorElectric_.numRows());
+  interior_magneticnp_.size(elemagele->eleinteriorMagnetic_.numRows());
 
-  interiorElectricnm_ = elemagele->eleinteriorElectricnm1_;
-  interiorElectricnp_ = elemagele->eleinteriorElectric_;
-  interiorMagneticnp_ = elemagele->eleinteriorMagnetic_;
+  interior_electricnm_ = elemagele->eleinteriorElectricnm1_;
+  interior_electricnp_ = elemagele->eleinteriorElectric_;
+  interior_magneticnp_ = elemagele->eleinteriorMagnetic_;
 
   // read vectors from time integrator
   if (discretization.HasState("trace"))  // in case of "update interior variables"
@@ -1663,15 +1663,15 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::UpdateInteriorVariablesAndComput
   CORE::LINALG::SerialDenseMatrix tempMat2(shapes_->ndofs_ * nsd_, shapes_->ndofs_ * nsd_);
 
   // The source has to be checked for bdf
-  localSolver_->ComputeSource(params, tempVec2, xVec);
+  local_solver_->ComputeSource(params, tempVec2, xVec);
 
-  CORE::LINALG::multiplyTN(tempMat, localSolver_->Bmat, localSolver_->invAmat);  // FA^{-1}
+  CORE::LINALG::multiplyTN(tempMat, local_solver_->Bmat, local_solver_->invAmat);  // FA^{-1}
 
-  tempMat2 += localSolver_->Emat;
-  tempMat2 += localSolver_->Gmat;
+  tempMat2 += local_solver_->Emat;
+  tempMat2 += local_solver_->Gmat;
   // Only if the D matrix is not zero <-> epsilon != 0
-  tempMat2 += localSolver_->Dmat;
-  CORE::LINALG::multiply(1.0, tempMat2, -1.0, tempMat, localSolver_->Bmat);  //(E + G) - FA^{-1}B
+  tempMat2 += local_solver_->Dmat;
+  CORE::LINALG::multiply(1.0, tempMat2, -1.0, tempMat, local_solver_->Bmat);  //(E + G) - FA^{-1}B
   {
     using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
     using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
@@ -1682,96 +1682,97 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::UpdateInteriorVariablesAndComput
 
   if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
-    CORE::LINALG::multiply(-1.0, tempVec2, -1.0 / 3.0, localSolver_->Emat,
+    CORE::LINALG::multiply(-1.0, tempVec2, -1.0 / 3.0, local_solver_->Emat,
         ele.eleinteriorElectricnm1_);  // (1/3)EE^{n}
-    CORE::LINALG::multiply(1.0, tempVec2, 4.0 / 3.0, localSolver_->Emat,
+    CORE::LINALG::multiply(1.0, tempVec2, 4.0 / 3.0, local_solver_->Emat,
         ele.eleinteriorElectric_);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n}
                                     // Only if the D matrix is not zero <-> epsilon != 0
     CORE::LINALG::multiply(
-        1.0, tempVec2, 1.0 / 2.0, localSolver_->Dmat, ele.eleinteriorElectricnm2_);
-    CORE::LINALG::multiply(1.0, tempVec2, -2.0, localSolver_->Dmat, ele.eleinteriorElectricnm1_);
-    CORE::LINALG::multiply(1.0, tempVec2, 5.0 / 2.0, localSolver_->Dmat, ele.eleinteriorElectric_);
+        1.0, tempVec2, 1.0 / 2.0, local_solver_->Dmat, ele.eleinteriorElectricnm2_);
+    CORE::LINALG::multiply(1.0, tempVec2, -2.0, local_solver_->Dmat, ele.eleinteriorElectricnm1_);
+    CORE::LINALG::multiply(1.0, tempVec2, 5.0 / 2.0, local_solver_->Dmat, ele.eleinteriorElectric_);
   }
   else if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
   {
-    CORE::LINALG::multiply(-1.0, tempVec2, -3.0 / 25.0, localSolver_->Emat,
+    CORE::LINALG::multiply(-1.0, tempVec2, -3.0 / 25.0, local_solver_->Emat,
         ele.eleinteriorElectricnm3_);  // (1/3)E E^{n} + I_s
-    CORE::LINALG::multiply(1.0, tempVec2, 16.0 / 25.0, localSolver_->Emat,
+    CORE::LINALG::multiply(1.0, tempVec2, 16.0 / 25.0, local_solver_->Emat,
         ele.eleinteriorElectricnm2_);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
     CORE::LINALG::multiply(
-        1.0, tempVec2, -36.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm1_);
+        1.0, tempVec2, -36.0 / 25.0, local_solver_->Emat, ele.eleinteriorElectricnm1_);
     CORE::LINALG::multiply(
-        1.0, tempVec2, 48.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectric_);
+        1.0, tempVec2, 48.0 / 25.0, local_solver_->Emat, ele.eleinteriorElectric_);
   }
   else
   {
-    CORE::LINALG::multiply(-1.0, tempVec2, 1.0, localSolver_->Emat,
+    CORE::LINALG::multiply(-1.0, tempVec2, 1.0, local_solver_->Emat,
         ele.eleinteriorElectric_);  // EE - I_s Implicit euler
                                     // Only if the D matrix is not zero <-> epsilon != 0
-    CORE::LINALG::multiply(1.0, tempVec2, -1.0, localSolver_->Dmat, ele.eleinteriorElectricnm1_);
-    CORE::LINALG::multiply(1.0, tempVec2, 2.0, localSolver_->Dmat, ele.eleinteriorElectric_);
+    CORE::LINALG::multiply(1.0, tempVec2, -1.0, local_solver_->Dmat, ele.eleinteriorElectricnm1_);
+    CORE::LINALG::multiply(1.0, tempVec2, 2.0, local_solver_->Dmat, ele.eleinteriorElectric_);
   }
   ele.eleinteriorElectricnm3_ = ele.eleinteriorElectricnm2_;
   ele.eleinteriorElectricnm2_ = ele.eleinteriorElectricnm1_;
   ele.eleinteriorElectricnm1_ = ele.eleinteriorElectric_;
 
   // C\lambda^{n+2}
-  CORE::LINALG::multiply(tempVec1, localSolver_->Cmat, ele.elenodeTrace2d_);
+  CORE::LINALG::multiply(tempVec1, local_solver_->Cmat, ele.elenodeTrace2d_);
   CORE::LINALG::multiply(
-      1.0, tempVec2, -1.0, localSolver_->Hmat, ele.elenodeTrace2d_);  // ^E - I_s - H\lambda^{n+2}
-  CORE::LINALG::multiply(1.0, tempVec2, 1.0, tempMat, tempVec1);      //  ^E + FA^{-1}C\lambda^{n+2}
+      1.0, tempVec2, -1.0, local_solver_->Hmat, ele.elenodeTrace2d_);  // ^E - I_s - H\lambda^{n+2}
+  CORE::LINALG::multiply(1.0, tempVec2, 1.0, tempMat, tempVec1);  //  ^E + FA^{-1}C\lambda^{n+2}
 
   //  E^{n+2} = [(E + G) - FA^{-1}B]^{-1} (^E + (FA^{-1}C - H)\lambda^{n+2})
   CORE::LINALG::multiply(ele.eleinteriorElectric_, tempMat2, tempVec2);
 
   // C\lambda^{n+2} + BE^{n}
-  CORE::LINALG::multiply(1.0, tempVec1, 1.0, localSolver_->Bmat, ele.eleinteriorElectric_);
+  CORE::LINALG::multiply(1.0, tempVec1, 1.0, local_solver_->Bmat, ele.eleinteriorElectric_);
 
   //  = -A^{-1}(C\lambda^{n+2} + BE^{n})
-  CORE::LINALG::multiply(0.0, ele.eleinteriorMagnetic_, -1.0, localSolver_->invAmat, tempVec1);
+  CORE::LINALG::multiply(0.0, ele.eleinteriorMagnetic_, -1.0, local_solver_->invAmat, tempVec1);
 
   // Updateresidual
 
   if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     //  = -1/3EE^{n+2} - I_s
-    CORE::LINALG::multiply(-1.0, xVec, -1.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectricnm1_);
+    CORE::LINALG::multiply(
+        -1.0, xVec, -1.0 / 3.0, local_solver_->Emat, ele.eleinteriorElectricnm1_);
     ////  = ^E - I_s = 4/3EE^{n} - 1/3EE^{n+2} - I_s
-    CORE::LINALG::multiply(1.0, xVec, 4.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectric_);
+    CORE::LINALG::multiply(1.0, xVec, 4.0 / 3.0, local_solver_->Emat, ele.eleinteriorElectric_);
     // Only if the D matrix is not zero <-> epsilon != 0
-    CORE::LINALG::multiply(1.0, xVec, 1.0 / 2.0, localSolver_->Dmat, ele.eleinteriorElectricnm2_);
-    CORE::LINALG::multiply(1.0, xVec, -2.0, localSolver_->Dmat, ele.eleinteriorElectricnm1_);
-    CORE::LINALG::multiply(1.0, xVec, 5.0 / 2.0, localSolver_->Dmat, ele.eleinteriorElectric_);
+    CORE::LINALG::multiply(1.0, xVec, 1.0 / 2.0, local_solver_->Dmat, ele.eleinteriorElectricnm2_);
+    CORE::LINALG::multiply(1.0, xVec, -2.0, local_solver_->Dmat, ele.eleinteriorElectricnm1_);
+    CORE::LINALG::multiply(1.0, xVec, 5.0 / 2.0, local_solver_->Dmat, ele.eleinteriorElectric_);
   }
   else if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
   {
-    CORE::LINALG::multiply(-1.0, xVec, -3.0 / 25.0, localSolver_->Emat,
+    CORE::LINALG::multiply(-1.0, xVec, -3.0 / 25.0, local_solver_->Emat,
         ele.eleinteriorElectricnm3_);  // (1/3)E E^{n} + I_s
-    CORE::LINALG::multiply(1.0, xVec, 16.0 / 25.0, localSolver_->Emat,
+    CORE::LINALG::multiply(1.0, xVec, 16.0 / 25.0, local_solver_->Emat,
         ele.eleinteriorElectricnm2_);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
     CORE::LINALG::multiply(
-        1.0, xVec, -36.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm1_);
-    CORE::LINALG::multiply(1.0, xVec, 48.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectric_);
+        1.0, xVec, -36.0 / 25.0, local_solver_->Emat, ele.eleinteriorElectricnm1_);
+    CORE::LINALG::multiply(1.0, xVec, 48.0 / 25.0, local_solver_->Emat, ele.eleinteriorElectric_);
   }
   else
   {
-    CORE::LINALG::multiply(-1.0, xVec, 1.0, localSolver_->Emat,
+    CORE::LINALG::multiply(-1.0, xVec, 1.0, local_solver_->Emat,
         ele.eleinteriorElectric_);  // Implicit euler
                                     // Only if the D matrix is not zero <-> epsilon != 0
     CORE::LINALG::multiply(
-        1.0, xVec, -1.0, localSolver_->Dmat, ele.eleinteriorElectricnm1_);  // Implicit euler
+        1.0, xVec, -1.0, local_solver_->Dmat, ele.eleinteriorElectricnm1_);  // Implicit euler
     CORE::LINALG::multiply(
-        1.0, xVec, 2.0, localSolver_->Dmat, ele.eleinteriorElectric_);  // Implicit euler}
+        1.0, xVec, 2.0, local_solver_->Dmat, ele.eleinteriorElectric_);  // Implicit euler}
   }
   //  y = [(E + G) - FA^{-1}B]^{-1}^(E - I_s)
   CORE::LINALG::multiply(yVec, tempMat2, xVec);
 
-  CORE::LINALG::multiplyTN(0.0, elevec, -1.0, localSolver_->Hmat, yVec);  //  = -Jy
+  CORE::LINALG::multiplyTN(0.0, elevec, -1.0, local_solver_->Hmat, yVec);  //  = -Jy
 
-  CORE::LINALG::multiply(xVec, localSolver_->Bmat, yVec);     //  = By
-  CORE::LINALG::multiply(yVec, localSolver_->invAmat, xVec);  //  = A^{-1} By
+  CORE::LINALG::multiply(xVec, local_solver_->Bmat, yVec);     //  = By
+  CORE::LINALG::multiply(yVec, local_solver_->invAmat, xVec);  //  = A^{-1} By
 
-  CORE::LINALG::multiplyTN(1.0, elevec, 1.0, localSolver_->Cmat, yVec);  //  = Ix - Jy
+  CORE::LINALG::multiplyTN(1.0, elevec, 1.0, local_solver_->Cmat, yVec);  //  = Ix - Jy
 
   return;
 }  // UpdateInteriorVariablesAndComputeResidual

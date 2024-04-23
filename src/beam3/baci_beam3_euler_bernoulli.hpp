@@ -234,7 +234,7 @@ namespace DRT::ELEMENTS
         std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
         std::vector<double>& curvature_3_GPs) const override
     {
-      axial_strain_GPs = axial_strain_GP_;
+      axial_strain_GPs = axial_strain_gp_;
       // shear deformations are zero by definition for Kirchhoff beam formulation
       shear_strain_2_GPs.clear();
       shear_strain_3_GPs.clear();
@@ -242,7 +242,7 @@ namespace DRT::ELEMENTS
       // twist deformation cannot be represented by this reduced Kirchhoff beam formulation
       twist_GPs.clear();
       // only one curvature component due to isotropic formulation of this reduced Kirchhoff beam
-      curvature_2_GPs = curvature_GP_;
+      curvature_2_GPs = curvature_gp_;
       curvature_3_GPs.clear();
     }
 
@@ -252,7 +252,7 @@ namespace DRT::ELEMENTS
         std::vector<double>& torque_GPs, std::vector<double>& bending_moment_2_GPs,
         std::vector<double>& bending_moment_3_GPs) const override
     {
-      axial_force_GPs = axial_force_GP_;
+      axial_force_GPs = axial_force_gp_;
       // note: shear deformations are zero by definition for Kirchhoff beam formulation
       shear_force_2_GPs.clear();
       shear_force_3_GPs.clear();
@@ -261,7 +261,7 @@ namespace DRT::ELEMENTS
       torque_GPs.clear();
       // only one bending moment component due to isotropic formulation of this reduced Kirchhoff
       // beam
-      bending_moment_2_GPs = bending_moment_GP_;
+      bending_moment_2_GPs = bending_moment_gp_;
       bending_moment_3_GPs.clear();
     }
 
@@ -277,10 +277,10 @@ namespace DRT::ELEMENTS
     double GetAxialStrain(double& xi, const CORE::LINALG::Matrix<12, 1>& disp_totlag) const;
 
     //! get internal (elastic) energy of element
-    double GetInternalEnergy() const override { return Eint_; };
+    double GetInternalEnergy() const override { return eint_; };
 
     //! get kinetic energy of element
-    double GetKineticEnergy() const override { return Ekin_; };
+    double GetKineticEnergy() const override { return ekin_; };
 
     //! \brief Get vector of Teuchos::RCPs to the lines of this element
     std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
@@ -523,17 +523,17 @@ namespace DRT::ELEMENTS
     bool firstcall_;
 
     //! kinetic energy
-    double Ekin_;
+    double ekin_;
 
     //! internal energy
-    double Eint_;
+    double eint_;
     //! internal energy stemming from axial tension
-    double Eint_axial_;
+    double eint_axial_;
 
     //! angular momentum of the element
-    CORE::LINALG::Matrix<3, 1> L_;
+    CORE::LINALG::Matrix<3, 1> l_;
     //! linear momentum of the element
-    CORE::LINALG::Matrix<3, 1> P_;
+    CORE::LINALG::Matrix<3, 1> p_;
     //! nodal tangents of last time step (necessary for PTC scheme)
     CORE::LINALG::Matrix<3, 2> t0_;
     //! nodal tangents of current time step (necessary for PTC scheme)
@@ -544,12 +544,12 @@ namespace DRT::ELEMENTS
     double epsilon_max_;
 
     //! strain resultant values at GPs
-    std::vector<double> axial_strain_GP_;
-    std::vector<double> curvature_GP_;
+    std::vector<double> axial_strain_gp_;
+    std::vector<double> curvature_gp_;
 
     //! stress resultant values at GPs
-    std::vector<double> axial_force_GP_;
-    std::vector<double> bending_moment_GP_;
+    std::vector<double> axial_force_gp_;
+    std::vector<double> bending_moment_gp_;
 
 #if NODALDOFS == 3
     //! Matrix holding the derivatives of the tangents at each node in reference configuration

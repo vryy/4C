@@ -68,7 +68,7 @@ namespace MIXTURE
 
    private:
     /// Holder of the internal structural tensors
-    std::vector<CORE::LINALG::Matrix<3, 3>> orthogonalStructuralTensor_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> orthogonal_structural_tensor_;
   };
 
   namespace PAR
@@ -325,7 +325,7 @@ namespace MIXTURE
     std::vector<Teuchos::RCP<MAT::ELASTIC::IsoNeoHooke>> potsum_membrane_;
 
     /// Anisotropy extension holding the structural tensor of the anisotropy
-    ElastinMembraneAnisotropyExtension anisotropyExtension_;
+    ElastinMembraneAnisotropyExtension anisotropy_extension_;
   };
 
 }  // namespace MIXTURE

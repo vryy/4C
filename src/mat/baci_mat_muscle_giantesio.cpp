@@ -299,10 +299,10 @@ CORE::COMM::ParObject* MAT::MuscleGiantesioType::Create(const std::vector<char>&
 
 MAT::MuscleGiantesio::MuscleGiantesio()
     : params_(nullptr),
-      lambdaMOld_(1.0),
-      omegaaOld_(-1.0),
+      lambda_m_old_(1.0),
+      omegaa_old_(-1.0),
       anisotropy_(),
-      anisotropyExtension_(true, 0.0, 0,
+      anisotropy_extension_(true, 0.0, 0,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0})
@@ -311,24 +311,24 @@ MAT::MuscleGiantesio::MuscleGiantesio()
 
 MAT::MuscleGiantesio::MuscleGiantesio(MAT::PAR::MuscleGiantesio* params)
     : params_(params),
-      lambdaMOld_(1.0),
-      omegaaOld_(-1.0),
+      lambda_m_old_(1.0),
+      omegaa_old_(-1.0),
       anisotropy_(),
-      anisotropyExtension_(true, 0.0, 0,
+      anisotropy_extension_(true, 0.0, 0,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {
   // initialize lambdaMOld_ and omegaOld_
-  lambdaMOld_ = 1.0;
-  omegaaOld_ = -1.0;
+  lambda_m_old_ = 1.0;
+  omegaa_old_ = -1.0;
 
   // register anisotropy extension to global anisotropy
-  anisotropy_.RegisterAnisotropyExtension(anisotropyExtension_);
+  anisotropy_.RegisterAnisotropyExtension(anisotropy_extension_);
 
   // initialize fiber directions and structural tensor
-  anisotropyExtension_.RegisterNeededTensors(MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
-                                             MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
+  anisotropy_extension_.RegisterNeededTensors(MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
+                                              MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
 void MAT::MuscleGiantesio::Pack(CORE::COMM::PackBuffer& data) const
@@ -345,10 +345,10 @@ void MAT::MuscleGiantesio::Pack(CORE::COMM::PackBuffer& data) const
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
-  AddtoPack(data, lambdaMOld_);
-  AddtoPack(data, omegaaOld_);
+  AddtoPack(data, lambda_m_old_);
+  AddtoPack(data, omegaa_old_);
 
-  anisotropyExtension_.PackAnisotropy(data);
+  anisotropy_extension_.PackAnisotropy(data);
 }
 
 void MAT::MuscleGiantesio::Unpack(const std::vector<char>& data)
@@ -379,10 +379,10 @@ void MAT::MuscleGiantesio::Unpack(const std::vector<char>& data)
     }
   }
 
-  ExtractfromPack(position, data, lambdaMOld_);
-  ExtractfromPack(position, data, omegaaOld_);
+  ExtractfromPack(position, data, lambda_m_old_);
+  ExtractfromPack(position, data, omegaa_old_);
 
-  anisotropyExtension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.UnpackAnisotropy(data, position);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
@@ -404,10 +404,10 @@ void MAT::MuscleGiantesio::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int 
   C.MultiplyTN(defgrd, defgrd);
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  const CORE::LINALG::Matrix<3, 3>& M = anisotropyExtension_.GetStructuralTensor(gp, 0);
+  const CORE::LINALG::Matrix<3, 3>& M = anisotropy_extension_.GetStructuralTensor(gp, 0);
 
   // save the current fibre stretch in lambdaMOld_
-  lambdaMOld_ = MAT::UTILS::MUSCLE::FiberStretch(C, M);
+  lambda_m_old_ = MAT::UTILS::MUSCLE::FiberStretch(C, M);
 }
 
 void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
@@ -453,7 +453,7 @@ void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::VOIGT::Stresses::MatrixToVector(invC, invCv);  // invCv
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  CORE::LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
+  CORE::LINALG::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
 
   // stretch in fibre direction lambdaM
   double lambdaM = MAT::UTILS::MUSCLE::FiberStretch(C, M);
@@ -465,7 +465,7 @@ void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // contraction velocity dotLambdaM
   double dotLambdaM =
-      MAT::UTILS::MUSCLE::ContractionVelocityBWEuler(lambdaM, lambdaMOld_, timeStepSize);
+      MAT::UTILS::MUSCLE::ContractionVelocityBWEuler(lambdaM, lambda_m_old_, timeStepSize);
 
   // compute activation level omegaa and derivative w.r.t. fiber stretch if material is active
   CORE::UTILS::ValuesFunctAndFunctDerivs omegaaAndDerivs = {
@@ -474,11 +474,11 @@ void MAT::MuscleGiantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   if (IsActive(currentTime))
   {
     omegaaAndDerivs = EvaluateActivationLevelAndDerivatives(lambdaM, dotLambdaM, currentTime);
-    omegaaOld_ = omegaaAndDerivs.val_funct;  // update omegaaOld
+    omegaa_old_ = omegaaAndDerivs.val_funct;  // update omegaaOld
   }
   else
   {
-    omegaaOld_ = -1;  // reset omegaaOld to -1
+    omegaa_old_ = -1;  // reset omegaaOld to -1
   }
 
   // --------------------------------------------------------------
@@ -644,7 +644,7 @@ double MAT::MuscleGiantesio::SolveActivationLevelEquation(
 
   // determine starting guess for newton solver
   double omegaa_init;
-  if (omegaaOld_ < 0.0)
+  if (omegaa_old_ < 0.0)
   {
     // setup parameters for bisection method for the approximation of the starting guess for the
     // newton solver in case omegaa is not available from a previous timestep
@@ -660,7 +660,7 @@ double MAT::MuscleGiantesio::SolveActivationLevelEquation(
   }
   else
     // use omegaa from the previous timestep as a starting guess
-    omegaa_init = omegaaOld_;
+    omegaa_init = omegaa_old_;
 
   // setup parameters for newton method
   const double tol_newton = 1e-12;  // reasonably small

@@ -36,14 +36,14 @@ MAT::ELASTIC::IsoAnisoExpo::IsoAnisoExpo(MAT::ELASTIC::PAR::IsoAnisoExpo* params
 void MAT::ELASTIC::IsoAnisoExpo::PackSummand(CORE::COMM::PackBuffer& data) const
 {
   AddtoPack(data, a_);
-  AddtoPack(data, A_);
+  AddtoPack(data, structural_tensor_);
 }
 
 void MAT::ELASTIC::IsoAnisoExpo::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   ExtractfromPack(position, data, a_);
-  ExtractfromPack(position, data, A_);
+  ExtractfromPack(position, data, structural_tensor_);
 }
 
 void MAT::ELASTIC::IsoAnisoExpo::Setup(int numgp, INPUT::LineDefinition* linedef)
@@ -77,7 +77,7 @@ void MAT::ELASTIC::IsoAnisoExpo::Setup(int numgp, INPUT::LineDefinition* linedef
     {
       // Read in of data
       ReadFiber(linedef, "FIBER1", a_);
-      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
+      params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, structural_tensor_);
     }
 
     // error path
@@ -97,8 +97,10 @@ void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const CORE::LINALG::Matr
 {
   double incJ = std::pow(I3, -1.0 / 3.0);  // J^{-2/3}
 
-  double J4 = incJ * (A_(0) * rcg(0) + A_(1) * rcg(1) + A_(2) * rcg(2) + A_(3) * rcg(3) +
-                         A_(4) * rcg(4) + A_(5) * rcg(5));  // J4 = J^{-2/3} I4
+  double J4 = incJ * (structural_tensor_(0) * rcg(0) + structural_tensor_(1) * rcg(1) +
+                         structural_tensor_(2) * rcg(2) + structural_tensor_(3) * rcg(3) +
+                         structural_tensor_(4) * rcg(4) +
+                         structural_tensor_(5) * rcg(5));  // J4 = J^{-2/3} I4
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -109,7 +111,7 @@ void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const CORE::LINALG::Matr
     k2 = params_->k2comp_;
   }
 
-  CORE::LINALG::Matrix<6, 1> Saniso(A_);  // first compute Sfbar = 2 dW/dJ4 A_
+  CORE::LINALG::Matrix<6, 1> Saniso(structural_tensor_);  // first compute Sfbar = 2 dW/dJ4 A_
   double gammabar = 2. * (k1 * (J4 - 1.) * exp(k2 * (J4 - 1.) * (J4 - 1.)));  // 2 dW/dJ4
   Saniso.Scale(gammabar);                                                     // Sfbar
 
@@ -121,7 +123,7 @@ void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const CORE::LINALG::Matr
   AddtoCmatHolzapfelProduct(Psl, icg, 1.0);
   Psl.MultiplyNT(-1. / 3., icg, icg, 1.0);
 
-  CORE::LINALG::Matrix<6, 1> Aiso(A_);
+  CORE::LINALG::Matrix<6, 1> Aiso(structural_tensor_);
   Aiso.Update(-J4 / 3.0, icg, incJ);
   CORE::LINALG::Matrix<6, 6> cmataniso(true);  // isochoric elastic cmat
   double deltabar = 2. * (1. + 2. * k2 * (J4 - 1.) * (J4 - 1.)) * 2. * k1 *
@@ -195,6 +197,6 @@ void MAT::ELASTIC::IsoAnisoExpo::SetFiberVecs(const double newgamma,
   a_0.Multiply(idefgrd, ca);
   a_.Update(1. / a_0.Norm2(), a_0);
 
-  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, A_);
+  params_->StructuralTensorStrategy()->SetupStructuralTensor(a_, structural_tensor_);
 }
 FOUR_C_NAMESPACE_CLOSE

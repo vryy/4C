@@ -234,7 +234,7 @@ class Beam3ContactOctTree
   }
 
   //!\brief flag indicating the use of periodic boundary conditions
-  bool periodicBC_;
+  bool periodic_bc_;
 
   //!\brief flag indicating
   bool additiveextrusion_;

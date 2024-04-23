@@ -98,7 +98,7 @@ namespace CONTACT
      \brief Return normal of auxiliary plane
 
      */
-    virtual double* AuxnSurf() { return auxnSurf_; }
+    virtual double* AuxnSurf() { return auxn_surf_; }
 
     /*!
      \brief Get communicator
@@ -172,19 +172,19 @@ namespace CONTACT
      \brief Get coupling slave element
 
      */
-    virtual Element& ParentElement() const { return pEle_; }
+    virtual Element& ParentElement() const { return p_ele_; }
 
     /*!
      \brief Get coupling slave element
 
      */
-    virtual Teuchos::RCP<MORTAR::Element>& LineElement() const { return lEle_; }
+    virtual Teuchos::RCP<MORTAR::Element>& LineElement() const { return l_ele_; }
 
     /*!
      \brief Get coupling master elements
 
      */
-    virtual std::vector<Element*> SurfaceElements() const { return surfEles_; }
+    virtual std::vector<Element*> SurfaceElements() const { return surf_eles_; }
 
     /*!
      \brief Get coupling master elements
@@ -192,22 +192,23 @@ namespace CONTACT
      */
     virtual Element& SurfaceElement() const
     {
-      if (currEle_ < 0 or currEle_ > ((int)surfEles_.size() - 1)) FOUR_C_THROW("currEle invalid!");
+      if (curr_ele_ < 0 or curr_ele_ > ((int)surf_eles_.size() - 1))
+        FOUR_C_THROW("currEle invalid!");
 
-      return *surfEles_[currEle_];
+      return *surf_eles_[curr_ele_];
     }
 
     /*!
      \brief Get number of master elements
 
      */
-    virtual int NumberSurfaceElements() const { return (int)surfEles_.size(); }
+    virtual int NumberSurfaceElements() const { return (int)surf_eles_.size(); }
 
     /*!
      \brief Get current master element in loop
 
      */
-    virtual int& CurrEle() { return currEle_; }
+    virtual int& CurrEle() { return curr_ele_; }
 
     /*!
      \brief Return length of Auxn() before normalization
@@ -225,7 +226,7 @@ namespace CONTACT
       \brief Return vector of (projected) slave node vertex objects
 
     */
-    virtual std::vector<MORTAR::Vertex>& TempInterSections() { return tempIntersections_; }
+    virtual std::vector<MORTAR::Vertex>& TempInterSections() { return temp_intersections_; }
 
     /*!
       \brief Return set which guarantee uniqueness of master lines
@@ -249,7 +250,7 @@ namespace CONTACT
      \brief Return vector of integration line
 
      */
-    virtual Teuchos::RCP<MORTAR::IntCell>& IntLine() { return intCell_; }
+    virtual Teuchos::RCP<MORTAR::IntCell>& IntLine() { return int_cell_; }
 
     /*!
      \brief perform integration for line to segment contact
@@ -349,7 +350,7 @@ namespace CONTACT
     \brief Return integration type
 
     */
-    virtual LineToSurfaceCoupling3d::IntType& IType() { return intType_; }
+    virtual LineToSurfaceCoupling3d::IntType& IType() { return int_type_; }
 
    private:
     //! don't want = operator and cctor
@@ -359,33 +360,33 @@ namespace CONTACT
     DRT::Discretization& idiscret_;  //< discretization of the contact interface
     int dim_;                        //< problem dimension (here: 3D)
 
-    Element& pEle_;                        //< parent element connected to line element
-    Teuchos::RCP<MORTAR::Element>& lEle_;  //< line element to perform coupling for
-    std::vector<Element*> surfEles_;       //< surface elements to perform coupling for
-    int currEle_;                          //< number of current element
+    Element& p_ele_;                        //< parent element connected to line element
+    Teuchos::RCP<MORTAR::Element>& l_ele_;  //< line element to perform coupling for
+    std::vector<Element*> surf_eles_;       //< surface elements to perform coupling for
+    int curr_ele_;                          //< number of current element
 
     Teuchos::ParameterList& imortar_;        //< containing contact input parameters
     double auxc_[3];                         //< center of auxiliary plane
     double auxn_[3];                         //< normal of auxiliary plane
     double lauxn_;                           //< length of interpolated Auxn() before normalization
-    double auxnSurf_[3];                     //< normal of auxiliary plane of surface element
+    double auxn_surf_[3];                    //< normal of auxiliary plane of surface element
     int linsize_;                            //< size of lin entries
     std::vector<MORTAR::Vertex> svertices_;  //< slave node vertex objects
     std::vector<MORTAR::Vertex> mvertices_;  //< master node vertex objects
-    std::vector<MORTAR::Vertex> intersections_;      //< vertex objects for intline
-    std::vector<MORTAR::Vertex> tempIntersections_;  //< vertex objects for intline temporary
+    std::vector<MORTAR::Vertex> intersections_;       //< vertex objects for intline
+    std::vector<MORTAR::Vertex> temp_intersections_;  //< vertex objects for intline temporary
     std::set<std::pair<int, int>>
         donebefore_;  //< set of master node pairs to guarantee uniqueness of line-line clipping
-    Teuchos::RCP<MORTAR::IntCell> intCell_;  //< vector of integration lines
+    Teuchos::RCP<MORTAR::IntCell> int_cell_;  //< vector of integration lines
     std::vector<CORE::GEN::Pairedvector<int, double>>
         derivauxn_;  //< derivatives of auxiliary plane normal
     std::vector<CORE::GEN::Pairedvector<int, double>>
-        derivauxnLine_;  //< derivatives of auxiliary line normal
+        derivauxn_line_;  //< derivatives of auxiliary line normal
     std::vector<CORE::GEN::Pairedvector<int, double>>
         derivauxc_;  //< derivatives of auxiliary plane normal
 
     // integration type:
-    LineToSurfaceCoupling3d::IntType intType_;
+    LineToSurfaceCoupling3d::IntType int_type_;
   };
 
   /*----------------------------------------------------------------------*
@@ -480,24 +481,24 @@ namespace CONTACT
      \brief Get coupling slave element
 
      */
-    virtual Teuchos::RCP<MORTAR::Element>& LineSlaveElement() const { return lSele_; }
+    virtual Teuchos::RCP<MORTAR::Element>& LineSlaveElement() const { return l_sele_; }
 
     /*!
      \brief Get coupling master element
 
      */
-    virtual Teuchos::RCP<MORTAR::Element>& LineMasterElement() const { return lMele_; }
+    virtual Teuchos::RCP<MORTAR::Element>& LineMasterElement() const { return l_mele_; }
 
    private:
     // don't want = operator and cctor
     LineToLineCouplingPoint3d operator=(const LineToLineCouplingPoint3d& old) = delete;
     LineToLineCouplingPoint3d(const LineToLineCouplingPoint3d& old) = delete;
 
-    DRT::Discretization& idiscret_;         //< discretization of the contact interface
-    int dim_;                               //< problem dimension (here: 3D)
-    Teuchos::ParameterList& imortar_;       //< containing contact input parameters
-    Teuchos::RCP<MORTAR::Element>& lSele_;  //< line element to perform coupling for
-    Teuchos::RCP<MORTAR::Element>& lMele_;  //< line element to perform coupling for
+    DRT::Discretization& idiscret_;          //< discretization of the contact interface
+    int dim_;                                //< problem dimension (here: 3D)
+    Teuchos::ParameterList& imortar_;        //< containing contact input parameters
+    Teuchos::RCP<MORTAR::Element>& l_sele_;  //< line element to perform coupling for
+    Teuchos::RCP<MORTAR::Element>& l_mele_;  //< line element to perform coupling for
   };
 
 }  // namespace CONTACT

@@ -76,9 +76,9 @@ namespace CONTACT
 
     inline bool IsFriction() const { return friction_; }
 
-    inline bool& IsNonSmoothContact() { return nonSmoothContact_; }
+    inline bool& IsNonSmoothContact() { return non_smooth_contact_; }
 
-    inline bool IsNonSmoothContact() const { return nonSmoothContact_; }
+    inline bool IsNonSmoothContact() const { return non_smooth_contact_; }
 
     inline bool IsTwoHalfPass() const { return two_half_pass_; }
 
@@ -138,29 +138,29 @@ namespace CONTACT
 
     inline Teuchos::RCP<const Epetra_Map> SmoothNodes() const { return smoothnodes_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofVertexRowmap() const { return sdofVertexRowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> SdofVertexRowmap() const { return sdof_vertex_rowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofVertexRowmap() { return sdofVertexRowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& SdofVertexRowmap() { return sdof_vertex_rowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofVertexColmap() const { return sdofVertexColmap_; }
+    inline Teuchos::RCP<const Epetra_Map> SdofVertexColmap() const { return sdof_vertex_colmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofVertexColmap() { return sdofVertexColmap_; }
+    inline Teuchos::RCP<Epetra_Map>& SdofVertexColmap() { return sdof_vertex_colmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofEdgeRowmap() const { return sdofEdgeRowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> SdofEdgeRowmap() const { return sdof_edge_rowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofEdgeRowmap() { return sdofEdgeRowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& SdofEdgeRowmap() { return sdof_edge_rowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofEdgeColmap() const { return sdofEdgeColmap_; }
+    inline Teuchos::RCP<const Epetra_Map> SdofEdgeColmap() const { return sdof_edge_colmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofEdgeColmap() { return sdofEdgeColmap_; }
+    inline Teuchos::RCP<Epetra_Map>& SdofEdgeColmap() { return sdof_edge_colmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofSurfRowmap() const { return sdofSurfRowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> SdofSurfRowmap() const { return sdof_surf_rowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofSurfRowmap() { return sdofSurfRowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& SdofSurfRowmap() { return sdof_surf_rowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> SdofSurfColmap() const { return sdofSurfColmap_; }
+    inline Teuchos::RCP<const Epetra_Map> SdofSurfColmap() const { return sdof_surf_colmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& SdofSurfColmap() { return sdofSurfColmap_; }
+    inline Teuchos::RCP<Epetra_Map>& SdofSurfColmap() { return sdof_surf_colmap_; }
 
     inline Teuchos::RCP<Epetra_Map>& NExtendedGhosting() { return nextendedghosting_; }
 
@@ -174,13 +174,13 @@ namespace CONTACT
 
     inline Teuchos::RCP<const SelfBinaryTree> BinaryTreeSelf() const { return binarytreeself_; }
 
-    inline Teuchos::RCP<Epetra_Vector>& CnValues() { return cnValues_; }
+    inline Teuchos::RCP<Epetra_Vector>& CnValues() { return cn_values_; }
 
-    inline Teuchos::RCP<const Epetra_Vector> CnValues() const { return cnValues_; }
+    inline Teuchos::RCP<const Epetra_Vector> CnValues() const { return cn_values_; }
 
-    inline Teuchos::RCP<Epetra_Vector>& CtValues() { return ctValues_; }
+    inline Teuchos::RCP<Epetra_Vector>& CtValues() { return ct_values_; }
 
-    inline Teuchos::RCP<const Epetra_Vector> CtValues() const { return ctValues_; }
+    inline Teuchos::RCP<const Epetra_Vector> CtValues() const { return ct_values_; }
 
     inline int& SMPairs() { return smpairs_; }
 
@@ -204,7 +204,7 @@ namespace CONTACT
     bool friction_;
 
     //! flag for non-smooth contact algorithm
-    bool nonSmoothContact_;
+    bool non_smooth_contact_;
 
     //! flag for two half pass contact algorithm
     bool two_half_pass_;
@@ -249,22 +249,22 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Map> smoothnodes_;
 
     //! row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofVertexRowmap_;
+    Teuchos::RCP<Epetra_Map> sdof_vertex_rowmap_;
 
     //! row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofVertexColmap_;
+    Teuchos::RCP<Epetra_Map> sdof_vertex_colmap_;
 
     //! row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofEdgeRowmap_;
+    Teuchos::RCP<Epetra_Map> sdof_edge_rowmap_;
 
     //! row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofEdgeColmap_;
+    Teuchos::RCP<Epetra_Map> sdof_edge_colmap_;
 
     //! row map of all nonsmooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofSurfRowmap_;
+    Teuchos::RCP<Epetra_Map> sdof_surf_rowmap_;
 
     //! row map of all smooth slave nodes
-    Teuchos::RCP<Epetra_Map> sdofSurfColmap_;
+    Teuchos::RCP<Epetra_Map> sdof_surf_colmap_;
 
     Teuchos::RCP<Epetra_Map> nextendedghosting_;
     Teuchos::RCP<Epetra_Map> eextendedghosting_;
@@ -275,10 +275,10 @@ namespace CONTACT
     Teuchos::RCP<SelfBinaryTree> binarytreeself_;
 
     //! cn-values of each node
-    Teuchos::RCP<Epetra_Vector> cnValues_;
+    Teuchos::RCP<Epetra_Vector> cn_values_;
 
     //! ct-values of each node
-    Teuchos::RCP<Epetra_Vector> ctValues_;
+    Teuchos::RCP<Epetra_Vector> ct_values_;
 
     //! proc local number of slave/master pairs
     int smpairs_;
@@ -1622,7 +1622,7 @@ namespace CONTACT
     void SetConditionSpecificParameters();
 
     /// pointer to the interface data object
-    Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_;
+    Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_;
 
    protected:
     /** @name References to the interface data container content

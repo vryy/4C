@@ -296,13 +296,13 @@ namespace CORE::COMM
   Communicators::Communicators(int groupId, int ngroup, std::map<int, int> lpidgpid,
       Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm,
       NestedParallelismType npType)
-      : groupId_(groupId),
+      : group_id_(groupId),
         ngroup_(ngroup),
         lpidgpid_(lpidgpid),
         lcomm_(lcomm),
         gcomm_(gcomm),
         subcomm_(Teuchos::null),
-        npType_(npType)
+        np_type_(npType)
   {
     return;
   }
@@ -319,7 +319,7 @@ namespace CORE::COMM
       ++it;
     }
     // if GPID is not part of the current group
-    printf("\n\n\nERROR: GPID (%d) is not in this group (%d) \n\n\n\n", GPID, groupId_);
+    printf("\n\n\nERROR: GPID (%d) is not in this group (%d) \n\n\n\n", GPID, group_id_);
     MPI_Abort(Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm_, true)->GetMpiComm(), EXIT_FAILURE);
     exit(1);
 

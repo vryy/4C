@@ -136,12 +136,12 @@ void MAT::ThermoPlasticHyperElast::Pack(CORE::COMM::PackBuffer& data) const
 
     // variables corresponding to temperture-dependency
     AddtoPack(data, mechdiss_->at(var));
-    AddtoPack(data, mechdiss_kTT_->at(var));
-    AddtoPack(data, mechdiss_kTd_->at(var));
-    AddtoPack(data, Cmat_kdT_->at(var));
+    AddtoPack(data, mechdiss_k_tt_->at(var));
+    AddtoPack(data, mechdiss_k_td_->at(var));
+    AddtoPack(data, cmat_kd_t_->at(var));
     AddtoPack(data, thrplheat_->at(var));
-    AddtoPack(data, thrplheat_kTT_->at(var));
-    AddtoPack(data, thrplheat_kTd_->at(var));
+    AddtoPack(data, thrplheat_k_tt_->at(var));
+    AddtoPack(data, thrplheat_k_td_->at(var));
   }
 
   AddtoPack(data, plastic_step_);
@@ -196,12 +196,12 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
   accplstraincurr_ = Teuchos::rcp(new std::vector<double>);
 
   mechdiss_ = Teuchos::rcp(new std::vector<double>);
-  mechdiss_kTT_ = Teuchos::rcp(new std::vector<double>);
-  mechdiss_kTd_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  Cmat_kdT_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  mechdiss_k_tt_ = Teuchos::rcp(new std::vector<double>);
+  mechdiss_k_td_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  cmat_kd_t_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
   thrplheat_ = Teuchos::rcp(new std::vector<double>);
-  thrplheat_kTT_ = Teuchos::rcp(new std::vector<double>);
-  thrplheat_kTd_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  thrplheat_k_tt_ = Teuchos::rcp(new std::vector<double>);
+  thrplheat_k_td_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
 
   for (int var = 0; var < histsize; ++var)
   {
@@ -223,22 +223,22 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
     mechdiss_->push_back(tmp_scalar);
 
     ExtractfromPack(position, data, tmp_scalar);
-    mechdiss_kTT_->push_back(tmp_scalar);
+    mechdiss_k_tt_->push_back(tmp_scalar);
 
     ExtractfromPack(position, data, tmp_vect);
-    mechdiss_kTd_->push_back(tmp_vect);
+    mechdiss_k_td_->push_back(tmp_vect);
 
     ExtractfromPack(position, data, tmp_vect);
-    Cmat_kdT_->push_back(tmp_vect);
+    cmat_kd_t_->push_back(tmp_vect);
 
     ExtractfromPack(position, data, tmp_scalar);
     thrplheat_->push_back(tmp_scalar);
 
     ExtractfromPack(position, data, tmp_scalar);
-    thrplheat_kTT_->push_back(tmp_scalar);
+    thrplheat_k_tt_->push_back(tmp_scalar);
 
     ExtractfromPack(position, data, tmp_vect);
-    thrplheat_kTd_->push_back(tmp_vect);
+    thrplheat_k_td_->push_back(tmp_vect);
 
     // current vectors have to be initialised
     defgrdcurr_->push_back(tmp_matrix);
@@ -277,12 +277,12 @@ void MAT::ThermoPlasticHyperElast::Setup(int numgp, INPUT::LineDefinition* lined
   accplstraincurr_ = Teuchos::rcp(new std::vector<double>);
 
   mechdiss_ = Teuchos::rcp(new std::vector<double>);
-  mechdiss_kTT_ = Teuchos::rcp(new std::vector<double>);
-  mechdiss_kTd_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<6, 1>>);
-  Cmat_kdT_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<6, 1>>);
+  mechdiss_k_tt_ = Teuchos::rcp(new std::vector<double>);
+  mechdiss_k_td_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<6, 1>>);
+  cmat_kd_t_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<6, 1>>);
   thrplheat_ = Teuchos::rcp(new std::vector<double>);
-  thrplheat_kTT_ = Teuchos::rcp(new std::vector<double>);
-  thrplheat_kTd_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<6, 1>>);
+  thrplheat_k_tt_ = Teuchos::rcp(new std::vector<double>);
+  thrplheat_k_td_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<6, 1>>);
 
   defgrdlast_->resize(numgp);
   defgrdcurr_->resize(numgp);
@@ -294,12 +294,12 @@ void MAT::ThermoPlasticHyperElast::Setup(int numgp, INPUT::LineDefinition* lined
   accplstraincurr_->resize(numgp);
 
   mechdiss_->resize(numgp);
-  mechdiss_kTT_->resize(numgp);
-  mechdiss_kTd_->resize(numgp);
-  Cmat_kdT_->resize(numgp);
+  mechdiss_k_tt_->resize(numgp);
+  mechdiss_k_td_->resize(numgp);
+  cmat_kd_t_->resize(numgp);
   thrplheat_->resize(numgp);
-  thrplheat_kTT_->resize(numgp);
-  thrplheat_kTd_->resize(numgp);
+  thrplheat_k_tt_->resize(numgp);
+  thrplheat_k_td_->resize(numgp);
 
   CORE::LINALG::Matrix<3, 3> emptymat(true);
   for (int i = 0; i < 3; i++) emptymat(i, i) = 1.0;
@@ -317,12 +317,12 @@ void MAT::ThermoPlasticHyperElast::Setup(int numgp, INPUT::LineDefinition* lined
     accplstraincurr_->at(i) = 0.0;
 
     mechdiss_->at(i) = 0.0;
-    mechdiss_kTT_->at(i) = 0.0;
-    mechdiss_kTd_->at(i) = emptyvect;
-    Cmat_kdT_->at(i) = emptyvect;
+    mechdiss_k_tt_->at(i) = 0.0;
+    mechdiss_k_td_->at(i) = emptyvect;
+    cmat_kd_t_->at(i) = emptyvect;
     thrplheat_->at(i) = 0.0;
-    thrplheat_kTT_->at(i) = 0.0;
-    thrplheat_kTd_->at(i) = emptyvect;
+    thrplheat_k_tt_->at(i) = 0.0;
+    thrplheat_k_td_->at(i) = emptyvect;
   }
 
   isinit_ = true;
@@ -547,12 +547,12 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
 
     // elastic load --> values are zero
     mechdiss_->at(gp) = 0.0;
-    mechdiss_kTT_->at(gp) = 0.0;
-    mechdiss_kTd_->at(gp).putScalar(0.0);
-    Cmat_kdT_->at(gp).putScalar(0.0);
+    mechdiss_k_tt_->at(gp) = 0.0;
+    mechdiss_k_td_->at(gp).putScalar(0.0);
+    cmat_kd_t_->at(gp).putScalar(0.0);
     thrplheat_->at(gp) = 0.0;
-    thrplheat_kTT_->at(gp) = 0.0;
-    thrplheat_kTd_->at(gp).putScalar(0.0);
+    thrplheat_k_tt_->at(gp) = 0.0;
+    thrplheat_k_td_->at(gp).putScalar(0.0);
   }  // end if (Phi_trial <= 0.0), i.e. elastic step
 
   //-------------------------------------------------------------------
@@ -565,10 +565,10 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
     // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
     if (plastic_step_ == false)
     {
-      plastic_eleID_ = eleGID;
+      plastic_ele_id_ = eleGID;
 
-      if ((plastic_step_ == false) and (eleGID == plastic_eleID_) and (gp == 0))
-        std::cout << "plasticity starts in element = " << plastic_eleID_ << std::endl;
+      if ((plastic_step_ == false) and (eleGID == plastic_ele_id_) and (gp == 0))
+        std::cout << "plasticity starts in element = " << plastic_ele_id_ << std::endl;
 
       plastic_step_ = true;
     }
@@ -761,7 +761,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
       // with sigma_y0_temp = sigma_y0 . (1.0 - omega_0 . (scalartemp - inittemp) )
       // calculate the derivativ of sigma_y0(T_{n+1}) w.r.t. T_{n+1}
       // derivative of mechanical Dissipation w.r.t. temperatures
-      mechdiss_kTT_->at(gp) =
+      mechdiss_k_tt_->at(gp) =
           sqrt(2.0 / 3.0) * (dDgamma_dT * sigma_y0_temp + Dgamma * dsigma_y0_temp_dT);
 
       // -------------------------------------------- dD_mech/dd for k_Td
@@ -777,7 +777,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
       mechdiss_kTd_vct(3) = 0.5 * (mechdiss_kTd_matrix(0, 1) + mechdiss_kTd_matrix(1, 0));
       mechdiss_kTd_vct(4) = 0.5 * (mechdiss_kTd_matrix(1, 2) + mechdiss_kTd_matrix(2, 1));
       mechdiss_kTd_vct(5) = 0.5 * (mechdiss_kTd_matrix(0, 2) + mechdiss_kTd_matrix(2, 0));
-      mechdiss_kTd_->at(gp).Update(mechdiss_kTd_vct);
+      mechdiss_k_td_->at(gp).Update(mechdiss_kTd_vct);
 
       // ------------------------------------------- thermoplastic heating term
 
@@ -800,7 +800,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
       //
       //       = [ thrplheat_ . 1/Dt + T . thrplheat_kTT_ . 1/Dt ] . N_T
       // be aware: multiplication with 1/Dt and T is done in thermo element
-      thrplheat_kTT_->at(gp) =
+      thrplheat_k_tt_->at(gp) =
           ddkappa_dTT * sqrt(2.0 / 3.0) * Dgamma + dkappa_dT * sqrt(2.0 / 3.0) * dDgamma_dT;
 
       // ----------------------------------------------- dH_p/dd for k_Td
@@ -827,7 +827,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
       thrplheat_kTd_vct(3) = 0.5 * (thrplheat_kTd_matrix(0, 1) + thrplheat_kTd_matrix(1, 0));
       thrplheat_kTd_vct(4) = 0.5 * (thrplheat_kTd_matrix(1, 2) + thrplheat_kTd_matrix(2, 1));
       thrplheat_kTd_vct(5) = 0.5 * (thrplheat_kTd_matrix(0, 2) + thrplheat_kTd_matrix(2, 0));
-      thrplheat_kTd_->at(gp).Update(thrplheat_kTd_vct);
+      thrplheat_k_td_->at(gp).Update(thrplheat_kTd_vct);
 
       //------ linearisation of mechanical material tangent w.r.t. temperatures
 
@@ -846,7 +846,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
       Cmat_kdT_vct(3) = 0.5 * (Cmat_kdT_matrix(0, 1) + Cmat_kdT_matrix(1, 0));
       Cmat_kdT_vct(4) = 0.5 * (Cmat_kdT_matrix(1, 2) + Cmat_kdT_matrix(2, 1));
       Cmat_kdT_vct(5) = 0.5 * (Cmat_kdT_matrix(0, 2) + Cmat_kdT_matrix(2, 0));
-      Cmat_kdT_->at(gp).Update(Cmat_kdT_vct);
+      cmat_kd_t_->at(gp).Update(Cmat_kdT_vct);
 
     }  // (Dgamma != 0.0)
 

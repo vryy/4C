@@ -94,7 +94,7 @@ namespace CORE::LINALG
 
     //! @name Atribute set methods required to support the Epetra_Operator interface
 
-    int SetUseTranspose(bool UseTranspose) override { return (A_->SetUseTranspose(UseTranspose)); }
+    int SetUseTranspose(bool UseTranspose) override { return (a_->SetUseTranspose(UseTranspose)); }
     //! @}
 
     //! @name Mathematical functions required to support the Epetra_Operator interface (modified)
@@ -136,35 +136,35 @@ namespace CORE::LINALG
     //! @}
     int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override;
 
-    double NormInf() const override { return (A_->NormInf()); }
+    double NormInf() const override { return (a_->NormInf()); }
     //! @}
 
     //! @name Atribute access functions required to support the Epetra_Operator interface
-    const char *Label() const override { return (A_->Label()); }
+    const char *Label() const override { return (a_->Label()); }
 
-    bool UseTranspose() const override { return (A_->UseTranspose()); }
+    bool UseTranspose() const override { return (a_->UseTranspose()); }
 
-    bool HasNormInf() const override { return (A_->HasNormInf()); }
+    bool HasNormInf() const override { return (a_->HasNormInf()); }
 
-    const Epetra_Comm &Comm() const override { return (A_->Comm()); }
+    const Epetra_Comm &Comm() const override { return (a_->Comm()); }
 
-    const Epetra_Map &OperatorDomainMap() const override { return (A_->OperatorDomainMap()); }
+    const Epetra_Map &OperatorDomainMap() const override { return (a_->OperatorDomainMap()); }
 
-    const Epetra_Map &OperatorRangeMap() const override { return (A_->OperatorRangeMap()); }
+    const Epetra_Map &OperatorRangeMap() const override { return (a_->OperatorRangeMap()); }
 
     int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
     {
-      return (A_->ApplyInverse(X, Y));
+      return (a_->ApplyInverse(X, Y));
     }
 
-    Teuchos::RCP<Epetra_Operator> UnprojectedOperator() { return (A_); }
+    Teuchos::RCP<Epetra_Operator> UnprojectedOperator() { return (a_); }
 
    private:
     //! flag whether to do a projection or just pass through
     bool project_;
 
     //! the actual unprojected operator
-    Teuchos::RCP<Epetra_Operator> A_;
+    Teuchos::RCP<Epetra_Operator> a_;
 
     //! Krylov space projector
     Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;

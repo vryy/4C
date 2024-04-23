@@ -120,29 +120,29 @@ namespace NOX
         \c trueTolerance based on the F-value at the initial guess.*/
       // void relativeSetup(::NOX::Abstract::Group& initialGuess);
 
-      double Tolerance() const { return trueTolerance_; }
+      double Tolerance() const { return true_tolerance_; }
 
      private:
       //! %Status
       ::NOX::StatusTest::StatusType status_;
 
       //! Type of norm to use
-      ::NOX::Abstract::Vector::NormType normType_;
+      ::NOX::Abstract::Vector::NormType norm_type_;
 
       //! Scaling to use
-      ScaleType scaleType_;
+      ScaleType scale_type_;
 
       //! Tolerance required for convergence.
-      double specifiedTolerance_;
+      double specified_tolerance_;
 
       //! Initial tolerance
-      double initialTolerance_;
+      double initial_tolerance_;
 
       //! True tolerance value, i.e., specifiedTolerance / initialTolerance
-      double trueTolerance_;
+      double true_tolerance_;
 
       //! Norm of F to be compared to trueTolerance
-      double normF_;
+      double norm_f_;
 
       //! name of this test
       std::string name_;
@@ -275,19 +275,19 @@ namespace NOX
       ::NOX::StatusTest::StatusType status_;
 
       //! Vector containing the update for the current outer iteration
-      Teuchos::RCP<::NOX::Abstract::Vector> updateVectorPtr_;
+      Teuchos::RCP<::NOX::Abstract::Vector> update_vector_ptr_;
 
       //! Type of norm to use
-      ::NOX::Abstract::Vector::NormType normType_;
+      ::NOX::Abstract::Vector::NormType norm_type_;
 
       //! Scaling to use
-      ScaleType scaleType_;
+      ScaleType scale_type_;
 
       //! Tolerance value specified by user in constructor
       double tolerance_;
 
       //! Norm of the update to be compared to trueTolerance
-      double normUpdate_;
+      double norm_update_;
 
       //! name of this test
       std::string name_;
@@ -352,16 +352,16 @@ namespace NOX
 
      private:
       //! Minimum number of iterations
-      int miniters;
+      int miniters_;
 
       //! Current number of iterations (if known)
-      int niters;
+      int niters_;
 
       //! Status
-      ::NOX::StatusTest::StatusType status;
+      ::NOX::StatusTest::StatusType status_;
 
       //! Ostream used to print errors
-      ::NOX::Utils utils;
+      ::NOX::Utils utils_;
     };
 
   }  // namespace FSI

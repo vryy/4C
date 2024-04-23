@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::INTERFACE::AssembleStrategy::AssembleStrategy(Interface* inter)
     : inter_(inter),
-      interfaceData_ptr_(Inter().SharedInterfaceDataPtr().get()),
+      interface_data_ptr_(Inter().SharedInterfaceDataPtr().get()),
       idiscret_(Inter().Discret())
 {
   // empty

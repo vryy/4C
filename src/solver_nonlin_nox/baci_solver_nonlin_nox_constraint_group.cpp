@@ -30,7 +30,7 @@ NOX::NLN::CONSTRAINT::Group::Group(Teuchos::ParameterList& printParams,
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr)
     : ::NOX::Epetra::Group(printParams, i, x, linSys),
       NOX::NLN::Group(printParams, grpOptionParams, i, x, linSys),
-      userConstraintInterfaces_(iConstr)
+      user_constraint_interfaces_(iConstr)
 {
   return;
 }
@@ -40,7 +40,7 @@ NOX::NLN::CONSTRAINT::Group::Group(Teuchos::ParameterList& printParams,
 NOX::NLN::CONSTRAINT::Group::Group(const NOX::NLN::CONSTRAINT::Group& source, ::NOX::CopyType type)
     : ::NOX::Epetra::Group(source, type),
       NOX::NLN::Group(source, type),
-      userConstraintInterfaces_(source.userConstraintInterfaces_)
+      user_constraint_interfaces_(source.user_constraint_interfaces_)
 {
   // empty
 }
@@ -60,8 +60,8 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::CONSTRAINT::Group::clone(::NOX::C
 {
   NOX::NLN::Group::operator=(source);
 
-  userConstraintInterfaces_ =
-      dynamic_cast<const NOX::NLN::CONSTRAINT::Group&>(source).userConstraintInterfaces_;
+  user_constraint_interfaces_ =
+      dynamic_cast<const NOX::NLN::CONSTRAINT::Group&>(source).user_constraint_interfaces_;
 
   return *this;
 }
@@ -71,7 +71,7 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::CONSTRAINT::Group::clone(::NOX::C
 const NOX::NLN::CONSTRAINT::ReqInterfaceMap& NOX::NLN::CONSTRAINT::Group::GetConstrInterfaces()
     const
 {
-  return userConstraintInterfaces_;
+  return user_constraint_interfaces_;
 }
 
 /*----------------------------------------------------------------------------*
@@ -90,15 +90,15 @@ NOX::NLN::CONSTRAINT::Group::GetConstraintInterfacePtr(
 {
   Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr = Teuchos::null;
 
-  ReqInterfaceMap::const_iterator it = userConstraintInterfaces_.find(soltype);
-  if (errflag and it == userConstraintInterfaces_.end())
+  ReqInterfaceMap::const_iterator it = user_constraint_interfaces_.find(soltype);
+  if (errflag and it == user_constraint_interfaces_.end())
   {
     std::ostringstream msg;
     msg << "The given NOX::NLN::SolutionType \"" << NOX::NLN::SolutionType2String(soltype)
         << "\" could not be found!";
     throwError("GetConstraintInterfacePtr", msg.str());
   }
-  else if (it != userConstraintInterfaces_.end())
+  else if (it != user_constraint_interfaces_.end())
     constrptr = it->second;
 
   return constrptr;
@@ -113,7 +113,7 @@ double NOX::NLN::CONSTRAINT::Group::GetModelValue(
 
   // constraint contributions
   double constr_contr = 0.0;
-  for (const auto& constr_iter : userConstraintInterfaces_)
+  for (const auto& constr_iter : user_constraint_interfaces_)
     constr_contr += constr_iter.second->GetModelValue(merit_func_type);
 
   return mrtFctVal + constr_contr;
@@ -133,7 +133,7 @@ double NOX::NLN::CONSTRAINT::Group::GetLinearizedModelTerms(const ::NOX::Abstrac
   const Epetra_Vector& dir_epetra = dir_nox_epetra.getEpetraVector();
 
   // constraint contributions
-  for (const auto& constr_iter : userConstraintInterfaces_)
+  for (const auto& constr_iter : user_constraint_interfaces_)
     linVal +=
         constr_iter.second->GetLinearizedModelTerms(dir_epetra, merit_func_type, linorder, lintype);
 

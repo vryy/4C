@@ -56,7 +56,7 @@ namespace STR
      private:
       Teuchos::RCP<Epetra_Vector> dbc_incr_ptr_;
 
-      bool applyLinearReactionForces_;
+      bool apply_linear_reaction_forces_;
     };  // class TangDis
   }     // namespace PREDICT
 }  // namespace STR

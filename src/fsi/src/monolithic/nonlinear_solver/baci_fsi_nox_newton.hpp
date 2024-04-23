@@ -49,7 +49,7 @@ namespace NOX
       Teuchos::RCP<::NOX::Utils> utils_;
 
       //! "Direction" sublist with parameters for the direction vector
-      Teuchos::ParameterList* paramsPtr;
+      Teuchos::ParameterList* params_ptr_;
 
       /// nonlinear tolerance we strive to achieve
       double desirednlnres_;

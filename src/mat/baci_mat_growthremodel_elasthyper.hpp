@@ -484,20 +484,20 @@ namespace MAT
     std::vector<double> v_;
 
     /// Circumferential structural tensor
-    CORE::LINALG::Matrix<3, 3> AcirM_;
+    CORE::LINALG::Matrix<3, 3> acir_m_;
 
     /// Axial structural tensor
-    CORE::LINALG::Matrix<3, 3> AaxM_;
+    CORE::LINALG::Matrix<3, 3> aax_m_;
 
     /// Radial structural tensor
-    CORE::LINALG::Matrix<3, 3> AradM_;
+    CORE::LINALG::Matrix<3, 3> arad_m_;
 
     /// Radial structural tensor in "stress-like" Voigt notation
-    CORE::LINALG::Matrix<6, 1> Aradv_;
+    CORE::LINALG::Matrix<6, 1> aradv_;
 
     /// Prestretch of elastin matrix in axial, circumferential and radial direction (used for
     /// prestressing)
-    std::vector<CORE::LINALG::Matrix<3, 3>> GM_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> gm_;
 
     /// Total simulation time
     double t_tot_;
@@ -517,10 +517,10 @@ namespace MAT
     std::vector<double> gp_rad_;
 
     /// Structural tensor of growth direction
-    CORE::LINALG::Matrix<3, 3> AgM_;
+    CORE::LINALG::Matrix<3, 3> ag_m_;
 
     /// Structural tensor of the plane in which all fibers are located
-    CORE::LINALG::Matrix<3, 3> AplM_;
+    CORE::LINALG::Matrix<3, 3> apl_m_;
 
     /// Fraction of 2D material parameter of elastin
     std::vector<double> mue_frac_;

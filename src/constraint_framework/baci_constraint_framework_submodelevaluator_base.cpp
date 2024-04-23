@@ -30,7 +30,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::EvaluateForceStiff(
 
     // evaluate the stiffness contribution of this sme:
     auto sme_stiff_ptr = CORE::LINALG::Multiply(*Q_dL_, false, *Q_Ld_, false, false);
-    sme_stiff_ptr->Scale(penaltyParameter_);
+    sme_stiff_ptr->Scale(penalty_parameter_);
     sme_stiff_ptr->Add(*Q_dd_, false, 1.0, 1.0);
     sme_stiff_ptr->Complete();
 
@@ -43,7 +43,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::EvaluateForceStiff(
     //  Calculate force contribution
     Teuchos::RCP<Epetra_Vector> r_pen = Teuchos::rcp(new Epetra_Vector(stiff_ptr_->RowMap(), true));
     Q_Ld_->Multiply(true, *constraint_vector_, *r_pen);
-    CORE::LINALG::AssembleMyVector(1.0, *me_force_ptr, penaltyParameter_, *r_pen);
+    CORE::LINALG::AssembleMyVector(1.0, *me_force_ptr, penalty_parameter_, *r_pen);
   }
   return true;
 }

@@ -62,10 +62,10 @@ void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Setup(
   }
 
   b_ = b;
-  A_ = matrix;  // we cannot use A here, since it could be Teuchos::null (for blocked operators);
+  a_ = matrix;  // we cannot use A here, since it could be Teuchos::null (for blocked operators);
   x_ = x;
 
-  preconditioner_->Setup(create, A_.get(), x_.get(), b_.get());
+  preconditioner_->Setup(create, a_.get(), x_.get(), b_.get());
 }
 
 //----------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
 {
   Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
 
-  auto problem = Teuchos::rcp(new Belos::LinearProblem<double, VectorType, MatrixType>(A_, x_, b_));
+  auto problem = Teuchos::rcp(new Belos::LinearProblem<double, VectorType, MatrixType>(a_, x_, b_));
 
   if (preconditioner_ != Teuchos::null)
   {
@@ -105,7 +105,7 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
 
   numiters_ = newSolver->getNumIters();
 
-  if (preconditioner_ != Teuchos::null) preconditioner_->Finish(A_.get(), x_.get(), b_.get());
+  if (preconditioner_ != Teuchos::null) preconditioner_->Finish(a_.get(), x_.get(), b_.get());
 
   int my_error = 0;
   if (ret != Belos::Converged) my_error = 1;
@@ -165,7 +165,7 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseSta
     auto ep_active_dof_map = linSysParams.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
 
     // Do we have history information available?
-    if (activeDofMap_.is_null())
+    if (active_dof_map_.is_null())
     {
       /* No history available.
        * This is the first application of the preconditioner. We cannot reuse it.
@@ -178,7 +178,7 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseSta
        * by comparing the current map of active DOFs with the stored map of active DOFs
        * from the previous application of the preconditioner.
        */
-      if (not ep_active_dof_map->PointSameAs(*activeDofMap_))
+      if (not ep_active_dof_map->PointSameAs(*active_dof_map_))
       {
         // Map of active nodes has changed -> force preconditioner to be rebuilt
         bAllowReuse = false;
@@ -186,7 +186,7 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseSta
     }
 
     // Store current map of active slave DOFs for comparison in next preconditioner application
-    activeDofMap_ = ep_active_dof_map;
+    active_dof_map_ = ep_active_dof_map;
   }
 
   return bAllowReuse;

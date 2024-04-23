@@ -448,9 +448,9 @@ void CONTACT::AUG::Plot::Setup()
   if (type_ == INPAR::CONTACT::PlotType::line or type_ == INPAR::CONTACT::PlotType::scalar)
     opt_.resolution_y_ = 1;
 
-  X_.reshape(opt_.resolution_x_, opt_.resolution_y_);
-  Y_.reshape(opt_.resolution_x_, opt_.resolution_y_);
-  Z_.resize(std::max(static_cast<int>(type_), 0),
+  x_.reshape(opt_.resolution_x_, opt_.resolution_y_);
+  y_.reshape(opt_.resolution_x_, opt_.resolution_y_);
+  z_.resize(std::max(static_cast<int>(type_), 0),
       CORE::LINALG::SerialDenseMatrix(opt_.resolution_x_, opt_.resolution_y_));
 
   std::vector<double> x;
@@ -462,8 +462,8 @@ void CONTACT::AUG::Plot::Setup()
   for (unsigned i = 0; i < opt_.resolution_x_; ++i)
     for (unsigned j = 0; j < opt_.resolution_y_; ++j)
     {
-      X_(i, j) = x[i];
-      Y_(i, j) = y[j];
+      x_(i, j) = x[i];
+      y_(i, j) = y[j];
     }
 
   const std::string path = IO::ExtractPath(filepath_);
@@ -729,12 +729,12 @@ void CONTACT::AUG::Plot::GetSupportPoints(
     {
       ComputeAnglePosition();
 
-      X_.reshape(position_node_id_map_.size(), X_.numCols());
+      x_.reshape(position_node_id_map_.size(), x_.numCols());
       unsigned i = 0;
       for (auto an_cit = position_node_id_map_.begin(); an_cit != position_node_id_map_.end();
            ++an_cit, ++i)
       {
-        for (unsigned j = 0; j < static_cast<unsigned>(X_.numCols()); ++j) X_(i, j) = an_cit->first;
+        for (unsigned j = 0; j < static_cast<unsigned>(x_.numCols()); ++j) x_(i, j) = an_cit->first;
       }
 
       break;
@@ -743,12 +743,12 @@ void CONTACT::AUG::Plot::GetSupportPoints(
     {
       ComputeDistancePosition();
 
-      X_.reshape(position_node_id_map_.size(), X_.numCols());
+      x_.reshape(position_node_id_map_.size(), x_.numCols());
       unsigned i = 0;
       for (auto an_cit = position_node_id_map_.begin(); an_cit != position_node_id_map_.end();
            ++an_cit, ++i)
       {
-        for (unsigned j = 0; j < static_cast<unsigned>(X_.numCols()); ++j) X_(i, j) = an_cit->first;
+        for (unsigned j = 0; j < static_cast<unsigned>(x_.numCols()); ++j) x_(i, j) = an_cit->first;
       }
 
       break;
@@ -821,13 +821,13 @@ void CONTACT::AUG::Plot::PlotScalar(const NOX::NLN::CONSTRAINT::Group& ref_grp,
   IO::cout << "Start evaluation of the scalar data...\n";
 
   Epetra_Vector step(dir.Map(), true);
-  GetSupportPoints(x_type_, X_);
+  GetSupportPoints(x_type_, x_);
 
-  ModifyStepLength(x_type_, X_(0, 0), dir, step);
+  ModifyStepLength(x_type_, x_(0, 0), dir, step);
   plot_grp.computeX(ref_grp, step, 1.0);
 
   plot_grp.computeF();
-  Y_(0, 0) = GetValue(func_type_, plot_grp);
+  y_(0, 0) = GetValue(func_type_, plot_grp);
 
   WriteLineDataToFile();
 }
@@ -838,16 +838,16 @@ void CONTACT::AUG::Plot::PlotLine(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     const Epetra_Vector& dir, NOX::NLN::CONSTRAINT::Group& plot_grp)
 {
   IO::cout << "Start evaluation of the line data...\n";
-  GetSupportPoints(x_type_, X_);
-  Y_.reshape(X_.numRows(), Y_.numCols());
+  GetSupportPoints(x_type_, x_);
+  y_.reshape(x_.numRows(), y_.numCols());
 
   double norm_step = -1.0;
   Epetra_Vector step(dir.Map(), true);
 
-  for (int i = 0; i < X_.numRows(); ++i)
+  for (int i = 0; i < x_.numRows(); ++i)
   {
-    IO::cout << "alpha = " << X_(i, 0) << IO::endl;
-    ModifyStepLength(x_type_, X_(i, 0), dir, step);
+    IO::cout << "alpha = " << x_(i, 0) << IO::endl;
+    ModifyStepLength(x_type_, x_(i, 0), dir, step);
 
     double curr_norm_step = 0.0;
     step.Norm2(&curr_norm_step);
@@ -858,7 +858,7 @@ void CONTACT::AUG::Plot::PlotLine(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     }
 
     plot_grp.computeF();
-    Y_(i, 0) = GetValue(func_type_, plot_grp, &X_(i, 0), &dir);
+    y_(i, 0) = GetValue(func_type_, plot_grp, &x_(i, 0), &dir);
   }
 
   WriteLineDataToFile();
@@ -870,8 +870,8 @@ void CONTACT::AUG::Plot::PlotSurface(const NOX::NLN::CONSTRAINT::Group& ref_grp,
     const Epetra_Vector& dir, NOX::NLN::CONSTRAINT::Group& plot_grp)
 {
   IO::cout << "Start evaluation of the surface data...\n";
-  GetSupportPoints(x_type_, X_);
-  GetSupportPoints(y_type_, Y_);
+  GetSupportPoints(x_type_, x_);
+  GetSupportPoints(y_type_, y_);
 
   Teuchos::RCP<Epetra_Vector> x_dir_ptr = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> y_dir_ptr = Teuchos::null;
@@ -880,18 +880,18 @@ void CONTACT::AUG::Plot::PlotSurface(const NOX::NLN::CONSTRAINT::Group& ref_grp,
 
   Epetra_Vector step(dir.Map(), true);
 
-  for (int i = 0; i < X_.numRows(); ++i)
+  for (int i = 0; i < x_.numRows(); ++i)
   {
-    for (int j = 0; j < X_.numCols(); ++j)
+    for (int j = 0; j < x_.numCols(); ++j)
     {
-      IO::cout << "( alpha, beta ) = ( " << X_(i, j) << ", " << Y_(i, j) << " )\n";
+      IO::cout << "( alpha, beta ) = ( " << x_(i, j) << ", " << y_(i, j) << " )\n";
 
-      ModifyStepLength(x_type_, X_(i, j), *x_dir_ptr, step);
-      ModifyStepLength(y_type_, Y_(i, j), *y_dir_ptr, step);
+      ModifyStepLength(x_type_, x_(i, j), *x_dir_ptr, step);
+      ModifyStepLength(y_type_, y_(i, j), *y_dir_ptr, step);
       plot_grp.computeX(ref_grp, step, 1.0);
 
       plot_grp.computeF();
-      Z_[0](i, j) = GetValue(func_type_, plot_grp);
+      z_[0](i, j) = GetValue(func_type_, plot_grp);
     }
   }
 
@@ -926,10 +926,10 @@ void CONTACT::AUG::Plot::PlotVectorField2D(const NOX::NLN::CONSTRAINT::Group& re
   {
     for (unsigned j = 0; j < opt_.resolution_y_; ++j)
     {
-      IO::cout << "( alpha, beta ) = ( " << X_(i, j) << ", " << Y_(i, j) << " )\n";
+      IO::cout << "( alpha, beta ) = ( " << x_(i, j) << ", " << y_(i, j) << " )\n";
 
-      ModifyStepLength(x_type_, X_(i, j), *x_dir_ptr, step);
-      ModifyStepLength(y_type_, Y_(i, j), *y_dir_ptr, step);
+      ModifyStepLength(x_type_, x_(i, j), *x_dir_ptr, step);
+      ModifyStepLength(y_type_, y_(i, j), *y_dir_ptr, step);
 
       plot_grp.computeX(ref_grp, step, 1.0);
 
@@ -937,8 +937,8 @@ void CONTACT::AUG::Plot::PlotVectorField2D(const NOX::NLN::CONSTRAINT::Group& re
 
       GetVectorValues(func_type_, plot_grp, dirs, vec_vals);
 
-      Z_[0](i, j) = vec_vals[0];
-      Z_[1](i, j) = vec_vals[1];
+      z_[0](i, j) = vec_vals[0];
+      z_[1](i, j) = vec_vals[1];
     }
   }
 
@@ -981,10 +981,10 @@ void CONTACT::AUG::Plot::WriteLineDataToFile() const
     case INPAR::CONTACT::PlotFileFormat::matlab:
     {
       outputfile << "X-DATA:\n";
-      WriteMatrixToFile(outputfile, X_, opt_.output_precision_);
+      WriteMatrixToFile(outputfile, x_, opt_.output_precision_);
 
       outputfile << "\n\nY-DATA:\n";
-      WriteMatrixToFile(outputfile, Y_, opt_.output_precision_);
+      WriteMatrixToFile(outputfile, y_, opt_.output_precision_);
 
       break;
     }
@@ -994,8 +994,8 @@ void CONTACT::AUG::Plot::WriteLineDataToFile() const
         outputfile << std::setw(24) << "x" << std::setw(24) << "y\n";
 
       std::vector<const CORE::LINALG::SerialDenseMatrix*> columndata(2, nullptr);
-      columndata[0] = &X_;
-      columndata[1] = &Y_;
+      columndata[0] = &x_;
+      columndata[1] = &y_;
 
       WriteColumnDataToFile(outputfile, columndata, opt_.output_precision_);
 
@@ -1022,16 +1022,16 @@ void CONTACT::AUG::Plot::WriteVectorFieldToFile() const
     case INPAR::CONTACT::PlotFileFormat::matlab:
     {
       outputfile << "X-DATA:\n";
-      WriteMatrixToFile(outputfile, X_, opt_.output_precision_);
+      WriteMatrixToFile(outputfile, x_, opt_.output_precision_);
 
       outputfile << "\n\nY-DATA:\n";
-      WriteMatrixToFile(outputfile, Y_, opt_.output_precision_);
+      WriteMatrixToFile(outputfile, y_, opt_.output_precision_);
 
       outputfile << "\n\nU-DATA:\n";
-      WriteMatrixToFile(outputfile, Z_[0], opt_.output_precision_);
+      WriteMatrixToFile(outputfile, z_[0], opt_.output_precision_);
 
       outputfile << "\n\nV-DATA:\n";
-      WriteMatrixToFile(outputfile, Z_[1], opt_.output_precision_);
+      WriteMatrixToFile(outputfile, z_[1], opt_.output_precision_);
 
       break;
     }
@@ -1041,10 +1041,10 @@ void CONTACT::AUG::Plot::WriteVectorFieldToFile() const
                  << std::setw(24) << "v\n";
 
       std::vector<const CORE::LINALG::SerialDenseMatrix*> columndata(4, nullptr);
-      columndata[0] = &X_;
-      columndata[1] = &Y_;
-      columndata[2] = &Z_[0];
-      columndata[3] = &Z_[1];
+      columndata[0] = &x_;
+      columndata[1] = &y_;
+      columndata[2] = &z_[0];
+      columndata[3] = &z_[1];
 
       WriteColumnDataToFile(outputfile, columndata, opt_.output_precision_);
 
@@ -1095,13 +1095,13 @@ void CONTACT::AUG::Plot::WriteSurfaceDataToFile() const
     case INPAR::CONTACT::PlotFileFormat::matlab:
     {
       outputfile << "X-DATA:\n";
-      WriteMatrixToFile(outputfile, X_, opt_.output_precision_);
+      WriteMatrixToFile(outputfile, x_, opt_.output_precision_);
 
       outputfile << "\n\nY-DATA:\n";
-      WriteMatrixToFile(outputfile, Y_, opt_.output_precision_);
+      WriteMatrixToFile(outputfile, y_, opt_.output_precision_);
 
       outputfile << "\n\nZ-DATA:\n";
-      WriteMatrixToFile(outputfile, Z_[0], opt_.output_precision_);
+      WriteMatrixToFile(outputfile, z_[0], opt_.output_precision_);
 
       break;
     }

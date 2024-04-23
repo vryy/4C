@@ -179,7 +179,7 @@ void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<doubl
   const int ndof = 6;
 
   // current nodal position (first
-  for (int j = 0; j < ndof; ++j) xcurr(j) = X_(j) + disp_ele[j];
+  for (int j = 0; j < ndof; ++j) xcurr(j) = x_(j) + disp_ele[j];
 
   // computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
   aux(0) = (xcurr(0) - xcurr(3));
@@ -343,12 +343,12 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
   const int ndof_per_node = ndof / 2;
 
   // computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xref
-  aux(0) = X_(0) - X_(3);
-  aux(1) = X_(1) - X_(4);
-  aux(2) = X_(2) - X_(5);
-  aux(3) = X_(3) - X_(0);
-  aux(4) = X_(4) - X_(1);
-  aux(5) = X_(5) - X_(2);
+  aux(0) = x_(0) - x_(3);
+  aux(1) = x_(1) - x_(4);
+  aux(2) = x_(2) - x_(5);
+  aux(3) = x_(3) - x_(0);
+  aux(4) = x_(4) - x_(1);
+  aux(5) = x_(5) - x_(2);
 
   // resulting force scaled by current length
   const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
@@ -394,7 +394,7 @@ void DRT::ELEMENTS::Truss3::PrepCalcInternalForceStiffTotLag(
   const int ndof = 6;
   static CORE::LINALG::Matrix<6, 1> xcurr;
   // current nodal position
-  for (int j = 0; j < ndof; ++j) xcurr(j) = X_(j) + disp_ele[j];
+  for (int j = 0; j < ndof; ++j) xcurr(j) = x_(j) + disp_ele[j];
 
   /* current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node)
    * compared to reference configuration; note: in general this is not equal to the values in disp

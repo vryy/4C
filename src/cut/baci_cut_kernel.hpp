@@ -3084,10 +3084,10 @@ namespace CORE::GEO::CUT::KERNEL
       real_tolerance(1) = scaled_tolerance(1);
       real_tolerance(2) = 0.0;
       if (WithinLimitsSplittedQuad<sideType>(xsi_ref_, real_tolerance))
-        sideLocation_triangle_split_ = PointOnSurfaceLoc(true, true);
+        side_location_triangle_split_ = PointOnSurfaceLoc(true, true);
       else
-        sideLocation_triangle_split_ = PointOnSurfaceLoc(false, true);
-      return sideLocation_triangle_split_;
+        side_location_triangle_split_ = PointOnSurfaceLoc(false, true);
+      return side_location_triangle_split_;
     }
 
     PointOnSurfaceLoc GetSideLocation() { return location_; }
@@ -3224,7 +3224,7 @@ namespace CORE::GEO::CUT::KERNEL
 
     // determines location of this point, with extended tolerance over side, that is shared for
     // another triangle (only for tri3)
-    PointOnSurfaceLoc sideLocation_triangle_split_;
+    PointOnSurfaceLoc side_location_triangle_split_;
     // we need to do detection of location and touching edge
     CORE::LINALG::Matrix<probDim, 1>& xsi_ref_;
 
@@ -4079,9 +4079,9 @@ namespace CORE::GEO::CUT::KERNEL
 
     bool IsConditionInfinity() { return cond_infinity_; }
 
-    PointOnSurfaceLoc GetSideLocation() { return sideLocation_; }
+    PointOnSurfaceLoc GetSideLocation() { return side_location_; }
 
-    PointOnSurfaceLoc GetEdgeLocation() { return edgeLocation_; }
+    PointOnSurfaceLoc GetEdgeLocation() { return edge_location_; }
 
     const std::vector<int>& GetTouchedSideEdges() { return touched_edges_ids_; }
 
@@ -4103,19 +4103,19 @@ namespace CORE::GEO::CUT::KERNEL
       this->GetLocalToleranceEdge(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_edge);
       // compute inside-outside relation
       if (WithinLimits<sideType>(clnxsi_, scaled_tolerance_side))
-        sideLocation_ = PointOnSurfaceLoc(true, true);
+        side_location_ = PointOnSurfaceLoc(true, true);
       else
-        sideLocation_ = PointOnSurfaceLoc(false, true);
+        side_location_ = PointOnSurfaceLoc(false, true);
       const CORE::LINALG::Matrix<dimEdge, 1, CORE::CLN::ClnWrapper> clnxsi_line(
           clnxsi_.A() + dimSide, true);
       if (WithinLimits<edgeType>(clnxsi_line, scaled_tolerance_edge))
-        edgeLocation_ = PointOnSurfaceLoc(true, true);
+        edge_location_ = PointOnSurfaceLoc(true, true);
       else
-        edgeLocation_ = PointOnSurfaceLoc(false, true);
+        edge_location_ = PointOnSurfaceLoc(false, true);
       // NOTE: In compute intersection we don't actually use touched_edges now. left for the
       // future
       touched_edges_ids_.clear();
-      if (sideLocation_.WithinSide())
+      if (side_location_.WithinSide())
       {
         GetEdgesAt<sideType>(clnxsi_, touched_edges_ids_, scaled_tolerance_side_touched_edges);
       }
@@ -4191,7 +4191,7 @@ namespace CORE::GEO::CUT::KERNEL
       // if touches more than one edge
       if (touched_edges_ids_.size() >= 2)
       {
-        if (sideLocation_.WithinSide())
+        if (side_location_.WithinSide())
         {
           CORE::LINALG::Matrix<dimSide, 1, CORE::CLN::ClnWrapper> zero_tolerance_side;
           // this means we are on the outer boundary of the tolerance
@@ -4228,7 +4228,7 @@ namespace CORE::GEO::CUT::KERNEL
             if (min_dist > NON_TOPOLOGICAL_TOLERANCE)
             {
               touched_edges_ids_.clear();
-              sideLocation_ = PointOnSurfaceLoc(false, true);
+              side_location_ = PointOnSurfaceLoc(false, true);
               std::stringstream msg;
               msg << "NOTICE: Intersection point is close to 2 side edges, but too far from "
                      "the corner point"
@@ -4305,10 +4305,10 @@ namespace CORE::GEO::CUT::KERNEL
     bool cond_infinity_;
 
     // determines location of this point with respect to the edge that cuts it
-    PointOnSurfaceLoc sideLocation_;
+    PointOnSurfaceLoc side_location_;
 
     // determines location of this point with respect to the side that cuts it
-    PointOnSurfaceLoc edgeLocation_;
+    PointOnSurfaceLoc edge_location_;
 
     // sizes of cln variables with different preciion
     static size_t cln_sizes_[CLN_LIMIT_ITER];
@@ -4374,8 +4374,8 @@ namespace CORE::GEO::CUT::KERNEL
                 clncalc(xsi_, checklimits_);
             bool clnsolved = clncalc(xyze_side, xyze_edge);
             conv = clnsolved;
-            edgeLocation_ = clncalc.GetEdgeLocation();
-            sideLocation_ = clncalc.GetSideLocation();
+            edge_location_ = clncalc.GetEdgeLocation();
+            side_location_ = clncalc.GetSideLocation();
             cond_infinity_ = clncalc.IsConditionInfinity();
             touched_edges_ids_.clear();
             const std::vector<int>& touched_edges_ids_cln = clncalc.GetTouchedSideEdges();
@@ -4423,9 +4423,9 @@ namespace CORE::GEO::CUT::KERNEL
 
     void WritetoGmsh(std::ofstream& file) { Strategy::WritetoGmsh(file); }
 
-    PointOnSurfaceLoc GetSideLocation() { return sideLocation_; }
+    PointOnSurfaceLoc GetSideLocation() { return side_location_; }
 
-    PointOnSurfaceLoc GetEdgeLocation() { return edgeLocation_; }
+    PointOnSurfaceLoc GetEdgeLocation() { return edge_location_; }
 
     bool IsConditionInfinity() { return cond_infinity_; }
 
@@ -4458,10 +4458,10 @@ namespace CORE::GEO::CUT::KERNEL
       real_tolerance(1) = 0.0;
       real_tolerance(2) = 0.0;
       if (WithinLimitsSplittedQuad<sideType>(xsi_, real_tolerance))
-        sideLocation_triangle_split_ = PointOnSurfaceLoc(true, true);
+        side_location_triangle_split_ = PointOnSurfaceLoc(true, true);
       else
-        sideLocation_triangle_split_ = PointOnSurfaceLoc(false, true);
-      return sideLocation_triangle_split_;
+        side_location_triangle_split_ = PointOnSurfaceLoc(false, true);
+      return side_location_triangle_split_;
     }
 
     // Distance between edges in edge-edge intersection
@@ -4494,18 +4494,18 @@ namespace CORE::GEO::CUT::KERNEL
       }
       // compute inside-outside relation
       if (WithinLimits<sideType>(xsi, scaled_tolerance_side))
-        sideLocation_ = PointOnSurfaceLoc(true, true);
+        side_location_ = PointOnSurfaceLoc(true, true);
       else
-        sideLocation_ = PointOnSurfaceLoc(false, true);
+        side_location_ = PointOnSurfaceLoc(false, true);
       const CORE::LINALG::Matrix<dimEdge, 1> xsi_line(xsi.A() + dimSide, true);
       if (WithinLimits<edgeType>(xsi_line, scaled_tolerance_edge))
-        edgeLocation_ = PointOnSurfaceLoc(true, true);
+        edge_location_ = PointOnSurfaceLoc(true, true);
       else
-        edgeLocation_ = PointOnSurfaceLoc(false, true);
+        edge_location_ = PointOnSurfaceLoc(false, true);
       if (probDim > dimEdge + dimSide) distance_between_ = Strategy::DistanceBetween();
 
       touched_edges_ids_.clear();
-      if (sideLocation_.WithinSide())
+      if (side_location_.WithinSide())
       {
         GetEdgesAt<sideType>(xsi, touched_edges_ids_, scaled_tolerance_side_touched_edges);
       }
@@ -4565,13 +4565,13 @@ namespace CORE::GEO::CUT::KERNEL
     static std::vector<int> touched_edges_ids_;
 
     // determines location of this point with respect to the edge that cuts it
-    PointOnSurfaceLoc sideLocation_;
+    PointOnSurfaceLoc side_location_;
 
     // determines location of this point with respect to the side that cuts it
-    PointOnSurfaceLoc edgeLocation_;
+    PointOnSurfaceLoc edge_location_;
     // determines location of this point, with extended tolerance over side, that is shared for
     // another triangle (only for tri3)
-    PointOnSurfaceLoc sideLocation_triangle_split_;
+    PointOnSurfaceLoc side_location_triangle_split_;
 
     // if condition number is infinity or not
     bool cond_infinity_;

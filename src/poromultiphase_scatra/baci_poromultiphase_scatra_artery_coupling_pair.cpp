@@ -47,7 +47,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distype
       element1_(nullptr),
       element2_(nullptr),
       arterydiamref_(0.0),
-      arterydiamAtGP_(0.0),
+      arterydiam_at_gp_(0.0),
       numdof_cont_(0),
       numdof_art_(0),
       dim1_(0),
@@ -355,7 +355,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       arterymat_ = Teuchos::rcp_static_cast<MAT::Cnst1dArt>(element1_->Material(0));
       if (arterymat_ == Teuchos::null)
         FOUR_C_THROW("cast to artery material failed for porofluid-artery coupling!");
-      arterydiamAtGP_ = arterymat_->Diam();
+      arterydiam_at_gp_ = arterymat_->Diam();
       arterydiamref_ = arterymat_->DiamInitial();
       arterydens = arterymat_->Density();
 
@@ -413,7 +413,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       arterymat_ = Teuchos::rcp_static_cast<MAT::Cnst1dArt>(element1_->Material(1));
       if (arterymat_ == Teuchos::null)
         FOUR_C_THROW("cast to artery material failed for arteryscatra-scatra coupling!");
-      arterydiamAtGP_ = arterymat_->Diam();
+      arterydiam_at_gp_ = arterymat_->Diam();
       arterydiamref_ = arterymat_->DiamInitial();
       arterydens = arterymat_->Density();
       break;
@@ -665,7 +665,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   eta_.resize(n_gp_);
   eta_s_.resize(n_gp_);
   wgp_.resize(n_gp_);
-  invJ_.resize(n_gp_);
+  inv_j_.resize(n_gp_);
   xi_.resize(n_gp_);
   for (int i_gp = 0; i_gp < n_gp_; i_gp++) xi_[i_gp].resize(numdim_);
 
@@ -700,8 +700,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
     // compute (dX/dxi)^-1
     Get2D3DShapeFunctions<double>(N2, N2_xi, xi_[i_gp]);
-    invJ_[i_gp].MultiplyNT(N2_xi, ele2pos_);
-    invJ_[i_gp].Invert();
+    inv_j_[i_gp].MultiplyNT(N2_xi, ele2pos_);
+    inv_j_[i_gp].Invert();
   }
 }
 
@@ -1126,7 +1126,7 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
     const std::vector<double> xi = xi_[i_gp];
     Get2D3DShapeFunctions<double>(N2, N2_xi, xi);
     // dN/dX = dN/dxi * dxi/dX = dN/dxi * (dX/dxi)^-1
-    N2_XYZ.Multiply(invJ_[i_gp], N2_xi);
+    N2_XYZ.Multiply(inv_j_[i_gp], N2_xi);
     // dx/dX = x * N_XYZ^T
     defgrad.MultiplyNT(ele2pos_, N2_XYZ);
     Ft0.Multiply(defgrad, lambda0_);
@@ -1260,10 +1260,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   {
     if (!constant_part_evaluated_)
     {
-      GPTS_NTP_stiffmat11_.shape(0, 0);
-      GPTS_NTP_stiffmat12_.shape(0, 0);
-      GPTS_NTP_stiffmat21_.shape(0, 0);
-      GPTS_NTP_stiffmat22_.shape(0, 0);
+      gpts_ntp_stiffmat11_.shape(0, 0);
+      gpts_ntp_stiffmat12_.shape(0, 0);
+      gpts_ntp_stiffmat21_.shape(0, 0);
+      gpts_ntp_stiffmat22_.shape(0, 0);
     }
 
     // we only have to this once if evaluated in reference configuration
@@ -1276,10 +1276,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       static CORE::LINALG::Matrix<1, numnodescont_> N2(true);           // = N2
       static CORE::LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
 
-      GPTS_NTP_stiffmat11_.shape(dim1_, dim1_);
-      GPTS_NTP_stiffmat12_.shape(dim1_, dim2_);
-      GPTS_NTP_stiffmat21_.shape(dim2_, dim1_);
-      GPTS_NTP_stiffmat22_.shape(dim2_, dim2_);
+      gpts_ntp_stiffmat11_.shape(dim1_, dim1_);
+      gpts_ntp_stiffmat12_.shape(dim1_, dim2_);
+      gpts_ntp_stiffmat21_.shape(dim2_, dim1_);
+      gpts_ntp_stiffmat22_.shape(dim2_, dim2_);
 
       const double curr_seg_length = segmentlengths[segmentid_];
 
@@ -1320,10 +1320,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   {
     if (!constant_part_evaluated_)
     {
-      GPTS_NTP_stiffmat11_.shape(0, 0);
-      GPTS_NTP_stiffmat12_.shape(0, 0);
-      GPTS_NTP_stiffmat21_.shape(0, 0);
-      GPTS_NTP_stiffmat22_.shape(0, 0);
+      gpts_ntp_stiffmat11_.shape(0, 0);
+      gpts_ntp_stiffmat12_.shape(0, 0);
+      gpts_ntp_stiffmat21_.shape(0, 0);
+      gpts_ntp_stiffmat22_.shape(0, 0);
     }
 
     // we only have to this once if evaluated in reference configuration
@@ -1336,10 +1336,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       static CORE::LINALG::Matrix<1, numnodescont_> N2(true);           // = N2
       static CORE::LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
 
-      GPTS_NTP_stiffmat11_.shape(dim1_, dim1_);
-      GPTS_NTP_stiffmat12_.shape(dim1_, dim2_);
-      GPTS_NTP_stiffmat21_.shape(dim2_, dim1_);
-      GPTS_NTP_stiffmat22_.shape(dim2_, dim2_);
+      gpts_ntp_stiffmat11_.shape(dim1_, dim1_);
+      gpts_ntp_stiffmat12_.shape(dim1_, dim2_);
+      gpts_ntp_stiffmat21_.shape(dim2_, dim1_);
+      gpts_ntp_stiffmat22_.shape(dim2_, dim2_);
 
 
       // Get constant values from projection
@@ -1381,8 +1381,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     // initialize
     if (!constant_part_evaluated_)
     {
-      D_.shape(0, 0);
-      M_.shape(0, 0);
+      d_.shape(0, 0);
+      m_.shape(0, 0);
     }
     // we only have to this once if evaluated in reference configuration
     if (!constant_part_evaluated_ or !evaluate_in_ref_config_)
@@ -1394,9 +1394,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       static CORE::LINALG::Matrix<1, numnodescont_> N2(true);           // = N2
       static CORE::LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
 
-      D_.shape(dim1_, dim1_);
-      M_.shape(dim1_, dim2_);
-      Kappa_.size(dim1_);
+      d_.shape(dim1_, dim1_);
+      m_.shape(dim1_, dim2_);
+      kappa_.size(dim1_);
 
       const double curr_seg_length = segmentlengths[segmentid_];
 
@@ -1583,7 +1583,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_art_ * pp * jacobi * w_gp * N1(i) * N1(j);
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_NTP_stiffmat11_(i * numdof_art_ + coupleddofs_art_[dof],
+        gpts_ntp_stiffmat11_(i * numdof_art_ + coupleddofs_art_[dof],
             j * numdof_art_ + coupleddofs_art_[dof]) += stiff;
     }
   }
@@ -1595,7 +1595,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_art_ * pp * jacobi * w_gp * N1(i) * (-N2(j));
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_NTP_stiffmat12_(i * numdof_art_ + coupleddofs_art_[dof],
+        gpts_ntp_stiffmat12_(i * numdof_art_ + coupleddofs_art_[dof],
             j * numdof_cont_ + coupleddofs_cont_[dof]) += stiff;
     }
   }
@@ -1607,7 +1607,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_cont_ * pp * jacobi * w_gp * N2(i) * (-N1(j));
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_NTP_stiffmat21_(i * numdof_cont_ + coupleddofs_cont_[dof],
+        gpts_ntp_stiffmat21_(i * numdof_cont_ + coupleddofs_cont_[dof],
             j * numdof_art_ + coupleddofs_art_[dof]) += stiff;
     }
   }
@@ -1619,7 +1619,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_cont_ * pp * jacobi * w_gp * N2(i) * N2(j);
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_NTP_stiffmat22_(i * numdof_cont_ + coupleddofs_cont_[dof],
+        gpts_ntp_stiffmat22_(i * numdof_cont_ + coupleddofs_cont_[dof],
             j * numdof_cont_ + coupleddofs_cont_[dof]) += stiff;
     }
   }
@@ -1641,7 +1641,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_art_ * pp * N1(i) * N1(j);
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_NTP_stiffmat11_(i * numdof_art_ + coupleddofs_art_[dof],
+        gpts_ntp_stiffmat11_(i * numdof_art_ + coupleddofs_art_[dof],
             j * numdof_art_ + coupleddofs_art_[dof]) += stiff;
     }
   }
@@ -1653,7 +1653,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_art_ * pp * N1(i) * (-N2(j));
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_NTP_stiffmat12_(i * numdof_art_ + coupleddofs_art_[dof],
+        gpts_ntp_stiffmat12_(i * numdof_art_ + coupleddofs_art_[dof],
             j * numdof_cont_ + coupleddofs_cont_[dof]) += stiff;
     }
   }
@@ -1665,7 +1665,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_cont_ * pp * N2(i) * (-N1(j));
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_NTP_stiffmat21_(i * numdof_cont_ + coupleddofs_cont_[dof],
+        gpts_ntp_stiffmat21_(i * numdof_cont_ + coupleddofs_cont_[dof],
             j * numdof_art_ + coupleddofs_art_[dof]) += stiff;
     }
   }
@@ -1677,7 +1677,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double stiff = timefacrhs_cont_ * pp * N2(i) * N2(j);
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        GPTS_NTP_stiffmat22_(i * numdof_cont_ + coupleddofs_cont_[dof],
+        gpts_ntp_stiffmat22_(i * numdof_cont_ + coupleddofs_cont_[dof],
             j * numdof_cont_ + coupleddofs_cont_[dof]) += stiff;
     }
   }
@@ -1696,7 +1696,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   for (unsigned int inode = 0; inode < numnodesart_; inode++)
   {
     const double mykappa = w_gp * jacobi * N1(inode);
-    for (int dof = 0; dof < numdof_art_; dof++) Kappa_(inode * numdof_art_ + dof) += mykappa;
+    for (int dof = 0; dof < numdof_art_; dof++) kappa_(inode * numdof_art_ + dof) += mykappa;
   }
 
   // Evaluate element mortar coupling operator D = N_1^T * N_1
@@ -1706,7 +1706,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double D = jacobi * w_gp * N1(i) * N1(j);
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        D_(i * numdof_art_ + coupleddofs_art_[dof], j * numdof_art_ + coupleddofs_art_[dof]) += D;
+        d_(i * numdof_art_ + coupleddofs_art_[dof], j * numdof_art_ + coupleddofs_art_[dof]) += D;
     }
   }
 
@@ -1717,7 +1717,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       const double M = jacobi * w_gp * N1(i) * N2(j);
       for (int dof = 0; dof < numcoupleddofs_; dof++)
-        M_(i * numdof_art_ + coupleddofs_art_[dof], j * numdof_cont_ + coupleddofs_cont_[dof]) += M;
+        m_(i * numdof_art_ + coupleddofs_art_[dof], j * numdof_cont_ + coupleddofs_cont_[dof]) += M;
     }
   }
 
@@ -1757,10 +1757,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
     CORE::LINALG::SerialDenseMatrix& stiffmat22)
 {
-  stiffmat11.assign(GPTS_NTP_stiffmat11_);
-  stiffmat12.assign(GPTS_NTP_stiffmat12_);
-  stiffmat21.assign(GPTS_NTP_stiffmat21_);
-  stiffmat22.assign(GPTS_NTP_stiffmat22_);
+  stiffmat11.assign(gpts_ntp_stiffmat11_);
+  stiffmat12.assign(gpts_ntp_stiffmat12_);
+  stiffmat21.assign(gpts_ntp_stiffmat21_);
+  stiffmat22.assign(gpts_ntp_stiffmat22_);
 }
 
 
@@ -1817,9 +1817,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     dim>::UpdateDMKappa(CORE::LINALG::SerialDenseMatrix& D_ele,
     CORE::LINALG::SerialDenseMatrix& M_ele, CORE::LINALG::SerialDenseVector& Kappa_ele)
 {
-  D_ele.assign(D_);
-  M_ele.assign(M_);
-  Kappa_ele.assign(Kappa_);
+  D_ele.assign(d_);
+  M_ele.assign(m_);
+  Kappa_ele.assign(kappa_);
 
   for (int idof = 0; idof < numcoupleddofs_; idof++)
   {
@@ -1870,7 +1870,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   {
     EvaluateDiamFunctionAndDeriv(artpressAtGP, w_gp, N1, N2, jacobi);
     // integral is only calculated in this case
-    if (coupltype_ == type_porofluid) integrated_diam += w_gp * jacobi * arterydiamAtGP_;
+    if (coupltype_ == type_porofluid) integrated_diam += w_gp * jacobi * arterydiam_at_gp_;
   }
 
   // artery functions
@@ -1930,7 +1930,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   SetFluidValuesAsVariables(variables, artpressnpAtGP);
 
   // evaluate the diameter at GP by evaluating the function
-  arterydiamAtGP_ = artdiam_funct_->Evaluate(variables, constants, 0);
+  arterydiam_at_gp_ = artdiam_funct_->Evaluate(variables, constants, 0);
 
   // derivatives and linearizations are so far only calculated for coupltype porofluid
   if (coupltype_ == type_porofluid)
@@ -2354,7 +2354,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           std::pair<std::string, double>("Dprev", arterymat_->DiamPreviousTimeStep()));
 
       // set artery diameter as variable
-      variables.push_back(std::pair<std::string, double>("D", arterydiamAtGP_));
+      variables.push_back(std::pair<std::string, double>("D", arterydiam_at_gp_));
 
       // evaluate the reaction term
       functval = funct.Evaluate(variables, constants, 0);
@@ -2479,7 +2479,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   constants.push_back(std::pair<std::string, double>(artpressname_, artpressnpAtGP));
 
   // set artery diameter as constant
-  constants.push_back(std::pair<std::string, double>("D", arterydiamAtGP_));
+  constants.push_back(std::pair<std::string, double>("D", arterydiam_at_gp_));
 
   // set reference artery diameter as constant
   constants.push_back(std::pair<std::string, double>("D0", arterydiamref_));

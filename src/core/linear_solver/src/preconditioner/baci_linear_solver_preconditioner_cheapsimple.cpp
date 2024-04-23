@@ -50,8 +50,8 @@ using NO = Node;
 CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::CheapSimpleBlockPreconditioner(
     Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& predict_list,
     const Teuchos::ParameterList& correct_list)
-    : predictSolver_list_(predict_list),
-      schurSolver_list_(correct_list),
+    : predict_solver_list_(predict_list),
+      schur_solver_list_(correct_list),
       alpha_(SIMPLER_ALPHA),
       vdw_(false),
       pdw_(false),
@@ -86,12 +86,12 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
   const int myrank = A->Comm().MyPID();
   Teuchos::Time time("", true);
   Teuchos::Time totaltime("", true);
-  const bool visml = predictSolver_list_.isSublist("ML Parameters");
-  const bool pisml = schurSolver_list_.isSublist("ML Parameters");
-  const bool vismuelu = predictSolver_list_.isSublist("MueLu Parameters");
-  const bool pismuelu = schurSolver_list_.isSublist("MueLu Parameters");
-  const bool visifpack = predictSolver_list_.isSublist("IFPACK Parameters");
-  const bool pisifpack = schurSolver_list_.isSublist("IFPACK Parameters");
+  const bool visml = predict_solver_list_.isSublist("ML Parameters");
+  const bool pisml = schur_solver_list_.isSublist("ML Parameters");
+  const bool vismuelu = predict_solver_list_.isSublist("MueLu Parameters");
+  const bool pismuelu = schur_solver_list_.isSublist("MueLu Parameters");
+  const bool visifpack = predict_solver_list_.isSublist("IFPACK Parameters");
+  const bool pisifpack = schur_solver_list_.isSublist("IFPACK Parameters");
 
   if (!visml && !visifpack && !vismuelu)
     FOUR_C_THROW("Have to use either ML or Ifpack for velocities");
@@ -101,14 +101,14 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
   //-------------------------------------------------------------------------
   // either do manual split or use provided BlockSparseMatrixBase
   //-------------------------------------------------------------------------
-  A_ = Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(A);
-  if (A_ != Teuchos::null)
+  a_ = Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(A);
+  if (a_ != Teuchos::null)
   {
     // Make a shallow copy of the block matrix as the preconditioners on the
     // blocks will be reused and the next assembly will replace the block
     // matrices.
-    A_ = A_->Clone(CORE::LINALG::View);
-    mmex_ = A_->RangeExtractor();
+    a_ = a_->Clone(CORE::LINALG::View);
+    mmex_ = a_->RangeExtractor();
   }
 
   // if the MESHTYING, CONTACT or CONSTRAINT flag is set,
@@ -118,8 +118,8 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
   // Modify lists to reuse subblock preconditioner at least maxiter times
   //-------------------------------------------------------------------------
   {
-    int maxiter = predictSolver_list_.sublist("Belos Parameters").get("Maximum Iterations", 1);
-    predictSolver_list_.sublist("Belos Parameters").set("reuse", maxiter + 1);
+    int maxiter = predict_solver_list_.sublist("Belos Parameters").get("Maximum Iterations", 1);
+    predict_solver_list_.sublist("Belos Parameters").set("reuse", maxiter + 1);
   }
 
 #if SIMPLEC_DIAGONAL
@@ -128,10 +128,10 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
   //-------------------------------------------------------------------------
   {
     Epetra_Vector diag(*mmex_.Map(0), false);
-    Teuchos::RCP<Epetra_CrsMatrix> A00 = (*A_)(0, 0).EpetraMatrix();
+    Teuchos::RCP<Epetra_CrsMatrix> A00 = (*a_)(0, 0).EpetraMatrix();
     A00->InvRowSums(diag);
-    diagAinv_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(diag));
-    diagAinv_->Complete(*mmex_.Map(0), *mmex_.Map(0));
+    diag_ainv_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(diag));
+    diag_ainv_->Complete(*mmex_.Map(0), *mmex_.Map(0));
   }
 #else
   //-------------------------------------------------------------------------
@@ -159,11 +159,11 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
     // with Trilinos Q1/2013 there are some improvements in EpetraExt MM.
     // However, they lead to a crash here -> use MLMultiply instead.
     // S_ = CORE::LINALG::Multiply(*diagAinv_,false,(*A_)(0,1),false,true);
-    S_ = CORE::LINALG::MLMultiply(*diagAinv_, (*A_)(0, 1), true);
+    s_ = CORE::LINALG::MLMultiply(*diag_ainv_, (*a_)(0, 1), true);
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = diagAinv * A(0,1) %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
-    S_ = CORE::LINALG::MLMultiply((*A_)(1, 0), *S_, false);
+    s_ = CORE::LINALG::MLMultiply((*a_)(1, 0), *s_, false);
     // The CORE::LINALG::Multiply method would consume a HUGE amount of memory!!!
     // So always use CORE::LINALG::MLMultiply in the line above! Otherwise you won't be able
     // to solve any large linear problem since you'll definitely run out of memory.
@@ -171,11 +171,11 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = A(1,0) * S (ML)   %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
-    S_->Add((*A_)(1, 1), false, 1.0, -1.0);
+    s_->Add((*a_)(1, 1), false, 1.0, -1.0);
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = A(1,1) - S        %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
-    S_->Complete((*A_)(1, 1).DomainMap(), (*A_)(1, 1).RangeMap());
+    s_->Complete((*a_)(1, 1).DomainMap(), (*a_)(1, 1).RangeMap());
     if (!myrank && SIMPLER_TIMING)
       printf("*** S complete            %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
@@ -188,17 +188,17 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
   {
     Epetra_CrsMatrix* A00 = nullptr;
     Epetra_CrsMatrix* A11 = nullptr;
-    A00 = (*A_)(0, 0).EpetraMatrix().get();
-    A11 = S_->EpetraMatrix().get();
+    A00 = (*a_)(0, 0).EpetraMatrix().get();
+    A11 = s_->EpetraMatrix().get();
 
     //-------------------------------------------------------------------------
     // Allocate preconditioner for pressure and velocity
     //-------------------------------------------------------------------------
     if (visml)
     {
-      predictSolver_list_.sublist("ML Parameters").remove("init smoother", false);
-      Ppredict_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(
-          *A00, predictSolver_list_.sublist("ML Parameters"), true));
+      predict_solver_list_.sublist("ML Parameters").remove("init smoother", false);
+      ppredict_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(
+          *A00, predict_solver_list_.sublist("ML Parameters"), true));
     }
     else if (vismuelu)
     {
@@ -214,7 +214,7 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
 
       // Create MueLu preconditioner:  using ML like input or xml files
       Teuchos::RCP<MueLu::Hierarchy<SC, LO, GO, NO>> H = Teuchos::null;
-      Teuchos::ParameterList& MueLuList = predictSolver_list_.sublist("MueLu Parameters");
+      Teuchos::ParameterList& MueLuList = predict_solver_list_.sublist("MueLu Parameters");
       std::string xmlFileName = MueLuList.get<std::string>("xml file", "none");
       if (xmlFileName == "none")
       {
@@ -255,18 +255,18 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
       }
 
       // set preconditioner
-      Ppredict_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+      ppredict_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
     }
     else
     {
       std::string type =
-          predictSolver_list_.sublist("Belos Parameters").get("Preconditioner Type", "ILU");
+          predict_solver_list_.sublist("Belos Parameters").get("Preconditioner Type", "ILU");
       Ifpack factory;
       Ifpack_Preconditioner* prec = factory.Create(type, A00, 0);
-      prec->SetParameters(predictSolver_list_.sublist("IFPACK Parameters"));
+      prec->SetParameters(predict_solver_list_.sublist("IFPACK Parameters"));
       prec->Initialize();
       prec->Compute();
-      Ppredict_ = Teuchos::rcp(prec);
+      ppredict_ = Teuchos::rcp(prec);
     }
     if (!myrank && SIMPLER_TIMING)
       printf("--- Time to do P(v)         %10.3E\n", time.totalElapsedTime(true));
@@ -274,9 +274,9 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
 
     if (pisml)
     {
-      schurSolver_list_.sublist("ML Parameters").remove("init smoother", false);
-      Pschur_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(
-          *A11, schurSolver_list_.sublist("ML Parameters"), true));
+      schur_solver_list_.sublist("ML Parameters").remove("init smoother", false);
+      pschur_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(
+          *A11, schur_solver_list_.sublist("ML Parameters"), true));
     }
     else if (pismuelu)
     {
@@ -292,7 +292,7 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
 
       // Create MueLu preconditioner:  using ML like input or xml files
       Teuchos::RCP<MueLu::Hierarchy<SC, LO, GO, NO>> H = Teuchos::null;
-      Teuchos::ParameterList& MueLuList = schurSolver_list_.sublist("MueLu Parameters");
+      Teuchos::ParameterList& MueLuList = schur_solver_list_.sublist("MueLu Parameters");
       std::string xmlFileName = MueLuList.get<std::string>("xml file", "none");
       if (xmlFileName == "none")
       {
@@ -333,18 +333,18 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Setup(Teuchos::RCP<Epe
       }
 
       // set preconditioner
-      Pschur_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+      pschur_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
     }
     else
     {
       Ifpack factory;
       std::string type =
-          schurSolver_list_.sublist("Belos Parameters").get("Preconditioner Type", "ILU");
+          schur_solver_list_.sublist("Belos Parameters").get("Preconditioner Type", "ILU");
       Ifpack_Preconditioner* prec = factory.Create(type, A11, 0);
-      prec->SetParameters(schurSolver_list_.sublist("IFPACK Parameters"));
+      prec->SetParameters(schur_solver_list_.sublist("IFPACK Parameters"));
       prec->Initialize();
       prec->Compute();
-      Pschur_ = Teuchos::rcp(prec);
+      pschur_ = Teuchos::rcp(prec);
     }
     if (!myrank && SIMPLER_TIMING)
       printf("--- Time to do P(p)         %10.3E\n", time.totalElapsedTime(true));
@@ -427,11 +427,11 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Simpler(CORE::LINALG::
     CORE::LINALG::ANA::Vector& pb) const
 {
   using namespace CORE::LINALG::ANA;
-  CORE::LINALG::SparseMatrix& A00 = (*A_)(0, 0);
-  CORE::LINALG::SparseMatrix& A10 = (*A_)(1, 0);
-  CORE::LINALG::SparseMatrix& A01 = (*A_)(0, 1);
-  CORE::LINALG::SparseMatrix& diagAinv = *diagAinv_;
-  CORE::LINALG::SparseMatrix& S = *S_;
+  CORE::LINALG::SparseMatrix& A00 = (*a_)(0, 0);
+  CORE::LINALG::SparseMatrix& A10 = (*a_)(1, 0);
+  CORE::LINALG::SparseMatrix& A01 = (*a_)(0, 1);
+  CORE::LINALG::SparseMatrix& diagAinv = *diag_ainv_;
+  CORE::LINALG::SparseMatrix& S = *s_;
 
   //-------------------------------------------------- L-solve / U-solve
 
@@ -461,11 +461,11 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::Simple(CORE::LINALG::A
     CORE::LINALG::ANA::Vector& pb) const
 {
   using namespace CORE::LINALG::ANA;
-  CORE::LINALG::SparseMatrix& A00 = (*A_)(0, 0);
-  CORE::LINALG::SparseMatrix& A10 = (*A_)(1, 0);
-  CORE::LINALG::SparseMatrix& A01 = (*A_)(0, 1);
-  CORE::LINALG::SparseMatrix& diagAinv = *diagAinv_;
-  CORE::LINALG::SparseMatrix& S = *S_;
+  CORE::LINALG::SparseMatrix& A00 = (*a_)(0, 0);
+  CORE::LINALG::SparseMatrix& A10 = (*a_)(1, 0);
+  CORE::LINALG::SparseMatrix& A01 = (*a_)(0, 1);
+  CORE::LINALG::SparseMatrix& diagAinv = *diag_ainv_;
+  CORE::LINALG::SparseMatrix& S = *s_;
 
 
   //------------------------------------------------------------ L-solve
@@ -496,30 +496,30 @@ void CORE::LINEAR_SOLVER::CheapSimpleBlockPreconditioner::CheapSimple(CORE::LINA
     CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
     CORE::LINALG::ANA::Vector& pb) const
 {
-  CORE::LINALG::SparseMatrix& A10 = (*A_)(1, 0);
-  CORE::LINALG::SparseMatrix& A01 = (*A_)(0, 1);
-  CORE::LINALG::SparseMatrix& diagAinv = *diagAinv_;
+  CORE::LINALG::SparseMatrix& A10 = (*a_)(1, 0);
+  CORE::LINALG::SparseMatrix& A01 = (*a_)(0, 1);
+  CORE::LINALG::SparseMatrix& diagAinv = *diag_ainv_;
 
   //------------------------------------------------------------ L-solve
   if (vdw_)
   {
     vdwind_->Permute(&vb, &*vdwin_);
-    Ppredict_->ApplyInverse(*vdwin_, *vdwout_);
+    ppredict_->ApplyInverse(*vdwin_, *vdwout_);
     vdwind_->InvPermute(&*vdwout_, &*vwork1_);
   }
   else
-    Ppredict_->ApplyInverse(vb, *vwork1_);
+    ppredict_->ApplyInverse(vb, *vwork1_);
 
   *pwork1_ = pb - A10 * vwork1_;
 
   if (pdw_)
   {
     pdwind_->Permute(&*pwork1_, &*pdwin_);
-    Pschur_->ApplyInverse(*pdwin_, *pdwout_);
+    pschur_->ApplyInverse(*pdwin_, *pdwout_);
     pdwind_->InvPermute(&*pdwout_, &px);
   }
   else
-    Pschur_->ApplyInverse(*pwork1_, px);
+    pschur_->ApplyInverse(*pwork1_, px);
 
   //------------------------------------------------------------ U-solve
 

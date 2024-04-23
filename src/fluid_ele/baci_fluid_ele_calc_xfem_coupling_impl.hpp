@@ -769,15 +769,15 @@ namespace DRT
         const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem_;
 
         CORE::LINALG::Matrix<master_numdof_ * nen_, master_numdof_ * nen_>
-            C_umum_;  ///< coupling matrix C_umum
+            c_umum_;  ///< coupling matrix C_umum
         CORE::LINALG::Matrix<slave_numdof * slave_nen_, master_numdof_ * nen_>
-            C_usum_;  ///< coupling matrix C_usum
+            c_usum_;  ///< coupling matrix C_usum
         CORE::LINALG::Matrix<master_numdof_ * nen_, slave_numdof * slave_nen_>
-            C_umus_;  ///< coupling matrix C_umus
+            c_umus_;  ///< coupling matrix C_umus
         CORE::LINALG::Matrix<slave_numdof * slave_nen_, slave_numdof * slave_nen_>
-            C_usus_;                                                 ///< coupling matrix C_usus
-        CORE::LINALG::Matrix<master_numdof_ * nen_, 1> rhC_um_;      ///< coupling rhs rhC_um
-        CORE::LINALG::Matrix<slave_numdof * slave_nen_, 1> rhC_us_;  ///< coupling rhs rhC_us
+            c_usus_;                                                  ///< coupling matrix C_usus
+        CORE::LINALG::Matrix<master_numdof_ * nen_, 1> rh_c_um_;      ///< coupling rhs rhC_um
+        CORE::LINALG::Matrix<slave_numdof * slave_nen_, 1> rh_c_us_;  ///< coupling rhs rhC_us
 
         /// scaling of Nitsche's adjoint viscous term
         const double adj_visc_scale_;
@@ -876,7 +876,7 @@ namespace DRT
         // AdjointNeumann help variables
         CORE::LINALG::Matrix<nen_, 1> normal_deriv_m_;  // 2.0 * half_normal(k) * derxy_m(k,ix)
         CORE::LINALG::Matrix<nen_, nen_>
-            derxy_m_P_derxy_m_;  // 2.0 * derxy_m(j,IC) P^t_{jk} *
+            derxy_m_p_derxy_m_;  // 2.0 * derxy_m(j,IC) P^t_{jk} *
                                  // derxy_m(k,IR) * mu_m * timefacfac * km
 
         double velint_diff_normal_pres_timefacfac_;

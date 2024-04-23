@@ -135,12 +135,12 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
               "energy vector of invalid size %i, expected row dimension 1 (total elastic energy of "
               "element)!",
               elevec1.numRows());
-        elevec1(0) = Eint_;
+        elevec1(0) = eint_;
       }
       else if (IsParamsInterface())  // new structural time integration
       {
-        ParamsInterface().AddContributionToEnergyType(Eint_, STR::internal_energy);
-        ParamsInterface().AddContributionToEnergyType(Ekin_, STR::kinetic_energy);
+        ParamsInterface().AddContributionToEnergyType(eint_, STR::internal_energy);
+        ParamsInterface().AddContributionToEnergyType(ekin_, STR::kinetic_energy);
       }
       break;
     }
@@ -370,16 +370,16 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
        * dynamic equilibrium has finally been found; this is the point where the variable
        * representing the geometric status of the beam at the end of the time step has to be
        * stored*/
-      Qconvnode_ = Qnewnode_;
-      QconvGPmass_ = QnewGPmass_;
-      wconvGPmass_ = wnewGPmass_;
-      aconvGPmass_ = anewGPmass_;
-      amodconvGPmass_ = amodnewGPmass_;
-      rttconvGPmass_ = rttnewGPmass_;
-      rttmodconvGPmass_ = rttmodnewGPmass_;
-      rtconvGPmass_ = rtnewGPmass_;
-      rconvGPmass_ = rnewGPmass_;
-      QconvGPdampstoch_ = QnewGPdampstoch_;
+      qconvnode_ = qnewnode_;
+      qconv_gp_mass_ = qnew_gp_mass_;
+      wconv_gp_mass_ = wnew_gp_mass_;
+      aconv_gp_mass_ = anew_gp_mass_;
+      amodconv_gp_mass_ = amodnew_gp_mass_;
+      rttconv_gp_mass_ = rttnew_gp_mass_;
+      rttmodconv_gp_mass_ = rttmodnew_gp_mass_;
+      rtconv_gp_mass_ = rtnew_gp_mass_;
+      rconv_gp_mass_ = rnew_gp_mass_;
+      qconv_gp_dampstoch_ = qnew_gp_dampstoch_;
       GetBeamMaterial().Update();
       break;
     }
@@ -393,16 +393,16 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
        * further iteration step; as a consequence the thereby generated change of the geometric
        * configuration should be canceled and the configuration should be reset to the value at the
        * beginning of the time step*/
-      Qnewnode_ = Qconvnode_;
-      QnewGPmass_ = QconvGPmass_;
-      wnewGPmass_ = wconvGPmass_;
-      anewGPmass_ = aconvGPmass_;
-      amodnewGPmass_ = amodconvGPmass_;
-      rttnewGPmass_ = rttconvGPmass_;
-      rttmodnewGPmass_ = rttmodconvGPmass_;
-      rtnewGPmass_ = rtconvGPmass_;
-      rnewGPmass_ = rconvGPmass_;
-      QnewGPdampstoch_ = QconvGPdampstoch_;
+      qnewnode_ = qconvnode_;
+      qnew_gp_mass_ = qconv_gp_mass_;
+      wnew_gp_mass_ = wconv_gp_mass_;
+      anew_gp_mass_ = aconv_gp_mass_;
+      amodnew_gp_mass_ = amodconv_gp_mass_;
+      rttnew_gp_mass_ = rttconv_gp_mass_;
+      rttmodnew_gp_mass_ = rttmodconv_gp_mass_;
+      rtnew_gp_mass_ = rtconv_gp_mass_;
+      rnew_gp_mass_ = rconv_gp_mass_;
+      qnew_gp_dampstoch_ = qconv_gp_dampstoch_;
       GetBeamMaterial().Reset();
       break;
     }
@@ -637,7 +637,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
     }
 
     double fac = 0;
-    fac = wgt * jacobiGPneumannline_[numgp];
+    fac = wgt * jacobi_gp_neumannline_[numgp];
 
     // load vector ar
     double ar[6];
@@ -747,7 +747,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
 {
   const unsigned int numdofelement = 3 * vpernode * nnodecl + 3 * nnodetriad;
 
-  if (not useFAD_)
+  if (not use_fad_)
   {
     // internal force vector
     CORE::LINALG::Matrix<numdofelement, 1, double> internal_force(true);
@@ -839,7 +839,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   const unsigned int dofpercombinode = dofperclnode + dofpertriadnode;
 
   // clear internal (elastic) energy
-  Eint_ = 0.0;
+  eint_ = 0.0;
 
   //*************************** physical quantities evaluated at a certain GP
   //***************************
@@ -938,17 +938,17 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
       gausspoints_elast_force, H_i_xi, this->Shape(), this->RefLength());
 
   // re-assure correct size of strain and stress resultant class variables
-  axial_strain_GP_elastf_.resize(gausspoints_elast_force.nquad);
-  shear_strain_2_GP_elastf_.resize(gausspoints_elast_force.nquad);
-  shear_strain_3_GP_elastf_.resize(gausspoints_elast_force.nquad);
+  axial_strain_gp_elastf_.resize(gausspoints_elast_force.nquad);
+  shear_strain_2_gp_elastf_.resize(gausspoints_elast_force.nquad);
+  shear_strain_3_gp_elastf_.resize(gausspoints_elast_force.nquad);
 
-  material_axial_force_GP_elastf_.resize(gausspoints_elast_force.nquad);
-  material_shear_force_2_GP_elastf_.resize(gausspoints_elast_force.nquad);
-  material_shear_force_3_GP_elastf_.resize(gausspoints_elast_force.nquad);
+  material_axial_force_gp_elastf_.resize(gausspoints_elast_force.nquad);
+  material_shear_force_2_gp_elastf_.resize(gausspoints_elast_force.nquad);
+  material_shear_force_3_gp_elastf_.resize(gausspoints_elast_force.nquad);
 
-  spatial_x_force_GP_elastf_.resize(gausspoints_elast_force.nquad);
-  spatial_y_force_2_GP_elastf_.resize(gausspoints_elast_force.nquad);
-  spatial_z_force_3_GP_elastf_.resize(gausspoints_elast_force.nquad);
+  spatial_x_force_gp_elastf_.resize(gausspoints_elast_force.nquad);
+  spatial_y_force_2_gp_elastf_.resize(gausspoints_elast_force.nquad);
+  spatial_z_force_3_gp_elastf_.resize(gausspoints_elast_force.nquad);
 
   // Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for (int numgp = 0; numgp < gausspoints_elast_force.nquad; ++numgp)
@@ -957,7 +957,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     const double wgt = gausspoints_elast_force.qwgt[numgp];
 
     Calc_r_s<nnodecl, vpernode, T>(
-        disp_totlag_centerline, H_i_xi[numgp], jacobiGPelastf_[numgp], r_s);
+        disp_totlag_centerline, H_i_xi[numgp], jacobi_gp_elastf_[numgp], r_s);
 
     triad_interpolation_scheme_ptr->GetInterpolatedTriadAtXi(
         Lambda, gausspoints_elast_force.qxg[numgp][0]);
@@ -966,7 +966,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     CORE::LARGEROTATIONS::computespin<T>(r_s_hat, r_s);
 
     // compute material strains Gamma and Cur
-    computeGamma<T>(r_s, Lambda, GammarefGP_[numgp], Gamma);
+    computeGamma<T>(r_s, Lambda, gammaref_gp_[numgp], Gamma);
 
     GetTemplatedBeamMaterial<T>().EvaluateForceContributionsToStress(stressN, CN, Gamma, numgp);
     GetTemplatedBeamMaterial<T>().GetStiffnessMatrixOfForces(stiffness_contribution, CN, numgp);
@@ -995,7 +995,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           internal_force(dofpercombinode * node + 3 + i) -=
-              r_s_hat(i, j) * stressn(j) * I_i[numgp](node) * wgt * jacobiGPelastf_[numgp];
+              r_s_hat(i, j) * stressn(j) * I_i[numgp](node) * wgt * jacobi_gp_elastf_[numgp];
     }
     for (unsigned int node = nnodecl; node < nnodetriad;
          ++node)  // this loop is only entered in case of nnodetriad>nnodecl
@@ -1004,35 +1004,35 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           internal_force(dofperclnode * nnodecl + dofpertriadnode * node + i) -=
-              r_s_hat(i, j) * stressn(j) * I_i[numgp](node) * wgt * jacobiGPelastf_[numgp];
+              r_s_hat(i, j) * stressn(j) * I_i[numgp](node) * wgt * jacobi_gp_elastf_[numgp];
     }
 
     if (stiffmatrix != nullptr)
     {
       CalcStiffmatAnalyticForceContributions<nnodetriad, nnodecl, vpernode>(*stiffmatrix, stressn,
           cn, r_s_hat, *triad_interpolation_scheme_ptr, I_i[numgp], H_i_xi[numgp], wgt,
-          jacobiGPelastf_[numgp]);
+          jacobi_gp_elastf_[numgp]);
     }
 
     // add elastic energy from forces at this GP
     for (unsigned int dim = 0; dim < 3; ++dim)
     {
-      Eint_ += 0.5 * CORE::FADUTILS::CastToDouble(Gamma(dim)) *
-               CORE::FADUTILS::CastToDouble(stressN(dim)) * jacobiGPelastf_[numgp] * wgt;
+      eint_ += 0.5 * CORE::FADUTILS::CastToDouble(Gamma(dim)) *
+               CORE::FADUTILS::CastToDouble(stressN(dim)) * jacobi_gp_elastf_[numgp] * wgt;
     }
 
     // store material strain and stress values in class variables
-    axial_strain_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(Gamma(0));
-    shear_strain_2_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(Gamma(1));
-    shear_strain_3_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(Gamma(2));
+    axial_strain_gp_elastf_[numgp] = CORE::FADUTILS::CastToDouble(Gamma(0));
+    shear_strain_2_gp_elastf_[numgp] = CORE::FADUTILS::CastToDouble(Gamma(1));
+    shear_strain_3_gp_elastf_[numgp] = CORE::FADUTILS::CastToDouble(Gamma(2));
 
-    material_axial_force_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressN(0));
-    material_shear_force_2_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressN(1));
-    material_shear_force_3_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressN(2));
+    material_axial_force_gp_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressN(0));
+    material_shear_force_2_gp_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressN(1));
+    material_shear_force_3_gp_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressN(2));
 
-    spatial_x_force_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressn(0));
-    spatial_y_force_2_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressn(1));
-    spatial_z_force_3_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressn(2));
+    spatial_x_force_gp_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressn(0));
+    spatial_y_force_2_gp_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressn(1));
+    spatial_z_force_3_gp_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressn(2));
   }
 
 
@@ -1052,20 +1052,20 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
       gausspoints_elast_moment, I_i, I_i_xi, this->Shape());
 
   // reset norm of maximal bending curvature
-  Kmax_ = 0.0;
+  kmax_ = 0.0;
 
   // assure correct size of strain and stress resultant class variables
-  twist_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-  curvature_2_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-  curvature_3_GP_elastm_.resize(gausspoints_elast_moment.nquad);
+  twist_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+  curvature_2_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+  curvature_3_gp_elastm_.resize(gausspoints_elast_moment.nquad);
 
-  material_torque_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-  material_bending_moment_2_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-  material_bending_moment_3_GP_elastm_.resize(gausspoints_elast_moment.nquad);
+  material_torque_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+  material_bending_moment_2_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+  material_bending_moment_3_gp_elastm_.resize(gausspoints_elast_moment.nquad);
 
-  spatial_x_moment_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-  spatial_y_moment_2_GP_elastm_.resize(gausspoints_elast_moment.nquad);
-  spatial_z_moment_3_GP_elastm_.resize(gausspoints_elast_moment.nquad);
+  spatial_x_moment_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+  spatial_y_moment_2_gp_elastm_.resize(gausspoints_elast_moment.nquad);
+  spatial_z_moment_3_gp_elastm_.resize(gausspoints_elast_moment.nquad);
 
 
   // Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
@@ -1077,18 +1077,18 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     triad_interpolation_scheme_ptr->GetInterpolatedLocalRotationVector(Psi_l, I_i[numgp]);
 
     triad_interpolation_scheme_ptr->GetInterpolatedLocalRotationVectorDerivative(
-        Psi_l_s, I_i_xi[numgp], jacobiGPelastm_[numgp]);
+        Psi_l_s, I_i_xi[numgp], jacobi_gp_elastm_[numgp]);
 
     triad_interpolation_scheme_ptr->GetInterpolatedTriad(Lambda, Psi_l);
 
     // compute material curvature Cur
-    computeK<T>(Psi_l, Psi_l_s, KrefGP_[numgp], Cur);
+    computeK<T>(Psi_l, Psi_l_s, kref_gp_[numgp], Cur);
 
     // determine norm of maximal bending curvature at this GP and store in class variable if needed
     double Kmax =
         std::sqrt(CORE::FADUTILS::CastToDouble(Cur(1)) * CORE::FADUTILS::CastToDouble(Cur(1)) +
                   CORE::FADUTILS::CastToDouble(Cur(2)) * CORE::FADUTILS::CastToDouble(Cur(2)));
-    if (Kmax > Kmax_) Kmax_ = Kmax;
+    if (Kmax > kmax_) kmax_ = Kmax;
 
     GetTemplatedBeamMaterial<T>().EvaluateMomentContributionsToStress(stressM, CM, Cur, numgp);
     GetTemplatedBeamMaterial<T>().GetStiffnessMatrixOfMoments(stiffness_contribution, CM, numgp);
@@ -1118,28 +1118,28 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     {
       CalcStiffmatAnalyticMomentContributions<nnodetriad, nnodecl, vpernode>(*stiffmatrix, stressm,
           cm, *triad_interpolation_scheme_ptr, Psi_l, Psi_l_s, I_i[numgp], I_i_xi[numgp], wgt,
-          jacobiGPelastm_[numgp]);
+          jacobi_gp_elastm_[numgp]);
     }
 
     // add elastic energy from moments at this GP
     for (unsigned int dim = 0; dim < 3; dim++)
     {
-      Eint_ += 0.5 * CORE::FADUTILS::CastToDouble(Cur(dim)) *
-               CORE::FADUTILS::CastToDouble(stressM(dim)) * jacobiGPelastm_[numgp] * wgt;
+      eint_ += 0.5 * CORE::FADUTILS::CastToDouble(Cur(dim)) *
+               CORE::FADUTILS::CastToDouble(stressM(dim)) * jacobi_gp_elastm_[numgp] * wgt;
     }
 
     // store material strain and stress values in class variables
-    twist_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(Cur(0));
-    curvature_2_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(Cur(1));
-    curvature_3_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(Cur(2));
+    twist_gp_elastm_[numgp] = CORE::FADUTILS::CastToDouble(Cur(0));
+    curvature_2_gp_elastm_[numgp] = CORE::FADUTILS::CastToDouble(Cur(1));
+    curvature_3_gp_elastm_[numgp] = CORE::FADUTILS::CastToDouble(Cur(2));
 
-    material_torque_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressM(0));
-    material_bending_moment_2_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressM(1));
-    material_bending_moment_3_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressM(2));
+    material_torque_gp_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressM(0));
+    material_bending_moment_2_gp_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressM(1));
+    material_bending_moment_3_gp_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressM(2));
 
-    spatial_x_moment_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressm(0));
-    spatial_y_moment_2_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressm(1));
-    spatial_z_moment_3_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressm(2));
+    spatial_x_moment_gp_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressm(0));
+    spatial_y_moment_2_gp_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressm(1));
+    spatial_z_moment_3_gp_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressm(2));
   }
 }
 
@@ -1228,7 +1228,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
   // Calculate current centerline position at gauss points (needed for element intern time
   // integration)
   for (int gp = 0; gp < gausspoints_mass.nquad; gp++)  // loop through Gauss points
-    Calc_r<nnodecl, vpernode, double>(disp_totlag_centerline, H_i[gp], rnewGPmass_[gp]);
+    Calc_r<nnodecl, vpernode, double>(disp_totlag_centerline, H_i[gp], rnew_gp_mass_[gp]);
 
   // create object of triad interpolation scheme
   Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>>
@@ -1238,9 +1238,9 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
   // reset triad interpolation scheme with nodal quaternions
   triad_interpolation_scheme_ptr->Reset(Qnode);
 
-  Ekin_ = 0.0;
-  L_ = 0.0;
-  P_ = 0.0;
+  ekin_ = 0.0;
+  l_ = 0.0;
+  p_ = 0.0;
 
   // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11),
   // Jelenic 1999
@@ -1262,7 +1262,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
 
     triad_interpolation_scheme_ptr->GetInterpolatedLocalRotationVector(Psi_l, I_i[gp]);
 
-    triad_interpolation_scheme_ptr->GetInterpolatedQuaternion(QnewGPmass_[gp], Psi_l);
+    triad_interpolation_scheme_ptr->GetInterpolatedQuaternion(qnew_gp_mass_[gp], Psi_l);
 
     triad_interpolation_scheme_ptr->GetNodalGeneralizedRotationInterpolationMatrices(
         Itilde, Psi_l, I_i[gp]);
@@ -1270,13 +1270,14 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     Lambdanewmass.Clear();
     Lambdaconvmass.Clear();
     // compute current and old triad at Gauss point
-    CORE::LARGEROTATIONS::quaterniontotriad<double>(QnewGPmass_[gp], Lambdanewmass);
-    CORE::LARGEROTATIONS::quaterniontotriad<double>(QconvGPmass_[gp], Lambdaconvmass);
+    CORE::LARGEROTATIONS::quaterniontotriad<double>(qnew_gp_mass_[gp], Lambdanewmass);
+    CORE::LARGEROTATIONS::quaterniontotriad<double>(qconv_gp_mass_[gp], Lambdaconvmass);
 
     // rotation between last converged position and current position expressed as a quaternion
     CORE::LINALG::Matrix<4, 1> deltaQ(true);
     CORE::LARGEROTATIONS::quaternionproduct(
-        CORE::LARGEROTATIONS::inversequaternion<double>(QconvGPmass_[gp]), QnewGPmass_[gp], deltaQ);
+        CORE::LARGEROTATIONS::inversequaternion<double>(qconv_gp_mass_[gp]), qnew_gp_mass_[gp],
+        deltaQ);
 
     // spatial rotation between last converged position and current position expressed as a three
     // element rotation vector
@@ -1292,9 +1293,9 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     CORE::LINALG::Matrix<3, 1> Amodconvmass(true);
     CORE::LINALG::Matrix<3, 1> Amodnewmass(true);
     deltaTHETA.MultiplyTN(Lambdanewmass, deltatheta);
-    Wconvmass.MultiplyTN(Lambdaconvmass, wconvGPmass_[gp]);
-    Aconvmass.MultiplyTN(Lambdaconvmass, aconvGPmass_[gp]);
-    Amodconvmass.MultiplyTN(Lambdaconvmass, amodconvGPmass_[gp]);
+    Wconvmass.MultiplyTN(Lambdaconvmass, wconv_gp_mass_[gp]);
+    Aconvmass.MultiplyTN(Lambdaconvmass, aconv_gp_mass_[gp]);
+    Amodconvmass.MultiplyTN(Lambdaconvmass, amodconv_gp_mass_[gp]);
 
     /* update angular velocities and accelerations according to Newmark time integration scheme in
      * material description (see Jelenic, 1999, p. 146, equations (2.8) and (2.9)).
@@ -1323,57 +1324,58 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
             1.0 / (1.0 - alpha_m) *
             ((1.0 - alpha_f) * Anewmass(i) + alpha_f * Aconvmass(i) - alpha_m * Amodconvmass(i));
       }
-      wnewGPmass_[gp].Multiply(Lambdanewmass, Wnewmass);
-      anewGPmass_[gp].Multiply(Lambdanewmass, Anewmass);
-      amodnewGPmass_[gp].Multiply(Lambdanewmass, Amodnewmass);
+      wnew_gp_mass_[gp].Multiply(Lambdanewmass, Wnewmass);
+      anew_gp_mass_[gp].Multiply(Lambdanewmass, Anewmass);
+      amodnew_gp_mass_[gp].Multiply(Lambdanewmass, Amodnewmass);
     }
     else
     {
       for (unsigned int i = 0; i < 3; i++)
       {
-        wnewGPmass_[gp](i) = gamma / (beta * dt) * deltatheta(i) +
-                             (1 - gamma / beta) * wconvGPmass_[gp](i) +
-                             dt * (1 - gamma / (2 * beta)) * amodconvGPmass_[gp](i);
+        wnew_gp_mass_[gp](i) = gamma / (beta * dt) * deltatheta(i) +
+                               (1 - gamma / beta) * wconv_gp_mass_[gp](i) +
+                               dt * (1 - gamma / (2 * beta)) * amodconv_gp_mass_[gp](i);
 
-        anewGPmass_[gp](i) = (1.0 - alpha_m) / (beta * dt * dt * (1.0 - alpha_f)) * deltatheta(i) -
-                             (1.0 - alpha_m) / (beta * dt * (1.0 - alpha_f)) * wconvGPmass_[gp](i) -
-                             alpha_f / (1.0 - alpha_f) * aconvGPmass_[gp](i) +
-                             (alpha_m / (1.0 - alpha_f) -
-                                 (0.5 - beta) * (1.0 - alpha_m) / (beta * (1.0 - alpha_f))) *
-                                 amodconvGPmass_[gp](i);
+        anew_gp_mass_[gp](i) =
+            (1.0 - alpha_m) / (beta * dt * dt * (1.0 - alpha_f)) * deltatheta(i) -
+            (1.0 - alpha_m) / (beta * dt * (1.0 - alpha_f)) * wconv_gp_mass_[gp](i) -
+            alpha_f / (1.0 - alpha_f) * aconv_gp_mass_[gp](i) +
+            (alpha_m / (1.0 - alpha_f) -
+                (0.5 - beta) * (1.0 - alpha_m) / (beta * (1.0 - alpha_f))) *
+                amodconv_gp_mass_[gp](i);
 
-        amodnewGPmass_[gp](i) =
+        amodnew_gp_mass_[gp](i) =
             1.0 / (1.0 - alpha_m) *
-            ((1.0 - alpha_f) * anewGPmass_[gp](i) + alpha_f * aconvGPmass_[gp](i) -
-                alpha_m * amodconvGPmass_[gp](i));
+            ((1.0 - alpha_f) * anew_gp_mass_[gp](i) + alpha_f * aconv_gp_mass_[gp](i) -
+                alpha_m * amodconv_gp_mass_[gp](i));
       }
-      Wnewmass.MultiplyTN(Lambdanewmass, wnewGPmass_[gp]);
-      Anewmass.MultiplyTN(Lambdanewmass, anewGPmass_[gp]);
-      Amodnewmass.MultiplyTN(Lambdanewmass, amodnewGPmass_[gp]);
+      Wnewmass.MultiplyTN(Lambdanewmass, wnew_gp_mass_[gp]);
+      Anewmass.MultiplyTN(Lambdanewmass, anew_gp_mass_[gp]);
+      Amodnewmass.MultiplyTN(Lambdanewmass, amodnew_gp_mass_[gp]);
     }
 
     CORE::LINALG::Matrix<3, 1> deltar(true);
     for (unsigned int i = 0; i < 3; i++)
     {
-      deltar(i) = rnewGPmass_[gp](i) - rconvGPmass_[gp](i);
+      deltar(i) = rnew_gp_mass_[gp](i) - rconv_gp_mass_[gp](i);
     }
     for (unsigned int i = 0; i < 3; i++)
     {
-      rttnewGPmass_[gp](i) =
+      rttnew_gp_mass_[gp](i) =
           (1.0 - alpha_m) / (beta * dt * dt * (1.0 - alpha_f)) * deltar(i) -
-          (1.0 - alpha_m) / (beta * dt * (1.0 - alpha_f)) * rtconvGPmass_[gp](i) -
-          alpha_f / (1.0 - alpha_f) * rttconvGPmass_[gp](i) +
+          (1.0 - alpha_m) / (beta * dt * (1.0 - alpha_f)) * rtconv_gp_mass_[gp](i) -
+          alpha_f / (1.0 - alpha_f) * rttconv_gp_mass_[gp](i) +
           (alpha_m / (1.0 - alpha_f) - (0.5 - beta) * (1.0 - alpha_m) / (beta * (1.0 - alpha_f))) *
-              rttmodconvGPmass_[gp](i);
+              rttmodconv_gp_mass_[gp](i);
 
-      rtnewGPmass_[gp](i) = gamma / (beta * dt) * deltar(i) +
-                            (1 - gamma / beta) * rtconvGPmass_[gp](i) +
-                            dt * (1 - gamma / (2 * beta)) * rttmodconvGPmass_[gp](i);
+      rtnew_gp_mass_[gp](i) = gamma / (beta * dt) * deltar(i) +
+                              (1 - gamma / beta) * rtconv_gp_mass_[gp](i) +
+                              dt * (1 - gamma / (2 * beta)) * rttmodconv_gp_mass_[gp](i);
 
-      rttmodnewGPmass_[gp](i) =
+      rttmodnew_gp_mass_[gp](i) =
           1.0 / (1.0 - alpha_m) *
-          ((1.0 - alpha_f) * rttnewGPmass_[gp](i) + alpha_f * rttconvGPmass_[gp](i) -
-              alpha_m * rttmodconvGPmass_[gp](i));
+          ((1.0 - alpha_f) * rttnew_gp_mass_[gp](i) + alpha_f * rttconv_gp_mass_[gp](i) -
+              alpha_m * rttmodconv_gp_mass_[gp](i));
     }
 
     // spin matrix of the material angular velocity, i.e. S(W)
@@ -1392,9 +1394,9 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     CORE::LINALG::Matrix<3, 1> r_t(true);
     CORE::LINALG::Matrix<3, 1> r(true);
 
-    r_tt = rttnewGPmass_[gp];
-    r_t = rtnewGPmass_[gp];
-    r = rnewGPmass_[gp];
+    r_tt = rttnew_gp_mass_[gp];
+    r_t = rtnew_gp_mass_[gp];
+    r = rnew_gp_mass_[gp];
 
     CORE::LINALG::Matrix<3, 3> S_r(true);
     CORE::LARGEROTATIONS::computespin<double>(S_r, r);
@@ -1405,8 +1407,8 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     dL.Update(1.0, Lambdanewmass_Jp_Wnewmass, 1.0);
     for (unsigned int i = 0; i < 3; i++)
     {
-      L_(i) += wgtmass * jacobiGPmass_[gp] * dL(i);
-      P_(i) += wgtmass * jacobiGPmass_[gp] * mass_inertia_translational * r_t(i);
+      l_(i) += wgtmass * jacobi_gp_mass_[gp] * dL(i);
+      p_(i) += wgtmass * jacobi_gp_mass_[gp] * mass_inertia_translational * r_t(i);
     }
 
     CORE::LINALG::Matrix<3, 3> S_Pit(true);
@@ -1440,23 +1442,23 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
         for (unsigned int node = 0; node < nnodecl; node++)
         {
           // translational contribution
-          (*inertia_force)(dofpercombinode * node + i) += jacobiGPmass_[gp] * wgtmass *
+          (*inertia_force)(dofpercombinode * node + i) += jacobi_gp_mass_[gp] * wgtmass *
                                                           mass_inertia_translational *
                                                           H_i[gp](vpernode * node) * r_tt(i);
           if (centerline_hermite_)
             (*inertia_force)(dofpercombinode * node + 6 + i) +=
-                jacobiGPmass_[gp] * wgtmass * mass_inertia_translational *
+                jacobi_gp_mass_[gp] * wgtmass * mass_inertia_translational *
                 H_i[gp](vpernode * node + 1) * r_tt(i);
           // rotational contribution
           (*inertia_force)(dofpercombinode * node + 3 + i) +=
-              jacobiGPmass_[gp] * wgtmass * I_i[gp](node) * Pi_t(i);
+              jacobi_gp_mass_[gp] * wgtmass * I_i[gp](node) * Pi_t(i);
         }
         for (unsigned int node = nnodecl; node < nnodetriad;
              node++)  // this loop is only entered in case of nnodetriad>nnodecl
         {
           // rotational contribution
           (*inertia_force)(dofperclnode * nnodecl + dofpertriadnode * node + i) +=
-              jacobiGPmass_[gp] * wgtmass * I_i[gp](node) * Pi_t(i);
+              jacobi_gp_mass_[gp] * wgtmass * I_i[gp](node) * Pi_t(i);
         }
       }
     }
@@ -1471,18 +1473,18 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
           for (unsigned int k = 0; k < 3; k++)
           {
             (*massmatrix)(dofpercombinode * inode + k, dofpercombinode * jnode + k) +=
-                diff_factor_acc * jacobiGPmass_[gp] * wgtmass * mass_inertia_translational *
+                diff_factor_acc * jacobi_gp_mass_[gp] * wgtmass * mass_inertia_translational *
                 H_i[gp](vpernode * inode) * H_i[gp](vpernode * jnode);
             if (centerline_hermite_)
             {
               (*massmatrix)(dofpercombinode * inode + 6 + k, dofpercombinode * jnode + 6 + k) +=
-                  diff_factor_acc * jacobiGPmass_[gp] * wgtmass * mass_inertia_translational *
+                  diff_factor_acc * jacobi_gp_mass_[gp] * wgtmass * mass_inertia_translational *
                   H_i[gp](vpernode * inode + 1) * H_i[gp](vpernode * jnode + 1);
               (*massmatrix)(dofpercombinode * inode + k, dofpercombinode * jnode + 6 + k) +=
-                  diff_factor_acc * jacobiGPmass_[gp] * wgtmass * mass_inertia_translational *
+                  diff_factor_acc * jacobi_gp_mass_[gp] * wgtmass * mass_inertia_translational *
                   H_i[gp](vpernode * inode) * H_i[gp](vpernode * jnode + 1);
               (*massmatrix)(dofpercombinode * inode + 6 + k, dofpercombinode * jnode + k) +=
-                  diff_factor_acc * jacobiGPmass_[gp] * wgtmass * mass_inertia_translational *
+                  diff_factor_acc * jacobi_gp_mass_[gp] * wgtmass * mass_inertia_translational *
                   H_i[gp](vpernode * inode + 1) * H_i[gp](vpernode * jnode);
             }
           }
@@ -1495,7 +1497,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
           for (unsigned int i = 0; i < 3; i++)
             for (unsigned int j = 0; j < 3; j++)
               (*massmatrix)(dofpercombinode * inode + 3 + i, dofpercombinode * jnode + 3 + j) +=
-                  jacobiGPmass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
+                  jacobi_gp_mass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
         }
         for (unsigned int inode = nnodecl; inode < nnodetriad;
              inode++)  // this loop is only entered in case of nnodetriad>nnodecl
@@ -1504,7 +1506,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
             for (unsigned int j = 0; j < 3; j++)
               (*massmatrix)(dofperclnode * nnodecl + dofpertriadnode * inode + i,
                   dofpercombinode * jnode + 3 + j) +=
-                  jacobiGPmass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
+                  jacobi_gp_mass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
         }
       }
       for (unsigned int jnode = nnodecl; jnode < nnodetriad;
@@ -1519,7 +1521,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
             for (unsigned int j = 0; j < 3; j++)
               (*massmatrix)(dofpercombinode * inode + 3 + i,
                   dofperclnode * nnodecl + dofpertriadnode * jnode + j) +=
-                  jacobiGPmass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
+                  jacobi_gp_mass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
         }
         for (unsigned int inode = nnodecl; inode < nnodetriad;
              inode++)  // this loop is only entered in case of nnodetriad>nnodecl
@@ -1528,7 +1530,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
             for (unsigned int j = 0; j < 3; j++)
               (*massmatrix)(dofperclnode * nnodecl + dofpertriadnode * inode + i,
                   dofperclnode * nnodecl + dofpertriadnode * jnode + j) +=
-                  jacobiGPmass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
+                  jacobi_gp_mass_[gp] * wgtmass * I_i[gp](inode) * auxmatrix2(i, j);
         }
       }
     }
@@ -1538,13 +1540,13 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     CORE::LINALG::Matrix<1, 1> ekintrans(true);
     ekinrot.MultiplyTN(Wnewmass, Jp_Wnewmass);
     ekintrans.MultiplyTN(r_t, r_t);
-    Ekin_ += 0.5 * (ekinrot.Norm2() + mass_inertia_translational * ekintrans.Norm2()) *
-             jacobiGPmass_[gp] * wgtmass;
-    Ekintorsion_ += 0.5 * Wnewmass(0) * Jp_Wnewmass(0) * jacobiGPmass_[gp] * wgtmass;
-    Ekinbending_ += 0.5 * Wnewmass(1) * Jp_Wnewmass(1) * jacobiGPmass_[gp] * wgtmass;
-    Ekinbending_ += 0.5 * Wnewmass(2) * Jp_Wnewmass(2) * jacobiGPmass_[gp] * wgtmass;
-    Ekintrans_ +=
-        0.5 * mass_inertia_translational * ekintrans.Norm2() * jacobiGPmass_[gp] * wgtmass;
+    ekin_ += 0.5 * (ekinrot.Norm2() + mass_inertia_translational * ekintrans.Norm2()) *
+             jacobi_gp_mass_[gp] * wgtmass;
+    ekintorsion_ += 0.5 * Wnewmass(0) * Jp_Wnewmass(0) * jacobi_gp_mass_[gp] * wgtmass;
+    ekinbending_ += 0.5 * Wnewmass(1) * Jp_Wnewmass(1) * jacobi_gp_mass_[gp] * wgtmass;
+    ekinbending_ += 0.5 * Wnewmass(2) * Jp_Wnewmass(2) * jacobi_gp_mass_[gp] * wgtmass;
+    ekintrans_ +=
+        0.5 * mass_inertia_translational * ekintrans.Norm2() * jacobi_gp_mass_[gp] * wgtmass;
 
     Jp_Wnewmass.Multiply(Jp, Wnewmass);
   }
@@ -2185,7 +2187,7 @@ void DRT::ELEMENTS::Beam3r::EvaluatePTC(
     // for damping
     CORE::LINALG::Matrix<4, 1> deltaQ;
     CORE::LARGEROTATIONS::quaternionproduct(
-        CORE::LARGEROTATIONS::inversequaternion(Qconvnode_[node]), Qnewnode_[node], deltaQ);
+        CORE::LARGEROTATIONS::inversequaternion(qconvnode_[node]), qnewnode_[node], deltaQ);
     CORE::LINALG::Matrix<3, 1> deltatheta;
     CORE::LARGEROTATIONS::quaterniontoangle(deltaQ, deltatheta);
 
@@ -2305,7 +2307,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
     triad_interpolation_scheme_ptr->GetInterpolatedQuaternion(QnewGP, Psi_l);
 
     // store in class variable in order to get QconvGPmass_ in subsequent time step
-    QnewGPdampstoch_[gp] = QnewGP;
+    qnew_gp_dampstoch_[gp] = QnewGP;
 
     // compute triad at Gauss point
     CORE::LARGEROTATIONS::quaterniontotriad(QnewGP, LambdaGP);
@@ -2323,7 +2325,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
     // get quaternion in converged state at gp and compute corresponding triad
     CORE::LINALG::Matrix<3, 3, double> triad_mat_conv(true);
     CORE::LINALG::Matrix<4, 1, double> Qconv(true);
-    for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (QconvGPdampstoch_[gp])(i);
+    for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (qconv_gp_dampstoch_[gp])(i);
 
     CORE::LARGEROTATIONS::quaterniontotriad(Qconv, triad_mat_conv);
 
@@ -2354,7 +2356,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
     CORE::LINALG::Matrix<3, 1> g1g1gammaomega;
     g1g1gammaomega.Multiply(g1g1gamma, omega);
 
-    const double jacobifac_gp_weight = jacobiGPdampstoch_[gp] * gausspoints.qwgt[gp];
+    const double jacobifac_gp_weight = jacobi_gp_dampstoch_[gp] * gausspoints.qwgt[gp];
 
     if (force != nullptr)
     {
@@ -2542,7 +2544,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
 
     // compute tangent vector t_{\par}=r' at current Gauss point
     Calc_r_s<nnodecl, vpernode, double>(
-        disp_totlag_centerline, H_i_xi[gp], jacobiGPdampstoch_[gp], r_s);
+        disp_totlag_centerline, H_i_xi[gp], jacobi_gp_dampstoch_[gp], r_s);
 
     // compute velocity and gradient of background flow field at point r
     GetBackgroundVelocity<ndim, double>(params, r, velbackground, velbackgroundgrad);
@@ -2562,7 +2564,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
     // compute viscous force vector per unit length at current GP
     f_visc.Multiply(damp_mat, vel_rel);
 
-    const double jacobifac_gp_weight = jacobiGPdampstoch_[gp] * gausspoints.qwgt[gp];
+    const double jacobifac_gp_weight = jacobi_gp_dampstoch_[gp] * gausspoints.qwgt[gp];
 
     if (force != nullptr)
     {
@@ -2596,10 +2598,10 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
             {
               (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + jdim) +=
                   gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) * H_i[gp](vpernode * jnode) *
-                  jacobiGPdampstoch_[gp] * damp_mat(idim, jdim) * dt_inv;
+                  jacobi_gp_dampstoch_[gp] * damp_mat(idim, jdim) * dt_inv;
               (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + jdim) -=
                   gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) * H_i[gp](vpernode * jnode) *
-                  jacobiGPdampstoch_[gp] * dampmatvelbackgroundgrad(idim, jdim);
+                  jacobi_gp_dampstoch_[gp] * dampmatvelbackgroundgrad(idim, jdim);
               (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + idim) +=
                   gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) * H_i_xi[gp](vpernode * jnode) *
                   (gamma(0) - gamma(1)) * r_s(jdim) * vel_rel(jdim);
@@ -2611,11 +2613,11 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
               {
                 (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + jdim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
-                    H_i[gp](vpernode * jnode) * jacobiGPdampstoch_[gp] * damp_mat(idim, jdim) *
+                    H_i[gp](vpernode * jnode) * jacobi_gp_dampstoch_[gp] * damp_mat(idim, jdim) *
                     dt_inv;
                 (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + jdim) -=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
-                    H_i[gp](vpernode * jnode) * jacobiGPdampstoch_[gp] *
+                    H_i[gp](vpernode * jnode) * jacobi_gp_dampstoch_[gp] *
                     dampmatvelbackgroundgrad(idim, jdim);
                 (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + idim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
@@ -2628,11 +2630,11 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
 
                 (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + 6 + jdim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) *
-                    H_i[gp](vpernode * jnode + 1) * jacobiGPdampstoch_[gp] * damp_mat(idim, jdim) *
-                    dt_inv;
+                    H_i[gp](vpernode * jnode + 1) * jacobi_gp_dampstoch_[gp] *
+                    damp_mat(idim, jdim) * dt_inv;
                 (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + 6 + jdim) -=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) *
-                    H_i[gp](vpernode * jnode + 1) * jacobiGPdampstoch_[gp] *
+                    H_i[gp](vpernode * jnode + 1) * jacobi_gp_dampstoch_[gp] *
                     dampmatvelbackgroundgrad(idim, jdim);
                 (*stiffmatrix)(inode * dofpernode + idim, jnode * dofpernode + 6 + idim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode) *
@@ -2645,11 +2647,11 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
 
                 (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + 6 + jdim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
-                    H_i[gp](vpernode * jnode + 1) * jacobiGPdampstoch_[gp] * damp_mat(idim, jdim) *
-                    dt_inv;
+                    H_i[gp](vpernode * jnode + 1) * jacobi_gp_dampstoch_[gp] *
+                    damp_mat(idim, jdim) * dt_inv;
                 (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + 6 + jdim) -=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
-                    H_i[gp](vpernode * jnode + 1) * jacobiGPdampstoch_[gp] *
+                    H_i[gp](vpernode * jnode + 1) * jacobi_gp_dampstoch_[gp] *
                     dampmatvelbackgroundgrad(idim, jdim);
                 (*stiffmatrix)(inode * dofpernode + 6 + idim, jnode * dofpernode + 6 + idim) +=
                     gausspoints.qwgt[gp] * H_i[gp](vpernode * inode + 1) *
@@ -2720,7 +2722,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
   {
     // compute tangent vector t_{\par}=r' at current Gauss point
     Calc_r_s<nnodecl, vpernode, double>(
-        disp_totlag_centerline, H_i_xi[gp], jacobiGPdampstoch_[gp], r_s);
+        disp_totlag_centerline, H_i_xi[gp], jacobi_gp_dampstoch_[gp], r_s);
 
     // extract random numbers from global vector
     for (unsigned int idim = 0; idim < ndim; idim++)
@@ -2741,7 +2743,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
                          randnumvec(jdim);
 
     const double sqrt_jacobifac_gp_weight =
-        std::sqrt(jacobiGPdampstoch_[gp] * gausspoints.qwgt[gp]);
+        std::sqrt(jacobi_gp_dampstoch_[gp] * gausspoints.qwgt[gp]);
 
     if (force != nullptr)
     {
@@ -2764,7 +2766,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
     {
       // note: division by sqrt of jacobi factor, because H_i_s = H_i_xi / jacobifactor
       const double sqrt_gp_weight_jacobifac_inv =
-          std::sqrt(gausspoints.qwgt[gp] / jacobiGPdampstoch_[gp]);
+          std::sqrt(gausspoints.qwgt[gp] / jacobi_gp_dampstoch_[gp]);
 
       const double prefactor = sqrt_gp_weight_jacobifac_inv * (sqrt_gamma(0) - sqrt_gamma(1));
 

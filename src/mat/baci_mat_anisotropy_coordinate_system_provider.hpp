@@ -46,17 +46,17 @@ namespace MAT
     Teuchos::RCP<const CylinderCoordinateSystemProvider> GetCylinderCoordinateSystem()
         const override
     {
-      return cylinderCoordinateSystem_;
+      return cylinder_coordinate_system_;
     }
 
     void SetCylinderCoordinateSystemProvider(
         Teuchos::RCP<const CylinderCoordinateSystemProvider> cylinderCoordinateSystem)
     {
-      cylinderCoordinateSystem_ = cylinderCoordinateSystem;
+      cylinder_coordinate_system_ = cylinderCoordinateSystem;
     }
 
    private:
-    Teuchos::RCP<const CylinderCoordinateSystemProvider> cylinderCoordinateSystem_;
+    Teuchos::RCP<const CylinderCoordinateSystemProvider> cylinder_coordinate_system_;
   };
 
 }  // namespace MAT

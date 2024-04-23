@@ -62,10 +62,10 @@ namespace DRT
       double Capacitance() const { return capacitance_; }
       double ChargeTransferConstant() const { return kr_; }
       DRT::Condition::ConditionType ConditionType() const { return conditiontype_; }
-      double ConvtolimplicitBV() const { return convtolimplicitBV_; }
+      double ConvtolimplicitBV() const { return convtolimplicit_bv_; }
       double Density() const { return density_; }
       bool IsPseudoContact() const { return is_pseudo_contact_; }
-      int ItemaximplicitBV() const { return itemaxmimplicitBV_; }
+      int ItemaximplicitBV() const { return itemaxmimplicit_bv_; }
       int KineticModel() const { return kineticmodel_; }
       double MolarHeatCapacity() const { return molar_heat_capacity_; }
       double MolarMass() const { return molarmass_; }
@@ -98,7 +98,7 @@ namespace DRT
 
       /// convergence tolerance of local Newton-Raphson iteration for modified Butler-Volmer
       /// equation
-      double convtolimplicitBV_;
+      double convtolimplicit_bv_;
 
       /// density of the interface layer material associated to S2IKineticsGrowth condition
       double density_;
@@ -112,7 +112,7 @@ namespace DRT
 
       /// maximum number of iterations of local Newton-Raphson iteration for modified Butler-Volmer
       /// equation
-      int itemaxmimplicitBV_;
+      int itemaxmimplicit_bv_;
 
       /// kinetic model of s2i condition
       int kineticmodel_;

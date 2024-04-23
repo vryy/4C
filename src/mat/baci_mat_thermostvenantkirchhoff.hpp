@@ -268,10 +268,10 @@ namespace MAT
     Teuchos::RCP<MAT::TRAIT::Thermo> thermo_;
 
     //! current temperature (set by Reinit())
-    double currentTemperature_{};
+    double current_temperature_{};
 
     //! current Green-Lagrange strain
-    const CORE::LINALG::Matrix<6, 1>* currentGlstrain_{};
+    const CORE::LINALG::Matrix<6, 1>* current_glstrain_{};
 
   };  // ThermoStVenantKirchhoff
 }  // namespace MAT

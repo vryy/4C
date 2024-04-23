@@ -31,7 +31,7 @@ MyocardFitzhughNagumo::MyocardFitzhughNagumo() {}
  *----------------------------------------------------------------------*/
 MyocardFitzhughNagumo::MyocardFitzhughNagumo(
     const double eps_deriv_myocard, const std::string tissue, int num_gp)
-    : tools_(), r0_(num_gp), r_(num_gp), J1_(num_gp), J2_(num_gp), mechanical_activation_(num_gp)
+    : tools_(), r0_(num_gp), r_(num_gp), j1_(num_gp), j2_(num_gp), mechanical_activation_(num_gp)
 {
   // Initial condition
   for (int i = 0; i < num_gp; ++i)
@@ -66,9 +66,9 @@ double MyocardFitzhughNagumo::ReaCoeff(const double phi, const double dt, int gp
 {
   double reacoeff;
   r_[gp] = tools_.GatingVarCalc(dt, r0_[gp], phi / d_, 1.0 / (b_ * d_));
-  J1_[gp] = c1_ * phi * (phi - a_) * (phi - 1.0);
-  J2_[gp] = c2_ * phi * r_[gp];
-  reacoeff = J1_[gp] + J2_[gp];
+  j1_[gp] = c1_ * phi * (phi - a_) * (phi - 1.0);
+  j2_[gp] = c2_ * phi * r_[gp];
+  reacoeff = j1_[gp] + j2_[gp];
 
   // For electromechanics
   mechanical_activation_[gp] = phi;
@@ -167,12 +167,12 @@ double MyocardFitzhughNagumo::GetIonicCurrents(const int k, int gp) const
   {
     case 0:
     {
-      val = J1_[gp];
+      val = j1_[gp];
       break;
     }
     case 1:
     {
-      val = J2_[gp];
+      val = j2_[gp];
       break;
     }
   }

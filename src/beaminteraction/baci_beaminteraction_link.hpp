@@ -123,7 +123,10 @@ namespace BEAMINTERACTION
     /*!
     \brief Return gid of first/second element (specified via given local element number 0/1)
     */
-    virtual inline const int& GetEleGid(const int& elenum) const { return bspotIds_[elenum].first; }
+    virtual inline const int& GetEleGid(const int& elenum) const
+    {
+      return bspot_ids_[elenum].first;
+    }
 
     /*!
     \brief Return element-local binding spot number of first/second element
@@ -131,7 +134,7 @@ namespace BEAMINTERACTION
     */
     virtual inline const int& GetLocBSpotNum(const int& elenum) const
     {
-      return bspotIds_[elenum].second;
+      return bspot_ids_[elenum].second;
     }
 
     //! return position of first connection site
@@ -233,7 +236,7 @@ namespace BEAMINTERACTION
 
     //! unique identifiers for first [0] and second [1] binding spot:
     // each is a pair of element GID and local binding spot number
-    std::vector<std::pair<int, int>> bspotIds_;
+    std::vector<std::pair<int, int>> bspot_ids_;
 
     //! current position of the two connection sites (a.k.a. binding spots)
     CORE::LINALG::Matrix<3, 1> bspotpos1_;

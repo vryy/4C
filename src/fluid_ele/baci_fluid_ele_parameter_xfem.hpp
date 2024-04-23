@@ -119,7 +119,7 @@ namespace DRT
 
       //! get the flag if the simulation is run as pseudo 2D simulation with only one element in the
       //! third dimension and strong Dirichlet condition to fix u_z = 0
-      bool IsPseudo2D() const { return is_pseudo_2D_; };
+      bool IsPseudo2D() const { return is_pseudo_2_d_; };
 
       //@}
 
@@ -238,7 +238,7 @@ namespace DRT
       //@{
 
       //! pseudo 2D flag for 2D simulation with one element in z-direction
-      double is_pseudo_2D_;
+      double is_pseudo_2_d_;
 
       //@}
 

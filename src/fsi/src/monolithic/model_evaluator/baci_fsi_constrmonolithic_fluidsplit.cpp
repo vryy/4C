@@ -104,7 +104,7 @@ FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(
   }
   // ---------------------------------------------------------------------------
 
-  sconT_ =
+  scon_t_ =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*conman_->GetConstraintMap(), 81, false, true));
 
   fggtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform);
@@ -326,9 +326,9 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
 
   scon = *(Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(tmp));
 
-  sconT_->Add(scon, true, 1.0, 0.0);
-  sconT_->Complete(scon.RangeMap(), scon.DomainMap());
-  mat.Assign(3, 0, CORE::LINALG::View, *sconT_);
+  scon_t_->Add(scon, true, 1.0, 0.0);
+  scon_t_->Complete(scon.RangeMap(), scon.DomainMap());
+  mat.Assign(3, 0, CORE::LINALG::View, *scon_t_);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.

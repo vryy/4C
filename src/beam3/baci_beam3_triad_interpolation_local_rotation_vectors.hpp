@@ -51,13 +51,13 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    inline unsigned int NodeI() const { return nodeI_; }
+    inline unsigned int NodeI() const { return node_i_; }
 
     /** \brief get node J which is part of the definition of the reference triad
      *
      *  \author grill
      *  \date 01/17 */
-    inline unsigned int NodeJ() const { return nodeJ_; }
+    inline unsigned int NodeJ() const { return node_j_; }
 
     //@}
 
@@ -260,22 +260,22 @@ namespace LARGEROTATIONS
     //! @name member variables
 
     //! node I for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
-    unsigned int nodeI_;
+    unsigned int node_i_;
 
     //! node J for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
-    unsigned int nodeJ_;
+    unsigned int node_j_;
 
     //! this determines the kind of shape functions which are to be applied
     CORE::FE::CellType distype_;
 
     //! nodal triads stored as quaternions
-    std::vector<CORE::LINALG::Matrix<4, 1, T>> Qnode_;
+    std::vector<CORE::LINALG::Matrix<4, 1, T>> qnode_;
 
     //! reference quaternion Q_r corresponding to reference triad Lambda_r
-    CORE::LINALG::Matrix<4, 1, T> Q_r_;
+    CORE::LINALG::Matrix<4, 1, T> q_r_;
 
     //! local rotation angles at nodes: angles between nodal triads and reference triad
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> Psi_li_;
+    std::vector<CORE::LINALG::Matrix<3, 1, T>> psi_li_;
 
     //@}
   };

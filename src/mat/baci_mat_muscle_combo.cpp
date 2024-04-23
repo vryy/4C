@@ -148,28 +148,28 @@ CORE::COMM::ParObject* MAT::MuscleComboType::Create(const std::vector<char>& dat
 MAT::MuscleCombo::MuscleCombo()
     : params_(nullptr),
       anisotropy_(),
-      anisotropyExtension_(true, 0.0, 0,
+      anisotropy_extension_(true, 0.0, 0,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0}),
-      activationEvaluator_(std::monostate{})
+      activation_evaluator_(std::monostate{})
 {
 }
 
 MAT::MuscleCombo::MuscleCombo(MAT::PAR::MuscleCombo* params)
     : params_(params),
       anisotropy_(),
-      anisotropyExtension_(true, 0.0, 0,
+      anisotropy_extension_(true, 0.0, 0,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0}),
-      activationEvaluator_(std::monostate{})
+      activation_evaluator_(std::monostate{})
 {
   // register anisotropy extension to global anisotropy
-  anisotropy_.RegisterAnisotropyExtension(anisotropyExtension_);
+  anisotropy_.RegisterAnisotropyExtension(anisotropy_extension_);
 
   // initialize fiber directions and structural tensor
-  anisotropyExtension_.RegisterNeededTensors(
+  anisotropy_extension_.RegisterNeededTensors(
       MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR |
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
@@ -191,7 +191,7 @@ void MAT::MuscleCombo::Pack(CORE::COMM::PackBuffer& data) const
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
-  anisotropyExtension_.PackAnisotropy(data);
+  anisotropy_extension_.PackAnisotropy(data);
 }
 
 void MAT::MuscleCombo::Unpack(const std::vector<char>& data)
@@ -217,7 +217,7 @@ void MAT::MuscleCombo::Unpack(const std::vector<char>& data)
       if (mat->Type() == MaterialType())
       {
         params_ = static_cast<MAT::PAR::MuscleCombo*>(mat);
-        activationEvaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
+        activation_evaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
       }
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
@@ -225,7 +225,7 @@ void MAT::MuscleCombo::Unpack(const std::vector<char>& data)
     }
   }
 
-  anisotropyExtension_.UnpackAnisotropy(data, position);
+  anisotropy_extension_.UnpackAnisotropy(data, position);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
@@ -237,7 +237,7 @@ void MAT::MuscleCombo::Setup(int numgp, INPUT::LineDefinition* linedef)
   anisotropy_.SetNumberOfGaussPoints(numgp);
   anisotropy_.ReadAnisotropyFromElement(linedef);
 
-  activationEvaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
+  activation_evaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
 }
 
 void MAT::MuscleCombo::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
@@ -274,7 +274,7 @@ void MAT::MuscleCombo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::VOIGT::Stresses::MatrixToVector(invC, invCv);  // invCv
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  CORE::LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
+  CORE::LINALG::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
   CORE::LINALG::Matrix<6, 1> Mv(false);                  // Voigt notation
   CORE::LINALG::VOIGT::Stresses::MatrixToVector(M, Mv);  // Mv
   // structural tensor L = omega0/3*Identity + omegap*M
@@ -421,7 +421,7 @@ void MAT::MuscleCombo::EvaluateActiveNominalStress(Teuchos::ParameterList& param
   // compute force-time-space dependency Poptft
   const double Poptft =
       std::visit(ActivationEvalVisitor{Popt, t_tot, element_center_reference_coordinates, eleGID},
-          activationEvaluator_);
+          activation_evaluator_);
 
   // compute the force-stretch dependency fxi, its integral in the boundaries lambdaMin to lambdaM,
   // and its derivative w.r.t. lambdaM

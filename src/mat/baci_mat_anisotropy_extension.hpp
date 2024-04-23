@@ -241,7 +241,7 @@ namespace MAT
      *
      * \return FiberLocation
      */
-    virtual FiberLocation GetFiberLocation() const { return fiberLocation_; }
+    virtual FiberLocation GetFiberLocation() const { return fiber_location_; }
 
     /*!
      * \brief This method will be called by MAT::Anisotropy if element and Gauss point fibers are
@@ -283,7 +283,7 @@ namespace MAT
     void ComputeStructuralTensors_stress();
 
     /// Indication of the fiber location
-    FiberLocation fiberLocation_ = FiberLocation::None;
+    FiberLocation fiber_location_ = FiberLocation::None;
 
     /// Tensors needed for the evaluation
     std::uint_fast8_t tensor_flags_{};
@@ -298,15 +298,15 @@ namespace MAT
      * Structural tensors of the fibers in stress like Voigt notation. The ordering is the same as
      * in #fibers_
      */
-    std::vector<std::array<CORE::LINALG::Matrix<6, 1>, numfib>> fiberStructuralTensors_stress_;
+    std::vector<std::array<CORE::LINALG::Matrix<6, 1>, numfib>> fiber_structural_tensors_stress_;
 
     /**
      * Structural tensors of the fibers. The ordering is the same as in #fibers_
      */
-    std::vector<std::array<CORE::LINALG::Matrix<3, 3>, numfib>> fiberStructuralTensors_;
+    std::vector<std::array<CORE::LINALG::Matrix<3, 3>, numfib>> fiber_structural_tensors_;
 
     /// Structural tensor strategy
-    const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase> structuralTensorStrategy_ =
+    const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase> structural_tensor_strategy_ =
         Teuchos::null;
   };
 }  // namespace MAT

@@ -46,7 +46,7 @@ XFEM::XfaCouplingManager::XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
       }
 
       std::cout << "|== XFACoupling_Manager: Setup of Ale Structure Coupling! ==|" << std::endl;
-      Ale_Struct_coupling_ = Teuchos::rcp(new XFEM::CouplingCommManager(
+      ale_struct_coupling_ = Teuchos::rcp(new XFEM::CouplingCommManager(
           ale_->Discretization(), structure_->Discretization(), "StructAleCoupling"));
     }
   }
@@ -88,8 +88,8 @@ void XFEM::XfaCouplingManager::PredictCouplingStates()
 void XFEM::XfaCouplingManager::SetCouplingStates()
 {
   // 1 Sets structural conditioned Dispnp onto Ale
-  if (Ale_Struct_coupling_ != Teuchos::null)
-    Ale_Struct_coupling_->InsertVector(1, structure_->Dispnp(), 0, ale_->WriteAccessDispnp(),
+  if (ale_struct_coupling_ != Teuchos::null)
+    ale_struct_coupling_->InsertVector(1, structure_->Dispnp(), 0, ale_->WriteAccessDispnp(),
         XFEM::CouplingCommManager::full_to_full);
 
   // 2 Get AleDisplacements
@@ -123,11 +123,11 @@ void XFEM::XfaCouplingManager::AddCouplingMatrix(
 
   systemmatrix.Assign(idx_[1], idx_[1], CORE::LINALG::View, aii);
 
-  if (Ale_Struct_coupling_ != Teuchos::null)
+  if (ale_struct_coupling_ != Teuchos::null)
   {
     const int& aidx_as = ALE::UTILS::MapExtractor::cond_lung_asi;
     CORE::LINALG::SparseMatrix& ai_gau = a->Matrix(aidx_other, aidx_as);
-    Ale_Struct_coupling_->InsertMatrix(0, 0, ai_gau, 1, systemmatrix.Matrix(idx_[1], idx_[2]),
+    ale_struct_coupling_->InsertMatrix(0, 0, ai_gau, 1, systemmatrix.Matrix(idx_[1], idx_[2]),
         XFEM::CouplingCommManager::col, 1.0, true, false);
   }
 

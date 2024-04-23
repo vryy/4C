@@ -128,11 +128,11 @@ namespace FPSI
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform1_;  // g_fsi || F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform2_;  // g_fsi || F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
-        Cfgtransform_;  // full FluidField || F->S transform (FSI)
+        cfgtransform_;  // full FluidField || F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
-        Cfptransform_;  // full FluidField || F->S transform (FSI)
+        cfptransform_;  // full FluidField || F->S transform (FSI)
     Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
-        Cfptransform2_;  // full FluidField || F->S transform (FSI)
+        cfptransform2_;  // full FluidField || F->S transform (FSI)
 
     Teuchos::RCP<CORE::LINALG::MatrixColTransform>
         figtransform1_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)

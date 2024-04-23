@@ -520,36 +520,36 @@ void WEAR::LagrangeStrategyWear::Initialize()
 
     // linearizations w.r.t w
     smatrixW_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gactiven_, 3));  // gactiven_
-    linslipW_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gslipt_, 3));
+    linslip_w_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gslipt_, 3));
 
     // w - rhs
-    inactiveWearRhs_ = CORE::LINALG::CreateVector(*gwinact_, true);
+    inactive_wear_rhs_ = CORE::LINALG::CreateVector(*gwinact_, true);
 
     if (sswear_)
-      WearCondRhs_ = CORE::LINALG::CreateVector(*gactiven_, true);
+      wear_cond_rhs_ = CORE::LINALG::CreateVector(*gactiven_, true);
     else
-      WearCondRhs_ = CORE::LINALG::CreateVector(*gslipn_, true);
+      wear_cond_rhs_ = CORE::LINALG::CreateVector(*gslipn_, true);
 
     // both-sided discr wear
     if (wearbothpv_)
     {
       // basic matrices
-      twmatrixM_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      twmatrix_m_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *gmslipn_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));  // gsdofnrowmap_
-      ematrixM_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      ematrix_m_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *gmslipn_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));  // gsdofnrowmap_
 
       // linearizations w.r.t d and z
-      lintdisM_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      lintdis_m_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *gmslipn_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
-      lintlmM_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      lintlm_m_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *gmslipn_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
-      linedisM_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      linedis_m_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *gmslipn_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
       // w - rhs
-      inactiveWearRhsM_ = Teuchos::rcp(new Epetra_FEVector(*gwminact_));
-      WearCondRhsM_ = Teuchos::rcp(new Epetra_FEVector(*gmslipn_));
+      inactive_wear_rhs_m_ = Teuchos::rcp(new Epetra_FEVector(*gwminact_));
+      wear_cond_rhs_m_ = Teuchos::rcp(new Epetra_FEVector(*gmslipn_));
     }
   }
 
@@ -1978,8 +1978,8 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
     fw_z->Scale(-1.0);
 
     // this wear condrhs excludes the lm-part of the rhs
-    WearCondRhs_->Scale(-1.0);
-    inve->Multiply(false, *WearCondRhs_, *fw_wrhs);
+    wear_cond_rhs_->Scale(-1.0);
+    inve->Multiply(false, *wear_cond_rhs_, *fw_wrhs);
     fw_z->Update(1.0, *fw_wrhs, 1.0);
 
     fw_z->Scale(-1.0);
@@ -1997,7 +1997,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> linslipW_sl, linslipW_i, d5, d6;
   CORE::LINALG::SplitMatrix2x2(
-      linslipW_, gslipt_, gslipt_, gslipn_, gwinact_, linslipW_sl, linslipW_i, d5, d6);
+      linslip_w_, gslipt_, gslipt_, gslipn_, gwinact_, linslipW_sl, linslipW_i, d5, d6);
 
   /********************************************************************/
   /* (7) Build the final K blocks                                     */
@@ -2305,7 +2305,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
 
   if (aset && slipset) smatrixW_sl->Multiply(false, *fw_z, *fw_g);
 
-  if (aset && (iset || stickset)) smatrixW_i->Multiply(false, *inactiveWearRhs_, *fwi_g);
+  if (aset && (iset || stickset)) smatrixW_i->Multiply(false, *inactive_wear_rhs_, *fwi_g);
 
   //--------------------------------------------------------- FIFTH LINE
   Teuchos::RCP<Epetra_Map> gstickdofs =
@@ -2359,7 +2359,7 @@ void WEAR::LagrangeStrategyWear::CondenseWearDiscr(
   if (slipset) linslipW_sl->Multiply(false, *fw_z, *fw_sl);
 
   Teuchos::RCP<Epetra_Vector> fwi_sl = Teuchos::rcp(new Epetra_Vector(*gslipt_));
-  if (slipset && (iset || stickset)) linslipW_i->Multiply(false, *inactiveWearRhs_, *fwi_sl);
+  if (slipset && (iset || stickset)) linslipW_i->Multiply(false, *inactive_wear_rhs_, *fwi_sl);
 
   /********************************************************************/
   /* (9) Transform the final K blocks                                 */
@@ -2688,24 +2688,24 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
 
       // blocks for z-lines
       interface_[i]->AssembleLinG_W(*smatrixW_);
-      interface_[i]->AssembleLinSlip_W(*linslipW_);
+      interface_[i]->AssembleLinSlip_W(*linslip_w_);
 
       // w-line rhs
-      interface_[i]->AssembleInactiveWearRhs(*inactiveWearRhs_);
-      interface_[i]->AssembleWearCondRhs(*WearCondRhs_);
+      interface_[i]->AssembleInactiveWearRhs(*inactive_wear_rhs_);
+      interface_[i]->AssembleWearCondRhs(*wear_cond_rhs_);
 
       // for both-sided discrete wear
       if (wearbothpv_)
       {
         // blocks for w-lines
-        interface_[i]->AssembleTE_Master(*twmatrixM_, *ematrixM_);
-        interface_[i]->AssembleLinT_D_Master(*lintdisM_);
-        interface_[i]->AssembleLinT_LM_Master(*lintlmM_);
-        interface_[i]->AssembleLinE_D_Master(*linedisM_);
+        interface_[i]->AssembleTE_Master(*twmatrix_m_, *ematrix_m_);
+        interface_[i]->AssembleLinT_D_Master(*lintdis_m_);
+        interface_[i]->AssembleLinT_LM_Master(*lintlm_m_);
+        interface_[i]->AssembleLinE_D_Master(*linedis_m_);
 
         // w-line rhs
-        interface_[i]->AssembleInactiveWearRhs_Master(*inactiveWearRhsM_);
-        interface_[i]->AssembleWearCondRhs_Master(*WearCondRhsM_);
+        interface_[i]->AssembleInactiveWearRhs_Master(*inactive_wear_rhs_m_);
+        interface_[i]->AssembleWearCondRhs_Master(*wear_cond_rhs_m_);
       }
     }
   }  // end interface loop
@@ -2793,22 +2793,22 @@ void WEAR::LagrangeStrategyWear::EvaluateFriction(
     if (wearbothpv_)
     {
       smatrixW_->Complete(*galldofnrowmap_, *gactiven_);
-      linslipW_->Complete(*galldofnrowmap_, *gslipt_);
+      linslip_w_->Complete(*galldofnrowmap_, *gslipt_);
     }
     else
     {
       smatrixW_->Complete(*gsdofnrowmap_, *gactiven_);
-      linslipW_->Complete(*gsdofnrowmap_, *gslipt_);
+      linslip_w_->Complete(*gsdofnrowmap_, *gslipt_);
     }
 
     if (wearbothpv_)
     {
-      ematrixM_->Complete(*gmdofnrowmap_, *gmslipn_);
-      twmatrixM_->Complete(*gsdofnrowmap_, *gmslipn_);
+      ematrix_m_->Complete(*gmdofnrowmap_, *gmslipn_);
+      twmatrix_m_->Complete(*gsdofnrowmap_, *gmslipn_);
 
-      lintdisM_->Complete(*gsmdofrowmap_, *gmslipn_);
-      lintlmM_->Complete(*gsdofrowmap_, *gmslipn_);
-      linedisM_->Complete(*gsmdofrowmap_, *gmslipn_);
+      lintdis_m_->Complete(*gsmdofrowmap_, *gmslipn_);
+      lintlm_m_->Complete(*gsdofrowmap_, *gmslipn_);
+      linedis_m_->Complete(*gsmdofrowmap_, *gmslipn_);
     }
   }
 
@@ -3445,7 +3445,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kzw =
         Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100, false, true));
     if (gactiven_->NumGlobalElements()) kzw->Add(*smatrixW_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzw->Add(*linslipW_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzw->Add(*linslip_w_, false, 1.0, 1.0);
     kzw->Complete(*gsdofnrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
@@ -3499,12 +3499,12 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
 
     // export inactive wear rhs
     Teuchos::RCP<Epetra_Vector> WearCondRhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofnrowmap_));
-    CORE::LINALG::Export(*WearCondRhs_, *WearCondRhsexp);
+    CORE::LINALG::Export(*wear_cond_rhs_, *WearCondRhsexp);
 
     // export inactive wear rhs
     Teuchos::RCP<Epetra_Vector> inactiveWearRhsexp =
         Teuchos::rcp(new Epetra_Vector(*gsdofnrowmap_));
-    CORE::LINALG::Export(*inactiveWearRhs_, *inactiveWearRhsexp);
+    CORE::LINALG::Export(*inactive_wear_rhs_, *inactiveWearRhsexp);
 
     wearrhs->Update(1.0, *WearCondRhsexp, 1.0);
     wearrhs->Update(1.0, *inactiveWearRhsexp, 1.0);
@@ -3624,7 +3624,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kzw =
         Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100, false, true));
     if (gactiven_->NumGlobalElements()) kzw->Add(*smatrixW_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzw->Add(*linslipW_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzw->Add(*linslip_w_, false, 1.0, 1.0);
     kzw->Complete(*galldofnrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
@@ -3636,8 +3636,8 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
     // build wear matrix kwmd
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kwmd =
         Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gmdofnrowmap_, 100, false, true));
-    if (gmslipn_->NumGlobalElements()) kwmd->Add(*lintdisM_, false, -wcoeffM, 1.0);
-    if (gmslipn_->NumGlobalElements()) kwmd->Add(*linedisM_, false, 1.0, 1.0);
+    if (gmslipn_->NumGlobalElements()) kwmd->Add(*lintdis_m_, false, -wcoeffM, 1.0);
+    if (gmslipn_->NumGlobalElements()) kwmd->Add(*linedis_m_, false, 1.0, 1.0);
     if (gmslipn_->NumGlobalElements()) kwmd->Complete(*gdisprowmap_, *gmdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
@@ -3651,7 +3651,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
     // build wear matrix kwmz
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kwmz =
         Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gmdofnrowmap_, 100, false, true));
-    if (gmslipn_->NumGlobalElements()) kwmz->Add(*lintlmM_, false, -wcoeffM, 1.0);
+    if (gmslipn_->NumGlobalElements()) kwmz->Add(*lintlm_m_, false, -wcoeffM, 1.0);
     kwmz->Complete(*gsdofrowmap_, *gmdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
@@ -3661,7 +3661,7 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
     // build wear matrix kwmwm
     Teuchos::RCP<CORE::LINALG::SparseMatrix> kwmwm =
         Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gmdofnrowmap_, 100, false, true));
-    if (gmslipn_->NumGlobalElements()) kwmwm->Add(*ematrixM_, false, 1.0, 1.0);
+    if (gmslipn_->NumGlobalElements()) kwmwm->Add(*ematrix_m_, false, 1.0, 1.0);
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Vector> oneswm = Teuchos::rcp(new Epetra_Vector(*gwminact_));
@@ -3725,12 +3725,12 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
 
     // export inactive wear rhs
     Teuchos::RCP<Epetra_Vector> WearCondRhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofnrowmap_));
-    CORE::LINALG::Export(*WearCondRhs_, *WearCondRhsexp);
+    CORE::LINALG::Export(*wear_cond_rhs_, *WearCondRhsexp);
 
     // export inactive wear rhs
     Teuchos::RCP<Epetra_Vector> inactiveWearRhsexp =
         Teuchos::rcp(new Epetra_Vector(*gsdofnrowmap_));
-    CORE::LINALG::Export(*inactiveWearRhs_, *inactiveWearRhsexp);
+    CORE::LINALG::Export(*inactive_wear_rhs_, *inactiveWearRhsexp);
 
     wearrhs->Update(1.0, *WearCondRhsexp, 1.0);
     wearrhs->Update(1.0, *inactiveWearRhsexp, 1.0);
@@ -3742,12 +3742,12 @@ void WEAR::LagrangeStrategyWear::BuildSaddlePointSystem(
     // ***************************************************************************************************
     // export inactive wear rhs
     Teuchos::RCP<Epetra_Vector> WearCondRhsexpM = Teuchos::rcp(new Epetra_Vector(*gmdofnrowmap_));
-    CORE::LINALG::Export(*WearCondRhsM_, *WearCondRhsexpM);
+    CORE::LINALG::Export(*wear_cond_rhs_m_, *WearCondRhsexpM);
 
     // export inactive wear rhs
     Teuchos::RCP<Epetra_Vector> inactiveWearRhsexpM =
         Teuchos::rcp(new Epetra_Vector(*gmdofnrowmap_));
-    CORE::LINALG::Export(*inactiveWearRhsM_, *inactiveWearRhsexpM);
+    CORE::LINALG::Export(*inactive_wear_rhs_m_, *inactiveWearRhsexpM);
 
     wearrhsM->Update(1.0, *WearCondRhsexpM, 1.0);
     wearrhsM->Update(1.0, *inactiveWearRhsexpM, 1.0);
@@ -4418,7 +4418,7 @@ void WEAR::LagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
     }
     // wear rhs  for inactive/stick nodes
     Teuchos::RCP<Epetra_Vector> wrhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofnrowmap_));
-    CORE::LINALG::Export(*inactiveWearRhs_, *wrhsexp);
+    CORE::LINALG::Export(*inactive_wear_rhs_, *wrhsexp);
     wincr_->Update(1.0, *wrhsexp, 1.0);
     w_->Update(1.0, *wincr_, 1.0);
   }

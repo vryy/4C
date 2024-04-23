@@ -87,7 +87,7 @@ namespace XFEM
     Teuchos::RCP<ADAPTER::Structure> structure_;
 
     //! ALE-Structure coupling object on the matching interface
-    Teuchos::RCP<XFEM::CouplingCommManager> Ale_Struct_coupling_;
+    Teuchos::RCP<XFEM::CouplingCommManager> ale_struct_coupling_;
   };
 }  // namespace XFEM
 FOUR_C_NAMESPACE_CLOSE

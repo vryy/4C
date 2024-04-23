@@ -70,8 +70,8 @@ void CORE::GEO::CUT::Parallel::CommunicateNodePositions()
     }
 
     // check if there are undecided node positions on this proc
-    bool undecided_nodes =
-        mesh_.CheckForUndecidedNodePositions(curr_undecidedNodePos_, curr_undecidedNodePos_shadow_);
+    bool undecided_nodes = mesh_.CheckForUndecidedNodePositions(
+        curr_undecided_node_pos_, curr_undecided_node_pos_shadow_);
 
     // no undecided node positions -> procDone=true
     // undecided node positions -> procDone=false
@@ -207,8 +207,8 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
 
       //--------------------
       // copy from std::map<plain_int_set, int> -> std::map<std::vector<int>, int>
-      for (std::map<plain_int_set, int>::iterator it = curr_undecidedNodePos_shadow_.begin();
-           it != curr_undecidedNodePos_shadow_.end(); it++)
+      for (std::map<plain_int_set, int>::iterator it = curr_undecided_node_pos_shadow_.begin();
+           it != curr_undecided_node_pos_shadow_.end(); it++)
       {
         std::vector<int> tmp_vec;
         tmp_vec.clear();
@@ -227,12 +227,12 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
 
       CORE::COMM::PackBuffer dataSend;  // data to be sent
 
-      CORE::COMM::ParObject::AddtoPack(dataSend, curr_undecidedNodePos_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, curr_undecided_node_pos_);
       CORE::COMM::ParObject::AddtoPack(dataSend, tmp_curr_undecidedNodePos_shadow);
 
       dataSend.StartPacking();
 
-      CORE::COMM::ParObject::AddtoPack(dataSend, curr_undecidedNodePos_);
+      CORE::COMM::ParObject::AddtoPack(dataSend, curr_undecided_node_pos_);
       CORE::COMM::ParObject::AddtoPack(dataSend, tmp_curr_undecidedNodePos_shadow);
 
 
@@ -243,14 +243,14 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
       std::vector<char>::size_type posinData = 0;
 
       // clear vector that should be filled
-      curr_undecidedNodePos_.clear();
-      curr_undecidedNodePos_shadow_.clear();
+      curr_undecided_node_pos_.clear();
+      curr_undecided_node_pos_shadow_.clear();
       tmp_curr_undecidedNodePos_shadow.clear();
 
       // unpack received data
       while (posinData < dataRecv.size())
       {
-        CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, curr_undecidedNodePos_);
+        CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, curr_undecided_node_pos_);
         CORE::COMM::ParObject::ExtractfromPack(
             posinData, dataRecv, tmp_curr_undecidedNodePos_shadow);
 
@@ -267,7 +267,8 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
             tmp_set.insert(*vec_it);
           }
 
-          curr_undecidedNodePos_shadow_.insert(std::pair<plain_int_set, int>(tmp_set, it->second));
+          curr_undecided_node_pos_shadow_.insert(
+              std::pair<plain_int_set, int>(tmp_set, it->second));
         }
         //--------------------
       }
@@ -281,8 +282,8 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
     //-------------------------------------
     //---------------------------------------------------------------------------------------------------------------
     // find node positions for received nodes and set position if possible
-    for (std::map<int, int>::iterator it = curr_undecidedNodePos_.begin();
-         it != curr_undecidedNodePos_.end(); it++)
+    for (std::map<int, int>::iterator it = curr_undecided_node_pos_.begin();
+         it != curr_undecided_node_pos_.end(); it++)
     {
       int nid = it->first;
       int pos = it->second;
@@ -320,8 +321,8 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
     //---------------------------------------------------------------------------------------------------------------
     // do the same for shadow nodes in case of quadratic elements
     // find node positions for received shadow! nodes and set position if possible
-    for (std::map<plain_int_set, int>::iterator it = curr_undecidedNodePos_shadow_.begin();
-         it != curr_undecidedNodePos_shadow_.end(); it++)
+    for (std::map<plain_int_set, int>::iterator it = curr_undecided_node_pos_shadow_.begin();
+         it != curr_undecided_node_pos_shadow_.end(); it++)
     {
       const plain_int_set& nids = it->first;
       int pos = it->second;
@@ -373,8 +374,8 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
 void CORE::GEO::CUT::Parallel::distributeMyReceivedNodePositionData()
 {
   // distribute the received data for myproc
-  for (std::map<int, int>::iterator it = curr_undecidedNodePos_.begin();
-       it != curr_undecidedNodePos_.end(); it++)
+  for (std::map<int, int>::iterator it = curr_undecided_node_pos_.begin();
+       it != curr_undecided_node_pos_.end(); it++)
   {
     int nid = it->first;
     Point::PointPosition received_pos = (Point::PointPosition)it->second;
@@ -398,8 +399,8 @@ void CORE::GEO::CUT::Parallel::distributeMyReceivedNodePositionData()
   // do the same for shadow nodes in case of quadratic elements
 
   // distribute the received data for myproc
-  for (std::map<plain_int_set, int>::iterator it = curr_undecidedNodePos_shadow_.begin();
-       it != curr_undecidedNodePos_shadow_.end(); it++)
+  for (std::map<plain_int_set, int>::iterator it = curr_undecided_node_pos_shadow_.begin();
+       it != curr_undecided_node_pos_shadow_.end(); it++)
   {
     const plain_int_set& nids = it->first;
     Point::PointPosition received_pos = (Point::PointPosition)it->second;
@@ -468,10 +469,10 @@ void CORE::GEO::CUT::Parallel::CommunicateNodeDofSetNumbers(bool include_inner)
   //
   //  const double t_start = Teuchos::Time::wallTime();
 
-  dofSetData_.clear();
+  dof_set_data_.clear();
 
   // check if there are missing dofset for volumecells on this proc
-  parentintersection_.FillParallelDofSetData(dofSetData_, *discret_, include_inner);
+  parentintersection_.FillParallelDofSetData(dof_set_data_, *discret_, include_inner);
 
 
   // perform just one Robin round to gather data from other procs
@@ -527,8 +528,8 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
 
       // packing the data
       for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator data =
-               dofSetData_.begin();
-           data != dofSetData_.end(); data++)
+               dof_set_data_.begin();
+           data != dof_set_data_.end(); data++)
       {
         CORE::COMM::ParObject::AddtoPack(dataSend, (*data)->set_index_);
         CORE::COMM::ParObject::AddtoPack(dataSend, (int)(*data)->inside_cell_);
@@ -541,8 +542,8 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
 
       // packing the data
       for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator data =
-               dofSetData_.begin();
-           data != dofSetData_.end(); data++)
+               dof_set_data_.begin();
+           data != dof_set_data_.end(); data++)
       {
         CORE::COMM::ParObject::AddtoPack(dataSend, (*data)->set_index_);
         CORE::COMM::ParObject::AddtoPack(dataSend, (int)(*data)->inside_cell_);
@@ -558,7 +559,7 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
       std::vector<char>::size_type posinData = 0;
 
       // clear vector that should be filled
-      dofSetData_.clear();
+      dof_set_data_.clear();
 
       // unpack received data
       while (posinData < dataRecv.size())
@@ -578,7 +579,7 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
         CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, node_dofsetnumber_map);
 
         // create a new dofSetData object with unpacked data
-        dofSetData_.push_back(Teuchos::rcp(new CORE::GEO::CUT::MeshIntersection::DofSetData(
+        dof_set_data_.push_back(Teuchos::rcp(new CORE::GEO::CUT::MeshIntersection::DofSetData(
             set_index, (bool)inside_cell, cut_points_coords, peid, node_dofsetnumber_map)));
       }
 
@@ -593,8 +594,8 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
     //-------------------------------------
     //---------------------------------------------------------------------------------------------------------------
     for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator vc_data =
-             dofSetData_.begin();
-         vc_data != dofSetData_.end(); vc_data++)
+             dof_set_data_.begin();
+         vc_data != dof_set_data_.end(); vc_data++)
     {
       bool find_volumecell = false;  // do we have to identify the received volumecell on myrank?
 
@@ -774,8 +775,9 @@ void CORE::GEO::CUT::Parallel::distributeDofSetData()
 {
   // back to the original proc
 
-  for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator data = dofSetData_.begin();
-       data != dofSetData_.end(); data++)
+  for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator data =
+           dof_set_data_.begin();
+       data != dof_set_data_.end(); data++)
   {
     // set data in first volumecell of set with setindex
 
@@ -1245,8 +1247,8 @@ void CORE::GEO::CUT::Parallel::sendData(
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Parallel::printDofSetData()
 {
-  for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator i = dofSetData_.begin();
-       i != dofSetData_.end(); i++)
+  for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator i = dof_set_data_.begin();
+       i != dof_set_data_.end(); i++)
   {
     (*i)->print();
   }
