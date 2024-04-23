@@ -60,83 +60,57 @@ namespace THR
    */
   inline std::string ActionToString(const Action action)
   {
-    std::string s = "";
     switch (action)
     {
       case none:
-        s = "none";
-        break;
+        return "none";
       case calc_thermo_fint:
-        s = "calc_thermo_fint";
-        break;
+        return "calc_thermo_fint";
       case calc_thermo_fintcapa:
-        s = "calc_thermo_fintcapa";
-        break;
+        return "calc_thermo_fintcapa";
       case calc_thermo_finttang:
-        s = "calc_thermo_finttang";
-        break;
+        return "calc_thermo_finttang";
       case calc_thermo_heatflux:
-        s = "calc_thermo_heatflux";
-        break;
+        return "calc_thermo_heatflux";
       case postproc_thermo_heatflux:
-        s = "postproc_thermo_heatflux";
-        break;
+        return "postproc_thermo_heatflux";
       case integrate_shape_functions:
-        s = "integrate_shape_functions";
-        break;
+        return "integrate_shape_functions";
       case calc_thermo_update_istep:
-        s = "calc_thermo_update_istep";
-        break;
+        return "calc_thermo_update_istep";
       case calc_thermo_reset_istep:
-        s = "calc_thermo_reset_istep";
-        break;
+        return "calc_thermo_reset_istep";
       case calc_thermo_energy:
-        s = "calc_thermo_energy";
-        break;
+        return "calc_thermo_energy";
       case calc_thermo_coupltang:
-        s = "calc_thermo_coupltang";
-        break;
+        return "calc_thermo_coupltang";
       case calc_thermo_fintcond:
-        s = "calc_thermo_fintcond";
-        break;
+        return "calc_thermo_fintcond";
       default:
         FOUR_C_THROW("no string for action %d defined!", action);
-        break;
     };
-    return s;
   }
 
   inline std::string BoundaryActionToString(const BoundaryAction baction)
   {
-    std::string s = "";
     switch (baction)
     {
       case ba_none:
-        s = "ba_none";
-        break;
+        return "ba_none";
       case calc_thermo_fextconvection:
-        s = "calc_thermo_fextconvection";
-        break;
+        return "calc_thermo_fextconvection";
       case calc_thermo_fextconvection_coupltang:
-        s = "calc_thermo_fextconvection_coupltang";
-        break;
+        return "calc_thermo_fextconvection_coupltang";
       case calc_normal_vectors:
-        s = "calc_normal_vectors";
-        break;
+        return "calc_normal_vectors";
       case ba_integrate_shape_functions:
-        s = "ba_integrate_shape_functions";
-        break;
+        return "ba_integrate_shape_functions";
       default:
-        std::cout << baction << std::endl;
-        FOUR_C_THROW("no string for this boundary action defined!");
-        break;
+        FOUR_C_THROW("no string for the boundary action %d defined!", baction);
     };
-    return s;
   }
 
-
 }  // namespace THR
-
 
 FOUR_C_NAMESPACE_CLOSE
 
