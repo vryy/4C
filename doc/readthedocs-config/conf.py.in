@@ -75,11 +75,11 @@ rst_prolog = """
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-# Default is sphinx-rtd-theme (set in var BACI_SPHINX_THEME)
+# Default is sphinx-rtd-theme (set in var FOUR_C_SPHINX_THEME)
 # can be overridden by setting the variable explicitly if desired,
 # e.g. 'classic', 'alabaster', etc.
 #
-html_theme = "@BACI_SPHINX_THEME@"
+html_theme = "@FOUR_C_SPHINX_THEME@"
 
 html_theme_options = {
     "collapse_navigation": False,

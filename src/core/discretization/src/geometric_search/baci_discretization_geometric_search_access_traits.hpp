@@ -16,7 +16,7 @@
 
 #include "baci_discretization_geometric_search_bounding_volume.hpp"
 
-#ifdef BACI_WITH_ARBORX
+#ifdef FOUR_C_WITH_ARBORX
 #include <ArborX.hpp>
 
 namespace ArborX

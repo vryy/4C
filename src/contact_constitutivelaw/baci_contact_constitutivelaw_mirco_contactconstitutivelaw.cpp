@@ -14,7 +14,7 @@
 #include "baci_linalg_serialdensevector.hpp"
 #include "baci_mat_par_bundle.hpp"
 
-#ifdef BACI_WITH_MIRCO
+#ifdef FOUR_C_WITH_MIRCO
 
 #include <mirco_evaluate.h>
 #include <mirco_topology.h>

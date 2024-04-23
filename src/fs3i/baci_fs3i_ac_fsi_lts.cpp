@@ -866,7 +866,7 @@ void FS3I::MeanManager::AddValue(
 {
   if (type == "wss")
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
     // check, whether maps are the same
     if (not value->Map().PointSameAs(sum_wss_->Map()))
     {
@@ -879,7 +879,7 @@ void FS3I::MeanManager::AddValue(
   }
   else if (type == "phi")
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
     // check, whether maps are the same
     if (not value->Map().PointSameAs(sum_phi_->Map()))
     {
@@ -892,7 +892,7 @@ void FS3I::MeanManager::AddValue(
   }
   else if (type == "pressure")
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
     // check, whether maps are the same
     if (not value->Map().PointSameAs(sum_pres_->Map()))
     {

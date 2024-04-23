@@ -87,7 +87,7 @@ namespace
     DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::hex8>(
         hex8ele, xicenterhex8ele, hex8elecoords);
 
-    BACI_EXPECT_NEAR(hex8elecoords, hex8refsolution, 1e-14);
+    FOUR_C_EXPECT_NEAR(hex8elecoords, hex8refsolution, 1e-14);
 
     // get quad4 element and test it
     const DRT::Element* quad4ele = testdis_->gElement(1);
@@ -100,7 +100,7 @@ namespace
     DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::quad4>(
         quad4ele, xicenterquad4ele, quad4elecoords);
 
-    BACI_EXPECT_NEAR(quad4elecoords, quad4refsolution, 1e-14);
+    FOUR_C_EXPECT_NEAR(quad4elecoords, quad4refsolution, 1e-14);
 
     // get tet4 element stuff and test it
     const DRT::Element* tet4ele = testdis_->gElement(2);
@@ -114,7 +114,7 @@ namespace
     DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tet4>(
         tet4ele, xicentertet4ele, tet4elecoords);
 
-    BACI_EXPECT_NEAR(tet4elecoords, tet4refsolution, 1e-14);
+    FOUR_C_EXPECT_NEAR(tet4elecoords, tet4refsolution, 1e-14);
 
     // get tri3 element and test it
     const DRT::Element* tri3ele = testdis_->gElement(3);
@@ -128,7 +128,7 @@ namespace
     DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, CORE::FE::CellType::tri3>(
         tri3ele, xicentertri3ele, tri3elecoords);
 
-    BACI_EXPECT_NEAR(tri3elecoords, tri3refsolution, 1e-14);
+    FOUR_C_EXPECT_NEAR(tri3elecoords, tri3refsolution, 1e-14);
   }
 
   TEST_F(UtilsRefConfigTest, ComputeUnitNormalAtXiRefConfig)
@@ -144,7 +144,7 @@ namespace
     DRT::UTILS::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::quad4>(
         quad4ele, xicenterquad4ele, quad4elecoords);
 
-    BACI_EXPECT_NEAR(quad4elecoords, quad4refsolution, 1e-14);
+    FOUR_C_EXPECT_NEAR(quad4elecoords, quad4refsolution, 1e-14);
 
     // get tri3 element and test it
     const DRT::Element* tri3ele = testdis_->gElement(3);
@@ -158,6 +158,6 @@ namespace
     DRT::UTILS::ComputeUnitNormalAtXiRefConfig<CORE::FE::CellType::tri3>(
         tri3ele, xicentertri3ele, tri3elecoords);
 
-    BACI_EXPECT_NEAR(tri3elecoords, tri3refsolution, 1e-14);
+    FOUR_C_EXPECT_NEAR(tri3elecoords, tri3refsolution, 1e-14);
   }
 }  // namespace

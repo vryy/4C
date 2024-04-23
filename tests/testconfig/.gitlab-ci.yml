@@ -3,27 +3,27 @@
 # N.B. This doesn't say anything about which jobs are run but only determines
 # if a pipeline is created.
 workflow:
-  name: $BACI_PIPELINE_NAME
+  name: $FOUR_C_PIPELINE_NAME
   rules:
     # for merge requests
   - if: $CI_MERGE_REQUEST_IID
     variables:
-      BACI_PIPELINE_NAME: MR pipeline for '$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME'
+      FOUR_C_PIPELINE_NAME: MR pipeline for '$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME'
         # for tags
   - if: $CI_COMMIT_TAG
     variables:
-      BACI_PIPELINE_NAME: Tag pipeline for '$CI_COMMIT_TAG'
+      FOUR_C_PIPELINE_NAME: Tag pipeline for '$CI_COMMIT_TAG'
         # for a merge to the default branch
   - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     variables:
-      BACI_PIPELINE_NAME: Post-merge pipeline for '$CI_COMMIT_TITLE'
+      FOUR_C_PIPELINE_NAME: Post-merge pipeline for '$CI_COMMIT_TITLE'
   - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     variables:
-      BACI_PIPELINE_NAME: Scheduled pipeline for '$CI_COMMIT_TITLE'
+      FOUR_C_PIPELINE_NAME: Scheduled pipeline for '$CI_COMMIT_TITLE'
         # if manually triggered with the web interface's "run pipeline"
   - if: $CI_PIPELINE_SOURCE == "web"
     variables:
-      BACI_PIPELINE_NAME: Manual pipeline for '$CI_COMMIT_BRANCH'
+      FOUR_C_PIPELINE_NAME: Manual pipeline for '$CI_COMMIT_BRANCH'
 
 #-------------------------------------------------------------------------------
 # Define global variables for all jobs
@@ -45,15 +45,15 @@ variables:
 
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
-  BACI_DOCKER_BUILD_IMAGES: 'False'
-  BACI_DOCKER_DEPENDENCIES_HASH: 64f288a5
-  BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies
-  BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $BACI_DOCKER_DEPENDENCIES_IMAGE:$BACI_DOCKER_DEPENDENCIES_HASH
+  FOUR_C_DOCKER_BUILD_IMAGES: 'False'
+  FOUR_C_DOCKER_DEPENDENCIES_HASH: 9a72bec9
+  FOUR_C_DOCKER_DEPENDENCIES_IMAGE: 4c-dependencies
+  FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $FOUR_C_DOCKER_DEPENDENCIES_IMAGE:$FOUR_C_DOCKER_DEPENDENCIES_HASH
 
   # Variables for Trilinos pipeline
   # The default Trilinos commit ref the Trilinos pipeline is running on
   TRILINOS_PIPELINE_COMMIT_REF: develop
-  BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS: baci-dependencies-trilinos:$TRILINOS_PIPELINE_COMMIT_REF
+  FOUR_C_DOCKER_DEPENDENCIES_IMAGE_TRILINOS: 4c-dependencies-trilinos:$TRILINOS_PIPELINE_COMMIT_REF
 
 .compute-dependencies-hash: &compute-dependencies-hash
   # compute short hash from contents of folder dependencies and docker (exclude trilinos_config and README.md files)
@@ -63,11 +63,11 @@ variables:
 before_script:
 - git config --global --add safe.directory ${CI_PROJECT_DIR}
 - *compute-dependencies-hash
-- if [ "${COMPUTED_DOCKER_DEPENDENCIES_HASH}" != "$BACI_DOCKER_DEPENDENCIES_HASH"
+- if [ "${COMPUTED_DOCKER_DEPENDENCIES_HASH}" != "$FOUR_C_DOCKER_DEPENDENCIES_HASH"
   ]; then echo "Docker image version hash does not match the hash of the dependencies.
   You likely need to change the hash to ${COMPUTED_DOCKER_DEPENDENCIES_HASH} and rebuild
   the dependencies." && exit 1; else echo "Running on the correct docker image version
-  with hash $BACI_DOCKER_DEPENDENCIES_HASH."; fi
+  with hash $FOUR_C_DOCKER_DEPENDENCIES_HASH."; fi
 
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
@@ -114,7 +114,7 @@ before_script:
 - grep -B 200 '*Failed\|*Timeout' ${CI_PROJECT_DIR}/test.log || true
 - sed -n '/tests passed,/,//p' ${CI_PROJECT_DIR}/test.log
   # Specify which configuration was tested by this pipeline
-- 'echo Baci build type: $CTEST_BUILD_TYPE_GITLAB'
+- 'echo 4C build type: $CTEST_BUILD_TYPE_GITLAB'
   # Move the log files to the source folder, so it can be found by artifacts.
 - cd ${CI_PROJECT_DIR}
 
@@ -218,12 +218,12 @@ before_script:
 # codeclimate job
 .codeclimate:
   stage: checkcode
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   script:
   - *clean-build-folder
   - mkdir ../baci-build/ && cd ../baci-build/
     # configure to get a compilation database
-  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} -DCMAKE_CXX_COMPILER="clang++" -DBACI_BUILD_READTHEDOCS=OFF
+  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} -DCMAKE_CXX_COMPILER="clang++" -DFOUR_C_BUILD_READTHEDOCS=OFF
     --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
     # create  and activate virtual environment
   - python3 -m venv venv
@@ -264,9 +264,9 @@ before_script:
   - rm -rf ../baci-build/
   - mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
 
-    # Configure and build (setting BACI_BUILD_READTHEDOCS=OFF, so that we don't need the python virtual environment
+    # Configure and build (setting FOUR_C_BUILD_READTHEDOCS=OFF, so that we don't need the python virtual environment
   - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
-    -DBACI_BUILD_READTHEDOCS=OFF
+    -DFOUR_C_BUILD_READTHEDOCS=OFF
   - ${CMAKE_COMMAND} --build . --target doxygen > ${CI_PROJECT_DIR}/doxygen.log
 
     # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
@@ -342,7 +342,7 @@ stages:
 
 checkcode:
   stage: checkcode
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   script:
   - echo code check
   - ./create-baci-python-venv
@@ -419,7 +419,7 @@ codeclimate-mr:
 
 buildtest_coverage:
   extends: .buildtest_coverage
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     # increase the global test timeout
     GLOBAL_TEST_TIMEOUT_SCALE: '50'
@@ -488,7 +488,7 @@ pages: # job name needs to be pages
 
 doxygen:
   extends: .doxygen
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
     CMAKE_COMMAND: cmake
@@ -526,16 +526,16 @@ build-base-dependencies:
   - echo $CI_REGISTRY_IMAGE
   - echo $CI_REGISTRY
   - echo "Generating BACI dependencies docker image with version-hash $COMPUTED_DOCKER_DEPENDENCIES_HASH"
-  - FULL_IMAGE_PATH="$CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE:$COMPUTED_DOCKER_DEPENDENCIES_HASH"
+  - FULL_IMAGE_PATH="$CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE:$COMPUTED_DOCKER_DEPENDENCIES_HASH"
   - docker build --no-cache --tag $FULL_IMAGE_PATH --file docker/Dockerfile .
   - docker push $FULL_IMAGE_PATH
   rules:
-  - if: $BACI_DOCKER_BUILD_IMAGES == "True"
+  - if: $FOUR_C_DOCKER_BUILD_IMAGES == "True"
     when: manual
 
 buildtest_full_release:
   extends: .buildtest_full
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
@@ -554,7 +554,7 @@ buildtest_full_release:
 
 buildtest_full_release_asan:
   extends: .buildtest_full
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     GLOBAL_TEST_TIMEOUT_SCALE: '10'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_asan
@@ -577,7 +577,7 @@ buildtest_full_release_asan:
 
 buildtest_full_debug:
   extends: .buildtest_daily_debug
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
     CMAKE_COMMAND: cmake
@@ -593,7 +593,7 @@ buildtest_full_debug:
   interruptible: true
 
 build-verify-headers:
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     NUMBER_OF_BUILD_THREADS: '10'
     CMAKE_COMMAND: cmake
@@ -627,7 +627,7 @@ build-verify-headers:
 
 readthedocs:
   extends: .readthedocs
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
     CMAKE_COMMAND: cmake
@@ -662,7 +662,7 @@ build-base-dependencies-trilinos-develop:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
   - echo "Generating BACI dependencies docker image with Trilinos version $TRILINOS_PIPELINE_COMMIT_REF"
-  - FULL_IMAGE_PATH="$CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS"
+  - FULL_IMAGE_PATH="$CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_TRILINOS"
   - docker build --no-cache --build-arg NPROCS=`nproc` --build-arg TRILINOS_VERSION="$TRILINOS_PIPELINE_COMMIT_REF"
     --tag $FULL_IMAGE_PATH --file docker/trilinos_develop/Dockerfile .
   - docker push $FULL_IMAGE_PATH
@@ -672,7 +672,7 @@ build-base-dependencies-trilinos-develop:
 
 buildtest_full_release_trilinos_develop:
   extends: .buildtest_full
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
@@ -689,7 +689,7 @@ buildtest_full_release_trilinos_develop:
 
 buildtest_full_debug_trilinos_develop:
   extends: .buildtest_daily_debug
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
   variables:
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
     CMAKE_COMMAND: cmake

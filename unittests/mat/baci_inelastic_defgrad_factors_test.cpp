@@ -374,7 +374,7 @@ namespace
       // create object
       auto growth_direction = MAT::PAR::InelasticDeformationDirection(growth_directions[i]);
       // check the results
-      BACI_EXPECT_NEAR(growth_direction.GrowthDirMat(), growth_direction_solutions[i], 1.0e-12);
+      FOUR_C_EXPECT_NEAR(growth_direction.GrowthDirMat(), growth_direction_solutions[i], 1.0e-12);
     }
   }
 
@@ -409,7 +409,7 @@ namespace
 
     lin_scalar_iso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
     DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 2.977205763668e-07;
-    BACI_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
 
     // clear variables and next test
     DFinDx.Clear();
@@ -421,14 +421,14 @@ namespace
     DFinDx_ref(3) = DFinDx_ref(6) = 3.367081656716e-07;
     DFinDx_ref(4) = DFinDx_ref(7) = 1.010124497015e-07;
     DFinDx_ref(5) = DFinDx_ref(8) = 2.020248994030e-07;
-    BACI_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
 
     // clear variables and next test
     DFinDx.Clear();
     DFinDx_ref.Clear();
     poly_intercal_frac_iso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
     DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 3.399216373729e-07;
-    BACI_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
 
     // clear variables and next test
     DFinDx.Clear();
@@ -440,14 +440,14 @@ namespace
     DFinDx_ref(3) = DFinDx_ref(6) = 3.811836067476e-07;
     DFinDx_ref(4) = DFinDx_ref(7) = 1.143550820243e-07;
     DFinDx_ref(5) = DFinDx_ref(8) = 2.287101640486e-07;
-    BACI_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
 
     // clear variables and next test
     DFinDx.Clear();
     DFinDx_ref.Clear();
     lin_temp_iso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
     DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 3.373943094440e-04;
-    BACI_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(DFinDx, DFinDx_ref, 1.0e-10);
   }
 
   TEST_F(InelasticDefgradFactorsTest, TestEvaluateInverseInelasticDefGrad)
@@ -459,7 +459,7 @@ namespace
     lin_scalar_iso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
 
     // compare the results
-    BACI_EXPECT_NEAR(iFin, iFin_lin_scalar_iso_solution_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(iFin, iFin_lin_scalar_iso_solution_, 1.0e-10);
 
     // clear matrix to be filled again
     iFin.Clear();
@@ -468,7 +468,7 @@ namespace
     lin_scalar_aniso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
 
     // compare the results
-    BACI_EXPECT_NEAR(iFin, iFin_lin_scalar_aniso_solution_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(iFin, iFin_lin_scalar_aniso_solution_, 1.0e-10);
 
     // clear matrix to be filled again
     iFin.Clear();
@@ -477,7 +477,7 @@ namespace
     poly_intercal_frac_iso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
 
     // compare the results
-    BACI_EXPECT_NEAR(iFin, iFin_poly_intercal_frac_iso_solution_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(iFin, iFin_poly_intercal_frac_iso_solution_, 1.0e-10);
 
     // clear matrix to be filled again
     iFin.Clear();
@@ -486,7 +486,7 @@ namespace
     poly_intercal_frac_aniso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
 
     // compare the results
-    BACI_EXPECT_NEAR(iFin, iFin_poly_intercal_frac_aniso_solution_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(iFin, iFin_poly_intercal_frac_aniso_solution_, 1.0e-10);
 
     // clear matrix to be filled again
     iFin.Clear();
@@ -495,7 +495,7 @@ namespace
     lin_temp_iso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
 
     // compare the results
-    BACI_EXPECT_NEAR(iFin, iFin_lin_temp_iso_solution_, 1.0e-15);
+    FOUR_C_EXPECT_NEAR(iFin, iFin_lin_temp_iso_solution_, 1.0e-15);
   }
 
   TEST_F(InelasticDefgradFactorsTest, TestEvaluateAdditionalCmat)
@@ -527,7 +527,7 @@ namespace
         &FM_, iFin_lin_scalar_iso_solution_, iCV, dSdiFin_, CMatAdd);
 
     // compare the results
-    BACI_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
 
     // clear matrix before test of next method
     CMatAdd.Clear();
@@ -547,7 +547,7 @@ namespace
         &FM_, iFin_lin_scalar_aniso_solution_, iCV, dSdiFin_, CMatAdd);
 
     // compare the results
-    BACI_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
 
     // clear matrix before test of next method
     CMatAdd.Clear();
@@ -567,7 +567,7 @@ namespace
         &FM_, iFin_poly_intercal_frac_iso_solution_, iCV, dSdiFin_, CMatAdd);
 
     // compare the results
-    BACI_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
 
     // clear matrix before test of next method
     CMatAdd.Clear();
@@ -587,7 +587,7 @@ namespace
         &FM_, iFin_poly_intercal_frac_aniso_solution_, iCV, dSdiFin_, CMatAdd);
 
     // compare the results
-    BACI_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-10);
 
     // clear matrix before test of next method
     CMatAdd.Clear();
@@ -600,7 +600,7 @@ namespace
         &FM_, iFin_lin_temp_iso_solution_, iCV, dSdiFin_, CMatAdd);
 
     // compare the results
-    BACI_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-16);
+    FOUR_C_EXPECT_NEAR(CMatAdd, CMatAdd_ref_solution, 1.0e-16);
   }
 
   TEST_F(InelasticDefgradFactorsTest, TestEvaluateODStiffMat)
@@ -617,7 +617,7 @@ namespace
     lin_scalar_iso_->EvaluateODStiffMat(&FM_, iFin_lin_scalar_iso_solution_, dSdiFin_, dSdc);
 
     // compare the results
-    BACI_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
 
     // clear the derivative to be refilled again by next method to be tested
     dSdc.Clear();
@@ -631,7 +631,7 @@ namespace
     lin_scalar_aniso_->EvaluateODStiffMat(&FM_, iFin_lin_scalar_aniso_solution_, dSdiFin_, dSdc);
 
     // compare the results
-    BACI_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
 
     // clear the derivative to be refilled again by next method to be tested
     dSdc.Clear();
@@ -646,7 +646,7 @@ namespace
         &FM_, iFin_poly_intercal_frac_iso_solution_, dSdiFin_, dSdc);
 
     // compare the results
-    BACI_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
 
     // clear the derivative to be refilled again by next method to be tested
     dSdc.Clear();
@@ -661,7 +661,7 @@ namespace
         &FM_, iFin_poly_intercal_frac_aniso_solution_, dSdiFin_, dSdc);
 
     // compare the results
-    BACI_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-10);
 
     // clear the derivative to be refilled again by next method to be tested
     dSdc.Clear();
@@ -675,6 +675,6 @@ namespace
     lin_temp_iso_->EvaluateODStiffMat(&FM_, iFin_lin_temp_iso_solution_, dSdiFin_, dSdc);
 
     // compare the results
-    BACI_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-15);
+    FOUR_C_EXPECT_NEAR(dSdc, dSdc_ref_solution, 1.0e-15);
   }
 }  // namespace

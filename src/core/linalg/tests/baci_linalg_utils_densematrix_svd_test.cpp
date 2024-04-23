@@ -52,7 +52,7 @@ namespace
     QS.MultiplyNN(Q, S);
     A_result.MultiplyNN(QS, VT);
 
-    BACI_EXPECT_NEAR(A, A_result, 1e-9);
+    FOUR_C_EXPECT_NEAR(A, A_result, 1e-9);
 
     // check singular values
     for (unsigned int i = 0; i < rows; ++i)
@@ -82,7 +82,7 @@ namespace
     CORE::LINALG::multiply(QS, Q, S);
     CORE::LINALG::multiply(A_result, QS, VT);
 
-    BACI_EXPECT_NEAR(A, A_result, 1e-9);
+    FOUR_C_EXPECT_NEAR(A, A_result, 1e-9);
 
     // check singular values
     for (int i = 0; i < rows; ++i)

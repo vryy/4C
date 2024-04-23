@@ -5,7 +5,7 @@
 #
 # Note: This function will do nothing if unit tests are not configured.
 function(baci_add_google_test_executable TESTNAME)
-  if(NOT BACI_WITH_GOOGLETEST)
+  if(NOT FOUR_C_WITH_GOOGLETEST)
     return()
   endif()
 
@@ -13,34 +13,34 @@ function(baci_add_google_test_executable TESTNAME)
   set(oneValueArgs NP THREADS)
   set(multiValueArgs SOURCE)
   cmake_parse_arguments(
-    BACI_ADD_GOOGLE_TEST_EXECUTABLE
+    FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE
     "${options}"
     "${oneValueArgs}"
     "${multiValueArgs}"
     ${ARGN}
     )
 
-  if(DEFINED BACI_ADD_GOOGLE_TEST_EXECUTABLE_UNPARSED_ARGUMENTS)
+  if(DEFINED FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_UNPARSED_ARGUMENTS)
     message(
       SEND_ERROR
-        "There are unparsed arguments: ${BACI_ADD_GOOGLE_TEST_EXECUTABLE_UNPARSED_ARGUMENTS}"
+        "There are unparsed arguments: ${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_UNPARSED_ARGUMENTS}"
       )
   endif()
 
-  if(NOT DEFINED BACI_ADD_GOOGLE_TEST_EXECUTABLE_SOURCE)
+  if(NOT DEFINED FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_SOURCE)
     message(SEND_ERROR "Need to specify at least one source file.")
   endif()
 
-  if(NOT DEFINED BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP)
-    set(BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP 1)
+  if(NOT DEFINED FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_NP)
+    set(FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_NP 1)
   endif()
 
-  if(NOT DEFINED BACI_ADD_GOOGLE_TEST_EXECUTABLE_THREADS)
-    set(BACI_ADD_GOOGLE_TEST_EXECUTABLE_THREADS 1)
+  if(NOT DEFINED FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_THREADS)
+    set(FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_THREADS 1)
   endif()
 
   set(assert_mpi_file
-      ${CMAKE_CURRENT_BINARY_DIR}/assert_mpi_${TESTNAME}_${BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP}.cpp
+      ${CMAKE_CURRENT_BINARY_DIR}/assert_mpi_${TESTNAME}_${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_NP}.cpp
       )
   configure_file(${PROJECT_SOURCE_DIR}/unittests/assert_mpi.cpp.in ${assert_mpi_file})
 
@@ -48,7 +48,7 @@ function(baci_add_google_test_executable TESTNAME)
     ${TESTNAME}
     ${PROJECT_SOURCE_DIR}/unittests/baci_gtest_main_mpi_test.cpp
     ${assert_mpi_file}
-    ${BACI_ADD_GOOGLE_TEST_EXECUTABLE_SOURCE}
+    ${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_SOURCE}
     )
   baci_set_up_executable(${TESTNAME})
 
@@ -71,8 +71,8 @@ function(baci_add_google_test_executable TESTNAME)
       --gtest_output=xml:unittest_reports/${TESTNAME}_report.xml
       )
   # if there is more than one process, spawn the remaining ones without a report
-  if(BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP GREATER "1")
-    math(EXPR remaining_procs "${BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP}-1")
+  if(FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_NP GREATER "1")
+    math(EXPR remaining_procs "${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_NP}-1")
     list(
       APPEND
       mpi_arguments
@@ -88,14 +88,15 @@ function(baci_add_google_test_executable TESTNAME)
   math(
     EXPR
     TOTAL_NUM_PROCESSORS
-    "${BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP}*${BACI_ADD_GOOGLE_TEST_EXECUTABLE_THREADS}"
+    "${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_NP}*${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_THREADS}"
     )
 
   add_test(NAME ${TESTNAME} COMMAND ${MPIEXEC_EXECUTABLE} ${mpi_arguments})
   set_tests_properties(${TESTNAME} PROPERTIES TIMEOUT ${UNITTEST_TIMEOUT} LABELS minimal)
   set_tests_properties(${TESTNAME} PROPERTIES PROCESSORS ${TOTAL_NUM_PROCESSORS})
   set_tests_properties(
-    ${TESTNAME} PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=${BACI_ADD_GOOGLE_TEST_EXECUTABLE_THREADS}"
+    ${TESTNAME}
+    PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_THREADS}"
     )
 
   add_dependencies(unittests ${TESTNAME})

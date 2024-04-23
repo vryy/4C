@@ -30,6 +30,7 @@ namespace
   {
     int a = 1, b = 0;
 
-    BACI_EXPECT_THROW_WITH_MESSAGE(division(a, b), CORE::Exception, "Division by zero condition!");
+    FOUR_C_EXPECT_THROW_WITH_MESSAGE(
+        division(a, b), CORE::Exception, "Division by zero condition!");
   }
 }  // namespace

@@ -1737,7 +1737,7 @@ namespace CORE::LINALG
     inline void multiply(
         value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -1763,7 +1763,7 @@ namespace CORE::LINALG
     inline void multiplyNN(
         value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -1789,7 +1789,7 @@ namespace CORE::LINALG
     inline void multiplyNT(
         value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -1815,7 +1815,7 @@ namespace CORE::LINALG
     inline void multiplyTN(
         value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -1841,7 +1841,7 @@ namespace CORE::LINALG
     inline void multiplyTT(
         value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -1867,7 +1867,7 @@ namespace CORE::LINALG
     inline void multiply(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -1893,7 +1893,7 @@ namespace CORE::LINALG
     inline void multiplyNN(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -1919,7 +1919,7 @@ namespace CORE::LINALG
     inline void multiplyNT(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -1945,7 +1945,7 @@ namespace CORE::LINALG
     inline void multiplyTN(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -1971,7 +1971,7 @@ namespace CORE::LINALG
     inline void multiplyTT(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -1999,7 +1999,7 @@ namespace CORE::LINALG
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -2027,7 +2027,7 @@ namespace CORE::LINALG
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -2055,7 +2055,7 @@ namespace CORE::LINALG
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -2083,7 +2083,7 @@ namespace CORE::LINALG
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -2111,7 +2111,7 @@ namespace CORE::LINALG
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -2135,7 +2135,7 @@ namespace CORE::LINALG
     template <class value_type>
     inline value_type invert1x1(value_type* out, const value_type* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       const value_type det = in[0];
@@ -2147,7 +2147,7 @@ namespace CORE::LINALG
     template <class value_type>
     inline value_type invert2x2(value_type* out, const value_type* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       const value_type det = in[0] * in[1 + 1 * 2] - in[1] * in[1 * 2];
@@ -2164,7 +2164,7 @@ namespace CORE::LINALG
     template <class value_type>
     inline value_type invert3x3(value_type* out, const value_type* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       out[0] = in[1 + 1 * 3] * in[2 + 2 * 3] - in[2 + 1 * 3] * in[1 + 2 * 3];
@@ -2194,7 +2194,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type invert(value_type* out, const value_type* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       DENSEERROR::Checker<i == j>::Cannot_compute_inverse_of_nonsquare_matrix();
@@ -2356,7 +2356,7 @@ namespace CORE::LINALG
     {
       if constexpr (std::is_same_v<value_type_out, value_type_in>)
       {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
         if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
         // std::memcpy(out, in, i*j*sizeof(value_type));
@@ -2372,7 +2372,7 @@ namespace CORE::LINALG
         class value_type_in>
     inline void update(value_type_out* out, const value_type_infac infac, const value_type_in* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_in>)
         if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
@@ -2385,7 +2385,7 @@ namespace CORE::LINALG
     inline void update(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_in* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_in>)
         if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
@@ -2408,7 +2408,7 @@ namespace CORE::LINALG
     inline void update(
         value_type_out* out, const value_type_left* left, const value_type_right* right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -2424,7 +2424,7 @@ namespace CORE::LINALG
         const value_type_left* left, const value_type_rightfac rightfac,
         const value_type_right* right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -2442,7 +2442,7 @@ namespace CORE::LINALG
         const value_type_leftfac leftfac, const value_type_left* left,
         const value_type_rightfac rightfac, const value_type_right* right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_left>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if constexpr (std::is_same_v<value_type_out, value_type_right>)
@@ -2465,7 +2465,7 @@ namespace CORE::LINALG
     template <class value_type_out, unsigned int i, unsigned int j, class value_type_in>
     inline void updateT(value_type_out* out, const value_type_in* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_in>)
         if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
@@ -2477,7 +2477,7 @@ namespace CORE::LINALG
         class value_type_in>
     inline void updateT(value_type_out* out, const value_type_infac infac, const value_type_in* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_in>)
         if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
@@ -2490,7 +2490,7 @@ namespace CORE::LINALG
     inline void updateT(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_in* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_in>)
         if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
@@ -2512,7 +2512,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void eMultiply(value_type* out, const value_type* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       *out *= *in;
@@ -2522,7 +2522,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void eMultiply(const value_type fac, value_type* out, const value_type* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       *out *= fac * (*in);
@@ -2532,7 +2532,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void eMultiply(value_type* out, const value_type* left, const value_type* right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
@@ -2544,7 +2544,7 @@ namespace CORE::LINALG
     inline void eMultiply(
         value_type* out, const value_type infac, const value_type* left, const value_type* right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
@@ -2556,7 +2556,7 @@ namespace CORE::LINALG
     inline void eMultiply(const value_type outfac, value_type* out, const value_type infac,
         const value_type* left, const value_type* right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
@@ -2576,7 +2576,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void eDivide(value_type* out, const value_type* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       *out /= *in;
@@ -2586,7 +2586,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void eDivide(const value_type fac, value_type* out, const value_type* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       *out = fac * (*out) / (*in);
@@ -2601,7 +2601,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void eDivide(value_type* out, const value_type* left, const value_type* right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
@@ -2613,7 +2613,7 @@ namespace CORE::LINALG
     inline void eDivide(
         value_type* out, const value_type infac, const value_type* left, const value_type* right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
@@ -2625,7 +2625,7 @@ namespace CORE::LINALG
     inline void eDivide(const value_type outfac, value_type* out, const value_type infac,
         const value_type* left, const value_type* right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
       if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
@@ -2668,7 +2668,7 @@ namespace CORE::LINALG
     inline void crossproduct(
         value_type_out* out, const value_type_left* left, const value_type_right* right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (i != 3 || j != 1) FOUR_C_THROW("cross product only for 3x1 matrices available");
 #endif
       out[0] = left[1] * right[2] - left[2] * right[1];
@@ -2700,7 +2700,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void abs(value_type* out, const value_type* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       *out = *in >= 0 ? *in : -*in;
@@ -2715,7 +2715,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void reciprocal(value_type* out, const value_type* in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       *out = 1.0 / (*in);
@@ -2807,7 +2807,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
           left.numCols() != right.numRows())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
@@ -2822,7 +2822,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
           left.numCols() != right.numRows())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
@@ -2837,7 +2837,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or out.numCols() != right.numRows() or
           left.numCols() != right.numCols())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
@@ -2852,7 +2852,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numCols() or out.numCols() != right.numCols() or
           left.numRows() != right.numRows())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
@@ -2867,7 +2867,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numCols() or out.numCols() != right.numRows() or
           left.numRows() != right.numCols())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
@@ -2882,7 +2882,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
           left.numCols() != right.numRows())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
@@ -2897,7 +2897,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
           left.numCols() != right.numRows())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
@@ -2912,7 +2912,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or out.numCols() != right.numRows() or
           left.numCols() != right.numCols())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
@@ -2927,7 +2927,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numCols() or out.numCols() != right.numCols() or
           left.numRows() != right.numRows())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
@@ -2942,7 +2942,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numCols() or out.numCols() != right.numRows() or
           left.numRows() != right.numCols())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
@@ -2958,7 +2958,7 @@ namespace CORE::LINALG
         const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
           left.numCols() != right.numRows())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
@@ -2973,7 +2973,7 @@ namespace CORE::LINALG
         const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
           left.numCols() != right.numRows())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
@@ -2988,7 +2988,7 @@ namespace CORE::LINALG
         const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or out.numCols() != right.numRows() or
           left.numCols() != right.numCols())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
@@ -3003,7 +3003,7 @@ namespace CORE::LINALG
         const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numCols() or out.numCols() != right.numCols() or
           left.numRows() != right.numRows())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
@@ -3018,7 +3018,7 @@ namespace CORE::LINALG
         const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numCols() or out.numCols() != right.numRows() or
           left.numRows() != right.numCols())
         FOUR_C_THROW("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
@@ -3032,7 +3032,7 @@ namespace CORE::LINALG
     inline value_type invert(
         CORE::LINALG::SerialDenseMatrix::Base& out, const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != out.numCols() or in.numRows() != in.numCols() or
           out.numRows() != in.numRows())
         FOUR_C_THROW("Invalid matrix sizes for inversion, (%i,%i) = inv( (%i,%i) )", out.numRows(),
@@ -3044,7 +3044,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type determinant(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (mat.numRows() != mat.numCols())
         FOUR_C_THROW(
             "Invalid matrix sizes for determinant, inv( (%i,%i) )", mat.numRows(), mat.numCols());
@@ -3057,7 +3057,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or left.numRows() != right.numRows() or
           out.numCols() != left.numCols() or left.numCols() != right.numCols())
         FOUR_C_THROW("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)",
@@ -3072,7 +3072,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& left, const value_type rightfac,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or left.numRows() != right.numRows() or
           out.numCols() != left.numCols() or left.numCols() != right.numCols())
         FOUR_C_THROW("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)",
@@ -3087,7 +3087,7 @@ namespace CORE::LINALG
         const value_type leftfac, const CORE::LINALG::SerialDenseMatrix::Base& left,
         const value_type rightfac, const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != left.numRows() or left.numRows() != right.numRows() or
           out.numCols() != left.numCols() or left.numCols() != right.numCols())
         FOUR_C_THROW("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)",
@@ -3102,7 +3102,7 @@ namespace CORE::LINALG
     inline void update(
         CORE::LINALG::SerialDenseMatrix::Base& out, const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != in.numRows() or out.numCols() != in.numCols())
         FOUR_C_THROW("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)", out.numRows(),
             out.numCols(), in.numRows(), in.numCols());
@@ -3114,7 +3114,7 @@ namespace CORE::LINALG
     inline void update(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
         const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != in.numRows() or out.numCols() != in.numCols())
         FOUR_C_THROW("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)", out.numRows(),
             out.numCols(), in.numRows(), in.numCols());
@@ -3127,7 +3127,7 @@ namespace CORE::LINALG
     inline void update(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
         const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != in.numRows() or out.numCols() != in.numCols())
         FOUR_C_THROW("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)", out.numRows(),
             out.numCols(), in.numRows(), in.numCols());
@@ -3139,7 +3139,7 @@ namespace CORE::LINALG
     inline void eMultiply(
         CORE::LINALG::SerialDenseMatrix::Base out, const CORE::LINALG::SerialDenseMatrix::Base in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
         FOUR_C_THROW("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)", i, j,
             out.numRows(), out.numCols(), in.numRows(), in.numCols());
@@ -3151,7 +3151,7 @@ namespace CORE::LINALG
     inline void eMultiply(const value_type fac, CORE::LINALG::SerialDenseMatrix::Base out,
         const CORE::LINALG::SerialDenseMatrix::Base in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
         FOUR_C_THROW("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)", i, j,
             out.numRows(), out.numCols(), in.numRows(), in.numCols());
@@ -3164,7 +3164,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base left,
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
           right.numRows() != i or right.numCols() != j)
         FOUR_C_THROW("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
@@ -3179,7 +3179,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base left,
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
           right.numRows() != i or right.numCols() != j)
         FOUR_C_THROW("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
@@ -3194,7 +3194,7 @@ namespace CORE::LINALG
         const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base left,
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
           right.numRows() != i or right.numCols() != j)
         FOUR_C_THROW("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
@@ -3208,7 +3208,7 @@ namespace CORE::LINALG
     inline void eDivide(
         CORE::LINALG::SerialDenseMatrix::Base out, const CORE::LINALG::SerialDenseMatrix::Base in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
         FOUR_C_THROW("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)", i, j,
             out.numRows(), out.numCols(), in.numRows(), in.numCols());
@@ -3220,7 +3220,7 @@ namespace CORE::LINALG
     inline void eDivide(const value_type fac, CORE::LINALG::SerialDenseMatrix::Base out,
         const CORE::LINALG::SerialDenseMatrix::Base in)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
         FOUR_C_THROW("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)", i, j,
             out.numRows(), out.numCols(), in.numRows(), in.numCols());
@@ -3233,7 +3233,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base left,
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
           right.numRows() != i or right.numCols() != j)
         FOUR_C_THROW("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
@@ -3248,7 +3248,7 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base left,
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
           right.numRows() != i or right.numCols() != j)
         FOUR_C_THROW("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
@@ -3263,7 +3263,7 @@ namespace CORE::LINALG
         const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base left,
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
           right.numRows() != i or right.numCols() != j)
         FOUR_C_THROW("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
@@ -3277,7 +3277,7 @@ namespace CORE::LINALG
     inline void abs(CORE::LINALG::SerialDenseMatrix::Base& dest,
         const CORE::LINALG::SerialDenseMatrix::Base& src)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (dest.numRows() != dest.numRows() or src.numCols() != src.numCols())
         FOUR_C_THROW("Invalid matrix sizes for abs, (%i,%i) = abs( (%i,%i) )", dest.numRows(),
             dest.numCols(), src.numRows(), src.numCols());
@@ -3289,7 +3289,7 @@ namespace CORE::LINALG
     inline void reciprocal(CORE::LINALG::SerialDenseMatrix::Base& dest,
         const CORE::LINALG::SerialDenseMatrix::Base& src)
     {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
       if (dest.numRows() != dest.numRows() or src.numCols() != src.numCols())
         FOUR_C_THROW("Invalid matrix sizes for reciprocal, (%i,%i) = reciprocal( (%i,%i) )",
             dest.numRows(), dest.numCols(), src.numRows(), src.numCols());
@@ -4716,7 +4716,7 @@ namespace CORE::LINALG
   template <unsigned int rows, unsigned int cols, class value_type>
   inline value_type& Matrix<rows, cols, value_type>::operator()(unsigned int r, unsigned int c)
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
     if (r >= rows or c >= cols)
       FOUR_C_THROW("Indices %i,%i out of range in Matrix<%i,%i>.", r, c, rows, cols);
 #endif
@@ -4727,7 +4727,7 @@ namespace CORE::LINALG
   inline const value_type& Matrix<rows, cols, value_type>::operator()(
       unsigned int r, unsigned int c) const
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
     if (r >= rows or c >= cols)
       FOUR_C_THROW("Indices %i,%i out of range in Matrix<%i,%i>.", r, c, rows, cols);
 #endif
@@ -4738,7 +4738,7 @@ namespace CORE::LINALG
   inline value_type& Matrix<rows, cols, value_type>::operator()(unsigned int r)
   {
     DENSEERROR::Checker<(cols == 1) or (rows == 1)>::Cannot_call_1D_access_function_on_2D_matrix();
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
     if (r >= (cols == 1 ? rows : cols))
       FOUR_C_THROW("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
 #endif
@@ -4749,7 +4749,7 @@ namespace CORE::LINALG
   inline const value_type& Matrix<rows, cols, value_type>::operator()(unsigned int r) const
   {
     DENSEERROR::Checker<(cols == 1) or (rows == 1)>::Cannot_call_1D_access_function_on_2D_matrix();
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
     if (r >= (cols == 1 ? rows : cols))
       FOUR_C_THROW("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
 #endif
@@ -4967,7 +4967,7 @@ namespace CORE::LINALG
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
   void FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::FactorWithEquilibration(bool b)
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
     if (factored_ or inverted_)
       FOUR_C_THROW("Cannot set equilibration after changing the matrix with Factor() or Invert().");
 #endif
@@ -4977,7 +4977,7 @@ namespace CORE::LINALG
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
   int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::Factor()
   {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
     if (inverted_) FOUR_C_THROW("Cannot factor the inverted matrix.");
 #endif
     if (factored_) return 0;
@@ -5001,7 +5001,7 @@ namespace CORE::LINALG
       errnum = EquilibrateRHS();
     }
     if (errnum != 0) return errnum;
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
     if (not vec_b_ or not vec_x_) FOUR_C_THROW("Both vectors must be set to solve.");
 #endif
 

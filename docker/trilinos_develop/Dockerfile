@@ -1,5 +1,5 @@
 FROM ubuntu:focal
-LABEL project=baci
+LABEL project=4C
 
 # Prevents tzdata asking for user feedback
 ENV DEBIAN_FRONTEND=noninteractive
@@ -52,7 +52,7 @@ RUN apt-get update && apt-get install -y \
 # Create directory for dependencies
 ARG NPROCS=12
 ENV NPROCS=$NPROCS \
-    INSTALL_DIR="/opt/baci-dependencies"
+    INSTALL_DIR="/opt/4C-dependencies"
 # Trilinos version: if unset the version defined in the install script is used
 ARG TRILINOS_VERSION
 RUN mkdir -p ${INSTALL_DIR}
@@ -81,20 +81,20 @@ RUN /dependencies/current/backtrace/install.sh ${INSTALL_DIR}
 
 # Packages for testing
 # Installation directory for dependencies concerning testing
-ENV BACI_TESTING_DEPENDENCIES_DIR="/opt/baci-dependencies-testing/"
-RUN mkdir ${BACI_TESTING_DEPENDENCIES_DIR}
+ENV FOUR_C_TESTING_DEPENDENCIES_DIR="/opt/4C-dependencies-testing/"
+RUN mkdir ${FOUR_C_TESTING_DEPENDENCIES_DIR}
 
 # Install LLVM (use standard install directory)
 RUN /dependencies/testing/llvm/install.sh /usr/local
 
 # Install Mathjax
-RUN /dependencies/testing/mathjax/install.sh ${BACI_TESTING_DEPENDENCIES_DIR}
+RUN /dependencies/testing/mathjax/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
 
 # Install Paraview
-RUN /dependencies/testing/paraview/install.sh ${BACI_TESTING_DEPENDENCIES_DIR}
+RUN /dependencies/testing/paraview/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
 
 # add and enable the default user
-ARG USER=baci
+ARG USER=user
 RUN adduser --disabled-password --shell '/usr/bin/bash' --gecos '' $USER
 RUN adduser $USER sudo; echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 

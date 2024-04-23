@@ -20,7 +20,7 @@
 #include <complex>
 #include <fstream>
 
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
 #include <fftw3.h>
 #endif
 
@@ -357,7 +357,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void TurbulenceStatisticsHit::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
   {
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
     //-------------------------------------------------------------------------------------------------
     // calculate energy spectrum via Fourier transformation
     //-------------------------------------------------------------------------------------------------
@@ -454,7 +454,7 @@ namespace FLD
     // note: this is not very efficient, since each
     // processor does the fft and there is no communication
 
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
         (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
@@ -712,7 +712,7 @@ namespace FLD
   void TurbulenceStatisticsHit::DoScatraTimeSample(
       Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> phinp)
   {
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
     //-------------------------------------------------------------------------------------------------
     // calculate energy spectrum via Fourier transformation
     //-------------------------------------------------------------------------------------------------
@@ -864,7 +864,7 @@ namespace FLD
     // note: this is not very efficient, since each
     // processor does the fft and there is no communication
 
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
         (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
@@ -1825,7 +1825,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void TurbulenceStatisticsHitHDG::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
   {
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
     //-------------------------------------------------------------------------------------------------
     // calculate energy spectrum via Fourier transformation
     //-------------------------------------------------------------------------------------------------
@@ -1940,7 +1940,7 @@ namespace FLD
     // note: this is not very efficient, since each
     // processor does the fft and there is no communication
 
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
         (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);

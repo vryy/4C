@@ -9,9 +9,9 @@
         "CMAKE_CXX_FLAGS": "-march=native",
         "CMAKE_C_FLAGS": "-march=native",
         "CMAKE_EXE_LINKER_FLAGS": "-L$env{HDF5_ROOT}/lib -L$env{BOOST_ROOT}/lib",
-        "BACI_WITH_ARBORX": "ON",
-        "BACI_WITH_GOOGLETEST": "OFF",
-        "BACI_BUILD_DOXYGEN": "OFF"
+        "FOUR_C_WITH_ARBORX": "ON",
+        "FOUR_C_WITH_GOOGLETEST": "OFF",
+        "FOUR_C_BUILD_DOXYGEN": "OFF"
       }
     },
     {
@@ -25,12 +25,12 @@
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "$env{OPENMPI_ROOT}/bin/mpic++",
         "CMAKE_C_COMPILER": "$env{OPENMPI_ROOT}/bin/mpicc",
-        "BACI_TRILINOS_ROOT": "$env{TRILINOS_ROOT}",
-        "BACI_QHULL_ROOT": "$env{QHULL_ROOT}",
-        "BACI_BOOST_ROOT": "$env{BOOST_ROOT}",
+        "FOUR_C_TRILINOS_ROOT": "$env{TRILINOS_ROOT}",
+        "FOUR_C_QHULL_ROOT": "$env{QHULL_ROOT}",
+        "FOUR_C_BOOST_ROOT": "$env{BOOST_ROOT}",
         "BOOST_EXCLUDE_SYSTEM_PATHS": "ON",
-        "BACI_CLN_ROOT": "$env{CLN_ROOT}",
-        "BACI_WITH_FFTW": "OFF"
+        "FOUR_C_CLN_ROOT": "$env{CLN_ROOT}",
+        "FOUR_C_WITH_FFTW": "OFF"
       }
     }
   ]

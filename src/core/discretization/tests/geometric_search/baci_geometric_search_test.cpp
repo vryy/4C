@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 
-#ifdef BACI_WITH_ARBORX
+#ifdef FOUR_C_WITH_ARBORX
 
 #include "baci_discretization_geometric_search_bvh.hpp"
 #include "baci_discretization_geometric_search_utils.hpp"

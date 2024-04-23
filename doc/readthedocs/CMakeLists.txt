@@ -1,13 +1,13 @@
 #
 # Build routine/test for readthedocs documentation
-baci_process_global_option(BACI_BUILD_READTHEDOCS "Build readthedocs documentation" OFF)
-if(BACI_BUILD_READTHEDOCS)
+baci_process_global_option(FOUR_C_BUILD_READTHEDOCS "Build readthedocs documentation" OFF)
+if(FOUR_C_BUILD_READTHEDOCS)
 
   # add doc-specific cmake modules
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
   # set input and output files and directories
-  set(BACI_VENV_DIR ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv)
+  set(FOUR_C_VENV_DIR ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv)
   set(READTHEDOCS_SOURCE_DIR ${PROJECT_SOURCE_DIR}/doc/readthedocs)
   set(READTHEDOCS_CONFIG_DIR ${PROJECT_SOURCE_DIR}/doc/readthedocs-config)
   set(READTHEDOCS_TPLDEPEND_DIR ${PROJECT_SOURCE_DIR}/dependencies/current)
@@ -23,8 +23,8 @@ if(BACI_BUILD_READTHEDOCS)
   #install the python virtual environment with sphinx
   find_package(Sphinx REQUIRED)
 
-  if(NOT DEFINED BACI_SPHINX_THEME)
-    set(BACI_SPHINX_THEME sphinx_rtd_theme)
+  if(NOT DEFINED FOUR_C_SPHINX_THEME)
+    set(FOUR_C_SPHINX_THEME sphinx_rtd_theme)
   endif()
 
   # configure readthedocs configuration

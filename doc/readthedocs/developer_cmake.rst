@@ -60,10 +60,10 @@ Such a local preset could look like this::
           "cacheVariables": {
             "CMAKE_CXX_COMPILER": "/usr/bin/mpic++",
             "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
-            "BACI_WITH_GOOGLETEST": "OFF",
-            "BACI_BUILD_READTHEDOCS": "ON",
-            "BACI_SPHINX_THEME": "sphinx_rtd_theme",
-            "BACI_BUILD_DOXYGEN": "ON",
+            "FOUR_C_WITH_GOOGLETEST": "OFF",
+            "FOUR_C_BUILD_READTHEDOCS": "ON",
+            "FOUR_C_SPHINX_THEME": "sphinx_rtd_theme",
+            "FOUR_C_BUILD_DOXYGEN": "ON",
           }
         }
       ]
@@ -75,7 +75,7 @@ detect reasonable defaults for you internally. Over time you might realize that 
 additional dependencies or features. To see which other options you can set, consult
 the console output of CMake or run `ccmake .` in the build folder.
 
-**Remark:** Variables either start with the prefix `BACI_` indicating that this variable only affects |FOURC| itself,
+**Remark:** Variables either start with the prefix `FOUR_C_` indicating that this variable only affects |FOURC| itself,
 or they start with `CMAKE_` indicating that the variable (potentially) affects all dependent projects in a way
 specified directly in the CMake documentation.
 
@@ -106,10 +106,10 @@ Conventions
   They affect downstream packages (e.g. from `fetch_content`) as well and we cannot easily know
   whether these packages can handle our settings.
 - Prefer the modern CMake way and use targets over variables when handling requirements and dependencies.
-- Every variable that is supposed to be set from outside has to start with `BACI_`.
-  Variables that toggle a dependency are named `BACI_WITH_<PACKAGE>`. Further options for a package
-  are specified by `BACI_<PACKAGE>_<OPTION>`.
-- The top-most install directory of a dependency is supplied by the `BACI_<PACKAGE>_ROOT` variable.
+- Every variable that is supposed to be set from outside has to start with `FOUR_C_`.
+  Variables that toggle a dependency are named `FOUR_C_WITH_<PACKAGE>`. Further options for a package
+  are specified by `FOUR_C_<PACKAGE>_<OPTION>`.
+- The top-most install directory of a dependency is supplied by the `FOUR_C_<PACKAGE>_ROOT` variable.
   When possible we try to use CMake files exported by dependencies. For older
   libraries we write our own `Find<package>.cmake` modules.
 - Every function that is supplied by this project starts with `baci_`.

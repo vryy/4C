@@ -12,8 +12,8 @@ set(_dependencies
     mat
     )
 
-if(BACI_WITH_MIRCO)
+if(FOUR_C_WITH_MIRCO)
   baci_add_external_dependency(${AUTO_DEFINED_MODULE_NAME} mirco::mirco_lib)
-endif(BACI_WITH_MIRCO)
+endif(FOUR_C_WITH_MIRCO)
 
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

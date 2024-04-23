@@ -1,4 +1,6 @@
-This folder contains the dependencies required to run Baci. The current dependencies are in `current/`. To install the dependencies just run
+This folder contains the dependencies required to build the project. The current dependencies are in `current/`. To
+install the dependencies just run
+
 ```
 # Define the number of procs for building or use the default (4 procs)
 export NPROCS=12

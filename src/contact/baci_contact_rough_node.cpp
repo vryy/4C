@@ -12,7 +12,7 @@
 #include "baci_global_data.hpp"
 #include "baci_utils_function.hpp"
 
-#ifdef BACI_WITH_MIRCO
+#ifdef FOUR_C_WITH_MIRCO
 
 #include <mirco_topology.h>
 #include <mirco_topologyutilities.h>
@@ -48,7 +48,7 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
       randomseedflag_(randomseedflag),
       randomgeneratorseed_(randomgeneratorseed)
 {
-#ifdef BACI_WITH_MIRCO
+#ifdef FOUR_C_WITH_MIRCO
   if (isslave)
   {
     hurstExponent_ =
@@ -76,7 +76,7 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
   }
 #else
   FOUR_C_THROW(
-      "You are trying to create a RoughNode with BACI_WITH_MIRCO flag turned off. Please enable "
+      "You are trying to create a RoughNode with FOUR_C_WITH_MIRCO flag turned off. Please enable "
       "this flag and build BACI again");
 #endif
 }

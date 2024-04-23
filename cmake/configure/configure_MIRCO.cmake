@@ -1,15 +1,15 @@
-option(BACI_MIRCO_FIND_INSTALLED "Use installed MIRCO instead of fetching sources" OFF)
-if(BACI_MIRCO_FIND_INSTALLED)
+option(FOUR_C_MIRCO_FIND_INSTALLED "Use installed MIRCO instead of fetching sources" OFF)
+if(FOUR_C_MIRCO_FIND_INSTALLED)
 
-  message(STATUS "BACI_MIRCO_FIND_INSTALLED is enabled")
+  message(STATUS "FOUR_C_MIRCO_FIND_INSTALLED is enabled")
 
   # MIRCO provides a package configuration file if installed.
-  find_package(mirco_lib HINTS ${BACI_MIRCO_ROOT})
+  find_package(mirco_lib HINTS ${FOUR_C_MIRCO_ROOT})
 
   if(NOT mirco_lib_FOUND)
     message(
       FATAL_ERROR
-        "mirco_lib could not be found. Please ensure that the BACI_MIRCO_ROOT path is correctly defined in the config file. Also, please use 'make install' and not just 'make' to install MIRCO."
+        "mirco_lib could not be found. Please ensure that the FOUR_C_MIRCO_ROOT path is correctly defined in the config file. Also, please use 'make install' and not just 'make' to install MIRCO."
       )
   endif()
 

@@ -12,11 +12,11 @@
 // GENERATED FILE! Make sure to edit the template in the source directory.
 
 // This test is automatically included inside every test executable created from the cmake function
-// BACI_ADD_GOOGLE_TEST_EXECUTABLE.
+// FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE.
 TEST(BACIGoogleTest, RunningWithIntendedNumberOfProcesses)
 {
   // clang-format off
-  const int intended_n_processes = @BACI_ADD_GOOGLE_TEST_EXECUTABLE_NP@;
+  const int intended_n_processes = @FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_NP@;
   // clang-format on
 
   int n_processes;

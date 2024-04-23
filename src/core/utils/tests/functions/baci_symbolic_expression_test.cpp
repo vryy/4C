@@ -138,7 +138,7 @@ namespace
 
   TEST(SymbolicExpressionTest, InvalidOperatorThrows)
   {
-    BACI_EXPECT_THROW_WITH_MESSAGE(
+    FOUR_C_EXPECT_THROW_WITH_MESSAGE(
         CORE::UTILS::SymbolicExpression<double> symbolicexpression("2 ** 4"), CORE::Exception,
         "unexpected token 7");
   }
@@ -146,14 +146,14 @@ namespace
 
   TEST(SymbolicExpressionTest, MissingBracketsThrows)
   {
-    BACI_EXPECT_THROW_WITH_MESSAGE(
+    FOUR_C_EXPECT_THROW_WITH_MESSAGE(
         CORE::UTILS::SymbolicExpression<double> symbolicexpression("2*4 - (3 + 1"), CORE::Exception,
         "')' expected");
   }
 
   TEST(SymbolicExpressionTest, IncompleteFunctionThrows)
   {
-    BACI_EXPECT_THROW_WITH_MESSAGE(
+    FOUR_C_EXPECT_THROW_WITH_MESSAGE(
         CORE::UTILS::SymbolicExpression<double> symbolicexpression("2*4 - (3 + "), CORE::Exception,
         "unexpected token 1");
   }

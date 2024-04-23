@@ -77,7 +77,7 @@ namespace
     stvenantkirchhoff_->Evaluate(&input_glstrain, result_cmat.get(), result_stress.get());
 
     // Test member function results using reference stress values
-    BACI_EXPECT_ITERABLE_NEAR(result_stress->values(), ref_stress_.data(), 6, 1.0e-4);
+    FOUR_C_EXPECT_ITERABLE_NEAR(result_stress->values(), ref_stress_.data(), 6, 1.0e-4);
   }
 
   TEST_F(StVenantKirchhoffTest, TestEvaluateLinalgMatrix)
@@ -105,7 +105,7 @@ namespace
         &defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
 
     // Test member function results using reference stress values
-    BACI_EXPECT_NEAR(result_stress, ref_stress, 1.0e-4);
+    FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-4);
   }
 
   TEST_F(StVenantKirchhoffTest, TestStrainEnergy)

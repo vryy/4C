@@ -68,9 +68,9 @@ namespace
     isoogden_.AddCoefficientsStretchesModified(modgamma, moddelta, modstr);
 
     // test member function results using reference stress values
-    BACI_EXPECT_NEAR(modgamma, ref_modgamma, 1.e-9);
+    FOUR_C_EXPECT_NEAR(modgamma, ref_modgamma, 1.e-9);
 
-    BACI_EXPECT_NEAR(moddelta, ref_moddelta, 1.e-9);
+    FOUR_C_EXPECT_NEAR(moddelta, ref_moddelta, 1.e-9);
   }
 
   TEST_F(IsoOgdenTest, TestSpecifyFormulationAllFalse)

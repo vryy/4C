@@ -6,8 +6,8 @@ function(baci_auto_define_module)
   get_filename_component(_target ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
   # Check if we are currently defining a part of a parent module. In this case, concatenate the module names
-  if(NOT "${BACI_CURRENTLY_DEFINED_PARENT_MODULE}" STREQUAL "")
-    set(_target "${BACI_CURRENTLY_DEFINED_PARENT_MODULE}_${_target}")
+  if(NOT "${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE}" STREQUAL "")
+    set(_target "${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE}_${_target}")
   endif()
 
   message(VERBOSE "Defining BACI module target: ${_target}")
@@ -42,13 +42,13 @@ function(baci_auto_define_module)
     )
 
   # Check if we are currently defining a part of a parent module and add ourselves as a dependency.
-  if(NOT "${BACI_CURRENTLY_DEFINED_PARENT_MODULE}" STREQUAL "")
-    baci_add_dependency(${BACI_CURRENTLY_DEFINED_PARENT_MODULE} ${_target})
+  if(NOT "${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE}" STREQUAL "")
+    baci_add_dependency(${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE} ${_target})
   endif()
 
   # Now check if there are more directories that contain CMakeLists.txt. If yes, we also add those.
   # For this action, we become the parent module of the submodules we are about to define.
-  set(BACI_CURRENTLY_DEFINED_PARENT_MODULE ${_target})
+  set(FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE ${_target})
 
   # N.B. We need to directly glob for CMakeLists.txt files here to ensure
   # the glob reruns when a new CMakeLists.txt is added.
@@ -65,8 +65,8 @@ function(baci_auto_define_module)
   list(POP_BACK CMAKE_MESSAGE_INDENT)
 
   # Collect all modules in the global library
-  target_link_libraries(${BACI_LIBRARY_NAME} PUBLIC ${_target}_deps)
-  target_link_libraries(${BACI_LIBRARY_NAME} PRIVATE $<TARGET_NAME_IF_EXISTS:${_target}_objs>)
+  target_link_libraries(${FOUR_C_LIBRARY_NAME} PUBLIC ${_target}_deps)
+  target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE $<TARGET_NAME_IF_EXISTS:${_target}_objs>)
 
   # Simulate a "return" by setting a variable at the call site
   set(AUTO_DEFINED_MODULE_NAME

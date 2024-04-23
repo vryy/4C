@@ -89,8 +89,8 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = speccoeff_ji * fac * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, PressureGradientNullptrAccI)
@@ -118,7 +118,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = speccoeff_ji * fac * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, PressureGradientNullptrAccJ)
@@ -146,7 +146,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = -speccoeff_ij * fac * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, ShearForces)
@@ -215,8 +215,8 @@ namespace
     }
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, ShearForcesNullptrAccI)
@@ -279,7 +279,7 @@ namespace
     }
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, ShearForcesNullptrAccJ)
@@ -342,7 +342,7 @@ namespace
     }
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, StandardBackgroundPressure)
@@ -374,8 +374,8 @@ namespace
     for (int i = 0; i < 3; ++i) mod_acc_j_ref[i] = speccoeff_ji * bg_press_j * fac * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, StandardBackgroundPressureNullptrModAccI)
@@ -404,7 +404,7 @@ namespace
     for (int i = 0; i < 3; ++i) mod_acc_j_ref[i] = speccoeff_ji * bg_press_j * fac * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, StandardBackgroundPressureNullptrModAccJ)
@@ -433,7 +433,7 @@ namespace
     for (int i = 0; i < 3; ++i) mod_acc_i_ref[i] = -speccoeff_ij * bg_press_i * fac * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, GeneralizedBackgroundPressure)
@@ -468,8 +468,8 @@ namespace
       mod_acc_j_ref[i] = mod_bg_press_j * (mass_i / std::pow(dens_j, 2)) * mod_dWdrji * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, GeneralizedBackgroundPressureNullptrModAccI)
@@ -499,7 +499,7 @@ namespace
       mod_acc_j_ref[i] = mod_bg_press_j * (mass_i / std::pow(dens_j, 2)) * mod_dWdrji * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, GeneralizedBackgroundPressureNullptrModAccJ)
@@ -529,7 +529,7 @@ namespace
       mod_acc_i_ref[i] = -mod_bg_press_i * (mass_j / std::pow(dens_i, 2)) * mod_dWdrij * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, ModifiedVelocityContribution)
@@ -594,8 +594,8 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = -speccoeff_ji * A_ij_e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, ModifiedVelocityContributionNullptrAccI)
@@ -657,7 +657,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = -speccoeff_ji * A_ij_e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, ModifiedVelocityContributionNullptrAccJ)
@@ -719,7 +719,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = speccoeff_ij * A_ij_e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, ModifiedVelocityContributionNullptrAccIModVelI)
@@ -766,7 +766,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = -speccoeff_ji * A_ij_e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationMonaghanTest, ModifiedVelocityContributionNullptrAccJModVelJ)
@@ -813,7 +813,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = speccoeff_ij * A_ij_e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
   }
 
 
@@ -890,8 +890,8 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = speccoeff_ji * fac * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, PressureGradientNullptrAccI)
@@ -919,7 +919,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = speccoeff_ji * fac * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, PressureGradientNullptrAccJ)
@@ -947,7 +947,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = -speccoeff_ij * fac * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, ShearForces)
@@ -995,8 +995,8 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = -speccoeff_ji * fac * (vel_i[i] - vel_j[i]);
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, ShearForcesNullptrAccI)
@@ -1041,7 +1041,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = -speccoeff_ji * fac * (vel_i[i] - vel_j[i]);
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, ShearForcesNullptrAccJ)
@@ -1086,7 +1086,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = speccoeff_ij * fac * (vel_i[i] - vel_j[i]);
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, StandardBackgroundPressure)
@@ -1116,8 +1116,8 @@ namespace
     for (int i = 0; i < 3; ++i) mod_acc_j_ref[i] = speccoeff_ji * bg_press_j * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, StandardBackgroundPressureNullptrModAccI)
@@ -1144,7 +1144,7 @@ namespace
     for (int i = 0; i < 3; ++i) mod_acc_j_ref[i] = speccoeff_ji * bg_press_j * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, StandardBackgroundPressureNullptrModAccJ)
@@ -1171,7 +1171,7 @@ namespace
     for (int i = 0; i < 3; ++i) mod_acc_i_ref[i] = -speccoeff_ij * bg_press_i * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, GeneralizedBackgroundPressure)
@@ -1208,8 +1208,8 @@ namespace
           (mod_bg_press_j / mass_j) * std::pow((mass_j / dens_j), 2) * mod_dWdrji * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, GeneralizedBackgroundPressureNullptrModAccI)
@@ -1240,7 +1240,7 @@ namespace
           (mod_bg_press_j / mass_j) * std::pow((mass_j / dens_j), 2) * mod_dWdrji * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_j, mod_acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, GeneralizedBackgroundPressureNullptrModAccJ)
@@ -1271,7 +1271,7 @@ namespace
           -(mod_bg_press_i / mass_i) * std::pow((mass_i / dens_i), 2) * mod_dWdrij * e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(mod_acc_i, mod_acc_i_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, ModifiedVelocityContribution)
@@ -1334,8 +1334,8 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = -speccoeff_ji * A_ij_e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, ModifiedVelocityContributionNullptrAccI)
@@ -1395,7 +1395,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = -speccoeff_ji * A_ij_e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, ModifiedVelocityContributionNullptrAccJ)
@@ -1455,7 +1455,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = speccoeff_ij * A_ij_e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
   }
 
 
@@ -1502,7 +1502,7 @@ namespace
     for (int i = 0; i < 3; ++i) acc_j_ref[i] = -speccoeff_ji * A_ij_e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 
   TEST_F(SPHMomentumFormulationAdamiTest, ModifiedVelocityContributionNullptrAccIModVelJ)
@@ -1548,6 +1548,6 @@ namespace
     for (int i = 0; i < 3; ++i) acc_i_ref[i] = speccoeff_ij * A_ij_e_ij[i];
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
   }
 }  // namespace

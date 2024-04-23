@@ -3,24 +3,24 @@
 #
 
 # The following options may be disabled by users. In this case, we do not search for a linker and use the user flags.
-option(BACI_DETECT_LINKER "Detect a fast linker" ON)
+option(FOUR_C_DETECT_LINKER "Detect a fast linker" ON)
 
-if(BACI_DETECT_LINKER)
+if(FOUR_C_DETECT_LINKER)
   # The order of the linkers here is the order in which we prefer to use the linkers.
   # As soon as a linker works, skip the rest.
   set(_linkers "mold" "lld" "gold" "bfd")
   set(_no_linker_found True)
   foreach(_linker_name ${_linkers})
     # Check that the linker exists
-    find_program(BACI_HAVE_LINKER_PROGRAM_${_linker_name} "ld.${_linker_name}")
+    find_program(FOUR_C_HAVE_LINKER_PROGRAM_${_linker_name} "ld.${_linker_name}")
 
-    if(BACI_HAVE_LINKER_PROGRAM_${_linker_name})
+    if(FOUR_C_HAVE_LINKER_PROGRAM_${_linker_name})
       # Check if the linker works out of the box.
       baci_add_settings_if_compiles(
-        BACI_LINKER_FUNCTIONAL_${_linker_name} LINK_OPTIONS "-fuse-ld=${_linker_name}"
+        FOUR_C_LINKER_FUNCTIONAL_${_linker_name} LINK_OPTIONS "-fuse-ld=${_linker_name}"
         )
 
-      if(BACI_LINKER_FUNCTIONAL_${_linker_name})
+      if(FOUR_C_LINKER_FUNCTIONAL_${_linker_name})
         message(STATUS "Linker ${_linker_name} is functional and will be used.")
         set(_no_linker_found False)
         break()
@@ -29,14 +29,14 @@ if(BACI_DETECT_LINKER)
         # Ubuntu 20.04. The faster linkers can fail due to a mistake in OpenMPI.
         # Since we know how to fix linking, we try if the linker works when adding the missing -lopen-pal flag.
         baci_add_settings_if_compiles(
-          BACI_LINKER_FUNCTIONAL_WITH_OPEN_PAL_${_linker_name}
+          FOUR_C_LINKER_FUNCTIONAL_WITH_OPEN_PAL_${_linker_name}
           LINK_LIBRARIES
           "open-pal"
           LINK_OPTIONS
           "-fuse-ld=${_linker_name}"
           )
 
-        if(BACI_LINKER_FUNCTIONAL_WITH_OPEN_PAL_${_linker_name})
+        if(FOUR_C_LINKER_FUNCTIONAL_WITH_OPEN_PAL_${_linker_name})
           message(
             STATUS
               "Linker ${_linker_name} is functional (when additionally adding `-lopen-pal`) and will be used."

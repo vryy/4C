@@ -76,8 +76,8 @@ namespace
 
     MAT::CalculateGammaDelta(gamma, delta, prinv_, dPI, ddPII);
 
-    BACI_EXPECT_NEAR(gamma, gamma_ref, 1.0e-10);
-    BACI_EXPECT_NEAR(delta, delta_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(gamma, gamma_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(delta, delta_ref, 1.0e-10);
   }
 
   TEST_F(ElastHyperServiceTest, TestEvaluateRightCauchyGreenStrainLikeVoigt)
@@ -103,7 +103,7 @@ namespace
 
     MAT::EvaluateRightCauchyGreenStrainLikeVoigt(E_VoigtStrain, C_VoigtStrain);
 
-    BACI_EXPECT_NEAR(C_VoigtStrain, C_VoigtStrain_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(C_VoigtStrain, C_VoigtStrain_ref, 1.0e-10);
   }
 
   TEST_F(ElastHyperServiceTest, TestEvaluateInvariantDerivatives)
@@ -150,7 +150,7 @@ namespace
     // strain energy function
     MAT::ElastHyperEvaluateInvariantDerivatives(prinv_, dPI, ddPII, potsum, properties, 0, 0);
 
-    BACI_EXPECT_NEAR(dPI, dPI_ref, 1.0e-4);
-    BACI_EXPECT_NEAR(ddPII, ddPII_ref, 1.0e-4);
+    FOUR_C_EXPECT_NEAR(dPI, dPI_ref, 1.0e-4);
+    FOUR_C_EXPECT_NEAR(ddPII, ddPII_ref, 1.0e-4);
   }
 }  // namespace

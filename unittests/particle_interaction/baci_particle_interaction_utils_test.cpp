@@ -29,7 +29,7 @@ namespace
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecClear(c);
 
-    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecSet)
@@ -40,7 +40,7 @@ namespace
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecSet(c, a);
 
-    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecAdd)
@@ -51,7 +51,7 @@ namespace
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecAdd(c, a);
 
-    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecSub)
@@ -62,7 +62,7 @@ namespace
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecSub(c, a);
 
-    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecScale)
@@ -72,7 +72,7 @@ namespace
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecScale(c, 1.8);
 
-    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecSetScale)
@@ -83,7 +83,7 @@ namespace
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecSetScale(c, 1.8, a);
 
-    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecAddScale)
@@ -94,7 +94,7 @@ namespace
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecAddScale(c, 1.8, a);
 
-    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecSetCross)
@@ -106,7 +106,7 @@ namespace
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecSetCross(c, a, b);
 
-    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecAddCross)
@@ -118,7 +118,7 @@ namespace
     double c[3] = {2.5, 7.5, -1.8};
     PARTICLEINTERACTION::UTILS::VecAddCross(c, a, b);
 
-    BACI_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(c, c_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, VecDot)
@@ -160,7 +160,7 @@ namespace
     double n_ref[3] = {0.0};
     PARTICLEINTERACTION::UTILS::VecSetCross(n_ref, t1, t2);
 
-    BACI_EXPECT_ITERABLE_NEAR(n, n_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(n, n_ref, 3, 1.0e-14);
   }
 
   TEST(PowHelperTest, LinTransLower)

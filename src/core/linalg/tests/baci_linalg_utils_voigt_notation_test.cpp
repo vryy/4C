@@ -77,7 +77,7 @@ namespace
 
     CORE::LINALG::VOIGT::Stresses::MatrixToVector(tens, cmp_stress);
 
-    BACI_EXPECT_NEAR(cmp_stress, tens_stress, 1e-10);
+    FOUR_C_EXPECT_NEAR(cmp_stress, tens_stress, 1e-10);
   }
 
   TEST_F(VoigtNotationTest, MatrixToVectorStrainLike)
@@ -86,7 +86,7 @@ namespace
 
     CORE::LINALG::VOIGT::Strains::MatrixToVector(tens, cmp_strain);
 
-    BACI_EXPECT_NEAR(cmp_strain, tens_strain, 1e-10);
+    FOUR_C_EXPECT_NEAR(cmp_strain, tens_strain, 1e-10);
   }
 
   TEST_F(VoigtNotationTest, DeterminantStressLike)
@@ -122,7 +122,7 @@ namespace
     CORE::LINALG::Matrix<6, 1> itens_stress_result(false);
     CORE::LINALG::VOIGT::Stresses::InverseTensor(tens_stress, itens_stress_result);
 
-    BACI_EXPECT_NEAR(itens_stress_result, itens_stress, 1e-5);
+    FOUR_C_EXPECT_NEAR(itens_stress_result, itens_stress, 1e-5);
   }
 
   TEST_F(VoigtNotationTest, InverseStrainLike)
@@ -130,7 +130,7 @@ namespace
     CORE::LINALG::Matrix<6, 1> itens_strain_result(false);
     CORE::LINALG::VOIGT::Strains::InverseTensor(tens_strain, itens_strain_result);
 
-    BACI_EXPECT_NEAR(itens_strain_result, itens_strain, 1e-5);
+    FOUR_C_EXPECT_NEAR(itens_strain_result, itens_strain, 1e-5);
   }
 
   TEST_F(VoigtNotationTest, ToStressLike)
@@ -140,8 +140,8 @@ namespace
     CORE::LINALG::VOIGT::Strains::ToStressLike(tens_strain, strain_to_stress);
     CORE::LINALG::VOIGT::Stresses::ToStressLike(tens_stress, stress_to_stress);
 
-    BACI_EXPECT_NEAR(strain_to_stress, tens_stress, 1e-5);
-    BACI_EXPECT_NEAR(stress_to_stress, stress_to_stress, 1e-5);
+    FOUR_C_EXPECT_NEAR(strain_to_stress, tens_stress, 1e-5);
+    FOUR_C_EXPECT_NEAR(stress_to_stress, stress_to_stress, 1e-5);
   }
 
   TEST_F(VoigtNotationTest, ToStrainLike)
@@ -152,8 +152,8 @@ namespace
     CORE::LINALG::VOIGT::Stresses::ToStrainLike(tens_stress, stress_to_strain);
 
 
-    BACI_EXPECT_NEAR(strain_to_strain, tens_strain, 1e-5);
-    BACI_EXPECT_NEAR(stress_to_strain, tens_strain, 1e-5);
+    FOUR_C_EXPECT_NEAR(strain_to_strain, tens_strain, 1e-5);
+    FOUR_C_EXPECT_NEAR(stress_to_strain, tens_strain, 1e-5);
   }
 
   TEST_F(VoigtNotationTest, IdentityMatrix)
