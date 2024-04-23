@@ -9,6 +9,8 @@
 
 #include <gtest/gtest.h>
 
+#include "baci_config.hpp"
+
 #ifdef FOUR_C_WITH_ARBORX
 
 #include "baci_discretization_geometric_search_bvh.hpp"
@@ -37,7 +39,7 @@ namespace
    protected:
     std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> primitives_, predicates_;
     Epetra_SerialComm comm_;
-    IO::verbositylevel verbosity_;
+    IO::Verbositylevel verbosity_;
   };
 
   /**

@@ -9,6 +9,8 @@
 
 #include <gtest/gtest.h>
 
+#include "baci_config.hpp"
+
 #include "baci_utils_exceptions.hpp"
 
 #include <array>

@@ -10,9 +10,9 @@
 #ifndef FOUR_C_GEOMETRIC_SEARCH_CREATE_BOUNDING_VOLUMES_TEST_HPP
 #define FOUR_C_GEOMETRIC_SEARCH_CREATE_BOUNDING_VOLUMES_TEST_HPP
 
-#ifdef FOUR_C_WITH_ARBORX
-
 #include "baci_config.hpp"
+
+#ifdef FOUR_C_WITH_ARBORX
 
 #include "baci_discretization_geometric_search_bounding_volume.hpp"
 #include "baci_linalg_fixedsizematrix.hpp"
