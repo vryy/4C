@@ -48,68 +48,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectP
     const ElementData<volume, scalar_type>& element_data_volume,
     CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
 {
-  // Initialize data structures
-
-  // Point on volume.
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_volume;
-
-  // Jacobian / inverse.
-  CORE::LINALG::Matrix<3, 3, scalar_type> J_J_inv;
-
-  // Increment of xi.
-  CORE::LINALG::Matrix<3, 1, scalar_type> delta_xi;
-  // Initialize the increment with a value that will not pass the first convergence check.
-  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
-
-  // Residuum.
-  CORE::LINALG::Matrix<3, 1, scalar_type> residuum;
-
-  // Reset the projection result flag.
-  projection_result = ProjectionResult::projection_not_found;
-
-  // Local Newton iteration.
-  {
-    unsigned int counter = 0;
-    while (counter < CONSTANTS::local_newton_iter_max)
-    {
-      // Get the point coordinates on the volume.
-      GEOMETRYPAIR::EvaluatePosition<volume>(xi, element_data_volume, r_volume);
-
-      // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$
-      residuum = r_volume;
-      residuum -= point;
-
-      // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
-          delta_xi.Norm2() < CONSTANTS::projection_xi_eta_tol)
-      {
-        if (ValidParameter3D<volume>(xi))
-          projection_result = ProjectionResult::projection_found_valid;
-        else
-          projection_result = ProjectionResult::projection_found_not_valid;
-        break;
-      }
-
-      // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
-
-      // Get the jacobian.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<volume>(xi, element_data_volume, J_J_inv);
-
-      // Solve the linearized system.
-      if (CORE::LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
-              J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
-      {
-        // Set the new parameter coordinates.
-        xi -= delta_xi;
-
-        // Advance Newton iteration counter.
-        counter++;
-      }
-      else
-        break;
-    }
-  }
+  GEOMETRYPAIR::ProjectPointToVolume<scalar_type, volume>(
+      point, element_data_volume, xi, projection_result);
 }
 
 
@@ -290,6 +230,76 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::Intersec
     if (intersection_found == ProjectionResult::projection_found_valid)
     {
       intersection_points.push_back(ProjectionPoint1DTo3D<scalar_type>(eta, xi));
+    }
+  }
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename volume>
+void GEOMETRYPAIR::ProjectPointToVolume(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+    const ElementData<volume, scalar_type>& element_data_volume,
+    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result)
+{
+  // Point on volume.
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_volume;
+
+  // Jacobian / inverse.
+  CORE::LINALG::Matrix<3, 3, scalar_type> J_J_inv;
+
+  // Increment of xi.
+  CORE::LINALG::Matrix<3, 1, scalar_type> delta_xi;
+  // Initialize the increment with a value that will not pass the first convergence check.
+  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
+
+  // Residuum.
+  CORE::LINALG::Matrix<3, 1, scalar_type> residuum;
+
+  // Reset the projection result flag.
+  projection_result = ProjectionResult::projection_not_found;
+
+  // Local Newton iteration.
+  {
+    unsigned int counter = 0;
+    while (counter < CONSTANTS::local_newton_iter_max)
+    {
+      // Get the point coordinates on the volume.
+      GEOMETRYPAIR::EvaluatePosition<volume>(xi, element_data_volume, r_volume);
+
+      // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$
+      residuum = r_volume;
+      residuum -= point;
+
+      // Check if tolerance is fulfilled.
+      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
+          delta_xi.Norm2() < CONSTANTS::projection_xi_eta_tol)
+      {
+        if (ValidParameter3D<volume>(xi))
+          projection_result = ProjectionResult::projection_found_valid;
+        else
+          projection_result = ProjectionResult::projection_found_not_valid;
+        break;
+      }
+
+      // Check if residuum is in a sensible range where we still expect to find a solution.
+      if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
+
+      // Get the jacobian.
+      GEOMETRYPAIR::EvaluatePositionDerivative1<volume>(xi, element_data_volume, J_J_inv);
+
+      // Solve the linearized system.
+      if (CORE::LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+              J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
+      {
+        // Set the new parameter coordinates.
+        xi -= delta_xi;
+
+        // Advance Newton iteration counter.
+        counter++;
+      }
+      else
+        break;
     }
   }
 }
