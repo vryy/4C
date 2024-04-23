@@ -1,14 +1,9 @@
-//
-//
-// flow around two obstacles, SUPG/PSPG/DIVGRAD stabilization on the whole element for cut elements
-// should be stable for Sigma and Nitsche with ~1/h and ~|Gamma|/|Omega|
-// only quadratic convergence for Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
-//
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 xfluid_multibody_hex8
+
+flow around two obstacles, SUPG/PSPG/DIVGRAD stabilization on the whole element for cut elements
+should be stable for Sigma and Nitsche with ~1/h and ~|Gamma|/|Omega|
+only quadratic convergence for Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        4610
 NODES                           7219

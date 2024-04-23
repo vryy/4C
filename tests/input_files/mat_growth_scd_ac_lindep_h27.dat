@@ -1,10 +1,7 @@
-//
-// scalar dependent growth of a quadratic block
-// Testing: materials MAT_MAT_GrowthVolumetricScd ,MAT_GrowthAC and MAT_ScDepInterp
-//          and SOLIDH27SCATRA elements
-==================================================================
-General Data File CCARAT
-==================================================================
+------------------------------------------------------TITLE
+scalar dependent growth of a quadratic block
+Testing: materials MAT_MAT_GrowthVolumetricScd ,MAT_GrowthAC and MAT_ScDepInterp
+         and SOLIDH27SCATRA elements
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216

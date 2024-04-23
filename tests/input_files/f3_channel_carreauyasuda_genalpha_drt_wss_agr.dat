@@ -1,13 +1,6 @@
-//
-//
-// testing: Stress calculation via ML agreagtion
-// hint: This does give different results in parallel, since the ML agreagtion Matrix does
-//       depend on the parallel distribution of the discretisation
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+testing: Stress calculation via ML agreagtion
+hint: This does give different results in parallel, since the ML agreagtion Matrix does depend on the parallel distribution of the discretisation
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        400
 NODES                           882

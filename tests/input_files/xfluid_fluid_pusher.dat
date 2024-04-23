@@ -1,14 +1,9 @@
-//
-//
-// Axel's fluidpusher test case
-// this test case only tests if constant velocity fields are continued exactly
-// this is not a good time integration test case, because the velocity field is
-// allways constant for each time step...
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 xfluid_fluid_pusher
+
+this test case only tests if constant velocity fields are continued exactly
+this is not a good time integration test case, because the velocity field is
+allways constant for each time step...
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        91
 NODES                           184

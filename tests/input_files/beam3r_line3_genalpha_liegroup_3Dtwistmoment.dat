@@ -1,13 +1,9 @@
-//
-//
-//For better Newton convergence the cross-section value has been scaled
-//from A=0.1 to A=CROSSAREA 0.0000001. This does not influence the result
-//since we neglect translational inertia terms (IT=0.0).
-==================================================================
-                        General Data File CCARAT
-==================================================================
 -------------------------------------------------------------TITLE
 Dynamic Test (only rotational inertia) for beam3r elements loaded with a tip moment
+
+Comment: For better Newton convergence the cross-section value has been scaled
+from A=0.1 to A=CROSSAREA 0.0000001. This does not influence the result
+since we neglect translational inertia terms (IT=0.0).
 ------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP

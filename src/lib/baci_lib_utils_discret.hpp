@@ -61,8 +61,7 @@ namespace DRT
      *  \param systemvector (out) : system-vector which is supposed to be filled
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
-     *
-     *  \author hiermeier \date 12/16 */
+     */
     void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
         const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& systemvector, const Epetra_Map* col_ele_map = nullptr);
@@ -81,8 +80,7 @@ namespace DRT
      *  \param systemvector (out) : system-vector vector which is supposed to be filled
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
-     *
-     *  \author hiermeier \date 12/16 */
+     */
     void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
         std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>>& systemmatrices,
         std::vector<Teuchos::RCP<Epetra_Vector>>& systemvector,
@@ -102,16 +100,14 @@ namespace DRT
      *                              and matrices
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
-     *
-     *  \author hiermeier \date 12/16 */
+     */
     void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
         DRT::AssembleStrategy& strategy, const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate Dirichlet boundary conditions
      *
      *  non-member functions to call the dbc public routines
-     *
-     *  \author hiermeier \date 10/16 */
+     */
     void EvaluateDirichlet(const DRT::Discretization& discret, const Teuchos::ParameterList& params,
         const Teuchos::RCP<Epetra_Vector>& systemvector,
         const Teuchos::RCP<Epetra_Vector>& systemvectord,
@@ -123,8 +119,7 @@ namespace DRT
      *
      *  Call this variant, if you need no new dbc map extractor.
      *  See the corresponding called function for more detailed information.
-     *
-     *  \author hiermeier \date 10/16 */
+     */
     inline void EvaluateDirichlet(const DRT::Discretization& discret,
         const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
         const Teuchos::RCP<Epetra_Vector>& systemvectord,
@@ -145,7 +140,6 @@ namespace DRT
     dynamics simulation, locids must contain the local DOF ids {0,1,2}. Another example would be
     prescribing an initial pressure in a 3D fluid dynamics simulation, where locids would have to
     contain only the local pressure DOF id, namely {3}.
-
     */
     void EvaluateInitialField(const DRT::Discretization& discret, const std::string& fieldstring,
         Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids);
@@ -163,13 +157,11 @@ namespace DRT
     /** \brief Build a Dbc object
      *
      *  The Dbc object is build in dependency of the given discretization.
-     *
-     *  \author hiermeier \date 10/16 */
+     */
     Teuchos::RCP<const Dbc> BuildDbc(const DRT::Discretization* discret_ptr);
 
     /** \brief Default Dirchilet boundary condition evaluation class
-     *
-     *  \author hiermeier \date 10/16 */
+     */
     class Dbc
     {
      protected:
@@ -242,8 +234,7 @@ namespace DRT
 
       /** \brief Extract parameters and setup some temporal variables, before the actual
        *  evaluation process can start
-       *
-       *  \author hiermeier \date 10/16 */
+       */
       void operator()(const DRT::Discretization& discret, const Teuchos::ParameterList& params,
           const Teuchos::RCP<Epetra_Vector>& systemvector,
           const Teuchos::RCP<Epetra_Vector>& systemvectord,
@@ -294,9 +285,7 @@ namespace DRT
        *  \param dbcmapextractor (out): Map extractor containing maps for the DOFs
        *                                subjected to Dirichlet boundary conditions
        *                                and the remaining/free DOFs
-       *
-       *  \author mwgee (original) \date 02/08
-       *  \author rauch \date 06/16 */
+       */
       virtual void Evaluate(const DRT::Discretization& discret, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const;
@@ -311,8 +300,7 @@ namespace DRT
        *                 LineDirichlet
        *                 PointDirichlet
        *  This way, lower entities override higher ones which is
-       *  equivalent to inheritance of dirichlet BCs as done in the old
-       *  ccarat discretization with design          (mgee 1/07)
+       *  equivalent to inheritance of dirichlet BCs.
        *
        *  Lower entities MUST NOT set dof values in systemvector before
        *  we know if higher entities also prescribe/release Dirichlet BCs
@@ -332,8 +320,7 @@ namespace DRT
        *  the input file determines if the systemvector for the corresponding
        *  dofs is actually touched, or not, irrespective of the dirichlet BC
        *  definition of a lower entity.
-       *
-       *  \author rauch \date 06/16 */
+       */
       void ReadDirichletCondition(const DRT::Discretization& discret,
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
@@ -369,8 +356,7 @@ namespace DRT
        *  in LINE 'E 1' definitely DO NOT HAVE a dirichlet BC on their first dof.
        *  No matter what is defined in a condition line of lower priority. The
        *  corresponding entries in the systemvectors remain untouched.
-       *
-       *  \author rauch \date 06/16 */
+       */
       virtual void ReadDirichletCondition(const DRT::Discretization& discret,
           const DRT::Condition& cond, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const;
@@ -381,8 +367,7 @@ namespace DRT
        *  (2) Assign SurfaceDirichlet DBC GIDs
        *  (3) Assign LineDirichlet DBC GIDs
        *  (4) Assign PointDirichlet DBC GIDs
-       *
-       *  \author hiermeier \date 10/16 */
+       */
       void DoDirichletCondition(const DRT::Discretization& discret,
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
@@ -432,16 +417,13 @@ namespace DRT
        *  handling. Now, the Dirichlet conditions are first read by
        *  ReadDirichletCondition(...). Then, they are applied by
        *  DoDirichletCondition(...).
-       *
-       *  \author mwgee (original) \date 02/08
-       *  \author rauch (modified) \date 06/2016 */
+       */
       virtual void DoDirichletCondition(const DRT::Discretization& discret,
           const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief Create a Dbc map extractor, if desired
-       *
-       *  \author hiermeier \date 10/16 */
+       */
       void BuildDbcMapExtractor(const DRT::Discretization& discret,
           const Teuchos::RCP<const std::set<int>>& dbcrowgids,
           const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const;

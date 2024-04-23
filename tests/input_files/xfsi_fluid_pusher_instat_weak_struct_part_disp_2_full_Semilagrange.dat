@@ -1,19 +1,14 @@
-//
-//
-// xfsi fluid pusher with one weak hex8 structure element,
-// therefore a simple real partitioned FSI simulation
-// NOTE: compared to the test case xfsi_fluid_pusher_instat_weak_struct_part_disp.dat
-// here the displacement is smaller such that at least one full element is not cut, otherwise the gradient penalty
-// reconstruction for ghost values is not successful as not face is available anymore then
-// we obtain identical results to the test case xfsi_fluid_pusher_instat_weak_struct_part_disp_2.dat
-// Just the number of fluid-iterations is higher, as not reasonable predictor w.r.t last increment is available
-// when we enforce to use the Semilagrangean algorithm instead of just copying values
-// However, the residual of the first iteration of a time step is equal to non-SL methods
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
-xfsi_fluid_pusher_instat_OST_1_new.dat
+xfsi fluid pusher with one weak hex8 structure element,
+therefore a simple real partitioned FSI simulation
+
+NOTE: compared to the test case xfsi_fluid_pusher_instat_weak_struct_part_disp.dat
+here the displacement is smaller such that at least one full element is not cut, otherwise the gradient penalty
+reconstruction for ghost values is not successful as not face is available anymore then
+we obtain identical results to the test case xfsi_fluid_pusher_instat_weak_struct_part_disp_2.dat
+Just the number of fluid-iterations is higher, as not reasonable predictor w.r.t last increment is available
+when we enforce to use the Semilagrangean algorithm instead of just copying values
+However, the residual of the first iteration of a time step is equal to non-SL methods
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        91
 NODES                           184

@@ -1,12 +1,8 @@
-//
-//
-// flow around two obstacles, edge-oriented stabilization on the whole element for cut elements
-// should be stable for Sigma and Nitsche with ~1/h and ~|Gamma|/|Omega|
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 xfluid_multibody_hex8
+
+flow around two obstacles, edge-oriented stabilization on the whole element for cut elements
+should be stable for Sigma and Nitsche with ~1/h and ~|Gamma|/|Omega|
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        4610
 NODES                           7219

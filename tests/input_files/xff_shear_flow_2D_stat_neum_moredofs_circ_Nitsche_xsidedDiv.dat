@@ -1,14 +1,7 @@
-///
-//
-//
-// volumecell gaus points by DirectDivergence
-//
-// boundarycell gauss points by Tesselation
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+volumecell gaus points by DirectDivergence
+
+boundarycell gauss points by Tesselation
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        78
 NODES                           206

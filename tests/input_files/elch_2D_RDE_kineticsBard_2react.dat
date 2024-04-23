@@ -1,19 +1,13 @@
-//
-//
-// example: reaction model Newman
-// simulation of potential sweep experiment described in
-//
-// D. Wittmann, Erweiterte Reaktionsmodelle fuer die numerische Simulation
-// von elektrochemischen Systemen, pp.27, 2011
-//
-// C. Dan, Numerical simulation of transient current responses
-// in dilute electrochemical systems,
-// Journal of Electroanalytical Chemistry, 12-23, 2001
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+example: reaction model Bard
+simulation of potential sweep experiment described in
+
+D. Wittmann, Erweiterte Reaktionsmodelle fuer die numerische Simulation
+von elektrochemischen Systemen, pp.27, 2011
+
+C. Dan, Numerical simulation of transient current responses
+in dilute electrochemical systems,
+Journal of Electroanalytical Chemistry, 12-23, 2001
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                        100
 //NODES                           202

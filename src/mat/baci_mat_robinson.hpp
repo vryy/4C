@@ -207,8 +207,6 @@ namespace MAT
     );
 
     //! \brief calculate visco-plastic strain rate governed by the evolution law
-    //!
-    // CCARAT: so3_mat_robinson_be_rvscstn()
     void CalcBEViscousStrainRate(const double dt,  //!< (i) time step size
         double tempnp,                             //!< (i) current temperature
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
@@ -234,27 +232,19 @@ namespace MAT
 
     //! \brief residual of BE-discretised back stress according to the flow rule
     //!        at Gauss point
-    //!
-    // CCARAT: so3_mat_robinson_be_rbcksts()
     void CalcBEBackStressFlow(const double dt,  //!< (i) time step size
         const double tempnp,                    //!< (i) current temperature at t_{n+1}
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
             strain_p,  //!< (i) viscous strain \f$\varepsilon_{n}\f$ at t_n^i
-                       // CCARAT: vscstn
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
             strain_pn,  //!< (i) viscous strain \f$\varepsilon_{n+1}\f$ at t_{n+1}^i
-                        // CCARAT: vscstnn
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
             devstress,  //!< (i) deviatoric stress \f$s_{n+1}\f$ at t_{n+1}^i
-                        // CCARAT: devstsn
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
             backstress,  //!<  (i)back stress \f$\alpha_{n}\f$  at t_{n}^i,
-                         // CCARAT: bacsts
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
             backstress_n,  //!< (i) back stress \f$\alpha_{n+1}\f$ at t_{n+1}^i,
-                           // CCARAT: bacstsn
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& backstress_res,  //!< (o) back stress residual
-                                                                 // CCARAT: bckstsr
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             kae,  //!< (o) \f$\dfrac{\partial f_{res}^{al}}{\partial \Delta\varepsilon}\f$
                   //!< tangent of back stress residual with respect to total strain inc eps
@@ -267,7 +257,6 @@ namespace MAT
     );
 
     //! Reduce (statically condense) system in eps,eps^v,al to purely eps
-    // CCARAT: so3_mat_robinson_be_red
     /*!
     The linearised stress and internal residuals are
 
@@ -328,7 +317,6 @@ namespace MAT
             kea,  //!< (6x6) (i) \f$\dfrac{\partial \sigma}{\partial \alpha}\f$
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
             strain_pres,  //!< (6x1) (i) viscous strain residual
-                          // CCARAT: vscstnr
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             kve,  //!< (6x6) (i) \f$\dfrac{\partial f_{res}^{v}}{\partial \varepsilon}\f$
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
@@ -337,7 +325,6 @@ namespace MAT
             kva,  //!< (6x6) (i) \f$\dfrac{\partial f_{res}^{v}}{\partial \alpha}\f$
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>&
             backstress_res,  //!< (6x1) (i) backstress residual
-                             // CCARAT: bckstsr
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             kae,  //!< (6x6) (i) \f$\dfrac{\partial f_{res}^{\alpha}}{\partial \varepsilon}\f$
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
@@ -358,8 +345,6 @@ namespace MAT
     //! of the total strain.
     //! Here the reduction matrices (kvarvam,kvakvae) stored at previous call of
     //! CalculateCondensedSystem() care used.
-    //!
-    // CCARAT: so3_mat_robinson_be_mivupditer() is called in so3_iv_upiter
     //!
     //! strainplcurr_ = strainpllast_ + Delta strain_p (o)
     //! backstresscurr_ = backstresslast_ + Delta backstress (o)
@@ -426,22 +411,18 @@ namespace MAT
     //! visco-plastic strain vector Ev^{gp} at t_{n} for every Gauss point gp
     //!    Ev^{gp,T} = [ E_11  E_22  E_33  2*E_12  2*E_23  2*E_31 ]^{gp} */
     //!< \f${\varepsilon}^p_{n}\f$
-    // CCARAT: ARRAY vicstn;
     Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>> strainpllast_;
     //! current visco-plastic strain vector Ev^{gp} at t_{n+1} for every Gauss point gp
     //!    Ev^{gp,T} = [ E_11  E_22  E_33  2*E_12  2*E_23  2*E_31 ]^{gp} */
-    // CCARAT: ARRAY vicstnn;
     Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     //! old back stress vector Alpha^{gp} at t_n for every Gauss point gp
     //!    Alpha^{gp,T} = [ A_11  A_22  A_33  A_12  A_23  A_31 ]^{gp}
-    // CCARAT: ARRAY bacsts;
     Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         backstresslast_;  //!< \f${\alpha}_{n}\f$
     //! current back stress vector Alpha^{gp} at t_{n+1} for every Gauss point gp
     //!< \f${\alpha}_{n+1}\f$
     //!    Alpha^{gp,T} = [ A_11  A_22  A_33  A_12  A_23  A_31 ]^{gp} */
-    // CCARAT: ARRAY bacstsn;
     Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         backstresscurr_;  //!< \f${\alpha}_{n+1}\f$
     //! update vector for MIV iterative increments
