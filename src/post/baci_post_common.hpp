@@ -54,11 +54,8 @@ namespace DRT
   \brief Foundation class of the filter
 
   Each filter needs one instance of PostProblem. This sets up the
-  filter environment including MPI in a parallel setting. Some rather
-  obscure global ccarat variables are handled here as well.
-
-  \author m.kue
-  \date 02/07
+  filter environment including MPI in a parallel setting. Some global variables are handled here as
+  well.
 */
 class PostProblem
 {
