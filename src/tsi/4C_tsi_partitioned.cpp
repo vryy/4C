@@ -243,6 +243,13 @@ void TSI::Partitioned::TimeLoopOneWay()
 {
   if (displacementcoupling_)  // (temperature change due to deformation)
   {
+    if (contact_strategy_nitsche_ != Teuchos::null)
+    {
+      // update the structure field with temperature from the thermal field.
+      // It is important for TSI contact in the first step
+      ApplyThermoCouplingState(ThermoField()->Tempnp());
+    }
+
     // -------------------------------------------------- structure field
 
     // predict the structure field without influence of temperatures

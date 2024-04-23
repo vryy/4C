@@ -177,7 +177,7 @@ void THR::TimIntImpl::Predict()
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
     // re-evaluate the contact
-    contact_strategy_nitsche_->Integrate(*contact_params_interface);
+    contact_strategy_nitsche_->Integrate(*contact_params_interface_);
   }
 
   // apply Dirichlet BCs

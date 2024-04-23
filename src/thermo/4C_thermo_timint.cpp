@@ -737,10 +737,6 @@ void THR::TimInt::ApplyForceTangInternal(
   {
     const auto ft = contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp);
     if (fint->Update(1., *ft, 1.)) FOUR_C_THROW("update failed");
-    tang->UnComplete();
-    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
-        false, p.get<double>("timefac"), 1.);
-    tang->Complete();
   }
 
   discret_->ClearState();

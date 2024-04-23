@@ -509,8 +509,7 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
     {
       case INPAR::CONTACT::NitThr_substitution:
       {
-        const double beta_bar =
-            beta * (-snn_av_pen_gap);  // TODO check with cauchy_nn_average_pen_gap
+        const double beta_bar = beta * (-snn_av_pen_gap);
         const double q1 = beta_bar * (s_gp_temp - m_gp_temp);
 
         CORE::GEN::Pairedvector<int, double> d_q1_d(

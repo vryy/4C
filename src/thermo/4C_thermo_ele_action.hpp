@@ -96,9 +96,11 @@ namespace THR
       case calc_thermo_coupltang:
         s = "calc_thermo_coupltang";
         break;
+      case calc_thermo_fintcond:
+        s = "calc_thermo_fintcond";
+        break;
       default:
-        std::cout << action << std::endl;
-        FOUR_C_THROW("no string for this action defined!");
+        FOUR_C_THROW("no string for action %d defined!", action);
         break;
     };
     return s;

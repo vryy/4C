@@ -132,7 +132,8 @@ namespace THR
     void SetNitscheContactParameters(
         Teuchos::RCP<CONTACT::ParamsInterface> params_interface) override
     {
-      contact_params_interface = params_interface;
+      contact_params_interface_ = params_interface;
+    }
     }
 
     //! prepare time step
@@ -616,8 +617,8 @@ namespace THR
     // thermo contact manager
     Teuchos::RCP<CONTACT::NitscheStrategyTsi> contact_strategy_nitsche_;
 
-    // therml contact parameters
-    Teuchos::RCP<CONTACT::ParamsInterface> contact_params_interface;
+    // thermo contact parameters
+    Teuchos::RCP<CONTACT::ParamsInterface> contact_params_interface_;
 
     //@}
 

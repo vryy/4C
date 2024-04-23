@@ -270,7 +270,6 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::CreateRhsBlockPtr(
       auto* mele = dynamic_cast<MORTAR::Element*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       auto& nitsche_container = mele->GetNitscheContainer();
-      // nitsche_container.RhsV
       nitsche_container.AssembleRHS(mele, bt, fc);
     }
   }
