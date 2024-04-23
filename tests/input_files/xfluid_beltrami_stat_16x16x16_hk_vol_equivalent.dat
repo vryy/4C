@@ -1,5 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
 stationary beltrami flow, 3D, 16x16x16 elements, viscous dominated
 tests the Nitsche based on a scaling hk~vol_equivalent
 ----------------------------------------------------------------PROBLEM SIZE

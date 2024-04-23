@@ -1,6 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus and jou2dat on Mi 4. Nov 11:49:06 CET 2009
-
 simple 3D example. consists of 3 hex8 elements and is loaded with a
 surface Neumann and a body Neumann boundary condition
 ----------------------------------------------------------------PROBLEM SIZE

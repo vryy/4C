@@ -1,6 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
-
 plastic necking of a cylindrical bar induced by an imperfect geometry
 (cone: z= -13.335: 0.0 <= x/y <= 6.2975, z= +13.335: 0.0 <= x/y <= 6.413)
 using a finite strain plastic von Mises material with linear isotropic hardening

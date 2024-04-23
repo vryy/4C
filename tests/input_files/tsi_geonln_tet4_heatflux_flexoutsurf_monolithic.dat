@@ -1,6 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus and jou2dat on Fri Nov 30 16:07:27 CET 2012
-
 simple 3D example. consists of 120 tet4 elements and is loaded with a
 surface thermal Neumann boundary condition. Heatflux increasing in time leads to
 a extension of the body, statics analysis.

@@ -1,5 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
 instationary 2D kimmoin flow (3 time-steps), convection-dominated with 1e-004
 "Kimmmoin LevelSet Neumann included
 ----------------------------------------------------------------PROBLEM SIZE

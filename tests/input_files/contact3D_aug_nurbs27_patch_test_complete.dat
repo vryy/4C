@@ -46,7 +46,6 @@ LIMIT_OUTP_TO_PROC              0
 VERBOSITY                       verbose
 RESTARTWALLTIMEINTERVAL         -1
 RESTARTEVRY                     -1
-//
 -------------------------------------------------IO/EVERY ITERATION
 OUTPUT_EVERY_ITER               yes
 RUN_NUMBER                      -1

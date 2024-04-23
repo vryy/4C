@@ -1,5 +1,4 @@
 -------------------------------------------------------------TITLE
-created by pre_exodus
 // Small four element (1xstruct, 1xporo, 2xfluid) test case,
 // which tests overlapping FPSI/FSI- Interfaces for FPSI problems!
 ------------------------------------------------------PROBLEM SIZE

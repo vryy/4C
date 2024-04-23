@@ -1,8 +1,6 @@
-//
-//
-// Simulate a cantilever beam with solid elements and with beam elements. Then check
-// if the element GIDs are output correctly.
-//
+---------------------------------------------------------------------------TITLE
+Simulate a cantilever beam with solid elements and with beam elements. Then check
+if the element GIDs are output correctly.
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                                   3
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT

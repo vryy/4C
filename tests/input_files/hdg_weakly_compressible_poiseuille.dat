@@ -1,5 +1,3 @@
-//
-//
 -------------------------------------------------------------TITLE
 Weakly compressible Poiseuille flow solved with the HDG method.
 From: "A superconvergent HDG method for weakly compressible

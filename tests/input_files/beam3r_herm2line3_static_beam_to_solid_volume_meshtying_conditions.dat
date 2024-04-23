@@ -1,6 +1,4 @@
-//
-//
----------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 Create a model with two not connected solids and two beams. The coupling is
 defined in a way, that each beam is only coupled to one solid. This tests
 that the beam-to-solid volume mesh tying conditions work as expected, since

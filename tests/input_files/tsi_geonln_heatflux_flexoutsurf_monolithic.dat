@@ -1,6 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus and jou2dat on Thu Nov 8 15:13:07 CET 2012
-
 simple 3D example. consists of 12 hex8 elements and is loaded with a
 surface thermal Neumann boundary condition. Heatflux increasing in time leads to
 a extension of the body, statics analysis.

@@ -1,6 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus and jou2dat on Mi 26. Jan 17:24:36 CET 2011
-
 - Analytical example for heat convection boundary condition
 - Use the new temperature T_n+1 for the temperature on the heat convection
 boundary

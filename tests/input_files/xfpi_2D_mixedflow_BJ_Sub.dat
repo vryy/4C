@@ -4,7 +4,6 @@
 // Flow threw interface (mixed normal and tangential direction)
 // with Beavers-Joseph interface law between Fluid and Poro done by substitution method
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP

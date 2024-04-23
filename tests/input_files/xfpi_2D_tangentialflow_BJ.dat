@@ -4,7 +4,6 @@
 // Simple Flow parallell to the interface with Beavers-Joseph interface law
 // between Fluid and Poro, stationary solution known
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP

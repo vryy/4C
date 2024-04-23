@@ -1,5 +1,4 @@
 -------------------------------------------------------------TITLE
-created by pre_exodus
 meshtying with quadratic FE and element-wise constant LM interpolation
 condensed linear system without any LM-dofs
 ------------------------------------------------------PROBLEM SIZE

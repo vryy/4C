@@ -1,6 +1,4 @@
 -------------------------------------------------------------TITLE
-created by pre_exodus
-
 Test of Edge-based pressure stabilization (pEOS) for quad4 stretched elements, ratio 20:1
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    2000

@@ -1,7 +1,6 @@
-//
-// Description: Two beams are coupled to a hollow cylinder modelled with
-//              nurbs27 elements.
-//
+---------------------------------------------------------------------------TITLE
+Description: Two beams are coupled to a hollow cylinder modelled with
+             nurbs27 elements.
 ---------------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                            Structure
 RESTART                               0

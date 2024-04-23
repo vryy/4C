@@ -1,6 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
-
 compressible poroelastic media, solved monolithically via XFEM, tests the general monolithic process
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4736

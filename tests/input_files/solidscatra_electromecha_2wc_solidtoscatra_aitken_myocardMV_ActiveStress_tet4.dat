@@ -1,10 +1,8 @@
-//
-//
-// Two way electromechanics
-// Testing: 2wc partioned scalar-structure interaction with fixed relaxated displacements
-//
 -------------------------------------------------------------TITLE
 Test for SolidScatra Material with Tet4 Elements
+
+Two way electromechanics
+Testing: 2wc partioned scalar-structure interaction with fixed relaxated displacements
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4153
 //NODES                         928

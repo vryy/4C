@@ -1,9 +1,3 @@
-//
-//
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    6400
-//NODES       7930
-DIM           3
 -----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1

@@ -1,5 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
 ... enforce the restart of the Newton scheme during a monolithic solve
 via ITEMAX 2
 In case of an enforced Newton restart, compared to a restart when the dofsets change,

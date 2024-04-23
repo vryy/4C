@@ -1,8 +1,7 @@
-//
-// Description: Simulate a beam coupled to a solid via penalty mortar coupling.
-//              The shape functions for the Lagrange multplicators are line3.
-//              Element based integration is used to evaluate the mortar terms.
-//
+---------------------------------------------------------------------------TITLE
+Description: Simulate a beam coupled to a solid via penalty mortar coupling.
+             The shape functions for the Lagrange multplicators are line3.
+             Element based integration is used to evaluate the mortar terms.
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                                   3
 ---------------------------------------------------------------------PROBLEM TYP

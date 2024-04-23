@@ -1,6 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
-
 flow around a ball, based on the XFSI testcase comp_struct
 tests the ghost-penalty stabilization in case that an element is just touched at a single point/edge
 ----------------------------------------------------------------PROBLEM SIZE

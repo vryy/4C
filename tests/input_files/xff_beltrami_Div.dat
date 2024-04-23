@@ -1,6 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
-
 Solves beltrami flow over cube with spherical embedded cut
 Volumecell gauss points by DirectDivergence
 boundary cell gauss points by Tessellation
