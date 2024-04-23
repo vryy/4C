@@ -23,21 +23,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-/*
-Functions to catch implementation erros in debug mode
-*/
-namespace
-{
-  [[maybe_unused]] bool IsCutPositionUnchanged(
-      CORE::GEO::CUT::Point::PointPosition position, CORE::GEO::CUT::Point::PointPosition pos)
-  {
-    if ((position == CORE::GEO::CUT::Point::inside and pos == CORE::GEO::CUT::Point::outside) or
-        (position == CORE::GEO::CUT::Point::outside and pos == CORE::GEO::CUT::Point::inside))
-      return false;
-    else
-      return true;
-  }
-}  // namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1103,6 +1088,16 @@ double CORE::GEO::CUT::DistanceBetweenPoints(Point* p1, const CORE::LINALG::Matr
   CORE::LINALG::Matrix<3, 1> p1_x;
   p1->Coordinates(p1_x.A());
   return DistanceBetweenPoints(p1_x, coord_b);
+}
+
+
+bool CORE::GEO::CUT::IsCutPositionUnchanged(Point::PointPosition position, Point::PointPosition pos)
+{
+  if ((position == Point::inside and pos == Point::outside) or
+      (position == Point::outside and pos == Point::inside))
+    return false;
+  else
+    return true;
 }
 
 template <unsigned probDim>

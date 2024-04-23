@@ -290,25 +290,5 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
   return sigma_nt;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <CORE::FE::CellType parentdistype, int dim>
-void inline CONTACT::UTILS::SoEleGP(MORTAR::Element& sele, const double wgt, const double* gpcoord,
-    CORE::LINALG::Matrix<dim, 1>& pxsi, CORE::LINALG::Matrix<dim, dim>& derivtrafo)
-{
-  CORE::FE::CollectedGaussPoints intpoints =
-      CORE::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
-  intpoints.Append(gpcoord[0], gpcoord[1], 0.0, wgt);
-
-  // get coordinates of gauss point w.r.t. local parent coordinate system
-  CORE::LINALG::SerialDenseMatrix pqxg(1, dim);
-  derivtrafo.Clear();
-
-  CORE::FE::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints, sele.ParentElement()->Shape(),
-      sele.Shape(), sele.FaceParentNumber());
-
-  // coordinates of the current integration point in parent coordinate system
-  for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);
-}
 
 FOUR_C_NAMESPACE_CLOSE

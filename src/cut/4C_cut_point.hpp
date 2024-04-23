@@ -685,6 +685,8 @@ namespace CORE::GEO
     /// Find distance between points
     double DistanceBetweenPoints(Point* p1, const CORE::LINALG::Matrix<3, 1>& coord_b);
 
+    bool IsCutPositionUnchanged(Point::PointPosition position, Point::PointPosition pos);
+
   }  // namespace CUT
 }  // namespace CORE::GEO
 
