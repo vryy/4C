@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 Dynamic test case for truss3 elements; pay attention: suitable for
 serial tests only since discretization consists of one element only

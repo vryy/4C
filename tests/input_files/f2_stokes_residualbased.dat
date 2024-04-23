@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File C_CARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 LinearStokes_SkewFlow_ResidualBased_Input_Testing
 // tests linearity of stokes problem and residual-based stabilization- should give exact results after one step

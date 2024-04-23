@@ -1,11 +1,6 @@
-//
-//
-// scalar dependent growth of a quadratic block
-// Testing: (transport) neumann condition with more than 6 dofs and varying curves
-//
-==================================================================
-General Data File CCARAT
-==================================================================
+----------------------------------------------------------------TITLE
+scalar dependent growth of a quadratic block
+Testing: (transport) neumann condition with more than 6 dofs and varying curves
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216

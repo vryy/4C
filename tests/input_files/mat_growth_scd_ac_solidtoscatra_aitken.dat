@@ -1,10 +1,6 @@
-//
-// scalar dependent growth of a quadratic block
-// Testing: materials MAT_MAT_GrowthVolumetricScd and MAT_GrowthAC
-//
-==================================================================
-General Data File CCARAT
-==================================================================
+------------------------------------------------------TITLE
+scalar dependent growth of a quadratic block
+Testing: materials MAT_MAT_GrowthVolumetricScd and MAT_GrowthAC
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216

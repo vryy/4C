@@ -1,17 +1,13 @@
-//
-//
-// Both volumecell and boundarycell Gauss points by Tessellation
-// Tests xFluid Ale
-// For the timesteps in the calculation the Tessilation gives
-// hex8 volumecells, which results in an exact integration!
-//
-//if this testcase is continued, tesselation will lead to an
-//error (as directdivergence does) - an therefore test will fail!
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 xfluid_channel_constWDBC_inclinedCut
+
+Both volumecell and boundarycell Gauss points by Tessellation
+Tests xFluid Ale
+For the timesteps in the calculation the Tessilation gives
+hex8 volumecells, which results in an exact integration!
+
+if this testcase is continued, tesselation will lead to an
+error (as directdivergence does) - an therefore test will fail!
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        91
 NODES                           184

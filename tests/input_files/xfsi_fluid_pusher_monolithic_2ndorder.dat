@@ -1,12 +1,6 @@
-//
-//
-// monolithic xfsi fluid pusher with one hex8 structure element,
-// 2nd order flag for FSI-theta and fld_theta=0.5
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
-xfsi_fluid_pusher_instat_OST_1_new.dat
+monolithic xfsi fluid pusher with one hex8 structure element,
+no 2nd order flag for FSI-theta and fld_theta=1.0
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        91
 NODES                           184

@@ -1,12 +1,7 @@
-//
-//
-// Tests the direct specification of the geometry
-//
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 patchtest_sohex8
+
+Tests the direct specification of the geometry
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        7
 NODES                           16

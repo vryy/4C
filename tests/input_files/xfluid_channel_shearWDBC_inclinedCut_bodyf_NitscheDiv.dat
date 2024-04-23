@@ -1,13 +1,9 @@
-//
-//
-// Volumecell Gauss points by DirectDivergence
-//
-// boundarycell Gauss points by Tessellation
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 xfluid_channel_shearWDBC_inclinedCut_bodyf
+
+Volumecell Gauss points by DirectDivergence
+
+Boundarycell Gauss points by Tessellation
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        91
 NODES                           184

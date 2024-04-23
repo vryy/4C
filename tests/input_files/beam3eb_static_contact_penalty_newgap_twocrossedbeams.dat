@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 Small quasi-2D beam contact example with beam3eb elements, penalty approach and new gap function (BEAMS_NEWGAP: Yes)
 ----------------------------------------------------------------PROBLEM SIZE

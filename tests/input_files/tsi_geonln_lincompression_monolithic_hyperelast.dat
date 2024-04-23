@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 Simple test case for monolithic TSI: heating due to nodal velocities.
 Compression of the body due to a traction force that increases with t

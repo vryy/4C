@@ -1,15 +1,9 @@
-//
-//
-// xfsi fluid pusher with one very stiff hex8 structure element
-// prescribed displacement on right side of structure with d(t)=-t^3
-// velocities computed with second-order flag
-// constant fluid velocity, linear pressure solution dependent on discret acceleration
-// the results are not exact (only ~1e-005) since the structure-solver is not exact
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
-xfsi_fluid_pusher_instat_OST_1.dat
+xfsi fluid pusher with one very stiff hex8 structure element
+prescribed displacement on right side of structure with d(t)=-t^3
+velocities computed with second-order flag
+constant fluid velocity, linear pressure solution dependent on discret acceleration
+the results are not exact (only ~1e-005) since the structure-solver is not exact
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        91
 NODES                           184

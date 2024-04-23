@@ -1,11 +1,7 @@
-//
-//
-==================================================================
-General Data File C_CARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 LinearStokes_SkewFlow_EdgeBased_Input_Testing
-// tests linearity of stokes problem and edge-based stabilization - should give exact results after one step
+
+tests linearity of stokes problem and edge-based stabilization - should give exact results after one step
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      100
 //NODES                         121

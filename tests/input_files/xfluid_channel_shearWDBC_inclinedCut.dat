@@ -1,12 +1,7 @@
-//
-//
-// Both volumecell and boundarycell Gauss points by Tessellation
-//
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 xfluid_channel_shearWDBC_inclinedCut
+
+Both volumecell and boundarycell Gauss points by Tessellation
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        91
 NODES                           184

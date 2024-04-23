@@ -1,8 +1,3 @@
-//
-//
-================================================================================
-General Data File CCARAT
-================================================================================
 ---------------------------------------------------------------------------TITLE
 dynamic test (only rotational inertia) for beam3r elements loaded with a tip moment
 //  - cubic Hermite interpolation of beam centerline

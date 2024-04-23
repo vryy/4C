@@ -1,13 +1,7 @@
-//
-//
-// This is a simple testcase to test the edge-based fluid stabilization
-// for standard fluid problems. Poiseuille flow shall be nodal-wise exact
-// in pressure and velocity
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+This is a simple testcase to test the edge-based fluid stabilization
+for standard fluid problems. Poiseuille flow shall be nodal-wise exact
+in pressure and velocity
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        37
 NODES                           118

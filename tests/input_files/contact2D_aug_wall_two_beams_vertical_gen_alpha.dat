@@ -1,13 +1,8 @@
-//
-//
-// Test of the dynamic augmented contact framework (GenAlpha)
-// Segment based integration
-
-==================================================================
-General Data File CCARAT
-==================================================================
 -----------------------------------------------------------------------TITLE
 dynamic frictionless contact (two curved beams, no sliding)
+
+Test of the dynamic augmented contact framework (GenAlpha)
+Segment based integration
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        200
 NODES                           306
