@@ -1,7 +1,3 @@
-//
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Simple academic test case consisting of 6 hex8 elements:
 - domain is split into 3 regions: anode, electrolyte, cathode (with 2 elements each)

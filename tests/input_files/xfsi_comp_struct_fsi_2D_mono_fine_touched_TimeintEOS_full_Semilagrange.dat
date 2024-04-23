@@ -1,14 +1,10 @@
-//
-//
-// flow around a compressible ball, monolithic XFSI testcase which
-// tests the ghost-penalty stabilization and timeintegration in case that an element is just touched at a single point/edge
-// at the beginning, as well as the restart of the monolithic Newton scheme and the ghost-penalty reconstruction for
-// pseudo-time integration to predict velnp during the monolithic Newton
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
+
+flow around a compressible ball, monolithic XFSI testcase which
+tests the ghost-penalty stabilization and timeintegration in case that an element is just touched at a single point/edge
+at the beginning, as well as the restart of the monolithic Newton scheme and the ghost-penalty reconstruction for
+pseudo-time integration to predict velnp during the monolithic Newton
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      10544
 //NODES                         21524

@@ -1,10 +1,3 @@
-//
-//
-//
-//
-==================================================================
-General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Framework test for multiphase flow through rigid porous medium
 coupled to a 1D artery network. The setup contains a porous bulk

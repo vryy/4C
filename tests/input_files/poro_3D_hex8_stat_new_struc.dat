@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 Test for standard poro hex8 stationary with new time integration. This test
 is based on poro_3D_hex8_stat.dat but uses the new time integration instead

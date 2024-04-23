@@ -1,6 +1,3 @@
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Testing the plot functionality of the CONTACT::AUG framework:
 - Write the nodal weighted gap jacobian error as line plot in pgf format.

@@ -1,6 +1,3 @@
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 - simple academic test case to check whether quasi statics structure implementation
   (NEGLECTINERTIA = yes) works with the ssi algorithm

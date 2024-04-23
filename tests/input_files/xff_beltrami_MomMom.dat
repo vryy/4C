@@ -1,12 +1,8 @@
-//
-//
-// Solves beltrami flow over cube with spherical embedded cut
-// Volume and boundary cell gauss points by Moment fitting
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
+
+Solves beltrami flow over cube with spherical embedded cut
+Volume and boundary cell gauss points by Moment fitting
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      248
 //NODES                         396

@@ -1,6 +1,3 @@
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Small test to check the implementation of the convective term.
 The computational domain is square, with a parabolic inflow profile at the left edge.

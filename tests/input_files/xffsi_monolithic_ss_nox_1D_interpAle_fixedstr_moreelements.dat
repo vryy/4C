@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 Monolithic XFFSI (w. NOX): Pseudo 1D example.
 Prescribed inflow velocity of u(t)=t^2. The structure is fixed at the dry end.

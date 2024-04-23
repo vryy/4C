@@ -1,9 +1,3 @@
-//
-//
-//
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Framework test for multiphase flow through deformable porous medium.
 Minimal test for monolithic framework also testing finite difference check

@@ -1,16 +1,12 @@
-//
-//
+-------------------------------------------------------------TITLE
+created by pre_exodus
+
 //3D-Porous Scatra Contact Testcase! +
 //This basic testcase tests the contact between 2 poro scatra
 //cubes where the scalar is not transported over the contact
 //surface. One cube is made out of a far stiffer material so that
 //the results of the other cube can be compared with a poro scatra
 //cube where one side is fixed. This produces comparable results.
-==================================================================
-General Data File BACI
-==================================================================
--------------------------------------------------------------TITLE
-created by pre_exodus
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
 ----------------------------------------------------DISCRETISATION

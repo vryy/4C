@@ -1,13 +1,8 @@
-//
-//
-// stationary Kim-Moin with density 5 with solving eigenvalue problem for
-// nitsche parameter
-//
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
+
+stationary Kim-Moin with density 5 with solving eigenvalue problem for
+nitsche parameter
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      1868
 //NODES                         3509

@@ -1,13 +1,8 @@
-//
-//
-// Test of the general augmented contact framework in 2-D
-// Element based integration
-
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 frictionless contact (two curved beams, test 2-D augmented framework)
+
+Test of the general augmented contact framework in 2-D
+Element based integration
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        200
 NODES                           306

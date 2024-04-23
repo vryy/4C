@@ -1,13 +1,8 @@
-//
-//
-// Test of the steepest ascent solving strategy
-// element based integration
-
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 frictionless contact (wedge intended into cantilever)
+
+Test of the steepest ascent solving strategy
+element based integration
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1350
 //NODES       1457

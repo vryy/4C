@@ -1,12 +1,8 @@
-//
-//
-// flow around a ball, based on the XFSI testcase comp_struct
-// tests the ghost-penalty stabilization in case that an element is just touched at a single point/edge
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
+
+flow around a ball, based on the XFSI testcase comp_struct
+tests the ghost-penalty stabilization in case that an element is just touched at a single point/edge
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      10544
 //NODES                         21524

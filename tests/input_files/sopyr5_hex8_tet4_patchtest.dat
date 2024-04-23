@@ -1,12 +1,7 @@
-//
-//
-// Testing: homogeneous stress state for pyr5, hex8 and tet4 elements
-//
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 created by pre_exodus
+
+Testing: homogeneous stress state for pyr5, hex8 and tet4 elements
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0

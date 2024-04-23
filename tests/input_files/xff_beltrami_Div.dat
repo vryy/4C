@@ -1,13 +1,9 @@
-//
-//
-// Solves beltrami flow over cube with spherical embedded cut
-// Volumecell gauss points by DirectDivergence
-// boundary cell gauss points by Tessellation
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
+
+Solves beltrami flow over cube with spherical embedded cut
+Volumecell gauss points by DirectDivergence
+boundary cell gauss points by Tessellation
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      248
 //NODES                         396

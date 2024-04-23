@@ -1,13 +1,9 @@
-//
-//
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Test for the augmented contact modified Newton strategy.
 - SufficientLinearReduction (SIR = sufficient infeasibility reduction) correction scheme is tested
 - Correction parameter is set to 0.9.
 - Condition number (inf-norm) is evaluated.
+
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1028
 //NODES       1120

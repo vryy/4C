@@ -1,14 +1,9 @@
-//
-//
-// 3-D augmented contact framework
-// - element based integration
-// - complete variational approach
-
-==================================================================
-General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 frictionless contact (two curved beams, test 3-D augmented framework)
+
+3-D augmented contact framework
+- element based integration
+- complete variational approach
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    350
 //NODES       885
