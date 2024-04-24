@@ -1,7 +1,6 @@
 -------------------------------------------------------------TITLE
-created by pre_exodus
-// length of domain: 0.25 mm
-// 1D domain
+length of domain: 0.25 mm
+1D domain
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    250
 //NODES       502

@@ -1,6 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
-
 stationary Kim-Moin with density 5, dyn. viscosity 0.005, Nitsche, new OST (theta 0.5)
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      1868

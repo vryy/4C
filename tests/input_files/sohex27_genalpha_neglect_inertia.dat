@@ -1,4 +1,3 @@
-//
 -----------------------------------------------------------------------TITLE
 - 1 hex element with quadratic shape functions (hex27) and nonlinear kinematics
 - element is stretched in x-dir using a time dependent DBC

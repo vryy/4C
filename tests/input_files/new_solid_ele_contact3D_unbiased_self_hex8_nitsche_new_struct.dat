@@ -1,5 +1,4 @@
 -------------------------------------------------------------TITLE
-created by pre_exodus
 // - first-order interpolation (new hex8 elements)
 // - unbiased self contact (is not relying on a slave-master sorting)
 // - nitsche contact formulation

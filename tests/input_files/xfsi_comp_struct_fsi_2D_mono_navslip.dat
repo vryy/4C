@@ -1,6 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
-
 compressible structure, solved monolithically via XFEM, tests the general monolithic process
 Navier slip interface condition
 Test Newton damping capapilities of XFSI/XFPI Algorithm

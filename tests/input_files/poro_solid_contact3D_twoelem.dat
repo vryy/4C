@@ -1,6 +1,4 @@
 -------------------------------------------------------------TITLE
-created by pre_exodus
-
 //3D-Porous Contact Testcase! +
 //This basic testcase 1Element Poro / 1Element Structure
 //tests the implementation of the Poro nopenetration condition for

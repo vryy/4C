@@ -1,6 +1,4 @@
 -------------------------------------------------------------TITLE
-created by pre_exodus
-
 //3D-Porous Scatra Contact Testcase! +
 //This basic testcase tests the contact between 2 poro scatra
 //cubes where the scalar is not transported over the contact

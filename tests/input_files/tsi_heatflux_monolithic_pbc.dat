@@ -1,6 +1,4 @@
 -------------------------------------------------------------TITLE
-created by pre_exodus
-
 simple 3D example. consists of 12 hex8 elements and is loaded with a
 surface thermal Neumann boundary condition. Heatflux increasing in time leads to
 a extension of the body, one-step-theta time integration.

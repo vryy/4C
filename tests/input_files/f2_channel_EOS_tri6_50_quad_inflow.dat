@@ -1,6 +1,4 @@
 -------------------------------------------------------------TITLE
-created by pre_exodus
-
 Test of Edge-based pressure stabilization (pEOS) for tri6 elements
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    5770

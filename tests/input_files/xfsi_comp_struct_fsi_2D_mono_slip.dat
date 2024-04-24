@@ -1,6 +1,4 @@
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
-
 compressible structure, solved monolithically via XFEM, tests the general monolithic process
 full slip interface condition
 ----------------------------------------------------------------PROBLEM SIZE

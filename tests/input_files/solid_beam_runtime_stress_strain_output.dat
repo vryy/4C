@@ -1,9 +1,8 @@
-//
-// Maintainer: Ivo Steinbrecher
-//
-// Simulate a cantilever beam with solid elements and with beam elements. Then check
-// if the solid stresses can be displayed in vtk.
-//
+---------------------------------------------------------------------------TITLE
+Maintainer: Ivo Steinbrecher
+
+Simulate a cantilever beam with solid elements and with beam elements. Then check
+if the solid stresses can be displayed in vtk.
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                                   3
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT

@@ -1,8 +1,5 @@
-//
-// Description: Simulate a beam coupled to a solid via cross section integration point projection.
-//
 ---------------------------------------------------------------------------TITLE
-created by pre_exodus
+Description: Simulate a beam coupled to a solid via cross section integration point projection.
 --------------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    16
 //NODES       225
