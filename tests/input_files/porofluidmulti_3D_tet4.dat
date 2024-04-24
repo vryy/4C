@@ -1,10 +1,3 @@
-//
-//
-//
-//
-==================================================================
-General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Framework test for multiphase flow through rigid porous medium in 3D.
 Basically a copy of the test porofluidmult_3D_hex8.dat with TET4 elements

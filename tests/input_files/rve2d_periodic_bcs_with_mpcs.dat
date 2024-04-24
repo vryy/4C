@@ -1,6 +1,3 @@
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Test if periodic boundary conditions work correctly for 2D problems
 when the displacement reference vector is defined manually.

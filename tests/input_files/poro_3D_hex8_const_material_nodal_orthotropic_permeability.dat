@@ -1,6 +1,3 @@
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Test the nodal orthotropic fluid poro material in 3D. Elementwise anisotropy
 directions as well as nodal coefficients are provided in the element

@@ -1,9 +1,3 @@
-//
-//
-// XFEM Navier Slip BC couette flow with LS
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 Couette flow (16x16) [0.0,1.6]x[0.0,1.6]
 Solution field:
@@ -33,6 +27,8 @@ u_H = 53
 
 See: /home/winter/mini-projects/couette-flow-NSslip/Couette_flow.m  there full formula without assumption 1) is made.
      -> makes the Neumann condition y dependent.
+
+XFEM Navier Slip BC couette flow with LS
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      800
 //NODES                         1722

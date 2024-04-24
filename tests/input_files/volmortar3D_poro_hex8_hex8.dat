@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 3D volume mortar in monolithic porous medium problem
 // - testing the setup and functionality of volume mortar in poro framework

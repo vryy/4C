@@ -1,11 +1,7 @@
-//
-//
-// kimmoin test for wedge15 elements and 2nd order gp stabilization only for normal derivatives (see Massing, Schott, Wall 2017)
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 created by pre_exodus
+
+kimmoin test for wedge15 elements and 2nd order gp stabilization only for normal derivatives (see Massing, Schott, Wall 2017)
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    3442
 //NODES       13103

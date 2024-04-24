@@ -1,12 +1,7 @@
-//
-//
-// Test of Edge-based pressure stabilization (pEOS) for stretched hex8 elements, ratio 125:8:8
-//
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 created by pre_exodus
+
+Test of Edge-based pressure stabilization (pEOS) for stretched hex8 elements, ratio 125:8:8
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    8001
 //NODES       10214

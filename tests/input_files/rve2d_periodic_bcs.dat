@@ -1,6 +1,3 @@
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Test if periodic boundary conditions work correctly for 2D Problems
 when automatically detecting corner nodes  

@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Academic test case for multi-scale electrochemistry:
 - one 1D macro scale representing (multi scale) electrolyte and one electrode and consisting of 8 line2 elements:

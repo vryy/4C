@@ -1,12 +1,7 @@
-//
-//
-// stationary Kim-Moin with density 5, dyn. viscosity 0.005, full eos, Nitsche
-//
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
+
+stationary Kim-Moin with density 5, dyn. viscosity 0.005, full eos, Nitsche
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      1868
 //NODES                         3509

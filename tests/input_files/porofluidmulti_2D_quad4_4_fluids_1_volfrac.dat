@@ -1,10 +1,3 @@
-//
-//
-//
-//
-==================================================================
-General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Framework test for multiphase flow through rigid porous medium.
 4 fluid phases and 1 additional volume fraction are present

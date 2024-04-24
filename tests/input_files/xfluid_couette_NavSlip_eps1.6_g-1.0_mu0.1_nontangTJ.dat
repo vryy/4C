@@ -1,12 +1,3 @@
-//
-//
-// XFEM Navier Slip BC couette flow with LS
-// Here a non-tangential traction jump is applied in the *.dat-file
-// for a correct implementation this non-tangential part should have
-// no effect onto the result!
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 Couette flow (16x16) [0.0,1.6]x[0.0,1.6]
 Solution field:
@@ -35,6 +26,11 @@ u(y) = C1*y+C2
 u_0 = 5
 u_H = 53
 
+
+XFEM Navier Slip BC couette flow with LS
+Here a non-tangential traction jump is applied in the *.dat-file
+for a correct implementation this non-tangential part should have
+no effect onto the result!
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      800
 //NODES                         1722

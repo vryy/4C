@@ -1,6 +1,3 @@
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Testing the plot functionality of the CONTACT::AUG framework:
 - Write the weighted gap as line plot in pgf format.

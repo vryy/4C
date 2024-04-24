@@ -1,6 +1,3 @@
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 Test for multiphase flow through elastic porous medium with scalar transport with two fluid phases
 and three scalar transport equations. One scalar transport equation includes a velocity due to a

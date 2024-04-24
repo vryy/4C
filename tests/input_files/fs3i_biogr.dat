@@ -1,12 +1,7 @@
-//
-//
-// Test for checking biofilm growth algorithm
-//
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
+
+Test for checking biofilm growth algorithm
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      2330
 //NODES                         4946

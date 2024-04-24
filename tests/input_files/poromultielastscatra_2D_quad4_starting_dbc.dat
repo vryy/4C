@@ -1,6 +1,3 @@
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 This test tests the starting Dirichlet boundary condition of the
 porofluidmultiphase framework: This means that for the first 5 time

@@ -1,11 +1,7 @@
-//
-//
-// kimmoin test for wedge15 elements and full 2nd order gp stabilization
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 created by pre_exodus
+
+kimmoin test for wedge15 elements and full 2nd order gp stabilization
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    3442
 //NODES       13103

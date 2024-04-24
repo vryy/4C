@@ -1,8 +1,3 @@
-//
-//
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 Monolithic XFFSI: Pseudo 1D example.
 Prescribed inflow velocity of u(t)=t^2. The structure is free at the dry

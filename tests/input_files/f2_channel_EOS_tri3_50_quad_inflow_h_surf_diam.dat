@@ -1,12 +1,7 @@
-//
-//
-// Test of Edge-based pressure stabilization (pEOS) for tri3 elements
-//
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 created by pre_exodus
+
+Test of Edge-based pressure stabilization (pEOS) for tri3 elements
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    5770
 //NODES       2986

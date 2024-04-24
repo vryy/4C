@@ -1,16 +1,12 @@
-//
-//
+-------------------------------------------------------------TITLE
+created by pre_exodus
+
 //Nitsche Based Porous Contact
 //3D-Porous Contact Testcase! +
 //This basic testcase 1Element Poro / 1Element Structure
 //tests the implementation of the Poro nopenetration condition for
 //porous contact!!!
 //without nopenetration condition for porous fluid!!!
-==================================================================
-General Data File BACI
-==================================================================
--------------------------------------------------------------TITLE
-created by pre_exodus
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
 ----------------------------------------------------DISCRETISATION

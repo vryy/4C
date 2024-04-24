@@ -1,14 +1,9 @@
-//
-//
-// Test the combination of two contact solving strategies:
-// (1) SteepestAscent (during the pre-asymptotic phase)
-// (2) Augmented Lagrange strategy (during the asymptotic phase)
-
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 static frictionless contact (wedge intended into cantilever)
+
+Test the combination of two contact solving strategies:
+(1) SteepestAscent (during the pre-asymptotic phase)
+(2) Augmented Lagrange strategy (during the asymptotic phase)
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1350
 //NODES       1457

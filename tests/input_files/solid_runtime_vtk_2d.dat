@@ -1,10 +1,8 @@
-//      Simulate a 2d qube to check, if the vtk runtime output works for
-//      2D Wall elements
-==================================================================
-                  General Data File BACI
-==================================================================
 -------------------------------------------------------------TITLE
 created by pre_exodus
+
+Simulate a 2d qube to check, if the vtk runtime output works for
+2D Wall elements
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    16
 //NODES       25
