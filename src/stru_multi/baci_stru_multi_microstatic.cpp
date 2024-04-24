@@ -24,6 +24,7 @@
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_so3_hex8.hpp"
 #include "baci_so3_shw6.hpp"
@@ -1026,7 +1027,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
         GLOBAL::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber);
 
     const auto solvertype =
-        Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+        Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
 
     // create solver
     Teuchos::RCP<CORE::LINALG::Solver> solver =
@@ -1040,7 +1041,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
 
     switch (solvertype)
     {
-      case INPAR::SOLVER::SolverType::belos:
+      case CORE::LINEAR_SOLVER::SolverType::belos:
       {
         // solve for 9 rhs at the same time --> thanks to Belos
         CORE::LINALG::SolverParams solver_params;
@@ -1049,7 +1050,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
         solver->Solve(stiff_->EpetraOperator(), iterinc, rhs_, solver_params);
         break;
       }
-      case INPAR::SOLVER::SolverType::superlu:
+      case CORE::LINEAR_SOLVER::SolverType::superlu:
       {
         // solve for 9 rhs iteratively
         for (int i = 0; i < rhs_->NumVectors(); i++)

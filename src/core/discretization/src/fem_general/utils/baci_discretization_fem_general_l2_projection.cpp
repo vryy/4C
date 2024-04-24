@@ -15,6 +15,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_parameter_list.hpp"
@@ -205,30 +206,30 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::solve_nodal_l2_projection(
 {
   // get solver parameter list of linear solver
   const auto solvertype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
 
   auto solver = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, comm));
 
   // skip setup of preconditioner in case of a direct solver
-  if (solvertype != INPAR::SOLVER::SolverType::umfpack and
-      solvertype != INPAR::SOLVER::SolverType::superlu)
+  if (solvertype != CORE::LINEAR_SOLVER::SolverType::umfpack and
+      solvertype != CORE::LINEAR_SOLVER::SolverType::superlu)
   {
     const auto prectyp =
-        Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
+        Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(solverparams, "AZPREC");
     switch (prectyp)
     {
-      case INPAR::SOLVER::PreconditionerType::multigrid_ml:
-      case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid:
-      case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid2:
-      case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
+      case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml:
+      case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid:
+      case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2:
+      case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
       {
         Teuchos::ParameterList* preclist_ptr = nullptr;
         // switch here between ML and MueLu cases
-        if (prectyp == INPAR::SOLVER::PreconditionerType::multigrid_ml or
-            prectyp == INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid or
-            prectyp == INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid2)
+        if (prectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml or
+            prectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid or
+            prectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2)
           preclist_ptr = &((solver->Params()).sublist("ML Parameters"));
-        else if (prectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu)
+        else if (prectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu)
           preclist_ptr = &((solver->Params()).sublist("MueLu Parameters"));
         else
           FOUR_C_THROW("please add correct parameter list");
@@ -248,7 +249,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::solve_nodal_l2_projection(
         preclist.set("ML validate parameter list", false);
       }
       break;
-      case INPAR::SOLVER::PreconditionerType::ilu:
+      case CORE::LINEAR_SOLVER::PreconditionerType::ilu:
         // do nothing
         break;
       default:
@@ -262,7 +263,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::solve_nodal_l2_projection(
 
   switch (solvertype)
   {
-    case INPAR::SOLVER::SolverType::belos:
+    case CORE::LINEAR_SOLVER::SolverType::belos:
     {
       // solve for numvec rhs at the same time using Belos solver
       CORE::LINALG::SolverParams solver_params;

@@ -34,7 +34,7 @@ CONTACT::AUG::LagrangeMultiplierFunction::LagrangeMultiplierFunction()
       strategy_(nullptr),
       interfaces_(0),
       data_(Teuchos::null),
-      lin_solver_type_(INPAR::SOLVER::SolverType::undefined),
+      lin_solver_type_(CORE::LINEAR_SOLVER::SolverType::undefined),
       lin_solver_(Teuchos::null),
       bmat_(Teuchos::null)
 {
@@ -87,20 +87,20 @@ void CONTACT::AUG::LagrangeMultiplierFunction::Redistribute()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::CreateLinearSolver(
     const int lin_sol_id, const Epetra_Comm& comm,
-    enum INPAR::SOLVER::SolverType& solver_type) const
+    enum CORE::LINEAR_SOLVER::SolverType& solver_type) const
 {
   if (lin_sol_id == -1) FOUR_C_THROW("You must specify a meaningful LINEAR_SOLVER!");
 
   // get solver parameter list of linear solver
   const Teuchos::ParameterList& solverparams =
       GLOBAL::Problem::Instance()->SolverParams(lin_sol_id);
-  solver_type = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+  solver_type = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
 
   Teuchos::RCP<CORE::LINALG::Solver> solver =
       Teuchos::rcp(new CORE::LINALG::Solver(solverparams, comm));
 
-  if (solver_type != INPAR::SOLVER::SolverType::umfpack and
-      solver_type != INPAR::SOLVER::SolverType::superlu)
+  if (solver_type != CORE::LINEAR_SOLVER::SolverType::umfpack and
+      solver_type != CORE::LINEAR_SOLVER::SolverType::superlu)
     FOUR_C_THROW("Currently only direct linear solvers are supported!");
 
   return solver;

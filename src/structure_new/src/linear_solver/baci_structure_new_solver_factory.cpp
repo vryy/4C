@@ -22,6 +22,7 @@
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_so3_base.hpp"
 
@@ -115,19 +116,19 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver
       Teuchos::rcp(new CORE::LINALG::Solver(linsolverparams, actdis.Comm()));
 
   const auto azprectype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(linsolverparams, "AZPREC");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(linsolverparams, "AZPREC");
 
   switch (azprectype)
   {
-    case INPAR::SOLVER::PreconditionerType::multigrid_ml:
-    case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid:
-    case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid2:
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
     {
       actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
       break;
     }
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_beamsolid:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_beamsolid:
     {
       // Create the beam and solid maps
       std::vector<int> solidDofs(0);
@@ -249,16 +250,19 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
       // plausibility check
 
       // solver can be either UMFPACK (direct solver) or an iterative solver
-      const auto sol = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(
+      const auto sol = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(
           GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), "SOLVER");
-      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+      const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
           GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), "AZPREC");
-      if (sol != INPAR::SOLVER::SolverType::umfpack && sol != INPAR::SOLVER::SolverType::superlu)
+      if (sol != CORE::LINEAR_SOLVER::SolverType::umfpack &&
+          sol != CORE::LINEAR_SOLVER::SolverType::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
-        if (prec != INPAR::SOLVER::PreconditionerType::cheap_simple &&
-            prec != INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)  // TODO adapt
-                                                                                   // error message
+        if (prec != CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple &&
+            prec !=
+                CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)  // TODO adapt
+                                                                                     // error
+                                                                                     // message
           FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar/Contact in saddlepoint "
               "formulation you have to choose a block preconditioner such as SIMPLE. Choose "
@@ -289,13 +293,13 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
           sol_type == INPAR::CONTACT::solution_steepest_ascent_sp)
       {
         // provide null space information
-        if (prec == INPAR::SOLVER::PreconditionerType::cheap_simple)
+        if (prec == CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple)
         {
           // Inverse2 is created within blockpreconditioners.cpp
           actdis.ComputeNullSpaceIfNecessary(
               linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"));
         }
-        else if (prec == INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)
+        else if (prec == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)
         { /* do nothing here */
         }
       }
@@ -364,11 +368,11 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
       if (!linsolver->Params().isSublist("Belos Parameters"))
         FOUR_C_THROW("Iterative solver expected!");
 
-      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+      const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       switch (prec)
       {
-        case INPAR::SOLVER::PreconditionerType::cheap_simple:
+        case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
         {
           // add Inverse1 block for velocity dofs
           // tell Inverse1 block about NodalBlockInformation
@@ -438,11 +442,11 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLi
       break;
     case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
     {
-      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+      const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       switch (prec)
       {
-        case INPAR::SOLVER::PreconditionerType::cheap_simple:
+        case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
         {
           // add Inverse1 block for velocity dofs
           // tell Inverse1 block about NodalBlockInformation

@@ -21,7 +21,6 @@
 #include "baci_contact_element.hpp"
 #include "baci_contact_interface.hpp"
 #include "baci_contact_node.hpp"
-#include "baci_coupling_adapter.hpp"
 #include "baci_coupling_adapter_converter.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_solver.hpp"
@@ -36,6 +35,7 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_lubrication_ele_action.hpp"
 #include "baci_lubrication_timint_implicit.hpp"
@@ -172,9 +172,9 @@ void EHL::Monolithic::CreateLinearSolver()
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(ehlsolverparams, "SOLVER");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(ehlsolverparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -186,16 +186,16 @@ void EHL::Monolithic::CreateLinearSolver()
     FOUR_C_THROW("Iterative solver expected");
   }
   const auto azprectype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(ehlsolverparams, "AZPREC");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(ehlsolverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
+    case CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2:
       break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
-    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
-    case INPAR::SOLVER::PreconditionerType::cheap_simple:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
+    case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -212,9 +212,9 @@ void EHL::Monolithic::CreateLinearSolver()
   // prepare linear solvers and preconditioners
   switch (azprectype)
   {
-    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
-    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
-    case INPAR::SOLVER::PreconditionerType::cheap_simple:
+    case CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
+    case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
     {
       // This should be the default case (well-tested and used)
       solver_ = Teuchos::rcp(new CORE::LINALG::Solver(ehlsolverparams,
@@ -237,7 +237,7 @@ void EHL::Monolithic::CreateLinearSolver()
           solver_->Params().sublist("Inverse2"));
 
 
-      if (azprectype == INPAR::SOLVER::PreconditionerType::cheap_simple)
+      if (azprectype == CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple)
       {
         // Tell to the CORE::LINALG::SOLVER::SimplePreconditioner that we use the general
         // implementation
@@ -246,7 +246,7 @@ void EHL::Monolithic::CreateLinearSolver()
 
       break;
     }
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
     {
       solver_ = Teuchos::rcp(new CORE::LINALG::Solver(ehlsolverparams,
           // ggfs. explizit Comm von STR wie lungscatra

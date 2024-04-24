@@ -16,7 +16,6 @@
 #include "baci_wear_partitioned.hpp"
 
 #include "baci_adapter_ale_wear.hpp"
-#include "baci_adapter_str_fsiwrapper.hpp"
 #include "baci_ale_utils_mapextractor.hpp"
 #include "baci_contact_abstract_strategy.hpp"
 #include "baci_contact_defines.hpp"
@@ -25,8 +24,6 @@
 #include "baci_contact_integrator.hpp"
 #include "baci_contact_interface.hpp"
 #include "baci_contact_lagrange_strategy_wear.hpp"
-#include "baci_contact_manager.hpp"
-#include "baci_contact_meshtying_manager.hpp"
 #include "baci_contact_node.hpp"
 #include "baci_contact_wear_interface.hpp"
 #include "baci_coupling_adapter.hpp"
@@ -34,15 +31,12 @@
 #include "baci_fs3i_biofilm_fsi_utils.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_ale.hpp"
-#include "baci_inpar_contact.hpp"
-#include "baci_inpar_validparameters.hpp"
 #include "baci_inpar_wear.hpp"
-#include "baci_lib_discret.hpp"
 #include "baci_lib_element.hpp"
-#include "baci_lib_elementtype.hpp"
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_mortar_manager_base.hpp"
 #include "baci_so3_hex20.hpp"
@@ -714,8 +708,8 @@ void WEAR::Partitioned::WearSpatialMasterMap(
     dmat->Complete();
 
     Teuchos::ParameterList solvparams;
-    CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-        "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+    CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+        "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
     CORE::LINALG::Solver solver(solvparams, Comm());
 
     CORE::LINALG::SolverParams solver_params;
@@ -894,8 +888,8 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
 
       // solve with default solver
       Teuchos::ParameterList solvparams;
-      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+          "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 
       if (activedofs->NumMyElements())
@@ -1116,8 +1110,8 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
 
       // solve with default solver
       Teuchos::ParameterList solvparams;
-      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+          "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 
       CORE::LINALG::SolverParams solver_params;
@@ -1134,8 +1128,8 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
 
       // solve with default solver
       Teuchos::ParameterList solvparams;
-      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+          "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 
       CORE::LINALG::SolverParams solver_params;
@@ -1361,8 +1355,8 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
 
       // solve with default solver
       Teuchos::ParameterList solvparams;
-      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+          "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 
       CORE::LINALG::SolverParams solver_params;
@@ -1380,8 +1374,8 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
 
       // solve with default solver
       Teuchos::ParameterList solvparams;
-      CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-          "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+      CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+          "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
       CORE::LINALG::Solver solver(solvparams, Comm());
 
       CORE::LINALG::SolverParams solver_params;

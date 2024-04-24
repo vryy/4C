@@ -19,7 +19,7 @@
 #include "baci_io_control.hpp"
 #include "baci_levelset_timint_ost.hpp"
 #include "baci_levelset_timint_stat.hpp"
-#include "baci_lib_discret.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_scatra_resulttest_hdg.hpp"
 #include "baci_scatra_timint_bdf2.hpp"
@@ -551,9 +551,10 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
       const auto& solver = scatra_->Solver();
 
       const int linsolvernumber = scatradyn->get<int>("LINEAR_SOLVER");
-      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+      const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
-      if (prec != INPAR::SOLVER::PreconditionerType::cheap_simple)  // TODO adapt error message
+      if (prec !=
+          CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple)  // TODO adapt error message
       {
         FOUR_C_THROW(
             "If SIMPLER flag is set to YES you can only use CheapSIMPLE as preconditioner in your "

@@ -13,6 +13,7 @@
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linear_solver_method_direct.hpp"
 #include "baci_linear_solver_method_iterative.hpp"
+#include "baci_utils_parameter_list.hpp"
 
 #include <BelosTypes.hpp>  // for Belos verbosity codes
 #include <Epetra_LinearProblem.h>
@@ -254,16 +255,16 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
 
   ML_Epetra::SetDefaults("SA", mllist);
   const auto prectyp =
-      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(inparams, "AZPREC");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(inparams, "AZPREC");
 
   switch (prectyp)
   {
-    case INPAR::SOLVER::PreconditionerType::multigrid_ml:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml:
       break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid:
       mllist.set("aggregation: use tentative restriction", true);
       break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid2:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2:
       mllist.set("energy minimization: enable", true);
       mllist.set("energy minimization: type", 3);
       mllist.set("aggregation: block scaling", false);
@@ -642,66 +643,66 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
           Teuchos::getIntegralValue<Belos::ScaleType>(inparams, "AZCONV")));
 
   // set type of solver
-  switch (Teuchos::getIntegralValue<INPAR::SOLVER::IterativeSolverType>(inparams, "AZSOLVE"))
+  switch (Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::IterativeSolverType>(inparams, "AZSOLVE"))
   {
-    case INPAR::SOLVER::IterativeSolverType::cg:
+    case CORE::LINEAR_SOLVER::IterativeSolverType::cg:
       beloslist.set("Solver Type", "CG");
       break;
-    case INPAR::SOLVER::IterativeSolverType::bicgstab:
+    case CORE::LINEAR_SOLVER::IterativeSolverType::bicgstab:
       beloslist.set("Solver Type", "BiCGSTAB");
       break;
-    case INPAR::SOLVER::IterativeSolverType::gmres:
+    case CORE::LINEAR_SOLVER::IterativeSolverType::gmres:
       beloslist.set("Solver Type", "GMRES");
       beloslist.set("Num Blocks", inparams.get<int>("AZSUB"));
       break;
     default:
     {
       FOUR_C_THROW("Flag '%s'! \nUnknown solver for Belos.",
-          Teuchos::getIntegralValue<INPAR::SOLVER::IterativeSolverType>(inparams, "AZSOLVE"));
+          Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::IterativeSolverType>(inparams, "AZSOLVE"));
       break;
     }
   }
 
   // set type of preconditioner
   const auto azprectyp =
-      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(inparams, "AZPREC");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(inparams, "AZPREC");
 
   switch (azprectyp)
   {
-    case INPAR::SOLVER::PreconditionerType::ilu:
+    case CORE::LINEAR_SOLVER::PreconditionerType::ilu:
       beloslist.set("Preconditioner Type", "ILU");
       break;
-    case INPAR::SOLVER::PreconditionerType::icc:
+    case CORE::LINEAR_SOLVER::PreconditionerType::icc:
       beloslist.set("Preconditioner Type", "IC");
       break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_ml:
-    case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid:
-    case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid2:
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
       beloslist.set("Preconditioner Type", "ML");
       break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_fluid:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fluid:
       beloslist.set("Preconditioner Type", "Fluid");
       break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_tsi:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_tsi:
       beloslist.set("Preconditioner Type", "TSI");
       break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp:
       beloslist.set("Preconditioner Type", "ContactSP");
       break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_beamsolid:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_beamsolid:
       beloslist.set("Preconditioner Type", "BeamSolid");
       break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_fsi:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fsi:
       beloslist.set("Preconditioner Type", "FSI");
       break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
       beloslist.set("Preconditioner Type", "AMGnxn");
       break;
-    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
+    case CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2:
       beloslist.set("Preconditioner Type", "ML");
       break;
-    case INPAR::SOLVER::PreconditionerType::cheap_simple:
+    case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
       beloslist.set("Preconditioner Type", "CheapSIMPLE");
       break;
     default:
@@ -710,15 +711,15 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
   }
 
   // set scaling of linear problem
-  switch (Teuchos::getIntegralValue<INPAR::SOLVER::ScalingStrategy>(inparams, "AZSCAL"))
+  switch (Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::ScalingStrategy>(inparams, "AZSCAL"))
   {
-    case INPAR::SOLVER::ScalingStrategy::none:
+    case CORE::LINEAR_SOLVER::ScalingStrategy::none:
       beloslist.set("scaling", "none");
       break;
-    case INPAR::SOLVER::ScalingStrategy::symmetric:
+    case CORE::LINEAR_SOLVER::ScalingStrategy::symmetric:
       beloslist.set("scaling", "symmetric");
       break;
-    case INPAR::SOLVER::ScalingStrategy::infnorm:
+    case CORE::LINEAR_SOLVER::ScalingStrategy::infnorm:
       beloslist.set("scaling", "infnorm");
       break;
     default:
@@ -727,15 +728,15 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
   }
 
   // set parameters for Ifpack if used
-  if (azprectyp == INPAR::SOLVER::PreconditionerType::ilu ||
-      azprectyp == INPAR::SOLVER::PreconditionerType::icc)
+  if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::ilu ||
+      azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::icc)
   {
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
     ifpacklist = CORE::LINALG::Solver::TranslateBACIToIfpack(inparams);
   }
 
   // set parameters for CheapSIMPLE if used
-  if (azprectyp == INPAR::SOLVER::PreconditionerType::cheap_simple)
+  if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple)
   {
     Teuchos::ParameterList& simplelist = outparams.sublist("CheapSIMPLE Parameters");
     simplelist.set("Prec Type", "CheapSIMPLE");  // not used
@@ -748,44 +749,44 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
   }
 
   // set parameters for ML if used
-  if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_ml ||
-      azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid ||
-      azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid2)
+  if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml ||
+      azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid ||
+      azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2)
   {
     Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
     mllist = CORE::LINALG::Solver::TranslateBACIToML(inparams, &beloslist);
   }
-  if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu)
+  if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
     muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
-  if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_fluid)
+  if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fluid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Fluid) Parameters");
     muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
-  if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_tsi)
+  if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_tsi)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (TSI) Parameters");
     muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
-  if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)
+  if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
     muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
-  if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_beamsolid)
+  if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_beamsolid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (BeamSolid) Parameters");
     muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
-  if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_fsi)
+  if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fsi)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (FSI) Parameters");
     muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
-  if (azprectyp == INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)
+  if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2)
   {
     Teuchos::ParameterList& bgslist = outparams.sublist("BGS Parameters");
     bgslist.set("numblocks", 2);
@@ -808,7 +809,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
     bgslist.set("block2_iter", 1);
     bgslist.set("block2_omega", inparams.get<double>("BGS2X2_BLOCK2_DAMPING"));
   }
-  if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_nxn)
+  if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn)
   {
     Teuchos::ParameterList& amgnxnlist = outparams.sublist("AMGnxn Parameters");
     std::string amgnxn_xml = inparams.get<std::string>("AMGNXN_XML_FILE");
@@ -831,20 +832,20 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateSolverParameters(
   if (inparams.isParameter("NAME"))
     outparams.set<std::string>("name", inparams.get<std::string>("NAME"));
 
-  switch (Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(inparams, "SOLVER"))
+  switch (Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(inparams, "SOLVER"))
   {
-    case INPAR::SOLVER::SolverType::undefined:
+    case CORE::LINEAR_SOLVER::SolverType::undefined:
       std::cout << "undefined solver! Set " << inparams.name() << "  in your dat file!"
                 << std::endl;
       FOUR_C_THROW("fix your dat file");
       break;
-    case INPAR::SOLVER::SolverType::umfpack:
+    case CORE::LINEAR_SOLVER::SolverType::umfpack:
       outparams.set("solver", "umfpack");
       break;
-    case INPAR::SOLVER::SolverType::superlu:
+    case CORE::LINEAR_SOLVER::SolverType::superlu:
       outparams.set("solver", "superlu");
       break;
-    case INPAR::SOLVER::SolverType::belos:
+    case CORE::LINEAR_SOLVER::SolverType::belos:
       outparams = CORE::LINALG::Solver::TranslateBACIToBelos(inparams);
       break;
     default:

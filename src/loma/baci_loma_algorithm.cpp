@@ -21,6 +21,7 @@
 #include "baci_linalg_blocksparsematrix.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_scatra_timint_loma.hpp"
 
@@ -180,17 +181,17 @@ void LOMA::Algorithm::Setup()
         GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
     const auto solvertype =
-        Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(lomasolverparams, "SOLVER");
+        Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(lomasolverparams, "SOLVER");
 
-    if (solvertype != INPAR::SOLVER::SolverType::belos)
+    if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos)
       FOUR_C_THROW(
           "SOLVER %i is not valid for LOMA. It has to be an iterative Solver (with BGS2x2 block "
           "preconditioner)",
           linsolvernumber);
 
-    const auto azprectype =
-        Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(lomasolverparams, "AZPREC");
-    if (azprectype != INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)
+    const auto azprectype = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
+        lomasolverparams, "AZPREC");
+    if (azprectype != CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2)
       FOUR_C_THROW(
           "SOLVER %i is not valid for LOMA. It has to be an iterative Solver with BGS2x2 block "
           "preconditioner",

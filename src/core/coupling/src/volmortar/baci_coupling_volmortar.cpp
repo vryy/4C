@@ -29,6 +29,7 @@
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_mortar_calc_utils.hpp"
 #include "baci_mortar_coupling3d.hpp"
@@ -1374,8 +1375,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     // solve with default solver
 
     Teuchos::ParameterList solvparams;
-    CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-        "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+    CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+        "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
     CORE::LINALG::Solver solver(solvparams, *comm_);
 
     CORE::LINALG::SolverParams solver_params;

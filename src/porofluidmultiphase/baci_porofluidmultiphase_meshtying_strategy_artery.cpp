@@ -16,6 +16,7 @@
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_linalg_utils_sparse_algebra_print.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_porofluidmultiphase_utils.hpp"
 #include "baci_poromultiphase_scatra_artery_coupling_base.hpp"
@@ -149,21 +150,22 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::InitializeLinearSolver(
   const Teuchos::ParameterList& solverparams =
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
   // no need to do the rest for direct solvers
-  if (solvertype == INPAR::SOLVER::SolverType::umfpack or
-      solvertype == INPAR::SOLVER::SolverType::superlu)
+  if (solvertype == CORE::LINEAR_SOLVER::SolverType::umfpack or
+      solvertype == CORE::LINEAR_SOLVER::SolverType::superlu)
     return;
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos) FOUR_C_THROW("Iterative solver expected");
+  if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos)
+    FOUR_C_THROW("Iterative solver expected");
 
   const auto azprectype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(solverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway

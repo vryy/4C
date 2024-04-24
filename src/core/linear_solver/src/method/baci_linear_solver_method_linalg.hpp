@@ -11,7 +11,6 @@
 
 #include "baci_config.hpp"
 
-#include "baci_inpar_solver.hpp"
 #include "baci_utils_exceptions.hpp"
 
 #include <Epetra_LinearProblem.h>

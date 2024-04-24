@@ -26,6 +26,7 @@
 #include "baci_lib_periodicbc.hpp"
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linalg_utils_densematrix_communication.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_mat_newtonianfluid.hpp"
 #include "baci_mat_par_bundle.hpp"
@@ -740,26 +741,26 @@ void FLD::XWall::SetupL2Projection()
     const Teuchos::ParameterList& solverparams =
         GLOBAL::Problem::Instance()->SolverParams(solvernumber);
     const auto solvertype =
-        Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+        Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
 
     solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, xwdiscret_->Comm()));
 
-    if (solvertype != INPAR::SOLVER::SolverType::umfpack)
+    if (solvertype != CORE::LINEAR_SOLVER::SolverType::umfpack)
     {
-      if (solvertype != INPAR::SOLVER::SolverType::belos && myrank_ == 0)
+      if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos && myrank_ == 0)
         std::cout
             << "\nUse Belos as solver because it can handle several right hand sides at once!\n"
             << std::endl;
-      const auto prectyp =
-          Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
+      const auto prectyp = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
+          solverparams, "AZPREC");
       // watch out: only ILU might work right now because of compute nullspace might not work...?
       // ... test!
       switch (prectyp)
       {
-        case INPAR::SOLVER::PreconditionerType::multigrid_ml:
-        case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid:
-        case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid2:
-        case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
+        case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml:
+        case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid:
+        case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2:
+        case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
         {
           if (proj_)
           {  // has 3 dofs, velocity dofs
@@ -833,7 +834,7 @@ void FLD::XWall::SetupL2Projection()
           }
         }
         break;
-        case INPAR::SOLVER::PreconditionerType::ilu:
+        case CORE::LINEAR_SOLVER::PreconditionerType::ilu:
           // do nothing
           break;
         default:

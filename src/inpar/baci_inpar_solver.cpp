@@ -10,6 +10,7 @@
 
 #include "baci_inpar_solver.hpp"
 
+#include "baci_linear_solver_method.hpp"
 #include "baci_utils_parameter_list.hpp"
 
 #include <BelosTypes.hpp>
@@ -25,20 +26,23 @@ namespace INPAR::SOLVER
 
     // Solver options
     {
-      setStringToIntegralParameter<SolverType>("SOLVER", "undefined",
+      setStringToIntegralParameter<CORE::LINEAR_SOLVER::SolverType>("SOLVER", "undefined",
           "The solver to attack the system of linear equations arising of FE approach with.",
           tuple<std::string>("UMFPACK", "Superlu", "Belos", "undefined"),
-          tuple<SolverType>(
-              SolverType::umfpack, SolverType::superlu, SolverType::belos, SolverType::undefined),
+          tuple<CORE::LINEAR_SOLVER::SolverType>(CORE::LINEAR_SOLVER::SolverType::umfpack,
+              CORE::LINEAR_SOLVER::SolverType::superlu, CORE::LINEAR_SOLVER::SolverType::belos,
+              CORE::LINEAR_SOLVER::SolverType::undefined),
           &list);
     }
 
     // Iterative solver options
     {
-      setStringToIntegralParameter<IterativeSolverType>("AZSOLVE", "GMRES",
+      setStringToIntegralParameter<CORE::LINEAR_SOLVER::IterativeSolverType>("AZSOLVE", "GMRES",
           "Type of linear solver algorithm to use.", tuple<std::string>("CG", "GMRES", "BiCGSTAB"),
-          tuple<IterativeSolverType>(
-              IterativeSolverType::cg, IterativeSolverType::gmres, IterativeSolverType::bicgstab),
+          tuple<CORE::LINEAR_SOLVER::IterativeSolverType>(
+              CORE::LINEAR_SOLVER::IterativeSolverType::cg,
+              CORE::LINEAR_SOLVER::IterativeSolverType::gmres,
+              CORE::LINEAR_SOLVER::IterativeSolverType::bicgstab),
           &list);
     }
 
@@ -47,38 +51,38 @@ namespace INPAR::SOLVER
       // this one is longer than 15 and the tuple<> function does not support this,
       // so build the Tuple class directly (which can be any size)
       Teuchos::Tuple<std::string, 14> name;
-      Teuchos::Tuple<PreconditionerType, 14> number;
+      Teuchos::Tuple<CORE::LINEAR_SOLVER::PreconditionerType, 14> number;
 
       name[0] = "ILU";
-      number[0] = PreconditionerType::ilu;
+      number[0] = CORE::LINEAR_SOLVER::PreconditionerType::ilu;
       name[1] = "ICC";
-      number[1] = PreconditionerType::icc;
+      number[1] = CORE::LINEAR_SOLVER::PreconditionerType::icc;
       name[2] = "ML";
-      number[2] = PreconditionerType::multigrid_ml;
+      number[2] = CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml;
       name[3] = "MLFLUID";
-      number[3] = PreconditionerType::multigrid_ml_fluid;
+      number[3] = CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid;
       name[4] = "MLFLUID2";
-      number[4] = PreconditionerType::multigrid_ml_fluid2;
+      number[4] = CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2;
       name[5] = "MueLu";
-      number[5] = PreconditionerType::multigrid_muelu;
+      number[5] = CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu;
       name[6] = "MueLu_fluid";
-      number[6] = PreconditionerType::multigrid_muelu_fluid;
+      number[6] = CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fluid;
       name[7] = "MueLu_tsi";
-      number[7] = PreconditionerType::multigrid_muelu_tsi;
+      number[7] = CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_tsi;
       name[8] = "MueLu_contactSP";
-      number[8] = PreconditionerType::multigrid_muelu_contactsp;
+      number[8] = CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp;
       name[9] = "MueLu_BeamSolid";
-      number[9] = PreconditionerType::multigrid_muelu_beamsolid;
+      number[9] = CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_beamsolid;
       name[10] = "MueLu_fsi";
-      number[10] = PreconditionerType::multigrid_muelu_fsi;
+      number[10] = CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fsi;
       name[11] = "AMGnxn";
-      number[11] = PreconditionerType::multigrid_nxn;
+      number[11] = CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn;
       name[12] = "BGS2x2";
-      number[12] = PreconditionerType::block_gauss_seidel_2x2;
+      number[12] = CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2;
       name[13] = "CheapSIMPLE";
-      number[13] = PreconditionerType::cheap_simple;
+      number[13] = CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple;
 
-      setStringToIntegralParameter<PreconditionerType>("AZPREC", "ILU",
+      setStringToIntegralParameter<CORE::LINEAR_SOLVER::PreconditionerType>("AZPREC", "ILU",
           "Type of internal preconditioner to use.\n"
           "Note! this preconditioner will only be used if the input operator\n"
           "supports the Epetra_RowMatrix interface and the client does not pass\n"
@@ -212,11 +216,12 @@ namespace INPAR::SOLVER
 
     // parameters for scaling of linear system
     {
-      setStringToIntegralParameter<ScalingStrategy>("AZSCAL", "none",
+      setStringToIntegralParameter<CORE::LINEAR_SOLVER::ScalingStrategy>("AZSCAL", "none",
           "scaling of the linear system to improve properties",
           tuple<std::string>("none", "sym", "infnorm"),
-          tuple<ScalingStrategy>(
-              ScalingStrategy::none, ScalingStrategy::symmetric, ScalingStrategy::infnorm),
+          tuple<CORE::LINEAR_SOLVER::ScalingStrategy>(CORE::LINEAR_SOLVER::ScalingStrategy::none,
+              CORE::LINEAR_SOLVER::ScalingStrategy::symmetric,
+              CORE::LINEAR_SOLVER::ScalingStrategy::infnorm),
           &list);
     }
 

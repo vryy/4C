@@ -20,10 +20,10 @@
 #include "baci_lib_discret.hpp"
 #include "baci_linalg_equilibrate.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_linear_solver_method_parameters.hpp"
 #include "baci_poromultiphase_base.hpp"
-#include "baci_poromultiphase_monolithic_twoway.hpp"
 #include "baci_scatra_ele_action.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_scatra_timint_meshtying_strategy_artery.hpp"
@@ -267,7 +267,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
   const Teuchos::ParameterList& solverparams =
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
 
   CreateLinearSolver(solverparams, solvertype);
 
@@ -280,15 +280,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSolver()
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSolver(
-    const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype)
+    const Teuchos::ParameterList& solverparams, const CORE::LINEAR_SOLVER::SolverType solvertype)
 {
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
   // no need to do the rest for direct solvers
-  if (solvertype == INPAR::SOLVER::SolverType::umfpack or
-      solvertype == INPAR::SOLVER::SolverType::superlu)
+  if (solvertype == CORE::LINEAR_SOLVER::SolverType::umfpack or
+      solvertype == CORE::LINEAR_SOLVER::SolverType::superlu)
     return;
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -300,12 +300,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::CreateLinearSol
     FOUR_C_THROW("Iterative solver expected");
   }
   const auto azprectype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(solverparams, "AZPREC");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(solverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway

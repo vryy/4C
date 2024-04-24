@@ -43,14 +43,13 @@
 #include "baci_inpar_fluid.hpp"
 #include "baci_inpar_fsi.hpp"
 #include "baci_inpar_poroelast.hpp"
-#include "baci_inpar_solver.hpp"
 #include "baci_inpar_validparameters.hpp"
-#include "baci_inpar_xfem.hpp"
 #include "baci_io.hpp"
 #include "baci_io_control.hpp"
 #include "baci_io_pstream.hpp"
 #include "baci_lib_discret.hpp"
 #include "baci_lib_periodicbc.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -171,16 +170,17 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             "(e.g. BGS2x2) as \"Inverse 2\".");
 
       // check, if meshtying solver is used with a valid block preconditioner
-      const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+      const auto azprectype = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
           GLOBAL::Problem::Instance()->SolverParams(mshsolver), "AZPREC");
 
       // plausibility check
       switch (azprectype)
       {
-        case INPAR::SOLVER::PreconditionerType::cheap_simple:
-        case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:  // block preconditioners,
-                                                                         // that are implemented in
-                                                                         // BACI
+        case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
+        case CORE::LINEAR_SOLVER::PreconditionerType::
+            block_gauss_seidel_2x2:  // block preconditioners,
+                                     // that are implemented in
+                                     // BACI
           break;
         default:
           FOUR_C_THROW(
@@ -197,11 +197,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       // add sub block solvers/smoothers to block preconditioners
       switch (azprectype)
       {
-        case INPAR::SOLVER::PreconditionerType::cheap_simple:
+        case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
           break;  // CheapSIMPLE adds its own Inverse1 and Inverse2 blocks
-        case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:  // block preconditioners,
-                                                                         // that are implemented in
-                                                                         // BACI
+        case CORE::LINEAR_SOLVER::PreconditionerType::
+            block_gauss_seidel_2x2:  // block preconditioners,
+                                     // that are implemented in
+                                     // BACI
         {
           // set Inverse blocks for block preconditioner
           // for BGS preconditioner
@@ -278,13 +279,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             "LINEAR_SOLVER");  // meshtying solver (with block preconditioner, e.g. BGS 2x2)
 
         // check, if meshtying solver is used with a valid block preconditioner
-        const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+        const auto azprectype = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
             GLOBAL::Problem::Instance()->SolverParams(mshsolver), "AZPREC");
 
         switch (azprectype)
         {
           // block preconditioners, that are implemented in BACI
-          case INPAR::SOLVER::PreconditionerType::cheap_simple:
+          case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
           {
             actdis->ComputeNullSpaceIfNecessary(
                 solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"), true);
@@ -292,7 +293,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                 solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"), true);
           }
           break;
-          case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
+          case CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2:
           {
             actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"), true);
             actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse2"), true);
@@ -1617,11 +1618,11 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
   if (CORE::UTILS::IntegralValue<int>(fdyn, "SIMPLER"))
   {
     const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
-    const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+    const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
         GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
     switch (prec)
     {
-      case INPAR::SOLVER::PreconditionerType::cheap_simple:
+      case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
       {
         // add Inverse1 block for velocity dofs
         // tell Inverse1 block about NodalBlockInformation
@@ -1640,7 +1641,7 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
         solver->Params().set("FLUID", true);
       }
       break;
-      case INPAR::SOLVER::PreconditionerType::multigrid_muelu_fluid:
+      case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fluid:
       {
         // add Inverse1 block for velocity dofs
         // tell Inverse1 block about NodalBlockInformation

@@ -20,6 +20,7 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_poroelast_scatra_utils.hpp"
 #include "baci_scatra_ele_action.hpp"
@@ -568,9 +569,9 @@ bool POROELASTSCATRA::PoroScatraMono::SetupSolver()
   const Teuchos::ParameterList& solverparams =
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == INPAR::SOLVER::SolverType::umfpack);
+  directsolve_ = (solvertype == CORE::LINEAR_SOLVER::SolverType::umfpack);
 
   if (directsolve_)
   {

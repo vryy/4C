@@ -15,9 +15,7 @@
 #include "baci_poroelast_utils.hpp"
 #include "baci_porofluidmultiphase_ele.hpp"
 #include "baci_porofluidmultiphase_utils.hpp"
-#include "baci_poromultiphase_monolithic.hpp"
 #include "baci_poromultiphase_monolithic_twoway.hpp"
-#include "baci_poromultiphase_partitioned.hpp"
 #include "baci_poromultiphase_partitioned_twoway.hpp"
 #include "baci_poromultiphase_utils_clonestrategy.hpp"
 

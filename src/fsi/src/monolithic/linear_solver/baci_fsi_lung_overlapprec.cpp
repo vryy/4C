@@ -15,6 +15,7 @@
 #include "baci_global_data.hpp"
 #include "baci_io_control.hpp"
 #include "baci_linalg_multiply.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_linear_solver_preconditioner_linalg.hpp"
 #include "baci_utils_parameter_list.hpp"
@@ -51,8 +52,8 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(
       fsidyn.sublist("CONSTRAINT"), "PRECONDITIONER");
 
   Teuchos::ParameterList constrsolvparams;
-  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-      "SOLVER", INPAR::SOLVER::SolverType::umfpack, constrsolvparams);
+  CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+      "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, constrsolvparams);
   constraintsolver_ = Teuchos::rcp(new CORE::LINALG::Solver(constrsolvparams, maps.Map(0)->Comm()));
 }
 
