@@ -169,7 +169,6 @@ MESHTYING                       no
 GRIDVEL                         BDF2
 ALLDOFCOUPLED                   Yes
 CALCERROR                       no
-SIMPLER                         no
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No

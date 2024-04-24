@@ -32,7 +32,6 @@ MAXTIME                         50
 NONLINITER                      Newton
 NUMSTEP                         1
 RESTARTEVRY                     20
-SIMPLER                         no
 STARTFUNCNO                     2
 START_THETA                     1
 STEADYSTEP                      -1

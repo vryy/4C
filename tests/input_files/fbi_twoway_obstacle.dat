@@ -82,7 +82,6 @@ NONLINITER                            Newton
 NUMSTASTEPS                           1
 PHYSICAL_TYPE                         Incompressible
 PREDICTOR                             steady_state
-SIMPLER                               no
 THETA                                 1.0
 TIMEINTEGR                            One_Step_Theta
 RESULTSEVRY                           1

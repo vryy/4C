@@ -34,7 +34,6 @@ GAMMA                           1.0
 LIFTDRAG                        no
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
-SIMPLER                         No
 PHYSICAL_TYPE                   Boussinesq
 CONVFORM                        conservative
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES

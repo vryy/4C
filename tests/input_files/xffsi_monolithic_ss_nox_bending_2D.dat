@@ -34,7 +34,6 @@ NONLINITER                      Newton
 NUMSTASTEPS                     1
 NUMSTEP                         1
 RESTARTEVRY                     5
-SIMPLER                         no
 STARTFUNCNO                     2
 STEADYSTEP                      -1
 THETA                           1.0

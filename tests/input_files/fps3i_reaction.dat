@@ -49,7 +49,6 @@ NUMSTEP                         3
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
 RESTARTEVRY                     1
-SIMPLER                         no
 SIMPLER_SOLVER                  -1
 STARTFUNCNO                     -1
 START_THETA                     1.0

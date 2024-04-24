@@ -49,7 +49,6 @@ THETA                           1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
-SIMPLER                         No
 CALCERROR                       kimmoin_stat_navier_stokes
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	                    1.0E-10

@@ -45,7 +45,6 @@ THETA                           0.5
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
-SIMPLER                         No
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1.0E-13
 TOL_VEL_INC	  1.0E-13

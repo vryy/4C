@@ -67,7 +67,6 @@ TIMESTEP                        0.025
 THETA                           1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
-SIMPLER                         No
 LINEAR_SOLVER                   3
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1.0E-13

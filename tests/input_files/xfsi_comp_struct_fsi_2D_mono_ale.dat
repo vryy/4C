@@ -116,7 +116,6 @@ MAXTIME                         20.0
 NONLINITER                      Newton
 NUMSTASTEPS                     1
 NUMSTEP                         1000
-SIMPLER                         no
 STEADYSTEP                      -1
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta

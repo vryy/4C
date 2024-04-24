@@ -28,7 +28,6 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 GAMMA                           0.66
 LIFTDRAG                        no
-SIMPLER                         No
 PREDICTOR                       steady_state
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1.0E-14

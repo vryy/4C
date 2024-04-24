@@ -44,8 +44,8 @@ NUMSTASTEPS                     0
 START_THETA                     0.67
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
-SIMPLER                         yes
 CONVFORM                        conservative
+BLOCKMATRIX                     yes
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1.0E-9
 TOL_VEL_INC	  1.0E-9

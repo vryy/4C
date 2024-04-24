@@ -40,7 +40,6 @@ ALPHA_M          1.00
 LIFTDRAG         no
 ADAPTCONV        Yes
 ADAPTCONV_BETTER 0.1
-SIMPLER          No
 CALCERROR        kimmoin_stat_navier_stokes
 -------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	    1.0E-10

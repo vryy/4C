@@ -59,7 +59,6 @@ NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         50
 RESTARTEVRY                     10
-SIMPLER                         no
 STARTFUNCNO                     -1
 START_THETA                     1
 THETA                           0.66
