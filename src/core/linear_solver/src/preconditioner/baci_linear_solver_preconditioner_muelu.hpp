@@ -33,7 +33,7 @@ namespace CORE::LINEAR_SOLVER
    * A. Prokopenko, C. M. Siefert, R. S. Tuminaro, T. A. Wiesner:
    * MueLu User's Guide, Technical Report, Sandia National Laboratories, SAND2019-0537, 2019
    */
-  class MueLuPreconditioner : public PreconditionerType
+  class MueLuPreconditioner : public PreconditionerTypeBase
   {
    public:
     MueLuPreconditioner(Teuchos::ParameterList& muelulist);

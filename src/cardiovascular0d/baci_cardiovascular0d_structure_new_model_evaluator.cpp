@@ -17,11 +17,11 @@
 #include "baci_linalg_sparsematrix.hpp"
 #include "baci_linalg_sparseoperator.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_structure_new_integrator.hpp"
 #include "baci_structure_new_model_evaluator_data.hpp"
 #include "baci_structure_new_timint_base.hpp"
-#include "baci_structure_new_utils.hpp"
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_parameter_list.hpp"
 
@@ -57,8 +57,8 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
   Teuchos::ParameterList solvparams;
-  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-      "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+  CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+      "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
   Teuchos::RCP<CORE::LINALG::Solver> dummysolver(
       new CORE::LINALG::Solver(solvparams, disnp_ptr_->Comm()));
 

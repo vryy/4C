@@ -12,11 +12,10 @@
 
 #include "baci_config.hpp"
 
-#include "baci_global_data.hpp"
 #include "baci_lib_element.hpp"
 #include "baci_linalg_serialdensematrix.hpp"
 
-#include <Epetra_MultiVector.h>
+#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 

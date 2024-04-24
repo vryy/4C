@@ -34,6 +34,7 @@
 #include "baci_linalg_multiply.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_mat_par_bundle.hpp"
 #include "baci_structure_timada_create.hpp"
@@ -535,15 +536,16 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
        *
        * Solver can be either a direct solver (UMFPACK, Superlu) or an iterative solver (Belos).
        */
-      const auto sol = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(
+      const auto sol = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "SOLVER");
-      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+      const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
-      if (sol != INPAR::SOLVER::SolverType::umfpack && sol != INPAR::SOLVER::SolverType::superlu)
+      if (sol != CORE::LINEAR_SOLVER::SolverType::umfpack &&
+          sol != CORE::LINEAR_SOLVER::SolverType::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner
-        if (prec != INPAR::SOLVER::PreconditionerType::cheap_simple &&
-            prec != INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)
+        if (prec != CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple &&
+            prec != CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)
           FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar meshtying/contact problems "
               "in saddle-point formulation, a block preconditioner is required. Choose an "
@@ -582,14 +584,14 @@ Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContac
               "STRUCTURAL DYNAMIC to a valid number!");
 
         // provide null space information
-        if (prec == INPAR::SOLVER::PreconditionerType::cheap_simple)
+        if (prec == CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple)
         {
           actdis->ComputeNullSpaceIfNecessary(
               solver->Params()
                   .sublist("CheapSIMPLE Parameters")
                   .sublist("Inverse1"));  // Inverse2 is created within blockpreconditioners.cpp
         }
-        else if (prec == INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)
+        else if (prec == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)
         { /* do nothing here */
         }
       }

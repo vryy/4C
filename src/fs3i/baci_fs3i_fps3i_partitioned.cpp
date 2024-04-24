@@ -16,25 +16,20 @@
 
 #include "baci_adapter_fld_poro.hpp"
 #include "baci_adapter_str_fpsiwrapper.hpp"
-#include "baci_ale_utils_clonestrategy.hpp"
-#include "baci_coupling_adapter.hpp"
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_utils_mapextractor.hpp"
 #include "baci_fpsi_monolithic_plain.hpp"
 #include "baci_fpsi_utils.hpp"
-#include "baci_fsi_monolithic.hpp"
-#include "baci_fsi_monolithicfluidsplit.hpp"
-#include "baci_fsi_monolithicstructuresplit.hpp"
 #include "baci_fsi_utils.hpp"
 #include "baci_global_data.hpp"
 #include "baci_inpar_scatra.hpp"
 #include "baci_inpar_validparameters.hpp"
 #include "baci_io_control.hpp"
 #include "baci_lib_condition_selector.hpp"
-#include "baci_lib_condition_utils.hpp"
 #include "baci_lib_utils_createdis.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_poroelast_monolithic.hpp"
 #include "baci_poroelast_scatra_utils.hpp"
@@ -43,8 +38,6 @@
 #include "baci_scatra_ele.hpp"
 #include "baci_scatra_timint_implicit.hpp"
 #include "baci_scatra_utils_clonestrategy.hpp"
-
-#include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -513,8 +506,8 @@ void FS3I::PartFPS3I::SetupSystem()
       (scatravec_[0])->ScaTraField()->Discretization();
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
-  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-      "SOLVER", INPAR::SOLVER::SolverType::umfpack, scatrasolvparams);
+  CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+      "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, scatrasolvparams);
   scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(scatrasolvparams, firstscatradis->Comm()));
 #else
   const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
@@ -529,14 +522,15 @@ void FS3I::PartFPS3I::SetupSystem()
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(coupledscatrasolvparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos) FOUR_C_THROW("Iterative solver expected");
+  if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos)
+    FOUR_C_THROW("Iterative solver expected");
 
-  const auto azprectype = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+  const auto azprectype = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
       coupledscatrasolvparams, "AZPREC");
 
-  if (azprectype != INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)
+  if (azprectype != CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2)
     FOUR_C_THROW("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object

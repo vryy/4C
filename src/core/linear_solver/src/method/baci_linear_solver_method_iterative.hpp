@@ -25,7 +25,7 @@ namespace CORE::LINEAR_SOLVER
 {
   //! krylov subspace linear solvers with right-side preconditioning
   template <class MatrixType, class VectorType>
-  class IterativeSolver : public SolverType<MatrixType, VectorType>
+  class IterativeSolver : public SolverTypeBase<MatrixType, VectorType>
   {
    public:
     //! Constructor
@@ -55,8 +55,8 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::ParameterList& Params() const { return params_; }
 
    private:
-    //! Get underlying preconditioner object of type PreconditionerType
-    const CORE::LINEAR_SOLVER::PreconditionerType& Preconditioner()
+    //! Get underlying preconditioner object of type PreconditionerTypeBase
+    const CORE::LINEAR_SOLVER::PreconditionerTypeBase& Preconditioner()
     {
       if (preconditioner_ == Teuchos::null)
         FOUR_C_THROW("Preconditioner has to be given for iterative methods!");
@@ -85,7 +85,7 @@ namespace CORE::LINEAR_SOLVER
      * @param isCrsMatrix Boolean flag to indicate Epetra_CrsMatrix (true) or block matrix (false)
      * @param projector Krylov projector
      */
-    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerType> CreatePreconditioner(
+    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase> CreatePreconditioner(
         Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
@@ -111,7 +111,7 @@ namespace CORE::LINEAR_SOLVER
     int numiters_{-1};
 
     //! preconditioner object
-    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerType> preconditioner_;
+    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase> preconditioner_;
 
     /*! \brief Check if active set has changed. If yes, enforce to rebuild the preconditioner.
      *

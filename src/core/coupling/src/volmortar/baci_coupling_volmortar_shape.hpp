@@ -19,11 +19,11 @@
  *----------------------------------------------------------------------*/
 #include "baci_config.hpp"
 
+#include "baci_coupling_volmortar.hpp"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.hpp"
 #include "baci_discretization_fem_general_utils_integration.hpp"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.hpp"
-#include "baci_inpar_volmortar.hpp"
 #include "baci_lib_element_integration_select.hpp"
 #include "baci_linalg_utils_densematrix_inverse.hpp"
 #include "baci_mortar_element.hpp"
@@ -122,7 +122,7 @@ namespace CORE::VOLMORTAR
     void volmortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
         const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
-        INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
+        DualQuad quadtype                           ///< type of quadratic element modification
     );
 
     template <CORE::FE::CellType distype, class V, class W, class U, class T>
@@ -139,7 +139,7 @@ namespace CORE::VOLMORTAR
     void volmortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
         const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
-        INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
+        DualQuad quadtype                           ///< type of quadratic element modification
     );
 
     template <CORE::FE::CellType distype, class V, class W, class U, class T>
@@ -156,7 +156,7 @@ namespace CORE::VOLMORTAR
     void volmortar_dualshape_function_3D(V& funct,  ///< to be filled with shape function values
         const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
-        INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
+        DualQuad quadtype                           ///< type of quadratic element modification
     );
 
     template <CORE::FE::CellType distype, class V, class W, class U, class T>
@@ -173,14 +173,14 @@ namespace CORE::VOLMORTAR
     template <CORE::FE::CellType distype, class V, class T>
     void shape_function(V& f,  ///< to be filled with shape function values
         const T* xi,           ///< para. coordinates
-        INPAR::VOLMORTAR::DualQuad dualquad = INPAR::VOLMORTAR::dualquad_no_mod);
+        DualQuad dualquad = dualquad_no_mod);
 
     // general evaluation routine for dual shape functions
     template <CORE::FE::CellType distype, class V, class T>
     void dual_shape_function(V& f,  ///< to be filled with shape function values
         const T& xi,                ///< para. coordinates
         const DRT::Element& ele,    ///< element which is considered
-        INPAR::VOLMORTAR::DualQuad dualquad = INPAR::VOLMORTAR::dualquad_no_mod);
+        DualQuad dualquad = dualquad_no_mod);
 
     template <CORE::FE::CellType distype, class V, class W, class U, class T>
     void nurbs_shape_function(V& funct,  ///< to be filled with shape function values
@@ -1083,7 +1083,7 @@ namespace CORE::VOLMORTAR
     void volmortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
         const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
-        INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
+        DualQuad quadtype                           ///< type of quadratic element modification
     )
     {
       switch (distype)
@@ -1251,7 +1251,7 @@ namespace CORE::VOLMORTAR
     void volmortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
         const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
-        INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
+        DualQuad quadtype                           ///< type of quadratic element modification
     )
     {
       switch (distype)
@@ -1423,7 +1423,7 @@ namespace CORE::VOLMORTAR
     void volmortar_dualshape_function_3D(V& funct,  ///< to be filled with shape function values
         const DRT::Element& ele,                    ///< element which is considered
         const T* xi,                                ///< para. coordinates
-        INPAR::VOLMORTAR::DualQuad quadtype         ///< type of quadratic element modification
+        DualQuad quadtype                           ///< type of quadratic element modification
     )
     {
       switch (distype)
@@ -1846,7 +1846,7 @@ namespace CORE::VOLMORTAR
      |  evaluate shapes                                          farah 09/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype, class V, class T>
-    void shape_function(V& f, const T* xi, INPAR::VOLMORTAR::DualQuad dualquad)
+    void shape_function(V& f, const T* xi, DualQuad dualquad)
     {
       switch (CORE::FE::dim<distype>)
       {
@@ -1863,11 +1863,11 @@ namespace CORE::VOLMORTAR
         case 3:
         {
           // modified shape function
-          if (dualquad == INPAR::VOLMORTAR::dualquad_quad_mod)
+          if (dualquad == dualquad_quad_mod)
             volmortar_shape_function_3D_modified(f, xi[0], xi[1], xi[2], distype);
 
           // non-modified shape function
-          else if (dualquad == INPAR::VOLMORTAR::dualquad_no_mod)
+          else if (dualquad == dualquad_no_mod)
             volmortar_shape_function_3D(f, xi[0], xi[1], xi[2], distype);
 
           // not implemented
@@ -1922,8 +1922,7 @@ namespace CORE::VOLMORTAR
      |  evaluate dual shapes                                     farah 09/14|
      *----------------------------------------------------------------------*/
     template <CORE::FE::CellType distype, class V, class T>
-    void dual_shape_function(
-        V& f, const T& xi, const DRT::Element& ele, INPAR::VOLMORTAR::DualQuad dualquad)
+    void dual_shape_function(V& f, const T& xi, const DRT::Element& ele, DualQuad dualquad)
     {
       switch (CORE::FE::dim<distype>)
       {

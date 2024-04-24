@@ -13,10 +13,10 @@
 #include "baci_adapter_str_factory.hpp"
 #include "baci_adapter_str_ssiwrapper.hpp"
 #include "baci_adapter_str_structure_new.hpp"
+#include "baci_coupling_volmortar.hpp"
 #include "baci_global_data.hpp"
 #include "baci_global_data_read.hpp"
 #include "baci_inpar_ssi.hpp"
-#include "baci_inpar_volmortar.hpp"
 #include "baci_io_control.hpp"
 #include "baci_io_inputreader.hpp"
 #include "baci_lib_utils_createdis.hpp"
@@ -395,8 +395,8 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
     {
       const Teuchos::ParameterList& volmortarparams =
           GLOBAL::Problem::Instance()->VolmortarParams();
-      if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::CouplingType>(
-              volmortarparams, "COUPLINGTYPE") != INPAR::VOLMORTAR::couplingtype_coninter)
+      if (CORE::UTILS::IntegralValue<CORE::VOLMORTAR::CouplingType>(
+              volmortarparams, "COUPLINGTYPE") != CORE::VOLMORTAR::couplingtype_coninter)
       {
         FOUR_C_THROW(
             "Volmortar coupling only tested for consistent interpolation, "

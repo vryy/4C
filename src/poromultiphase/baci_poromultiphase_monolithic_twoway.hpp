@@ -13,7 +13,6 @@
 #include "baci_config.hpp"
 
 #include "baci_inpar_poromultiphase.hpp"
-#include "baci_inpar_solver.hpp"
 #include "baci_poromultiphase_monolithic.hpp"
 
 #include <Teuchos_Time.hpp>
@@ -31,6 +30,11 @@ namespace CORE::LINALG
   class Equilibration;
   enum class EquilibrationMethod;
 }  // namespace CORE::LINALG
+
+namespace CORE::LINEAR_SOLVER
+{
+  enum class SolverType;
+}
 
 namespace DRT
 {
@@ -171,8 +175,8 @@ namespace POROMULTIPHASE
     void LinearSolve();
 
     //! Create the linear solver
-    virtual void CreateLinearSolver(
-        const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype);
+    virtual void CreateLinearSolver(const Teuchos::ParameterList& solverparams,
+        const CORE::LINEAR_SOLVER::SolverType solvertype);
 
     //! Setup Newton-Raphson
     void SetupNewton();
@@ -323,7 +327,7 @@ namespace POROMULTIPHASE
 
     //! Create the linear solver
     void CreateLinearSolver(const Teuchos::ParameterList& solverparams,
-        const INPAR::SOLVER::SolverType solvertype) override;
+        const CORE::LINEAR_SOLVER::SolverType solvertype) override;
 
     //! build the block null spaces
     void BuildArteryBlockNullSpace(

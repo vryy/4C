@@ -23,7 +23,6 @@
 #include "baci_fsi_nox_group.hpp"
 #include "baci_fsi_nox_linearsystem.hpp"
 #include "baci_fsi_nox_newton.hpp"
-#include "baci_fsi_overlapprec.hpp"
 #include "baci_fsi_overlapprec_fsiamg.hpp"
 #include "baci_fsi_overlapprec_hybrid.hpp"
 #include "baci_fsi_statustest.hpp"
@@ -34,6 +33,7 @@
 #include "baci_linalg_blocksparsematrix.hpp"
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_linear_solver_method_parameters.hpp"
 #include "baci_structure_aux.hpp"
@@ -1282,12 +1282,12 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSyst
 
       auto solver = Teuchos::rcp(new CORE::LINALG::Solver(fsisolverparams, Comm()));
 
-      const auto azprectype =
-          Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(fsisolverparams, "AZPREC");
+      const auto azprectype = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
+          fsisolverparams, "AZPREC");
 
       switch (azprectype)
       {
-        case INPAR::SOLVER::PreconditionerType::multigrid_muelu_fsi:
+        case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fsi:
         {
           solver->PutSolverParamsToSubParams("Inverse1", fsisolverparams);
           // This might be an alternative to "CORE::LINALG::FixNullspace()", directly calculate

@@ -28,10 +28,10 @@ namespace CORE::LINEAR_SOLVER
     This is not a preconditioner in a mathematical sense, but it fits the
     software framework nicely. A "real" preconditioner is wrapped.
   */
-  class KrylovProjectionPreconditioner : public PreconditionerType
+  class KrylovProjectionPreconditioner : public PreconditionerTypeBase
   {
    public:
-    KrylovProjectionPreconditioner(Teuchos::RCP<PreconditionerType> preconditioner,
+    KrylovProjectionPreconditioner(Teuchos::RCP<PreconditionerTypeBase> preconditioner,
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
     // virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
@@ -48,7 +48,7 @@ namespace CORE::LINEAR_SOLVER
     std::string getParameterListName() const override { return "unknown"; }
 
    private:
-    Teuchos::RCP<PreconditionerType> preconditioner_;
+    Teuchos::RCP<PreconditionerTypeBase> preconditioner_;
 
     /// Peter's projector object that does the actual work
     Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;

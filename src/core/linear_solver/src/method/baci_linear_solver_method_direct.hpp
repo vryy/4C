@@ -24,7 +24,7 @@ namespace CORE::LINEAR_SOLVER
 {
   /// direct linear solver (using amesos)
   template <class MatrixType, class VectorType>
-  class DirectSolver : public SolverType<MatrixType, VectorType>
+  class DirectSolver : public SolverTypeBase<MatrixType, VectorType>
   {
    public:
     //! Constructor

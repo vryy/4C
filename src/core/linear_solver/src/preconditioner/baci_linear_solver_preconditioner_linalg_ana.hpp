@@ -13,6 +13,7 @@
 #include "baci_config.hpp"
 
 #include "baci_linalg_sparsematrix.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_utils_exceptions.hpp"
 #include "baci_utils_parameter_list.hpp"
@@ -578,8 +579,8 @@ namespace CORE::LINALG
                 [&]()
                 {
                   Teuchos::ParameterList solvparams;
-                  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-                      "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+                  CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+                      "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
                   return Teuchos::rcp(new CORE::LINALG::Solver(solvparams, op.Comm()));
                 })),
             solver_(*defaultsolver_),
@@ -593,8 +594,8 @@ namespace CORE::LINALG
                 [&]()
                 {
                   Teuchos::ParameterList solvparams;
-                  CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-                      "SOLVER", INPAR::SOLVER::SolverType::umfpack, solvparams);
+                  CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+                      "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
                   return Teuchos::rcp(new CORE::LINALG::Solver(solvparams, op.Comm()));
                 })),
             solver_(*defaultsolver_),

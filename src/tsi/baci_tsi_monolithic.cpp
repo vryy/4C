@@ -24,7 +24,6 @@
 #include "baci_contact_node.hpp"
 #include "baci_discretization_fem_general_extract_values.hpp"
 #include "baci_global_data.hpp"
-#include "baci_inpar_solver.hpp"
 #include "baci_lib_assemblestrategy.hpp"
 #include "baci_lib_elements_paramsminimal.hpp"
 #include "baci_lib_locsys.hpp"
@@ -33,6 +32,7 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_mortar_manager_base.hpp"
 #include "baci_mortar_multifield_coupling.hpp"
@@ -263,9 +263,9 @@ void TSI::Monolithic::CreateLinearSolver()
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(tsisolverparams, "SOLVER");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(tsisolverparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -281,13 +281,13 @@ void TSI::Monolithic::CreateLinearSolver()
   solver_ = Teuchos::rcp(new CORE::LINALG::Solver(tsisolverparams, Comm()));
 
   const auto azprectype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(tsisolverparams, "AZPREC");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(tsisolverparams, "AZPREC");
 
   switch (azprectype)
   {
-    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
-    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
-    case INPAR::SOLVER::PreconditionerType::cheap_simple:
+    case CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
+    case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
     {
       // get parameter list of structural dynamics
       const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->StructuralDynamicParams();
@@ -328,7 +328,7 @@ void TSI::Monolithic::CreateLinearSolver()
           solver_->Params().sublist("Inverse2"));
 
 
-      if (azprectype == INPAR::SOLVER::PreconditionerType::cheap_simple)
+      if (azprectype == CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple)
       {
         // Tell to the CORE::LINALG::SOLVER::SimplePreconditioner that we use the general
         // implementation
@@ -337,7 +337,7 @@ void TSI::Monolithic::CreateLinearSolver()
 
       break;
     }
-    case INPAR::SOLVER::PreconditionerType::multigrid_muelu_tsi:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_tsi:
     {
       solver_->PutSolverParamsToSubParams("Inverse1", tsisolverparams);
       StructureField()->Discretization()->ComputeNullSpaceIfNecessary(

@@ -16,7 +16,6 @@
 #include "baci_contact_meshtying_contact_bridge.hpp"
 #include "baci_contact_meshtying_poro_lagrange_strategy.hpp"
 #include "baci_contact_nitsche_strategy_poro.hpp"
-#include "baci_coupling_adapter_volmortar.hpp"
 #include "baci_fluid_ele_action.hpp"
 #include "baci_fluid_utils_mapextractor.hpp"
 #include "baci_global_data.hpp"
@@ -29,9 +28,9 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_mortar_manager_base.hpp"
-#include "baci_poroelast_defines.hpp"
 #include "baci_structure_aux.hpp"
 
 #include <Teuchos_Time.hpp>
@@ -653,9 +652,9 @@ void POROELAST::Monolithic::CreateLinearSolver()
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(porosolverparams, "SOLVER");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(porosolverparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -666,15 +665,15 @@ void POROELAST::Monolithic::CreateLinearSolver()
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     FOUR_C_THROW("Iterative solver expected");
   }
-  const auto azprectype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(porosolverparams, "AZPREC");
+  const auto azprectype = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
+      porosolverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2:
+    case CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2:
       break;
-    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -1579,10 +1578,10 @@ bool POROELAST::Monolithic::SetupSolver()
   const Teuchos::ParameterList& solverparams =
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == INPAR::SOLVER::SolverType::umfpack or
-                  solvertype == INPAR::SOLVER::SolverType::superlu);
+  directsolve_ = (solvertype == CORE::LINEAR_SOLVER::SolverType::umfpack or
+                  solvertype == CORE::LINEAR_SOLVER::SolverType::superlu);
 
   if (directsolve_)
   {

@@ -31,6 +31,11 @@ namespace CORE::LINALG
   enum class EquilibrationMethod;
 }  // namespace CORE::LINALG
 
+namespace CORE::LINEAR_SOLVER
+{
+  enum class SolverType;
+}
+
 namespace POROMULTIPHASESCATRA
 {
   //! monolithic coupling algorithm of poromultiphasescatra framework
@@ -86,8 +91,8 @@ namespace POROMULTIPHASESCATRA
     virtual void BuildBlockNullSpaces();
 
     //! create the linear solver
-    void CreateLinearSolver(
-        const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype);
+    void CreateLinearSolver(const Teuchos::ParameterList& solverparams,
+        const CORE::LINEAR_SOLVER::SolverType solvertype);
 
     //! full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap();

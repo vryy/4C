@@ -10,7 +10,6 @@
 /*----------------------------------------------------------------------*/
 #include "baci_coupling_adapter_mortar.hpp"
 
-#include "baci_inpar_fluid.hpp"
 #include "baci_io.hpp"
 #include "baci_lib_condition_utils.hpp"
 #include "baci_lib_discret.hpp"

@@ -36,10 +36,10 @@ CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBa
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
-  dualquad_ = CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params, "DUALQUAD");
+  dualquad_ = CORE::UTILS::IntegralValue<DualQuad>(params, "DUALQUAD");
 
   // get type of quadratic modification
-  shape_ = CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::Shapefcn>(params, "SHAPEFCN");
+  shape_ = CORE::UTILS::IntegralValue<Shapefcn>(params, "SHAPEFCN");
 }
 
 /*----------------------------------------------------------------------*
@@ -444,8 +444,8 @@ template class CORE::VOLMORTAR::VolMortarIntegratorEleBased<CORE::FE::CellType::
 template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
 bool CORE::VOLMORTAR::VolMortarEleBasedGP(DRT::Element& sele, DRT::Element* mele,
     std::vector<int>& foundeles, int& found, int& gpid, double& jac, double& wgt, double& gpdist,
-    double* Axi, double* AuxXi, double* globgp, INPAR::VOLMORTAR::DualQuad& dq,
-    INPAR::VOLMORTAR::Shapefcn& shape, CORE::LINALG::SparseMatrix& D, CORE::LINALG::SparseMatrix& M,
+    double* Axi, double* AuxXi, double* globgp, DualQuad& dq, Shapefcn& shape,
+    CORE::LINALG::SparseMatrix& D, CORE::LINALG::SparseMatrix& M,
     Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
     int dofseta, int dofsetb, const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
     const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap)
@@ -508,7 +508,7 @@ bool CORE::VOLMORTAR::VolMortarEleBasedGP(DRT::Element& sele, DRT::Element* mele
 
     const int nsdof = Adis->NumDof(dofseta, cnode);
 
-    if (shape == INPAR::VOLMORTAR::shape_std)
+    if (shape == shape_std)
     {
       for (int j = 0; j < ns_; ++j)
       {
@@ -562,7 +562,7 @@ bool CORE::VOLMORTAR::VolMortarEleBasedGP(DRT::Element& sele, DRT::Element* mele
         }
       }
     }
-    else if (shape == INPAR::VOLMORTAR::shape_dual)
+    else if (shape == shape_dual)
     {
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
@@ -684,10 +684,10 @@ CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::VolMortarIntegrator(
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
-  dualquad_ = CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params, "DUALQUAD");
+  dualquad_ = CORE::UTILS::IntegralValue<DualQuad>(params, "DUALQUAD");
 
   // get type of quadratic modification
-  shape_ = CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::Shapefcn>(params, "SHAPEFCN");
+  shape_ = CORE::UTILS::IntegralValue<Shapefcn>(params, "SHAPEFCN");
 
   // define gp rule
   InitializeGP();
@@ -907,7 +907,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
 
     // compute segment D/M matrix ****************************************
     // standard shape functions
-    if (shape_ == INPAR::VOLMORTAR::shape_std)
+    if (shape_ == shape_std)
     {
       for (int j = 0; j < ns_; ++j)
       {
@@ -967,7 +967,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
         }
       }
     }
-    else if (shape_ == INPAR::VOLMORTAR::shape_dual)
+    else if (shape_ == shape_dual)
     {
       for (int j = 0; j < ns_; ++j)
       {
@@ -1029,8 +1029,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
     Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
     int sdofset_A, int mdofset_A, int sdofset_B, int mdofset_B)
 {
-  if (shape_ == INPAR::VOLMORTAR::shape_std)
-    FOUR_C_THROW("ERORR: std. shape functions not supported");
+  if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval_A;
@@ -1169,8 +1168,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D_
     Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
     int sdofset_A, int mdofset_A, int sdofset_B, int mdofset_B)
 {
-  if (shape_ == INPAR::VOLMORTAR::shape_std)
-    FOUR_C_THROW("ERORR: std. shape functions not supported");
+  if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval_A;
@@ -1315,8 +1313,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased
     CORE::LINALG::SparseMatrix& mmatrix_A, Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis, int dofsetA, int dofsetB)
 {
-  if (shape_ == INPAR::VOLMORTAR::shape_std)
-    FOUR_C_THROW("ERORR: std. shape functions not supported");
+  if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval_A;
@@ -1441,8 +1438,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEleBased
     CORE::LINALG::SparseMatrix& mmatrix_B, Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis, int dofsetA, int dofsetB)
 {
-  if (shape_ == INPAR::VOLMORTAR::shape_std)
-    FOUR_C_THROW("ERORR: std. shape functions not supported");
+  if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> mval_A;
@@ -1570,8 +1566,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
     Teuchos::RCP<const DRT::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
     int mdofset_B)
 {
-  if (shape_ == INPAR::VOLMORTAR::shape_std)
-    FOUR_C_THROW("ERORR: std. shape functions not supported");
+  if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::Matrix<ns_, 1> sval_A;

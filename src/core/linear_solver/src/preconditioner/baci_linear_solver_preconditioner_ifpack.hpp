@@ -24,7 +24,7 @@ namespace CORE::LINEAR_SOLVER
    *
    *  Set of standard single-matrix preconditioners.
    */
-  class IFPACKPreconditioner : public LINEAR_SOLVER::PreconditionerType
+  class IFPACKPreconditioner : public LINEAR_SOLVER::PreconditionerTypeBase
   {
    public:
     //! Constructor (empty)

@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::LINEAR_SOLVER
 {
-  class AmGnxnPreconditioner : public PreconditionerType
+  class AmGnxnPreconditioner : public PreconditionerTypeBase
   {
    public:
     AmGnxnPreconditioner(Teuchos::ParameterList &params);

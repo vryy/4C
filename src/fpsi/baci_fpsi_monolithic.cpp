@@ -21,6 +21,7 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_linear_solver_method_parameters.hpp"
 #include "baci_poroelast_monolithic.hpp"
@@ -510,10 +511,10 @@ void FPSI::Monolithic::SetupSolver()
   const Teuchos::ParameterList& solverparams =
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == INPAR::SOLVER::SolverType::umfpack or
-                  solvertype == INPAR::SOLVER::SolverType::superlu);
+  directsolve_ = (solvertype == CORE::LINEAR_SOLVER::SolverType::umfpack or
+                  solvertype == CORE::LINEAR_SOLVER::SolverType::superlu);
 
   if (directsolve_)
     solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
@@ -618,9 +619,9 @@ void FPSI::Monolithic::CreateLinearSolver()
       GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(fpsisolverparams, "SOLVER");
+      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(fpsisolverparams, "SOLVER");
 
-  if (solvertype != INPAR::SOLVER::SolverType::belos)
+  if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -631,13 +632,13 @@ void FPSI::Monolithic::CreateLinearSolver()
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     FOUR_C_THROW("Iterative solver expected");
   }
-  const auto azprectype =
-      Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(fpsisolverparams, "AZPREC");
+  const auto azprectype = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
+      fpsisolverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::PreconditionerType::multigrid_nxn:
+    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway

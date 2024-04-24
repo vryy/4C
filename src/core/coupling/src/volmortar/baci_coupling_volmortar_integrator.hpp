@@ -19,10 +19,10 @@
  *---------------------------------------------------------------------*/
 #include "baci_config.hpp"
 
+#include "baci_coupling_volmortar.hpp"
 #include "baci_cut_utils.hpp"
 #include "baci_discretization_fem_general_utils_gausspoints.hpp"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "baci_inpar_volmortar.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -149,8 +149,8 @@ namespace CORE::VOLMORTAR
     std::vector<double> weights_;             // Gauss point weights
 
     // input parameter
-    INPAR::VOLMORTAR::DualQuad dualquad_;  // type of quadratic weighting interpolation
-    INPAR::VOLMORTAR::Shapefcn shape_;     // type of test function
+    DualQuad dualquad_;  // type of quadratic weighting interpolation
+    Shapefcn shape_;     // type of test function
   };
 
   template <CORE::FE::CellType distypeS>
@@ -199,8 +199,8 @@ namespace CORE::VOLMORTAR
     std::vector<double> weights_;             // Gauss point weights
 
     // input parameter
-    INPAR::VOLMORTAR::DualQuad dualquad_;  // type of quadratic weighting interpolation
-    INPAR::VOLMORTAR::Shapefcn shape_;     // type of test function
+    DualQuad dualquad_;  // type of quadratic weighting interpolation
+    Shapefcn shape_;     // type of test function
   };
 
   /*----------------------------------------------------------------------*
@@ -362,10 +362,10 @@ namespace CORE::VOLMORTAR
   template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
   bool VolMortarEleBasedGP(DRT::Element& sele, DRT::Element* mele, std::vector<int>& foundeles,
       int& found, int& gpid, double& jac, double& wgt, double& gpdist, double* Axi, double* AuxXi,
-      double* globgp, INPAR::VOLMORTAR::DualQuad& dq, INPAR::VOLMORTAR::Shapefcn& shape,
-      CORE::LINALG::SparseMatrix& dmatrix_A, CORE::LINALG::SparseMatrix& mmatrix_A,
-      Teuchos::RCP<const DRT::Discretization> Adis, Teuchos::RCP<const DRT::Discretization> Bdis,
-      int dofseta, int dofsetb, const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
+      double* globgp, DualQuad& dq, Shapefcn& shape, CORE::LINALG::SparseMatrix& dmatrix_A,
+      CORE::LINALG::SparseMatrix& mmatrix_A, Teuchos::RCP<const DRT::Discretization> Adis,
+      Teuchos::RCP<const DRT::Discretization> Bdis, int dofseta, int dofsetb,
+      const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
       const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap);
 
   // evaluation of nts approach

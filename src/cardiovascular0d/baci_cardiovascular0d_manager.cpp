@@ -26,6 +26,7 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.hpp"
 #include "baci_linalg_utils_sparse_algebra_create.hpp"
 #include "baci_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_mor_pod.hpp"
 
@@ -1076,11 +1077,11 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<CORE::LINALG::SparseMatri
       break;
     case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
     {
-      const auto prec = Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(
+      const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
           GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       switch (prec)
       {
-        case INPAR::SOLVER::PreconditionerType::cheap_simple:
+        case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
         {
           // add Inverse1 block for "velocity" dofs
           // tell Inverse1 block about NodalBlockInformation

@@ -14,6 +14,7 @@
 
 #include "baci_contact_aug_utils.hpp"
 #include "baci_inpar_solver.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_utils_exceptions.hpp"
 
 #include <Epetra_Vector.h>
@@ -57,7 +58,7 @@ namespace CONTACT
 
      private:
       Teuchos::RCP<CORE::LINALG::Solver> CreateLinearSolver(const int lin_sol_id,
-          const Epetra_Comm& comm, enum INPAR::SOLVER::SolverType& solver_type) const;
+          const Epetra_Comm& comm, enum CORE::LINEAR_SOLVER::SolverType& solver_type) const;
 
       void LinSolve(
           CORE::LINALG::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol);
@@ -94,7 +95,7 @@ namespace CONTACT
 
       Teuchos::RCP<DataContainer> data_;
 
-      enum INPAR::SOLVER::SolverType lin_solver_type_;
+      enum CORE::LINEAR_SOLVER::SolverType lin_solver_type_;
 
       Teuchos::RCP<CORE::LINALG::Solver> lin_solver_;
 

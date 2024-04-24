@@ -15,6 +15,7 @@
 #include "baci_fsi_debugwriter.hpp"
 #include "baci_global_data.hpp"
 #include "baci_io_control.hpp"
+#include "baci_linear_solver_method.hpp"
 #include "baci_linear_solver_method_linalg.hpp"
 #include "baci_linear_solver_preconditioner_linalg.hpp"
 #include "baci_utils_parameter_list.hpp"
@@ -404,8 +405,8 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
     interconA->Scale(-1.0);
 
     Teuchos::ParameterList constrsolvparams;
-    CORE::UTILS::AddEnumClassToParameterList<INPAR::SOLVER::SolverType>(
-        "SOLVER", INPAR::SOLVER::SolverType::umfpack, constrsolvparams);
+    CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
+        "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, constrsolvparams);
     Teuchos::RCP<Epetra_Vector> interconsol =
         Teuchos::rcp(new Epetra_Vector(ConStructOp.RangeMap()));
     Teuchos::RCP<CORE::LINALG::Solver> ConstraintSolver =
