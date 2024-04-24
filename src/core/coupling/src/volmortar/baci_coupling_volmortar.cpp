@@ -203,15 +203,13 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
   /***********************************************************
    * Segment-based integration                               *
    ***********************************************************/
-  if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::IntType>(Params(), "INTTYPE") ==
-      INPAR::VOLMORTAR::inttype_segments)
+  if (CORE::UTILS::IntegralValue<IntType>(Params(), "INTTYPE") == inttype_segments)
     EvaluateSegments();
 
   /***********************************************************
    * Element-based Integration                               *
    ***********************************************************/
-  else if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::IntType>(Params(), "INTTYPE") ==
-           INPAR::VOLMORTAR::inttype_elements)
+  else if (CORE::UTILS::IntegralValue<IntType>(Params(), "INTTYPE") == inttype_elements)
     EvaluateElements();
 
   // no other possibility
@@ -803,8 +801,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateElements()
     Integrate3DEleBased_P12(*Aele, found);
 
     // create trafo operator for quadr. modification
-    if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
-      CreateTrafoOperator(*Aele, dis1_, true, donebeforea);
+    if (dualquad_ != dualquad_no_mod) CreateTrafoOperator(*Aele, dis1_, true, donebeforea);
   }
 
   // half-time output
@@ -829,8 +826,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateElements()
     Integrate3DEleBased_P21(*Bele, found);
 
     // create trafo operator for quadr. modification
-    if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
-      CreateTrafoOperator(*Bele, dis2_, false, donebeforeb);
+    if (dualquad_ != dualquad_no_mod) CreateTrafoOperator(*Bele, dis2_, false, donebeforeb);
   }
 
   // stats
@@ -1021,8 +1017,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput(
     const Teuchos::ParameterList& volmortar_parameters)
 {
   // check validity
-  if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar_parameters, "INTTYPE") ==
-      INPAR::VOLMORTAR::inttype_segments)
+  if (CORE::UTILS::IntegralValue<IntType>(volmortar_parameters, "INTTYPE") == inttype_segments)
   {
     if (myrank_ == 0)
     {
@@ -1036,14 +1031,12 @@ void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput(
   }
 
   if (CORE::UTILS::IntegralValue<int>(volmortar_parameters, "MESH_INIT") and
-      CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar_parameters, "INTTYPE") ==
-          INPAR::VOLMORTAR::inttype_segments)
+      CORE::UTILS::IntegralValue<IntType>(volmortar_parameters, "INTTYPE") == inttype_segments)
   {
     FOUR_C_THROW("ERROR: MeshInit only for ele-based integration!!!");
   }
 
-  if (CORE::UTILS::IntegralValue<int>(volmortar_parameters, "SHAPEFCN") ==
-      INPAR::VOLMORTAR::shape_std)
+  if (CORE::UTILS::IntegralValue<int>(volmortar_parameters, "SHAPEFCN") == shape_std)
   {
     std::cout << "WARNING: Standard shape functions are employed! D is lumped!" << std::endl;
   }
@@ -1052,7 +1045,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput(
   params_.setParameters(volmortar_parameters);
 
   // get specific and frequently reused parameters
-  dualquad_ = CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params_, "DUALQUAD");
+  dualquad_ = CORE::UTILS::IntegralValue<DualQuad>(params_, "DUALQUAD");
 }
 
 /*----------------------------------------------------------------------*
@@ -1622,8 +1615,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
 
   // *************************************
   // TESSELATION *************************
-  if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(), "CUTTYPE") ==
-      INPAR::VOLMORTAR::cuttype_tessellation)
+  if (CORE::UTILS::IntegralValue<CutType>(Params(), "CUTTYPE") == cuttype_tessellation)
   {
     // Set options for the cut wizard
     wizard->SetOptions(INPAR::CUT::NDS_Strategy_full,
@@ -1685,8 +1677,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
 
   // *******************************************
   // DIRECT DIVERGENCE *************************
-  else if (CORE::UTILS::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(), "CUTTYPE") ==
-           INPAR::VOLMORTAR::cuttype_directdivergence)
+  else if (CORE::UTILS::IntegralValue<CutType>(Params(), "CUTTYPE") == cuttype_directdivergence)
   {
     // Set options for the cut wizard
     wizard->SetOptions(INPAR::CUT::NDS_Strategy_full,
@@ -3625,7 +3616,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Initialize()
   m21_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*p21_dofrowmap_, 100));
 
   // initialize trafo operator for quadr. modification
-  if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
+  if (dualquad_ != dualquad_no_mod)
   {
     t1_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*p12_dofrowmap_, 10));
     t2_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*p21_dofrowmap_, 10));
@@ -3647,7 +3638,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Complete()
   m21_->Complete(*p21_dofdomainmap_, *p21_dofrowmap_);
 
   // complete trafo operator for quadr. modification
-  if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
+  if (dualquad_ != dualquad_no_mod)
   {
     t1_->Complete(*p12_dofrowmap_, *p12_dofrowmap_);
     t2_->Complete(*p21_dofrowmap_, *p21_dofrowmap_);
@@ -3713,7 +3704,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
       CORE::LINALG::MLMultiply(*invd2, false, *m21_, false, false, false, true);
 
   // initialize trafo operator for quadr. modification
-  if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
+  if (dualquad_ != dualquad_no_mod)
   {
     p12_ = CORE::LINALG::MLMultiply(*t1_, false, *aux12, false, false, false, true);
     p21_ = CORE::LINALG::MLMultiply(*t2_, false, *aux21, false, false, false, true);
