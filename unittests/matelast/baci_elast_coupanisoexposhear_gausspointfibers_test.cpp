@@ -121,13 +121,13 @@ namespace
 
   TEST_P(CoupAnisoExpoShearGaussPointFibersTest, GetStructuralTensor)
   {
-    BACI_EXPECT_NEAR(anisotropyExtension_->GetStructuralTensor(GetGaussPoint()),
+    FOUR_C_EXPECT_NEAR(anisotropyExtension_->GetStructuralTensor(GetGaussPoint()),
         gpTensors_[GetGaussPoint()], 1e-10);
   }
 
   TEST_P(CoupAnisoExpoShearGaussPointFibersTest, GetStructuralTensorStress)
   {
-    BACI_EXPECT_NEAR(anisotropyExtension_->GetStructuralTensor_stress(GetGaussPoint()),
+    FOUR_C_EXPECT_NEAR(anisotropyExtension_->GetStructuralTensor_stress(GetGaussPoint()),
         gpTensors_stress_[GetGaussPoint()], 1e-10);
   }
 

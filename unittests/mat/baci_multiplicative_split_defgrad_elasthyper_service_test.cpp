@@ -61,7 +61,7 @@ namespace
     CORE::LINALG::Matrix<3, 3> CeM(false);
     MAT::EvaluateCe(FM_, iFinM_, CeM);
 
-    BACI_EXPECT_NEAR(CeM, CeM_target, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(CeM, CeM_target, 1.0e-10);
   }
 
   TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestEvaluateiCinCiCin)
@@ -77,7 +77,7 @@ namespace
     CORE::LINALG::Matrix<3, 3> iCinCiCinM(false);
     MAT::EvaluateiCinCiCin(CM_, iCinM_, iCinCiCinM);
 
-    BACI_EXPECT_NEAR(iCinCiCinM, iCinCiCinM_target, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(iCinCiCinM, iCinCiCinM_target, 1.0e-10);
   }
 
 
@@ -151,7 +151,7 @@ namespace
     cmat_target(5, 4) = -0.0079082879496605533;
     cmat_target(5, 5) = 0.64761600029220823;
 
-    BACI_EXPECT_NEAR(S_stress, S_stress_target, 1.0e-9);
-    BACI_EXPECT_NEAR(cmat, cmat_target, 1.0e-9);
+    FOUR_C_EXPECT_NEAR(S_stress, S_stress_target, 1.0e-9);
+    FOUR_C_EXPECT_NEAR(cmat, cmat_target, 1.0e-9);
   }
 }  // namespace

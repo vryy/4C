@@ -283,7 +283,7 @@ namespace
     double gradWij[3];
     kernel_3D_->GradWij(rij, support, eij, gradWij);
 
-    BACI_EXPECT_ITERABLE_NEAR(gradWij, gradWij_reference, 3, 1.0e-10);
+    FOUR_C_EXPECT_ITERABLE_NEAR(gradWij, gradWij_reference, 3, 1.0e-10);
   }
 
 
@@ -599,6 +599,6 @@ namespace
     double gradWij[3];
     kernel_3D_->GradWij(rij, support, eij, gradWij);
 
-    BACI_EXPECT_ITERABLE_NEAR(gradWij, gradWij_reference, 3, 1.0e-10);
+    FOUR_C_EXPECT_ITERABLE_NEAR(gradWij, gradWij_reference, 3, 1.0e-10);
   }
 }  // namespace

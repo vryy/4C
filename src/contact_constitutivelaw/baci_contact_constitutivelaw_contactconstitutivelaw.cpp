@@ -20,7 +20,7 @@
 #include "baci_contact_constitutivelaw_power_contactconstitutivelaw.hpp"
 #include "baci_global_data.hpp"
 
-#ifdef BACI_WITH_MIRCO
+#ifdef FOUR_C_WITH_MIRCO
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.hpp"
 #endif
 
@@ -82,13 +82,13 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
     }
     case INPAR::CONTACT::ConstitutiveLawType::colaw_mirco:
     {
-#ifdef BACI_WITH_MIRCO
+#ifdef FOUR_C_WITH_MIRCO
       CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams* params =
           new CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams(contactconstitutivelawdata);
       return params->CreateConstitutiveLaw();
 #else
       FOUR_C_THROW(
-          "You are trying to use MIRCO contact consitutive law with BACI_WITH_MIRCO flag turned "
+          "You are trying to use MIRCO contact consitutive law with FOUR_C_WITH_MIRCO flag turned "
           "off. Please enable this flag and build BACI again");
 #endif
     }

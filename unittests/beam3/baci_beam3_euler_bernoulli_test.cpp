@@ -97,7 +97,7 @@ namespace
       CORE::LINALG::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
           *node, std::vector{0.0, 0.0, 0.0}.data(), numdof, dimnsp);
 
-      BACI_EXPECT_NEAR(nullspace, nullspace_ref, testTolerance);
+      FOUR_C_EXPECT_NEAR(nullspace, nullspace_ref, testTolerance);
     }
 
     // nodal nullspace calculation for reference center of discretization at {-0.05, 0.05, 0.3}
@@ -120,7 +120,7 @@ namespace
       CORE::LINALG::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
           *node, std::vector{-0.05, 0.05, 0.3}.data(), numdof, dimnsp);
 
-      BACI_EXPECT_NEAR(nullspace, nullspace_ref, testTolerance);
+      FOUR_C_EXPECT_NEAR(nullspace, nullspace_ref, testTolerance);
     }
   }
 

@@ -45,7 +45,7 @@ namespace
             0.182642289473823, 0.214768580862521, 0.315358749090858}
             .data());
 
-    BACI_EXPECT_NEAR(euler_almansi_strain, euler_almansi_strain_ref, 1e-13);
+    FOUR_C_EXPECT_NEAR(euler_almansi_strain, euler_almansi_strain_ref, 1e-13);
   }
 
   TEST(TestStressStrainMeasures, GreenLagrangeToLogStrain)
@@ -61,7 +61,7 @@ namespace
             0.218832208837098, 0.400808067245772, 0.400940161591198}
             .data());
 
-    BACI_EXPECT_NEAR(log_strain, log_strain_ref, 1e-13);
+    FOUR_C_EXPECT_NEAR(log_strain, log_strain_ref, 1e-13);
   }
 
   TEST(TestStressStrainMeasures, SecondPiolaKirchhoffToCauchy)
@@ -78,6 +78,6 @@ namespace
             340.6815203116966, 306.97914008976466, 411.0514636046741}
             .data());
 
-    BACI_EXPECT_NEAR(cauchy, cauchy_ref, 1e-12);
+    FOUR_C_EXPECT_NEAR(cauchy, cauchy_ref, 1e-12);
   }
 }  // namespace

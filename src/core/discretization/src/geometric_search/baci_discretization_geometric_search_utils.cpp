@@ -59,7 +59,7 @@ namespace CORE::GEOMETRICSEARCH
   std::pair<std::vector<CORE::LINALG::Matrix<3, 1>>, std::vector<std::vector<int>>>
   GetKDopPolyhedronRepresentation(const BoundingVolume boundingVolume)
   {
-#ifndef BACI_WITH_ARBORX
+#ifndef FOUR_C_WITH_ARBORX
     FOUR_C_THROW(
         "CORE::GEOMETRICSEARCH::GetKDopPolyhedronRepresentation can only be used with ArborX."
         "To use it, enable ArborX during the configure process.");

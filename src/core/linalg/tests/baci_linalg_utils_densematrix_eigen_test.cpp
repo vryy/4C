@@ -69,7 +69,7 @@ namespace
       CORE::LINALG::multiplyNT(1.0, A_result, eigenvalues(i), v, v);
     }
 
-    BACI_EXPECT_NEAR(A, A_result, 1e-9);
+    FOUR_C_EXPECT_NEAR(A, A_result, 1e-9);
   }
 
   template <unsigned int size, size_t length>
@@ -88,7 +88,7 @@ namespace
       A_result.MultiplyNT(eigenvalues(i, i), v, v, 1.0);
     }
 
-    BACI_EXPECT_NEAR(A, A_result, 1e-9);
+    FOUR_C_EXPECT_NEAR(A, A_result, 1e-9);
   }
 
 

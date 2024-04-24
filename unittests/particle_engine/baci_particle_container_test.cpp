@@ -290,10 +290,10 @@ namespace
       }
 
       const double* currpos = container_->GetPtrToState(PARTICLEENGINE::Position, index);
-      BACI_EXPECT_ITERABLE_NEAR(currpos, pos.begin(), 3, 1e-14);
+      FOUR_C_EXPECT_ITERABLE_NEAR(currpos, pos.begin(), 3, 1e-14);
 
       const double* currvel = container_->GetPtrToState(PARTICLEENGINE::Velocity, index);
-      BACI_EXPECT_ITERABLE_NEAR(currvel, vel.begin(), 3, 1e-14);
+      FOUR_C_EXPECT_ITERABLE_NEAR(currvel, vel.begin(), 3, 1e-14);
 
       const double* currmass = container_->GetPtrToState(PARTICLEENGINE::Mass, index);
       EXPECT_NEAR(currmass[0], mass[0], 1e-14);
@@ -340,10 +340,10 @@ namespace
       }
 
       double* currpos = container_->CondGetPtrToState(PARTICLEENGINE::Position, index);
-      BACI_EXPECT_ITERABLE_NEAR(currpos, pos.begin(), 3, 1.0e-14);
+      FOUR_C_EXPECT_ITERABLE_NEAR(currpos, pos.begin(), 3, 1.0e-14);
 
       double* currvel = container_->CondGetPtrToState(PARTICLEENGINE::Velocity, index);
-      BACI_EXPECT_ITERABLE_NEAR(currvel, vel.begin(), 3, 1.0e-14);
+      FOUR_C_EXPECT_ITERABLE_NEAR(currvel, vel.begin(), 3, 1.0e-14);
 
       double* currmass = container_->CondGetPtrToState(PARTICLEENGINE::Mass, index);
       EXPECT_NEAR(currmass[0], mass[0], 1e-14);

@@ -35,8 +35,8 @@ math(EXPR GLOBAL_TEST_TIMEOUT_SCALED "${GLOBAL_TEST_TIMEOUT}*${GLOBAL_TEST_TIMEO
 message(STATUS "The scaled global test timeout is ${GLOBAL_TEST_TIMEOUT_SCALED} s.")
 
 # Fetch GoogleTest and setup the unit tests if option is enabled
-option(BACI_WITH_GOOGLETEST "Use GoogleTest for unit testing" ON)
-if(BACI_WITH_GOOGLETEST)
+option(FOUR_C_WITH_GOOGLETEST "Use GoogleTest for unit testing" ON)
+if(FOUR_C_WITH_GOOGLETEST)
   message(STATUS "Unit tests with GoogleTest: enabled")
 
   # Define a convenience target for all unit tests and add it to 'full'

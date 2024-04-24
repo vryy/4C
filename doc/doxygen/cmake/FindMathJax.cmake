@@ -1,12 +1,12 @@
 # Sets DOXYGEN_MATHJAX_RELPATH variable and provides target setup_mathjax
 
-if(BACI_DOXYGEN_USE_LOCAL_MATHJAX)
+if(FOUR_C_DOXYGEN_USE_LOCAL_MATHJAX)
   set(DOXYGEN_MATHJAX_RELPATH ./mathjax)
 
   # find local mathjax: heuristic check that the main js file exists
   find_file(
     _mathjax_main_file MathJax.js
-    PATHS ${BACI_DOXYGEN_LOCAL_MATHJAX_BASEPATH}
+    PATHS ${FOUR_C_DOXYGEN_LOCAL_MATHJAX_BASEPATH}
     NO_DEFAULT_PATH
     )
 
@@ -19,7 +19,7 @@ if(BACI_DOXYGEN_USE_LOCAL_MATHJAX)
     COMMAND
       ${CMAKE_COMMAND} -E make_directory ${DOXYGEN_OUT_DIRECTORY}/html/${DOXYGEN_MATHJAX_RELPATH}
     COMMAND
-      ${CMAKE_COMMAND} -E copy_directory ${BACI_DOXYGEN_LOCAL_MATHJAX_BASEPATH}
+      ${CMAKE_COMMAND} -E copy_directory ${FOUR_C_DOXYGEN_LOCAL_MATHJAX_BASEPATH}
       ${DOXYGEN_OUT_DIRECTORY}/html/${DOXYGEN_MATHJAX_RELPATH}
     COMMENT "Copy local MathJax to documentation build folder"
     )

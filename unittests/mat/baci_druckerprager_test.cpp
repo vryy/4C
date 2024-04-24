@@ -84,7 +84,7 @@ namespace
     auto plastic = Teuchos::rcp(new MAT::PlasticDruckerPrager());
     plastic->Unpack(dataSend);
     plastic->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
-    BACI_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
+    FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
   //! test member function Evaluate
@@ -106,7 +106,7 @@ namespace
     CORE::LINALG::Matrix<6, 6> result_cmat(true);
     CORE::LINALG::Matrix<6, 1> result_stress(true);
     druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
-    BACI_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
+    FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
   //! test member function Evaluate for Return to Cone
@@ -128,7 +128,7 @@ namespace
     CORE::LINALG::Matrix<6, 6> result_cmat(true);
     CORE::LINALG::Matrix<6, 1> result_stress(true);
     druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
-    BACI_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
+    FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
   //! test member function Evaluate for Return to Apex
@@ -146,7 +146,7 @@ namespace
     CORE::LINALG::Matrix<6, 6> result_cmat(true);
     CORE::LINALG::Matrix<6, 1> result_stress(true);
     druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
-    BACI_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
+    FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
   //! test member function Evaluate for History and elastic unloading
@@ -171,7 +171,7 @@ namespace
         ref_cmat(i, j) = result_stress(i).dx(j);
       }
     }
-    BACI_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
+    FOUR_C_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
     druckprag_->Update();
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 1.0);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.0);
@@ -183,7 +183,7 @@ namespace
         ref_cmat(i, j) = result_stress(i).dx(j);
       }
     }
-    BACI_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
+    FOUR_C_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
     druckprag_->Update();
     for (int i = 0; i < 3; ++i) input_strain(i) = FAD(6, i, 0.2);
     for (int i = 3; i < 6; ++i) input_strain(i) = FAD(6, i, 0.0);
@@ -195,7 +195,7 @@ namespace
         ref_cmat(i, j) = result_stress(i).dx(j);
       }
     }
-    BACI_EXPECT_NEAR(CORE::FADUTILS::CastToDouble(result_stress),
+    FOUR_C_EXPECT_NEAR(CORE::FADUTILS::CastToDouble(result_stress),
         CORE::FADUTILS::CastToDouble(ref_stress), 1.0e-12);
   };
 
@@ -223,7 +223,7 @@ namespace
     CORE::LINALG::Matrix<6, 6> result_cmat(true);
     CORE::LINALG::Matrix<6, 1> result_stress(true);
     druckprag_->Evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
-    BACI_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
+    FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };
 
   //! test member function Evaluate
@@ -253,7 +253,7 @@ namespace
         ref_cmat(i, j) = result_stress(i).dx(j);
       }
     }
-    BACI_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
+    FOUR_C_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
   };
 
   //! test CMAT matrix for Return to Cone
@@ -277,7 +277,7 @@ namespace
         ref_cmat(i, j) = result_stress(i).dx(j);
       }
     }
-    BACI_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
+    FOUR_C_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
   };
   TEST_F(DruckerPragerTest, TestEvaluateReturnToApexCmat)
   {
@@ -299,7 +299,7 @@ namespace
         ref_cmat(i, j) = result_stress(i).dx(j);
       }
     }
-    BACI_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
+    FOUR_C_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
   };
 
   //! test CMAT matrix for Return to Apex
@@ -334,6 +334,6 @@ namespace
         ref_cmat(i, j) = result_stress(i).dx(j);
       }
     }
-    BACI_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
+    FOUR_C_EXPECT_NEAR(result_cmat, ref_cmat, 1.0e-12);
   };
 }  // namespace

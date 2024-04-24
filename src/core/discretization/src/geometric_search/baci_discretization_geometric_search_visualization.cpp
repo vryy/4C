@@ -34,7 +34,7 @@ namespace CORE::GEOMETRICSEARCH
       const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& primitives,
       const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& predicates)
   {
-#ifndef BACI_WITH_ARBORX
+#ifndef FOUR_C_WITH_ARBORX
     FOUR_C_THROW(
         "CORE::GEOMETRICSEARCH::WritePrimitivesAndPredicatesToDisk can only be used with ArborX."
         "To use it, enable ArborX during the configure process.");

@@ -35,8 +35,8 @@ set(_allowed_build_types "DEBUG" "RELEASE" "RELWITHDEBINFO")
 if(NOT CMAKE_BUILD_TYPE)
   message(FATAL_ERROR "Choose a build type. Options are: ${_allowed_build_types}.")
 else()
-  string(TOUPPER ${CMAKE_BUILD_TYPE} BACI_BUILD_TYPE_UPPER)
-  if(NOT ${BACI_BUILD_TYPE_UPPER} IN_LIST _allowed_build_types)
+  string(TOUPPER ${CMAKE_BUILD_TYPE} FOUR_C_BUILD_TYPE_UPPER)
+  if(NOT ${FOUR_C_BUILD_TYPE_UPPER} IN_LIST _allowed_build_types)
     message(
       FATAL_ERROR "Invalid build type ${CMAKE_BUILD_TYPE}. Options are: ${_allowed_build_types}."
       )
@@ -89,12 +89,12 @@ baci_configure_dependency(MIRCO DEFAULT OFF)
 baci_configure_dependency(Backtrace DEFAULT OFF)
 
 # Generate the macro definition for all dependencies automatically
-get_property(BACI_FLAGS_EXTERNAL_DEPENDENCIES GLOBAL PROPERTY BACI_FLAGS_EXTERNAL_DEPENDENCIES)
-foreach(_dependency ${BACI_FLAGS_EXTERNAL_DEPENDENCIES})
+get_property(FOUR_C_FLAGS_EXTERNAL_DEPENDENCIES GLOBAL PROPERTY FOUR_C_FLAGS_EXTERNAL_DEPENDENCIES)
+foreach(_dependency ${FOUR_C_FLAGS_EXTERNAL_DEPENDENCIES})
   if(${_dependency})
-    string(APPEND BACI_DEFINES_FOR_EXTERNAL_DEPENDENCIES "#define ${_dependency}\n")
+    string(APPEND FOUR_C_DEFINES_FOR_EXTERNAL_DEPENDENCIES "#define ${_dependency}\n")
   else()
-    string(APPEND BACI_DEFINES_FOR_EXTERNAL_DEPENDENCIES "/* #undef ${_dependency} */\n")
+    string(APPEND FOUR_C_DEFINES_FOR_EXTERNAL_DEPENDENCIES "/* #undef ${_dependency} */\n")
   endif()
 endforeach()
 
@@ -109,10 +109,10 @@ set(MPIEXEC_EXTRA_OPTS_FOR_TESTING
     "--bind-to none --mca orte_tmpdir_base ${PROJECT_BINARY_DIR}/tmp"
     )
 
-if(BACI_WITH_ADDRESS_SANITIZER)
+if(FOUR_C_WITH_ADDRESS_SANITIZER)
   # Do not detect leaks, we only care about UB inducing memory issues
   string(APPEND MPIEXEC_EXTRA_OPTS_FOR_TESTING " -x LSAN_OPTIONS=detect_leaks=0")
-  set(BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
+  set(FOUR_C_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
 endif()
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
@@ -132,9 +132,9 @@ add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
 include(cmake/setup_tests.cmake)
 
 # Create one large library: every module adds itself to this target
-set(BACI_LIBRARY_NAME baci_lib)
-add_library(${BACI_LIBRARY_NAME})
-target_link_libraries(${BACI_LIBRARY_NAME} PRIVATE baci_private_compile_interface)
+set(FOUR_C_LIBRARY_NAME baci_lib)
+add_library(${FOUR_C_LIBRARY_NAME})
+target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE baci_private_compile_interface)
 
 # Read in the source directory which defines all modules
 add_subdirectory(src)

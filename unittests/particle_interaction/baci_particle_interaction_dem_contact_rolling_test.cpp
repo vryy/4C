@@ -108,7 +108,7 @@ namespace
     PARTICLEINTERACTION::UTILS::VecSetCross(v_rel_rolling_ref, angvel_i, e_ji);
     PARTICLEINTERACTION::UTILS::VecAddCross(v_rel_rolling_ref, e_ji, angvel_j);
 
-    BACI_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
+    FOUR_C_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
 
   TEST_F(DEMContactRollingViscousTest, RelativeRollingVelocityNullptrAngvelJ)
@@ -131,7 +131,7 @@ namespace
     double v_rel_rolling_ref[3] = {0.0};
     PARTICLEINTERACTION::UTILS::VecSetCross(v_rel_rolling_ref, angvel_i, e_ji);
 
-    BACI_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
+    FOUR_C_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
 
   TEST_F(DEMContactRollingViscousTest, RollingContactMoment)
@@ -277,7 +277,7 @@ namespace
     PARTICLEINTERACTION::UTILS::VecAddCross(v_rel_rolling_ref, angvel_j, e_ji);
     PARTICLEINTERACTION::UTILS::VecScale(v_rel_rolling_ref, r_eff);
 
-    BACI_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
+    FOUR_C_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
 
   TEST_F(DEMContactRollingCoulombTest, RelativeRollingVelocityNullptrAngvelJ)
@@ -301,7 +301,7 @@ namespace
     PARTICLEINTERACTION::UTILS::VecSetCross(v_rel_rolling_ref, e_ji, angvel_i);
     PARTICLEINTERACTION::UTILS::VecScale(v_rel_rolling_ref, r_eff);
 
-    BACI_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
+    FOUR_C_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
 
   TEST_F(DEMContactRollingCoulombTest, RollingContactMomentStick)
@@ -335,7 +335,7 @@ namespace
     double rollingcontactmoment_ref[3] = {
         -0.1119618097864935, 0.09699534835316952, -0.02050722172996138};
 
-    BACI_EXPECT_ITERABLE_NEAR(gap_rolling, gap_rolling_ref, 3, 1.0e-12);
+    FOUR_C_EXPECT_ITERABLE_NEAR(gap_rolling, gap_rolling_ref, 3, 1.0e-12);
 
     for (int i = 0; i < 3; ++i)
       EXPECT_NEAR(rollingcontactmoment[i], rollingcontactmoment_ref[i], 1.0e-12);
@@ -374,7 +374,7 @@ namespace
     double rollingcontactmoment_ref[3] = {
         -0.1119618097864935, 0.09699534835316952, -0.02050722172996138};
 
-    BACI_EXPECT_ITERABLE_NEAR(gap_rolling, gap_rolling_ref, 3, 1.0e-12);
+    FOUR_C_EXPECT_ITERABLE_NEAR(gap_rolling, gap_rolling_ref, 3, 1.0e-12);
 
     for (int i = 0; i < 3; ++i)
       EXPECT_NEAR(rollingcontactmoment[i], rollingcontactmoment_ref[i], 1.0e-12);

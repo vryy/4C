@@ -21,7 +21,7 @@ namespace
     double q[4] = {1.0, 2.0, 3.0, 4.0};
     PARTICLERIGIDBODY::UTILS::QuaternionClear(q);
 
-    BACI_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
 
   TEST(QuaternionTest, Set)
@@ -31,7 +31,7 @@ namespace
 
     PARTICLERIGIDBODY::UTILS::QuaternionSet(q1, q2);
 
-    BACI_EXPECT_ITERABLE_NEAR(q1, q2, 4, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(q1, q2, 4, 1.0e-14);
   }
 
   TEST(QuaternionTest, Invert)
@@ -42,7 +42,7 @@ namespace
 
     PARTICLERIGIDBODY::UTILS::QuaternionInvert(q1, q2);
 
-    BACI_EXPECT_ITERABLE_NEAR(q1, q_ref, 4, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(q1, q_ref, 4, 1.0e-14);
   }
 
   TEST(QuaternionTest, Product)
@@ -61,7 +61,7 @@ namespace
     double q12[4];
     PARTICLERIGIDBODY::UTILS::QuaternionProduct(q12, q2, q1);
 
-    BACI_EXPECT_ITERABLE_NEAR(q12, q12_ref, 4, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(q12, q12_ref, 4, 1.0e-14);
   }
 
   TEST(QuaternionTest, FromAngleZero)
@@ -72,7 +72,7 @@ namespace
     double q[4];
     PARTICLERIGIDBODY::UTILS::QuaternionFromAngle(q, phi);
 
-    BACI_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
 
   TEST(QuaternionTest, FromAngleXAxis)
@@ -83,7 +83,7 @@ namespace
     double q[4];
     PARTICLERIGIDBODY::UTILS::QuaternionFromAngle(q, phi);
 
-    BACI_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
 
   TEST(QuaternionTest, FromAngleYAxis)
@@ -94,7 +94,7 @@ namespace
     double q[4];
     PARTICLERIGIDBODY::UTILS::QuaternionFromAngle(q, phi);
 
-    BACI_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
 
   TEST(QuaternionTest, FromAngleZAxis)
@@ -105,7 +105,7 @@ namespace
     double q[4];
     PARTICLERIGIDBODY::UTILS::QuaternionFromAngle(q, phi);
 
-    BACI_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
 
   TEST(QuaternionTest, FromAngleGeneral)
@@ -117,7 +117,7 @@ namespace
     double q[4];
     PARTICLERIGIDBODY::UTILS::QuaternionFromAngle(q, phi);
 
-    BACI_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
 
   TEST(QuaternionTest, RotateVectorXUnitAroundZAxis)
@@ -130,7 +130,7 @@ namespace
 
     PARTICLERIGIDBODY::UTILS::QuaternionRotateVector(w, q, v);
 
-    BACI_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
   }
 
   TEST(QuaternionTest, RotateVectorZUnitAroundYAxis)
@@ -143,7 +143,7 @@ namespace
 
     PARTICLERIGIDBODY::UTILS::QuaternionRotateVector(w, q, v);
 
-    BACI_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
   }
 
   TEST(QuaternionTest, RotateVectorYUnitAroundXAxis)
@@ -156,7 +156,7 @@ namespace
 
     PARTICLERIGIDBODY::UTILS::QuaternionRotateVector(w, q, v);
 
-    BACI_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
   }
 
   TEST(QuaternionTest, RotateVectorGeneral)
@@ -172,6 +172,6 @@ namespace
 
     PARTICLERIGIDBODY::UTILS::QuaternionRotateVector(w, q, v);
 
-    BACI_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
   }
 }  // namespace

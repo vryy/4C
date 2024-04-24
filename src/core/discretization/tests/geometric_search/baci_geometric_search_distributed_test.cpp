@@ -9,11 +9,13 @@
 
 #include <gtest/gtest.h>
 
+#include "baci_config.hpp"
+
 #include "baci_utils_exceptions.hpp"
 
 #include <array>
 
-#ifdef BACI_WITH_ARBORX
+#ifdef FOUR_C_WITH_ARBORX
 
 #include "baci_discretization_geometric_search_distributed_tree.hpp"
 #include "baci_geometric_search_create_bounding_volumes_test.hpp"

@@ -10,7 +10,7 @@ function(enable_compiler_flag_if_supported _flag)
   # compiler as a define.
   string(REGEX REPLACE "^-" "" _flag_var ${_flag})
   string(REGEX REPLACE "\[-=\]" "_" _flag_var ${_flag_var})
-  baci_add_settings_if_compiles(BACI_COMPILER_HAS_FLAG_${_flag_var} COMPILE_OPTIONS ${_flag})
+  baci_add_settings_if_compiles(FOUR_C_COMPILER_HAS_FLAG_${_flag_var} COMPILE_OPTIONS ${_flag})
 endfunction()
 
 #
@@ -21,7 +21,7 @@ function(enable_linker_flag_if_supported _flag)
   # compiler as a define.
   string(REGEX REPLACE "^-" "" _flag_var ${_flag})
   string(REGEX REPLACE "\[-=\]" "_" _flag_var ${_flag_var})
-  baci_add_settings_if_compiles(BACI_LINKER_HAS_FLAG_${_flag_var} LINK_OPTIONS ${_flag})
+  baci_add_settings_if_compiles(FOUR_C_LINKER_HAS_FLAG_${_flag_var} LINK_OPTIONS ${_flag})
 endfunction()
 
 enable_compiler_flag_if_supported("-Wall")
@@ -54,33 +54,35 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 # If enabled, build all targets with address sanitizer
-option(BACI_WITH_ADDRESS_SANITIZER "Compile BACI with address sanitizer" OFF)
-if(BACI_WITH_ADDRESS_SANITIZER)
+option(FOUR_C_WITH_ADDRESS_SANITIZER "Compile BACI with address sanitizer" OFF)
+if(FOUR_C_WITH_ADDRESS_SANITIZER)
   # We get better stack traces in ASAN with this flag.
   enable_compiler_flag_if_supported("-fno-omit-frame-pointer")
   enable_linker_flag_if_supported("-fno-omit-frame-pointer")
 
   # ASAN requires to check both flags at once.
   baci_add_settings_if_compiles(
-    BACI_COMPILER_LINKER_SUPPORT_ASAN
+    FOUR_C_COMPILER_LINKER_SUPPORT_ASAN
     COMPILE_OPTIONS
     "-fsanitize=address"
     LINK_OPTIONS
     "-fsanitize=address"
     )
 
-  if(NOT BACI_COMPILER_LINKER_SUPPORT_ASAN)
+  if(NOT FOUR_C_COMPILER_LINKER_SUPPORT_ASAN)
     message(
       FATAL_ERROR
-        "Option BACI_WITH_ADDRESS_SANITIZER is ON but the compiler does not support this feature."
+        "Option FOUR_C_WITH_ADDRESS_SANITIZER is ON but the compiler does not support this feature."
       )
   endif()
 endif()
 
-baci_process_global_option(BACI_ENABLE_COVERAGE "Set up a build to gather coverage information" OFF)
-if(BACI_ENABLE_COVERAGE)
+baci_process_global_option(
+  FOUR_C_ENABLE_COVERAGE "Set up a build to gather coverage information" OFF
+  )
+if(FOUR_C_ENABLE_COVERAGE)
   baci_add_settings_if_compiles(
-    BACI_COMPILER_SUPPORT_COVERAGE
+    FOUR_C_COMPILER_SUPPORT_COVERAGE
     COMPILE_OPTIONS
     "-fprofile-arcs"
     "-ftest-coverage"
@@ -89,20 +91,20 @@ if(BACI_ENABLE_COVERAGE)
     "-ftest-coverage"
     )
 
-  if(NOT BACI_COMPILER_SUPPORT_COVERAGE)
+  if(NOT FOUR_C_COMPILER_SUPPORT_COVERAGE)
     message(
       FATAL_ERROR
-        "Option BACI_ENABLE_COVERAGE is ON but the compiler does not support this feature."
+        "Option FOUR_C_ENABLE_COVERAGE is ON but the compiler does not support this feature."
       )
   endif()
 endif()
 
-baci_process_global_option(BACI_DSERROR_DUMP "Uncaught exceptions create a core file" OFF)
-baci_process_global_option(BACI_TRAP_FE "Crash BACI if a nan or inf occurs" ON)
+baci_process_global_option(FOUR_C_DSERROR_DUMP "Uncaught exceptions create a core file" OFF)
+baci_process_global_option(FOUR_C_TRAP_FE "Crash BACI if a nan or inf occurs" ON)
 
 ##
 # Optimization flags
-# These flags are reasonable defaults. Users may amend them by setting BACI_CXX_FLAGS and/or BACI_CXX_FLAGS_<CONFIG>.
+# These flags are reasonable defaults. Users may amend them by setting FOUR_C_CXX_FLAGS and/or FOUR_C_CXX_FLAGS_<CONFIG>.
 # The default way to add more flags via CMAKE_CXX_FLAGS(_<CONFIG>) is also supported but note that these flags are
 # added in front of all other flags and cannot override the defaults set below.
 #
@@ -113,7 +115,7 @@ baci_process_global_option(BACI_TRAP_FE "Crash BACI if a nan or inf occurs" ON)
 # Side note: we use the same flag for a few legacy C sources, which we compile as C++ anyway.
 ##
 
-if(${BACI_BUILD_TYPE_UPPER} MATCHES DEBUG)
+if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES DEBUG)
   set(FOUR_C_ENABLE_ASSERTIONS
       "ON"
       CACHE BOOL "Forced ON due to build type DEBUG" FORCE
@@ -124,14 +126,14 @@ if(${BACI_BUILD_TYPE_UPPER} MATCHES DEBUG)
   target_compile_options(baci_private_compile_interface INTERFACE "-g")
 endif()
 
-if(${BACI_BUILD_TYPE_UPPER} MATCHES RELEASE)
+if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES RELEASE)
   target_compile_options(baci_private_compile_interface INTERFACE "-O3")
   target_link_options(baci_private_compile_interface INTERFACE "-O3")
 
   enable_compiler_flag_if_supported("-funroll-loops")
 endif()
 
-if(${BACI_BUILD_TYPE_UPPER} MATCHES RELWITHDEBINFO)
+if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES RELWITHDEBINFO)
   target_compile_options(baci_private_compile_interface INTERFACE "-O2")
   target_link_options(baci_private_compile_interface INTERFACE "-O2")
 
@@ -151,15 +153,15 @@ baci_process_global_option(
 ##
 
 # Compiler
-separate_arguments(_split UNIX_COMMAND ${BACI_CXX_FLAGS})
+separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_FLAGS})
 target_compile_options(baci_private_compile_interface INTERFACE ${_split})
-separate_arguments(_split UNIX_COMMAND ${BACI_CXX_FLAGS_${BACI_BUILD_TYPE_UPPER}})
+separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_FLAGS_${FOUR_C_BUILD_TYPE_UPPER}})
 target_compile_options(baci_private_compile_interface INTERFACE ${_split})
 
 # Linker
-separate_arguments(_split UNIX_COMMAND ${BACI_CXX_LINKER_FLAGS})
+separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_LINKER_FLAGS})
 target_link_options(baci_private_compile_interface INTERFACE ${_split})
-separate_arguments(_split UNIX_COMMAND ${BACI_CXX_LINKER_FLAGS_${BACI_BUILD_TYPE_UPPER}})
+separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_LINKER_FLAGS_${FOUR_C_BUILD_TYPE_UPPER}})
 target_link_options(baci_private_compile_interface INTERFACE ${_split})
 
 ### Do not add any more flags here! User flags have already been added.

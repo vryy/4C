@@ -27,14 +27,14 @@
 ############################################################
 
 # Load the python virtual environment, which provides clang-format.
-BACI_PYTHON_VENV_ACTIVATION_SCRIPT="utilities/baci-python-venv/bin/activate"
-if [ ! -f $BACI_PYTHON_VENV_ACTIVATION_SCRIPT ]; then
-    echo "You have not created the baci python virtual environment, which is necessary to run all checks. You can use the following command in your source directory:"
+PYTHON_VENV_ACTIVATION_SCRIPT="utilities/baci-python-venv/bin/activate"
+if [ ! -f $PYTHON_VENV_ACTIVATION_SCRIPT ]; then
+    echo "You have not created the python virtual environment, which is necessary to run all checks. You can use the following command in your source directory:"
     echo ""
     echo "./create-baci-python-venv"
     exit 1
 fi
-source $BACI_PYTHON_VENV_ACTIVATION_SCRIPT
+source $PYTHON_VENV_ACTIVATION_SCRIPT
 
 ### Stage 1: Style format check ##############################
 # set the field separator to new line

@@ -16,12 +16,12 @@
 
 #include "baci_linalg_fixedsizematrix.hpp"
 
-#ifdef BACI_WITH_ARBORX
+#ifdef FOUR_C_WITH_ARBORX
 #include <ArborX.hpp>
 #include <ArborX_KDOP.hpp>
 #endif
 
-#ifdef BACI_WITH_ARBORX
+#ifdef FOUR_C_WITH_ARBORX
 namespace ArborX::Details
 {
   /*! \brief  This struct helps to get access to the protected static member directions from ArborX.
@@ -42,7 +42,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CORE::GEOMETRICSEARCH
 {
-#ifdef BACI_WITH_ARBORX
+#ifdef FOUR_C_WITH_ARBORX
   //! kdop_directions is the number of directions defining the possible faces of the k-DOP. In this
   //! case 13 means that we have the (3) Cartesian basis vectors, all vectors pointing to the edges
   //! of a unit cube (6) and all vectors pointing to corners of the unit cube (4). For more details
@@ -62,7 +62,7 @@ namespace CORE::GEOMETRICSEARCH
    */
   struct BoundingVolume
   {
-#ifndef BACI_WITH_ARBORX
+#ifndef FOUR_C_WITH_ARBORX
     /*! \brief This class can not be used without ArborX, add empy methods and a controlled error.
      */
     BoundingVolume()

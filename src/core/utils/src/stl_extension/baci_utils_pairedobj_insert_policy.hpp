@@ -139,7 +139,7 @@ namespace CORE::GEN
 
     void setDebugMode(bool isdebug)
     {
-#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
+#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       _isdebug = isdebug;
 #else
       std::stringstream msg;
@@ -303,7 +303,7 @@ namespace CORE::GEN
      *  @author hiermeier @date 11/17 */
     T& repetitive_access(const Key k, const int rep_count, pairedvector_type& data, size_t& entries)
     {
-#if defined(BACI_DEBUG) || defined(DEBUG_INSERT_POLICY)
+#if defined(FOUR_C_DEBUG) || defined(DEBUG_INSERT_POLICY)
       if (rep_count < -1)
         FOUR_C_THROW(
             "The repetition counter is not allowed to "
@@ -318,7 +318,7 @@ namespace CORE::GEN
         }
         case 0:
         {
-#if defined(BACI_DEBUG) || defined(DEBUG_INSERT_POLICY)
+#if defined(FOUR_C_DEBUG) || defined(DEBUG_INSERT_POLICY)
           if (prev_repcount_ != -1 and prev_repcount_ != rep_count and !isfilled_)
             FOUR_C_THROW(
                 "At the end of each repetition Complete "
@@ -330,7 +330,7 @@ namespace CORE::GEN
         }
         default:
         {
-#if defined(BACI_DEBUG) || defined(DEBUG_INSERT_POLICY)
+#if defined(FOUR_C_DEBUG) || defined(DEBUG_INSERT_POLICY)
           if (prev_repcount_ != rep_count and !isfilled_)
             FOUR_C_THROW(
                 "At the end of each repetition Complete "
@@ -365,7 +365,7 @@ namespace CORE::GEN
       // reset id-index after each single complete call
       id_index_ = 0;
 
-#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
+#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "\nCOMPLETE\n";
@@ -405,7 +405,7 @@ namespace CORE::GEN
       id_map_.reserve(id_map_size_);
       prev_repcount_ = 0;
 
-#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
+#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       if (this->_isdebug)
       {
         std::cout << __FUNCTION__ << std::endl;
@@ -431,7 +431,7 @@ namespace CORE::GEN
         ++entries;
       }
 
-#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
+#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "repetition count  = " << prev_repcount_ << "\n";
@@ -448,7 +448,7 @@ namespace CORE::GEN
     T& subsequent_access(const Key k, pairedvector_type& data, size_t& entries)
     {
       pair_type& curr_pair = data[get_id()];
-#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
+#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "index #" << id_index_ << std::endl;
@@ -707,7 +707,7 @@ namespace CORE::GEN
       if (non_unique_vec_.size() < merged_entries + 1)
         non_unique_vec_.resize(merged_entries + 1, pair_type());
 
-#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
+#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "unique_vec:\n";
@@ -720,7 +720,7 @@ namespace CORE::GEN
       std::copy(unique_vec.begin(), unique_vec.begin() + unique_entries,
           non_unique_vec_.begin() + non_unique_entries_);
 
-#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
+#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "merged _non_unique_vec + unique_vec:\n";
@@ -731,7 +731,7 @@ namespace CORE::GEN
       // group the entries
       const size_t num_grps = groupData(non_unique_vec_.begin(), merged_entries);
 
-#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
+#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "sorted merged _non_unique_vec + unique_vec:\n";
@@ -739,7 +739,7 @@ namespace CORE::GEN
       }
 #endif
 
-#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
+#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "number of groups = " << num_grps << "\n";
@@ -758,7 +758,7 @@ namespace CORE::GEN
       if (corrected_length < unique_entries)
         std::fill(last_result, unique_vec.begin() + unique_entries, pair_type());
 
-#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
+#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
       if (this->_isdebug)
       {
         std::cout << "corrected num_unique = " << corrected_length << "\n";

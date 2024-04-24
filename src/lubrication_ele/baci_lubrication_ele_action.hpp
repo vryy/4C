@@ -44,7 +44,7 @@ namespace LUBRICATION
   /*--------------------------------------------------------------------------*/
   enum BoundaryAction
   {
-    // new action                       //PRE_BACI_CLEANING NAME:
+    // new action
     bd_calc_weak_Dirichlet,  // WeakDirichlet,
     bd_calc_Neumann,         // n/a
   };                         // enum LUBRICATION::BoundaryAction

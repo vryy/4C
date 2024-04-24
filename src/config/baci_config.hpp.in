@@ -9,15 +9,15 @@
 #define FOUR_C_CONFIG_HPP
 
 // General definitions that are used throughout the project.
-#define BACI_VERSION_MAJOR @baci_VERSION_MAJOR@
-#define BACI_VERSION_MINOR @baci_VERSION_MINOR@
+#define FOUR_C_VERSION_MAJOR @baci_VERSION_MAJOR@
+#define FOUR_C_VERSION_MINOR @baci_VERSION_MINOR@
 
 // This flag guards assertions and special checks that are often expensive and should only run when debugging.
 #cmakedefine FOUR_C_ENABLE_ASSERTIONS
 
-#cmakedefine BACI_DSERROR_DUMP
+#cmakedefine FOUR_C_DSERROR_DUMP
 
-#cmakedefine BACI_TRAP_FE
+#cmakedefine FOUR_C_TRAP_FE
 
 // The project namespace is added via the following two macros. This design allows
 // to treat the namespace as invisible within the project.
@@ -27,7 +27,7 @@
 /// Dependencies
 /// The following flags are set when configuring the project with CMake.
 
-@BACI_DEFINES_FOR_EXTERNAL_DEPENDENCIES@
+@FOUR_C_DEFINES_FOR_EXTERNAL_DEPENDENCIES@
 
 // Centrally include MPI which is a core dependency that needs configuration.
 #include <mpi.h>  // IWYU pragma: export

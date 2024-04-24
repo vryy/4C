@@ -53,7 +53,7 @@ namespace TESTING::INTERNAL
    * same underlying data types. The signature is mandated by GoogleTest's EXPECT_PRED_FORMAT4
    * macro.
    *
-   * @note This function is not intended to be used directly. Use BACI_EXPECT_ITERABLE_NEAR.
+   * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_ITERABLE_NEAR.
    */
   template <typename Iterator1, typename Iterator2>
   inline ::testing::AssertionResult AssertNear(const char* vec1Expr, const char* vec2Expr,
@@ -88,7 +88,7 @@ namespace TESTING::INTERNAL
    * Compare two std::vector<T> objects for double equality up to a tolerance. The signature is
    * mandated by GoogleTest's EXPECT_PRED_FORMAT3 macro.
    *
-   * @note This function is not intended to be used directly. Use BACI_EXPECT_NEAR.
+   * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
   template <typename T>
   inline ::testing::AssertionResult AssertNear(const char* vec1Expr,
@@ -114,7 +114,7 @@ namespace TESTING::INTERNAL
    * Compare two CORE::LINALG::Matrix objects for double equality up to a tolerance. The signature
    * is mandated by GoogleTest's EXPECT_PRED_FORMAT3 macro.
    *
-   * @note This function is not intended to be used directly. Use BACI_EXPECT_NEAR.
+   * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
   template <unsigned int M, unsigned int N, typename T>
   inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
@@ -152,7 +152,7 @@ namespace TESTING::INTERNAL
    * entries in std::array row-major. The signature is mandated by GoogleTest's EXPECT_PRED_FORMAT3
    * macro.
    *
-   * @note This function is not intended to be used directly. Use BACI_EXPECT_NEAR.
+   * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
   template <unsigned int M, unsigned int N, typename T>
   inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
@@ -190,7 +190,7 @@ namespace TESTING::INTERNAL
    * Compare two CORE::LINALG::SerialDenseMatrix objects for double equality up to a tolerance. The
    * signature is mandated by GoogleTest's EXPECT_PRED_FORMAT3 macro.
    *
-   * @note This function is not intended to be used directly. Use BACI_EXPECT_NEAR.
+   * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
   inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
       const char* mat2Expr,  // NOLINT
@@ -236,7 +236,7 @@ namespace TESTING::INTERNAL
    * Compare two Teuchos::SerialDenseMatrix objects for double equality up to a tolerance. The
    * signature is mandated by GoogleTest's EXPECT_PRED_FORMAT3 macro.
    *
-   * @note This function is not intended to be used directly. Use BACI_EXPECT_NEAR.
+   * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
   template <typename T>
   inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
@@ -291,10 +291,10 @@ namespace TESTING::INTERNAL
  * - CORE::LINALG::SerialDenseMatrix
  *
  * @note Implementation details: this and similar macros are defined to avoid writing asserts in the
- * unexpressive EXPECT_PRED_FORMATn syntax by gtest. They are all prefixed with `BACI_` to easily
+ * unexpressive EXPECT_PRED_FORMATn syntax by gtest. They are all prefixed with `FOUR_C_` to easily
  * distinguish them from gtest asserts.
  */
-#define BACI_EXPECT_NEAR(actual, expected, tolerance) \
+#define FOUR_C_EXPECT_NEAR(actual, expected, tolerance) \
   EXPECT_PRED_FORMAT3(TESTING::INTERNAL::AssertNear, actual, expected, tolerance)
 
 /**
@@ -307,16 +307,16 @@ namespace TESTING::INTERNAL
  * When testing containers you need to pass an iterator e.g. my_vector.begin()
  *
  * @note Implementation details: this and similar macros are defined to avoid writing asserts in the
- * unexpressive EXPECT_PRED_FORMATn syntax by gtest. They are all prefixed with `BACI_` to easily
+ * unexpressive EXPECT_PRED_FORMATn syntax by gtest. They are all prefixed with `FOUR_C_` to easily
  * distinguish them from gtest asserts.
  */
-#define BACI_EXPECT_ITERABLE_NEAR(actual, expected, length, tolerance) \
+#define FOUR_C_EXPECT_ITERABLE_NEAR(actual, expected, length, tolerance) \
   EXPECT_PRED_FORMAT4(TESTING::INTERNAL::AssertNear, actual, expected, length, tolerance)
 
 /*!
  * Extension of EXPECT_THROW which also checks for a substring in the what() expression.
  */
-#define BACI_EXPECT_THROW_WITH_MESSAGE(statement, expectedException, messageSubString)          \
+#define FOUR_C_EXPECT_THROW_WITH_MESSAGE(statement, expectedException, messageSubString)        \
   {                                                                                             \
     std::function<void(void)> find_the_statement_below(                                         \
         [&]()                                                                                   \

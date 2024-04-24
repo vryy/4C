@@ -34,7 +34,7 @@ namespace
     prinv_reference(1) = 4.3085999999999984;
     prinv_reference(2) = 1.7143620000000002;
 
-    BACI_EXPECT_NEAR(prinv, prinv_reference, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(prinv, prinv_reference, 1.0e-10);
   }
 
   TEST(MaterialServiceTest, TestAddDerivInvABInvBProduct)
@@ -99,7 +99,7 @@ namespace
     Result_reference(5, 4) = -0.6985;
     Result_reference(5, 5) = -0.95275;
 
-    BACI_EXPECT_NEAR(Result, Result_reference, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(Result, Result_reference, 1.0e-10);
   }
 
 }  // namespace

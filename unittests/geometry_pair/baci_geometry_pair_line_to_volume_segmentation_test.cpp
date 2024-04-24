@@ -441,8 +441,8 @@ namespace
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Create and evaluate the geometry pairs.
-    BACI_EXPECT_THROW_WITH_MESSAGE(CreateEvaluatePairs(geometry_pairs, q_line_elements,
-                                       line_ref_lengths, q_volume_elements, segments_vector),
+    FOUR_C_EXPECT_THROW_WITH_MESSAGE(CreateEvaluatePairs(geometry_pairs, q_line_elements,
+                                         line_ref_lengths, q_volume_elements, segments_vector),
         CORE::Exception, "Error when projecting the Gauss points.");
   }
 }  // namespace

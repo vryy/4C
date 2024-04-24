@@ -13,7 +13,7 @@
 
 #include "baci_utils_exceptions.hpp"
 
-#ifdef BACI_WITH_BACKTRACE
+#ifdef FOUR_C_WITH_BACKTRACE
 #define BOOST_STACKTRACE_USE_BACKTRACE
 #endif
 

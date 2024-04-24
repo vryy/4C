@@ -369,7 +369,7 @@ namespace
 
     multiplicative_split_defgrad_->EvaluateAdditionalCmat(&FM_, iCV_ref_, dSdiFin_ref_, cMatAdd);
 
-    BACI_EXPECT_NEAR(cMatAdd, cMatAdd_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(cMatAdd, cMatAdd_ref, 1.0e-10);
   }
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateCauchyNDirAndDerivatives)
@@ -419,9 +419,9 @@ namespace
     d_cauchyndir_dF_ref(8) = -3.361951777558e+01;
 
     EXPECT_NEAR(cauchy_n_dir, cauchy_n_dir_ref, 1.0e-10);
-    BACI_EXPECT_NEAR(d_cauchyndir_dn, d_cauchyndir_dn_ref, 1.0e-10);
-    BACI_EXPECT_NEAR(d_cauchyndir_ddir, d_cauchyndir_ddir_ref, 1.0e-10);
-    BACI_EXPECT_NEAR(d_cauchyndir_dF, d_cauchyndir_dF_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(d_cauchyndir_dn, d_cauchyndir_dn_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(d_cauchyndir_ddir, d_cauchyndir_ddir_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(d_cauchyndir_dF, d_cauchyndir_dF_ref, 1.0e-10);
   }
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluatedSdiFin)
@@ -431,7 +431,7 @@ namespace
         iCinV_ref_, CiFin9x1_ref_, CiFinCe9x1_ref_, iCinCiCinV_ref_, CiFiniCe9x1_ref_, iCV_ref_,
         iFinCeM_ref_, detFin_, dSdiFin);
 
-    BACI_EXPECT_NEAR(dSdiFin, dSdiFin_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(dSdiFin, dSdiFin_ref_, 1.0e-10);
   }
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateInvariantDerivatives)
@@ -444,8 +444,8 @@ namespace
     multiplicative_split_defgrad_->EvaluateInvariantDerivatives(
         prinv_ref_, gp, eleGID, dPIe, ddPIIe);
 
-    BACI_EXPECT_NEAR(dPIe, dPIe_ref_, 1.0e-10);
-    BACI_EXPECT_NEAR(ddPIIe, ddPIIe_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(dPIe, dPIe_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(ddPIIe, ddPIIe_ref_, 1.0e-10);
   }
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateKinQuantElast)
@@ -464,15 +464,15 @@ namespace
     multiplicative_split_defgrad_->EvaluateKinQuantElast(&FM_, iFinM_, iCinV, iCinCiCinV, iCV,
         iCinCM, iFinCeM, CiFin9x1, CiFinCe9x1, CiFiniCe9x1, prinv);
 
-    BACI_EXPECT_NEAR(iCinV, iCinV_ref_, 1.0e-10);
-    BACI_EXPECT_NEAR(iCinCiCinV, iCinCiCinV_ref_, 1.0e-10);
-    BACI_EXPECT_NEAR(iCV, iCV_ref_, 1.0e-10);
-    BACI_EXPECT_NEAR(iCinCM, iCinCM_ref_, 1.0e-10);
-    BACI_EXPECT_NEAR(iFinCeM, iFinCeM_ref_, 1.0e-10);
-    BACI_EXPECT_NEAR(CiFin9x1, CiFin9x1_ref_, 1.0e-10);
-    BACI_EXPECT_NEAR(CiFinCe9x1, CiFinCe9x1_ref_, 1.0e-10);
-    BACI_EXPECT_NEAR(CiFiniCe9x1, CiFiniCe9x1_ref_, 1.0e-10);
-    BACI_EXPECT_NEAR(prinv, prinv_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(iCinV, iCinV_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(iCinCiCinV, iCinCiCinV_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(iCV, iCV_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(iCinCM, iCinCM_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(iFinCeM, iFinCeM_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(CiFin9x1, CiFin9x1_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(CiFinCe9x1, CiFinCe9x1_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(CiFiniCe9x1, CiFiniCe9x1_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(prinv, prinv_ref_, 1.0e-10);
   }
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateLinearizationOD)
@@ -498,7 +498,7 @@ namespace
     DFDx_ref(7) = 2.007777061162e-02;
     DFDx_ref(8) = 2.409332473394e-02;
 
-    BACI_EXPECT_NEAR(DFDx, DFDx_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(DFDx, DFDx_ref, 1.0e-10);
   }
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateOdStiffMat)
@@ -520,7 +520,7 @@ namespace
 
     multiplicative_split_defgrad_->EvaluateODStiffMat(source, &FM_, dSdiFin_ref_, dSdx);
 
-    BACI_EXPECT_NEAR(dSdx, dSdx_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(dSdx, dSdx_ref, 1.0e-10);
   }
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateStressCmatIso)
@@ -580,7 +580,7 @@ namespace
     multiplicative_split_defgrad_->EvaluateStressCmatIso(
         iCV_ref_, iCinV_ref_, iCinCiCinV_ref_, gamma_ref_, delta_ref_, detFin_, S, cMatIso);
 
-    BACI_EXPECT_NEAR(S, S_ref, 1.0e-10);
-    BACI_EXPECT_NEAR(cMatIso, cMatIso_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(S, S_ref, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(cMatIso, cMatIso_ref, 1.0e-10);
   }
 }  // namespace

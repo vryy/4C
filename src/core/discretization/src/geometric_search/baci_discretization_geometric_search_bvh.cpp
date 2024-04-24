@@ -19,7 +19,7 @@
 #include <Epetra_MpiComm.h>
 #include <Teuchos_TimeMonitor.hpp>
 
-#ifdef BACI_WITH_ARBORX
+#ifdef FOUR_C_WITH_ARBORX
 #include <ArborX.hpp>
 #endif
 
@@ -32,7 +32,7 @@ namespace CORE::GEOMETRICSEARCH
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
       const IO::Verbositylevel verbosity)
   {
-#ifndef BACI_WITH_ARBORX
+#ifndef FOUR_C_WITH_ARBORX
     FOUR_C_THROW(
         "CORE::GEOMETRICSEARCH::CollisionSearch can only be used with ArborX."
         "To use it, enable ArborX during the configure process.");

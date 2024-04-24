@@ -17,7 +17,7 @@ function
 #include "baci_mat_par_bundle.hpp"
 #include "baci_utils_function.hpp"
 
-#ifdef BACI_WITH_MIRCO
+#ifdef FOUR_C_WITH_MIRCO
 
 namespace
 {

@@ -23,7 +23,7 @@ Technical Report 034, MEMS, Rice University (2002) 16.
 #include <cmath>
 #include <complex>
 
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
 #include <fftw3.h>
 #endif
 FOUR_C_NAMESPACE_OPEN
@@ -205,7 +205,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbInitialField::CalculateInitialField()
   {
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
 
     // set and initialize working arrays
     Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
@@ -465,7 +465,7 @@ namespace FLD
     // fast Fourier transformation using FFTW
     //----------------------------------------
 
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
         (reinterpret_cast<fftw_complex*>(u1_hat_fftw->data())), u1->data(), FFTW_ESTIMATE);
@@ -892,7 +892,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   void HomIsoTurbInitialFieldHDG::CalculateInitialField()
   {
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
 
     // set and initialize working arrays
     Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
@@ -1152,7 +1152,7 @@ namespace FLD
     // fast Fourier transformation using FFTW
     //----------------------------------------
 
-#ifdef BACI_WITH_FFTW
+#ifdef FOUR_C_WITH_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
         (reinterpret_cast<fftw_complex*>(u1_hat_fftw->data())), u1->data(), FFTW_ESTIMATE);

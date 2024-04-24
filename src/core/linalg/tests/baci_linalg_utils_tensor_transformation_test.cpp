@@ -95,20 +95,20 @@ namespace
   {
     CORE::LINALG::Matrix<3, 3> tmp;
     CORE::LINALG::TENSOR::TensorRotation(rotationMatrix1_, tens1_, tmp);
-    BACI_EXPECT_NEAR(tmp, rotatedTens1_, 1e-9);
+    FOUR_C_EXPECT_NEAR(tmp, rotatedTens1_, 1e-9);
 
     CORE::LINALG::TENSOR::TensorRotation(rotationMatrix2_, tens2_, tmp);
-    BACI_EXPECT_NEAR(tmp, rotatedTens2_, 1e-9);
+    FOUR_C_EXPECT_NEAR(tmp, rotatedTens2_, 1e-9);
   }
 
   TEST_F(TensorTransformationTest, InverseTensorRotation)
   {
     CORE::LINALG::Matrix<3, 3> tmp;
     CORE::LINALG::TENSOR::InverseTensorRotation(rotationMatrix1_, rotatedTens1_, tmp);
-    BACI_EXPECT_NEAR(tmp, tens1_, 1e-9);
+    FOUR_C_EXPECT_NEAR(tmp, tens1_, 1e-9);
 
     CORE::LINALG::TENSOR::InverseTensorRotation(rotationMatrix2_, rotatedTens2_, tmp);
-    BACI_EXPECT_NEAR(tmp, tens2_, 1e-9);
+    FOUR_C_EXPECT_NEAR(tmp, tens2_, 1e-9);
   }
 }  // namespace
 FOUR_C_NAMESPACE_CLOSE

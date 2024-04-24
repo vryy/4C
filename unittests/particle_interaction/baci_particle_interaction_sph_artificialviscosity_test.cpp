@@ -91,7 +91,7 @@ namespace
         dWdrij, dWdrji, dens_ij, h_ij, c_ij, abs_rij, e_ij, acc_i, acc_j);
 
     // compare results
-    BACI_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
-    BACI_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_i, acc_i_ref, 3, 1.0e-14);
+    FOUR_C_EXPECT_ITERABLE_NEAR(acc_j, acc_j_ref, 3, 1.0e-14);
   }
 }  // namespace

@@ -408,7 +408,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_DEBUG
   FOUR_C_ASSERT(xf_c_comm_ != Teuchos::null,
       "UpdateConfigurationMap_GP_Contact but no Xfluid Contact Communicator assigned!");
 #endif
