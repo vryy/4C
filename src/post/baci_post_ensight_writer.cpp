@@ -26,7 +26,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 //! 6 Surfaces of a Hex27 element with 9 nodes per surface
-const int Hex20_BaciToEnsightGold[20] = {
+const int Hex20_FourCToEnsightGold[20] = {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 12, 13, 14, 15};
 
 /*----------------------------------------------------------------------*/
@@ -458,9 +458,9 @@ void EnsightWriter::WriteCells(std::ofstream& geofile, const Teuchos::RCP<DRT::D
             for (int inode = 0; inode < numnp; ++inode)
             {
               if (myrank_ == 0)  // proc0 can write its elements immediately
-                Write(geofile, proc0map->LID(nodes[Hex20_BaciToEnsightGold[inode]]->Id()) + 1);
+                Write(geofile, proc0map->LID(nodes[Hex20_FourCToEnsightGold[inode]]->Id()) + 1);
               else  // elements on other procs have to store their global node ids
-                nodevector.push_back(nodes[Hex20_BaciToEnsightGold[inode]]->Id());
+                nodevector.push_back(nodes[Hex20_FourCToEnsightGold[inode]]->Id());
             }
             break;
           }

@@ -120,9 +120,9 @@ void PostVtuWriter::WriteGeo()
     else
     {
       celltypes.push_back(
-          DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).first);
+          DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).first);
       const std::vector<int>& numbering =
-          DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
+          DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
       const DRT::Node* const* nodes = ele->Nodes();
       for (int n = 0; n < ele->NumNode(); ++n)
         for (int d = 0; d < 3; ++d) coordinates.push_back(nodes[numbering[n]]->X()[d]);
@@ -304,7 +304,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     else
     {
       const std::vector<int>& numbering =
-          DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
+          DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
 
       for (int n = 0; n < ele->NumNode(); ++n)
       {
@@ -404,7 +404,7 @@ void PostVtuWriter::WriteNodalResultStep(std::ofstream& file,
     else
     {
       const std::vector<int>& numbering =
-          DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
+          DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
       for (int n = 0; n < ele->NumNode(); ++n)
       {
         for (int idf = 0; idf < numdf; ++idf)
@@ -586,11 +586,12 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
   const CORE::FE::CellType mapped_dis_type = MapNurbsDisTypeToLagrangeDisType(nurbs_type);
 
   const std::vector<int>& numbering =
-      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).second;
+      DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
 
   Teuchos::RCP<const DRT::Discretization> dis = this->GetField()->discretization();
 
-  celltypes.push_back(DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).first);
+  celltypes.push_back(
+      DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).first);
 
   CORE::LINALG::Matrix<NUMNODES, 1> weights;
   const DRT::Node* const* nodes = ele->Nodes();
@@ -758,7 +759,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
   const CORE::FE::CellType mapped_dis_type = MapNurbsDisTypeToLagrangeDisType(nurbs_type);
 
   const std::vector<int>& numbering =
-      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).second;
+      DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
 
   CORE::LINALG::Matrix<NUMNODES, 1> weights;
   const DRT::Node* const* nodes = ele->Nodes();
@@ -946,7 +947,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
   const CORE::FE::CellType mapped_dis_type = MapNurbsDisTypeToLagrangeDisType(nurbs_type);
 
   const std::vector<int>& numbering =
-      DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).second;
+      DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(mapped_dis_type).second;
 
   CORE::LINALG::Matrix<NUMNODES, 1> weights;
   const DRT::Node* const* nodes = ele->Nodes();

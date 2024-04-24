@@ -120,9 +120,9 @@ void PostVtuWriterNode::WriteGeo()
     else
     {
       celltypes.push_back(
-          DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).first);
+          DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).first);
       const std::vector<int>& numbering =
-          DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
+          DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
       const DRT::Node* const* nodes = ele->Nodes();
       for (int n = 0; n < ele->NumNode(); ++n)
       {

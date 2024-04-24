@@ -444,7 +444,7 @@ void MAT::AaAneohookeStopro::VisNames(std::map<std::string, int>& names)
   names[fiber] = 1;  // scalar
   fiber = "youngs";
   names[fiber] = 1;  // scalar
-  fiber = "BaciEleId";
+  fiber = "FourCEleId";
   names[fiber] = 1;  // scalar
 }
 
@@ -462,7 +462,7 @@ bool MAT::AaAneohookeStopro::VisData(
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     data[0] = Youngs();
   }
-  else if (name == "BaciEleId")
+  else if (name == "FourCEleId")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     data[0] = eleID;
