@@ -32,17 +32,17 @@ namespace CORE::LINEAR_SOLVER
      are many possible preconditioners. A unified framework simplifies the
      solution process.
   */
-  class PreconditionerType
+  class PreconditionerTypeBase
   {
    public:
     /*!
        No setup is done upon construction, only the preconditioner object is
        created.
     */
-    PreconditionerType() = default;
+    PreconditionerTypeBase() = default;
 
     /// virtual destruction
-    virtual ~PreconditionerType() = default;
+    virtual ~PreconditionerTypeBase() = default;
 
     /// linear problem created (managed) by this preconditioner
     /*!

@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::InfNormPreconditioner::InfNormPreconditioner(
-    Teuchos::RCP<PreconditionerType> preconditioner)
+    Teuchos::RCP<PreconditionerTypeBase> preconditioner)
     : preconditioner_(preconditioner)
 {
 }
@@ -67,7 +67,7 @@ void CORE::LINEAR_SOLVER::InfNormPreconditioner::Finish(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::SymDiagPreconditioner::SymDiagPreconditioner(
-    Teuchos::RCP<PreconditionerType> preconditioner)
+    Teuchos::RCP<PreconditionerTypeBase> preconditioner)
     : preconditioner_(preconditioner)
 {
 }

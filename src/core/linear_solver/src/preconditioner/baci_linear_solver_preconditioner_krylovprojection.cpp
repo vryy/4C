@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner::KrylovProjectionPreconditioner(
-    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerType> preconditioner,
+    Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase> preconditioner,
     Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
     : preconditioner_(preconditioner), projector_(projector)
 {

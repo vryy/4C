@@ -33,7 +33,7 @@ namespace CORE::LINALG
 namespace CORE::LINEAR_SOLVER
 {
   template <class MatrixType, class VectorType>
-  class SolverType;
+  class SolverTypeBase;
 }
 
 namespace CORE::LINALG
@@ -298,7 +298,7 @@ namespace CORE::LINALG
     Teuchos::RCP<Teuchos::ParameterList> params_;
 
     /// internal solver strategy
-    Teuchos::RCP<CORE::LINEAR_SOLVER::SolverType<Epetra_Operator, Epetra_MultiVector>> solver_;
+    Teuchos::RCP<CORE::LINEAR_SOLVER::SolverTypeBase<Epetra_Operator, Epetra_MultiVector>> solver_;
 
    private:
     //! don't want = operator

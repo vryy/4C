@@ -21,11 +21,11 @@ namespace CORE::LINEAR_SOLVER
 {
   /// linear solver type base class
   template <class MatrixType, class VectorType>
-  class SolverType
+  class SolverTypeBase
   {
    public:
     //! Destructor
-    virtual ~SolverType() = default;
+    virtual ~SolverTypeBase() = default;
 
     /*! \brief Setup the solver object
      *

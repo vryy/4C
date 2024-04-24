@@ -24,10 +24,10 @@ namespace CORE::LINEAR_SOLVER
    Modifies the underlying matrix and needs to unscale the result
    afterwards. Can be combined with any single-matrix preconditioner.
   */
-  class InfNormPreconditioner : public PreconditionerType
+  class InfNormPreconditioner : public PreconditionerTypeBase
   {
    public:
-    InfNormPreconditioner(Teuchos::RCP<PreconditionerType> preconditioner);
+    InfNormPreconditioner(Teuchos::RCP<PreconditionerTypeBase> preconditioner);
 
     Epetra_LinearProblem& LinearProblem() override { return preconditioner_->LinearProblem(); }
 
@@ -46,7 +46,7 @@ namespace CORE::LINEAR_SOLVER
     std::string getParameterListName() const override { return "unknown"; }
 
    private:
-    Teuchos::RCP<PreconditionerType> preconditioner_;
+    Teuchos::RCP<PreconditionerTypeBase> preconditioner_;
     Teuchos::RCP<Epetra_Vector> rowsum_;
     Teuchos::RCP<Epetra_Vector> colsum_;
   };
@@ -56,10 +56,10 @@ namespace CORE::LINEAR_SOLVER
    Modifies the underlying matrix and needs to unscale the result
    afterwards. Can be combined with any single-matrix preconditioner.
   */
-  class SymDiagPreconditioner : public PreconditionerType
+  class SymDiagPreconditioner : public PreconditionerTypeBase
   {
    public:
-    SymDiagPreconditioner(Teuchos::RCP<PreconditionerType> preconditioner);
+    SymDiagPreconditioner(Teuchos::RCP<PreconditionerTypeBase> preconditioner);
 
     Epetra_LinearProblem& LinearProblem() override { return preconditioner_->LinearProblem(); }
 
@@ -79,7 +79,7 @@ namespace CORE::LINEAR_SOLVER
 
    private:
     /// embedded preconditioner
-    Teuchos::RCP<LINEAR_SOLVER::PreconditionerType> preconditioner_;
+    Teuchos::RCP<LINEAR_SOLVER::PreconditionerTypeBase> preconditioner_;
 
     /// matrix diagonal
     Teuchos::RCP<Epetra_Vector> diag_;

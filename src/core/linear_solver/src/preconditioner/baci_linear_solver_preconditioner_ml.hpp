@@ -22,7 +22,7 @@ namespace CORE::LINEAR_SOLVER
   /*!
     Set of single-matrix algebraic multi-grid preconditioners.
    */
-  class MLPreconditioner : public PreconditionerType
+  class MLPreconditioner : public PreconditionerTypeBase
   {
    public:
     MLPreconditioner(Teuchos::ParameterList& mllist);

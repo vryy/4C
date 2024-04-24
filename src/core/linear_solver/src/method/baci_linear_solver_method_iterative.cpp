@@ -195,14 +195,14 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CheckReuseSta
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerType>
+Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase>
 CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::CreatePreconditioner(
     Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
     Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1.1)   CreatePreconditioner");
 
-  Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerType> preconditioner;
+  Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase> preconditioner;
 
   if (isCrsMatrix)
   {

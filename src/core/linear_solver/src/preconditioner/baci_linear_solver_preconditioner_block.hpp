@@ -23,7 +23,7 @@ namespace CORE::LINEAR_SOLVER
     Block preconditioners assume the Epetra_Operator to be a
     CORE::LINALG::BlockSparseMatrix.
    */
-  class SimplePreconditioner : public PreconditionerType
+  class SimplePreconditioner : public PreconditionerTypeBase
   {
    public:
     SimplePreconditioner(Teuchos::ParameterList& params);
@@ -46,7 +46,7 @@ namespace CORE::LINEAR_SOLVER
   /*!
     2x2 block preconditioner
    */
-  class BGSPreconditioner : public PreconditionerType
+  class BGSPreconditioner : public PreconditionerTypeBase
   {
    public:
     BGSPreconditioner(Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist);
