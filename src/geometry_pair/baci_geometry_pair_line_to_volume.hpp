@@ -152,6 +152,19 @@ namespace GEOMETRYPAIR
     //! Link to the geometry evaluation container.
     Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> line_to_3d_evaluation_data_;
   };
+
+  /**
+   * \brief Project a point in space to the volume element.
+   * @param point (in) Point in space.
+   * @param element_data_volume (in) Degrees of freedom for the volume.
+   * @param xi (in/out) Parameter coordinates in the volume. The given values are the start values
+   * for the Newton iteration.
+   * @param projection_result (out) Flag for the result of the projection.
+   */
+  template <typename scalar_type, typename volume>
+  void ProjectPointToVolume(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+      const ElementData<volume, scalar_type>& element_data_volume,
+      CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result);
 }  // namespace GEOMETRYPAIR
 
 FOUR_C_NAMESPACE_CLOSE
