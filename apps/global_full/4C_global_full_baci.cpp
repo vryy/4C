@@ -188,10 +188,10 @@ namespace
         exception_string = "FE_INEXACT";
         break;
       default:
-        FOUR_C_THROW("Baci produced an unknown floating point exception.");
+        FOUR_C_THROW("4C produced an unknown floating point exception.");
         break;
     }
-    FOUR_C_THROW("Baci produced a %s floating point exception.", exception_string.c_str());
+    FOUR_C_THROW("4C produced a %s floating point exception.", exception_string.c_str());
   }
 #endif
 
@@ -202,7 +202,7 @@ namespace
 void ntam(int argc, char *argv[]);
 
 /**
- * @brief The main function of the central BACI executable.
+ * @brief The main function of the central 4C executable.
  *
  * This function:
  * - sets up and finalizes MPI and Kokkos.

@@ -6,7 +6,7 @@
 
 \level 1
 
-Validate a given BACI input file (after all preprocessing steps)
+Validate a given 4C input file (after all preprocessing steps)
 
 */
 /*----------------------------------------------------------------------*/
@@ -30,9 +30,6 @@ FOUR_C_NAMESPACE_OPEN
 void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile)
 {
   using namespace FourC;
-
-  // read and check the provided header file
-  // std::cout << "checking BACI input file       --> "<<datfile<< std::endl;
 
   // access our problem instance
   GLOBAL::Problem* problem = GLOBAL::Problem::Instance();

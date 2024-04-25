@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
   printf(
       "\n"
       "**********************************************\n"
-      "*                   BACI                     *\n"
+      "*                    4C                      *\n"
       "*          Reference files creator           *\n"
       "*              for ReadTheDocs               *\n"
       "**********************************************\n\n");

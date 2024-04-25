@@ -6,7 +6,7 @@
 
 \level 1
 
-Validate a given BACI input file (after all preprocessing steps)
+Validate a given 4C input file (after all preprocessing steps)
 
 */
 

@@ -47,7 +47,7 @@ namespace EXODUS
     invalid
   };
 
-  //! this is what fully defines a baci element
+  //! this is what fully defines a 4C element
   struct ElemDef
   {
     int id;             ///< refering to mesh_entity id of eb,ns,ss
@@ -57,7 +57,7 @@ namespace EXODUS
     std::string ename;  ///< FLUID,SOLIDSH8,etc
   };
 
-  //! this is what fully defines a baci condition
+  //! this is what fully defines a 4C condition
   struct CondDef
   {
     int id;            ///< refering to mesh_entity id of eb,ns,ss

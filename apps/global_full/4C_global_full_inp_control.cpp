@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Global control routine of baci
+\brief Global control routine of 4C
 
 \level 0
 
