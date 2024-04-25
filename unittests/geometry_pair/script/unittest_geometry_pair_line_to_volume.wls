@@ -29,7 +29,7 @@ xBeam:={
 (*Set up the beam and calculate the intersections with the y-z plane*)
 
 
-(*The element length is taken from the baci simulation*)
+(*The element length is taken from the 4C simulation*)
 replaceBeamRef:={
     beamLength->0.58637598747637864616,
     posBx[0][1]->0.485,

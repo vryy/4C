@@ -13,7 +13,7 @@
 (*Matrix to CORE::LINALG::TMatrix*)
 
 
-matrixToBaci[var_,name_]:=Module[{allStringsWithZeros, stringList},  
+matrixToFourC[var_,name_]:=Module[{allStringsWithZeros, stringList},  
   allStringsWithZeros = Table[
     If[var[[i,j]]==0, 0,
         ToString[StringForm["``(``,``)=``;",name,i-1,j-1,NumberForm[N[var[[i,j]]],16,ScientificNotationThreshold->{-20,20}]]]
@@ -23,7 +23,7 @@ matrixToBaci[var_,name_]:=Module[{allStringsWithZeros, stringList},
   stringList=DeleteCases[Flatten[allStringsWithZeros],0];
   StringRiffle[stringList,"\n"]
 ]
-vectorToBaci[var_,name_]:=Module[{allStringsWithZeros, stringList},  
+vectorToFourC[var_,name_]:=Module[{allStringsWithZeros, stringList},  
   allStringsWithZeros = Table[
     If[var[[i]]==0, 0,
         ToString[StringForm["``(``)=``;",name,i-1,NumberForm[N[var[[i]]],16,ScientificNotationThreshold->{-20,20}]]]
@@ -79,7 +79,7 @@ xBeam:={
 (*Reference position of beam.*)
 
 
-(*The element length is taken from the baci simulation*)
+(*The element length is taken from the 4C simulation*)
 replaceBeamRef:={
     beamLength->0.6192043571449604711,
     posBx[0][1]->0.15,
@@ -172,13 +172,13 @@ kappa=DeleteCases[Flatten[Transpose[D[int\[Lambda],{qLambda}]]],0];
 (*Output the results.*)
 StringRiffle[{
   "// Positional DOFs of the solid.",
-  vectorToBaci[replaceSolidRef[[All,2]],"q_solid.element_position_"],
+  vectorToFourC[replaceSolidRef[[All,2]],"q_solid.element_position_"],
   "\n// Results for D.",
-  matrixToBaci[DD,"result_local_D"],
+  matrixToFourC[DD,"result_local_D"],
   "\n// Results for M.",
-  matrixToBaci[MM,"result_local_M"],
+  matrixToFourC[MM,"result_local_M"],
   "\n// Results for Kappa.",
-  vectorToBaci[kappa,"result_local_kappa"]},"\n"]
+  vectorToFourC[kappa,"result_local_kappa"]},"\n"]
   )
 
 

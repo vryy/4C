@@ -164,7 +164,7 @@ Normalize[{1,0.2,0.1}]
 };
 replaceUnkownsBeam=Flatten[{
 Thread[Flatten[unknownsBeam\[Transpose]]->Flatten[beamCoordinates]],
-(*The ref length is taken from baci*)
+(*The ref length is taken from 4C*)
 {lenDof->1.807519343263254585}
 }];
 
