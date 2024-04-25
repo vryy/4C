@@ -232,7 +232,7 @@ int CORE::LINALG::Solver::NoxSolve(Epetra_LinearProblem& linProblem, const Solve
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToIfpack(
+Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToIfpack(
     const Teuchos::ParameterList& inparams)
 {
   Teuchos::ParameterList ifpacklist;
@@ -248,7 +248,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToIfpack(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
+Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToML(
     const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
 {
   Teuchos::ParameterList mllist;
@@ -582,7 +582,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToMuelu(
+Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToMuelu(
     const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
 {
   Teuchos::ParameterList muelulist;
@@ -599,7 +599,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToMuelu(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
+Teuchos::ParameterList CORE::LINALG::Solver::TranslateFourCToBelos(
     const Teuchos::ParameterList& inparams)
 {
   Teuchos::ParameterList outparams;
@@ -732,7 +732,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
       azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::icc)
   {
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
-    ifpacklist = CORE::LINALG::Solver::TranslateBACIToIfpack(inparams);
+    ifpacklist = CORE::LINALG::Solver::TranslateFourCToIfpack(inparams);
   }
 
   // set parameters for CheapSIMPLE if used
@@ -754,37 +754,37 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
       azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2)
   {
     Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
-    mllist = CORE::LINALG::Solver::TranslateBACIToML(inparams, &beloslist);
+    mllist = CORE::LINALG::Solver::TranslateFourCToML(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fluid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Fluid) Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_tsi)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (TSI) Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_beamsolid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (BeamSolid) Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_fsi)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (FSI) Parameters");
-    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateFourCToMuelu(inparams, &beloslist);
   }
   if (azprectyp == CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2)
   {
@@ -846,7 +846,7 @@ Teuchos::ParameterList CORE::LINALG::Solver::TranslateSolverParameters(
       outparams.set("solver", "superlu");
       break;
     case CORE::LINEAR_SOLVER::SolverType::belos:
-      outparams = CORE::LINALG::Solver::TranslateBACIToBelos(inparams);
+      outparams = CORE::LINALG::Solver::TranslateFourCToBelos(inparams);
       break;
     default:
       FOUR_C_THROW("Unsupported type of solver");

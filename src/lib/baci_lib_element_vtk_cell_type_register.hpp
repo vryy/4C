@@ -46,8 +46,8 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    std::pair<uint8_t, std::vector<int>> inline GetVtkCellTypeFromBaciElementShapeType(
-        CORE::FE::CellType baciele_shape_type)
+    std::pair<uint8_t, std::vector<int>> inline GetVtkCellTypeFromFourCElementShapeType(
+        CORE::FE::CellType four_c_ele_shape_type)
     {
       static_assert(29 == static_cast<int>(CORE::FE::CellType::max_distype),
           "The number of element types defined by CORE::FE::CellType does not match "
@@ -57,7 +57,7 @@ namespace DRT
       // e.g. at http://www.vtk.org/doc/nightly/html/vtkCellType_8h.html
       // this list must be kept in sync with the element types since we use this
       // for index translation
-      switch (baciele_shape_type)
+      switch (four_c_ele_shape_type)
       {
         case CORE::FE::CellType::dis_none:
           return std::pair<uint8_t, std::vector<int>>(0, std::vector<int>());
@@ -138,7 +138,7 @@ namespace DRT
                       << 0 << 2 << 8 << 6 << 18 << 20 << 26 << 24 << 1 << 5 << 7 << 3 << 19 << 23
                       << 25 << 21 << 9 << 11 << 17 << 15 << 12 << 14 << 10 << 16 << 4 << 22 << 13);
         default:
-          FOUR_C_THROW("Unknown element shape type: %d", baciele_shape_type);
+          FOUR_C_THROW("Unknown element shape type: %d", four_c_ele_shape_type);
           return std::pair<uint8_t, std::vector<int>>(static_cast<uint8_t>(-1), std::vector<int>());
       }
     }

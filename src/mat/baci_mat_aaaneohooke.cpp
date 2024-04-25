@@ -387,7 +387,7 @@ void MAT::AAAneohooke::VisNames(std::map<std::string, int>& names)
   names[fiber] = 1;  // scalar
   fiber = "youngs";
   names[fiber] = 1;  // scalar
-  fiber = "BaciEleId";
+  fiber = "FourCEleId";
   names[fiber] = 1;  // scalar
 }
 
@@ -405,7 +405,7 @@ bool MAT::AAAneohooke::VisData(
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     data[0] = params_->GetParameter(params_->young, eleGID);
   }
-  else if (name == "BaciEleId")
+  else if (name == "FourCEleId")
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     // get element lID incase we have element specific material parameters

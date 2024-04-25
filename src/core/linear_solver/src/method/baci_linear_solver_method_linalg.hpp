@@ -199,15 +199,15 @@ namespace CORE::LINALG
     \brief Translate BACI dat file parameters
 
     */
-    static Teuchos::ParameterList TranslateBACIToML(
+    static Teuchos::ParameterList TranslateFourCToML(
         const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
 
-    static Teuchos::ParameterList TranslateBACIToMuelu(
+    static Teuchos::ParameterList TranslateFourCToMuelu(
         const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = nullptr);
 
-    static Teuchos::ParameterList TranslateBACIToIfpack(const Teuchos::ParameterList& inparams);
+    static Teuchos::ParameterList TranslateFourCToIfpack(const Teuchos::ParameterList& inparams);
 
-    static Teuchos::ParameterList TranslateBACIToBelos(const Teuchos::ParameterList& inparams);
+    static Teuchos::ParameterList TranslateFourCToBelos(const Teuchos::ParameterList& inparams);
 
     /*!
     \brief Add a validated input parameter list as sublist to internal

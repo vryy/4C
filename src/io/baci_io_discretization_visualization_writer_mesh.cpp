@@ -247,7 +247,7 @@ namespace IO
       if (beamele != nullptr) continue;
 
       const std::vector<int>& numbering =
-          DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
+          DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
 
       for (unsigned int inode = 0; inode < (unsigned int)ele->NumNode(); ++inode)
       {
@@ -421,7 +421,7 @@ namespace IO
 
       // Add the node GIDs.
       const std::vector<int>& numbering =
-          DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
+          DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
       const DRT::Node* const* nodes = ele->Nodes();
       for (int inode = 0; inode < ele->NumNode(); ++inode)
         gid_of_nodes.push_back(nodes[numbering[inode]]->Id());

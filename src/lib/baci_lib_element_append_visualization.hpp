@@ -38,7 +38,7 @@ namespace DRT::ELEMENTS
       std::vector<double>& point_coordinates)
   {
     const unsigned int num_spatial_dimensions = 3;
-    auto vtk_cell_info = DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele.Shape());
+    auto vtk_cell_info = DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele.Shape());
     const std::vector<int>& numbering = vtk_cell_info.second;
 
     // Add the cell type to the output.
@@ -64,10 +64,10 @@ namespace DRT::ELEMENTS
     switch (celltype)
     {
       case CORE::FE::CellType::nurbs9:
-        return DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(CORE::FE::CellType::quad9);
+        return DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(CORE::FE::CellType::quad9);
         break;
       case CORE::FE::CellType::nurbs27:
-        return DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(CORE::FE::CellType::hex27);
+        return DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(CORE::FE::CellType::hex27);
         break;
       default:
         FOUR_C_THROW("The VTK cell type for the NURBS element %s is not implemented",
@@ -223,7 +223,7 @@ namespace DRT::ELEMENTS
       std::vector<double>& vtu_point_result_data)
   {
     const std::vector<int>& numbering =
-        DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele.Shape()).second;
+        DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele.Shape()).second;
 
     for (unsigned int inode = 0; inode < (unsigned int)ele.NumNode(); ++inode)
     {

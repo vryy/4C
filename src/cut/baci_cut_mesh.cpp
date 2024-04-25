@@ -2883,7 +2883,7 @@ template <>
 CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<3>(
     int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active)
 {
-  static int shards_to_baci[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+  static int shards_to_fourc[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
       19, 26, 20, 25, 24, 22, 21, 23, -1};
 
   unsigned sc = top_data.side_count;
@@ -2904,7 +2904,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<3>(
     side_nids.reserve(side_topology.node_count);
     for (unsigned j = 0; j < side_topology.node_count; ++j)
     {
-      int nid = shards_to_baci[side.node[j]];
+      int nid = shards_to_fourc[side.node[j]];
       side_nids.push_back(nodes[nid]->Id());
       side_nodes.push_back(nodes[nid]);
     }
