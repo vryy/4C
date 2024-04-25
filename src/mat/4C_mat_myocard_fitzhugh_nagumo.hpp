@@ -1,0 +1,139 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+\brief Fitzhugh Nagumo model for myocard material
+
+\level 2
+
+*/
+
+/*----------------------------------------------------------------------*
+ |  definitions                                              cbert 09/13 |
+ *----------------------------------------------------------------------*/
+#ifndef FOUR_C_MAT_MYOCARD_FITZHUGH_NAGUMO_HPP
+#define FOUR_C_MAT_MYOCARD_FITZHUGH_NAGUMO_HPP
+
+/*----------------------------------------------------------------------*
+ |  headers                                                  cbert 09/13 |
+ *----------------------------------------------------------------------*/
+#include "4C_config.hpp"
+
+#include "4C_comm_parobjectfactory.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
+#include "4C_linalg_serialdensevector.hpp"
+#include "4C_mat_material.hpp"
+#include "4C_mat_myocard_general.hpp"
+#include "4C_mat_myocard_tools.hpp"
+#include "4C_mat_par_parameter.hpp"
+
+FOUR_C_NAMESPACE_OPEN
+
+/*----------------------------------------------------------------------*/
+/// Myocard material according to [1]
+///
+/// This is a reaction-diffusion law of anisotropic, instationary electric conductivity in cardiac
+/// muscle tissue
+///
+/// d(r)/dt =  b*d*(\phi/d-r)
+/// d(\phi)/dt + c1*\phi*(\phi-a)*(\phi-1.0) + c2*\phi*r_ = 0
+///
+/// with \phi the potential variable and r the internal state
+/// </ul>
+///
+/// \author cbert
+
+
+/// \date 09/13
+
+class MyocardFitzhughNagumo : public MyocardGeneral
+
+{
+ public:
+  /// construct empty material object
+  MyocardFitzhughNagumo();
+
+  /// construct empty material object
+  explicit MyocardFitzhughNagumo(
+      const double eps_deriv_myocard, const std::string tissue, int num_gp);
+
+  /// compute reaction coefficient
+  double ReaCoeff(const double phi, const double dt) override;
+
+  /// compute reaction coefficient for multiple points per element
+  double ReaCoeff(const double phi, const double dt, int gp) override;
+
+  ///  returns number of internal state variables of the material
+  int GetNumberOfInternalStateVariables() const override;
+
+  ///  returns current internal state of the material
+  double GetInternalState(const int k) const override;
+
+  ///  returns current internal state of the material for multiple points per element
+  double GetInternalState(const int k, int gp) const override;
+
+  ///  set internal state of the material
+  void SetInternalState(const int k, const double val) override;
+
+  ///  set internal state of the material for multiple points per element
+  void SetInternalState(const int k, const double val, int gp) override;
+
+  ///  return number of ionic currents
+  int GetNumberOfIonicCurrents() const override;
+
+  ///  return ionic currents
+  double GetIonicCurrents(const int k) const override;
+
+  ///  return ionic currents for multiple points per element
+  double GetIonicCurrents(const int k, int gp) const override;
+
+  /// time update for this material
+  void Update(const double phi, const double dt) override;
+
+  /// get number of Gauss points
+  int GetNumberOfGP() const override { return r0_.size(); };
+
+  /// resize internal state variables if number of Gauss point changes
+  void ResizeInternalStateVariables(int gp) override
+  {
+    r0_.resize(gp);
+    r_.resize(gp);
+    j1_.resize(gp);
+    j2_.resize(gp);
+    mechanical_activation_.resize(gp);
+  }
+
+ private:
+  MyocardTools tools_;
+
+  /// perturbation for numerical approximation of the derivative
+  double eps_deriv_;
+
+  /// last gating variables MV
+  std::vector<double> r0_;  /// fast inward current
+
+  /// current gating variables MV
+  std::vector<double> r_;  /// fast inward current
+
+  /// ionic currents
+  std::vector<double> j1_;
+  std::vector<double> j2_;
+
+  /// model parameters
+  double a_;
+  double b_;
+  double c1_;
+  double c2_;
+  double d_;
+
+  // Variables for electromechanical coupling
+  std::vector<double>
+      mechanical_activation_;  // to store the variable for activation (phi in this case=)
+  double act_thres_;  // activation threshold (so that activation = 1.0 if mechanical_activation_ >=
+                      // act_thres_)
+
+
+};  // Myocard_Fitzhugh_Nagumo
+
+
+FOUR_C_NAMESPACE_CLOSE
+
+#endif

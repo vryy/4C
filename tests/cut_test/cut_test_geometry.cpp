@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_intersection.hpp"  // for IntersectionStatus
-#include "baci_cut_kernel.hpp"
-#include "baci_cut_output.hpp"
-#include "baci_cut_position.hpp"
+#include "4C_cut_intersection.hpp"  // for IntersectionStatus
+#include "4C_cut_kernel.hpp"
+#include "4C_cut_output.hpp"
+#include "4C_cut_position.hpp"
 
 #include <iostream>
 

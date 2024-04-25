@@ -1,6 +1,6 @@
 set(OBJS_PRE_LOCSYS
     # cmake-format: sortable
-    baci_pre_locsys.cpp
+    4C_pre_locsys.cpp
     )
 
 add_executable(pre_locsys EXCLUDE_FROM_ALL ${OBJS_PRE_LOCSYS})

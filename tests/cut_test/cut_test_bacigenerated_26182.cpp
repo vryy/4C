@@ -7,18 +7,18 @@
 *----------------------------------------------------------------------*/
 
 // This test is tests the triangulation by EarClipping
-#include "baci_cut_combintersection.hpp"
-#include "baci_cut_kernel.hpp"
-#include "baci_cut_levelsetintersection.hpp"
-#include "baci_cut_meshintersection.hpp"
-#include "baci_cut_options.hpp"
-#include "baci_cut_side.hpp"
-#include "baci_cut_sidehandle.hpp"
-#include "baci_cut_tetmeshintersection.hpp"
-#include "baci_cut_triangulateFacet.hpp"
-#include "baci_cut_utils.hpp"
-#include "baci_cut_volumecell.hpp"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_cut_combintersection.hpp"
+#include "4C_cut_kernel.hpp"
+#include "4C_cut_levelsetintersection.hpp"
+#include "4C_cut_meshintersection.hpp"
+#include "4C_cut_options.hpp"
+#include "4C_cut_side.hpp"
+#include "4C_cut_sidehandle.hpp"
+#include "4C_cut_tetmeshintersection.hpp"
+#include "4C_cut_triangulateFacet.hpp"
+#include "4C_cut_utils.hpp"
+#include "4C_cut_volumecell.hpp"
+#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 
 #include <iostream>
 #include <map>

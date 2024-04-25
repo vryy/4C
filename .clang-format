@@ -27,13 +27,13 @@ IncludeCategories:
     Priority: -2
 
   # make sure to include config headers before other BACI headers:
-  - Regex: "baci_config.*.hpp"
+  - Regex: "4C_config.*.hpp"
     Priority: -1
 
   # the header associated with a cpp file has priority zero and would come here
 
   # try to group BACI headers:
-  - Regex: "baci_.*\\.(h|H|hpp)"
+  - Regex: "4C_.*\\.(h|H|hpp)"
     Priority: 10
 
   # try to catch all third party headers and put them after BACI but before

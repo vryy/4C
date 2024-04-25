@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_intersection.hpp"
-#include "baci_cut_mesh.hpp"
-#include "baci_cut_options.hpp"
-#include "baci_cut_side.hpp"
+#include "4C_cut_intersection.hpp"
+#include "4C_cut_mesh.hpp"
+#include "4C_cut_options.hpp"
+#include "4C_cut_side.hpp"
 
 #include "cut_test_utils.hpp"
 

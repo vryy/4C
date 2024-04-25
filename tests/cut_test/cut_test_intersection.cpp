@@ -6,13 +6,13 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_intersection.hpp"
-#include "baci_cut_meshintersection.hpp"
-#include "baci_cut_options.hpp"
-#include "baci_cut_side.hpp"
-#include "baci_cut_tetmeshintersection.hpp"
-#include "baci_cut_volumecell.hpp"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_cut_intersection.hpp"
+#include "4C_cut_meshintersection.hpp"
+#include "4C_cut_options.hpp"
+#include "4C_cut_side.hpp"
+#include "4C_cut_tetmeshintersection.hpp"
+#include "4C_cut_volumecell.hpp"
+#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 
 #include <iostream>
 #include <map>

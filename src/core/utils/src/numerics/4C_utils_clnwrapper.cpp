@@ -1,0 +1,17 @@
+/*---------------------------------------------------------------------*/
+/*! \file
+
+\brief Custom memory allocator user for CLN data type
+
+\level 3
+
+
+*----------------------------------------------------------------------*/
+#include "4C_utils_clnwrapper.hpp"
+
+FOUR_C_NAMESPACE_OPEN
+
+// initial value of precision_
+unsigned int CORE::CLN::ClnWrapper::precision_ = CLN_START_PRECISION;
+
+FOUR_C_NAMESPACE_CLOSE

@@ -8,9 +8,9 @@
 #ifndef CUT_TEST_UTILS_HPP
 #define CUT_TEST_UTILS_HPP
 
-#include "baci_lib_element.hpp"
-#include "baci_linalg_fixedsizematrix.hpp"
-#include "baci_linalg_serialdensematrix.hpp"
+#include "4C_lib_element.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
 
 #include <map>
 #include <vector>

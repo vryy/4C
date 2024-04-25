@@ -6,9 +6,9 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_element.hpp"
-#include "baci_cut_mesh.hpp"
-#include "baci_cut_meshintersection.hpp"
+#include "4C_cut_element.hpp"
+#include "4C_cut_mesh.hpp"
+#include "4C_cut_meshintersection.hpp"
 
 #include "cut_test_utils.hpp"
 

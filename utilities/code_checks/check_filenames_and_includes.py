@@ -29,8 +29,8 @@ def is_prefixed_by_module(file, module):
     """
     A valid prefix is equal to the module name followed either by an underscore or a file extension.
     """
-    return file.startswith("baci_" + module + "_") or file.startswith(
-        "baci_" + module + "."
+    return file.startswith("4C_" + module + "_") or file.startswith(
+        "4C_" + module + "."
     )
 
 
@@ -43,7 +43,7 @@ def has_valid_filename(path, module_roots):
     Check that the file has a valid filename.
 
     A valid filename
-    - is prefixed by 'baci' and the module name
+    - is prefixed by '4C' and the module name
     - is postfixed by '_test' if it is a test file
     """
     abs_path, file = os.path.split(os.path.abspath(path))
@@ -53,7 +53,7 @@ def has_valid_filename(path, module_roots):
     if "tests" in abs_path.split("/") or "unittests" in abs_path.split("/"):
         return (
             file.endswith("_test.cpp") or file.endswith("_test.hpp")
-        ) and file.startswith("baci_")
+        ) and file.startswith("4C_")
 
     # If the file is not in a module, we do not require a specific prefix and return true.
     if my_module_root is None:
