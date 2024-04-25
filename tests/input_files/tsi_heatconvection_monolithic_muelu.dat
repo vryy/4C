@@ -7,8 +7,7 @@ benchmark for linear thermo-structure interaction
 -> for comparison with literature use: tmax = 4.0, dt = 0.01
 Be careful if you want to compare these results with Tanaka: coupling
 term in thermal equation depends only on initial temperature T_0,
-whereas:
-in BACI the coupling term depends on current temperature T
+whereas in 4C the coupling term depends on current temperature T
 -> Switch on #define COUPLEINITTEMPERATURE in tsi_defines.H
 12x4x4 elements, i.e., 192 elements: to test monolithic TSI with
 BGS(AMG) mesh is too coarse, but for nightly test case better and

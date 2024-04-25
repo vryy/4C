@@ -1,6 +1,7 @@
-// Statics solution for the free vibration beam problem.
 -----------------------------------------------------------------------TITLE
-BACI Structural Analysis
+4C Structural Analysis
+
+Statics solution for the free vibration beam problem.
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                         10
 NODES                            44

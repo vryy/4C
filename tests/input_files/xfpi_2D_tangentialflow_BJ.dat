@@ -1,9 +1,7 @@
-//
-//
-// XFluid_Poroelastic_Interaction (Poro is cut out)
-// Simple Flow parallell to the interface with Beavers-Joseph interface law
-// between Fluid and Poro, stationary solution known
 -----------------------------------------------------------------------TITLE
+XFluid_Poroelastic_Interaction (Poro is cut out)
+Simple Flow parallell to the interface with Beavers-Joseph interface law
+between Fluid and Poro, stationary solution known
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP

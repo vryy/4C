@@ -1,5 +1,5 @@
 -----------------------------------------------------------------------TITLE
-Test case checking the stress free hypothesis of all isotropic hyperelastic materials implemented in Baci
+Test case checking the stress free hypothesis of all implemented isotropic hyperelastic materials
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      8
 //NODES                         27

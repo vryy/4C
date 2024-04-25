@@ -1,8 +1,6 @@
-//
-//
-// XFluid_Poroelastic_Interaction (Poro is cut out)
-// Simple Flow orthogonal to the interface, stationary solution known
 -----------------------------------------------------------------------TITLE
+XFluid_Poroelastic_Interaction (Poro is cut out)
+Simple Flow orthogonal to the interface, stationary solution known
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP

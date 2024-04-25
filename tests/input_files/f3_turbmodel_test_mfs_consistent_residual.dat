@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------TITLE
 f3_beltrami
 This test case aims at ensuring that turbulence models are correctly
-handled by baci, that is, all necessary quantities and parameters
+handled by 4C, that is, all necessary quantities and parameters
 are transferred to the element routine. It does not check the model
 itself, that is, it ability to deal with turbulent flows.
 here:                           mfs

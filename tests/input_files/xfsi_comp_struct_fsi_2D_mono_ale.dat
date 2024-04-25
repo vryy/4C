@@ -1,7 +1,7 @@
 -----------------------------------------------------------------------TITLE
 Check the SpecialCheck_InterfaceTips-Check for ALE! --> for this testcase does not matter as
 nodes are not move a lot, where the dofsets change !!!
-For general case, one has to add functionality of this check to baci!
+For general case, one has to add functionality of this check to 4C!
 ale background fluid
 compressible structure, solved monolithically via XFEM, tests the general monolithic process
 ----------------------------------------------------------------PROBLEM SIZE

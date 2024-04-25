@@ -5,8 +5,7 @@ c.f.
 M.Tanaka (1995), Application of boundary element method to 3-D problems of
 coupled                         thermoelasticity
 Be careful if you want to compare these results with Tanaka: coupling term in
-thermal equation depends only on initial temperature T_0, whereas:
-in BACI the coupling term depends on current temperature T
+thermal equation depends only on initial temperature T_0, whereas in 4C the coupling term depends on current temperature T
 Switch on #define COUPLEINITTEMPERATURE in tsi_defines.H
 Switch off time curve in heat convection boundary condition. Tanaka apply the
 full load at the beginning of the simulation, does not increase it gradually

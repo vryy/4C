@@ -1,5 +1,5 @@
 -----------------------------------------------------------------------TITLE
-BACI Structural Analysis
+4C Structural Analysis
 This example tests the singlestep nonlinear solver by solving a linear statics problem.
 Since one iteration is necessary to obtain the correct results, "singlestep" nonlinear solver can be used.
 For general case, one should use "fullnewton" to obtain the equilibrium solution.
