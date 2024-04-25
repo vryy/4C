@@ -8,11 +8,11 @@
 
 #include "cut_test_utils.hpp"
 
-#include "baci_cut_element.hpp"
-#include "baci_cut_mesh.hpp"
-#include "baci_cut_meshintersection.hpp"
-#include "baci_cut_volumecell.hpp"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.hpp"
+#include "4C_cut_element.hpp"
+#include "4C_cut_mesh.hpp"
+#include "4C_cut_meshintersection.hpp"
+#include "4C_cut_volumecell.hpp"
+#include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 
 int numnode;
 int numele;

@@ -10,18 +10,18 @@
 // Sheared elements needs to be tested separately
 // m.w. 05.2015
 
-#include "baci_cut_element.hpp"
-#include "baci_cut_levelsetintersection.hpp"
-#include "baci_cut_mesh.hpp"
-#include "baci_cut_options.hpp"
+#include "4C_cut_element.hpp"
+#include "4C_cut_levelsetintersection.hpp"
+#include "4C_cut_mesh.hpp"
+#include "4C_cut_options.hpp"
 
 // Added
-#include "baci_cut_combintersection.hpp"
-#include "baci_cut_facet.hpp"
-#include "baci_cut_integrationcell.hpp"
-#include "baci_cut_sorted_vector.hpp"
-#include "baci_cut_utils.hpp"
-#include "baci_cut_volumecell.hpp"
+#include "4C_cut_combintersection.hpp"
+#include "4C_cut_facet.hpp"
+#include "4C_cut_integrationcell.hpp"
+#include "4C_cut_sorted_vector.hpp"
+#include "4C_cut_utils.hpp"
+#include "4C_cut_volumecell.hpp"
 
 #include <iterator>
 

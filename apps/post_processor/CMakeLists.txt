@@ -1,9 +1,9 @@
 set(OBJS_POST_PROCESSOR_MAIN
     # cmake-format: sortable
-    baci_post_processor.cpp
-    baci_post_processor_single_field_writers.cpp
-    baci_post_processor_structure_stress.cpp
-    baci_post_processor_thermo_heatflux.cpp
+    4C_post_processor.cpp
+    4C_post_processor_single_field_writers.cpp
+    4C_post_processor_structure_stress.cpp
+    4C_post_processor_thermo_heatflux.cpp
     )
 
 add_executable(post_processor EXCLUDE_FROM_ALL ${OBJS_POST_PROCESSOR_MAIN})

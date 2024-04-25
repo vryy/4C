@@ -9,7 +9,7 @@
 #ifndef CUT_TEST_LOADER_HPP
 #define CUT_TEST_LOADER_HPP
 
-#include "baci_cut_meshintersection.hpp"
+#include "4C_cut_meshintersection.hpp"
 
 #include <map>
 #include <vector>

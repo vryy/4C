@@ -1,6 +1,6 @@
 set(OBJS_POST_MONITOR
     # cmake-format: sortable
-    baci_post_monitor.cpp
+    4C_post_monitor.cpp
     )
 
 add_executable(post_monitor EXCLUDE_FROM_ALL ${OBJS_POST_MONITOR})
