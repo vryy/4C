@@ -1,10 +1,10 @@
 set(OBJS_FOUR_C_MAIN
     # cmake-format: sortable
-    4C_global_full_baci.cpp
     4C_global_full_cal_control.cpp
     4C_global_full_control.cpp
     4C_global_full_init_control.cpp
     4C_global_full_inp_control.cpp
+    4C_global_full_main.cpp
     )
 
 # the baci executable
