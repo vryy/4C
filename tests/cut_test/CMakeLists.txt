@@ -27,34 +27,34 @@ set(OBJS_CUT_TEST
     cut_test_axel_10.cpp
     cut_test_axel_8.cpp
     cut_test_axel_9.cpp
-    cut_test_bacigenerated_1858.cpp
-    cut_test_bacigenerated_1860.cpp
-    cut_test_bacigenerated_1890.cpp
-    cut_test_bacigenerated_1910.cpp
-    cut_test_bacigenerated_1970.cpp
-    cut_test_bacigenerated_197489.cpp
-    cut_test_bacigenerated_2010.cpp
-    cut_test_bacigenerated_227469.cpp
-    cut_test_bacigenerated_238343.cpp
-    cut_test_bacigenerated_238425.cpp
-    cut_test_bacigenerated_26182.cpp
-    cut_test_bacigenerated_369096.cpp
-    cut_test_bacigenerated_41534.cpp
-    cut_test_bacigenerated_43244.cpp
-    cut_test_bacigenerated_463638.cpp
-    cut_test_bacigenerated_622320.cpp
-    cut_test_bacigenerated_622829.cpp
-    cut_test_bacigenerated_627558.cpp
-    cut_test_bacigenerated_6890.cpp
-    cut_test_bacigenerated_6920.cpp
-    cut_test_bacigenerated_6923.cpp
-    cut_test_bacigenerated_7019.cpp
-    cut_test_bacigenerated_7022.cpp
-    cut_test_bacigenerated_79216.cpp
     cut_test_benedikt_1.cpp
     cut_test_double.cpp
     cut_test_facet_failed_cln.cpp
     cut_test_fluidfluid.cpp
+    cut_test_generated_1858.cpp
+    cut_test_generated_1860.cpp
+    cut_test_generated_1890.cpp
+    cut_test_generated_1910.cpp
+    cut_test_generated_1970.cpp
+    cut_test_generated_197489.cpp
+    cut_test_generated_2010.cpp
+    cut_test_generated_227469.cpp
+    cut_test_generated_238343.cpp
+    cut_test_generated_238425.cpp
+    cut_test_generated_26182.cpp
+    cut_test_generated_369096.cpp
+    cut_test_generated_41534.cpp
+    cut_test_generated_43244.cpp
+    cut_test_generated_463638.cpp
+    cut_test_generated_622320.cpp
+    cut_test_generated_622829.cpp
+    cut_test_generated_627558.cpp
+    cut_test_generated_6890.cpp
+    cut_test_generated_6920.cpp
+    cut_test_generated_6923.cpp
+    cut_test_generated_7019.cpp
+    cut_test_generated_7022.cpp
+    cut_test_generated_79216.cpp
     cut_test_geometry.cpp
     cut_test_hex8_twintri.cpp
     cut_test_intersection.cpp

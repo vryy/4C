@@ -24,7 +24,7 @@
 
 #include "cut_test_utils.hpp"
 
-void test_bacigenerated_43244()
+void test_generated_43244()
 {
   CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln

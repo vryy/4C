@@ -24,7 +24,7 @@
 
 #include "cut_test_utils.hpp"
 
-void test_bacigenerated_2010()
+void test_generated_1910()
 {
   CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
@@ -38,16 +38,52 @@ void test_bacigenerated_2010()
     nids.clear();
     tri3_xyze(0, 0) = -0.0575201;
     tri3_xyze(1, 0) = -0.0154125;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2577);
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2542);
+    tri3_xyze(0, 1) = -0.0595492;
+    tri3_xyze(1, 1) = -9.23291e-14;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2546);
+    tri3_xyze(0, 2) = -0.0538414;
+    tri3_xyze(1, 2) = -0.00708835;
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-1);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0595492;
+    tri3_xyze(1, 0) = -9.23291e-14;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2546);
+    tri3_xyze(0, 1) = -0.05;
+    tri3_xyze(1, 1) = 0;
+    tri3_xyze(2, 1) = 0.8;
+    nids.push_back(2545);
+    tri3_xyze(0, 2) = -0.0538414;
+    tri3_xyze(1, 2) = -0.00708835;
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-1);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.05;
+    tri3_xyze(1, 0) = 0;
+    tri3_xyze(2, 0) = 0.8;
+    nids.push_back(2545);
     tri3_xyze(0, 1) = -0.0482963;
     tri3_xyze(1, 1) = -0.012941;
     tri3_xyze(2, 1) = 0.8;
     nids.push_back(2541);
     tri3_xyze(0, 2) = -0.0538414;
     tri3_xyze(1, 2) = -0.00708835;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-3);
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-1);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -58,14 +94,158 @@ void test_bacigenerated_2010()
     tri3_xyze(1, 0) = -0.012941;
     tri3_xyze(2, 0) = 0.8;
     nids.push_back(2541);
-    tri3_xyze(0, 1) = -0.05;
-    tri3_xyze(1, 1) = 0;
-    tri3_xyze(2, 1) = 0.8;
-    nids.push_back(2545);
+    tri3_xyze(0, 1) = -0.0575201;
+    tri3_xyze(1, 1) = -0.0154125;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2542);
     tri3_xyze(0, 2) = -0.0538414;
     tri3_xyze(1, 2) = -0.00708835;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-3);
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-1);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0575201;
+    tri3_xyze(1, 0) = -0.0154125;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2542);
+    tri3_xyze(0, 1) = -0.0816682;
+    tri3_xyze(1, 1) = -0.0218829;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2549);
+    tri3_xyze(0, 2) = -0.0708216;
+    tri3_xyze(1, 2) = -0.00932385;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-5);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0816682;
+    tri3_xyze(1, 0) = -0.0218829;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2549);
+    tri3_xyze(0, 1) = -0.0845492;
+    tri3_xyze(1, 1) = -1.49392e-13;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2551);
+    tri3_xyze(0, 2) = -0.0708216;
+    tri3_xyze(1, 2) = -0.00932385;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-5);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0845492;
+    tri3_xyze(1, 0) = -1.49392e-13;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2551);
+    tri3_xyze(0, 1) = -0.0595492;
+    tri3_xyze(1, 1) = -9.23291e-14;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2546);
+    tri3_xyze(0, 2) = -0.0708216;
+    tri3_xyze(1, 2) = -0.00932385;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-5);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0595492;
+    tri3_xyze(1, 0) = -9.23291e-14;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2546);
+    tri3_xyze(0, 1) = -0.0575201;
+    tri3_xyze(1, 1) = -0.0154125;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2542);
+    tri3_xyze(0, 2) = -0.0708216;
+    tri3_xyze(1, 2) = -0.00932385;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-5);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0515711;
+    tri3_xyze(1, 0) = -0.0297746;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2582);
+    tri3_xyze(0, 1) = -0.0732217;
+    tri3_xyze(1, 1) = -0.0422746;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2585);
+    tri3_xyze(0, 2) = -0.0659953;
+    tri3_xyze(1, 2) = -0.0273361;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-6);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0732217;
+    tri3_xyze(1, 0) = -0.0422746;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2585);
+    tri3_xyze(0, 1) = -0.0816682;
+    tri3_xyze(1, 1) = -0.0218829;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2549);
+    tri3_xyze(0, 2) = -0.0659953;
+    tri3_xyze(1, 2) = -0.0273361;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-6);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0816682;
+    tri3_xyze(1, 0) = -0.0218829;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2549);
+    tri3_xyze(0, 1) = -0.0575201;
+    tri3_xyze(1, 1) = -0.0154125;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2542);
+    tri3_xyze(0, 2) = -0.0659953;
+    tri3_xyze(1, 2) = -0.0273361;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-6);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0575201;
+    tri3_xyze(1, 0) = -0.0154125;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2542);
+    tri3_xyze(0, 1) = -0.0515711;
+    tri3_xyze(1, 1) = -0.0297746;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2582);
+    tri3_xyze(0, 2) = -0.0659953;
+    tri3_xyze(1, 2) = -0.0273361;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-6);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -77,13 +257,13 @@ void test_bacigenerated_2010()
     tri3_xyze(2, 0) = 0.8;
     nids.push_back(2545);
     tri3_xyze(0, 1) = -0.0595492;
-    tri3_xyze(1, 1) = 5.53975e-14;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2579);
+    tri3_xyze(1, 1) = -9.23291e-14;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2546);
     tri3_xyze(0, 2) = -0.0538414;
-    tri3_xyze(1, 2) = -0.00708835;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-3);
+    tri3_xyze(1, 2) = 0.00708835;
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-7);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -91,35 +271,17 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.0595492;
-    tri3_xyze(1, 0) = 5.53975e-14;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2579);
+    tri3_xyze(1, 0) = -9.23291e-14;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2546);
     tri3_xyze(0, 1) = -0.0575201;
-    tri3_xyze(1, 1) = -0.0154125;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2577);
+    tri3_xyze(1, 1) = 0.0154125;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2802);
     tri3_xyze(0, 2) = -0.0538414;
-    tri3_xyze(1, 2) = -0.00708835;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-3);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0515711;
-    tri3_xyze(1, 0) = -0.0297746;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2599);
-    tri3_xyze(0, 1) = -0.0433013;
-    tri3_xyze(1, 1) = -0.025;
-    tri3_xyze(2, 1) = 0.8;
-    nids.push_back(2581);
-    tri3_xyze(0, 2) = -0.0501722;
-    tri3_xyze(1, 2) = -0.020782;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-4);
+    tri3_xyze(1, 2) = 0.00708835;
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-7);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -130,32 +292,32 @@ void test_bacigenerated_2010()
     tri3_xyze(1, 0) = -0.025;
     tri3_xyze(2, 0) = 0.8;
     nids.push_back(2581);
-    tri3_xyze(0, 1) = -0.0482963;
-    tri3_xyze(1, 1) = -0.012941;
-    tri3_xyze(2, 1) = 0.8;
-    nids.push_back(2541);
+    tri3_xyze(0, 1) = -0.0515711;
+    tri3_xyze(1, 1) = -0.0297746;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2582);
     tri3_xyze(0, 2) = -0.0501722;
     tri3_xyze(1, 2) = -0.020782;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-4);
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-2);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0482963;
-    tri3_xyze(1, 0) = -0.012941;
-    tri3_xyze(2, 0) = 0.8;
-    nids.push_back(2541);
+    tri3_xyze(0, 0) = -0.0515711;
+    tri3_xyze(1, 0) = -0.0297746;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2582);
     tri3_xyze(0, 1) = -0.0575201;
     tri3_xyze(1, 1) = -0.0154125;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2577);
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2542);
     tri3_xyze(0, 2) = -0.0501722;
     tri3_xyze(1, 2) = -0.020782;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-4);
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-2);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -164,16 +326,16 @@ void test_bacigenerated_2010()
     nids.clear();
     tri3_xyze(0, 0) = -0.0575201;
     tri3_xyze(1, 0) = -0.0154125;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2577);
-    tri3_xyze(0, 1) = -0.0515711;
-    tri3_xyze(1, 1) = -0.0297746;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2599);
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2542);
+    tri3_xyze(0, 1) = -0.0482963;
+    tri3_xyze(1, 1) = -0.012941;
+    tri3_xyze(2, 1) = 0.8;
+    nids.push_back(2541);
     tri3_xyze(0, 2) = -0.0501722;
     tri3_xyze(1, 2) = -0.020782;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-4);
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-2);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -181,7 +343,7 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.0595492;
-    tri3_xyze(1, 0) = 5.53975e-14;
+    tri3_xyze(1, 0) = 9.23291e-14;
     tri3_xyze(2, 0) = 0.829389;
     nids.push_back(2579);
     tri3_xyze(0, 1) = -0.05;
@@ -198,18 +360,54 @@ void test_bacigenerated_2010()
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
+    tri3_xyze(0, 0) = -0.0595492;
+    tri3_xyze(1, 0) = -9.23291e-14;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2546);
+    tri3_xyze(0, 1) = -0.0845492;
+    tri3_xyze(1, 1) = -1.49392e-13;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2551);
+    tri3_xyze(0, 2) = -0.0708216;
+    tri3_xyze(1, 2) = 0.00932385;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-9);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0845492;
+    tri3_xyze(1, 0) = -1.49392e-13;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2551);
+    tri3_xyze(0, 1) = -0.0816682;
+    tri3_xyze(1, 1) = 0.0218829;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2805);
+    tri3_xyze(0, 2) = -0.0708216;
+    tri3_xyze(1, 2) = 0.00932385;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-9);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
     tri3_xyze(0, 0) = -0.0575201;
     tri3_xyze(1, 0) = 0.0154125;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2819);
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2802);
     tri3_xyze(0, 1) = -0.0595492;
-    tri3_xyze(1, 1) = 5.53975e-14;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2579);
-    tri3_xyze(0, 2) = -0.0538414;
-    tri3_xyze(1, 2) = 0.00708835;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-8);
+    tri3_xyze(1, 1) = -9.23291e-14;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2546);
+    tri3_xyze(0, 2) = -0.0708216;
+    tri3_xyze(1, 2) = 0.00932385;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-9);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -239,7 +437,7 @@ void test_bacigenerated_2010()
     tri3_xyze(2, 0) = 0.752447;
     nids.push_back(2553);
     tri3_xyze(0, 1) = -0.115451;
-    tri3_xyze(1, 1) = -8.9635e-14;
+    tri3_xyze(1, 1) = -1.49392e-13;
     tri3_xyze(2, 1) = 0.752447;
     nids.push_back(2555);
     tri3_xyze(0, 2) = -0.0982963;
@@ -253,17 +451,53 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.115451;
-    tri3_xyze(1, 0) = -8.9635e-14;
+    tri3_xyze(1, 0) = -1.49392e-13;
     tri3_xyze(2, 0) = 0.752447;
     nids.push_back(2555);
     tri3_xyze(0, 1) = -0.0845492;
-    tri3_xyze(1, 1) = -8.9635e-14;
+    tri3_xyze(1, 1) = -1.49392e-13;
     tri3_xyze(2, 1) = 0.752447;
     nids.push_back(2551);
     tri3_xyze(0, 2) = -0.0982963;
     tri3_xyze(1, 2) = -0.012941;
     tri3_xyze(2, 2) = 0.752447;
     nids.push_back(-10);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0845492;
+    tri3_xyze(1, 0) = -1.49392e-13;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2551);
+    tri3_xyze(0, 1) = -0.0816682;
+    tri3_xyze(1, 1) = -0.0218829;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2549);
+    tri3_xyze(0, 2) = -0.0982963;
+    tri3_xyze(1, 2) = -0.012941;
+    tri3_xyze(2, 2) = 0.752447;
+    nids.push_back(-10);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0732217;
+    tri3_xyze(1, 0) = -0.0422746;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2585);
+    tri3_xyze(0, 1) = -0.0999834;
+    tri3_xyze(1, 1) = -0.0577254;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2587);
+    tri3_xyze(0, 2) = -0.0915976;
+    tri3_xyze(1, 2) = -0.037941;
+    tri3_xyze(2, 2) = 0.752447;
+    nids.push_back(-11);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -288,6 +522,60 @@ void test_bacigenerated_2010()
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
+    tri3_xyze(0, 0) = -0.0482963;
+    tri3_xyze(1, 0) = -0.012941;
+    tri3_xyze(2, 0) = 0.8;
+    nids.push_back(2541);
+    tri3_xyze(0, 1) = -0.0433013;
+    tri3_xyze(1, 1) = -0.025;
+    tri3_xyze(2, 1) = 0.8;
+    nids.push_back(2581);
+    tri3_xyze(0, 2) = -0.0501722;
+    tri3_xyze(1, 2) = -0.020782;
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-2);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0482963;
+    tri3_xyze(1, 0) = -0.012941;
+    tri3_xyze(2, 0) = 0.8;
+    nids.push_back(2541);
+    tri3_xyze(0, 1) = -0.05;
+    tri3_xyze(1, 1) = 0;
+    tri3_xyze(2, 1) = 0.8;
+    nids.push_back(2545);
+    tri3_xyze(0, 2) = -0.0538414;
+    tri3_xyze(1, 2) = -0.00708835;
+    tri3_xyze(2, 2) = 0.814695;
+    nids.push_back(-3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.05;
+    tri3_xyze(1, 0) = 0;
+    tri3_xyze(2, 0) = 0.8;
+    nids.push_back(2545);
+    tri3_xyze(0, 1) = -0.0595492;
+    tri3_xyze(1, 1) = 9.23291e-14;
+    tri3_xyze(2, 1) = 0.829389;
+    nids.push_back(2579);
+    tri3_xyze(0, 2) = -0.0538414;
+    tri3_xyze(1, 2) = -0.00708835;
+    tri3_xyze(2, 2) = 0.814695;
+    nids.push_back(-3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
     tri3_xyze(0, 0) = -0.111517;
     tri3_xyze(1, 0) = -0.0298809;
     tri3_xyze(2, 0) = 0.752447;
@@ -306,12 +594,30 @@ void test_bacigenerated_2010()
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
+    tri3_xyze(0, 0) = -0.0816682;
+    tri3_xyze(1, 0) = -0.0218829;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2549);
+    tri3_xyze(0, 1) = -0.0732217;
+    tri3_xyze(1, 1) = -0.0422746;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2585);
+    tri3_xyze(0, 2) = -0.0915976;
+    tri3_xyze(1, 2) = -0.037941;
+    tri3_xyze(2, 2) = 0.752447;
+    nids.push_back(-11);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
     tri3_xyze(0, 0) = -0.0845492;
-    tri3_xyze(1, 0) = -8.9635e-14;
+    tri3_xyze(1, 0) = -1.49392e-13;
     tri3_xyze(2, 0) = 0.752447;
     nids.push_back(2551);
     tri3_xyze(0, 1) = -0.115451;
-    tri3_xyze(1, 1) = -8.9635e-14;
+    tri3_xyze(1, 1) = -1.49392e-13;
     tri3_xyze(2, 1) = 0.752447;
     nids.push_back(2555);
     tri3_xyze(0, 2) = -0.0982963;
@@ -325,7 +631,7 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.115451;
-    tri3_xyze(1, 0) = -8.9635e-14;
+    tri3_xyze(1, 0) = -1.49392e-13;
     tri3_xyze(2, 0) = 0.752447;
     nids.push_back(2555);
     tri3_xyze(0, 1) = -0.111517;
@@ -342,18 +648,36 @@ void test_bacigenerated_2010()
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0999834;
-    tri3_xyze(1, 0) = -0.0577254;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2595);
-    tri3_xyze(0, 1) = -0.0732217;
-    tri3_xyze(1, 1) = -0.0422746;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2597);
-    tri3_xyze(0, 2) = -0.0915976;
-    tri3_xyze(1, 2) = -0.037941;
-    tri3_xyze(2, 2) = 0.847553;
-    nids.push_back(-26);
+    tri3_xyze(0, 0) = -0.111517;
+    tri3_xyze(1, 0) = 0.0298809;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2807);
+    tri3_xyze(0, 1) = -0.0816682;
+    tri3_xyze(1, 1) = 0.0218829;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2805);
+    tri3_xyze(0, 2) = -0.0982963;
+    tri3_xyze(1, 2) = 0.012941;
+    tri3_xyze(2, 2) = 0.752447;
+    nids.push_back(-12);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0816682;
+    tri3_xyze(1, 0) = 0.0218829;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2805);
+    tri3_xyze(0, 1) = -0.0845492;
+    tri3_xyze(1, 1) = -1.49392e-13;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2551);
+    tri3_xyze(0, 2) = -0.0982963;
+    tri3_xyze(1, 2) = 0.012941;
+    tri3_xyze(2, 2) = 0.752447;
+    nids.push_back(-12);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -383,7 +707,7 @@ void test_bacigenerated_2010()
     tri3_xyze(2, 0) = 0.770611;
     nids.push_back(2557);
     tri3_xyze(0, 1) = -0.140451;
-    tri3_xyze(1, 1) = -5.53975e-14;
+    tri3_xyze(1, 1) = -9.23291e-14;
     tri3_xyze(2, 1) = 0.770611;
     nids.push_back(2559);
     tri3_xyze(0, 2) = -0.125771;
@@ -397,11 +721,11 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.140451;
-    tri3_xyze(1, 0) = -5.53975e-14;
+    tri3_xyze(1, 0) = -9.23291e-14;
     tri3_xyze(2, 0) = 0.770611;
     nids.push_back(2559);
     tri3_xyze(0, 1) = -0.115451;
-    tri3_xyze(1, 1) = -8.9635e-14;
+    tri3_xyze(1, 1) = -1.49392e-13;
     tri3_xyze(2, 1) = 0.752447;
     nids.push_back(2555);
     tri3_xyze(0, 2) = -0.125771;
@@ -415,7 +739,7 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.115451;
-    tri3_xyze(1, 0) = -8.9635e-14;
+    tri3_xyze(1, 0) = -1.49392e-13;
     tri3_xyze(2, 0) = 0.752447;
     nids.push_back(2555);
     tri3_xyze(0, 1) = -0.111517;
@@ -505,11 +829,11 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.115451;
-    tri3_xyze(1, 0) = -8.9635e-14;
+    tri3_xyze(1, 0) = -1.49392e-13;
     tri3_xyze(2, 0) = 0.752447;
     nids.push_back(2555);
     tri3_xyze(0, 1) = -0.140451;
-    tri3_xyze(1, 1) = -5.53975e-14;
+    tri3_xyze(1, 1) = -9.23291e-14;
     tri3_xyze(2, 1) = 0.770611;
     nids.push_back(2559);
     tri3_xyze(0, 2) = -0.125771;
@@ -523,7 +847,7 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.140451;
-    tri3_xyze(1, 0) = -5.53975e-14;
+    tri3_xyze(1, 0) = -9.23291e-14;
     tri3_xyze(2, 0) = 0.770611;
     nids.push_back(2559);
     tri3_xyze(0, 1) = -0.135665;
@@ -540,12 +864,30 @@ void test_bacigenerated_2010()
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
+    tri3_xyze(0, 0) = -0.135665;
+    tri3_xyze(1, 0) = 0.0363514;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2809);
+    tri3_xyze(0, 1) = -0.111517;
+    tri3_xyze(1, 1) = 0.0298809;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2807);
+    tri3_xyze(0, 2) = -0.125771;
+    tri3_xyze(1, 2) = 0.0165581;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-15);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
     tri3_xyze(0, 0) = -0.111517;
     tri3_xyze(1, 0) = 0.0298809;
     tri3_xyze(2, 0) = 0.752447;
     nids.push_back(2807);
     tri3_xyze(0, 1) = -0.115451;
-    tri3_xyze(1, 1) = -8.9635e-14;
+    tri3_xyze(1, 1) = -1.49392e-13;
     tri3_xyze(2, 1) = 0.752447;
     nids.push_back(2555);
     tri3_xyze(0, 2) = -0.125771;
@@ -599,7 +941,7 @@ void test_bacigenerated_2010()
     tri3_xyze(2, 0) = 0.8;
     nids.push_back(2563);
     tri3_xyze(0, 1) = -0.140451;
-    tri3_xyze(1, 1) = -5.53975e-14;
+    tri3_xyze(1, 1) = -9.23291e-14;
     tri3_xyze(2, 1) = 0.770611;
     nids.push_back(2559);
     tri3_xyze(0, 2) = -0.142751;
@@ -613,7 +955,7 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.140451;
-    tri3_xyze(1, 0) = -5.53975e-14;
+    tri3_xyze(1, 0) = -9.23291e-14;
     tri3_xyze(2, 0) = 0.770611;
     nids.push_back(2559);
     tri3_xyze(0, 1) = -0.135665;
@@ -624,6 +966,24 @@ void test_bacigenerated_2010()
     tri3_xyze(1, 2) = -0.0187936;
     tri3_xyze(2, 2) = 0.785305;
     nids.push_back(-16);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.121634;
+    tri3_xyze(1, 0) = -0.0702254;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2589);
+    tri3_xyze(0, 1) = -0.129904;
+    tri3_xyze(1, 1) = -0.075;
+    tri3_xyze(2, 1) = 0.8;
+    nids.push_back(2591);
+    tri3_xyze(0, 2) = -0.133023;
+    tri3_xyze(1, 2) = -0.0550999;
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-17);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -685,7 +1045,7 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.140451;
-    tri3_xyze(1, 0) = -5.53975e-14;
+    tri3_xyze(1, 0) = -9.23291e-14;
     tri3_xyze(2, 0) = 0.770611;
     nids.push_back(2559);
     tri3_xyze(0, 1) = -0.15;
@@ -743,7 +1103,7 @@ void test_bacigenerated_2010()
     tri3_xyze(2, 0) = 0.770611;
     nids.push_back(2809);
     tri3_xyze(0, 1) = -0.140451;
-    tri3_xyze(1, 1) = -5.53975e-14;
+    tri3_xyze(1, 1) = -9.23291e-14;
     tri3_xyze(2, 1) = 0.770611;
     nids.push_back(2559);
     tri3_xyze(0, 2) = -0.142751;
@@ -779,7 +1139,7 @@ void test_bacigenerated_2010()
     tri3_xyze(2, 0) = 0.829389;
     nids.push_back(2565);
     tri3_xyze(0, 1) = -0.140451;
-    tri3_xyze(1, 1) = 5.53975e-14;
+    tri3_xyze(1, 1) = 9.23291e-14;
     tri3_xyze(2, 1) = 0.829389;
     nids.push_back(2567);
     tri3_xyze(0, 2) = -0.142751;
@@ -793,7 +1153,7 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.140451;
-    tri3_xyze(1, 0) = 5.53975e-14;
+    tri3_xyze(1, 0) = 9.23291e-14;
     tri3_xyze(2, 0) = 0.829389;
     nids.push_back(2567);
     tri3_xyze(0, 1) = -0.15;
@@ -905,7 +1265,7 @@ void test_bacigenerated_2010()
     tri3_xyze(2, 0) = 0.8;
     nids.push_back(2563);
     tri3_xyze(0, 1) = -0.140451;
-    tri3_xyze(1, 1) = 5.53975e-14;
+    tri3_xyze(1, 1) = 9.23291e-14;
     tri3_xyze(2, 1) = 0.829389;
     nids.push_back(2567);
     tri3_xyze(0, 2) = -0.142751;
@@ -919,7 +1279,7 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.140451;
-    tri3_xyze(1, 0) = 5.53975e-14;
+    tri3_xyze(1, 0) = 9.23291e-14;
     tri3_xyze(2, 0) = 0.829389;
     nids.push_back(2567);
     tri3_xyze(0, 1) = -0.135665;
@@ -995,7 +1355,7 @@ void test_bacigenerated_2010()
     tri3_xyze(2, 0) = 0.847553;
     nids.push_back(2569);
     tri3_xyze(0, 1) = -0.115451;
-    tri3_xyze(1, 1) = 8.9635e-14;
+    tri3_xyze(1, 1) = 1.49392e-13;
     tri3_xyze(2, 1) = 0.847553;
     nids.push_back(2571);
     tri3_xyze(0, 2) = -0.125771;
@@ -1009,11 +1369,11 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.115451;
-    tri3_xyze(1, 0) = 8.9635e-14;
+    tri3_xyze(1, 0) = 1.49392e-13;
     tri3_xyze(2, 0) = 0.847553;
     nids.push_back(2571);
     tri3_xyze(0, 1) = -0.140451;
-    tri3_xyze(1, 1) = 5.53975e-14;
+    tri3_xyze(1, 1) = 9.23291e-14;
     tri3_xyze(2, 1) = 0.829389;
     nids.push_back(2567);
     tri3_xyze(0, 2) = -0.125771;
@@ -1027,7 +1387,7 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.140451;
-    tri3_xyze(1, 0) = 5.53975e-14;
+    tri3_xyze(1, 0) = 9.23291e-14;
     tri3_xyze(2, 0) = 0.829389;
     nids.push_back(2567);
     tri3_xyze(0, 1) = -0.135665;
@@ -1117,11 +1477,11 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.140451;
-    tri3_xyze(1, 0) = 5.53975e-14;
+    tri3_xyze(1, 0) = 9.23291e-14;
     tri3_xyze(2, 0) = 0.829389;
     nids.push_back(2567);
     tri3_xyze(0, 1) = -0.115451;
-    tri3_xyze(1, 1) = 8.9635e-14;
+    tri3_xyze(1, 1) = 1.49392e-13;
     tri3_xyze(2, 1) = 0.847553;
     nids.push_back(2571);
     tri3_xyze(0, 2) = -0.125771;
@@ -1135,7 +1495,7 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.115451;
-    tri3_xyze(1, 0) = 8.9635e-14;
+    tri3_xyze(1, 0) = 1.49392e-13;
     tri3_xyze(2, 0) = 0.847553;
     nids.push_back(2571);
     tri3_xyze(0, 1) = -0.111517;
@@ -1152,30 +1512,12 @@ void test_bacigenerated_2010()
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.111517;
-    tri3_xyze(1, 0) = 0.0298809;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2815);
-    tri3_xyze(0, 1) = -0.135665;
-    tri3_xyze(1, 1) = 0.0363514;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2813);
-    tri3_xyze(0, 2) = -0.125771;
-    tri3_xyze(1, 2) = 0.0165581;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-24);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
     tri3_xyze(0, 0) = -0.135665;
     tri3_xyze(1, 0) = 0.0363514;
     tri3_xyze(2, 0) = 0.829389;
     nids.push_back(2813);
     tri3_xyze(0, 1) = -0.140451;
-    tri3_xyze(1, 1) = 5.53975e-14;
+    tri3_xyze(1, 1) = 9.23291e-14;
     tri3_xyze(2, 1) = 0.829389;
     nids.push_back(2567);
     tri3_xyze(0, 2) = -0.125771;
@@ -1206,30 +1548,12 @@ void test_bacigenerated_2010()
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0816682;
-    tri3_xyze(1, 0) = -0.0218829;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2573);
-    tri3_xyze(0, 1) = -0.0845492;
-    tri3_xyze(1, 1) = 8.9635e-14;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2575);
-    tri3_xyze(0, 2) = -0.0982963;
-    tri3_xyze(1, 2) = -0.012941;
-    tri3_xyze(2, 2) = 0.847553;
-    nids.push_back(-25);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
     tri3_xyze(0, 0) = -0.0845492;
-    tri3_xyze(1, 0) = 8.9635e-14;
+    tri3_xyze(1, 0) = 1.49392e-13;
     tri3_xyze(2, 0) = 0.847553;
     nids.push_back(2575);
     tri3_xyze(0, 1) = -0.115451;
-    tri3_xyze(1, 1) = 8.9635e-14;
+    tri3_xyze(1, 1) = 1.49392e-13;
     tri3_xyze(2, 1) = 0.847553;
     nids.push_back(2571);
     tri3_xyze(0, 2) = -0.0982963;
@@ -1243,7 +1567,7 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.115451;
-    tri3_xyze(1, 0) = 8.9635e-14;
+    tri3_xyze(1, 0) = 1.49392e-13;
     tri3_xyze(2, 0) = 0.847553;
     nids.push_back(2571);
     tri3_xyze(0, 1) = -0.111517;
@@ -1254,24 +1578,6 @@ void test_bacigenerated_2010()
     tri3_xyze(1, 2) = -0.012941;
     tri3_xyze(2, 2) = 0.847553;
     nids.push_back(-25);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0732217;
-    tri3_xyze(1, 0) = -0.0422746;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2597);
-    tri3_xyze(0, 1) = -0.0816682;
-    tri3_xyze(1, 1) = -0.0218829;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2573);
-    tri3_xyze(0, 2) = -0.0915976;
-    tri3_xyze(1, 2) = -0.037941;
-    tri3_xyze(2, 2) = 0.847553;
-    nids.push_back(-26);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -1315,31 +1621,13 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.115451;
-    tri3_xyze(1, 0) = 8.9635e-14;
+    tri3_xyze(1, 0) = 1.49392e-13;
     tri3_xyze(2, 0) = 0.847553;
     nids.push_back(2571);
     tri3_xyze(0, 1) = -0.0845492;
-    tri3_xyze(1, 1) = 8.9635e-14;
+    tri3_xyze(1, 1) = 1.49392e-13;
     tri3_xyze(2, 1) = 0.847553;
     nids.push_back(2575);
-    tri3_xyze(0, 2) = -0.0982963;
-    tri3_xyze(1, 2) = 0.012941;
-    tri3_xyze(2, 2) = 0.847553;
-    nids.push_back(-27);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0816682;
-    tri3_xyze(1, 0) = 0.0218829;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2817);
-    tri3_xyze(0, 1) = -0.111517;
-    tri3_xyze(1, 1) = 0.0298809;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2815);
     tri3_xyze(0, 2) = -0.0982963;
     tri3_xyze(1, 2) = 0.012941;
     tri3_xyze(2, 2) = 0.847553;
@@ -1355,7 +1643,7 @@ void test_bacigenerated_2010()
     tri3_xyze(2, 0) = 0.847553;
     nids.push_back(2815);
     tri3_xyze(0, 1) = -0.115451;
-    tri3_xyze(1, 1) = 8.9635e-14;
+    tri3_xyze(1, 1) = 1.49392e-13;
     tri3_xyze(2, 1) = 0.847553;
     nids.push_back(2571);
     tri3_xyze(0, 2) = -0.0982963;
@@ -1368,72 +1656,72 @@ void test_bacigenerated_2010()
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0816682;
-    tri3_xyze(1, 0) = -0.0218829;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2573);
-    tri3_xyze(0, 1) = -0.0575201;
-    tri3_xyze(1, 1) = -0.0154125;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2577);
-    tri3_xyze(0, 2) = -0.0708216;
-    tri3_xyze(1, 2) = -0.00932385;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-28);
+    tri3_xyze(0, 0) = -0.0421076;
+    tri3_xyze(1, 0) = -0.0421076;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2602);
+    tri3_xyze(0, 1) = -0.0515711;
+    tri3_xyze(1, 1) = -0.0297746;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2582);
+    tri3_xyze(0, 2) = -0.0430838;
+    tri3_xyze(1, 2) = -0.0330594;
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-31);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0575201;
-    tri3_xyze(1, 0) = -0.0154125;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2577);
-    tri3_xyze(0, 1) = -0.0595492;
-    tri3_xyze(1, 1) = 5.53975e-14;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2579);
-    tri3_xyze(0, 2) = -0.0708216;
-    tri3_xyze(1, 2) = -0.00932385;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-28);
+    tri3_xyze(0, 0) = -0.0515711;
+    tri3_xyze(1, 0) = -0.0297746;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2582);
+    tri3_xyze(0, 1) = -0.0433013;
+    tri3_xyze(1, 1) = -0.025;
+    tri3_xyze(2, 1) = 0.8;
+    nids.push_back(2581);
+    tri3_xyze(0, 2) = -0.0430838;
+    tri3_xyze(1, 2) = -0.0330594;
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-31);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0595492;
-    tri3_xyze(1, 0) = 5.53975e-14;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2579);
-    tri3_xyze(0, 1) = -0.0845492;
-    tri3_xyze(1, 1) = 8.9635e-14;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2575);
-    tri3_xyze(0, 2) = -0.0708216;
-    tri3_xyze(1, 2) = -0.00932385;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-28);
+    tri3_xyze(0, 0) = -0.0421076;
+    tri3_xyze(1, 0) = -0.0421076;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2602);
+    tri3_xyze(0, 1) = -0.0597853;
+    tri3_xyze(1, 1) = -0.0597853;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2605);
+    tri3_xyze(0, 2) = -0.0566714;
+    tri3_xyze(1, 2) = -0.0434855;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-33);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0845492;
-    tri3_xyze(1, 0) = 8.9635e-14;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2575);
-    tri3_xyze(0, 1) = -0.0816682;
-    tri3_xyze(1, 1) = -0.0218829;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2573);
-    tri3_xyze(0, 2) = -0.0708216;
-    tri3_xyze(1, 2) = -0.00932385;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-28);
+    tri3_xyze(0, 0) = -0.0597853;
+    tri3_xyze(1, 0) = -0.0597853;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2605);
+    tri3_xyze(0, 1) = -0.0732217;
+    tri3_xyze(1, 1) = -0.0422746;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2585);
+    tri3_xyze(0, 2) = -0.0566714;
+    tri3_xyze(1, 2) = -0.0434855;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-33);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -1442,16 +1730,16 @@ void test_bacigenerated_2010()
     nids.clear();
     tri3_xyze(0, 0) = -0.0732217;
     tri3_xyze(1, 0) = -0.0422746;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2597);
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2585);
     tri3_xyze(0, 1) = -0.0515711;
     tri3_xyze(1, 1) = -0.0297746;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2599);
-    tri3_xyze(0, 2) = -0.0659953;
-    tri3_xyze(1, 2) = -0.0273361;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-29);
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2582);
+    tri3_xyze(0, 2) = -0.0566714;
+    tri3_xyze(1, 2) = -0.0434855;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-33);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -1460,124 +1748,142 @@ void test_bacigenerated_2010()
     nids.clear();
     tri3_xyze(0, 0) = -0.0515711;
     tri3_xyze(1, 0) = -0.0297746;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2599);
-    tri3_xyze(0, 1) = -0.0575201;
-    tri3_xyze(1, 1) = -0.0154125;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2577);
-    tri3_xyze(0, 2) = -0.0659953;
-    tri3_xyze(1, 2) = -0.0273361;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-29);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0575201;
-    tri3_xyze(1, 0) = -0.0154125;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2577);
-    tri3_xyze(0, 1) = -0.0816682;
-    tri3_xyze(1, 1) = -0.0218829;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2573);
-    tri3_xyze(0, 2) = -0.0659953;
-    tri3_xyze(1, 2) = -0.0273361;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-29);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0816682;
-    tri3_xyze(1, 0) = -0.0218829;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2573);
-    tri3_xyze(0, 1) = -0.0732217;
-    tri3_xyze(1, 1) = -0.0422746;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2597);
-    tri3_xyze(0, 2) = -0.0659953;
-    tri3_xyze(1, 2) = -0.0273361;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-29);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0845492;
-    tri3_xyze(1, 0) = 8.9635e-14;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2575);
-    tri3_xyze(0, 1) = -0.0595492;
-    tri3_xyze(1, 1) = 5.53975e-14;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2579);
-    tri3_xyze(0, 2) = -0.0708216;
-    tri3_xyze(1, 2) = 0.00932385;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-30);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0595492;
-    tri3_xyze(1, 0) = 5.53975e-14;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2579);
-    tri3_xyze(0, 1) = -0.0575201;
-    tri3_xyze(1, 1) = 0.0154125;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2819);
-    tri3_xyze(0, 2) = -0.0708216;
-    tri3_xyze(1, 2) = 0.00932385;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-30);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0433013;
-    tri3_xyze(1, 0) = -0.025;
-    tri3_xyze(2, 0) = 0.8;
-    nids.push_back(2581);
-    tri3_xyze(0, 1) = -0.0515711;
-    tri3_xyze(1, 1) = -0.0297746;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2599);
-    tri3_xyze(0, 2) = -0.0430838;
-    tri3_xyze(1, 2) = -0.0330594;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-32);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0515711;
-    tri3_xyze(1, 0) = -0.0297746;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2599);
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2582);
     tri3_xyze(0, 1) = -0.0421076;
     tri3_xyze(1, 1) = -0.0421076;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2619);
-    tri3_xyze(0, 2) = -0.0430838;
-    tri3_xyze(1, 2) = -0.0330594;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-32);
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2602);
+    tri3_xyze(0, 2) = -0.0566714;
+    tri3_xyze(1, 2) = -0.0434855;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-33);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0999834;
+    tri3_xyze(1, 0) = -0.0577254;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2587);
+    tri3_xyze(0, 1) = -0.0732217;
+    tri3_xyze(1, 1) = -0.0422746;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2585);
+    tri3_xyze(0, 2) = -0.0786566;
+    tri3_xyze(1, 2) = -0.0603553;
+    tri3_xyze(2, 2) = 0.752447;
+    nids.push_back(-34);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0732217;
+    tri3_xyze(1, 0) = -0.0422746;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2585);
+    tri3_xyze(0, 1) = -0.0597853;
+    tri3_xyze(1, 1) = -0.0597853;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2605);
+    tri3_xyze(0, 2) = -0.0786566;
+    tri3_xyze(1, 2) = -0.0603553;
+    tri3_xyze(2, 2) = 0.752447;
+    nids.push_back(-34);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0816361;
+    tri3_xyze(1, 0) = -0.0816361;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2607);
+    tri3_xyze(0, 1) = -0.0993137;
+    tri3_xyze(1, 1) = -0.0993137;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2609);
+    tri3_xyze(0, 2) = -0.100642;
+    tri3_xyze(1, 2) = -0.0772252;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-35);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0993137;
+    tri3_xyze(1, 0) = -0.0993137;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2609);
+    tri3_xyze(0, 1) = -0.121634;
+    tri3_xyze(1, 1) = -0.0702254;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2589);
+    tri3_xyze(0, 2) = -0.100642;
+    tri3_xyze(1, 2) = -0.0772252;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-35);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.121634;
+    tri3_xyze(1, 0) = -0.0702254;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2589);
+    tri3_xyze(0, 1) = -0.0999834;
+    tri3_xyze(1, 1) = -0.0577254;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2587);
+    tri3_xyze(0, 2) = -0.100642;
+    tri3_xyze(1, 2) = -0.0772252;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-35);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0999834;
+    tri3_xyze(1, 0) = -0.0577254;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2587);
+    tri3_xyze(0, 1) = -0.0816361;
+    tri3_xyze(1, 1) = -0.0816361;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2607);
+    tri3_xyze(0, 2) = -0.100642;
+    tri3_xyze(1, 2) = -0.0772252;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-35);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.0993137;
+    tri3_xyze(1, 0) = -0.0993137;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2609);
+    tri3_xyze(0, 1) = -0.106066;
+    tri3_xyze(1, 1) = -0.106066;
+    tri3_xyze(2, 1) = 0.8;
+    nids.push_back(2611);
+    tri3_xyze(0, 2) = -0.114229;
+    tri3_xyze(1, 2) = -0.0876513;
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-36);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -1588,32 +1894,50 @@ void test_bacigenerated_2010()
     tri3_xyze(1, 0) = -0.106066;
     tri3_xyze(2, 0) = 0.8;
     nids.push_back(2611);
-    tri3_xyze(0, 1) = -0.0993137;
-    tri3_xyze(1, 1) = -0.0993137;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2613);
+    tri3_xyze(0, 1) = -0.129904;
+    tri3_xyze(1, 1) = -0.075;
+    tri3_xyze(2, 1) = 0.8;
+    nids.push_back(2591);
     tri3_xyze(0, 2) = -0.114229;
     tri3_xyze(1, 2) = -0.0876513;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-37);
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-36);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0993137;
-    tri3_xyze(1, 0) = -0.0993137;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2613);
+    tri3_xyze(0, 0) = -0.129904;
+    tri3_xyze(1, 0) = -0.075;
+    tri3_xyze(2, 0) = 0.8;
+    nids.push_back(2591);
     tri3_xyze(0, 1) = -0.121634;
     tri3_xyze(1, 1) = -0.0702254;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2593);
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2589);
     tri3_xyze(0, 2) = -0.114229;
     tri3_xyze(1, 2) = -0.0876513;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-37);
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-36);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.121634;
+    tri3_xyze(1, 0) = -0.0702254;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2589);
+    tri3_xyze(0, 1) = -0.0993137;
+    tri3_xyze(1, 1) = -0.0993137;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2609);
+    tri3_xyze(0, 2) = -0.114229;
+    tri3_xyze(1, 2) = -0.0876513;
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-36);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -1656,54 +1980,72 @@ void test_bacigenerated_2010()
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0993137;
-    tri3_xyze(1, 0) = -0.0993137;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2613);
-    tri3_xyze(0, 1) = -0.0816361;
-    tri3_xyze(1, 1) = -0.0816361;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2615);
-    tri3_xyze(0, 2) = -0.100642;
-    tri3_xyze(1, 2) = -0.0772252;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-38);
+    tri3_xyze(0, 0) = -0.0816682;
+    tri3_xyze(1, 0) = 0.0218829;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2805);
+    tri3_xyze(0, 1) = -0.111517;
+    tri3_xyze(1, 1) = 0.0298809;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2807);
+    tri3_xyze(0, 2) = -0.0915976;
+    tri3_xyze(1, 2) = 0.037941;
+    tri3_xyze(2, 2) = 0.752447;
+    nids.push_back(-144);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0816361;
-    tri3_xyze(1, 0) = -0.0816361;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2615);
+    tri3_xyze(0, 0) = -0.111517;
+    tri3_xyze(1, 0) = 0.0298809;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2807);
     tri3_xyze(0, 1) = -0.0999834;
-    tri3_xyze(1, 1) = -0.0577254;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2595);
-    tri3_xyze(0, 2) = -0.100642;
-    tri3_xyze(1, 2) = -0.0772252;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-38);
+    tri3_xyze(1, 1) = 0.0577254;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2827);
+    tri3_xyze(0, 2) = -0.0915976;
+    tri3_xyze(1, 2) = 0.037941;
+    tri3_xyze(2, 2) = 0.752447;
+    nids.push_back(-144);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0999834;
-    tri3_xyze(1, 0) = -0.0577254;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2595);
+    tri3_xyze(0, 0) = -0.111517;
+    tri3_xyze(1, 0) = 0.0298809;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2807);
+    tri3_xyze(0, 1) = -0.135665;
+    tri3_xyze(1, 1) = 0.0363514;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2809);
+    tri3_xyze(0, 2) = -0.1172;
+    tri3_xyze(1, 2) = 0.0485458;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-145);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
+    tri3_xyze(0, 0) = -0.135665;
+    tri3_xyze(1, 0) = 0.0363514;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2809);
     tri3_xyze(0, 1) = -0.121634;
-    tri3_xyze(1, 1) = -0.0702254;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2593);
-    tri3_xyze(0, 2) = -0.100642;
-    tri3_xyze(1, 2) = -0.0772252;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-38);
+    tri3_xyze(1, 1) = 0.0702254;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2829);
+    tri3_xyze(0, 2) = -0.1172;
+    tri3_xyze(1, 2) = 0.0485458;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-145);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -1711,125 +2053,35 @@ void test_bacigenerated_2010()
 
     nids.clear();
     tri3_xyze(0, 0) = -0.121634;
-    tri3_xyze(1, 0) = -0.0702254;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2593);
-    tri3_xyze(0, 1) = -0.0993137;
-    tri3_xyze(1, 1) = -0.0993137;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2613);
-    tri3_xyze(0, 2) = -0.100642;
-    tri3_xyze(1, 2) = -0.0772252;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-38);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0597853;
-    tri3_xyze(1, 0) = -0.0597853;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2617);
-    tri3_xyze(0, 1) = -0.0732217;
-    tri3_xyze(1, 1) = -0.0422746;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2597);
-    tri3_xyze(0, 2) = -0.0786566;
-    tri3_xyze(1, 2) = -0.0603553;
-    tri3_xyze(2, 2) = 0.847553;
-    nids.push_back(-39);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0732217;
-    tri3_xyze(1, 0) = -0.0422746;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2597);
+    tri3_xyze(1, 0) = 0.0702254;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2829);
     tri3_xyze(0, 1) = -0.0999834;
-    tri3_xyze(1, 1) = -0.0577254;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2595);
-    tri3_xyze(0, 2) = -0.0786566;
-    tri3_xyze(1, 2) = -0.0603553;
-    tri3_xyze(2, 2) = 0.847553;
-    nids.push_back(-39);
+    tri3_xyze(1, 1) = 0.0577254;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2827);
+    tri3_xyze(0, 2) = -0.1172;
+    tri3_xyze(1, 2) = 0.0485458;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-145);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
-    tri3_xyze(0, 0) = -0.0597853;
-    tri3_xyze(1, 0) = -0.0597853;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2617);
-    tri3_xyze(0, 1) = -0.0421076;
-    tri3_xyze(1, 1) = -0.0421076;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2619);
-    tri3_xyze(0, 2) = -0.0566714;
-    tri3_xyze(1, 2) = -0.0434855;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-40);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0421076;
-    tri3_xyze(1, 0) = -0.0421076;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2619);
-    tri3_xyze(0, 1) = -0.0515711;
-    tri3_xyze(1, 1) = -0.0297746;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2599);
-    tri3_xyze(0, 2) = -0.0566714;
-    tri3_xyze(1, 2) = -0.0434855;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-40);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0515711;
-    tri3_xyze(1, 0) = -0.0297746;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2599);
-    tri3_xyze(0, 1) = -0.0732217;
-    tri3_xyze(1, 1) = -0.0422746;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2597);
-    tri3_xyze(0, 2) = -0.0566714;
-    tri3_xyze(1, 2) = -0.0434855;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-40);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0732217;
-    tri3_xyze(1, 0) = -0.0422746;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2597);
-    tri3_xyze(0, 1) = -0.0597853;
-    tri3_xyze(1, 1) = -0.0597853;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2617);
-    tri3_xyze(0, 2) = -0.0566714;
-    tri3_xyze(1, 2) = -0.0434855;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-40);
+    tri3_xyze(0, 0) = -0.0999834;
+    tri3_xyze(1, 0) = 0.0577254;
+    tri3_xyze(2, 0) = 0.752447;
+    nids.push_back(2827);
+    tri3_xyze(0, 1) = -0.111517;
+    tri3_xyze(1, 1) = 0.0298809;
+    tri3_xyze(2, 1) = 0.752447;
+    nids.push_back(2807);
+    tri3_xyze(0, 2) = -0.1172;
+    tri3_xyze(1, 2) = 0.0485458;
+    tri3_xyze(2, 2) = 0.761529;
+    nids.push_back(-145);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
   {
@@ -1872,6 +2124,24 @@ void test_bacigenerated_2010()
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     nids.clear();
+    tri3_xyze(0, 0) = -0.121634;
+    tri3_xyze(1, 0) = 0.0702254;
+    tri3_xyze(2, 0) = 0.770611;
+    nids.push_back(2829);
+    tri3_xyze(0, 1) = -0.135665;
+    tri3_xyze(1, 1) = 0.0363514;
+    tri3_xyze(2, 1) = 0.770611;
+    nids.push_back(2809);
+    tri3_xyze(0, 2) = -0.133023;
+    tri3_xyze(1, 2) = 0.0550999;
+    tri3_xyze(2, 2) = 0.785305;
+    nids.push_back(-146);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+  }
+  {
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+
+    nids.clear();
     tri3_xyze(0, 0) = -0.144889;
     tri3_xyze(1, 0) = 0.0388229;
     tri3_xyze(2, 0) = 0.8;
@@ -1880,24 +2150,6 @@ void test_bacigenerated_2010()
     tri3_xyze(1, 1) = 0.0363514;
     tri3_xyze(2, 1) = 0.829389;
     nids.push_back(2813);
-    tri3_xyze(0, 2) = -0.133023;
-    tri3_xyze(1, 2) = 0.0550999;
-    tri3_xyze(2, 2) = 0.814695;
-    nids.push_back(-147);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.135665;
-    tri3_xyze(1, 0) = 0.0363514;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2813);
-    tri3_xyze(0, 1) = -0.121634;
-    tri3_xyze(1, 1) = 0.0702254;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2833);
     tri3_xyze(0, 2) = -0.133023;
     tri3_xyze(1, 2) = 0.0550999;
     tri3_xyze(2, 2) = 0.814695;
@@ -1922,114 +2174,9 @@ void test_bacigenerated_2010()
     nids.push_back(-147);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
   }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
-    nids.clear();
-    tri3_xyze(0, 0) = -0.135665;
-    tri3_xyze(1, 0) = 0.0363514;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2813);
-    tri3_xyze(0, 1) = -0.111517;
-    tri3_xyze(1, 1) = 0.0298809;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2815);
-    tri3_xyze(0, 2) = -0.1172;
-    tri3_xyze(1, 2) = 0.0485458;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-148);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
-    nids.clear();
-    tri3_xyze(0, 0) = -0.111517;
-    tri3_xyze(1, 0) = 0.0298809;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2815);
-    tri3_xyze(0, 1) = -0.0999834;
-    tri3_xyze(1, 1) = 0.0577254;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2835);
-    tri3_xyze(0, 2) = -0.1172;
-    tri3_xyze(1, 2) = 0.0485458;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-148);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0999834;
-    tri3_xyze(1, 0) = 0.0577254;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2835);
-    tri3_xyze(0, 1) = -0.121634;
-    tri3_xyze(1, 1) = 0.0702254;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2833);
-    tri3_xyze(0, 2) = -0.1172;
-    tri3_xyze(1, 2) = 0.0485458;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-148);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.121634;
-    tri3_xyze(1, 0) = 0.0702254;
-    tri3_xyze(2, 0) = 0.829389;
-    nids.push_back(2833);
-    tri3_xyze(0, 1) = -0.135665;
-    tri3_xyze(1, 1) = 0.0363514;
-    tri3_xyze(2, 1) = 0.829389;
-    nids.push_back(2813);
-    tri3_xyze(0, 2) = -0.1172;
-    tri3_xyze(1, 2) = 0.0485458;
-    tri3_xyze(2, 2) = 0.838471;
-    nids.push_back(-148);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.111517;
-    tri3_xyze(1, 0) = 0.0298809;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2815);
-    tri3_xyze(0, 1) = -0.0816682;
-    tri3_xyze(1, 1) = 0.0218829;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2817);
-    tri3_xyze(0, 2) = -0.0915976;
-    tri3_xyze(1, 2) = 0.037941;
-    tri3_xyze(2, 2) = 0.847553;
-    nids.push_back(-149);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
-  {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
-
-    nids.clear();
-    tri3_xyze(0, 0) = -0.0999834;
-    tri3_xyze(1, 0) = 0.0577254;
-    tri3_xyze(2, 0) = 0.847553;
-    nids.push_back(2835);
-    tri3_xyze(0, 1) = -0.111517;
-    tri3_xyze(1, 1) = 0.0298809;
-    tri3_xyze(2, 1) = 0.847553;
-    nids.push_back(2815);
-    tri3_xyze(0, 2) = -0.0915976;
-    tri3_xyze(1, 2) = 0.037941;
-    tri3_xyze(2, 2) = 0.847553;
-    nids.push_back(-149);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
-  }
   {
     CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
@@ -2070,205 +2217,7 @@ void test_bacigenerated_2010()
     intersection.AddElement(1910, nids, hex8_xyze, CORE::FE::CellType::hex8);
   }
 
-  {
-    CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
-    nids.clear();
-    hex8_xyze(0, 0) = -0.05;
-    hex8_xyze(1, 0) = -0.05;
-    hex8_xyze(2, 0) = 0.8;
-    nids.push_back(2006);
-    hex8_xyze(0, 1) = -0.05;
-    hex8_xyze(1, 1) = 0;
-    hex8_xyze(2, 1) = 0.8;
-    nids.push_back(2007);
-    hex8_xyze(0, 2) = -0.1;
-    hex8_xyze(1, 2) = 0;
-    hex8_xyze(2, 2) = 0.8;
-    nids.push_back(2018);
-    hex8_xyze(0, 3) = -0.1;
-    hex8_xyze(1, 3) = -0.05;
-    hex8_xyze(2, 3) = 0.8;
-    nids.push_back(2017);
-    hex8_xyze(0, 4) = -0.05;
-    hex8_xyze(1, 4) = -0.05;
-    hex8_xyze(2, 4) = 0.85;
-    nids.push_back(2127);
-    hex8_xyze(0, 5) = -0.05;
-    hex8_xyze(1, 5) = 0;
-    hex8_xyze(2, 5) = 0.85;
-    nids.push_back(2128);
-    hex8_xyze(0, 6) = -0.1;
-    hex8_xyze(1, 6) = 0;
-    hex8_xyze(2, 6) = 0.85;
-    nids.push_back(2139);
-    hex8_xyze(0, 7) = -0.1;
-    hex8_xyze(1, 7) = -0.05;
-    hex8_xyze(2, 7) = 0.85;
-    nids.push_back(2138);
-
-    intersection.AddElement(2000, nids, hex8_xyze, CORE::FE::CellType::hex8);
-  }
-
-  {
-    CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
-
-    nids.clear();
-    hex8_xyze(0, 0) = -0.1;
-    hex8_xyze(1, 0) = -0.1;
-    hex8_xyze(2, 0) = 0.8;
-    nids.push_back(2016);
-    hex8_xyze(0, 1) = -0.1;
-    hex8_xyze(1, 1) = -0.05;
-    hex8_xyze(2, 1) = 0.8;
-    nids.push_back(2017);
-    hex8_xyze(0, 2) = -0.15;
-    hex8_xyze(1, 2) = -0.05;
-    hex8_xyze(2, 2) = 0.8;
-    nids.push_back(2028);
-    hex8_xyze(0, 3) = -0.15;
-    hex8_xyze(1, 3) = -0.1;
-    hex8_xyze(2, 3) = 0.8;
-    nids.push_back(2027);
-    hex8_xyze(0, 4) = -0.1;
-    hex8_xyze(1, 4) = -0.1;
-    hex8_xyze(2, 4) = 0.85;
-    nids.push_back(2137);
-    hex8_xyze(0, 5) = -0.1;
-    hex8_xyze(1, 5) = -0.05;
-    hex8_xyze(2, 5) = 0.85;
-    nids.push_back(2138);
-    hex8_xyze(0, 6) = -0.15;
-    hex8_xyze(1, 6) = -0.05;
-    hex8_xyze(2, 6) = 0.85;
-    nids.push_back(2149);
-    hex8_xyze(0, 7) = -0.15;
-    hex8_xyze(1, 7) = -0.1;
-    hex8_xyze(2, 7) = 0.85;
-    nids.push_back(2148);
-
-    intersection.AddElement(2009, nids, hex8_xyze, CORE::FE::CellType::hex8);
-  }
-
-  {
-    CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
-
-    nids.clear();
-    hex8_xyze(0, 0) = -0.1;
-    hex8_xyze(1, 0) = -0.05;
-    hex8_xyze(2, 0) = 0.8;
-    nids.push_back(2017);
-    hex8_xyze(0, 1) = -0.1;
-    hex8_xyze(1, 1) = 0;
-    hex8_xyze(2, 1) = 0.8;
-    nids.push_back(2018);
-    hex8_xyze(0, 2) = -0.15;
-    hex8_xyze(1, 2) = 0;
-    hex8_xyze(2, 2) = 0.8;
-    nids.push_back(2029);
-    hex8_xyze(0, 3) = -0.15;
-    hex8_xyze(1, 3) = -0.05;
-    hex8_xyze(2, 3) = 0.8;
-    nids.push_back(2028);
-    hex8_xyze(0, 4) = -0.1;
-    hex8_xyze(1, 4) = -0.05;
-    hex8_xyze(2, 4) = 0.85;
-    nids.push_back(2138);
-    hex8_xyze(0, 5) = -0.1;
-    hex8_xyze(1, 5) = 0;
-    hex8_xyze(2, 5) = 0.85;
-    nids.push_back(2139);
-    hex8_xyze(0, 6) = -0.15;
-    hex8_xyze(1, 6) = 0;
-    hex8_xyze(2, 6) = 0.85;
-    nids.push_back(2150);
-    hex8_xyze(0, 7) = -0.15;
-    hex8_xyze(1, 7) = -0.05;
-    hex8_xyze(2, 7) = 0.85;
-    nids.push_back(2149);
-
-    intersection.AddElement(2010, nids, hex8_xyze, CORE::FE::CellType::hex8);
-  }
-
-  {
-    CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
-
-    nids.clear();
-    hex8_xyze(0, 0) = -0.1;
-    hex8_xyze(1, 0) = 0;
-    hex8_xyze(2, 0) = 0.8;
-    nids.push_back(2018);
-    hex8_xyze(0, 1) = -0.1;
-    hex8_xyze(1, 1) = 0.05;
-    hex8_xyze(2, 1) = 0.8;
-    nids.push_back(2019);
-    hex8_xyze(0, 2) = -0.15;
-    hex8_xyze(1, 2) = 0.05;
-    hex8_xyze(2, 2) = 0.8;
-    nids.push_back(2030);
-    hex8_xyze(0, 3) = -0.15;
-    hex8_xyze(1, 3) = 0;
-    hex8_xyze(2, 3) = 0.8;
-    nids.push_back(2029);
-    hex8_xyze(0, 4) = -0.1;
-    hex8_xyze(1, 4) = 0;
-    hex8_xyze(2, 4) = 0.85;
-    nids.push_back(2139);
-    hex8_xyze(0, 5) = -0.1;
-    hex8_xyze(1, 5) = 0.05;
-    hex8_xyze(2, 5) = 0.85;
-    nids.push_back(2140);
-    hex8_xyze(0, 6) = -0.15;
-    hex8_xyze(1, 6) = 0.05;
-    hex8_xyze(2, 6) = 0.85;
-    nids.push_back(2151);
-    hex8_xyze(0, 7) = -0.15;
-    hex8_xyze(1, 7) = 0;
-    hex8_xyze(2, 7) = 0.85;
-    nids.push_back(2150);
-
-    intersection.AddElement(2011, nids, hex8_xyze, CORE::FE::CellType::hex8);
-  }
-
-  {
-    CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
-
-    nids.clear();
-    hex8_xyze(0, 0) = -0.15;
-    hex8_xyze(1, 0) = -0.05;
-    hex8_xyze(2, 0) = 0.8;
-    nids.push_back(2028);
-    hex8_xyze(0, 1) = -0.15;
-    hex8_xyze(1, 1) = 0;
-    hex8_xyze(2, 1) = 0.8;
-    nids.push_back(2029);
-    hex8_xyze(0, 2) = -0.2;
-    hex8_xyze(1, 2) = 0;
-    hex8_xyze(2, 2) = 0.8;
-    nids.push_back(2040);
-    hex8_xyze(0, 3) = -0.2;
-    hex8_xyze(1, 3) = -0.05;
-    hex8_xyze(2, 3) = 0.8;
-    nids.push_back(2039);
-    hex8_xyze(0, 4) = -0.15;
-    hex8_xyze(1, 4) = -0.05;
-    hex8_xyze(2, 4) = 0.85;
-    nids.push_back(2149);
-    hex8_xyze(0, 5) = -0.15;
-    hex8_xyze(1, 5) = 0;
-    hex8_xyze(2, 5) = 0.85;
-    nids.push_back(2150);
-    hex8_xyze(0, 6) = -0.2;
-    hex8_xyze(1, 6) = 0;
-    hex8_xyze(2, 6) = 0.85;
-    nids.push_back(2161);
-    hex8_xyze(0, 7) = -0.2;
-    hex8_xyze(1, 7) = -0.05;
-    hex8_xyze(2, 7) = 0.85;
-    nids.push_back(2160);
-
-    intersection.AddElement(2020, nids, hex8_xyze, CORE::FE::CellType::hex8);
-  }
 
   intersection.CutTest_Cut(
       true, INPAR::CUT::VCellGaussPts_DirectDivergence, INPAR::CUT::BCellGaussPts_Tessellation);
