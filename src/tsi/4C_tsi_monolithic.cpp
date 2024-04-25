@@ -2799,26 +2799,6 @@ void TSI::Monolithic::PrepareOutput()
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::ApplyThermoCouplingState(
-    Teuchos::RCP<const Epetra_Vector> temp, Teuchos::RCP<const Epetra_Vector> temp_res)
-{
-  TSI::Algorithm::ApplyThermoCouplingState(temp, temp_res);
-
-  // set new temperatures to contact
-  if (contact_strategy_lagrange_ != Teuchos::null || contact_strategy_nitsche_ != Teuchos::null)
-  {
-    if (contact_strategy_lagrange_ != Teuchos::null)
-      contact_strategy_lagrange_->SetState(
-          MORTAR::state_temperature, *coupST_()->SlaveToMaster(ThermoField()->Tempnp()));
-    if (contact_strategy_nitsche_ != Teuchos::null)
-      contact_strategy_nitsche_->SetState(MORTAR::state_temperature, *ThermoField()->Tempnp());
-  }
-}  // ApplyThermoCouplingState()
-
-
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
 void TSI::Monolithic::ApplyStructCouplingState(
     Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel)
 {

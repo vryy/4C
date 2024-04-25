@@ -20,6 +20,25 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+std::string CONTACT::VecBlockTypeToStr(const CONTACT::VecBlockType bt)
+{
+  switch (bt)
+  {
+    case VecBlockType::displ:
+      return "displ";
+    case VecBlockType::temp:
+      return "temp";
+    case VecBlockType::scatra:
+      return "scatra";
+    case VecBlockType::constraint:
+      return "constraint";
+    case VecBlockType::elch:
+      return "elch";
+    default:
+      FOUR_C_THROW("Unknown block type %d", bt);
+  }
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& contact_conditions,

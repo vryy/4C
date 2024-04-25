@@ -66,12 +66,12 @@ namespace NOX
         //! Returns a pointer to the given soltype. If the solution type is not found an error is
         //! thrown.
         Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> GetConstraintInterfacePtr(
-            const NOX::NLN::SolutionType& soltype) const;
+            const NOX::NLN::SolutionType soltype) const;
 
         //! If the \c errflag is set to true, a error is thrown as soon as we cannot find the
         //! corresponding entry in the stl_map. Otherwise a Teuchos::null pointer is returned.
         Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> GetConstraintInterfacePtr(
-            const NOX::NLN::SolutionType& soltype, const bool& errflag) const;
+            const NOX::NLN::SolutionType soltype, const bool errflag) const;
 
         // @name "Get" functions
         //@{

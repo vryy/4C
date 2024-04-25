@@ -668,7 +668,7 @@ namespace STR
         FOUR_C_ASSERT(!contact_data_ptr_.is_null(), "The contact model is not active!");
         return *contact_data_ptr_;
       }
-      inline const Teuchos::RCP<ContactData>& ContactPtr()
+      inline const Teuchos::RCP<ContactData>& ContactPtr() const
       {
         FOUR_C_ASSERT(!contact_data_ptr_.is_null(), "The contact model is not active!");
         return contact_data_ptr_;

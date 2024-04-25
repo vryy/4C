@@ -77,7 +77,7 @@ const NOX::NLN::CONSTRAINT::ReqInterfaceMap& NOX::NLN::CONSTRAINT::Group::GetCon
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required>
-NOX::NLN::CONSTRAINT::Group::GetConstraintInterfacePtr(const NOX::NLN::SolutionType& soltype) const
+NOX::NLN::CONSTRAINT::Group::GetConstraintInterfacePtr(const NOX::NLN::SolutionType soltype) const
 {
   return GetConstraintInterfacePtr(soltype, true);
 }
@@ -86,7 +86,7 @@ NOX::NLN::CONSTRAINT::Group::GetConstraintInterfacePtr(const NOX::NLN::SolutionT
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required>
 NOX::NLN::CONSTRAINT::Group::GetConstraintInterfacePtr(
-    const NOX::NLN::SolutionType& soltype, const bool& errflag) const
+    const NOX::NLN::SolutionType soltype, const bool errflag) const
 {
   Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr = Teuchos::null;
 
@@ -169,9 +169,12 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::CONSTRAINT::Group::GetRHSNorms
     {
       enum NOX::NLN::SolutionType soltype = NOX::NLN::AUX::ConvertQuantityType2SolutionType(chQ[i]);
       Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr =
-          GetConstraintInterfacePtr(soltype);
-      rval = constrptr->GetConstraintRHSNorms(RHSVector.getEpetraVector(), chQ[i], type[i],
-          (*scale)[i] == ::NOX::StatusTest::NormF::Scaled);
+          GetConstraintInterfacePtr(soltype, false);
+      if (constrptr != Teuchos::null)
+        rval = constrptr->GetConstraintRHSNorms(RHSVector.getEpetraVector(), chQ[i], type[i],
+            (*scale)[i] == ::NOX::StatusTest::NormF::Scaled);
+      else
+        rval = 0.0;
     }
 
     if (rval >= 0.0)

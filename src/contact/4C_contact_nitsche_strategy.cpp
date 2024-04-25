@@ -236,7 +236,7 @@ void CONTACT::NitscheStrategy::Integrate(const CONTACT::ParamsInterface& cparams
   // now we also did this state
   curr_state_eval_ = true;
 
-  // ... and we can assemble the matric and rhs
+  // ... and we can assemble the matrix and rhs
   fc_ = CreateRhsBlockPtr(CONTACT::VecBlockType::displ);
   kc_ = CreateMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
 }
@@ -269,7 +269,9 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::CreateRhsBlockPtr(
     {
       auto* mele = dynamic_cast<MORTAR::Element*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
-      mele->GetNitscheContainer().AssembleRHS(mele, bt, fc);
+      auto& nitsche_container = mele->GetNitscheContainer();
+      // nitsche_container.RhsV
+      nitsche_container.AssembleRHS(mele, bt, fc);
     }
   }
   if (fc->GlobalAssemble(Add, false) != 0) FOUR_C_THROW("GlobalAssemble failed");

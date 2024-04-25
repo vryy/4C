@@ -63,7 +63,8 @@ namespace CORE::LINALG
 namespace CONTACT
 {
   class NitscheStrategyTsi;
-}
+  class ParamsInterface;
+}  // namespace CONTACT
 
 namespace ADAPTER
 {
@@ -219,6 +220,9 @@ namespace ADAPTER
 
     //! store an RCP to the contact strategy constructed in the structural time integration
     virtual void SetNitscheContactStrategy(Teuchos::RCP<CONTACT::NitscheStrategyTsi> strategy) = 0;
+
+    //! store an RCP to the contact interface parameters in the structural time integration
+    virtual void SetNitscheContactParameters(Teuchos::RCP<CONTACT::ParamsInterface> params) = 0;
 
     /// apply interface loads on the thermal field
     virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload) = 0;

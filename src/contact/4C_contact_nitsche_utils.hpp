@@ -41,11 +41,11 @@ namespace MORTAR
 
     virtual void Clear() = 0;
 
-    virtual void AssembleRHS(
-        MORTAR::Element* mele, CONTACT::VecBlockType row, Teuchos::RCP<Epetra_FEVector> fc) = 0;
+    virtual void AssembleRHS(MORTAR::Element* mele, CONTACT::VecBlockType row,
+        Teuchos::RCP<Epetra_FEVector> fc) const = 0;
 
     virtual void AssembleMatrix(MORTAR::Element* mele, CONTACT::MatBlockType block,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) const = 0;
 
     virtual double* Rhs(int dof) = 0;
     virtual double* Rhs() = 0;
@@ -167,7 +167,12 @@ namespace MORTAR
   template <CORE::FE::CellType parent_distype>
   class ElementNitscheData : public ElementNitscheContainer
   {
+    using VectorType =
+        CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>,
+            1>;
+
    public:
+    const VectorType& RhsVec() { return rhs_; }
     double* Rhs(int dof) override { return &rhs_(dof); }
     double* Rhs() override { return rhs_.A(); }
     double* K(int col) override { return k_[col].A(); }
@@ -196,21 +201,21 @@ namespace MORTAR
     double* Kde(int col) override { return ssi_elch_data_.k_de_[col].A(); }
 
     void AssembleRHS(MORTAR::Element* mele, CONTACT::VecBlockType row,
-        Teuchos::RCP<Epetra_FEVector> fc) override;
+        Teuchos::RCP<Epetra_FEVector> fc) const override;
 
     void AssembleMatrix(MORTAR::Element* mele, CONTACT::MatBlockType block,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) const override;
 
     template <int num_dof_per_node>
     void AssembleRHS(MORTAR::Element* mele,
         const CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>& rhs,
-        std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc);
+        std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc) const;
 
     template <int num_dof_per_node>
     void AssembleMatrix(MORTAR::Element* mele,
         const std::unordered_map<int,
             CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>>& k,
-        std::vector<int>& dofs, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc);
+        std::vector<int>& dofs, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) const;
 
 
     void Clear() override
@@ -224,12 +229,8 @@ namespace MORTAR
     }
 
    private:
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>, 1>
-        rhs_;
-    std::unordered_map<int,
-        CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>,
-            1>>
-        k_;
+    VectorType rhs_;
+    std::unordered_map<int, VectorType> k_;
     MORTAR::ElementNitscheDataTsi<parent_distype> tsi_data_;
     MORTAR::ElementNitscheDataPoro<parent_distype> poro_data_;
     MORTAR::ElementNitscheDataSsi<parent_distype> ssi_data_;

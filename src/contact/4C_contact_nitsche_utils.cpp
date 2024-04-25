@@ -20,7 +20,7 @@ template <CORE::FE::CellType parent_distype>
 template <int num_dof_per_node>
 void MORTAR::ElementNitscheData<parent_distype>::AssembleRHS(MORTAR::Element* mele,
     const CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>& rhs,
-    std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc)
+    std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc) const
 {
   const int nen = CORE::FE::num_nodes<parent_distype>;
 
@@ -42,7 +42,7 @@ template <int num_dof_per_node>
 void MORTAR::ElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Element* mele,
     const std::unordered_map<int,
         CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>>& k,
-    std::vector<int>& dofs, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
+    std::vector<int>& dofs, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) const
 {
   const int nen = CORE::FE::num_nodes<parent_distype>;
 
@@ -66,7 +66,7 @@ void MORTAR::ElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Element*
 
 template <CORE::FE::CellType parent_distype>
 void MORTAR::ElementNitscheData<parent_distype>::AssembleRHS(
-    MORTAR::Element* mele, CONTACT::VecBlockType row, Teuchos::RCP<Epetra_FEVector> fc)
+    MORTAR::Element* mele, CONTACT::VecBlockType row, Teuchos::RCP<Epetra_FEVector> fc) const
 {
   switch (row)
   {
@@ -96,8 +96,8 @@ void MORTAR::ElementNitscheData<parent_distype>::AssembleRHS(
 }
 
 template <CORE::FE::CellType parent_distype>
-void MORTAR::ElementNitscheData<parent_distype>::AssembleMatrix(
-    MORTAR::Element* mele, CONTACT::MatBlockType block, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
+void MORTAR::ElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Element* mele,
+    CONTACT::MatBlockType block, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) const
 {
   switch (block)
   {
