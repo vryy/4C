@@ -105,9 +105,9 @@ PREDICTOR                       explicit_second_order_midpoint
 // Increment for writing restart
 RESTARTEVRY                     20
 //
-// Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!
+// Assemble fluid system matrix into a block system
 //                              Yes,No,yes,no,YES,NO
-SIMPLER                         no
+BLOCKMATRIX                     no
 //
 // Function for Initial Starting Field
 STARTFUNCNO                     -1
