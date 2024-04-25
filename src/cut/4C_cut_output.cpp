@@ -1177,7 +1177,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
        << "\n";
   file << ""
        << "\n";
-  file << "void test_bacigenerated_" << ele->Id() << "()"
+  file << "void test_generated_" << ele->Id() << "()"
        << "\n";
   file << "{"
        << "\n";

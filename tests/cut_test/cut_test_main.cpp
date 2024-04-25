@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Central fiel for the tests of the CUT Library, here all tests are called.
+\brief Central file for the tests of the CUT Library, here all tests are called.
 
 \level 1
 
@@ -22,33 +22,33 @@
 
 #include "cut_test_utils.hpp"
 
-void test_bacigenerated_26182();
-void test_bacigenerated_238343();
-void test_bacigenerated_369096();
-void test_bacigenerated_79216();
-void test_bacigenerated_197489();
-void test_bacigenerated_238425();
+void test_generated_26182();
+void test_generated_238343();
+void test_generated_369096();
+void test_generated_79216();
+void test_generated_197489();
+void test_generated_238425();
 
-void test_bacigenerated_622320();
-void test_bacigenerated_622829();
-void test_bacigenerated_627558();
+void test_generated_622320();
+void test_generated_622829();
+void test_generated_627558();
 
-void test_bacigenerated_7022();
-void test_bacigenerated_227469();
-void test_bacigenerated_463638();
-void test_bacigenerated_43244();
-void test_bacigenerated_41534();
-void test_bacigenerated_6923();
-void test_bacigenerated_7019();
-void test_bacigenerated_6920();
-void test_bacigenerated_6890();
-void test_bacigenerated_1890();
-void test_bacigenerated_1858();
-void test_bacigenerated_1860();
-void test_bacigenerated_2010();
-void test_bacigenerated_1901();
-void test_bacigenerated_1970();
-void test_bacigenerated_1910();
+void test_generated_7022();
+void test_generated_227469();
+void test_generated_463638();
+void test_generated_43244();
+void test_generated_41534();
+void test_generated_6923();
+void test_generated_7019();
+void test_generated_6920();
+void test_generated_6890();
+void test_generated_1890();
+void test_generated_1858();
+void test_generated_1860();
+void test_generated_2010();
+void test_generated_1901();
+void test_generated_1970();
+void test_generated_1910();
 
 void test_hex8_simple();
 void test_tet4_simple();
@@ -449,44 +449,44 @@ int main(int argc, char** argv)
   // all of then expreience the same problem:
   // "Could not find reference plane with all gausspoints inside!" in
   // src/cut/direct_divergence_refplane.cpp
-  functable["cluster_comp_fail1"] = test_bacigenerated_622829;
-  // functable["cluster_comp_fail2"] = test_bacigenerated_627558;
-  functable["cluster_comp_fail3"] = test_bacigenerated_622320;
+  functable["cluster_comp_fail1"] = test_generated_622829;
+  // functable["cluster_comp_fail2"] = test_generated_627558;
+  functable["cluster_comp_fail3"] = test_generated_622320;
 
-  functable["touching_hole"] = test_bacigenerated_79216;
+  functable["touching_hole"] = test_generated_79216;
 
   // tests to test small edge cases in triangulation
   // they fail, but due to other problems, not related to triangulation
-  functable["narrow_triangulation"] = test_bacigenerated_369096;
-  functable["split_facet"] = test_bacigenerated_238343;
+  functable["narrow_triangulation"] = test_generated_369096;
+  functable["split_facet"] = test_generated_238343;
 
   // selfcut 3d-Island detection
-  functable["selfcut_island"] = test_bacigenerated_26182;
+  functable["selfcut_island"] = test_generated_26182;
 
   // tests that failed, due to the problem with spliting surface with holes
   // in the colored
-  functable["split_colored_graph_1"] = test_bacigenerated_197489;
-  functable["split_colored_graph_2"] = test_bacigenerated_238425;
+  functable["split_colored_graph_1"] = test_generated_197489;
+  functable["split_colored_graph_2"] = test_generated_238425;
 
   // all the tests below were generated from testing of a rotating and slowly moving (with very
   // small displacement) tori in the rectangular mesh in which they failed on the previous version
   // of the cut. Now they must run fine
-  functable["touching_failed"] = test_bacigenerated_7022;
-  functable["failing_cut_kernel"] = test_bacigenerated_463638;
-  functable["tolerance_mismatch"] = test_bacigenerated_6923;
-  functable["failing_topology"] = test_bacigenerated_1890;
-  functable["find_node_position"] = test_bacigenerated_1858;
-  functable["failing_tolerance"] = test_bacigenerated_2010;
-  functable["failing_cln_facetgraph"] = test_bacigenerated_1901;
-  functable["failing_cln_doublearc1910"] = test_bacigenerated_1910;
-  functable["failing_cln_doublearc1970"] = test_bacigenerated_1970;
-  functable["failing_tori1"] = test_bacigenerated_41534;
-  functable["failing_tori2"] = test_bacigenerated_43244;
-  functable["failing_tori3"] = test_bacigenerated_7019;
-  functable["failing_tori4"] = test_bacigenerated_6920;
-  functable["failing_tori5"] = test_bacigenerated_6890;
-  functable["failing_tori6"] = test_bacigenerated_1860;
-  functable["failing_tori7"] = test_bacigenerated_227469;
+  functable["touching_failed"] = test_generated_7022;
+  functable["failing_cut_kernel"] = test_generated_463638;
+  functable["tolerance_mismatch"] = test_generated_6923;
+  functable["failing_topology"] = test_generated_1890;
+  functable["find_node_position"] = test_generated_1858;
+  functable["failing_tolerance"] = test_generated_2010;
+  functable["failing_cln_facetgraph"] = test_generated_1901;
+  functable["failing_cln_doublearc1910"] = test_generated_1910;
+  functable["failing_cln_doublearc1970"] = test_generated_1970;
+  functable["failing_tori1"] = test_generated_41534;
+  functable["failing_tori2"] = test_generated_43244;
+  functable["failing_tori3"] = test_generated_7019;
+  functable["failing_tori4"] = test_generated_6920;
+  functable["failing_tori5"] = test_generated_6890;
+  functable["failing_tori6"] = test_generated_1860;
+  functable["failing_tori7"] = test_generated_227469;
 
   functable["hex8_simple"] = test_hex8_simple;
   functable["tet4_simple"] = test_tet4_simple;

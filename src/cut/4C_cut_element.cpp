@@ -1118,7 +1118,7 @@ void CORE::GEO::CUT::Element::DebugDump()
   {
     // Write Elemement Cut Test!!!
     std::stringstream str;
-    str << "cut_test_bacigenerated_" << Id() << ".cpp";
+    str << "cut_test_generated_" << Id() << ".cpp";
     std::ofstream file(str.str().c_str());
     CORE::GEO::CUT::OUTPUT::GmshElementCutTest(file, this, haslevelsetside);
   }
