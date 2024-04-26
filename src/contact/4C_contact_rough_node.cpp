@@ -77,7 +77,7 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
 #else
   FOUR_C_THROW(
       "You are trying to create a RoughNode with FOUR_C_WITH_MIRCO flag turned off. Please enable "
-      "this flag and build BACI again");
+      "this flag and build 4C again");
 #endif
 }
 

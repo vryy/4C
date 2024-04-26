@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 void scatra_cardiac_monodomain_dyn(int restart /* do we have to perform a restart?  */
 );
 
-/*! prints the BACI cardiac monodomain-module logo on the screen */
+/*! prints the 4C cardiac monodomain-module logo on the screen */
 void printheartlogo();
 
 

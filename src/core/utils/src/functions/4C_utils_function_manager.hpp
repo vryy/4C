@@ -41,7 +41,7 @@ namespace INPUT
 namespace CORE::UTILS
 {
   /**
-   * A class that collects various (mathematical) BACI Functions specified by the user.
+   * A class that collects various (mathematical) 4C Functions specified by the user.
    *
    * An instance of this class is available after reading the input file. The specific ways how to
    * parse Functions from input data are attached within the various modules.
@@ -50,14 +50,14 @@ namespace CORE::UTILS
   {
    public:
     /**
-     * Type used to pass functions that create BACI Functions from a number of parsed lines.
+     * Type used to pass functions that create 4C Functions from a number of parsed lines.
      */
     using FunctionFactory = std::function<std::any(const std::vector<INPUT::LineDefinition>&)>;
 
     /// Return all known input lines that define a Function.
     INPUT::Lines ValidFunctionLines();
 
-    /// Read the baci input file and set up all Functions.
+    /// Read the 4C input file and set up all Functions.
     void ReadInput(INPUT::DatFileReader& reader);
 
     /**
@@ -97,7 +97,7 @@ namespace CORE::UTILS
 
 
     /**
-     * Store the lines we can read and how to convert them into a BACI Function.
+     * Store the lines we can read and how to convert them into a 4C Function.
      */
     std::vector<std::pair<std::vector<INPUT::LineDefinition>, FunctionFactory>>
         attached_function_data_;

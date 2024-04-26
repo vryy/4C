@@ -123,7 +123,7 @@ namespace IO
     void AppendElementOwner(const std::string resultname);
 
     /**
-     * \brief Write the BACI internal element GIDs for each element
+     * \brief Write the 4C internal element GIDs for each element
      *
      * @param resultname (in) Name of the field in the visualization file
      */
@@ -137,7 +137,7 @@ namespace IO
     void AppendElementGhostingInformation();
 
     /**
-     * \brief Write the BACI internal node GIDs for each node
+     * \brief Write the 4C internal node GIDs for each node
      *
      * @param resultname (in) Name of the field in the visualization file
      */

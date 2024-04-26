@@ -881,7 +881,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
-    // Otherwise BACI DEBUG version will crash during runtime!
+    // Otherwise 4C DEBUG version will crash during runtime!
     Teuchos::Tuple<std::string, 22> name;
     Teuchos::Tuple<int, 22> label;
     name[0] = "no";

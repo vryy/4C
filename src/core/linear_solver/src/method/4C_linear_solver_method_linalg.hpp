@@ -196,7 +196,7 @@ namespace CORE::LINALG
     static Teuchos::ParameterList TranslateSolverParameters(const Teuchos::ParameterList& inparams);
 
     /*!
-    \brief Translate BACI dat file parameters
+    \brief Translate 4C dat file parameters
 
     */
     static Teuchos::ParameterList TranslateFourCToML(

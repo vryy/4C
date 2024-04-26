@@ -57,7 +57,7 @@ namespace DRT
     \brief A general structural surface element (tri3/tri6/quad4/quad8/quad9/nurbs9)
 
     This element implements all common shapes. It also implements all
-    common types of loads currently demanded in baci
+    common types of loads currently demanded in 4C
 
     */
     class StructuralSurface : public DRT::FaceElement

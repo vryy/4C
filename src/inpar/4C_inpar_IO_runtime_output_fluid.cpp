@@ -69,11 +69,11 @@ namespace INPAR
 
         // whether to write element GIDs
         CORE::UTILS::BoolParameter(
-            "ELEMENT_GID", "No", "write baci internal element GIDs", &sublist_IO_output_fluid);
+            "ELEMENT_GID", "No", "write 4C internal element GIDs", &sublist_IO_output_fluid);
 
         // whether to write node GIDs
         CORE::UTILS::BoolParameter(
-            "NODE_GID", "No", "write baci internal node GIDs", &sublist_IO_output_fluid);
+            "NODE_GID", "No", "write 4C internal node GIDs", &sublist_IO_output_fluid);
       }
     }  // namespace FLUID
   }    // namespace IO_RUNTIME_OUTPUT

@@ -1982,7 +1982,7 @@ void CORE::GEO::CUT::Mesh::DumpGmsh(std::string name)
     CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
-  // ###############write all facets (or bacially the facet points)###############
+  // ###############write all facets (or basically the facet points)###############
   if (facets_.size() > 0)
   {
     //    CORE::GEO::CUT::OUTPUT::GmshNewSection(file,"Facet_Points");
@@ -1991,7 +1991,7 @@ void CORE::GEO::CUT::Mesh::DumpGmsh(std::string name)
     //      CORE::GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"points");
     //    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
 
-    // ###############write all facets (or bacially the facet lines)###############
+    // ###############write all facets (or basically the facet lines)###############
     CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "Facet_Lines");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
       CORE::GEO::CUT::OUTPUT::GmshFacetDump(file, &(**i), "lines");

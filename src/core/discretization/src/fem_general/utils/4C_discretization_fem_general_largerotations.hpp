@@ -434,8 +434,7 @@ namespace CORE::LARGEROTATIONS
     return;
   }
 
-  //! Transformation from node number according to Crisfield 1999 to storage position applied in
-  //! BACI
+  //! Transformation from node number according to Crisfield 1999 to storage position applied in 4C
   unsigned int NumberingTrafo(const unsigned int j, const unsigned int numnode);
 
   //! Rotate an arbitrary triad around its first base vector (tangent)

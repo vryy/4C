@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Implementation of general BACI sparse matrix class
+\brief Implementation of general 4C sparse matrix class
 
 \level 0
 

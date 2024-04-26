@@ -76,7 +76,7 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
               << markerline << std::endl;
   }
   /* The following parameters create a NOX::NLN::Solver::PseudoTransient
-   * solver which is equivalent to the old BACI implementation.
+   * solver which is equivalent to the old 4C implementation.
    *
    * If you are keen on using the new features, please use the corresponding
    * input section "STRUCT NOX/Pseudo Transient" in your input file. */

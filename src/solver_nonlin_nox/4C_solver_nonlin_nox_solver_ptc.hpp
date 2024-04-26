@@ -41,7 +41,7 @@ namespace NOX
       /*! \brief Pseudo Transient Continuation (PTC) non-linear solver
        *
        * This implementation is based on the ::NOX::Solver::PseudoTransient class
-       * and the former BACI internal implementation of the PTC method. In contrast
+       * and the former 4C internal implementation of the PTC method. In contrast
        * to the NOX internal implementation we try to avoid the need of the Thyra
        * interface package.
        *

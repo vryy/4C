@@ -1624,9 +1624,9 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
    * page 146, a time integration scheme that delivers angular velocities and angular
    * accelerations as needed for the inertia terms of geometrically exact beams has to be
    * based on multiplicative rotation angle increments between two successive time steps.
-   * Since BACI does all displacement updates in an additive manner, the global vector of
+   * Since 4C does all displacement updates in an additive manner, the global vector of
    * rotational displacements has no physical meaning and, consequently the global velocity
-   * and acceleration vectors resulting from the BACI time integration schemes have no
+   * and acceleration vectors resulting from the 4C time integration schemes have no
    * physical meaning, too. Therefore, a mass matrix in combination with this global
    * acceleration vector is meaningless from a physical point of view. For these reasons, we
    * have to apply our own time integration scheme at element level. Up to now, the only
@@ -2233,7 +2233,7 @@ void DRT::ELEMENTS::Beam3k::EvaluatePointNeumannEB(CORE::LINALG::SerialDenseVect
           disp_totlag, disp_totlag_centerline, triad_mat_cp, Qref);
 
       // create view on external force vector to avoid copying
-      // IMPORTANT: fext is multiplied by (-1) in BACI, consequently we need no minus sign here
+      // IMPORTANT: fext is multiplied by (-1) in 4C, consequently we need no minus sign here
       CORE::LINALG::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double> f_ext_fixedsize(
           forcevec, true);
 
@@ -2310,7 +2310,7 @@ void DRT::ELEMENTS::Beam3k::EvaluatePointNeumannEB(CORE::LINALG::SerialDenseVect
       EvaluateResidualFromPointNeumannMoment<nnodecl, FAD>(
           f_ext_FAD, moment, r_s_FAD, abs_r_s_FAD, node);
 
-      // IMPORTANT: fext is multiplied by (-1) in BACI, consequently we need no minus sign here
+      // IMPORTANT: fext is multiplied by (-1) in 4C, consequently we need no minus sign here
       for (unsigned int i = 0; i < 6 * nnodecl + BEAM3K_COLLOCATION_POINTS; ++i)
       {
         forcevec(i) += f_ext_FAD(i).val();
@@ -2500,7 +2500,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumann(CORE::LINALG::SerialDenseVector&
     }
 
 
-    // IMPORTANT: fext is multiplied by (-1) in BACI, consequently we need no minus sign here
+    // IMPORTANT: fext is multiplied by (-1) in 4C, consequently we need no minus sign here
     for (unsigned int i = 0; i < 6 * nnodecl + BEAM3K_COLLOCATION_POINTS; i++)
     {
       forcevec(i) = f_ext(i).val();

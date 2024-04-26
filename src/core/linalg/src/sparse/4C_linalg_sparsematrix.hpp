@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Declaration of general BACI sparse matrix class
+\brief Declaration of general 4C sparse matrix class
 
 \level 0
 
@@ -228,7 +228,7 @@ namespace CORE::LINALG
 
       NOTE: This methods checks if rowowner == myrank. Only in this case
       values are set. This is needed if the method is called in a loop over
-      column elements (which is the standard in baci) to avoid multiple same entries.
+      column elements (which is the standard in 4C) to avoid multiple same entries.
      */
     void FEAssemble(const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);

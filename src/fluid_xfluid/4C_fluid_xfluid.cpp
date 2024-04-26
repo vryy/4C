@@ -849,7 +849,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
   // REMARK: in this XFEM framework the whole evaluate routine uses only row elements
   // and assembles into EpetraFECrs matrix
-  // this is baci-unusual but more efficient in all XFEM applications
+  // this is 4C-unusual but more efficient in all XFEM applications
   for (int i = 0; i < numrowele; ++i)
   {
     DRT::Element* actele = discret_->lRowElement(i);
@@ -1316,7 +1316,7 @@ void FLD::XFluid::AssembleMatAndRHS_FaceTerms(
 
     // REMARK: in this XFEM framework the whole evaluate routine uses only row internal faces
     // and assembles into EpetraFECrs matrix
-    // this is baci-unusual but more efficient in all XFEM applications
+    // this is 4C-unusual but more efficient in all XFEM applications
     for (int i = 0; i < numrowintfaces; ++i)
     {
       DRT::Element* actface = xdiscret->lRowFace(i);
@@ -1360,7 +1360,7 @@ void FLD::XFluid::IntegrateShapeFunction(Teuchos::ParameterList& eleparams,
 
   // REMARK: in this XFEM framework the whole evaluate routine uses only row elements
   // and assembles into EpetraFECrs matrix
-  // this is baci-unusual but more efficient in all XFEM applications
+  // this is 4C-unusual but more efficient in all XFEM applications
   for (int i = 0; i < numrowele; ++i)
   {
     DRT::Element* actele = discret.lRowElement(i);

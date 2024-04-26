@@ -42,7 +42,7 @@ namespace INPUT
   /*----------------------------------------------------------------------*/
   /// reading, broadcasting and storing of dat file contents
   /*!
-    The normal baci job needs to read one dat file at the beginning of
+    The normal 4C job needs to read one dat file at the beginning of
     its execution. This file contains all input parameters as well as
     the meshes and so on and needs to be available on all
     processors. However, we cannot rely on a shared file system, so only
@@ -54,7 +54,7 @@ namespace INPUT
     stores all lines in an array. Afterwards these lines are
     communicated to all other processors, so each processor has an
     internal copy of the input file and subsequently parses it.  There
-    is one instance of this class during the input phase of baci. When
+    is one instance of this class during the input phase of 4C. When
     everything is set up properly this instance goes away and the
     internal copy of the input file vanishes.
 

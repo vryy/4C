@@ -8,9 +8,8 @@
 ---------------------------------------------------------------------*/
 /*!
 
-ccarat writes control files that describe its binary output. Those
-files are meant to be human readable and very flexible but still must
-be read back. To accomplish this we need a small parser and a way to
+Control files describe binary output. The control files are meant to be human readable and very
+flexible but still must be read back. To accomplish this we need a small parser and a way to
 represent these files internally. And here it is.
 
 A control file consists of definitions. Simple definitions look like

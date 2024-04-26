@@ -685,7 +685,7 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::CurrentPositionOfCo
 void CORE::GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(
     int i, std::vector<double>& x) const
 {
-  // to get numbering according to baci convention of hex eles
+  // to get numbering according to 4C convention of hex eles
   if (i == 2 or i == 6)
     ++i;
   else if (i == 3 or i == 7)
@@ -701,7 +701,7 @@ void CORE::GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(
 CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(
     int i) const
 {
-  // to get numbering according to baci convention of hex eles
+  // to get numbering according to 4C convention of hex eles
   if (i == 2 or i == 6)
     ++i;
   else if (i == 3 or i == 7)

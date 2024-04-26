@@ -57,7 +57,7 @@ namespace INPAR
 
         // whether to write element GIDs
         CORE::UTILS::BoolParameter(
-            "ELEMENT_GID", "No", "write baci internal element GIDs", &sublist_IO_VTK_structure);
+            "ELEMENT_GID", "No", "write 4C internal element GIDs", &sublist_IO_VTK_structure);
 
         // write element ghosting information
         CORE::UTILS::BoolParameter("ELEMENT_GHOSTING", "No",
@@ -65,7 +65,7 @@ namespace INPAR
 
         // whether to write node GIDs
         CORE::UTILS::BoolParameter(
-            "NODE_GID", "No", "write baci internal node GIDs", &sublist_IO_VTK_structure);
+            "NODE_GID", "No", "write 4C internal node GIDs", &sublist_IO_VTK_structure);
 
         // whether to write stress and / or strain data
         CORE::UTILS::BoolParameter("STRESS_STRAIN", "No",

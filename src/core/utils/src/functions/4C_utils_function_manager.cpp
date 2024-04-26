@@ -203,7 +203,7 @@ void CORE::UTILS::FunctionManager::ReadInput(INPUT::DatFileReader& reader)
               ss << '\n' << line;
             }
 
-            FOUR_C_THROW("Could not parse the following lines into a Function known to BACI:\n%s",
+            FOUR_C_THROW("Could not parse the following lines into a Function known to 4C:\n%s",
                 ss.str().c_str());
           }
         });

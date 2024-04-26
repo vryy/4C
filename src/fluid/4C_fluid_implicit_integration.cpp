@@ -63,7 +63,7 @@
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_nurbs_discret_apply_nurbs_initial_condition.hpp"
-#include "4C_utils_function.hpp"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
+#include "4C_utils_function.hpp"
 
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Workspace.h>
@@ -1160,7 +1160,7 @@ void FLD::FluidImplicitTimeInt::EvaluateMatAndRHS(Teuchos::ParameterList& elepar
 
     // REMARK: in this XFEM framework the whole evaluate routine uses only row elements
     // and assembles into EpetraFECrs matrix
-    // this is baci-unusual but more efficient in all XFEM applications
+    // this is 4C-unusual but more efficient in all XFEM applications
     for (int i = 0; i < numrowele; ++i)
     {
       DRT::Element* actele = discret_->lRowElement(i);
@@ -1786,7 +1786,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
   //------------------------------------------------------------------------
   // 7) Navier-slip boundary conditions                         [hahn 03/14]
   //    At the boundary, apply a shear stress which is proportional to the
-  //    tangential/bi-tangential velocity. In BACI, this is achieved by
+  //    tangential/bi-tangential velocity. In 4C, this is achieved by
   //    applying h = sigma*n = -beta*u under the condition that u*n=0 has
   //    been set as Dirichlet BC! For details on the Navier slip condition
   //    please refer to e.g. Behr M., 2003, "On the Application of Slip

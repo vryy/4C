@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief BACI implementation of main class to control all contact
+\brief 4C implementation of main class to control all contact
 
 \level 1
 
@@ -28,7 +28,7 @@ namespace CONTACT
   class Element;
 
   /*!
-  \brief BACI implementation of main class to control all contact
+  \brief 4C implementation of main class to control all contact
 
   */
 

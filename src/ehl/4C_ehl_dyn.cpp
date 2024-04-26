@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- | BACI Logo for  EHL problems                             Faraji 05/19 |
+ | 4C Logo for  EHL problems                             Faraji 05/19 |
  *----------------------------------------------------------------------*/
 void printehllogo()
 {

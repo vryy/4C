@@ -56,7 +56,7 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
   // get the global ids of elements for each distype (global numbers)
   eleGidPerDisType_ = GetEleGidPerDisType(dis, numElePerDisType_);
 
-  // map between distypes in BACI and existing Ensight strings
+  // map between distypes in 4C and existing Ensight strings
   // it includes only strings for cell types known in ensight
   // you need to manually switch to other types distypes before querying this map
   distype2ensightstring_.clear();
@@ -1751,7 +1751,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
     {
       std::vector<int> mycols(numdf);
       std::iota(std::begin(mycols), std::end(mycols), 0);
-      // swap entries 5 and 6 (inside BACI we use XY, YZ, XZ, however, ensight-format expects
+      // swap entries 5 and 6 (inside 4C we use XY, YZ, XZ, however, ensight-format expects
       // ordering XY, XZ, YZ, for symmetric tensors)
       if (numdf == 6)
       {
@@ -2038,7 +2038,7 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file,
         FOUR_C_THROW("violated column range of Epetra_MultiVector: %d", numcol);
       std::vector<int> mycols(numdf);
       std::iota(std::begin(mycols), std::end(mycols), 0);
-      // swap entries 5 and 6 (inside BACI we use XY, YZ, XZ, however, ensight-format expects
+      // swap entries 5 and 6 (inside 4C we use XY, YZ, XZ, however, ensight-format expects
       // ordering XY, XZ, YZ, for symmetric tensors)
       if (numdf == 6)
       {

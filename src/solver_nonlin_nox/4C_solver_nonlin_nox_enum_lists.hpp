@@ -3,7 +3,7 @@
 
 \brief Contains ONLY lists of enumerators and is supposed to be included
        into the header files, if necessary and till the C++11 standard is
-       available in BACI.
+       available in 4C.
 
 
 

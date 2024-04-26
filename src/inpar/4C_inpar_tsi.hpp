@@ -38,8 +38,8 @@ namespace INPAR
       Monolithic
     };
 
-    //! Type of coupling strategy for BACI-INCA coupling (TFSI)
-    enum BaciIncaCoupling
+    //! Type of coupling strategy for 4C-INCA coupling (TFSI)
+    enum FourCIncaCoupling
     {
       TFSI,
       FSI,

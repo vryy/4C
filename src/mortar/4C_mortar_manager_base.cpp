@@ -23,7 +23,7 @@ MORTAR::ManagerBase::ManagerBase()
   //**********************************************************************
   // Setup of the mortar contact library is done by a derived class. This
   // derived class is specific to the FEM code into which the mortar contact
-  // library is meant to be integrated. For BACI this is realized via the
+  // library is meant to be integrated. For 4C this is realized via the
   // CONTACT::ContactManager class! There the following actions are performed:
   //**********************************************************************
   // 1) get problem dimension (2D or 3D)
@@ -32,7 +32,7 @@ MORTAR::ManagerBase::ManagerBase()
   // 4) build contact interfaces
   //**********************************************************************
   // A similar process also applies to mortar meshtying libraries. Again
-  // a specific derived class is needed. For BACI this is realized via the
+  // a specific derived class is needed. For 4C this is realized via the
   // CONTACT::MeshtyingManager class!
   //**********************************************************************
 

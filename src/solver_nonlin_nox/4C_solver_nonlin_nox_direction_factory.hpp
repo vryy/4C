@@ -44,7 +44,7 @@ namespace NOX
         /*! \brief Factory to build user-defined direction objects.
 
             \note All direction methods which differ from the default NOX direction
-            routines are user-defined. That means the user is the BACI user and the BACI
+            routines are user-defined. That means the user is the 4C user and the 4C
             programmer.
 
             @param gd A global data pointer that contains the top level parameter list.  Without

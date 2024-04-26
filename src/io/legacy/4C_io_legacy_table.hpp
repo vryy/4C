@@ -6,36 +6,6 @@
 \level 1
 
 ---------------------------------------------------------------------*/
-/*!
-
-ccarat writes control files that describe its binary output. Those
-files are meant to be human readable and very flexible but still must
-be read back. To accomplish this we need a small parser and a way to
-represent these files internally. And here it is.
-
-A control file consists of definitions. Simple definitions look like
-this:
-
-attr_name = value
-
-where value might be a string, an integer or a double constant. (It's
-easily possible to enhance the parser to understand mathematical
-expressions. Speak up if you need this.) Additionally you can group
-your definitions:
-
-group_name:
-    attr_name_1 = value
-    attr_name_2 = value
-
-This looks a little like python and indeed indentions do matter
-here. But on the other hand you can have many groups using the same
-name. That's convenient because restart information is written every
-some steps into identical groups.
-
-Files that follow this scheme can be read into a simple symbol
-table. This table can be queried for those values quite easily.
-
-*/
 
 #ifndef FOUR_C_IO_LEGACY_TABLE_HPP
 #define FOUR_C_IO_LEGACY_TABLE_HPP

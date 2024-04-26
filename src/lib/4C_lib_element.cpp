@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief Implementation of base element class in BACI with basic operations
+\brief Implementation of base element class in 4C with basic operations
 
 \level 0
 

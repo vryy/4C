@@ -326,7 +326,7 @@ namespace DRT
           Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
       );
       // TODO this should really not be necessary if we use one consistent GP definition
-      // throughout baci
+      // throughout 4C
       //! map the Intrepid gp numbering to the so_hex8 numbering, do nothing if not hex8
       int MapMyGpToSoHex8(int myGp);
       //@}

@@ -109,7 +109,7 @@ class BeamDiscretizationRuntimeOutputWriter
   void AppendElementOwningProcessor();
 
   /**
-   * \brief Append the baci interal GIDs to all beam elements.
+   * \brief Append the 4C interal GIDs to all beam elements.
    */
   void AppendElementGID();
 

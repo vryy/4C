@@ -45,7 +45,7 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   CORE::UTILS::IntParameter("ITEMAX", 10, "maximum number of iterations over fields", &ssidyn);
   CORE::UTILS::BoolParameter("SCATRA_FROM_RESTART_FILE", "No",
       "read scatra result from restart files (use option 'restartfromfile' during execution of "
-      "baci)",
+      "4C)",
       &ssidyn);
   CORE::UTILS::StringParameter(
       "SCATRA_FILENAME", "nil", "Control-file name for reading scatra results in SSI", &ssidyn);

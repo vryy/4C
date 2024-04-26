@@ -63,7 +63,7 @@ void GLOBAL::Problem::Done()
     if (!instance) continue;
   }
 
-  // This is called at the very end of a baci run.
+  // This is called at the very end of a 4C run.
   //
   // It removes all global problem objects. Therefore all
   // discretizations as well and everything inside those.

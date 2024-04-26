@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief Extension of Trilinos's ::NOX::Solver::SingleStep to include Baci's specific inner/outer
+\brief Extension of Trilinos's ::NOX::Solver::SingleStep to include 4C's specific inner/outer
 tests
 
 \level 3

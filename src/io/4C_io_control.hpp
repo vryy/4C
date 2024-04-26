@@ -82,7 +82,7 @@ namespace IO
     std::string FileName() const { return filename_; }
 
     /**
-     * @brief Return the file name prefix, i.e., the file name that is given to the baci call
+     * @brief Return the file name prefix, i.e., the file name that is given to the 4C call
      */
     std::string FileNameOnlyPrefix() const;
 

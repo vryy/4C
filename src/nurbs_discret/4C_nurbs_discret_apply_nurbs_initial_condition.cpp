@@ -145,7 +145,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
 
     for (int i = 0; i < numcolele; ++i)
     {
-      // first baci progress bar
+      // first 4C progress bar
       if (myrank == 0 && i % every == 0)
       {
         printf(".");

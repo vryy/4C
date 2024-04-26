@@ -67,7 +67,7 @@ namespace IO
   };
 
   /*!
-    \brief base class of baci restart
+    \brief base class of 4C restart
 
     \author m.kue
     \date 04/07

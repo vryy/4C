@@ -80,15 +80,15 @@ namespace IO
    *
    * Since we have the option to output states during the nonlinear solution process, we use the
    * following convention for time step values and indices:
-   * - For standard output the BACI internal time step value and index are used
-   * - For output during each iteration, we increment the BACI internal time step value with a
+   * - For standard output the 4C internal time step value and index are used
+   * - For output during each iteration, we increment the 4C internal time step value with a
    *   small increment for each nonlinear iteration, and we "add" the iteration index to the time
    *   step index, e.g., the time step index 0000270005 corresponds to the 5th nonlinear iteration
    *   in the 28th step -> 0000280000 is the converged 28th step.
    *
    * @param visualization_parameters (in) Reference to a parameters container
-   * @param time (in) BACI internal time
-   * @param step (in) BACI internal time step index of the last converged state
+   * @param time (in) 4C internal time
+   * @param step (in) 4C internal time step index of the last converged state
    * @param iteration_number (in) Number of nonlinear iteration
    */
   [[nodiscard]] std::pair<double, int> GetTimeAndTimeStepIndexForOutput(

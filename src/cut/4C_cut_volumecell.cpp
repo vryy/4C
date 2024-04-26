@@ -1052,7 +1052,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::CreateProjected(
 }
 
 /*------------------------------------------------------------------------------------------------------*
-    convert the Gaussian points and weights into appropriate Gauss rule as per BACI implementation
+    convert the Gaussian points and weights into appropriate Gauss rule as per 4C implementation
 *-------------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::GaussPointsFitting()
 {

@@ -37,7 +37,7 @@ namespace GLOBAL
 
 namespace INPUT
 {
-  /// Definition of a valid material in BACI input
+  /// Definition of a valid material in 4C input
   ///
   /// This is basically a clone of \see ConditionDefinition which
   /// was adjusted to adhere the heterogeneous lines occurring
@@ -53,7 +53,7 @@ namespace INPUT
   /// DRT::Discretization.
   ///
   /// So this is quite sophisticated internal stuff here. If you want to
-  /// introduce a new material to BACI, all you have to do is add an
+  /// introduce a new material to 4C, all you have to do is add an
   /// appropriate definition in ValidMaterials(). This will take care of the
   /// reading part and you will get your DRT::Discretization filled with proper
   /// DRT::Material objects.

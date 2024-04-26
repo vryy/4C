@@ -43,7 +43,7 @@ namespace DRT
 
   The important work is done in \ref AssignDegreesOfFreedom . If you want to use
   or extend this class, please be aware of the documentation of this method. Also
-  have in mind the needs of those models and methods in BACI this class was originally
+  have in mind the needs of those models and methods in 4C this class was originally
   intended to support (see above).
 
 
@@ -68,7 +68,7 @@ namespace DRT
   \endcode
 
   See also the example '.dat'-file 'immersed_cell_biochemo_mechano_pureProtrusion_h8' in
-  the BACI 'Input' folder.
+  the 4C 'Input' folder.
 
 
   \date 08/2016

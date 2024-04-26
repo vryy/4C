@@ -60,7 +60,7 @@ namespace ADAPTER
     //! values specified in given problem-dependent ParameterList)
     /**
      * \note In this function the linear solver object is generated. For pure fluid problems or
-     * fluid meshtying (no block matrix) the FLUID SOLVER block from the BACI dat file is used.
+     * fluid meshtying (no block matrix) the FLUID SOLVER block from the 4C dat file is used.
      * For fluid meshtying (block matrix) the MESHTYING SOLVER block is used as main solver object
      * with a block preconditioner (BGS or SIMPLE type). The block preconditioners use the
      * information form the FLUID SOLVER and the FLUID PRESSURE SOLVER block for the velocity and

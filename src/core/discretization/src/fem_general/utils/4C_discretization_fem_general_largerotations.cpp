@@ -24,7 +24,7 @@ unsigned int CORE::LARGEROTATIONS::NumberingTrafo(const unsigned int j, const un
   // LINE4  1---2---3---4
   // LINE5  1---2---3---4---5
 
-  // Storage position i=0,...,NumNode()-1 of nodal quantities applied in BACI:
+  // Storage position i=0,...,NumNode()-1 of nodal quantities applied in 4C:
   // LINE2  (1,2)
   // LINE3  (1,3,2)
   // LINE4  (1,4,2,3)

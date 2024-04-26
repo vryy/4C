@@ -3,7 +3,7 @@
 \level 1
 
 
-\brief BACI implementation of main class to control all meshtying
+\brief 4C implementation of main class to control all meshtying
 */
 /*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_MESHTYING_MANAGER_HPP
@@ -26,7 +26,7 @@ namespace CONTACT
   // forward declarations
 
   /*!
-  \brief BACI implementation of main class to control all meshtying
+  \brief 4C implementation of main class to control all meshtying
 
   */
   class MtManager : public MORTAR::ManagerBase

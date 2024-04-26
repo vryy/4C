@@ -4,7 +4,7 @@
 \brief Within this file all geometry typedefs shall be defined. Thus they can
 be used from outside in header files without including the according geometry
 header file
---> THIS FUNCTIONALITY IS JUST USED IN COMBUST AND WILL LEAVE BACI SOON
+--> THIS FUNCTIONALITY IS JUST USED IN COMBUST AND WILL LEAVE 4C SOON
 
 \level 3
 
