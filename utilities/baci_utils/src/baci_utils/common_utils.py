@@ -39,36 +39,6 @@ def cstyle_comment_remover(text):
     return re.sub(pattern, replacer, text)
 
 
-def is_unittest_file(fname):
-    parts = path_split_all(fname)
-
-    if len(parts) < 3:
-        return False
-    if parts[0] != "Unittests":
-        return False
-    if parts[1] != "src":
-        return False
-    if not os.path.splitext(parts[-1])[1] in ".h .H .hpp".split():
-        return False
-
-    # open file and check, whether it contains a FourCCxxTestWrapper
-    with open(fname, "r") as f:
-        content = cstyle_comment_remover("\n".join(f.readlines()))
-        if "FourCCxxTestWrapper" not in content:
-            return False
-
-    return True
-
-
-def is_unittest_cmakefile(fname):
-    parts = path_split_all(fname)
-
-    if parts[0] != "Unittests":
-        return False
-
-    return parts[-1] == "CMakeLists.txt"
-
-
 def is_source_file(fname):
     return os.path.splitext(fname)[1] in ".c .cpp .cxx .h .H .hpp".split()
 
