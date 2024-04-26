@@ -20,6 +20,8 @@
 #include "4C_so3_base.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_poro.hpp"
+#include "4C_solid_3D_ele.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -175,16 +177,35 @@ void CONTACT::IntegratorNitschePoro::SoEleCauchy(MORTAR::Element& moEle, double*
   CONTACT::UTILS::MapGPtoParent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
 
   double sigma_nt;
-  CORE::LINALG::SerialDenseMatrix dsdd;
   CORE::LINALG::SerialDenseMatrix dsntdd, dsntdp;
   CORE::LINALG::Matrix<dim, 1> dsntdn, dsntdt, dsntdpxi;
 
   if (!moEle.MoData().ParentPFPres().size())
   {
-    dynamic_cast<DRT::ELEMENTS::SoBase*>(moEle.ParentElement())
-        ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction,
-            sigma_nt, &dsntdd, nullptr, nullptr, nullptr, nullptr, &dsntdn, &dsntdt, &dsntdpxi,
-            nullptr, nullptr, nullptr, nullptr, nullptr);
+    // The element can be either an old so3 element or a new solid element
+    if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(moEle.ParentElement());
+        solid_ele != nullptr)
+    {
+      solid_ele->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(), normal,
+          direction, sigma_nt, &dsntdd, nullptr, nullptr, nullptr, nullptr, &dsntdn, &dsntdt,
+          &dsntdpxi, nullptr, nullptr, nullptr, nullptr, nullptr);
+    }
+    else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(moEle.ParentElement());
+             solid_ele != nullptr)
+    {
+      DRT::ELEMENTS::CauchyNDirLinearizations<3> cauchy_linearizations{};
+      cauchy_linearizations.d_cauchyndir_dd = &dsntdd;
+      cauchy_linearizations.d_cauchyndir_dn = &dsntdn;
+      cauchy_linearizations.d_cauchyndir_ddir = &dsntdt;
+      cauchy_linearizations.d_cauchyndir_dxi = &dsntdpxi;
+
+      sigma_nt = solid_ele->GetCauchyNDirAtXi<3>(
+          moEle.MoData().ParentDisp(), pxsi, normal, direction, cauchy_linearizations);
+    }
+    else
+    {
+      FOUR_C_THROW("Unsupported solid element type");
+    }
   }
   else
   {
