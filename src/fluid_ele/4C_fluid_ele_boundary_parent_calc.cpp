@@ -800,9 +800,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
       // compute measure for rate of strain at n+alpha_F or n+1 if required
       // for non-Newtonian fluid
-      if (material->MaterialType() == INPAR::MAT::m_carreauyasuda or
-          material->MaterialType() == INPAR::MAT::m_modpowerlaw or
-          material->MaterialType() == INPAR::MAT::m_herschelbulkley)
+      if (material->MaterialType() == CORE::Materials::m_carreauyasuda or
+          material->MaterialType() == CORE::Materials::m_modpowerlaw or
+          material->MaterialType() == CORE::Materials::m_herschelbulkley)
       {
         //-------------------------------------------------------------------
         //
@@ -2237,9 +2237,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
     // compute measure for rate of strain at n+alpha_F or n+1 if required
     // for non-Newtonian fluid
-    if (material->MaterialType() == INPAR::MAT::m_carreauyasuda or
-        material->MaterialType() == INPAR::MAT::m_modpowerlaw or
-        material->MaterialType() == INPAR::MAT::m_herschelbulkley)
+    if (material->MaterialType() == CORE::Materials::m_carreauyasuda or
+        material->MaterialType() == CORE::Materials::m_modpowerlaw or
+        material->MaterialType() == CORE::Materials::m_herschelbulkley)
     {
       //-------------------------------------------------------------------
       //
@@ -4299,9 +4299,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   const double rateofstrain = 0.0;
   Teuchos::RCP<MAT::Material> material = parent->Material();
 
-  if (material->MaterialType() == INPAR::MAT::m_carreauyasuda or
-      material->MaterialType() == INPAR::MAT::m_modpowerlaw or
-      material->MaterialType() == INPAR::MAT::m_herschelbulkley)
+  if (material->MaterialType() == CORE::Materials::m_carreauyasuda or
+      material->MaterialType() == CORE::Materials::m_modpowerlaw or
+      material->MaterialType() == CORE::Materials::m_herschelbulkley)
     FOUR_C_THROW("No non-Newtonian fluid allowed for mixed/hybrid DBCs so far!");
 
   // get viscosity
@@ -5771,7 +5771,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
   // initially set density to 1.0
   densaf_ = 1.0;
 
-  if (material->MaterialType() == INPAR::MAT::m_fluid)
+  if (material->MaterialType() == CORE::Materials::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
 
@@ -5780,7 +5780,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     // get constant viscosity
     visc_ = actmat->Viscosity();
   }
-  else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
+  else if (material->MaterialType() == CORE::Materials::m_carreauyasuda)
   {
     const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
 
@@ -5800,7 +5800,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     // dynamic viscosity
     visc_ *= densaf_;
   }
-  else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
+  else if (material->MaterialType() == CORE::Materials::m_modpowerlaw)
   {
     const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
 
@@ -5818,7 +5818,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     // dynamic viscosity
     visc_ *= densaf_;
   }
-  else if (material->MaterialType() == INPAR::MAT::m_herschelbulkley)
+  else if (material->MaterialType() == CORE::Materials::m_herschelbulkley)
   {
     const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(material.get());
 
@@ -5843,7 +5843,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
       visc_ = tau0 * ((1.0 - exp(-mexp * rateofstrain)) / rateofstrain) +
               kfac * pow(rateofstrain, (nexp - 1.0));
   }
-  else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
+  else if (material->MaterialType() == CORE::Materials::m_mixfrac)
   {
     const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
 
@@ -5853,7 +5853,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     // compute density at n+alpha_F or n+1 based on mixture fraction
     densaf_ = actmat->ComputeDensity(pscaaf);
   }
-  else if (material->MaterialType() == INPAR::MAT::m_sutherland)
+  else if (material->MaterialType() == CORE::Materials::m_sutherland)
   {
     const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
@@ -5864,7 +5864,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     // and thermodynamic pressure
     densaf_ = actmat->ComputeDensity(pscaaf, thermpressaf);
   }
-  else if (material->MaterialType() == INPAR::MAT::m_tempdepwater)
+  else if (material->MaterialType() == CORE::Materials::m_tempdepwater)
   {
     const MAT::TempDepWater* actmat = static_cast<const MAT::TempDepWater*>(material.get());
 
@@ -5874,7 +5874,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     // compute density at n+alpha_F or n+1 based on temperature
     densaf_ = actmat->ComputeDensity(pscaaf);
   }
-  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+  else if (material->MaterialType() == CORE::Materials::m_arrhenius_pv)
   {
     const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
@@ -5887,7 +5887,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     // compute density at n+alpha_F or n+1 based on progress variable
     densaf_ = actmat->ComputeDensity(pscaaf);
   }
-  else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+  else if (material->MaterialType() == CORE::Materials::m_ferech_pv)
   {
     const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
 
@@ -5900,7 +5900,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     // compute density at n+alpha_F or n+1 based on progress variable
     densaf_ = actmat->ComputeDensity(pscaaf);
   }
-  else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
+  else if (material->MaterialType() == CORE::Materials::m_permeable_fluid)
   {
     const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
 
@@ -5909,7 +5909,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
     // get constant viscosity
     visc_ = actmat->SetViscosity();
   }
-  else if (material->MaterialType() == INPAR::MAT::m_fluidporo)
+  else if (material->MaterialType() == CORE::Materials::m_fluidporo)
   {
     const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
 

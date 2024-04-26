@@ -42,7 +42,7 @@ namespace MAT
       virtual void Initialize() = 0;
 
       /// return type of phase law
-      virtual INPAR::MAT::MaterialType PoroPhaseLawType() const = 0;
+      virtual CORE::Materials::MaterialType PoroPhaseLawType() const = 0;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
       virtual void FillDoFMatrix(CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const = 0;
@@ -78,7 +78,7 @@ namespace MAT
       void Initialize() override;
 
       /// return type of phase law
-      INPAR::MAT::MaterialType PoroPhaseLawType() const override;
+      CORE::Materials::MaterialType PoroPhaseLawType() const override;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
       void FillDoFMatrix(CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const override;
@@ -120,7 +120,7 @@ namespace MAT
       void Initialize() override;
 
       /// return type of phase law
-      INPAR::MAT::MaterialType PoroPhaseLawType() const override;
+      CORE::Materials::MaterialType PoroPhaseLawType() const override;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
       void FillDoFMatrix(CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const override;
@@ -164,7 +164,7 @@ namespace MAT
       void Initialize() override;
 
       /// return type of phase law
-      INPAR::MAT::MaterialType PoroPhaseLawType() const override;
+      CORE::Materials::MaterialType PoroPhaseLawType() const override;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
       void FillDoFMatrix(CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const override;

@@ -44,7 +44,7 @@ MAT::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
 
       // safety check and cast
-      if (mat->MaterialType() != INPAR::MAT::m_fluidporo_singlereaction)
+      if (mat->MaterialType() != CORE::Materials::m_fluidporo_singlereaction)
         FOUR_C_THROW("only MAT_FluidPoroSingleReaction material valid");
       MAT::FluidPoroSingleReaction singlereacmat = static_cast<MAT::FluidPoroSingleReaction&>(*mat);
       if (singlereacmat.TotalNumDof() != this->nummat_)

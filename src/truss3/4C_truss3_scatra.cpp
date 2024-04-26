@@ -160,18 +160,18 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
     CORE::LINALG::SerialDenseVector& forcevec, CORE::LINALG::SerialDenseMatrix& stiffmat)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D_growth and
-      Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+  if (Material()->MaterialType() != CORE::Materials::m_linelast1D_growth and
+      Material()->MaterialType() != CORE::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic growth material supported for truss element");
 
   switch (Material()->MaterialType())
   {
-    case INPAR::MAT::m_linelast1D:
+    case CORE::Materials::m_linelast1D:
     {
       Truss3::CalcInternalForceStiffTotLag(ele_state, forcevec, stiffmat);
       break;
     }
-    case INPAR::MAT::m_linelast1D_growth:
+    case CORE::Materials::m_linelast1D_growth:
     {
       CORE::LINALG::Matrix<6, 1> curr_nodal_coords;
       CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
@@ -238,18 +238,18 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
     Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D_growth and
-      Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+  if (Material()->MaterialType() != CORE::Materials::m_linelast1D_growth and
+      Material()->MaterialType() != CORE::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic growth material supported for truss element");
 
   switch (Material()->MaterialType())
   {
-    case INPAR::MAT::m_linelast1D:
+    case CORE::Materials::m_linelast1D:
     {
       Truss3::CalcGPStresses(params, ele_state);
       break;
     }
-    case INPAR::MAT::m_linelast1D_growth:
+    case CORE::Materials::m_linelast1D_growth:
     {
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       INPAR::STR::StressType iostress;
@@ -407,18 +407,18 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
     CORE::LINALG::SerialDenseVector& intenergy)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D_growth and
-      Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+  if (Material()->MaterialType() != CORE::Materials::m_linelast1D_growth and
+      Material()->MaterialType() != CORE::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic growth material supported for truss element");
 
   switch (Material()->MaterialType())
   {
-    case INPAR::MAT::m_linelast1D:
+    case CORE::Materials::m_linelast1D:
     {
       Truss3::Energy(ele_state, params, intenergy);
       break;
     }
-    case INPAR::MAT::m_linelast1D_growth:
+    case CORE::Materials::m_linelast1D_growth:
     {
       CORE::LINALG::Matrix<6, 1> curr_nodal_coords;
       CORE::LINALG::Matrix<6, 6> dtruss_disp_du;

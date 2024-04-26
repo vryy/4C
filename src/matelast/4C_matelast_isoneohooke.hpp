@@ -82,7 +82,10 @@ namespace MAT
       //@{
 
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_isoneohooke; }
+      CORE::Materials::MaterialType MaterialType() const override
+      {
+        return CORE::Materials::mes_isoneohooke;
+      }
 
       /// add shear modulus equivalent
       void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added

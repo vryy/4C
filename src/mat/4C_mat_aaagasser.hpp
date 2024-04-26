@@ -214,7 +214,10 @@ namespace MAT
     }
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_aaagasser; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_aaagasser;
+    }
 
     /// check if element kinematics and material kinematics are compatible
     void ValidKinematics(INPAR::STR::KinemType kinem) override

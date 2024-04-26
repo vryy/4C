@@ -16,6 +16,7 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_inpar_material.hpp"
+#include "4C_legacy_enum_definitions_materials.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -57,7 +58,7 @@ namespace MAT
   {
    public:
     /// return type of this material
-    virtual INPAR::MAT::MaterialType MaterialType() const = 0;
+    virtual CORE::Materials::MaterialType MaterialType() const = 0;
 
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const = 0;

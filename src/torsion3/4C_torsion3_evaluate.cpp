@@ -310,7 +310,7 @@ void DRT::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params, std::vec
   // assignment of material parameters; only spring material is accepted for this element
   switch (currmat->MaterialType())
   {
-    case INPAR::MAT::m_spring:  // only elastic spring supported
+    case CORE::Materials::m_spring:  // only elastic spring supported
     {
       const MAT::Spring* actmat = static_cast<const MAT::Spring*>(currmat.get());
       spring = actmat->Stiffness();
@@ -442,7 +442,7 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
   // assignment of material parameters; only spring material is accepted for this element
   switch (currmat->MaterialType())
   {
-    case INPAR::MAT::m_spring:  // only elastic spring supported
+    case CORE::Materials::m_spring:  // only elastic spring supported
     {
       const MAT::Spring* actmat = static_cast<const MAT::Spring*>(currmat.get());
       spring = actmat->Stiffness();

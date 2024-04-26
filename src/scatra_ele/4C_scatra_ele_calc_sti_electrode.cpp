@@ -111,9 +111,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
     }
 
     // matrix and vector contributions arising from source terms
-    if (ele->Material()->MaterialType() == INPAR::MAT::m_soret)
+    if (ele->Material()->MaterialType() == CORE::Materials::m_soret)
       mystielch::CalcMatAndRhsSource(emat, erhs, timefacfac, rhsfac);
-    else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+    else if (ele->Material()->MaterialType() == CORE::Materials::m_th_fourier_iso)
       CalcMatAndRhsJoule(emat, erhs, timefacfac, rhsfac);
   }  // loop over integration points
 }
@@ -341,9 +341,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::SysmatODThermoScatra(
 
     // provide element matrix with linearizations of source terms in discrete thermo residuals
     // w.r.t. scatra dofs
-    if (ele->Material()->MaterialType() == INPAR::MAT::m_soret)
+    if (ele->Material()->MaterialType() == CORE::Materials::m_soret)
       mystielch::CalcMatSourceOD(emat, my::scatraparatimint_->TimeFac() * fac);
-    else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+    else if (ele->Material()->MaterialType() == CORE::Materials::m_th_fourier_iso)
       CalcMatJouleOD(emat, my::scatraparatimint_->TimeFac() * fac);
   }
 }
@@ -553,16 +553,16 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(const 
 {
   // get parameters of primary, thermal material
   Teuchos::RCP<const MAT::Material> material = ele->Material();
-  if (material->MaterialType() == INPAR::MAT::m_soret)
+  if (material->MaterialType() == CORE::Materials::m_soret)
     MatSoret(material, densn[0], densnp[0], densam[0]);
-  else if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+  else if (material->MaterialType() == CORE::Materials::m_th_fourier_iso)
     MatFourier(material, densn[0], densnp[0], densam[0]);
   else
     FOUR_C_THROW("Invalid thermal material!");
 
   // get parameters of secondary, scatra material
   material = ele->Material(1);
-  if (material->MaterialType() == INPAR::MAT::m_electrode)
+  if (material->MaterialType() == CORE::Materials::m_electrode)
   {
     utils_->MatElectrode(
         material, VarManager()->Conc(), my::scatravarmanager_->Phinp(0), diffmanagerstielectrode_);

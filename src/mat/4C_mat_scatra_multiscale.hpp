@@ -118,9 +118,9 @@ namespace MAT
     //@}
 
     //! return material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_scatra_multiscale;
+      return CORE::Materials::m_scatra_multiscale;
     };
 
     //! clone material

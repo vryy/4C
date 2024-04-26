@@ -89,8 +89,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
                           problem_->PoroMultiPhaseScatraDynamicParams(), "ARTERY_COUPLING") &&
                       actdis->Name() == "scatra"),
       heteroreaccoupling_(actdis->GetCondition("ScatraHeteroReactionSlave") != nullptr),
-      macro_scale_(problem_->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1 or
-                   problem_->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale) != -1),
+      macro_scale_(
+          problem_->Materials()->FirstIdByType(CORE::Materials::m_scatra_multiscale) != -1 or
+          problem_->Materials()->FirstIdByType(CORE::Materials::m_newman_multiscale) != -1),
       micro_scale_(probnum != 0),
       isemd_(extraparams->get<bool>("ELECTROMAGNETICDIFFUSION", false)),
       emd_source_(extraparams->get<int>("EMDSOURCE", -1)),
@@ -684,8 +685,8 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   DRT::Element* element = discret_->lRowElement(0);
   Teuchos::RCP<MAT::Material> mat = element->Material();
 
-  if (mat->MaterialType() == INPAR::MAT::m_matlist or
-      mat->MaterialType() == INPAR::MAT::m_matlist_reactions)
+  if (mat->MaterialType() == CORE::Materials::m_matlist or
+      mat->MaterialType() == CORE::Materials::m_matlist_reactions)
   {
     Teuchos::RCP<const MAT::MatList> actmat = Teuchos::rcp_static_cast<const MAT::MatList>(mat);
 
@@ -694,7 +695,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
       const int matid = actmat->MatID(k);
       Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      if (singlemat->MaterialType() == INPAR::MAT::m_scatra)
+      if (singlemat->MaterialType() == CORE::Materials::m_scatra)
       {
         Teuchos::RCP<const MAT::ScatraMat> actsinglemat =
             Teuchos::rcp_static_cast<const MAT::ScatraMat>(singlemat);
@@ -709,7 +710,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   }
 
   // for a single species calculation
-  else if (mat->MaterialType() == INPAR::MAT::m_scatra)
+  else if (mat->MaterialType() == CORE::Materials::m_scatra)
   {
     Teuchos::RCP<const MAT::ScatraMat> actmat = Teuchos::rcp_static_cast<const MAT::ScatraMat>(mat);
 
@@ -3667,7 +3668,7 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
     const int ele_gid = discret_->ElementRowMap()->GID(ele_lid);
     auto* ele = discret_->gElement(ele_gid);
 
-    if (ele->Material()->MaterialType() != INPAR::MAT::m_electrode) continue;
+    if (ele->Material()->MaterialType() != CORE::Materials::m_electrode) continue;
 
     auto* nodes = ele->Nodes();
 
@@ -3731,7 +3732,7 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
       auto ele_mat = ele->Material(mat_id);
       auto material_type = ele_mat->MaterialType();
 
-      if (material_type == INPAR::MAT::m_elchmat)
+      if (material_type == CORE::Materials::m_elchmat)
       {
         const auto* elchmat = static_cast<const MAT::ElchMat*>(ele_mat.get());
 

@@ -148,7 +148,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
   const double L = CalculateEleLength(ele, discretization, la);
 
   // check here, if we really have an artery !!
-  if (material->MaterialType() != INPAR::MAT::m_cnst_art)
+  if (material->MaterialType() != CORE::Materials::m_cnst_art)
     FOUR_C_THROW("Wrong material type for artery");
 
   // cast the material to artery material material
@@ -225,7 +225,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateFlow(Artery* ele,
   const double L = CalculateEleLength(ele, discretization, la);
 
   // check here, if we really have an artery !!
-  if (material->MaterialType() != INPAR::MAT::m_cnst_art)
+  if (material->MaterialType() != CORE::Materials::m_cnst_art)
     FOUR_C_THROW("Wrong material type for artery");
 
   // cast the material to artery material material

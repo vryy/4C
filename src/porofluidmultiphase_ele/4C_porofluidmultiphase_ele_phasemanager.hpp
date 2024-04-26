@@ -91,13 +91,13 @@ namespace DRT
         //! factory method
         static Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface>
         CreatePhaseManager(const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
-            INPAR::MAT::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
+            CORE::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
             int totalnumdofpernode, int numfluidphases);
 
         //! factory method
         static Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface>
         WrapPhaseManager(const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
-            INPAR::MAT::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
+            CORE::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
             Teuchos::RCP<PhaseManagerInterface> corephasemanager);
 
         //! setup (matnum is the material number of the porofluid-material on the current element)

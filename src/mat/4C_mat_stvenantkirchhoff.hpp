@@ -85,9 +85,9 @@ namespace MAT
 
     //! @name Access methods
 
-    [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override
+    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_stvenant;
+      return CORE::Materials::m_stvenant;
     }
 
     void ValidKinematics(INPAR::STR::KinemType kinem) override

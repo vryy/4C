@@ -74,7 +74,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Materials(
     const int iquad                                    //!< id of current gauss point
 )
 {
-  if (material->MaterialType() == INPAR::MAT::m_scatra_aniso)
+  if (material->MaterialType() == CORE::Materials::m_scatra_aniso)
     MatScaTraAniso(material, k, densn, densnp, densam, visc, iquad);
   else
     FOUR_C_THROW("Material type is not supported");

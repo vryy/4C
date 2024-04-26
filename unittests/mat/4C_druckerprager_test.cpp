@@ -27,7 +27,7 @@ namespace
     void SetUp() override
     {
       const Teuchos::RCP<MAT::PAR::Material> container = Teuchos::rcp(new MAT::PAR::Material(
-          1, INPAR::MAT::MaterialType::m_pldruckprag, "MAT_Struct_DruckerPrager"));
+          1, CORE::Materials::MaterialType::m_pldruckprag, "MAT_Struct_DruckerPrager"));
       container->Add("YOUNG", 1.0);
       container->Add("NUE", 0.25);
       container->Add("DENS", 0.0);

@@ -523,7 +523,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   if (block != "NeumannIntegration" && block != "NeumannIntegration_Ale")
   {
     structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(structele->Material());
-    if (structmat->MaterialType() != INPAR::MAT::m_structporo)
+    if (structmat->MaterialType() != CORE::Materials::m_structporo)
     {
       FOUR_C_THROW("invalid structure material for poroelasticity");
     }

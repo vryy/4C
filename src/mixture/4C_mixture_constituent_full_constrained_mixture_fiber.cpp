@@ -111,10 +111,10 @@ MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-INPAR::MAT::MaterialType MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::MaterialType()
+CORE::Materials::MaterialType MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::MaterialType()
     const
 {
-  return INPAR::MAT::mix_full_constrained_mixture_fiber;
+  return CORE::Materials::mix_full_constrained_mixture_fiber;
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::PackConstituent(

@@ -48,8 +48,8 @@ void DRT::ELEMENTS::Wall1Poro<distype>::PreEvaluate(Teuchos::ParameterList& para
         Teuchos::RCP<MAT::Material> scatramat = Material(2);
 
         int numscal = 1;
-        if (scatramat->MaterialType() == INPAR::MAT::m_matlist or
-            scatramat->MaterialType() == INPAR::MAT::m_matlist_reactions)
+        if (scatramat->MaterialType() == CORE::Materials::m_matlist or
+            scatramat->MaterialType() == CORE::Materials::m_matlist_reactions)
         {
           Teuchos::RCP<MAT::MatList> matlist = Teuchos::rcp_dynamic_cast<MAT::MatList>(scatramat);
           numscal = matlist->NumMat();
@@ -1750,7 +1750,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::CouplingStressPoroelast(
 
   // get structure material
   Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-  if (structmat->MaterialType() != INPAR::MAT::m_structporo)
+  if (structmat->MaterialType() != CORE::Materials::m_structporo)
     FOUR_C_THROW("invalid structure material for poroelasticity");
 
   for (int gp = 0; gp < numgpt_; ++gp)

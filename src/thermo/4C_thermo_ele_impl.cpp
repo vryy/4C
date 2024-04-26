@@ -195,8 +195,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // call ThermoStVenantKirchhoff material and get the temperature dependent
     // tangent ctemp
     plasticmat_ = false;
-    if ((structmat->MaterialType() == INPAR::MAT::m_thermopllinelast) or
-        (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast))
+    if ((structmat->MaterialType() == CORE::Materials::m_thermopllinelast) or
+        (structmat->MaterialType() == CORE::Materials::m_thermoplhyperelast))
       plasticmat_ = true;
   }  // (la.Size > 1)
 
@@ -953,7 +953,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
   // ------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
 
-  if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
+  if (structmat->MaterialType() == CORE::Materials::m_thermostvenant)
   {
     Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk =
         Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(structmat, true);
@@ -1015,7 +1015,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
 
       Ndctemp_dTBvNT.Multiply(Ndctemp_dTBv, NT);
     }
-    else if (structmat->MaterialType() == INPAR::MAT::m_thermopllinelast)
+    else if (structmat->MaterialType() == CORE::Materials::m_thermopllinelast)
     {
       Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(structmat, true);
@@ -1234,7 +1234,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
       thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
     }
-    else if (structmat->MaterialType() == INPAR::MAT::m_thermopllinelast)
+    else if (structmat->MaterialType() == CORE::Materials::m_thermopllinelast)
     {
       Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(structmat, true);
@@ -1420,7 +1420,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
         econd->MultiplyNT(-fac_, Ndctemp_dTCrateNT, funct_, 1.0);
       }  // (econd != nullptr)
     }
-    else if (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+    else if (structmat->MaterialType() == CORE::Materials::m_thermoplhyperelast)
     {
       Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(structmat, true);
@@ -1479,7 +1479,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
       // fint = fint + fint_{Td}
       // with fint_{Td} += - N^T . ctemp : (1/2 . C') . N . T +
       //                   + B^T . k_0 . F^{-1} . F^{-T} . B . T
-      if (structmat->MaterialType() == INPAR::MAT::m_plelasthyper)
+      if (structmat->MaterialType() == CORE::Materials::m_plelasthyper)
       {
         Teuchos::RCP<MAT::PlasticElastHyper> plmat =
             Teuchos::rcp_dynamic_cast<MAT::PlasticElastHyper>(structmat, true);
@@ -1520,7 +1520,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
       econd->MultiplyTN(fac_, derxy_, CinvdCmatGradTN, 1.0);  //(8x8)=(8x3)(3x8)
 #ifndef TSISLMNOGOUGHJOULE
       // linearization of thermo-mechanical effects
-      if (structmat->MaterialType() == INPAR::MAT::m_plelasthyper)
+      if (structmat->MaterialType() == CORE::Materials::m_plelasthyper)
       {
         Teuchos::RCP<MAT::PlasticElastHyper> plmat =
             Teuchos::rcp_dynamic_cast<MAT::PlasticElastHyper>(structmat, true);
@@ -1813,7 +1813,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
       thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
     }
-    else if (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+    else if (structmat->MaterialType() == CORE::Materials::m_thermoplhyperelast)
     {
       // C_T = m_0 . (J + 1/J) . C^{-1}
       // thermoelastic heating term
@@ -1840,7 +1840,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
       // these coupling terms have already been computed during the structural
       // evaluate to efficiently combine it with the condensation of plastic
       // deformation DOFs
-      if (structmat->MaterialType() == INPAR::MAT::m_plelasthyper)
+      if (structmat->MaterialType() == CORE::Materials::m_plelasthyper)
       {
         Teuchos::RCP<MAT::PlasticElastHyper> plmat =
             Teuchos::rcp_dynamic_cast<MAT::PlasticElastHyper>(structmat, true);
@@ -1900,7 +1900,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
       etangcoupl->MultiplyNN(fac_, bgradTcmat, dCinv_dd, 1.0);
     }  // (etangcoupl != nullptr)
 
-    if (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+    if (structmat->MaterialType() == CORE::Materials::m_thermoplhyperelast)
     {
       // --------- additional terms due to linearisation of H_ep w.r.t. d_{n+1}
 
@@ -1997,7 +1997,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
   // ------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
 
-  if (structmat->MaterialType() != INPAR::MAT::m_thermopllinelast)
+  if (structmat->MaterialType() != CORE::Materials::m_thermopllinelast)
   {
     FOUR_C_THROW("So far dissipation only for ThermoPlasticLinElast material!");
   }
@@ -2092,7 +2092,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
 
   // ------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
-  if (structmat->MaterialType() != INPAR::MAT::m_thermopllinelast)
+  if (structmat->MaterialType() != CORE::Materials::m_thermopllinelast)
   {
     FOUR_C_THROW("So far dissipation only available for ThermoPlasticLinElast material!");
   }
@@ -2268,7 +2268,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
   // ------------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
 
-  if (structmat->MaterialType() != INPAR::MAT::m_thermoplhyperelast)
+  if (structmat->MaterialType() != CORE::Materials::m_thermoplhyperelast)
   {
     FOUR_C_THROW("So far dissipation only for ThermoPlasticHyperElast material!");
   }

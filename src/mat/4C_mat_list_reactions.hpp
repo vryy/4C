@@ -125,9 +125,9 @@ namespace MAT
     virtual void Initialize();
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_matlist_reactions;
+      return CORE::Materials::m_matlist_reactions;
     }
 
     /// return copy of this material object

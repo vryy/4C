@@ -40,41 +40,41 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::m_poro_law_linear:
+    case CORE::Materials::m_poro_law_linear:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::PoroLawLinear(curmat));
       poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_poro_law_constant:
+    case CORE::Materials::m_poro_law_constant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroLawConstant(curmat));
       poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_poro_law_logNeoHooke_Penalty:
+    case CORE::Materials::m_poro_law_logNeoHooke_Penalty:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroLawNeoHooke(curmat));
       poro_law_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_poro_law_incompr_skeleton:
+    case CORE::Materials::m_poro_law_incompr_skeleton:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroLawIncompSkeleton(curmat));
       poro_law_ = static_cast<MAT::PAR::PoroLawIncompSkeleton*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_poro_law_linear_biot:
+    case CORE::Materials::m_poro_law_linear_biot:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroLawLinBiot(curmat));
       poro_law_ = static_cast<MAT::PAR::PoroLawLinBiot*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_poro_law_density_dependent:
+    case CORE::Materials::m_poro_law_density_dependent:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroLawDensityDependent(curmat));
@@ -129,7 +129,7 @@ void MAT::StructPoro::PoroSetup(int numgp, INPUT::LineDefinition* linedef)
   is_initialized_ = true;
 }
 
-inline INPAR::MAT::MaterialType MAT::StructPoro::PoroLawType() const
+inline CORE::Materials::MaterialType MAT::StructPoro::PoroLawType() const
 {
   return params_->poro_law_->Type();
 }

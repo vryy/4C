@@ -78,8 +78,8 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
   // set the fluid material in the element
   VarManager()->SetFluidPoromultiphaseMaterial(ele);
 
-  if (material->MaterialType() == INPAR::MAT::m_matlist or
-      material->MaterialType() == INPAR::MAT::m_matlist_reactions)
+  if (material->MaterialType() == CORE::Materials::m_matlist or
+      material->MaterialType() == CORE::Materials::m_matlist_reactions)
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
@@ -92,7 +92,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
       switch (singlemat->MaterialType())
       {
-        case INPAR::MAT::m_scatra_multiporo_fluid:
+        case CORE::Materials::m_scatra_multiporo_fluid:
         {
           const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& poromat =
               Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroFluid>(singlemat);
@@ -108,7 +108,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
           Teuchos::RCP<MAT::Material> singlemat =
               VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
-          if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
+          if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlephase)
             FOUR_C_THROW(
                 "Invalid phase ID for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)",
                 k);
@@ -125,7 +125,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
           VarManager()->SetRelativeMobilityFunctionId(poromat->RelativeMobilityFunctId(), k);
           break;
         }
-        case INPAR::MAT::m_scatra_multiporo_volfrac:
+        case CORE::Materials::m_scatra_multiporo_volfrac:
         {
           const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& poromat =
               Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(singlemat);
@@ -143,7 +143,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
           Teuchos::RCP<MAT::Material> singlemat =
               VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
-          if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
+          if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlevolfrac)
             FOUR_C_THROW(
                 "Invalid phase ID for scalar %i (species in volume fraction = "
                 "MAT_scatra_multiporo_volfrac)",
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
           break;
         }
-        case INPAR::MAT::m_scatra_multiporo_solid:
+        case CORE::Materials::m_scatra_multiporo_solid:
         {
           const Teuchos::RCP<const MAT::ScatraMatMultiPoroSolid>& poromat =
               Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroSolid>(singlemat);
@@ -174,7 +174,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
           break;
         }
-        case INPAR::MAT::m_scatra_multiporo_temperature:
+        case CORE::Materials::m_scatra_multiporo_temperature:
         {
           const Teuchos::RCP<const MAT::ScatraMatMultiPoroTemperature>& poromat =
               Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroTemperature>(singlemat);
@@ -224,7 +224,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
   {
     switch (material->MaterialType())
     {
-      case INPAR::MAT::m_scatra_multiporo_fluid:
+      case CORE::Materials::m_scatra_multiporo_fluid:
       {
         const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& poromat =
             Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroFluid>(material);
@@ -240,7 +240,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
         Teuchos::RCP<MAT::Material> singlemat =
             VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
-        if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
+        if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlephase)
           FOUR_C_THROW(
               "Invalid phase ID for scalar %i (species in fluid = MAT_scatra_multiporo_fluid)", 0);
 
@@ -256,7 +256,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
         VarManager()->SetRelativeMobilityFunctionId(poromat->RelativeMobilityFunctId(), 0);
         break;
       }
-      case INPAR::MAT::m_scatra_multiporo_volfrac:
+      case CORE::Materials::m_scatra_multiporo_volfrac:
       {
         const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& poromat =
             Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(material);
@@ -274,7 +274,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
         Teuchos::RCP<MAT::Material> singlemat =
             VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
-        if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
+        if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlevolfrac)
           FOUR_C_THROW(
               "Invalid phase ID for scalar %i (species in volume fraction = "
               "MAT_scatra_multiporo_volfrac)",
@@ -291,7 +291,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
         break;
       }
-      case INPAR::MAT::m_scatra_multiporo_solid:
+      case CORE::Materials::m_scatra_multiporo_solid:
       {
         const Teuchos::RCP<const MAT::ScatraMatMultiPoroSolid>& poromat =
             Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroSolid>(material);
@@ -305,7 +305,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
 
         break;
       }
-      case INPAR::MAT::m_scatra_multiporo_temperature:
+      case CORE::Materials::m_scatra_multiporo_temperature:
       {
         const Teuchos::RCP<const MAT::ScatraMatMultiPoroTemperature>& poromat =
             Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroTemperature>(material);
@@ -538,24 +538,24 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Materials(
 {
   switch (material->MaterialType())
   {
-    case INPAR::MAT::m_scatra_multiporo_fluid:
+    case CORE::Materials::m_scatra_multiporo_fluid:
     {
       MatMultiPoroFluid(material, k, densn, densnp, densam, visc, iquad);
       break;
     }
-    case INPAR::MAT::m_scatra_multiporo_volfrac:
+    case CORE::Materials::m_scatra_multiporo_volfrac:
     {
       MatMultiPoroVolFrac(material, k, densn, densnp, densam, visc, iquad);
       break;
     }
 
-    case INPAR::MAT::m_scatra_multiporo_solid:
+    case CORE::Materials::m_scatra_multiporo_solid:
     {
       MatMultiPoroSolid(material, k, densn, densnp, densam, visc, iquad);
       break;
     }
 
-    case INPAR::MAT::m_scatra_multiporo_temperature:
+    case CORE::Materials::m_scatra_multiporo_temperature:
     {
       MatMultiPoroTemperature(material, k, densn, densnp, densam, visc, iquad);
       break;

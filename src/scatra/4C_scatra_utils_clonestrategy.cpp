@@ -50,17 +50,19 @@ void SCATRA::ScatraFluidCloneStrategy::CheckMaterialType(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
-  if ((mtype != INPAR::MAT::m_scatra) && (mtype != INPAR::MAT::m_mixfrac) &&
-      (mtype != INPAR::MAT::m_sutherland) && (mtype != INPAR::MAT::m_tempdepwater) &&
-      (mtype != INPAR::MAT::m_arrhenius_pv) && (mtype != INPAR::MAT::m_ferech_pv) &&
-      (mtype != INPAR::MAT::m_ion) && (mtype != INPAR::MAT::m_th_fourier_iso) &&
-      (mtype != INPAR::MAT::m_thermostvenant) && (mtype != INPAR::MAT::m_yoghurt) &&
-      (mtype != INPAR::MAT::m_matlist) && (mtype != INPAR::MAT::m_matlist_reactions) &&
-      (mtype != INPAR::MAT::m_myocard) && (mtype != INPAR::MAT::m_scatra_multiporo_fluid) &&
-      (mtype != INPAR::MAT::m_scatra_multiporo_volfrac) &&
-      (mtype != INPAR::MAT::m_scatra_multiporo_solid) &&
-      (mtype != INPAR::MAT::m_scatra_multiporo_temperature))
+  CORE::Materials::MaterialType mtype =
+      GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
+  if ((mtype != CORE::Materials::m_scatra) && (mtype != CORE::Materials::m_mixfrac) &&
+      (mtype != CORE::Materials::m_sutherland) && (mtype != CORE::Materials::m_tempdepwater) &&
+      (mtype != CORE::Materials::m_arrhenius_pv) && (mtype != CORE::Materials::m_ferech_pv) &&
+      (mtype != CORE::Materials::m_ion) && (mtype != CORE::Materials::m_th_fourier_iso) &&
+      (mtype != CORE::Materials::m_thermostvenant) && (mtype != CORE::Materials::m_yoghurt) &&
+      (mtype != CORE::Materials::m_matlist) && (mtype != CORE::Materials::m_matlist_reactions) &&
+      (mtype != CORE::Materials::m_myocard) &&
+      (mtype != CORE::Materials::m_scatra_multiporo_fluid) &&
+      (mtype != CORE::Materials::m_scatra_multiporo_volfrac) &&
+      (mtype != CORE::Materials::m_scatra_multiporo_solid) &&
+      (mtype != CORE::Materials::m_scatra_multiporo_temperature))
     FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
@@ -126,9 +128,10 @@ void SCATRA::ScatraReactionCloneStrategy::CheckMaterialType(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
-  if ((mtype != INPAR::MAT::m_scatra) && (mtype != INPAR::MAT::m_matlist) &&
-      (mtype != INPAR::MAT::m_matlist_reactions))
+  CORE::Materials::MaterialType mtype =
+      GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
+  if ((mtype != CORE::Materials::m_scatra) && (mtype != CORE::Materials::m_matlist) &&
+      (mtype != CORE::Materials::m_matlist_reactions))
     FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 

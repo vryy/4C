@@ -106,9 +106,9 @@ namespace MAT
       //@{
 
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override
+      CORE::Materials::MaterialType MaterialType() const override
       {
-        return INPAR::MAT::mes_coupanisoneohooke_varprop;
+        return CORE::Materials::mes_coupanisoneohooke_varprop;
       }
 
       //@}

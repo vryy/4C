@@ -477,7 +477,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
 
       // check if aciuns is ogden type material
       if (discret_->gElement(GID)->Material(0)->MaterialType() ==
-          INPAR::MAT::m_0d_maxwell_acinus_ogden)
+          CORE::Materials::m_0d_maxwell_acinus_ogden)
       {
         // get material parameters kappa and beta
         Teuchos::RCP<MAT::Maxwell0dAcinusOgden> mymat =

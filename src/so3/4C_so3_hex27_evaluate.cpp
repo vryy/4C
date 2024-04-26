@@ -374,7 +374,7 @@ int DRT::ELEMENTS::SoHex27::Evaluate(Teuchos::ParameterList& params,
       UpdateJacobianMapping(mydisp, *prestress_);
 
       // Update constraintmixture material
-      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+      if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
       {
         SolidMaterial()->Update();
       }
@@ -845,9 +845,9 @@ void DRT::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // locati
         FOUR_C_THROW("requested strain type not available");
     }
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture)
+    if (Material()->MaterialType() == CORE::Materials::m_constraintmixture ||
+        Material()->MaterialType() == CORE::Materials::m_growthremodel_elasthyper ||
+        Material()->MaterialType() == CORE::Materials::m_mixture)
     {
       // gp reference coordinates
       CORE::LINALG::Matrix<NUMNOD_SOH27, 1> funct(true);
@@ -996,9 +996,9 @@ void DRT::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // locati
       }
 
     }  // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
-       /* =========================================================================*/
-  }    /* ==================================================== end of Loop over GP */
-       /* =========================================================================*/
+    /* =========================================================================*/
+  } /* ==================================================== end of Loop over GP */
+  /* =========================================================================*/
 
   return;
 }  // DRT::ELEMENTS::So_hex27::soh27_linstiffmass
@@ -1214,9 +1214,9 @@ void DRT::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locati
       bop(5, NODDOF_SOH27 * i + 2) = defgrd(2, 2) * N_XYZ(0, i) + defgrd(2, 0) * N_XYZ(2, i);
     }
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture)
+    if (Material()->MaterialType() == CORE::Materials::m_constraintmixture ||
+        Material()->MaterialType() == CORE::Materials::m_growthremodel_elasthyper ||
+        Material()->MaterialType() == CORE::Materials::m_mixture)
     {
       // gp reference coordinates
       CORE::LINALG::Matrix<NUMNOD_SOH27, 1> funct(true);

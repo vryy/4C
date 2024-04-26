@@ -94,7 +94,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Materials(
 {
   switch (material->MaterialType())
   {
-    case INPAR::MAT::m_scatra:
+    case CORE::Materials::m_scatra:
       MatScaTra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:

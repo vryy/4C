@@ -1537,13 +1537,13 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorResidu
     double RefPressure = 0.0;
     double RefBulkModulus = 0.0;
     double MatParameter = 0.0;
-    if (mat->MaterialType() == INPAR::MAT::m_fluid)
+    if (mat->MaterialType() == CORE::Materials::m_fluid)
     {
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->Density();
     }
-    else if (mat->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+    else if (mat->MaterialType() == CORE::Materials::m_fluid_murnaghantait)
     {
       const MAT::MurnaghanTaitFluid* actmat =
           static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
@@ -1691,8 +1691,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatric
       for (unsigned int i = 0; i < nsd_ * ndofs_; ++i) ufMat(i, f) = 0.;
   }
 
-  if (mat->MaterialType() != INPAR::MAT::m_fluid and
-      mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
+  if (mat->MaterialType() != CORE::Materials::m_fluid and
+      mat->MaterialType() != CORE::Materials::m_fluid_murnaghantait)
     FOUR_C_THROW("Only m_fluid and m_fluid_murnaghantait supported as materials");
 
   double viscosity = 0.0;
@@ -1705,13 +1705,13 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatric
   for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
   {
     // get material properties
-    if (mat->MaterialType() == INPAR::MAT::m_fluid)
+    if (mat->MaterialType() == CORE::Materials::m_fluid)
     {
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->Density();
     }
-    else if (mat->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+    else if (mat->MaterialType() == CORE::Materials::m_fluid_murnaghantait)
     {
       const MAT::MurnaghanTaitFluid* actmat =
           static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
@@ -1976,19 +1976,19 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(c
     }
 
     // get material properties
-    if (mat->MaterialType() != INPAR::MAT::m_fluid and
-        mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
+    if (mat->MaterialType() != CORE::Materials::m_fluid and
+        mat->MaterialType() != CORE::Materials::m_fluid_murnaghantait)
       FOUR_C_THROW("Only m_fluid and m_fluid_murnaghantait supported as materials");
 
     double viscosity = 0.0;
     double density = 0.0;
-    if (mat->MaterialType() == INPAR::MAT::m_fluid)
+    if (mat->MaterialType() == CORE::Materials::m_fluid)
     {
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->Density();
     }
-    else if (mat->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+    else if (mat->MaterialType() == CORE::Materials::m_fluid_murnaghantait)
     {
       const MAT::MurnaghanTaitFluid* actmat =
           static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
@@ -2074,8 +2074,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(c
   trMat.shape(ndofs_ * nsd_, shapesface_.nfdofs_);
   trMatAvg.shape(ndofs_ * nsd_, shapesface_.nfdofs_);
 
-  if (mat->MaterialType() != INPAR::MAT::m_fluid and
-      mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
+  if (mat->MaterialType() != CORE::Materials::m_fluid and
+      mat->MaterialType() != CORE::Materials::m_fluid_murnaghantait)
     FOUR_C_THROW("Only m_fluid and m_fluid_murnaghantait supported as materials");
 
   double viscosity = 0.0;
@@ -2085,13 +2085,13 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(c
   for (unsigned int q = 0; q < shapesface_.nqpoints_; ++q)
   {
     // get material properties
-    if (mat->MaterialType() == INPAR::MAT::m_fluid)
+    if (mat->MaterialType() == CORE::Materials::m_fluid)
     {
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->Density();
     }
-    else if (mat->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+    else if (mat->MaterialType() == CORE::Materials::m_fluid_murnaghantait)
     {
       const MAT::MurnaghanTaitFluid* actmat =
           static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());

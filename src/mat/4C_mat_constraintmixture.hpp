@@ -202,9 +202,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_constraintmixture;
+      return CORE::Materials::m_constraintmixture;
     }
 
     /// check if element kinematics and material kinematics are compatible

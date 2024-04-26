@@ -59,24 +59,24 @@ namespace MAT
       };  // class CoupBlatzKo
 
     }  // namespace PAR
-       /*!
-        * @brief Coupled Blatz and Ko material according to [1].
-        *
-        * Strain energy function is given by
-        * \f[
-        *   \Psi= f \frac {\mu} 2 \left[ (I_{\boldsymbol C}-3)+\frac 1
-        *         {\beta} ( III_{\boldsymbol C}^{-\beta} -1) \right]
-        *         +(1-f) \frac {\mu} 2 \left[\left( \frac {II_{\boldsymbol
-        *         C}}{III_{\boldsymbol C}}-3 \right) + \frac 1 {\beta}
-        *         (III_{\boldsymbol C}^{\beta}-1)\right]
-        * \f]
-        *
-        * \f[
-        *    with \ \beta = \ nue/(1. - 2.*nue)
-        * \f]
-        *
-        * [1] Holzapfel, G.A. "Nonlinear Solid Mechanics", 2000, p.247
-        */
+    /*!
+     * @brief Coupled Blatz and Ko material according to [1].
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi= f \frac {\mu} 2 \left[ (I_{\boldsymbol C}-3)+\frac 1
+     *         {\beta} ( III_{\boldsymbol C}^{-\beta} -1) \right]
+     *         +(1-f) \frac {\mu} 2 \left[\left( \frac {II_{\boldsymbol
+     *         C}}{III_{\boldsymbol C}}-3 \right) + \frac 1 {\beta}
+     *         (III_{\boldsymbol C}^{\beta}-1)\right]
+     * \f]
+     *
+     * \f[
+     *    with \ \beta = \ nue/(1. - 2.*nue)
+     * \f]
+     *
+     * [1] Holzapfel, G.A. "Nonlinear Solid Mechanics", 2000, p.247
+     */
     class CoupBlatzKo : public Summand
     {
      public:
@@ -86,7 +86,10 @@ namespace MAT
       /// @name Access material constants
       //@{
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_coupblatzko; }
+      CORE::Materials::MaterialType MaterialType() const override
+      {
+        return CORE::Materials::mes_coupblatzko;
+      }
 
       //@}
 

@@ -66,7 +66,7 @@ namespace INPUT
     /// construction of a material definition
     MaterialDefinition(std::string materialname,  ///< name of materials in DRT::Discretization
         std::string description,                  ///< description of material type
-        INPAR::MAT::MaterialType mattype          ///< type of materials to be build
+        CORE::Materials::MaterialType mattype     ///< type of materials to be build
     );
 
     /// add a concrete component to the material line definition
@@ -88,7 +88,7 @@ namespace INPUT
     std::string Name() const { return materialname_; }
 
     // my material type
-    INPAR::MAT::MaterialType Type() const { return mattype_; }
+    CORE::Materials::MaterialType Type() const { return mattype_; }
 
     /// my material description
     std::string Description() const { return description_; }
@@ -102,7 +102,7 @@ namespace INPUT
     /// description of material type
     std::string description_;
     /// type of materials to be build
-    INPAR::MAT::MaterialType mattype_;
+    CORE::Materials::MaterialType mattype_;
 
     /// the list of valid components
     std::vector<Teuchos::RCP<INPUT::LineComponent>> inputline_;

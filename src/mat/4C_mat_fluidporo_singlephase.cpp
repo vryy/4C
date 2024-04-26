@@ -52,21 +52,21 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::m_fluidporo_phasedof_diffpressure:
+    case CORE::Materials::m_fluidporo_phasedof_diffpressure:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
       phasedof_ = static_cast<MAT::PAR::FluidPoroPhaseDofDiffPressure*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_fluidporo_phasedof_pressure:
+    case CORE::Materials::m_fluidporo_phasedof_pressure:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
       phasedof_ = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_fluidporo_phasedof_saturation:
+    case CORE::Materials::m_fluidporo_phasedof_saturation:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
@@ -189,7 +189,7 @@ void MAT::FluidPoroSinglePhase::Initialize()
 /*----------------------------------------------------------------------*
  *  return dof type                                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-INPAR::MAT::MaterialType MAT::FluidPoroSinglePhase::PoroDofType() const
+CORE::Materials::MaterialType MAT::FluidPoroSinglePhase::PoroDofType() const
 {
   return params_->phasedof_->Type();
 }
@@ -197,7 +197,7 @@ INPAR::MAT::MaterialType MAT::FluidPoroSinglePhase::PoroDofType() const
 /*----------------------------------------------------------------------*
  *  return phase law type                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-INPAR::MAT::MaterialType MAT::FluidPoroSinglePhase::PoroPhaseLawType() const
+CORE::Materials::MaterialType MAT::FluidPoroSinglePhase::PoroPhaseLawType() const
 {
   return params_->phasedof_->PoroPhaseLawType();
 }

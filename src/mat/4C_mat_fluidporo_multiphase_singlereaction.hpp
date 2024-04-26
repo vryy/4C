@@ -175,9 +175,9 @@ namespace MAT
     explicit FluidPoroSingleReaction(MAT::PAR::FluidPoroSingleReaction* params);
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_fluidporo_singlereaction;
+      return CORE::Materials::m_fluidporo_singlereaction;
     }
 
     /// return copy of this material object

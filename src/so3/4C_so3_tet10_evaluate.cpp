@@ -311,7 +311,7 @@ int DRT::ELEMENTS::SoTet10::Evaluate(Teuchos::ParameterList& params,
           UpdateJacobianMapping(mydisp, *prestress_);
 
           // Update constraintmixture material
-          if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+          if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
           {
             SolidMaterial()->Update();
           }
@@ -1002,8 +1002,8 @@ void DRT::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // loc
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture)
+    if (Material()->MaterialType() == CORE::Materials::m_constraintmixture ||
+        Material()->MaterialType() == CORE::Materials::m_mixture)
     {
       // gp reference coordinates
       CORE::LINALG::Matrix<NUMNOD_SOTET10, 1> funct(true);

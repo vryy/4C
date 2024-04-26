@@ -74,7 +74,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Materials(
 {
   switch (material->MaterialType())
   {
-    case INPAR::MAT::m_scatra:
+    case CORE::Materials::m_scatra:
       pororeac::MatScaTra(material, k, densn, densnp, densam, visc, iquad);
       break;
     default:
@@ -103,7 +103,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetMaterialParams(
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
-  if (material->MaterialType() == INPAR::MAT::m_matlist_reactions)
+  if (material->MaterialType() == CORE::Materials::m_matlist_reactions)
   {
     const Teuchos::RCP<MAT::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);

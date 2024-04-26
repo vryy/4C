@@ -285,7 +285,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetMaterialParams(
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
   // get diffusivity / diffusivities
-  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);

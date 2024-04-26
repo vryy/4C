@@ -2360,7 +2360,7 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
 void XFEM::MeshCouplingFSI::GetStressTangentSlave(DRT::Element* coup_ele,  ///< solid ele
     double& e_s)  ///< stress tangent slavesided
 {
-  //  if (coup_ele->Material()->MaterialType() == INPAR::MAT::m_elasthyper)
+  //  if (coup_ele->Material()->MaterialType() == CORE::Materials::m_elasthyper)
   //    e_s = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(coup_ele->Material())->GetYoung();
   //  else
   //    FOUR_C_THROW("GetCouplingSpecificAverageWeights: Slave Material not a Elasthyper
@@ -2564,7 +2564,7 @@ void XFEM::MeshCouplingFluidFluid::GetViscositySlave(DRT::Element* coup_ele,  //
 {
   Teuchos::RCP<MAT::Material> mat_s;
   XFEM::UTILS::GetVolumeCellMaterial(coup_ele, mat_s, CORE::GEO::CUT::Point::outside);
-  if (mat_s->MaterialType() == INPAR::MAT::m_fluid)
+  if (mat_s->MaterialType() == CORE::Materials::m_fluid)
     visc_s = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_s)->Viscosity();
   else
     FOUR_C_THROW("GetCouplingSpecificAverageWeights: Slave Material not a fluid material?");

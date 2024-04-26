@@ -89,7 +89,7 @@ namespace
     {
     }
 
-    [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override
+    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
     {
       FOUR_C_THROW("This is only a Mock. Don't use this here!");
       std::abort();

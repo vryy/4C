@@ -1310,11 +1310,11 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
 {
   // check whether micro material is specified
   const int id_struct =
-      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_struct_multiscale);
+      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_struct_multiscale);
   const int id_scatra =
-      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale);
+      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_scatra_multiscale);
   const int id_elch =
-      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale);
+      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_newman_multiscale);
 
   // return if no multiscale material is used
   if (id_struct == -1 and id_scatra == -1 and id_elch == -1) return;
@@ -1363,7 +1363,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
     DRT::Element* actele = macro_dis->lColElement(i);
     Teuchos::RCP<MAT::Material> actmat = actele->Material();
 
-    if (id_elch != -1 and actmat->MaterialType() == INPAR::MAT::m_elchmat)
+    if (id_elch != -1 and actmat->MaterialType() == CORE::Materials::m_elchmat)
     {
       // extract wrapped material
       auto elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(actmat);
@@ -1372,11 +1372,12 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
       actmat = elchphase->MatById(elchphase->MatID(0));
     }
 
-    if ((actmat->MaterialType() == INPAR::MAT::m_struct_multiscale and
+    if ((actmat->MaterialType() == CORE::Materials::m_struct_multiscale and
             macro_dis_name == "structure") or
-        (actmat->MaterialType() == INPAR::MAT::m_scatra_multiscale and
+        (actmat->MaterialType() == CORE::Materials::m_scatra_multiscale and
             macro_dis_name == "scatra") or
-        (actmat->MaterialType() == INPAR::MAT::m_newman_multiscale and macro_dis_name == "scatra"))
+        (actmat->MaterialType() == CORE::Materials::m_newman_multiscale and
+            macro_dis_name == "scatra"))
     {
       MAT::PAR::Parameter* actparams = actmat->Parameter();
       my_multimat_IDs.insert(actparams->Id());

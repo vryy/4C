@@ -146,7 +146,10 @@ namespace MAT
     //! @name Access methods
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_crosslinkermat; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_crosslinkermat;
+    }
 
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override

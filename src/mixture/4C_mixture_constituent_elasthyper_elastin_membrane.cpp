@@ -147,9 +147,10 @@ MIXTURE::MixtureConstituentElastHyperElastinMembrane::MixtureConstituentElastHyp
 }
 
 // Returns the material type
-INPAR::MAT::MaterialType MIXTURE::MixtureConstituentElastHyperElastinMembrane::MaterialType() const
+CORE::Materials::MaterialType MIXTURE::MixtureConstituentElastHyperElastinMembrane::MaterialType()
+    const
 {
-  return INPAR::MAT::mix_elasthyper_elastin_membrane;
+  return CORE::Materials::mix_elasthyper_elastin_membrane;
 }
 
 // Pack the constituent

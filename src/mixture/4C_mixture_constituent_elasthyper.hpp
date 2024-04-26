@@ -54,7 +54,7 @@ namespace MIXTURE
         MIXTURE::PAR::MixtureConstituentElastHyper* params, int id);
 
     /// Returns the material type enum
-    INPAR::MAT::MaterialType MaterialType() const override;
+    CORE::Materials::MaterialType MaterialType() const override;
 
     /*!
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out

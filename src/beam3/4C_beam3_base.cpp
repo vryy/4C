@@ -196,7 +196,7 @@ MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
   // get the material law
   Teuchos::RCP<MAT::Material> material_ptr = Material();
 
-  if (material_ptr->MaterialType() != INPAR::MAT::m_beam_elast_hyper_generic)
+  if (material_ptr->MaterialType() != CORE::Materials::m_beam_elast_hyper_generic)
     FOUR_C_THROW("unknown or improper type of material law! expected beam material law!");
 
   return *static_cast<MAT::BeamMaterial*>(material_ptr.get());

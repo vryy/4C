@@ -112,9 +112,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_0d_maxwell_acinus_exponential;
+      return CORE::Materials::m_0d_maxwell_acinus_exponential;
     }
 
     /// return copy of this material object

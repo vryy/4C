@@ -827,8 +827,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyAdditionalDBCForVolFracPress()
     const MAT::Material& material = *(myele->Material());
 
     // check the material
-    if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-        material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+    if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+        material.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
       FOUR_C_THROW("only poro multiphase and poro multiphase reactions material valid");
 
     // cast

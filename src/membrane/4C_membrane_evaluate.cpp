@@ -328,7 +328,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         double lambda3 = 1.0;
 
         // standard evaluation (incompressible, plane stress)
-        if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
+        if (Material()->MaterialType() == CORE::Materials::m_membrane_elasthyper)
         {
           // incompressibility condition to get principle stretch in thickness direction
           lambda3 = std::sqrt(
@@ -359,7 +359,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         double psi = 0.0;
 
         // standard evaluation (incompressible, plane stress)
-        if (Material()->MaterialType() == INPAR::MAT::m_membrane_elasthyper)
+        if (Material()->MaterialType() == CORE::Materials::m_membrane_elasthyper)
         {
           Teuchos::rcp_dynamic_cast<MAT::MembraneElastHyper>(DRT::Element::Material(), true)
               ->StrainEnergy(cauchygreen_loc, psi, gp, Id());
@@ -734,7 +734,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     CORE::LINALG::Matrix<3, 3> cmatred_loc(true);
 
     // The growth remodel elast hyper material needs some special quantities for its evaluation
-    if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+    if (Material()->MaterialType() == CORE::Materials::m_growthremodel_elasthyper)
     {
       // Gauss-point coordinates in reference configuration
       CORE::LINALG::Matrix<noddof_, 1> gprefecoord(true);

@@ -58,10 +58,10 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
       FOUR_C_THROW("unexpected dof sets in structure field");
   }
 
-  if (GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) !=
-          -1 or
-      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale) !=
-          -1)
+  if (GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
+          CORE::Materials::m_scatra_multiscale) != -1 or
+      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
+          CORE::Materials::m_newman_multiscale) != -1)
   {
     auto dofsetmicro = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0, 0, true));
     if (scatradis->AddDofSet(dofsetmicro) != ++scatra_dofset_counter)

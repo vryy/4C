@@ -128,9 +128,9 @@ namespace MAT
       //@{
 
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override
+      CORE::Materials::MaterialType MaterialType() const override
       {
-        return INPAR::MAT::mes_coupanisoexpo;
+        return CORE::Materials::mes_coupanisoexpo;
       }
 
       //@}

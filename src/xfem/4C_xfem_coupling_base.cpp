@@ -667,7 +667,7 @@ void XFEM::CouplingBase::GetViscosityMaster(DRT::Element* xfele,  ///< xfluid el
   // into account
   // by an additional input parameter here (e.g. XFSI with TwoPhase)
   XFEM::UTILS::GetVolumeCellMaterial(xfele, mat_m, CORE::GEO::CUT::Point::outside);
-  if (mat_m->MaterialType() == INPAR::MAT::m_fluid)
+  if (mat_m->MaterialType() == CORE::Materials::m_fluid)
     visc_m = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_m)->Viscosity();
   else
     FOUR_C_THROW("GetCouplingSpecificAverageWeights: Master Material not a fluid material?");

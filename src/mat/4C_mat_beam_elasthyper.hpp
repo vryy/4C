@@ -122,12 +122,12 @@ namespace MAT
     /** \brief get type of this material
      *
      */
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
       /* the idea is that we have a generic type of material (this class), but two
        * possible types of material parameter definitions and hence types
        * (BeamReissnerElastHyperMaterialParams and BeamReissnerElastHyperMaterialParamsByMode) */
-      return INPAR::MAT::m_beam_elast_hyper_generic;
+      return CORE::Materials::m_beam_elast_hyper_generic;
     }
 
     /** \brief return copy of this material object

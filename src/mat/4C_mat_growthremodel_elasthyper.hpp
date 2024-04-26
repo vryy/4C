@@ -192,11 +192,9 @@ namespace MAT
     }
 
     /// material type
-    INPAR::MAT::  /// axial direction of the cylinder (cylidner axis)
-        MaterialType
-        MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_growthremodel_elasthyper;
+      return CORE::Materials::m_growthremodel_elasthyper;
     }
 
     /// return copy of this material object

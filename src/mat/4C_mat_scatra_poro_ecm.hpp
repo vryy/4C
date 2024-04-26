@@ -103,9 +103,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_scatra_reaction_poroECM;
+      return CORE::Materials::m_scatra_reaction_poroECM;
     }
 
     /// return copy of this material object

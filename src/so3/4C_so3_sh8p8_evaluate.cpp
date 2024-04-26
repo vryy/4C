@@ -460,7 +460,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<MAT::Material> mat = Material();
 
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale) soh8_read_restart_multi();
+      if (mat->MaterialType() == CORE::Materials::m_struct_multiscale) soh8_read_restart_multi();
     }
     break;
 
@@ -2241,43 +2241,43 @@ double DRT::ELEMENTS::SoSh8p8::ShearMod() const
   Teuchos::RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    case INPAR::MAT::m_stvenant: /*-------- st.venant-kirchhoff-material */
+    case CORE::Materials::m_stvenant: /*-------- st.venant-kirchhoff-material */
     {
       auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(mat.get());
       return stvk->ShearMod();
       break;
     }
-    case INPAR::MAT::m_aaaneohooke: /*-----------AAA NeoHookean Material */
+    case CORE::Materials::m_aaaneohooke: /*-----------AAA NeoHookean Material */
     {
       auto* aaaneo = dynamic_cast<MAT::AAAneohooke*>(mat.get());
       return aaaneo->ShearMod();
       break;
     }
-    case INPAR::MAT::m_aaaraghavanvorp_damage: /*-AAA RaghavanVorp Material with damage*/
+    case CORE::Materials::m_aaaraghavanvorp_damage: /*-AAA RaghavanVorp Material with damage*/
     {
       auto* aaadam = dynamic_cast<MAT::AaAraghavanvorpDamage*>(mat.get());
       return aaadam->ShearMod();
       break;
     }
-    case INPAR::MAT::m_viscoanisotropic: /*-----------Anisotropic Viscous Material */
+    case CORE::Materials::m_viscoanisotropic: /*-----------Anisotropic Viscous Material */
     {
       MAT::ViscoAnisotropic* visco = dynamic_cast<MAT::ViscoAnisotropic*>(Material().get());
       return visco->ShearMod();
       break;
     }
-    case INPAR::MAT::m_visconeohooke: /*-----------Viscous NeoHookean Material */
+    case CORE::Materials::m_visconeohooke: /*-----------Viscous NeoHookean Material */
     {
       MAT::ViscoNeoHooke* visconeo = dynamic_cast<MAT::ViscoNeoHooke*>(Material().get());
       return visconeo->ShearMod();
       break;
     }
-    case INPAR::MAT::m_viscoelasthyper: /*-----------general visco-hyperelastic material */
+    case CORE::Materials::m_viscoelasthyper: /*-----------general visco-hyperelastic material */
     {
       MAT::ViscoElastHyper* viscoelasthyper = dynamic_cast<MAT::ViscoElastHyper*>(Material().get());
       return viscoelasthyper->ShearMod();
       break;
     }
-    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
+    case CORE::Materials::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = dynamic_cast<MAT::ElastHyper*>(Material().get());
       return hyper->ShearMod();
@@ -2579,7 +2579,7 @@ int DRT::ELEMENTS::SoSh8p8Type::Initialize(DRT::Discretization& dis)
       if (altered and (actele->thickdir_ != DRT::ELEMENTS::SoSh8p8::undefined))
       {
         // special element-dependent input of material parameters
-        if (actele->Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic)
+        if (actele->Material()->MaterialType() == CORE::Materials::m_viscoanisotropic)
         {
           MAT::ViscoAnisotropic* visco =
               dynamic_cast<MAT::ViscoAnisotropic*>(actele->Material().get());

@@ -17,6 +17,7 @@
 #include "4C_config.hpp"
 
 #include "4C_inpar_material.hpp"
+#include "4C_legacy_enum_definitions_materials.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -68,7 +69,7 @@ namespace MAT::PAR
     [[nodiscard]] int Id() const { return id_; }
 
     /// material type
-    [[nodiscard]] INPAR::MAT::MaterialType Type() const { return type_; }
+    [[nodiscard]] CORE::Materials::MaterialType Type() const { return type_; }
 
     /// material name
     [[nodiscard]] std::string Name() const { return name_; }
@@ -108,7 +109,7 @@ namespace MAT::PAR
     int id_;
 
     /// material type
-    INPAR::MAT::MaterialType type_;
+    CORE::Materials::MaterialType type_;
 
     /// material name
     std::string name_;

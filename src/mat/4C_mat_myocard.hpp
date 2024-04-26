@@ -141,7 +141,10 @@ namespace MAT
     void SetGP(int gp) { params_->num_gp = gp; };
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_myocard; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_myocard;
+    }
 
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Myocard(*this)); }

@@ -164,7 +164,7 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-    if (sum->MaterialType() != INPAR::MAT::mes_isoneohooke)
+    if (sum->MaterialType() != CORE::Materials::mes_isoneohooke)
       FOUR_C_THROW(
           "2D Elastin Material: So far, you have to use a IsoNeoHooke material as the "
           "prestretching algorithm needs it. "
@@ -181,7 +181,7 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-      if (sum->MaterialType() != INPAR::MAT::mes_isoneohooke)
+      if (sum->MaterialType() != CORE::Materials::mes_isoneohooke)
         FOUR_C_THROW(
             "3D Elastin Material: So far, you have to use an IsoNeoHooke material as the "
             "prestretching algorithm needs it"
@@ -194,7 +194,7 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
     Teuchos::RCP<MAT::ELASTIC::Summand> sum =
         MAT::ELASTIC::Summand::Factory(params_->matid_penalty_);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-    if (sum->MaterialType() != INPAR::MAT::mes_volsussmanbathe)
+    if (sum->MaterialType() != CORE::Materials::mes_volsussmanbathe)
       FOUR_C_THROW(
           "Volumetric Penalty Material: So far, you have to use a CoupNeoHooke material as the "
           "prestretching algorithm needs it. "
@@ -346,7 +346,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-      if (sum->MaterialType() != INPAR::MAT::mes_isoneohooke)
+      if (sum->MaterialType() != CORE::Materials::mes_isoneohooke)
         FOUR_C_THROW(
             "2D Elastin Material: So far, you have to use a IsoNeoHooke material as the "
             "prestretching algorithm needs it. "
@@ -368,7 +368,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
         const int matid = *m;
         Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
         if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-        if (sum->MaterialType() != INPAR::MAT::mes_isoneohooke)
+        if (sum->MaterialType() != CORE::Materials::mes_isoneohooke)
           FOUR_C_THROW(
               "3D Elastin Material: So far, you have to use an IsoNeoHooke material as the "
               "prestretching algorithm needs it"
@@ -386,7 +386,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
       Teuchos::RCP<MAT::ELASTIC::Summand> sum =
           MAT::ELASTIC::Summand::Factory(params_->matid_penalty_);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-      if (sum->MaterialType() != INPAR::MAT::mes_volsussmanbathe)
+      if (sum->MaterialType() != CORE::Materials::mes_volsussmanbathe)
         FOUR_C_THROW(
             "Volumetric Penalty Material: So far, you have to use a CoupNeoHooke material as the "
             "prestretching algorithm needs it. "

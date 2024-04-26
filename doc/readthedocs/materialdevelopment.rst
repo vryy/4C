@@ -140,12 +140,12 @@ Selection of the material model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The selection of the material model happens in the file ``mat/mat_material.cpp``.
-Based on the enum ``INPAR::MAT::MaterialType``, a switch creates the material and provides the parameters.
+Based on the enum ``CORE::Materials::MaterialType``, a switch creates the material and provides the parameters.
 Each case within the switch condition has a very similar layout, so for our material it looks like this:
 
 ::
 
-    case INPAR::MAT::m_mynewmaterial:
+    case CORE::Materials::m_mynewmaterial:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::MyNewMaterial(curmat));

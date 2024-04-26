@@ -44,15 +44,15 @@ MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::Factor
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::mix_growth_strategy_isotropic:
+    case CORE::Materials::mix_growth_strategy_isotropic:
     {
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::IsotropicGrowthStrategy>(curmat);
     }
-    case INPAR::MAT::mix_growth_strategy_anisotropic:
+    case CORE::Materials::mix_growth_strategy_anisotropic:
     {
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::AnisotropicGrowthStrategy>(curmat);
     }
-    case INPAR::MAT::mix_growth_strategy_stiffness:
+    case CORE::Materials::mix_growth_strategy_stiffness:
     {
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::StiffnessGrowthStrategy>(curmat);
     }

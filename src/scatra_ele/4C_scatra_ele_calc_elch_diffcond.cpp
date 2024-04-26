@@ -1190,7 +1190,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::GetMaterialPara
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
   // evaluate electrolyte material
-  if (material->MaterialType() == INPAR::MAT::m_elchmat)
+  if (material->MaterialType() == CORE::Materials::m_elchmat)
   {
     Utils()->MatElchMat(material, VarManager()->Phinp(), VarManager()->Temperature(),
         myelch::elchparams_->EquPot(), myelch::elchparams_->Faraday() * VarManager()->FRT(),

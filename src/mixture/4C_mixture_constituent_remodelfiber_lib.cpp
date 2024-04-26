@@ -40,10 +40,10 @@ FOUR_C_NAMESPACE_OPEN
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::mix_remodelfiber_material_exponential:
+    case CORE::Materials::mix_remodelfiber_material_exponential:
       return MAT::CreateMaterialParameterInstance<
           MIXTURE::PAR::RemodelFiberMaterialExponential<double>>(curmat);
-    case INPAR::MAT::mix_remodelfiber_material_exponential_active:
+    case CORE::Materials::mix_remodelfiber_material_exponential_active:
       return MAT::CreateMaterialParameterInstance<
           MIXTURE::PAR::RemodelFiberMaterialExponentialActive<double>>(curmat);
     default:

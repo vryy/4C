@@ -134,7 +134,10 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_arrhenius_temp; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_arrhenius_temp;
+    }
 
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new ArrheniusTemp(*this)); }

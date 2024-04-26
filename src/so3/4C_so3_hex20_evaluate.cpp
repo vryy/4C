@@ -342,7 +342,7 @@ int DRT::ELEMENTS::SoHex20::Evaluate(Teuchos::ParameterList& params,
       UpdateJacobianMapping(mydisp, *prestress_);
 
       // Update constraintmixture material
-      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+      if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
       {
         SolidMaterial()->Update();
       }
@@ -875,9 +875,9 @@ void DRT::ELEMENTS::SoHex20::soh20_linstiffmass(std::vector<int>& lm,  // locati
       }
 
     }  // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
-       /* =========================================================================*/
-  }    /* ==================================================== end of Loop over GP */
-       /* =========================================================================*/
+    /* =========================================================================*/
+  } /* ==================================================== end of Loop over GP */
+  /* =========================================================================*/
 
   return;
 }  // DRT::ELEMENTS::So_hex20::soh20_linstiffmass

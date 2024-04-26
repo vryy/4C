@@ -713,7 +713,7 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(const Teuchos::RCP<MAT::Material>
 {
   switch (mat->MaterialType())
   {
-    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    case CORE::Materials::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(mat.get());
       Teuchos::ParameterList params;
@@ -722,7 +722,7 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(const Teuchos::RCP<MAT::Material>
       density = stvk->Density();
     }
     break;
-    case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
+    case CORE::Materials::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
                                        Raghavan, Vorp */
     {
       auto* aaa = dynamic_cast<MAT::AAAneohooke*>(mat.get());
@@ -731,7 +731,7 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(const Teuchos::RCP<MAT::Material>
       density = aaa->Density();
     }
     break;
-    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
+    case CORE::Materials::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       auto* hyper = dynamic_cast<MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;

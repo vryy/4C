@@ -1490,14 +1490,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
   //          GET MATERIAL DATA
   //--------------------------------------------------
   reacoeff_ = 0.0;
-  if (material->MaterialType() == INPAR::MAT::m_fluid)
+  if (material->MaterialType() == CORE::Materials::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
     // we need the kinematic viscosity (nu ~ m^2/s) here
     kinvisc_ = actmat->Viscosity() / actmat->Density();
     density_ = actmat->Density();
   }
-  else if (material->MaterialType() == INPAR::MAT::m_fluidporo)
+  else if (material->MaterialType() == CORE::Materials::m_fluidporo)
   {
     const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
     // we need the kinematic viscosity (nu ~ m^2/s) here
@@ -1509,7 +1509,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
     reacoeff_ = actmat->ComputeReactionCoeff() *
                 dynamic_cast<MAT::PAR::FluidPoro*>(actmat->Parameter())->initial_porosity_;
   }
-  else if (material->MaterialType() == INPAR::MAT::m_matlist)
+  else if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     // get material list for this element
     const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
@@ -1533,7 +1533,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
       matid = matlist->MatID(nmaterial);
 
       Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
-      INPAR::MAT::MaterialType mattype = matptr->MaterialType();
+      CORE::Materials::MaterialType mattype = matptr->MaterialType();
 
       // choose from different materials
       switch (mattype)
@@ -1541,7 +1541,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
         //--------------------------------------------------------
         // Newtonian fluid for incompressible flow (standard case)
         //--------------------------------------------------------
-        case INPAR::MAT::m_fluid:
+        case CORE::Materials::m_fluid:
         {
           const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
           density[nmaterial] = mat->Density();

@@ -332,8 +332,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
     const MAT::Material& material2 = *(myele->Material(2));
 
     // check the material
-    if (material2.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-        material2.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+    if (material2.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+        material2.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
       FOUR_C_THROW("only poro multiphase and poro multiphase reactions material valid");
 
     // cast fluid material
@@ -353,8 +353,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
     // cast scatra material
     const MAT::MatList& scatramat = static_cast<const MAT::MatList&>(material);
 
-    if (not(scatramat.MaterialType() == INPAR::MAT::m_matlist or
-            scatramat.MaterialType() == INPAR::MAT::m_matlist_reactions))
+    if (not(scatramat.MaterialType() == CORE::Materials::m_matlist or
+            scatramat.MaterialType() == CORE::Materials::m_matlist_reactions))
       FOUR_C_THROW("wrong type of ScaTra-Material");
 
     const int numscatramat = scatramat.NumMat();
@@ -374,13 +374,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
         {
           int matid = scatramat.MatID(idof);
           Teuchos::RCP<MAT::Material> singlemat = scatramat.MaterialById(matid);
-          if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid ||
-              singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid ||
-              singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature)
+          if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_fluid ||
+              singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_solid ||
+              singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_temperature)
           {
             // do nothing
           }
-          else if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_volfrac)
+          else if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_volfrac)
           {
             const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& scatravolfracmat =
                 Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(singlemat);

@@ -183,7 +183,10 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_elasthyper; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_elasthyper;
+    }
 
     /// check if element kinematics and material kinematics are compatible
     void ValidKinematics(INPAR::STR::KinemType kinem) override
@@ -356,7 +359,7 @@ namespace MAT
 
     /// Return potential summand pointer for the given material type
     Teuchos::RCP<const MAT::ELASTIC::Summand> GetPotSummandPtr(
-        const INPAR::MAT::MaterialType& materialtype) const;
+        const CORE::Materials::MaterialType& materialtype) const;
 
     /// Return quick accessible material parameter data
     MAT::PAR::Parameter* Parameter() const override { return params_; }

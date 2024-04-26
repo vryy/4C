@@ -459,7 +459,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
 
   Teuchos::RCP<MAT::Material> structurematerial = structuredis->gElement(GID)->Material();
 
-  if (structurematerial->MaterialType() != INPAR::MAT::m_growth_volumetric)
+  if (structurematerial->MaterialType() != CORE::Materials::m_growth_volumetric)
   {
     FOUR_C_THROW("In AC-FS3I we want growth, so use a growth material like MAT_GrowthVolumetric!");
   }
@@ -481,7 +481,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
 
     switch (growthlaw->MaterialType())
     {
-      case INPAR::MAT::m_growth_ac:
+      case CORE::Materials::m_growth_ac:
       {
         Teuchos::RCP<MAT::GrowthLawAC> growthlawac =
             Teuchos::rcp_dynamic_cast<MAT::GrowthLawAC>(growthlaw);
@@ -491,7 +491,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
         sc1 = growthlawac->Parameter()->Sc1_;
         break;
       }
-      case INPAR::MAT::m_growth_ac_radial:
+      case CORE::Materials::m_growth_ac_radial:
       {
         Teuchos::RCP<MAT::GrowthLawACRadial> growthlawacradial =
             Teuchos::rcp_dynamic_cast<MAT::GrowthLawACRadial>(growthlaw);
@@ -501,7 +501,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
         sc1 = growthlawacradial->Parameter()->Sc1_;
         break;
       }
-      case INPAR::MAT::m_growth_ac_radial_refconc:
+      case CORE::Materials::m_growth_ac_radial_refconc:
       {
         Teuchos::RCP<MAT::GrowthLawACRadialRefConc> growthlawacradialrefconc =
             Teuchos::rcp_dynamic_cast<MAT::GrowthLawACRadialRefConc>(growthlaw);

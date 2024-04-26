@@ -313,8 +313,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         Teuchos::RCP<MAT::Material> singlemat = multiphasemat->MaterialById(matid);
 
         // safety check
-        if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure &&
-            singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
+        if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_volfracpressure &&
+            singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlephase)
         {
           FOUR_C_THROW(
               "You can only couple volume fraction pressures or fluid phases in multiphase "
@@ -326,8 +326,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       // element
       if (element2_->NumMaterial() == 3)
       {
-        if (element2_->Material(2)->MaterialType() == INPAR::MAT::m_matlist or
-            element2_->Material(2)->MaterialType() == INPAR::MAT::m_matlist_reactions)
+        if (element2_->Material(2)->MaterialType() == CORE::Materials::m_matlist or
+            element2_->Material(2)->MaterialType() == CORE::Materials::m_matlist_reactions)
         {
           Teuchos::RCP<MAT::MatList> scatramat =
               Teuchos::rcp_static_cast<MAT::MatList>(element2_->Material(2));
@@ -340,13 +340,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       // material in the artery element
       if (element1_->NumMaterial() == 2)
       {
-        if (element1_->Material(1)->MaterialType() == INPAR::MAT::m_matlist)
+        if (element1_->Material(1)->MaterialType() == CORE::Materials::m_matlist)
         {
           Teuchos::RCP<MAT::MatList> artscatramat =
               Teuchos::rcp_static_cast<MAT::MatList>(element1_->Material(1));
           numscalart_ = artscatramat->NumMat();
         }
-        else if (element1_->Material(1)->MaterialType() == INPAR::MAT::m_scatra)
+        else if (element1_->Material(1)->MaterialType() == CORE::Materials::m_scatra)
           numscalart_ = 1;
         else
           FOUR_C_THROW("Only MAT_matlist and MAT_scatra are valid for artery-scatra material");
@@ -382,8 +382,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         Teuchos::RCP<MAT::Material> singlemat = contscatramat->MaterialById(matid);
 
         // safety check
-        if (singlemat->MaterialType() != INPAR::MAT::m_scatra_multiporo_volfrac &&
-            singlemat->MaterialType() != INPAR::MAT::m_scatra_multiporo_fluid)
+        if (singlemat->MaterialType() != CORE::Materials::m_scatra_multiporo_volfrac &&
+            singlemat->MaterialType() != CORE::Materials::m_scatra_multiporo_fluid)
         {
           FOUR_C_THROW(
               "You can only couple MAT::ScatraMatMultiPoroVolFrac or MAT::ScatraMatMultiPoroFluid, "
@@ -391,7 +391,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
               singlemat->MaterialType());
         }
 
-        if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_volfrac)
+        if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_volfrac)
         {
           const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& poromat =
               Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(singlemat);
@@ -399,13 +399,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         }
       }
       // get the artery scatra-material
-      if (element1_->Material(0)->MaterialType() == INPAR::MAT::m_matlist)
+      if (element1_->Material(0)->MaterialType() == CORE::Materials::m_matlist)
       {
         Teuchos::RCP<MAT::MatList> artscatramat =
             Teuchos::rcp_static_cast<MAT::MatList>(element1_->Material(0));
         numscalart_ = artscatramat->NumMat();
       }
-      else if (element1_->Material(0)->MaterialType() == INPAR::MAT::m_scatra)
+      else if (element1_->Material(0)->MaterialType() == CORE::Materials::m_scatra)
         numscalart_ = 1;
       else
         FOUR_C_THROW("Only MAT_matlist and MAT_scatra are valid for artery-scatra material");
@@ -2043,13 +2043,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         const int matid = contscatramat->MatID(idof);
         Teuchos::RCP<MAT::Material> singlemat = contscatramat->MaterialById(matid);
         int phaseid = -1;
-        if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid)
+        if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_fluid)
         {
           const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& poromat =
               Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroFluid>(singlemat);
           phaseid = poromat->PhaseID();
         }
-        else if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_volfrac)
+        else if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_volfrac)
         {
           const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& poromat =
               Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(singlemat);

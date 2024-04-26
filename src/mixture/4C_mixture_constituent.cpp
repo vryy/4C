@@ -64,7 +64,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::mix_elasthyper:
+    case CORE::Materials::mix_elasthyper:
     {
       if (curmat->Parameter() == nullptr)
       {
@@ -72,7 +72,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
-    case INPAR::MAT::mix_elasthyper_damage:
+    case CORE::Materials::mix_elasthyper_damage:
     {
       if (curmat->Parameter() == nullptr)
       {
@@ -80,7 +80,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
-    case INPAR::MAT::mix_elasthyper_elastin_membrane:
+    case CORE::Materials::mix_elasthyper_elastin_membrane:
     {
       if (curmat->Parameter() == nullptr)
       {
@@ -88,7 +88,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
-    case INPAR::MAT::mix_remodelfiber_expl:
+    case CORE::Materials::mix_remodelfiber_expl:
     {
       if (curmat->Parameter() == nullptr)
       {
@@ -96,7 +96,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
-    case INPAR::MAT::mix_full_constrained_mixture_fiber:
+    case CORE::Materials::mix_full_constrained_mixture_fiber:
     {
       if (curmat->Parameter() == nullptr)
       {
@@ -105,7 +105,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
-    case INPAR::MAT::mix_remodelfiber_impl:
+    case CORE::Materials::mix_remodelfiber_impl:
     {
       if (curmat->Parameter() == nullptr)
       {
@@ -113,7 +113,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
-    case INPAR::MAT::mix_solid_material:
+    case CORE::Materials::mix_solid_material:
     {
       if (curmat->Parameter() == nullptr)
       {

@@ -929,9 +929,9 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
   if (coupl_ele->NumMaterial() > 1)
   {
     poromat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(coupl_ele->Material(0));
-    if (poromat->MaterialType() != INPAR::MAT::m_structporo and
-        poromat->MaterialType() != INPAR::MAT::m_structpororeaction and
-        poromat->MaterialType() != INPAR::MAT::m_structpororeactionECM)
+    if (poromat->MaterialType() != CORE::Materials::m_structporo and
+        poromat->MaterialType() != CORE::Materials::m_structpororeaction and
+        poromat->MaterialType() != CORE::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
   else

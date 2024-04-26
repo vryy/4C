@@ -44,9 +44,9 @@ MIXTURE::MixtureConstituentElastHyperDamage::MixtureConstituentElastHyperDamage(
 }
 
 // Returns the material type
-INPAR::MAT::MaterialType MIXTURE::MixtureConstituentElastHyperDamage::MaterialType() const
+CORE::Materials::MaterialType MIXTURE::MixtureConstituentElastHyperDamage::MaterialType() const
 {
-  return INPAR::MAT::mix_elasthyper_damage;
+  return CORE::Materials::mix_elasthyper_damage;
 }
 
 // Pack the constituent

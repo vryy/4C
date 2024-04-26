@@ -104,9 +104,9 @@ namespace MAT
       //@{
 
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override
+      CORE::Materials::MaterialType MaterialType() const override
       {
-        return INPAR::MAT::mes_isoanisoexpo;
+        return CORE::Materials::mes_isoanisoexpo;
       }
 
       //@}

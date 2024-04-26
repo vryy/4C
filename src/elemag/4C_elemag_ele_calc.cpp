@@ -113,7 +113,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     }
     case ELEMAG::project_dirich_field:
     {
-      // if (mat->MaterialType() != INPAR::MAT::m_electromagneticmat)
+      // if (mat->MaterialType() != CORE::Materials::m_electromagneticmat)
       //  FOUR_C_THROW("for physical type 'lossless' please supply MAT_Electromagnetic");
       if (params.isParameter("faceconsider"))
       {

@@ -124,9 +124,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_struct_multiscale;
+      return CORE::Materials::m_struct_multiscale;
     }
 
     /// check if element kinematics and material kinematics are compatible

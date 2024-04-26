@@ -117,7 +117,10 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_herschelbulkley; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_herschelbulkley;
+    }
 
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override

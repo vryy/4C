@@ -246,7 +246,7 @@ namespace DRT
         xyzint.Multiply(my::xyze_, my::funct_);
 
         // get viscosity
-        if (mat->MaterialType() == INPAR::MAT::m_fluid)
+        if (mat->MaterialType() == CORE::Materials::m_fluid)
         {
           const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
 

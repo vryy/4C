@@ -212,9 +212,9 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<MAT::So3Material> so3mat =
           Teuchos::rcp_dynamic_cast<MAT::So3Material>(mat, true);
 
-      if (so3mat->MaterialType() != INPAR::MAT::m_elasthyper and
+      if (so3mat->MaterialType() != CORE::Materials::m_elasthyper and
           so3mat->MaterialType() !=
-              INPAR::MAT::m_stvenant)  // ToDo (mayr): allow only materials without history
+              CORE::Materials::m_stvenant)  // ToDo (mayr): allow only materials without history
       {
         FOUR_C_THROW(
             "Illegal material type for ALE. Only materials allowed that do "
@@ -222,7 +222,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
             "element line definition.");
       }
 
-      if (so3mat->MaterialType() == INPAR::MAT::m_elasthyper)
+      if (so3mat->MaterialType() == CORE::Materials::m_elasthyper)
       {
         so3mat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(mat, true);
         so3mat->Setup(0, nullptr);
@@ -1584,7 +1584,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discret
   CORE::LINALG::Matrix<nd, nd> sys_mat(sys_mat_epetra.values(), true);
 
   //  get material using class StVenantKirchhoff
-  //  if (material->MaterialType()!=INPAR::MAT::m_stvenant)
+  //  if (material->MaterialType()!=CORE::Materials::m_stvenant)
   //    FOUR_C_THROW("stvenant material expected but got type %d", material->MaterialType());
   //  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
 

@@ -1232,7 +1232,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
 
     // compute strong residual of mixture (structural) equation
     if (porofldpara_->StabBiot() and (not porofldpara_->IsStationaryConti()) and
-        struct_mat_->PoroLawType() != INPAR::MAT::m_poro_law_constant)
+        struct_mat_->PoroLawType() != CORE::Materials::m_poro_law_constant)
       ComputeMixtureStrongResidual(params, defgrd, edispnp, edispn, F_X, *iquad, false);
 
     //----------------------------------------------------------------------
@@ -1521,7 +1521,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
 
     // 8) Biot stabilization term
     if (porofldpara_->StabBiot() and (not porofldpara_->IsStationaryConti()) and
-        struct_mat_->PoroLawType() != INPAR::MAT::m_poro_law_constant)
+        struct_mat_->PoroLawType() != CORE::Materials::m_poro_law_constant)
     {
       StabBiot(estif_q_u, ppmat, preforce, lin_resM_Du, lin_resMRea_Du, lin_resM_Dp, dphi_dp, 0.0,
           timefacfac, timefacfacpre, rhsfac);
@@ -1749,7 +1749,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
 
     // compute strong residual of mixture (structural) equation
     if (porofldpara_->StabBiot() and (not porofldpara_->IsStationaryConti()) and
-        struct_mat_->PoroLawType() != INPAR::MAT::m_poro_law_constant)
+        struct_mat_->PoroLawType() != CORE::Materials::m_poro_law_constant)
       ComputeMixtureStrongResidual(params, defgrd, edispnp, edispn, F_X, *iquad, true);
 
     //----------------------------------------------------------------------
@@ -2225,7 +2225,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& t
   //**************************************************************************
   // biot stabilization
   if (porofldpara_->StabBiot() and (not porofldpara_->IsStationaryConti()) and
-      struct_mat_->PoroLawType() != INPAR::MAT::m_poro_law_constant)
+      struct_mat_->PoroLawType() != CORE::Materials::m_poro_law_constant)
   {
     const double val = tau_struct_ * porosity_;
     double fac_dens = 0.0;
@@ -3636,7 +3636,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
   }
 
   if (porofldpara_->StabBiot() and (not porofldpara_->IsStationaryConti()) and
-      struct_mat_->PoroLawType() != INPAR::MAT::m_poro_law_constant)
+      struct_mat_->PoroLawType() != CORE::Materials::m_poro_law_constant)
   {
     // shape derivative of Jacobian
     {
@@ -4353,7 +4353,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
   }
 
   if (porofldpara_->StabBiot() and (not porofldpara_->IsStationaryConti()) and
-      struct_mat_->PoroLawType() != INPAR::MAT::m_poro_law_constant)
+      struct_mat_->PoroLawType() != CORE::Materials::m_poro_law_constant)
   {
     // shape derivative of Jacobian
     {
@@ -4926,9 +4926,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetStructMaterial(DRT::ELEMENTS::
     if (ele->NumMaterial() > 1)
     {
       struct_mat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele->Material(1));
-      if (struct_mat_->MaterialType() != INPAR::MAT::m_structporo and
-          struct_mat_->MaterialType() != INPAR::MAT::m_structpororeaction and
-          struct_mat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
+      if (struct_mat_->MaterialType() != CORE::Materials::m_structporo and
+          struct_mat_->MaterialType() != CORE::Materials::m_structpororeaction and
+          struct_mat_->MaterialType() != CORE::Materials::m_structpororeactionECM)
         FOUR_C_THROW("invalid structure material for poroelasticity");
     }
     else
@@ -5110,7 +5110,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetMaterialParamters(
   {
     Teuchos::RCP<const MAT::FluidPoro> actmat =
         Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
-    if (actmat->MaterialType() != INPAR::MAT::m_fluidporo)
+    if (actmat->MaterialType() != CORE::Materials::m_fluidporo)
       FOUR_C_THROW("invalid fluid material for poroelasticity");
 
     // set density at n+alpha_F/n+1 and n+alpha_M/n+1
@@ -5469,7 +5469,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
     dtau_dphi_(2) = 0.0;
 
     if (porofldpara_->StabBiot() and (not porofldpara_->IsStationaryConti()) and
-        struct_mat_->PoroLawType() != INPAR::MAT::m_poro_law_constant)
+        struct_mat_->PoroLawType() != CORE::Materials::m_poro_law_constant)
     {
       /*
       Stabilization parameter for Biot problems
@@ -6777,14 +6777,14 @@ double DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeEffectiveStiffness()
 
   switch (struct_mat_->GetMaterial()->MaterialType())
   {
-    case INPAR::MAT::m_stvenant:
+    case CORE::Materials::m_stvenant:
     {
       Teuchos::RCP<MAT::StVenantKirchhoff> stvmat =
           Teuchos::rcp_dynamic_cast<MAT::StVenantKirchhoff>(curmat);
       effective_stiffness = stvmat->ShearMod();
       break;
     }
-    case INPAR::MAT::m_elasthyper:
+    case CORE::Materials::m_elasthyper:
     {
       Teuchos::RCP<MAT::ElastHyper> ehmat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(curmat);
       effective_stiffness = ehmat->ShearMod();

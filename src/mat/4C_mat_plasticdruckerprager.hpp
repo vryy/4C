@@ -90,7 +90,10 @@ namespace MAT
     }
     void Pack(CORE::COMM::PackBuffer& data) const override;
     void Unpack(const std::vector<char>& data) override;
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_pldruckprag; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_pldruckprag;
+    }
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (kinem != INPAR::STR::KinemType::linear)

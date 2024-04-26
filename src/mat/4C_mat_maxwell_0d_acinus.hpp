@@ -147,9 +147,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_0d_maxwell_acinus;
+      return CORE::Materials::m_0d_maxwell_acinus;
     }
 
     /// return copy of this material object
@@ -184,7 +184,8 @@ namespace MAT
 
     /// Return names of visualization data
     virtual void VisNames(std::map<std::string, int>& names){
-        /* do nothing for simple material models */};
+        /* do nothing for simple material models */
+    };
 
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int eleID)

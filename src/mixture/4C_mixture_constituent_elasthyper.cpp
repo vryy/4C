@@ -44,9 +44,9 @@ MIXTURE::MixtureConstituentElastHyper::MixtureConstituentElastHyper(
 }
 
 // Returns the material type
-INPAR::MAT::MaterialType MIXTURE::MixtureConstituentElastHyper::MaterialType() const
+CORE::Materials::MaterialType MIXTURE::MixtureConstituentElastHyper::MaterialType() const
 {
-  return INPAR::MAT::mix_elasthyper;
+  return CORE::Materials::mix_elasthyper;
 }
 
 // Evaluates the stress of the constituent

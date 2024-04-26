@@ -823,7 +823,7 @@ void DRT::ELEMENTS::So3Plast<distype>::nln_stiffmass(
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+  if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
   {
@@ -1101,7 +1101,7 @@ void DRT::ELEMENTS::So3Plast<distype>::CondensePlasticity(
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+  if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
     FOUR_C_THROW("so3_ssn_plast elements only with PlasticElastHyper material");
@@ -1748,7 +1748,7 @@ void DRT::ELEMENTS::So3Plast<distype>::RecoverPlasticityAndEAS(
     if (eastype_ != soh8p_easnone) RecoverEAS(res_d, res_T);
 
 
-    if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+    if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
     {
       CORE::LINALG::Matrix<nen_, 1> shapefunct;
       double res_t = -1.;
@@ -1779,7 +1779,7 @@ void DRT::ELEMENTS::So3Plast<distype>::RecoverPlasticityAndEAS(
     //    if (eastype_!=soh8p_easnone)
     //      ReduceEasStep(new_step_length,old_step_length_);
     //
-    //    if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
+    //    if (Material()->MaterialType()==CORE::Materials::m_plelasthyper)
     //      for (int gp=0;gp<numgpt_;++gp)
     //        ReducePlasticityStep(new_step_length,old_step_length_,gp);
     //
@@ -2007,7 +2007,7 @@ void DRT::ELEMENTS::So3Plast<distype>::ReducePlasticityStep(
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::So3Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType spintype)
 {
-  if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+  if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
   {
     // loop over all Gauss points
     for (int gp = 0; gp < numgpt_; gp++)
@@ -2065,7 +2065,7 @@ double DRT::ELEMENTS::So3Plast<distype>::CalcIntEnergy(
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+  if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
     FOUR_C_THROW("elastic strain energy in so3plast elements only for plastic material");
@@ -2129,7 +2129,7 @@ void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
   if (temp || d_cauchyndir_dT || d2_cauchyndir_dd_dT)
     if (!temp || !d_cauchyndir_dT || !d2_cauchyndir_dd_dT)
       FOUR_C_THROW("inconsistent temperature dependency input");
-  if (temp && Material()->MaterialType() != INPAR::MAT::m_plelasthyper)
+  if (temp && Material()->MaterialType() != CORE::Materials::m_plelasthyper)
   {
     FOUR_C_THROW(
         "thermo-mechanical Nitsche contact only with PlasticElastHyper"
@@ -2386,7 +2386,7 @@ void DRT::ELEMENTS::So3Plast<distype>::GetCauchyNDirAndDerivativesAtXiPlast(
     CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT)
 {
   if (distype != CORE::FE::CellType::hex8 || numgpt_ != 8) FOUR_C_THROW("only for hex8 with 8 gp");
-  if (Material()->MaterialType() != INPAR::MAT::m_plelasthyper)
+  if (Material()->MaterialType() != CORE::Materials::m_plelasthyper)
     FOUR_C_THROW("only PlasticElastHyper materials here");
   if ((int)cauchy_.size() != numgpt_ || (int)cauchy_deriv_.size() != numgpt_)
     FOUR_C_THROW("have you evaluated the cauchy stress???");
@@ -2695,7 +2695,7 @@ void DRT::ELEMENTS::So3Plast<distype>::Kinematics(const int gp)
   CalculateBop(&SetBop(), &Defgrd(), &DerivShapeFunctionXYZ(), gp);
 
   // build plastic velocity gradient from condensed variables
-  if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper && gp >= 0 && gp < numgpt_)
+  if (Material()->MaterialType() == CORE::Materials::m_plelasthyper && gp >= 0 && gp < numgpt_)
     BuildDeltaLp(gp);
 }
 
@@ -2857,7 +2857,7 @@ void DRT::ELEMENTS::So3Plast<distype>::IntegrateThermoGp(
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+  if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
     FOUR_C_THROW("tsi only with m_plelasthyper material type");

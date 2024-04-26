@@ -242,9 +242,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_scatra_multiporo_fluid;
+      return CORE::Materials::m_scatra_multiporo_fluid;
     }
 
     /// return copy of this material object
@@ -329,9 +329,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_scatra_multiporo_volfrac;
+      return CORE::Materials::m_scatra_multiporo_volfrac;
     }
 
     /// return copy of this material object
@@ -413,9 +413,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_scatra_multiporo_solid;
+      return CORE::Materials::m_scatra_multiporo_solid;
     }
 
     /// return copy of this material object
@@ -488,9 +488,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_scatra_multiporo_temperature;
+      return CORE::Materials::m_scatra_multiporo_temperature;
     }
 
     /// return copy of this material object

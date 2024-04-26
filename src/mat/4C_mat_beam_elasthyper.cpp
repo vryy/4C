@@ -133,13 +133,13 @@ void MAT::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
 
       /* the idea is that we have a generic type of material (this class), but various
        * possible sets of material parameters to 'feed' these very general constitutive relations */
-      if (mat->Type() == INPAR::MAT::m_beam_reissner_elast_hyper or
-          mat->Type() == INPAR::MAT::m_beam_reissner_elast_hyper_bymodes or
-          mat->Type() == INPAR::MAT::m_beam_kirchhoff_elast_hyper or
-          mat->Type() == INPAR::MAT::m_beam_reissner_elast_plastic or
-          mat->Type() == INPAR::MAT::m_beam_kirchhoff_elast_hyper_bymodes or
-          mat->Type() == INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper or
-          mat->Type() == INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes)
+      if (mat->Type() == CORE::Materials::m_beam_reissner_elast_hyper or
+          mat->Type() == CORE::Materials::m_beam_reissner_elast_hyper_bymodes or
+          mat->Type() == CORE::Materials::m_beam_kirchhoff_elast_hyper or
+          mat->Type() == CORE::Materials::m_beam_reissner_elast_plastic or
+          mat->Type() == CORE::Materials::m_beam_kirchhoff_elast_hyper_bymodes or
+          mat->Type() == CORE::Materials::m_beam_kirchhoff_torsionfree_elast_hyper or
+          mat->Type() == CORE::Materials::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes)
         params_ = static_cast<MAT::PAR::BeamElastHyperMaterialParameterGeneric*>(mat);
       else
         FOUR_C_THROW("Type of material parameter %d does not fit to type of material law %d",

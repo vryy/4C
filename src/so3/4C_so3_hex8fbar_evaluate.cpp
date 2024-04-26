@@ -333,7 +333,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
       UpdateJacobianMapping(mydisp, *prestress_);
 
       // Update constraintmixture material
-      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+      if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
       {
         SolidMaterial()->Update();
       }
@@ -346,7 +346,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<MAT::Material> mat = Material();
 
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale) soh8_read_restart_multi();
+      if (mat->MaterialType() == CORE::Materials::m_struct_multiscale) soh8_read_restart_multi();
     }
     break;
 
@@ -1147,9 +1147,9 @@ void DRT::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // location 
 
     UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex8>(shapefcts[gp], params);
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture)
+    if (Material()->MaterialType() == CORE::Materials::m_constraintmixture ||
+        Material()->MaterialType() == CORE::Materials::m_growthremodel_elasthyper ||
+        Material()->MaterialType() == CORE::Materials::m_mixture)
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(true);
       soh8_GaussPointRefeCoords(point, xrefe, gp);

@@ -40,14 +40,14 @@ MAT::PAR::FluidPoroViscosityLaw* MAT::PAR::FluidPoroViscosityLaw::CreateViscosit
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::m_fluidporo_viscositylaw_constant:
+    case CORE::Materials::m_fluidporo_viscositylaw_constant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroViscosityLawConstant(curmat));
       viscositylaw = static_cast<MAT::PAR::FluidPoroViscosityLawConstant*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_fluidporo_viscositylaw_celladh:
+    case CORE::Materials::m_fluidporo_viscositylaw_celladh:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroViscosityLawCellAdherence(curmat));

@@ -277,7 +277,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetMaterialPar
   Teuchos::RCP<const MAT::Material> material = ele->Material();
 
   // evaluate electrode material
-  if (material->MaterialType() == INPAR::MAT::m_electrode)
+  if (material->MaterialType() == CORE::Materials::m_electrode)
   {
     Utils()->MatElectrode(
         material, VarManager()->Phinp(0), VarManager()->Temperature(), DiffManager());

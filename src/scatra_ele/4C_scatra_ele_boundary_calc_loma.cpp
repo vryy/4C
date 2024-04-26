@@ -217,13 +217,13 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
   // get density depending on material
   switch (material->MaterialType())
   {
-    case INPAR::MAT::m_matlist:
+    case CORE::Materials::m_matlist:
     {
       const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
 
       const int lastmatid = actmat->NumMat() - 1;
 
-      if (actmat->MaterialById(lastmatid)->MaterialType() == INPAR::MAT::m_arrhenius_temp)
+      if (actmat->MaterialById(lastmatid)->MaterialType() == CORE::Materials::m_arrhenius_temp)
       {
         // compute temperature and check whether it is positive
         const double temp = my::funct_.Dot(ephinp[my::numscal_ - 1]);
@@ -244,7 +244,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
       break;
     }
 
-    case INPAR::MAT::m_mixfrac:
+    case CORE::Materials::m_mixfrac:
     {
       // compute density based on mixture fraction
       density = static_cast<const MAT::MixFrac*>(material.get())
@@ -253,7 +253,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
       break;
     }
 
-    case INPAR::MAT::m_sutherland:
+    case CORE::Materials::m_sutherland:
     {
       // compute temperature and check whether it is positive
       const double temp = my::funct_.Dot(ephinp[k]);
@@ -267,7 +267,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
       break;
     }
 
-    case INPAR::MAT::m_tempdepwater:
+    case CORE::Materials::m_tempdepwater:
     {
       // compute temperature and check whether it is positive
       const double temp = my::funct_.Dot(ephinp[k]);
@@ -282,7 +282,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
       break;
     }
 
-    case INPAR::MAT::m_arrhenius_pv:
+    case CORE::Materials::m_arrhenius_pv:
     {
       // compute density based on progress variable
       density = static_cast<const MAT::ArrheniusPV*>(material.get())
@@ -291,7 +291,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
       break;
     }
 
-    case INPAR::MAT::m_ferech_pv:
+    case CORE::Materials::m_ferech_pv:
     {
       // compute density based on progress variable
       density = static_cast<const MAT::FerEchPV*>(material.get())
@@ -300,7 +300,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
       break;
     }
 
-    case INPAR::MAT::m_thermostvenant:
+    case CORE::Materials::m_thermostvenant:
     {
       // get constant density
       density = static_cast<const MAT::ThermoStVenantKirchhoff*>(material.get())->Density();
@@ -308,7 +308,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
       break;
     }
 
-    case INPAR::MAT::m_yoghurt:
+    case CORE::Materials::m_yoghurt:
     {
       // get constant density
       density = static_cast<const MAT::Yoghurt*>(material.get())->Density();

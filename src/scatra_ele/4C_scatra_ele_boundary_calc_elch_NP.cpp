@@ -250,14 +250,14 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::GetValence(
 {
   double valence(0.);
 
-  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     const Teuchos::RCP<const MAT::MatList> matlist =
         Teuchos::rcp_static_cast<const MAT::MatList>(material);
 
     const Teuchos::RCP<const MAT::Material> species = matlist->MaterialById(matlist->MatID(k));
 
-    if (species->MaterialType() == INPAR::MAT::m_ion)
+    if (species->MaterialType() == CORE::Materials::m_ion)
     {
       valence = Teuchos::rcp_static_cast<const MAT::Ion>(species)->Valence();
       if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");

@@ -150,9 +150,9 @@ namespace MAT
     void Unpack(const std::vector<char>& data) override;
 
    private:
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_vp_no_yield_surface;
+      return CORE::Materials::m_vp_no_yield_surface;
     }
 
     void ValidKinematics(INPAR::STR::KinemType kinem) override

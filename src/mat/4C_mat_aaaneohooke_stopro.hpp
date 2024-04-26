@@ -151,9 +151,9 @@ namespace MAT
     double ShearMod() const { return 0.5 * params_->youngs_mean_ / (1.0 + params_->nue_); }
 
     // material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_aaaneohooke_stopro;
+      return CORE::Materials::m_aaaneohooke_stopro;
     }
 
     /// return copy of this material object

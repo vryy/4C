@@ -149,7 +149,10 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_cnst_art; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_cnst_art;
+    }
 
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Cnst1dArt(*this)); }

@@ -147,9 +147,9 @@ namespace MAT
     bool Initialized() const { return isinit_ && (histgcurr_ != Teuchos::null); }
 
     // material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_aaaraghavanvorp_damage;
+      return CORE::Materials::m_aaaraghavanvorp_damage;
     }
 
     /// check if element kinematics and material kinematics are compatible

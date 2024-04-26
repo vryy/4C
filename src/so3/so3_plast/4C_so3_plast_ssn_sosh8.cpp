@@ -975,7 +975,7 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+  if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
     plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
   else
     FOUR_C_THROW("so3_ssn_plast elements only with PlasticElastHyper material");

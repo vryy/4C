@@ -70,19 +70,19 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::mix_rule_function:
+    case CORE::Materials::mix_rule_function:
     {
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::FunctionMixtureRule>(curmat);
     }
-    case INPAR::MAT::mix_rule_map:
+    case CORE::Materials::mix_rule_map:
     {
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::MapMixtureRule>(curmat);
     }
-    case INPAR::MAT::mix_rule_simple:
+    case CORE::Materials::mix_rule_simple:
     {
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::SimpleMixtureRule>(curmat);
     }
-    case INPAR::MAT::mix_rule_growthremodel:
+    case CORE::Materials::mix_rule_growthremodel:
     {
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::GrowthRemodelMixtureRule>(curmat);
     }

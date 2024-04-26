@@ -117,9 +117,9 @@ namespace MAT
     //@}
 
     //! return material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_newman_multiscale;
+      return CORE::Materials::m_newman_multiscale;
     };
 
     //! clone Newman multi-scale material

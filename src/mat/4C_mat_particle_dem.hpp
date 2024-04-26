@@ -108,7 +108,10 @@ namespace MAT
     //@}
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_particle_dem; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_particle_dem;
+    }
 
     //! return copy of this material object
     Teuchos::RCP<Material> Clone() const override

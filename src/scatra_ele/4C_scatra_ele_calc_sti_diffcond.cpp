@@ -111,9 +111,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Sysmat(
     }
 
     // matrix and vector contributions arising from source terms
-    if (ele->Material()->MaterialType() == INPAR::MAT::m_soret)
+    if (ele->Material()->MaterialType() == CORE::Materials::m_soret)
       mystielch::CalcMatAndRhsSource(emat, erhs, timefacfac, rhsfac);
-    else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+    else if (ele->Material()->MaterialType() == CORE::Materials::m_th_fourier_iso)
       CalcMatAndRhsJouleSolid(emat, erhs, timefacfac, rhsfac);
   }  // loop over integration points
 }
@@ -390,9 +390,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::SysmatODThermoScatra(
 
     // provide element matrix with linearizations of source terms in discrete thermo residuals
     // w.r.t. scatra dofs
-    if (ele->Material()->MaterialType() == INPAR::MAT::m_soret)
+    if (ele->Material()->MaterialType() == CORE::Materials::m_soret)
       mystielch::CalcMatSourceOD(emat, my::scatraparatimint_->TimeFac() * fac);
-    else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+    else if (ele->Material()->MaterialType() == CORE::Materials::m_th_fourier_iso)
       CalcMatJouleSolidOD(emat, my::scatraparatimint_->TimeFac() * fac);
   }
 }
@@ -661,16 +661,16 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::GetMaterialParams(const D
 {
   // get parameters of primary, thermal material
   Teuchos::RCP<const MAT::Material> material = ele->Material();
-  if (material->MaterialType() == INPAR::MAT::m_soret)
+  if (material->MaterialType() == CORE::Materials::m_soret)
     MatSoret(material, densn[0], densnp[0], densam[0]);
-  else if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+  else if (material->MaterialType() == CORE::Materials::m_th_fourier_iso)
     MatFourier(material, densn[0], densnp[0], densam[0]);
   else
     FOUR_C_THROW("Invalid thermal material!");
 
   // get parameters of secondary, scatra material
   material = ele->Material(1);
-  if (material->MaterialType() == INPAR::MAT::m_elchmat)
+  if (material->MaterialType() == CORE::Materials::m_elchmat)
   {
     // pre calculate RT and F^2/(RT)
     const double rt = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant() *

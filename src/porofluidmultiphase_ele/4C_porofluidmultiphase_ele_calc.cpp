@@ -493,8 +493,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(DRT::Element* 
   ele_ = ele;
 
   Teuchos::RCP<MAT::Material> mat = ele->Material();
-  if (mat->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-      mat->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+  if (mat->MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+      mat->MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW(
         "PoroFluidMultiPhase element got unsupported material type %d", mat->MaterialType());
 

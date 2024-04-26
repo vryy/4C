@@ -442,7 +442,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<MAT::Material> mat = Material();
 
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale) soh8_read_restart_multi();
+      if (mat->MaterialType() == CORE::Materials::m_struct_multiscale) soh8_read_restart_multi();
     }
     break;
 
@@ -1171,9 +1171,9 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
         }
       }
     }  // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
-       /* =========================================================================*/
-  }    /* ==================================================== end of Loop over GP */
-       /* =========================================================================*/
+    /* =========================================================================*/
+  } /* ==================================================== end of Loop over GP */
+  /* =========================================================================*/
 
   // rhs norm of eas equations
   if (eastype_ != soh8_easnone && split_res)
@@ -2051,7 +2051,7 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
       if (altered and (actele->thickdir_ != DRT::ELEMENTS::SoSh8::undefined))
       {
         // special element-dependent input of material parameters
-        if (actele->Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic)
+        if (actele->Material()->MaterialType() == CORE::Materials::m_viscoanisotropic)
         {
           MAT::ViscoAnisotropic* visco =
               dynamic_cast<MAT::ViscoAnisotropic*>(actele->Material().get());

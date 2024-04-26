@@ -60,7 +60,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(Teuchos::ParameterList& params,
       // we assume here, that the material is equal for all elements in this discretization
       // get the parent element including its material
       Teuchos::RCP<MAT::Material> material = ParentElement()->Material();
-      if (material->MaterialType() == INPAR::MAT::m_elchmat)
+      if (material->MaterialType() == CORE::Materials::m_elchmat)
         numscal = static_cast<const MAT::ElchMat*>(material.get())->NumScal();
 
       break;

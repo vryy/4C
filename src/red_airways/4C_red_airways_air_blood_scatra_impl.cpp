@@ -220,8 +220,8 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
   // --------------------------------
   // Get O2 properties in air
   // --------------------------------
-  int aid =
-      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
+  int aid = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
+      CORE::Materials::m_0d_o2_air_saturation);
   // check if O2 properties material exists
   if (aid == -1)
   {
@@ -241,7 +241,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
   // Get O2 properties in Blood
   // --------------------------------
   int bid = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-      INPAR::MAT::m_0d_o2_hemoglobin_saturation);
+      CORE::Materials::m_0d_o2_hemoglobin_saturation);
 
   // check if O2 properties material exists
   if (bid == -1)

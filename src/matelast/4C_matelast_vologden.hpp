@@ -80,7 +80,10 @@ namespace MAT
       //@{
 
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_vologden; }
+      CORE::Materials::MaterialType MaterialType() const override
+      {
+        return CORE::Materials::mes_vologden;
+      }
 
       //@}
 

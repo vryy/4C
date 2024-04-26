@@ -136,7 +136,7 @@ namespace MAT
     //@{
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const = 0;
+    virtual CORE::Materials::MaterialType MaterialType() const = 0;
 
     //! return material parameters
     MAT::PAR::Parameter* Parameter() { return params_; }
@@ -449,7 +449,7 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override = 0;
+    CORE::Materials::MaterialType MaterialType() const override = 0;
 
     //! Return whether material has a varying material density
     bool VaryingDensity() const override { return true; }
@@ -587,9 +587,9 @@ namespace MAT
     //@}
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_growth_aniso_strain;
+      return CORE::Materials::m_growth_aniso_strain;
     }
 
     //! material parameters
@@ -731,9 +731,9 @@ namespace MAT
     //@}
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_growth_aniso_stress;
+      return CORE::Materials::m_growth_aniso_stress;
     }
 
     //! material parameters
@@ -832,9 +832,9 @@ namespace MAT
     //@}
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_growth_aniso_strain_const_trig;
+      return CORE::Materials::m_growth_aniso_strain_const_trig;
     }
 
     //! material parameters
@@ -934,9 +934,9 @@ namespace MAT
     //@}
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_growth_aniso_stress_const_trig;
+      return CORE::Materials::m_growth_aniso_stress_const_trig;
     }
 
     //! material parameters
@@ -1087,9 +1087,9 @@ namespace MAT
     //@}
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_growth_iso_stress;
+      return CORE::Materials::m_growth_iso_stress;
     }
 
     //! material parameters
@@ -1192,7 +1192,10 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_growth_ac; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_growth_ac;
+    }
 
     MAT::PAR::GrowthLawAC* Parameter()
     {
@@ -1274,9 +1277,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_growth_ac_radial;
+      return CORE::Materials::m_growth_ac_radial;
     }
 
     MAT::PAR::GrowthLawACRadial* Parameter()
@@ -1358,9 +1361,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_growth_ac_radial_refconc;
+      return CORE::Materials::m_growth_ac_radial_refconc;
     }
 
     MAT::PAR::GrowthLawACRadialRefConc* Parameter()
@@ -1483,7 +1486,10 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_growth_const; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_growth_const;
+    }
 
     MAT::PAR::GrowthLawConst* Parameter()
     {

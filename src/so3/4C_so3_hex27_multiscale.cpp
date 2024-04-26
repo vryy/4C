@@ -51,7 +51,7 @@ void DRT::ELEMENTS::SoHex27::soh27_read_restart_multi()
 {
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+  if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
   {
     auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
     int eleID = Id();

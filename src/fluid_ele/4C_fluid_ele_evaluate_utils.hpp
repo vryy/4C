@@ -1012,12 +1012,12 @@ namespace FLD
     // get material at gauss point
     double dens = 0.0;
     Teuchos::RCP<MAT::Material> material = ele->Material();
-    if (material->MaterialType() == INPAR::MAT::m_fluid)
+    if (material->MaterialType() == CORE::Materials::m_fluid)
     {
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
       dens = actmat->Density();
     }
-    else if (material->MaterialType() == INPAR::MAT::m_sutherland)
+    else if (material->MaterialType() == CORE::Materials::m_sutherland)
     {
       const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
@@ -1672,7 +1672,7 @@ namespace FLD
     {
       // get density from material
       Teuchos::RCP<MAT::Material> material = ele->Material();
-      if (material->MaterialType() == INPAR::MAT::m_fluid)
+      if (material->MaterialType() == CORE::Materials::m_fluid)
       {
         const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
         densint_hat = actmat->Density();
@@ -2031,7 +2031,7 @@ namespace FLD
     // get material
     double dynvisc = 0.0;
     double dens = 0.0;
-    if (mat->MaterialType() == INPAR::MAT::m_fluid)
+    if (mat->MaterialType() == CORE::Materials::m_fluid)
     {
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
       // get constant viscosity
@@ -2850,7 +2850,7 @@ namespace FLD
         double dens = 0.0;
         double visc = 0.0;
         Teuchos::RCP<MAT::Material> material = ele->Material();
-        if (material->MaterialType() == INPAR::MAT::m_sutherland)
+        if (material->MaterialType() == CORE::Materials::m_sutherland)
         {
           const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
@@ -2862,7 +2862,7 @@ namespace FLD
           dens = actmat->ComputeDensity(temp, thermpress);
           visc = actmat->ComputeViscosity(temp);
         }
-        else if (material->MaterialType() == INPAR::MAT::m_fluid)
+        else if (material->MaterialType() == CORE::Materials::m_fluid)
         {
           const MAT::NewtonianFluid* actmat =
               static_cast<const MAT::NewtonianFluid*>(material.get());

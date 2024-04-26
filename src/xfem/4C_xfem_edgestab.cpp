@@ -136,7 +136,7 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
   {
     num_edgestab++;
 
-    if (matptr_m->MaterialType() == INPAR::MAT::m_matlist)
+    if (matptr_m->MaterialType() == CORE::Materials::m_matlist)
       FOUR_C_THROW("The edgebased algo can not handle matlist at the moment, for this entry!");
 
     face_type = INPAR::XFEM::face_type_std;

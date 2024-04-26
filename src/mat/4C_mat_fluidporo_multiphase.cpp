@@ -83,7 +83,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
     if (iphase < numfluidphases_)
     {
       // safety check and cast
-      if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
+      if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlephase)
         FOUR_C_THROW(
             "You have chosen %i fluidphases, however your material number %i is no poro "
             "singlephase material\n"
@@ -100,7 +100,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
       const MAT::FluidPoroSinglePhase& singlephase =
           static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
 
-      if (singlephase.PoroPhaseLawType() == INPAR::MAT::m_fluidporo_phaselaw_constraint)
+      if (singlephase.PoroPhaseLawType() == CORE::Materials::m_fluidporo_phaselaw_constraint)
       {
         if (constraintphaseID_ != -1)
           FOUR_C_THROW(
@@ -115,7 +115,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
     else if (iphase < numfluidphases_ + numvolfrac_)
     {
       // safety check
-      if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
+      if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlevolfrac)
         FOUR_C_THROW(
             "You have chosen %i fluid phases and %i volume fractions, however your material number "
             "%i is no poro volume fraction material\n"
@@ -133,7 +133,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
     else if (iphase < numfluidphases_ + 2 * numvolfrac_)
     {
       // safety check
-      if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure)
+      if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_volfracpressure)
         FOUR_C_THROW(
             "You have chosen %i fluid phases and %i volume fractions, however your material number "
             "%i is no poro volume fraction pressure material\n"

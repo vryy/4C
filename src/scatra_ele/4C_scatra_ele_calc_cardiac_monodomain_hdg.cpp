@@ -243,7 +243,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Materia
     CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
     CORE::LINALG::SerialDenseVector& ivecnp, CORE::LINALG::SerialDenseMatrix& ivecnpderiv)
 {
-  if (material->MaterialType() == INPAR::MAT::m_myocard)
+  if (material->MaterialType() == CORE::Materials::m_myocard)
     MatMyocard(material, k, difftensor, ivecn, ivecnp, ivecnpderiv);
   else
     FOUR_C_THROW("Material type is not supported");
@@ -421,7 +421,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpd
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
   // first, determine the materials which need a time update, i.e. myocard materials
-  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     const Teuchos::RCP<MAT::MatList> actmat = Teuchos::rcp_dynamic_cast<MAT::MatList>(material);
     if (actmat->NumMat() < this->numscal_) FOUR_C_THROW("Not enough materials in MatList.");
@@ -431,7 +431,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpd
       const int matid = actmat->MatID(k);
       Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      if (singlemat->MaterialType() == INPAR::MAT::m_myocard)
+      if (singlemat->MaterialType() == CORE::Materials::m_myocard)
       {
         // reference to Teuchos::rcp not possible here, since the material
         // is required to be not const for this application
@@ -440,7 +440,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpd
     }
   }
 
-  if (material->MaterialType() == INPAR::MAT::m_myocard)
+  if (material->MaterialType() == CORE::Materials::m_myocard)
   {
     // reference to Teuchos::rcp not possible here, since the material is required to be
     // not const for this application
@@ -472,7 +472,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::GetMate
     Teuchos::RCP<Epetra_MultiVector> material_internal_state =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
 
-    if (material->MaterialType() == INPAR::MAT::m_myocard)
+    if (material->MaterialType() == CORE::Materials::m_myocard)
     {
       Teuchos::RCP<MAT::Myocard> material =
           Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
@@ -513,7 +513,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::SetMate
     Teuchos::RCP<Epetra_MultiVector> material_internal_state =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
 
-    if (material->MaterialType() == INPAR::MAT::m_myocard)
+    if (material->MaterialType() == CORE::Materials::m_myocard)
     {
       Teuchos::RCP<MAT::Myocard> material =
           Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());

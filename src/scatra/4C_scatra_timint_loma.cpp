@@ -86,7 +86,7 @@ void SCATRA::ScaTraTimIntLoma::SetupSplitter()
 void SCATRA::ScaTraTimIntLoma::SetInitialThermPressure()
 {
   // get thermodynamic pressure from material parameters
-  int id = problem_->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
+  int id = problem_->Materials()->FirstIdByType(CORE::Materials::m_sutherland);
   if (id != -1)  // i.e., Sutherland material found
   {
     const MAT::PAR::Parameter* mat = problem_->Materials()->ParameterById(id);
@@ -98,7 +98,7 @@ void SCATRA::ScaTraTimIntLoma::SetInitialThermPressure()
   {
     // No Sutherland material found -> now check for temperature-dependent water,
     // which is allowed to be used in TFSI
-    int id = problem_->Materials()->FirstIdByType(INPAR::MAT::m_tempdepwater);
+    int id = problem_->Materials()->FirstIdByType(CORE::Materials::m_tempdepwater);
     if (id != -1)  // i.e., temperature-dependent water found
     {
       // set thermodynamic pressure to zero once and for all
@@ -135,7 +135,7 @@ void SCATRA::ScaTraTimIntLoma::SetInitialThermPressure()
 void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
 {
   // check for temperature-dependent water, which is allowed to be used in TFSI
-  int id = problem_->Materials()->FirstIdByType(INPAR::MAT::m_tempdepwater);
+  int id = problem_->Materials()->FirstIdByType(CORE::Materials::m_tempdepwater);
   if (id != -1)
     FOUR_C_THROW(
         "Temperature-dependent water found for initial computation of derivative of thermodynamic "
@@ -230,7 +230,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
 void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
 {
   // check for temperature-dependent water, which is allowed to be used in TFSI
-  int id = problem_->Materials()->FirstIdByType(INPAR::MAT::m_tempdepwater);
+  int id = problem_->Materials()->FirstIdByType(CORE::Materials::m_tempdepwater);
   if (id != -1)
     FOUR_C_THROW(
         "Temperature-dependent water found for initial computation of mass -> Set 'CONSTHERMPRES' "

@@ -166,7 +166,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   {
     // get fluid viscosity from material definition --- for computation
     // of ltau
-    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
     if (id == -1)
       FOUR_C_THROW("Could not find Newtonian fluid material");
     else
@@ -182,7 +182,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   {
     // get specific heat capacity --- for computation
     // of Temp_tau
-    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
+    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_sutherland);
     if (id == -1)
       FOUR_C_THROW("Could not find sutherland material");
     else
@@ -5866,7 +5866,7 @@ void FLD::TurbulenceStatisticsCha::StoreScatraDiscretAndParams(
   {
     // get diffusivity from material definition --- for computation
     // of additional mfs-statistics
-    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra);
+    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_scatra);
     if (id == -1)
       FOUR_C_THROW("Could not find scatra material");
     else

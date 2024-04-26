@@ -68,7 +68,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
 
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::null;
-  if (ele->ParentElement()->Material()->MaterialType() == INPAR::MAT::MaterialType::m_electrode)
+  if (ele->ParentElement()->Material()->MaterialType() ==
+      CORE::Materials::MaterialType::m_electrode)
   {
     matelectrode =
         Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
@@ -574,7 +575,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
     CORE::LINALG::SerialDenseMatrix& eslavematrix)
 {
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::null;
-  if (ele->ParentElement()->Material()->MaterialType() == INPAR::MAT::MaterialType::m_electrode)
+  if (ele->ParentElement()->Material()->MaterialType() ==
+      CORE::Materials::MaterialType::m_electrode)
   {
     matelectrode =
         Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
@@ -1149,7 +1151,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::CalcS2
 
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::null;
-  if (ele->ParentElement()->Material()->MaterialType() == INPAR::MAT::MaterialType::m_electrode)
+  if (ele->ParentElement()->Material()->MaterialType() ==
+      CORE::Materials::MaterialType::m_electrode)
   {
     matelectrode =
         Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());

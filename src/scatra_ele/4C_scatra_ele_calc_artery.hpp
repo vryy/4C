@@ -186,7 +186,7 @@ namespace DRT
         // check if we actually have two materials
         if (ele->NumMaterial() < 2) FOUR_C_THROW("no second material available");
         // check for artery material
-        if (ele->Material(1)->MaterialType() != INPAR::MAT::MaterialType::m_cnst_art)
+        if (ele->Material(1)->MaterialType() != CORE::Materials::MaterialType::m_cnst_art)
           FOUR_C_THROW("Secondary material is not of type m_cnst_art, but %d",
               ele->Material(1)->MaterialType());
 

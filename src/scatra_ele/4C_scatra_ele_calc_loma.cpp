@@ -89,23 +89,23 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Materials(
     const int iquad                                    //!< id of current gauss point
 )
 {
-  if (material->MaterialType() == INPAR::MAT::m_mixfrac)
+  if (material->MaterialType() == CORE::Materials::m_mixfrac)
     MatMixFrac(material, k, densn, densnp, densam, visc);
-  else if (material->MaterialType() == INPAR::MAT::m_sutherland)
+  else if (material->MaterialType() == CORE::Materials::m_sutherland)
     MatSutherland(material, k, densn, densnp, densam, visc);
-  else if (material->MaterialType() == INPAR::MAT::m_tempdepwater)
+  else if (material->MaterialType() == CORE::Materials::m_tempdepwater)
     MatTempDepWater(material, k, densn, densnp, densam, visc);
-  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+  else if (material->MaterialType() == CORE::Materials::m_arrhenius_pv)
     MatArrheniusPV(material, k, densn, densnp, densam, visc);
-  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_spec)
+  else if (material->MaterialType() == CORE::Materials::m_arrhenius_spec)
     MatArrheniusSpec(material, k, densn, densnp, densam, visc);
-  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_temp)
+  else if (material->MaterialType() == CORE::Materials::m_arrhenius_temp)
     MatArrheniusTemp(material, k, densn, densnp, densam, visc);
-  else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+  else if (material->MaterialType() == CORE::Materials::m_ferech_pv)
     MatArrheniusPV(material, k, densn, densnp, densam, visc);
-  else if (material->MaterialType() == INPAR::MAT::m_thermostvenant)
+  else if (material->MaterialType() == CORE::Materials::m_thermostvenant)
     MatThermoStVenantKirchhoff(material, k, densn, densnp, densam, visc);
-  else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
+  else if (material->MaterialType() == CORE::Materials::m_yoghurt)
     MatYoghurt(material, k, densn, densnp, densam, visc);
   else
     FOUR_C_THROW("Material type is not supported");

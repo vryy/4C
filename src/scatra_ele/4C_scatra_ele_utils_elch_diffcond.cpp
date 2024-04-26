@@ -68,7 +68,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchMat(
   // extract electrolyte phase
   const Teuchos::RCP<const MAT::Material> elchphase = elchmat->PhaseById(elchmat->PhaseID(0));
 
-  if (elchphase->MaterialType() == INPAR::MAT::m_elchphase)
+  if (elchphase->MaterialType() == CORE::Materials::m_elchphase)
   {
     // evaluate electrolyte phase
     MatElchPhase(elchphase, concentrations, temperature, equpot, ffrt, diffmanager, diffcondmat);
@@ -104,8 +104,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
 
     switch (elchPhaseMaterial->MaterialType())
     {
-      case INPAR::MAT::m_newman:
-      case INPAR::MAT::m_newman_multiscale:
+      case CORE::Materials::m_newman:
+      case CORE::Materials::m_newman_multiscale:
       {
         // safety check
         if (matelchphase->NumMat() != 1)
@@ -120,7 +120,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
         break;
       }
 
-      case INPAR::MAT::m_ion:
+      case CORE::Materials::m_ion:
       {
         // set ion type
         diffcondmat = INPAR::ELCH::diffcondmat_ion;

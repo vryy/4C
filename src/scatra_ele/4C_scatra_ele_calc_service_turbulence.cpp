@@ -51,7 +51,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(dou
 
   // get temperature at integration point
   double tempnp = phinp;
-  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
     tempnp = funct_.Dot(ephinp_[actmat->NumMat() - 1]);
@@ -183,7 +183,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetDensity(const DRT::Ele
   // initialization
   double density(0.);
 
-  if (material->MaterialType() == INPAR::MAT::m_scatra)
+  if (material->MaterialType() == CORE::Materials::m_scatra)
   {
     // access fluid discretization
     Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
@@ -193,7 +193,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetDensity(const DRT::Ele
     if (fluidele == nullptr) FOUR_C_THROW("Fluid element %i not on local processor", ele->Id());
     // get fluid material
     Teuchos::RCP<MAT::Material> fluidmat = fluidele->Material();
-    if (fluidmat->MaterialType() != INPAR::MAT::m_fluid)
+    if (fluidmat->MaterialType() != CORE::Materials::m_fluid)
       FOUR_C_THROW("Invalid fluid material for passive scalar transport in turbulent flow!");
 
     density = Teuchos::rcp_dynamic_cast<const MAT::NewtonianFluid>(fluidmat)->Density();

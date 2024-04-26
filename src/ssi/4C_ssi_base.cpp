@@ -51,9 +51,9 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
           globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
       is_s2i_kinetic_with_pseudo_contact_(CheckS2IKineticsConditionForPseudoContact("structure")),
       macro_scale_(GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-                       INPAR::MAT::m_scatra_multiscale) != -1 or
+                       CORE::Materials::m_scatra_multiscale) != -1 or
                    GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-                       INPAR::MAT::m_newman_multiscale) != -1),
+                       CORE::Materials::m_newman_multiscale) != -1),
       ssiinterfacecontact_(
           GLOBAL::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
           nullptr),

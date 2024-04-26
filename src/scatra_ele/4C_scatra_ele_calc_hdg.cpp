@@ -1384,7 +1384,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterialParams(
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
-  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
@@ -1428,7 +1428,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
-  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);

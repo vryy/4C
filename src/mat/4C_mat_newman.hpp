@@ -129,7 +129,10 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_newman; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_newman;
+    }
 
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Newman(*this)); }

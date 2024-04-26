@@ -1664,7 +1664,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   DRT::Element* element = discret_->lRowElement(0);
   Teuchos::RCP<MAT::Material> mat = element->Material();
 
-  if (mat->MaterialType() == INPAR::MAT::m_matlist)
+  if (mat->MaterialType() == CORE::Materials::m_matlist)
   {
     Teuchos::RCP<const MAT::MatList> actmat = Teuchos::rcp_static_cast<const MAT::MatList>(mat);
 
@@ -1673,7 +1673,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
       const int matid = actmat->MatID(k);
       Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      if (singlemat->MaterialType() == INPAR::MAT::m_ion)
+      if (singlemat->MaterialType() == CORE::Materials::m_ion)
       {
         Teuchos::RCP<const MAT::Ion> actsinglemat =
             Teuchos::rcp_static_cast<const MAT::Ion>(singlemat);
@@ -1688,7 +1688,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   }
 
   // for a single species calculation
-  else if (mat->MaterialType() == INPAR::MAT::m_ion)
+  else if (mat->MaterialType() == CORE::Materials::m_ion)
   {
     Teuchos::RCP<const MAT::Ion> actmat = Teuchos::rcp_static_cast<const MAT::Ion>(mat);
 

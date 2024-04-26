@@ -138,9 +138,9 @@ namespace MAT
     //@}
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_particle_sph_fluid;
+      return CORE::Materials::m_particle_sph_fluid;
     }
 
     //! return copy of this material object

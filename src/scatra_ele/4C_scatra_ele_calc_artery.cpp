@@ -92,7 +92,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Materials(
 {
   switch (material->MaterialType())
   {
-    case INPAR::MAT::m_scatra:
+    case CORE::Materials::m_scatra:
     {
       const Teuchos::RCP<const MAT::ScatraMat>& actmat =
           Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
