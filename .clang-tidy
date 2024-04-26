@@ -25,6 +25,7 @@ Checks: >-
   -bugprone-use-after-move,
   -bugprone-unused-return-value,
   -bugprone-suspicious-string-compare,
+  -bugprone-suspicious-include,
   -bugprone-infinite-loop,
   -bugprone-assert-side-effect,
   -bugprone-multiple-statement-macro

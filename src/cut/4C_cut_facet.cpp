@@ -19,22 +19,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-/*
-Functions to catch implementation erros in debug mode
-*/
-namespace
-{
-  [[maybe_unused]] bool IsCutPositionUnchanged(
-      CORE::GEO::CUT::Point::PointPosition position, CORE::GEO::CUT::Point::PointPosition pos)
-  {
-    if ((position == CORE::GEO::CUT::Point::inside and pos == CORE::GEO::CUT::Point::outside) or
-        (position == CORE::GEO::CUT::Point::outside and pos == CORE::GEO::CUT::Point::inside))
-      return false;
-    else
-      return true;
-  }
-}  // namespace
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::Facet::Facet(

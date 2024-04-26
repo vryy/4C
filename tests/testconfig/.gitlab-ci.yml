@@ -222,9 +222,9 @@ before_script:
   script:
   - *clean-build-folder
   - mkdir ../baci-build/ && cd ../baci-build/
-    # configure to get a compilation database
+    # configure to get a compilation database: use a unity build for faster parsing of files
   - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} -DCMAKE_CXX_COMPILER="clang++" -DFOUR_C_BUILD_READTHEDOCS=OFF
-    --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
+    -DCMAKE_UNITY_BUILD=ON --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
     # create  and activate virtual environment
   - python3 -m venv venv
   - . venv/bin/activate
@@ -236,7 +236,7 @@ before_script:
     # run clang tidy and export report
   - run-clang-tidy -j `nproc` -config-file ${CI_PROJECT_DIR}/.clang-tidy -use-color
     -p . -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*"
-    "${ESCAPED_PROJECT_DIR}\/.*" 2>&1 | python ${CI_PROJECT_DIR}/utilities/code_climate/filter_clang_tidy_output.py
+    2>&1 | python ${CI_PROJECT_DIR}/utilities/code_climate/filter_clang_tidy_output.py
     # export clang tidy issues
   - python ${CI_PROJECT_DIR}/utilities/code_climate/export_clang_tidy_issues.py -j
     `nproc` --code-climate-file ${CI_PROJECT_DIR}/codeclimate.json --source-folder

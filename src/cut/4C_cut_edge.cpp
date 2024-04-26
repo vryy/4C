@@ -20,22 +20,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-/*
-Functions to catch implementation erros in debug mode
-*/
-namespace
-{
-  [[maybe_unused]] bool IsCutPositionUnchanged(
-      CORE::GEO::CUT::Point::PointPosition cutposition, CORE::GEO::CUT::Point::PointPosition pos)
-  {
-    if ((cutposition == CORE::GEO::CUT::Point::inside and pos == CORE::GEO::CUT::Point::outside) or
-        (cutposition == CORE::GEO::CUT::Point::outside and pos == CORE::GEO::CUT::Point::inside))
-      return false;
-    else
-      return true;
-  }
-}  // namespace
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::Edge::Create(

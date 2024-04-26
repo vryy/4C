@@ -50,6 +50,9 @@ function(baci_add_google_test_executable TESTNAME)
     ${assert_mpi_file}
     ${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_SOURCE}
     )
+  # Do not try to build tests as unity files.
+  set_target_properties(${TESTNAME} PROPERTIES UNITY_BUILD OFF)
+
   baci_set_up_executable(${TESTNAME})
 
   # All libraries are linked as PRIVATE since a unit test executable cannot be used as a dependency itself.

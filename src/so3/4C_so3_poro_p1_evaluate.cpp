@@ -720,8 +720,8 @@ void DRT::ELEMENTS::So3PoroP1<so3_ele, distype>::CouplingPoroelast(std::vector<i
     CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
     CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,
     CORE::LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>* stiffmatrix,
-    [[maybe_unused]] CORE::LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>* reamatrix,
-    [[maybe_unused]] CORE::LINALG::Matrix<numdof_, 1>* force, Teuchos::ParameterList& params)
+    CORE::LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>* reamatrix,
+    CORE::LINALG::Matrix<numdof_, 1>* force, Teuchos::ParameterList& params)
 {
   //=============================get parameters
 
