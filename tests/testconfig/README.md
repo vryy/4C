@@ -1,6 +1,6 @@
-# BACI-Testing
+# 4C Testing
 
-BACI is tested via GitLab CI/CD pipelines. Tests can be started by schedulers or whenever something changes in the repository. We test different configurations, for a pipeline to pass it has to succeed for all configurations. This document gives a quick overview over the important steps.
+4C is tested via GitLab CI/CD pipelines. Tests can be started by schedulers or whenever something changes in the repository. We test different configurations, for a pipeline to pass it has to succeed for all configurations. This document gives a quick overview over the important steps.
 
 ## Terminology
 

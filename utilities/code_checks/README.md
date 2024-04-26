@@ -14,7 +14,7 @@
 
 
 ## LNM previous code checks
-Before BACI was moved to GitLab, respectively used Git for version control, a pre-commit and post-commit script was used within SVN to call several Python scripts that:
+Before 4C was moved to GitLab, respectively used Git for version control, a pre-commit and post-commit script was used within SVN to call several Python scripts that:
 * Checked for trailing white-spaces
 * Checked for tabs
 * Made sure that the author of the commit had the rights to perform the commit

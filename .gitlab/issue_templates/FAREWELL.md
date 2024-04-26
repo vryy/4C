@@ -17,7 +17,7 @@ Assignee: Assign this issue to the leaving developer.
 Labels: Assign the "team" label.
 -->
 
-## Many thanks for all your contributions to BACI!
+## Many thanks for all your contributions to 4C!
 
 We wish you all the best for the future and hope to stay in contact (to bother you with the bugs you left behind :stuck_out_tongue_winking_eye:).
 
@@ -33,7 +33,7 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 - [ ] Change ownership of source and input files to another developer or a team.
 
 
-## Checklist for the BACI team
+## Checklist for the 4C team
 <!---
 Tick the box as soon as a task is completed (either by inserting an "x" in edit mode or clicking on it in view mode).
 -->
@@ -44,7 +44,7 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 - [ ] If applicable, remove the leaving team member from the GitLab group baci_maintainers.
 - [ ] If applicable, remove the leaving team member from the list of maintainers in #336.
 - [ ] If applicable, transfer GitLab parent user role to another developer.
-- [ ] If applicable, remove the leaving team member from the BACI Slack channel.
+- [ ] If applicable, remove the leaving team member from the 4C Slack channel.
 - [ ] Add leaving team member to the GitLab group baci_collaborators.
 
 ## Interested Parties

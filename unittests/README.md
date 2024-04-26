@@ -1,4 +1,4 @@
-# BACI's unit test suite
+# 4C's unit test suite
 
 For unit testing we use the [GoogleTest](https://github.com/google/googletest) library.
 
