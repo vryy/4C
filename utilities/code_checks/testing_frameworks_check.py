@@ -187,34 +187,34 @@ def check_inputtests(look_cmd, allerrors):
         # Defining the list of test macros with regular expressions that recognize them in the cmake file
         test_macros = [
             TestMacro(
-                re.compile(r"baci_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"),
+                re.compile(r"four_c_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"),
                 mpirank_group=1,
             ),
             TestMacro(
                 re.compile(
-                    r"baci_test_extended_timeout\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"
+                    r"four_c_test_extended_timeout\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"
                 ),
                 mpirank_group=1,
             ),
             TestMacro(
-                re.compile(r"baci_omp_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"),
+                re.compile(r"four_c_test_omp\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"),
                 mpirank_group=1,
             ),
             TestMacro(
                 re.compile(
-                    r"baci_test_and_post_ensight_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"
-                ),
-                mpirank_group=1,
-            ),
-            TestMacro(
-                re.compile(
-                    r"baci_test_restartonly\s*\(*([a-zA-Z0-9_\.\-]+)\s+(?:[a-zA-Z0-9_\.\-]+)\s+(\d+)"
+                    r"four_c_test_and_post_ensight_test\s*\(*([a-zA-Z0-9_\.\-]+)\s+(\d+)"
                 ),
                 mpirank_group=1,
             ),
             TestMacro(
                 re.compile(
-                    r"baci_test_Nested_Par\s*\(\s*([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s*"
+                    r"four_c_restart_only\s*\(*([a-zA-Z0-9_\.\-]+)\s+(?:[a-zA-Z0-9_\.\-]+)\s+(\d+)"
+                ),
+                mpirank_group=1,
+            ),
+            TestMacro(
+                re.compile(
+                    r"four_c_test_nested_par\s*\(\s*([a-zA-Z0-9_\.\-]+)\s+([a-zA-Z0-9_\.\-]+)\s*"
                 ),
                 test_names_groups=[0, 1],
             ),
