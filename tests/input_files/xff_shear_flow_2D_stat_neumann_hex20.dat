@@ -34,7 +34,6 @@ NONLINITER                      Newton
 NUMSTASTEPS                     0
 NUMSTEP                         1
 RESTARTEVRY                     20
-SIMPLER                         no
 STARTFUNCNO                     2
 THETA                           1.00
 TIMEINTEGR                      Stationary

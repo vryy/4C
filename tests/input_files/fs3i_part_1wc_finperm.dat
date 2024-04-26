@@ -67,7 +67,6 @@ NUMSTEP                         1
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
 RESTARTEVRY                     1
-SIMPLER                         no
 STARTFUNCNO                     -1
 START_THETA                     1
 THETA                           0.66

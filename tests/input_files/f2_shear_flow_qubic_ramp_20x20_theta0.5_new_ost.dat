@@ -26,7 +26,6 @@ NUMSTASTEPS                     0
 START_THETA                     0.5
 INITIALFIELD                    zero_field
 STARTFUNCNO                     -1
-SIMPLER                         no
 GMSH_OUTPUT                     yes
 NEW_OST                         yes
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES

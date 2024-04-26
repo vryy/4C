@@ -42,7 +42,6 @@ NONLINITER                      Newton
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.01
 PREDICTOR                       steady_state
-SIMPLER                         no
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 NONLINEARBC                     yes

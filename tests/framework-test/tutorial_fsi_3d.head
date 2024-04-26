@@ -470,9 +470,9 @@ CALCERROR                       no
 // Function for Error Calculation
 CALCERRORFUNCNO                 -1
 //
-// Switch on SIMPLE family of solvers, only works with block preconditioners like CheapSIMPLE!
-//     Yes,No,yes,no,YES,NO
-SIMPLER                         no
+// Assemble fluid system matrix into a block system
+//                              Yes,No,yes,no,YES,NO
+BLOCKMATRIX                     no
 //
 // Switch on adaptive control of linear solver tolerance for nonlinear solution
 //     Yes,No,yes,no,YES,NO

@@ -236,9 +236,8 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   CORE::UTILS::DoubleParameter("REFMACH", 1.0, "Reference Mach number", &fdyn);
 
-  CORE::UTILS::BoolParameter("SIMPLER", "no",
-      "Switch on SIMPLE family of solvers, only works with block preconditioners like CheapSIMPLE!",
-      &fdyn);
+  CORE::UTILS::BoolParameter("BLOCKMATRIX", "No",
+      "Indicates if system matrix should be assembled into a sparse block matrix type.", &fdyn);
 
   CORE::UTILS::BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution", &fdyn);

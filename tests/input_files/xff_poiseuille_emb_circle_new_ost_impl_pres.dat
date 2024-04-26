@@ -29,7 +29,6 @@ NONLINITER                      Newton
 NUMSTASTEPS                     1
 NUMSTEP                         8
 RESTARTEVRY                     1
-SIMPLER                         no
 STARTFUNCNO                     1
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta

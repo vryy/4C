@@ -16,7 +16,6 @@ LIFTDRAG                        No
 NONLINITER                      Newton
 NUMSTEP                         1
 PHYSICAL_TYPE                   Incompressible
-SIMPLER                         no
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 LINEAR_SOLVER                   1

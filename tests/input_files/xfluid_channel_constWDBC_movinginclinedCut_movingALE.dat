@@ -57,7 +57,6 @@ MAXTIME                         1000.0
 TIMESTEP                        0.1
 THETA                           0.5
 LIFTDRAG                        no
-SIMPLER                         No
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1.0E-13
 TOL_VEL_INC	  1.0E-13

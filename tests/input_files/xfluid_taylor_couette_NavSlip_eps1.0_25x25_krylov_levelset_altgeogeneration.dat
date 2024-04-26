@@ -59,7 +59,6 @@ START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
-SIMPLER                         No
 CONVFORM                        convective
 GAMMA                           1
 GRIDVEL                         BE

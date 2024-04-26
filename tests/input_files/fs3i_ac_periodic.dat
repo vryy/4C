@@ -175,7 +175,6 @@ MESHTYING                       no
 GRIDVEL                         OST
 ALLDOFCOUPLED                   Yes
 CALCERROR                       no
-SIMPLER                         no
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No

@@ -25,7 +25,6 @@ NONLINEARBC                     yes
 MESHTYING                       no
 ALLDOFCOUPLED                   No
 CALCERROR                       no
-SIMPLER                         no
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No

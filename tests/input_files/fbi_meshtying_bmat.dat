@@ -102,7 +102,6 @@ NUMSTASTEPS                           0
 PHYSICAL_TYPE                         Incompressible
 PREDICTOR                             steady_state
 RESTARTEVRY                           20
-SIMPLER                               no
 SIMPLER_SOLVER                        4
 STARTFUNCNO                           -1
 START_THETA                           1

@@ -85,7 +85,6 @@ MESHTYING                       no
 GRIDVEL                         BE
 ALLDOFCOUPLED                   Yes
 CALCERROR                       no
-SIMPLER                         no
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No

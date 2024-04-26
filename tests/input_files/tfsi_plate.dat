@@ -90,7 +90,6 @@ GRIDVEL                         BE
 ALLDOFCOUPLED                   Yes
 CALCERROR                       no
 CALCERRORFUNCNO                 -1
-SIMPLER                         no
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  no

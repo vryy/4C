@@ -44,7 +44,6 @@ NUMSTASTEPS                     0
 NUMSTEP                         25
 PREDICTOR                       steady_state
 RESTARTEVRY                     10
-SIMPLER                         no
 STARTFUNCNO                     2
 START_THETA                     1
 THETA                           0.66
