@@ -75,18 +75,18 @@ include(cmake/setup_global_options.cmake)
 ###------------------------------------------------------------------ External Libraries
 
 # Collect all external dependencies in a helper target
-add_library(baci_all_enabled_external_dependencies INTERFACE)
+add_library(four_c_all_enabled_external_dependencies INTERFACE)
 
-baci_configure_dependency(HDF5 DEFAULT ON)
-baci_configure_dependency(MPI DEFAULT ON)
-baci_configure_dependency(Qhull DEFAULT ON)
-baci_configure_dependency(Trilinos DEFAULT ON)
-baci_configure_dependency(Boost DEFAULT ON)
-baci_configure_dependency(ArborX DEFAULT OFF)
-baci_configure_dependency(FFTW DEFAULT ON)
-baci_configure_dependency(CLN DEFAULT ON)
-baci_configure_dependency(MIRCO DEFAULT OFF)
-baci_configure_dependency(Backtrace DEFAULT OFF)
+four_c_configure_dependency(HDF5 DEFAULT ON)
+four_c_configure_dependency(MPI DEFAULT ON)
+four_c_configure_dependency(Qhull DEFAULT ON)
+four_c_configure_dependency(Trilinos DEFAULT ON)
+four_c_configure_dependency(Boost DEFAULT ON)
+four_c_configure_dependency(ArborX DEFAULT OFF)
+four_c_configure_dependency(FFTW DEFAULT ON)
+four_c_configure_dependency(CLN DEFAULT ON)
+four_c_configure_dependency(MIRCO DEFAULT OFF)
+four_c_configure_dependency(Backtrace DEFAULT OFF)
 
 # Generate the macro definition for all dependencies automatically
 get_property(FOUR_C_FLAGS_EXTERNAL_DEPENDENCIES GLOBAL PROPERTY FOUR_C_FLAGS_EXTERNAL_DEPENDENCIES)
@@ -134,7 +134,7 @@ include(cmake/setup_tests.cmake)
 # Create one large library: every module adds itself to this target
 set(FOUR_C_LIBRARY_NAME baci_lib)
 add_library(${FOUR_C_LIBRARY_NAME})
-target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE baci_private_compile_interface)
+target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE four_c_private_compile_interface)
 
 # Read in the source directory which defines all modules
 add_subdirectory(src)

@@ -1,4 +1,4 @@
-baci_auto_define_module()
+four_c_auto_define_module()
 
 set(_dependencies
     # cmake-format: sortable
@@ -18,6 +18,6 @@ set(_dependencies
     thermo
     )
 
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
+four_c_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
 
-baci_unity_build_compile_separately(4C_so3_scatra_evaluate.cpp)
+four_c_unity_build_compile_separately(4C_so3_scatra_evaluate.cpp)

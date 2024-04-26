@@ -11,4 +11,4 @@ set(SOURCE_LIST
     4C_linalg_utils_voigt_notation_test.cpp
     )
 
-baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
+four_c_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})

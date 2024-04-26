@@ -8,7 +8,7 @@ set(SOURCE_LIST
     4C_utils_reference_configuration_test.cpp
     )
 
-baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
+four_c_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
 
 set(TESTNAME unittests_lib_np_3)
 
@@ -17,7 +17,7 @@ set(SOURCE_LIST
     4C_gid_vector_test.cpp
     )
 
-baci_add_google_test_executable(
+four_c_add_google_test_executable(
   ${TESTNAME}
   NP
   3

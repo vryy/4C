@@ -1,5 +1,5 @@
 # get git revision information
-function(baci_get_git_revision_information)
+function(four_c_get_git_revision_information)
 
   # check git package
   if(NOT GIT_FOUND)

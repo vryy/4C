@@ -13,7 +13,7 @@ endfunction()
 # point. All settings that are checked are added at once, and only if they all work,
 # they will be used.
 #
-function(baci_add_settings_if_compiles _result_var)
+function(four_c_add_settings_if_compiles _result_var)
   # Parse arguments
   set(options "")
   set(oneValueArgs "")
@@ -35,15 +35,17 @@ function(baci_add_settings_if_compiles _result_var)
       )
 
   _get_target_property_or_empty(
-    _compile_definitions baci_private_compile_interface INTERFACE_COMPILE_DEFINITIONS
+    _compile_definitions four_c_private_compile_interface INTERFACE_COMPILE_DEFINITIONS
     )
   _get_target_property_or_empty(
-    _compile_options baci_private_compile_interface INTERFACE_COMPILE_OPTIONS
+    _compile_options four_c_private_compile_interface INTERFACE_COMPILE_OPTIONS
     )
   _get_target_property_or_empty(
-    _link_libraries baci_private_compile_interface INTERFACE_LINK_LIBRARIES
+    _link_libraries four_c_private_compile_interface INTERFACE_LINK_LIBRARIES
     )
-  _get_target_property_or_empty(_link_options baci_private_compile_interface INTERFACE_LINK_OPTIONS)
+  _get_target_property_or_empty(
+    _link_options four_c_private_compile_interface INTERFACE_LINK_OPTIONS
+    )
 
   # Note: this one must be a space-separated string!
   string(JOIN " " CMAKE_REQUIRED_FLAGS ${_compile_options})
@@ -63,12 +65,12 @@ function(baci_add_settings_if_compiles _result_var)
   check_cxx_source_compiles("${_test_source_code}" ${_result_var})
 
   if(${_result_var})
-    target_compile_options(baci_private_compile_interface INTERFACE ${_parsed_COMPILE_OPTIONS})
+    target_compile_options(four_c_private_compile_interface INTERFACE ${_parsed_COMPILE_OPTIONS})
     target_compile_definitions(
-      baci_private_compile_interface INTERFACE ${_parsed_COMPILE_DEFINITIONS}
+      four_c_private_compile_interface INTERFACE ${_parsed_COMPILE_DEFINITIONS}
       )
-    target_link_options(baci_private_compile_interface INTERFACE ${_parsed_LINK_OPTIONS})
-    target_link_libraries(baci_private_compile_interface INTERFACE ${_parsed_LINK_LIBRARIES})
+    target_link_options(four_c_private_compile_interface INTERFACE ${_parsed_LINK_OPTIONS})
+    target_link_libraries(four_c_private_compile_interface INTERFACE ${_parsed_LINK_LIBRARIES})
   endif()
 
 endfunction()

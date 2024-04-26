@@ -1,20 +1,20 @@
-function(_baci_internal_link_with_debug_message target link_type deps)
+function(_four_c_internal_link_with_debug_message target link_type deps)
   message(DEBUG "Linking: ${target} <- ${deps} (${link_type})")
   target_link_libraries(${target} ${link_type} ${deps})
 endfunction()
 
-function(baci_add_dependency target)
+function(four_c_add_dependency target)
   # Internal BACI target in the library
   if(TARGET ${target}_deps)
     foreach(_dep ${ARGN})
-      _baci_internal_link_with_debug_message(${target}_deps INTERFACE ${_dep}_deps)
+      _four_c_internal_link_with_debug_message(${target}_deps INTERFACE ${_dep}_deps)
     endforeach()
     # Some other target
   else()
     get_target_property(_target_type ${target} TYPE)
     if(${_target_type} STREQUAL INTERFACE_LIBRARY)
       foreach(_dep ${ARGN})
-        _baci_internal_link_with_debug_message(${target} INTERFACE ${_dep}_deps)
+        _four_c_internal_link_with_debug_message(${target} INTERFACE ${_dep}_deps)
       endforeach()
     elseif(${_target_type} STREQUAL EXECUTABLE)
       # Currently the code base is not able to link without cycles. When linking an executable to a libary, the
@@ -31,7 +31,7 @@ function(baci_add_dependency target)
   endif()
 endfunction()
 
-function(baci_add_external_dependency target)
+function(four_c_add_external_dependency target)
   # Internal BACI target in the library: adjust name
   if(TARGET ${target}_deps)
     set(target ${target}_deps)

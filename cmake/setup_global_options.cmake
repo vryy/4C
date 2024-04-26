@@ -10,7 +10,7 @@ function(enable_compiler_flag_if_supported _flag)
   # compiler as a define.
   string(REGEX REPLACE "^-" "" _flag_var ${_flag})
   string(REGEX REPLACE "\[-=\]" "_" _flag_var ${_flag_var})
-  baci_add_settings_if_compiles(FOUR_C_COMPILER_HAS_FLAG_${_flag_var} COMPILE_OPTIONS ${_flag})
+  four_c_add_settings_if_compiles(FOUR_C_COMPILER_HAS_FLAG_${_flag_var} COMPILE_OPTIONS ${_flag})
 endfunction()
 
 #
@@ -21,7 +21,7 @@ function(enable_linker_flag_if_supported _flag)
   # compiler as a define.
   string(REGEX REPLACE "^-" "" _flag_var ${_flag})
   string(REGEX REPLACE "\[-=\]" "_" _flag_var ${_flag_var})
-  baci_add_settings_if_compiles(FOUR_C_LINKER_HAS_FLAG_${_flag_var} LINK_OPTIONS ${_flag})
+  four_c_add_settings_if_compiles(FOUR_C_LINKER_HAS_FLAG_${_flag_var} LINK_OPTIONS ${_flag})
 endfunction()
 
 enable_compiler_flag_if_supported("-Wall")
@@ -41,7 +41,7 @@ enable_linker_flag_if_supported("-rdynamic")
 if(BUILD_SHARED_LIBS)
   message(VERBOSE "Enabling POSITION_INDEPENDENT_CODE on internal targets.")
   set_target_properties(
-    baci_private_compile_interface PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE
+    four_c_private_compile_interface PROPERTIES INTERFACE_POSITION_INDEPENDENT_CODE TRUE
     )
 endif()
 
@@ -61,7 +61,7 @@ if(FOUR_C_WITH_ADDRESS_SANITIZER)
   enable_linker_flag_if_supported("-fno-omit-frame-pointer")
 
   # ASAN requires to check both flags at once.
-  baci_add_settings_if_compiles(
+  four_c_add_settings_if_compiles(
     FOUR_C_COMPILER_LINKER_SUPPORT_ASAN
     COMPILE_OPTIONS
     "-fsanitize=address"
@@ -77,11 +77,11 @@ if(FOUR_C_WITH_ADDRESS_SANITIZER)
   endif()
 endif()
 
-baci_process_global_option(
+four_c_process_global_option(
   FOUR_C_ENABLE_COVERAGE "Set up a build to gather coverage information" OFF
   )
 if(FOUR_C_ENABLE_COVERAGE)
-  baci_add_settings_if_compiles(
+  four_c_add_settings_if_compiles(
     FOUR_C_COMPILER_SUPPORT_COVERAGE
     COMPILE_OPTIONS
     "-fprofile-arcs"
@@ -99,8 +99,8 @@ if(FOUR_C_ENABLE_COVERAGE)
   endif()
 endif()
 
-baci_process_global_option(FOUR_C_DSERROR_DUMP "Uncaught exceptions create a core file" OFF)
-baci_process_global_option(FOUR_C_TRAP_FE "Crash BACI if a nan or inf occurs" ON)
+four_c_process_global_option(FOUR_C_DSERROR_DUMP "Uncaught exceptions create a core file" OFF)
+four_c_process_global_option(FOUR_C_TRAP_FE "Crash BACI if a nan or inf occurs" ON)
 
 ##
 # Optimization flags
@@ -120,29 +120,29 @@ if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES DEBUG)
       "ON"
       CACHE BOOL "Forced ON due to build type DEBUG" FORCE
       )
-  target_compile_options(baci_private_compile_interface INTERFACE "-O0")
-  target_link_options(baci_private_compile_interface INTERFACE "-O0")
+  target_compile_options(four_c_private_compile_interface INTERFACE "-O0")
+  target_link_options(four_c_private_compile_interface INTERFACE "-O0")
 
-  target_compile_options(baci_private_compile_interface INTERFACE "-g")
+  target_compile_options(four_c_private_compile_interface INTERFACE "-g")
 endif()
 
 if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES RELEASE)
-  target_compile_options(baci_private_compile_interface INTERFACE "-O3")
-  target_link_options(baci_private_compile_interface INTERFACE "-O3")
+  target_compile_options(four_c_private_compile_interface INTERFACE "-O3")
+  target_link_options(four_c_private_compile_interface INTERFACE "-O3")
 
   enable_compiler_flag_if_supported("-funroll-loops")
 endif()
 
 if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES RELWITHDEBINFO)
-  target_compile_options(baci_private_compile_interface INTERFACE "-O2")
-  target_link_options(baci_private_compile_interface INTERFACE "-O2")
+  target_compile_options(four_c_private_compile_interface INTERFACE "-O2")
+  target_link_options(four_c_private_compile_interface INTERFACE "-O2")
 
-  target_compile_options(baci_private_compile_interface INTERFACE "-g")
+  target_compile_options(four_c_private_compile_interface INTERFACE "-g")
   enable_compiler_flag_if_supported("-funroll-loops")
 endif()
 
 # Evaluate this option now to get the correct output in case it is force ON in DEBUG mode.
-baci_process_global_option(
+four_c_process_global_option(
   FOUR_C_ENABLE_ASSERTIONS
   "Turn on assertions and debug sections in code. Automatically turned on for DEBUG as CMAKE_BUILD_TYPE."
   OFF
@@ -154,14 +154,14 @@ baci_process_global_option(
 
 # Compiler
 separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_FLAGS})
-target_compile_options(baci_private_compile_interface INTERFACE ${_split})
+target_compile_options(four_c_private_compile_interface INTERFACE ${_split})
 separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_FLAGS_${FOUR_C_BUILD_TYPE_UPPER}})
-target_compile_options(baci_private_compile_interface INTERFACE ${_split})
+target_compile_options(four_c_private_compile_interface INTERFACE ${_split})
 
 # Linker
 separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_LINKER_FLAGS})
-target_link_options(baci_private_compile_interface INTERFACE ${_split})
+target_link_options(four_c_private_compile_interface INTERFACE ${_split})
 separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_LINKER_FLAGS_${FOUR_C_BUILD_TYPE_UPPER}})
-target_link_options(baci_private_compile_interface INTERFACE ${_split})
+target_link_options(four_c_private_compile_interface INTERFACE ${_split})
 
 ### Do not add any more flags here! User flags have already been added.

@@ -16,7 +16,7 @@ if(FOUR_C_DETECT_LINKER)
 
     if(FOUR_C_HAVE_LINKER_PROGRAM_${_linker_name})
       # Check if the linker works out of the box.
-      baci_add_settings_if_compiles(
+      four_c_add_settings_if_compiles(
         FOUR_C_LINKER_FUNCTIONAL_${_linker_name} LINK_OPTIONS "-fuse-ld=${_linker_name}"
         )
 
@@ -28,7 +28,7 @@ if(FOUR_C_DETECT_LINKER)
         # This is a special case which happens when using the mpic++ compiler wrapper on
         # Ubuntu 20.04. The faster linkers can fail due to a mistake in OpenMPI.
         # Since we know how to fix linking, we try if the linker works when adding the missing -lopen-pal flag.
-        baci_add_settings_if_compiles(
+        four_c_add_settings_if_compiles(
           FOUR_C_LINKER_FUNCTIONAL_WITH_OPEN_PAL_${_linker_name}
           LINK_LIBRARIES
           "open-pal"

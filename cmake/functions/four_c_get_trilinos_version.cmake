@@ -1,5 +1,5 @@
 # get trilinos version
-function(baci_get_trilinos_version)
+function(four_c_get_trilinos_version)
 
   # get Trilinos version
   set(TrilinosVersion

@@ -1,6 +1,6 @@
 #
 # Build routine/test for readthedocs documentation
-baci_process_global_option(FOUR_C_BUILD_READTHEDOCS "Build readthedocs documentation" OFF)
+four_c_process_global_option(FOUR_C_BUILD_READTHEDOCS "Build readthedocs documentation" OFF)
 if(FOUR_C_BUILD_READTHEDOCS)
 
   # add doc-specific cmake modules

@@ -8,4 +8,4 @@ fetchcontent_declare(
   )
 fetchcontent_makeavailable(arborx)
 
-baci_add_external_dependency(baci_all_enabled_external_dependencies ArborX::ArborX)
+four_c_add_external_dependency(four_c_all_enabled_external_dependencies ArborX::ArborX)

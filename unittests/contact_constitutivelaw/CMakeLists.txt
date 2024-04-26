@@ -10,7 +10,7 @@ set(SOURCE_LIST
     4C_power_contactconstitutivelaw_test.cpp
     )
 
-baci_add_google_test_executable(
+four_c_add_google_test_executable(
   ${TESTNAME}
   THREADS
   2

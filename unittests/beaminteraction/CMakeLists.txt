@@ -5,4 +5,4 @@ set(SOURCE_LIST
     4C_beaminteraction_beam_to_solid_volume_meshtying_mortar_test.cpp
     )
 
-baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
+four_c_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})

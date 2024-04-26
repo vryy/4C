@@ -4,4 +4,4 @@
 set(MPI_CXX_SKIP_MPICXX ON)
 find_package(MPI REQUIRED)
 
-target_link_libraries(baci_all_enabled_external_dependencies INTERFACE MPI::MPI_CXX)
+target_link_libraries(four_c_all_enabled_external_dependencies INTERFACE MPI::MPI_CXX)

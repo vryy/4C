@@ -10,6 +10,6 @@ set(OBJS_FOUR_C_MAIN
 # the baci executable
 add_executable(${baciname} ${OBJS_FOUR_C_MAIN})
 set_target_properties(${baciname} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-baci_set_up_executable(${baciname})
+four_c_set_up_executable(${baciname})
 
 add_custom_target(baci DEPENDS ${baciname})
