@@ -22,6 +22,7 @@ between the xfluid class and the cut-library
 #include "4C_io_pstream.hpp"
 #include "4C_lib_dofset_transparent_independent.hpp"
 #include "4C_lib_utils_createdis.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -30,6 +31,9 @@ between the xfluid class and the cut-library
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_surface.hpp"
+#include "4C_solid_3D_ele.hpp"
+#include "4C_solid_3D_ele_calc_lib_nitsche.hpp"
+#include "4C_utils_exceptions.hpp"
 #include "4C_xfem_discretization_utils.hpp"
 #include "4C_xfem_interface_utils.hpp"
 #include "4C_xfem_utils.hpp"
@@ -2308,50 +2312,74 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
 {
   if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided) return;
 
-  if (coupl_ele->Shape() == CORE::FE::CellType::hex8)
+  FOUR_C_THROW_UNLESS(coupl_ele->Shape() == CORE::FE::CellType::hex8,
+      "XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress is currently only implemented for "
+      "hex8 elements");
+
+
+  auto evaluate_cauchy_n_dir_and_derivatives =
+      [&]() -> std::function<void(const CORE::LINALG::Matrix<NUMDIM_SOH8, 1>&, double&,
+                CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&)>
   {
-    DRT::ELEMENTS::SoHex8* solid_ele = dynamic_cast<DRT::ELEMENTS::SoHex8*>(coupl_ele);
-    if (solid_ele == nullptr)
-      FOUR_C_THROW(
-          "XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: Cast of coupl_ele to solid_ele "
-          "failed!");
-
-    solid_stress.resize(5);  // traction,dtdd,d2dddx,d2dddy,d2dddz
-    solid_stress[0].reshape(NUMDIM_SOH8, 1);
-    CORE::LINALG::Matrix<NUMDIM_SOH8, 1> traction(solid_stress[0].values(), true);
-
-    solid_stress[1].reshape(NUMDOF_SOH8, NUMDIM_SOH8);
-    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> dtraction_dd_l(solid_stress[1].values(), true);
-
-    traction.Clear();
-
-    static CORE::LINALG::SerialDenseMatrix dtraction_dd_i;
-    for (int i = 0; i < NUMDIM_SOH8; ++i)
+    if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(coupl_ele); solid_ele != nullptr)
     {
-      CORE::LINALG::Matrix<NUMDIM_SOH8, 1> ei(true);
-      ei(i, 0) = 1.;
-      solid_ele->GetCauchyNDirAndDerivativesAtXi(rst_slave, eledisp, normal, ei, traction(i, 0),
-          &dtraction_dd_i, &solid_stress[2 + i], nullptr, nullptr, nullptr, nullptr, nullptr,
-          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
-      CORE::LINALG::Matrix<NUMDOF_SOH8, 1> dtraction_dd_i_l(dtraction_dd_i.values(), true);
-      for (int col = 0; col < NUMDOF_SOH8; ++col) dtraction_dd_l(col, i) = dtraction_dd_i_l(col, 0);
+      return [&](const CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& dir, double& cauchy_n_dir,
+                 CORE::LINALG::SerialDenseMatrix& d_cauchy_d_d,
+                 CORE::LINALG::SerialDenseMatrix& d2_cauchy_d_d2)
+      {
+        solid_ele->GetCauchyNDirAndDerivativesAtXi(rst_slave, eledisp, normal, dir, cauchy_n_dir,
+            &d_cauchy_d_d, &d2_cauchy_d_d2, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+            nullptr, nullptr, nullptr, nullptr, nullptr);
+      };
     }
-    if (timefac_ > 0)
+    else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(coupl_ele); solid_ele != nullptr)
     {
-      // Change from linearization w.r.t. displacements to linearization w.r.t. velocities
-      // (All other linearizations on the Nitsche Interface are evaluated like this)
-      solid_stress[1].scale(timefac_);
-      for (int idx = 2; idx < 5; ++idx) solid_stress[idx].scale(-timefac_ * timefac_);
+      return [&](const CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& dir, double& cauchy_n_dir,
+                 CORE::LINALG::SerialDenseMatrix& d_cauchy_d_d,
+                 CORE::LINALG::SerialDenseMatrix& d2_cauchy_d_d2)
+      {
+        DRT::ELEMENTS::CauchyNDirLinearizations<3> linearizations{};
+        linearizations.d_cauchyndir_dd = &d_cauchy_d_d;
+        linearizations.d2_cauchyndir_dd2 = &d2_cauchy_d_d2;
+
+        cauchy_n_dir =
+            solid_ele->GetCauchyNDirAtXi<3>(eledisp, rst_slave, normal, dir, linearizations);
+      };
     }
     else
-      FOUR_C_THROW("XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: timefac = %f, not set!",
-          timefac_);
+    {
+      FOUR_C_THROW("Unknown solid element type");
+    }
+  }();
+
+  solid_stress.resize(5);  // traction,dtdd,d2dddx,d2dddy,d2dddz
+  solid_stress[0].reshape(NUMDIM_SOH8, 1);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, 1> traction(solid_stress[0].values(), true);
+
+  solid_stress[1].reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> dtraction_dd_l(solid_stress[1].values(), true);
+
+  traction.Clear();
+
+  static CORE::LINALG::SerialDenseMatrix dtraction_dd_i;
+  for (int i = 0; i < NUMDIM_SOH8; ++i)
+  {
+    CORE::LINALG::Matrix<NUMDIM_SOH8, 1> ei(true);
+    ei(i, 0) = 1.;
+
+    evaluate_cauchy_n_dir_and_derivatives(ei, traction(i, 0), dtraction_dd_i, solid_stress[2 + i]);
+
+    CORE::LINALG::Matrix<NUMDOF_SOH8, 1> dtraction_dd_i_l(dtraction_dd_i.values(), true);
+    for (int col = 0; col < NUMDOF_SOH8; ++col) dtraction_dd_l(col, i) = dtraction_dd_i_l(col, 0);
   }
-  else
-    FOUR_C_THROW(
-        "XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress:: Element type not implemented "
-        "yet!");
-  return;
+
+  FOUR_C_THROW_UNLESS(timefac_ > 0,
+      "XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: timefac = %f, not set!", timefac_);
+
+  // Change from linearization w.r.t. displacements to linearization w.r.t. velocities
+  // (All other linearizations on the Nitsche Interface are evaluated like this)
+  solid_stress[1].scale(timefac_);
+  for (int idx = 2; idx < 5; ++idx) solid_stress[idx].scale(-timefac_ * timefac_);
 }
 
 /*--------------------------------------------------------------------------*
