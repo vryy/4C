@@ -394,7 +394,7 @@ macro(four_c_framework_test name_of_input_file num_proc xml_filename)
   endif(NOT ${xml_filename} STREQUAL "")
 
   set(RUNFOURC
-      ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ $<TARGET_FILE:${four_c_framework_test_directory}/xxx
+      ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ $<TARGET_FILE:${baciname}>\ ${test_directory}/xxx.dat\ ${test_directory}/xxx
       ) # 4C is run using the generated dat file
   set(RUNPOSTFILTER
       ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx
