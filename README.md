@@ -1,35 +1,35 @@
-# BACI
+# 4C
 
-BACI ("Bavarian Advanced Computational Initiative") is a parallel multiphysics research code
+4C ("Comprehensive Computational Community Code") is a parallel multiphysics research code
 to address a plethora of physical problems by means of _computational mechanics_.
 
-Large parts of BACI are based on finite element methods (FEM),
+Large parts of 4C are based on finite element methods (FEM),
 but alternative discretization methods such as discontinuous Galerkin methods (DG),
 particle methods and mesh-free methods have also been successfully integrated.
 The research software is implemented throughout in object-oriented programming (C++)
 using modern software design and is parallelized with MPI for distributed memory hardware architectures.
 
-**Disclaimer**: BACI is developed for research purposes in the field of numerical method development.
+**Disclaimer**: 4C is developed for research purposes in the field of numerical method development.
 It is not intended for any use beyond this purpose, and generally should not be used for any form of
 safety-relevant or safety-critical calculations,
 or for an application in association with physical products in particular.
 
 ## Contents
 
-1. [Getting Up and Running with BACI](#getting-up-and-running-with-baci)
+1. [Getting Up and Running with 4C](#getting-up-and-running-with-fourc)
     1. [Set-up LRZ GitLab account](#set-up-lrz-gitlab-account)
     1. [Configure Git](#configure-git)
     1. [Clone the Repository](#clone-the-repository)
     1. [Set-Up the Environment](#set-up-the-environment)
     1. [Configure and Build](#configure-and-build)
     1. [Prepare and Run Simulations](#prepare-and-run-simulations)
-    1. [Updating BACI](#updating-baci)
+    1. [Updating 4C](#updating-fourc)
 1. [Where to Ask Questions](#where-to-ask-questions)
 1. [Contributing](#contributing)
-1. [How to cite Baci](#how-to-cite-baci)
+1. [How to cite 4C](#how-to-cite-fourc)
 1. [License](#license)
 
-## Getting Up and Running with BACI
+## Getting Up and Running with 4C
 
 ### Set-up LRZ GitLab account
 
@@ -64,7 +64,7 @@ git clone git@gitlab.lrz.de:baci/baci.git <sourceDir>
 cd <sourceDir>
 ```
 
-where `<someBaseDir>` is some directory on your machine and `<sourceDir>` will contain the BACI source code.
+where `<someBaseDir>` is some directory on your machine and `<sourceDir>` will contain the 4C source code.
 You can choose names and locations of these directories freely.
 
 Your directory tree should look like the following:
@@ -117,7 +117,7 @@ a [detailed setup guide for your local git configuration](https://baci.pages.git
 
 ### Set-up the Environment
 
-BACI heavily relies on the [Trilinos project](https://trilinos.github.io).
+4C heavily relies on the [Trilinos project](https://trilinos.github.io).
 
 Some further third party libraries (TPLs) are mandatory, e.g.
 
@@ -145,7 +145,7 @@ the [user documentation](https://baci.pages.gitlab.lrz.de/baci/readthedocs/bacis
 
 ### Configure and Build
 
-#### Create python virtual environment for BACI development (optional)
+#### Create python virtual environment for 4C development (optional)
 
 For testing and active development, you need to create a python virtual environment once. In the source directory,
 execute:
@@ -156,7 +156,7 @@ execute:
 
 #### Create the Build Directory
 
-BACI enforces an out-of-source build, i.e. your build directory may not be located inside the source code directory.
+4C enforces an out-of-source build, i.e. your build directory may not be located inside the source code directory.
 
 ```bash
 cd <someBaseDir>
@@ -195,7 +195,7 @@ ninja -j <numProcs> full |& tee build$(date +%y%m%d%H%M%N).log
 
 where `<numProcs>` is the number of processors you want to use.
 
-> **Note:**  After the first build, it is rarely necessary to reconfigure baci &mdash; only the build-command is
+> **Note:**  After the first build, it is rarely necessary to reconfigure 4C &mdash; only the build-command is
 > required. `cmake` is invoked *automatically* during the build process if something changed within `CMakeLists.txt`.
 
 > **Note:** Make sure to have Ninja installed on your system.
@@ -221,7 +221,7 @@ execution.
 
 ### Prepare and Run Simulations
 
-After sucessfully building BACI, the executable `baci-release` is located in your build directory `<buildDir>/`.
+After sucessfully building 4C, the executable `baci-release` is located in your build directory `<buildDir>/`.
 It needs to be invoked together with an input (`.dat`) file via
 
 ```bash
@@ -251,7 +251,7 @@ to list all options that are available to filter the output.
 
 If you are using runtime ouput, the simulation results are directly accessible in vtk format.
 
-The input (`.dat`) file can be created using the `pre_exodus` script which is also located in the BACI build directory.
+The input (`.dat`) file can be created using the `pre_exodus` script which is also located in the 4C build directory.
 The script is invoked via
 
 ```bash
@@ -269,9 +269,9 @@ simulation settings etc....
 
 [↑ Contents](#contents)
 
-### Updating BACI
+### Updating 4C
 
-Any time you need to grab the latest from BACI:
+Any time you need to grab the latest from 4C:
 
 ```bash
 cd <someBaseDir>/<sourceDir>
@@ -283,7 +283,7 @@ git pull
 
 ## Where to Ask Questions
 
-If you need help with BACI, feel free to ask questions
+If you need help with 4C, feel free to ask questions
 by [creating a GitLab issue](https://gitlab.lrz.de/baci/baci/issues). Use an issue template from the dropdown menu to
 pre-populate the *Description* field, giving you instructions on submitting the issue.
 
@@ -291,16 +291,16 @@ pre-populate the *Description* field, giving you instructions on submitting the 
 
 ## Contributing
 
-If you're interested in contributing to BACI, we welcome your collaboration. Before your start, configure
+If you're interested in contributing to 4C, we welcome your collaboration. Before your start, configure
 your [local Git](#set-up-git) and your [LRZ GitLab account](#set-up-lrz-gitlab).
 Read [our contributing guidelines](https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md) carefully for details on
 our workflow, submitting merge-requests, etc.
 
 [↑ Contents](#contents)
 
-## How to cite Baci
+## How to cite 4C
 
-Whenever you mention BACI in some sort of scientific document/publication/presentation, please cite BACI as follows:
+Whenever you mention 4C in some sort of scientific document/publication/presentation, please cite 4C as follows:
 
 ```
 4C: A Comprehensive Multi-Physics Simulation Framework, https://www.4c-multiphysics.org
@@ -322,8 +322,6 @@ _Note:_ You might need to adapt the BibTeX entry depending on the citation style
 
 Remember: It is good scientific practice to include the date, when you've visisted that website, into the citation. It's
 up to you (and your advisor) to include the date, depending on the type of publication.
-
-_Note:_ Already use the new name 4C for citing BACI.
 
 [↑ Contents](#contents)
 

@@ -1,21 +1,21 @@
-# Contributing to BACI
+# Contributing to 4C
 
-Thank you for your willingness to contribute to BACI.
-The steps outlined in [Setup and Initial Configuration](#setup-and-initial-configuration) have to be performed only once, while the  [BACI Development Workflow](#the-baci-development-workflow) has to be cycled for every bit of code development in BACI.
+Thank you for your willingness to contribute to 4C.
+The steps outlined in [Setup and Initial Configuration](#setup-and-initial-configuration) have to be performed only once, while the  [4C Development Workflow](#the-fourc-development-workflow) has to be cycled for every bit of code development in 4C.
 
-> **Note:**  By contributing to BACI, you implicitly agree to our [contributor license agreement](https://gitlab.lrz.de/baci/baci/blob/master/ContributorLicenseAgreement.md).
+> **Note:**  By contributing to 4C, you implicitly agree to our [contributor license agreement](https://gitlab.lrz.de/baci/baci/blob/master/ContributorLicenseAgreement.md).
 
-BACI development is strongly based on the [GitHub Flow](https://guides.github.com/introduction/flow/index.html) which is a branch-based workflow involving only two types of branches: the `master` branch and `feature` branches.
+4C development is strongly based on the [GitHub Flow](https://guides.github.com/introduction/flow/index.html) which is a branch-based workflow involving only two types of branches: the `master` branch and `feature` branches.
 The most important rules are:
 
 - Anything in the `master` branch is always deployable, i.e. considered stable.
 - Development (and bugfixes) are carried out in `feature` branches.
 
-To incorporate a `feature` branch into the `master` branch, BACI employs GitLab's *merge request* mechanism resulting in a *merge commit*.
+To incorporate a `feature` branch into the `master` branch, 4C employs GitLab's *merge request* mechanism resulting in a *merge commit*.
 
 ### Contents
 1. [Setup and Initial Configuration](#setup-and-initial-configuration)
-1. [The BACI Development Workflow](#the-baci-development-workflow)
+1. [The 4C Development Workflow](#the-fourc-development-workflow)
    1. [Create a GitLab Issue](#create-a-gitlab-issue)
    1. [Work an Issue](#work-an-issue)
       1. [Create a Feature Branch](#create-a-feature-branch)
@@ -43,13 +43,13 @@ Double-check that your local Git repository is configured as described in [READM
 We recommend to use an Integrated Develoment Environment (IDE) for code development because it provides many convenient features and also eases to comply with our mandatory code style.
 Set-up instructions for various IDEs can be found on the respective [Wiki page](https://gitlab.lrz.de/baci/baci/wikis/set-up-your-integrated-development-environment).
 
-## The BACI Development Workflow
+## The 4C Development Workflow
 
 ### Create a GitLab Issue
 
-It is highly recommended to open an issue, when planning any change to BACI. It is good practice to open the issues when starting to work on something (and not after working on it or just prior to create the merge request).
+It is highly recommended to open an issue, when planning any change to 4C. It is good practice to open the issues when starting to work on something (and not after working on it or just prior to create the merge request).
 
-Navigate to BACI's [GitLab Issues page](https://gitlab.lrz.de/baci/baci/issues) and create a new issue.
+Navigate to 4C's [GitLab Issues page](https://gitlab.lrz.de/baci/baci/issues) and create a new issue.
 The issue can be used for any number of things &mdash; reporting a bug, suggesting an enhancement, posing a question, etc.
 On the new issue creation page, select an issue template from the drop down menu
 to pre-populate the *Description* field with some text.
@@ -60,7 +60,7 @@ Make sure to assign appropriate team::<teamname> label(s) according to the issue
 
 Issues begin their life in the **Open** column of our [issue board](https://gitlab.lrz.de/baci/baci/-/boards)
 and then move through the board from left to right. Each column represents the current state of the issue as indicated by the status label.
-If at any point in an issue's life it becomes blocked by something (either another BACI issue, or perhaps something external),
+If at any point in an issue's life it becomes blocked by something (either another 4C issue, or perhaps something external),
 move the issue card into the **Blocked** column to indicate that work can't proceed until something else is dealt with.
 Add a comment to the blocked issue to explain why it is blocked and what needs to happen to resolve the **Blocked** status.
 
@@ -73,19 +73,19 @@ Then the workflow to use is the following:
 
 #### Create a Feature Branch
 
-> **Note:** It is important to keep your local `master` branch in BACI up-to-date with the remote `master`. Hence, creation of a feature branch consists of *two* steps.
+> **Note:** It is important to keep your local `master` branch in 4C up-to-date with the remote `master`. Hence, creation of a feature branch consists of *two* steps.
 
 First, update the `master` branch:
 
 ```bash
-cd <path/to/baci-source-code>
+cd <path/to/four-c-source-code>
 git checkout master
 git pull
 ```
 
-where `<path/to/baci-source-code>` is the location of your local BACI repository, i.e. the BACI source code.
+where `<path/to/four-c-source-code>` is the location of your local 4C repository, i.e. the 4C source code.
 
-Then, create a local branch off of `master` in BACI on which to make your changes:
+Then, create a local branch off of `master` in 4C on which to make your changes:
 
 ```bash
 git branch <branchName>
@@ -133,14 +133,14 @@ limited to 72 characters wide.
 
 ##### Doxygen
 
-BACI uses [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) to generate documentation from annotated source code.
+4C uses [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) to generate documentation from annotated source code.
 Please see [this wiki page](https://gitlab.lrz.de/baci/baci/wikis/Doxygen) for our Doxygen guidelines.
 
 [↑ Contents](#contents)
 
 #### Integrate changes from `master` into your feature branch
 
-While working on your feature in your local `<branchName>` branch in BACI, other commits will likely make it into the remote `master` branch.  There are a variety of ways to incorporate these changes into your local feature branch. Our preferred possibility is a rebase onto the newest available `master`, e.g. by running:
+While working on your feature in your local `<branchName>` branch in 4C, other commits will likely make it into the remote `master` branch.  There are a variety of ways to incorporate these changes into your local feature branch. Our preferred possibility is a rebase onto the newest available `master`, e.g. by running:
 
 ```bash
 git fetch
@@ -160,14 +160,14 @@ For more information on `git rebase` you may want to check out [the documentatio
 
 #### Test your Changes
 
-To ensure your changes haven't broken anything, run `ctest` in your BACI build directory.
+To ensure your changes haven't broken anything, run `ctest` in your 4C build directory.
 A small set of test cases can be run via `ctest -L minimal`.
 
 [↑ Contents](#contents)
 
 ### Merging Changes into `master`
 
-To bring changes form a locally developed feature branch into `master` and make them available to everyone, Baci relies on GitLab's _merge request (MR)_ mechanism. Baci's MR workflow is outlined in the following.
+To bring changes form a locally developed feature branch into `master` and make them available to everyone, 4C relies on GitLab's _merge request (MR)_ mechanism. 4C's MR workflow is outlined in the following.
 
 #### Push your branch to GitLab
 
@@ -181,11 +181,11 @@ git push --set-upstream origin <branchName>
 
 #### Create a Merge Request
 
-When your changes are ready to be integrated into BACI's `master` branch,
+When your changes are ready to be integrated into 4C's `master` branch,
 move the issue card from **In Progress** to **Under Review** on our
 [issue board](https://gitlab.lrz.de/baci/baci/-/boards) and then:
 
-*  Navigate to the BACI project on GitLab and [create a new merge request](https://gitlab.lrz.de/baci/baci/merge_requests/new):
+*  Navigate to the 4C project on GitLab and [create a new merge request](https://gitlab.lrz.de/baci/baci/merge_requests/new):
    * Be sure you choose:
       * source branch: `<branchName>`
       * target branch: `master`
@@ -219,12 +219,12 @@ rather than having to look at the entire change set at once.
 
 #### Feedback, Review, and Approval
 
-At this point you'll enter into a stage where you and various BACI developers will iterate back and forth until your changes are in an acceptable state and can be merged in.
+At this point you'll enter into a stage where you and various 4C developers will iterate back and forth until your changes are in an acceptable state and can be merged in.
 If you need to make changes to your merge request, make additional commits on your `<branchName>` branch and push them up to the remote.
 If the changes are minor changes (typos, renames, etc.) compared to the original commits, you can add them to the respective commits, to keep the commit log meaningful.
 Make sure you don't delete your remote feature branch before your merge request has been merged.
 
-> Independent of your level of expertise, experience with BACI, employment status, or whatsoever, you are encouraged to actively participate in this process _in the best interest of collaborative code development_. **Every contribution is valuable!**
+> Independent of your level of expertise, experience with 4C, employment status, or whatsoever, you are encouraged to actively participate in this process _in the best interest of collaborative code development_. **Every contribution is valuable!**
 
 To stimulate an open and constructive discussion and to get the MR ready to be merged, this includes:
 
@@ -249,7 +249,7 @@ To merge changes into `master`, a feature branch needs to satisfy the following 
 * Passing code check, e.g. no trailing white spaces, proper Doxygen style, ...
 * No build errors and warnings
 * All tests are passing.
-* Approval of the changes by at least one respective code owner (cf. `<path/to/baci-source-code>/.gitlab/CODEOWNERS.md`)
+* Approval of the changes by at least one respective code owner (cf. `<path/to/four-c-source-code>/.gitlab/CODEOWNERS.md`)
 
 Before the merge is performed, consider a rebase of your branch into a final clean state.
 For instance, if you added small
