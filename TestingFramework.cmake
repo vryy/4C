@@ -9,7 +9,7 @@
 # then ensure that a) required fixtures are included if necessary and b) tests are executed in
 # the correct order.
 #
-# In the BACI test suite we need such dependencies between a test e.g. for an initial simulation
+# In the 4C test suite we need such dependencies between a test e.g. for an initial simulation
 # and a test for a restart, or between an initial simulation and a post-processing test.
 function(define_setup_fixture name_of_test name_of_fixture)
   set_tests_properties(${name_of_test} PROPERTIES FIXTURES_SETUP ${name_of_fixture})
@@ -57,13 +57,13 @@ endfunction(set_timeout)
 
 # The macros defined in this section can be used in the file 'TestingFrameworkListOfTests.cmake' to define tests
 
-# DEFAULT BACI TEST - run simulation with .dat file
-# Usage in TestingFrameworkListOfTests.cmake: "baci_test(<name_of_input_file> <num_proc> <restart_step> optional: <label>)"
+# DEFAULT 4C TEST - run simulation with .dat file
+# Usage in TestingFrameworkListOfTests.cmake: "four_c_test(<name_of_input_file> <num_proc> <restart_step> optional: <label>)"
 # <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of processors the test should use
 # <restart_step>: number of restart step; <""> indicates no restart
 # optional: <label>: add a label to the test
-macro(baci_test name_of_input_file num_proc restart_step)
+macro(four_c_test name_of_input_file num_proc restart_step)
   set(name_of_test ${name_of_input_file}-p${num_proc})
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc})
   set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat)
@@ -97,16 +97,16 @@ macro(baci_test name_of_input_file num_proc restart_step)
     define_setup_fixture(${name_of_test}-restart ${name_of_test}-restart)
     set_timeout(${name_of_test}-restart)
   endif(${restart_step})
-endmacro(baci_test)
+endmacro(four_c_test)
 
-# BACI TEST TIMEOUT - run simulation with .dat file and manually defined time for timeout
-# Usage in TestingFrameworkListOfTests.cmake: "baci_test_extended_timeout(<name_of_input_file> <num_proc> <restart_step> <testtimeout>)"
+# 4C TEST TIMEOUT - run simulation with .dat file and manually defined time for timeout
+# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_extended_timeout(<name_of_input_file> <num_proc> <restart_step> <testtimeout>)"
 # <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of processors the test should use
 # <restart_step>: number of restart step; <""> indicates no restart
 # <testtimeout>: manually defined duration for test timeout
 macro(
-  baci_test_extended_timeout
+  four_c_test_extended_timeout
   name_of_input_file
   num_proc
   restart_step
@@ -144,17 +144,17 @@ macro(
     define_setup_fixture(${name_of_test}-restart ${name_of_test}-restart)
     set_timeout(${name_of_test}-restart ${actualtesttimeout})
   endif(${restart_step})
-endmacro(baci_test_extended_timeout)
+endmacro(four_c_test_extended_timeout)
 
-# DEFAULT BACI TEST WITH OpenMP - run simulation with .dat file for tests using OpenMP
-# Usage in TestingFrameworkListOfTests.cmake: "baci_omp_test(<name_of_input_file> <num_proc> <num_omp_threads> <restart_step> optional: <label>)"
+# DEFAULT 4C TEST WITH OpenMP - run simulation with .dat file for tests using OpenMP
+# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_omp(<name_of_input_file> <num_proc> <num_omp_threads> <restart_step> optional: <label>)"
 # <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of mpi-processors the test should use
 # <num_omp_threads>: number of OpenMP threads per proccessor the test should use
 # <restart_step>: number of restart step; <""> indicates no restart
 # optional: <label>: add a label to the test
 macro(
-  baci_omp_test
+  four_c_test_omp
   name_of_input_file
   num_proc
   num_omp_threads
@@ -198,23 +198,23 @@ macro(
     define_setup_fixture(${name_of_test}-restart ${name_of_test}-restart)
     set_timeout(${name_of_test}-restart)
   endif(${restart_step})
-endmacro(baci_omp_test)
+endmacro(four_c_test_omp)
 
-# DEFAULT BACI TEST + POST ENSIGHT - run BACI test and subsequent post ensight test in serial and parallel
-# Usage in TestingFrameworkListOfTests.cmake: "baci_test_and_post_ensight_test(<name_of_input_file> <num_proc> <restart_step> optional: <label>)"
+# DEFAULT 4C TEST + POST ENSIGHT - run 4C test and subsequent post ensight test in serial and parallel
+# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_and_post_ensight_test(<name_of_input_file> <num_proc> <restart_step> optional: <label>)"
 # <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of processors the test should use
 # <restart_step>: number of restart step; <""> indicates no restart
 # optional: <label>: add a label to the test
-macro(baci_test_and_post_ensight_test name_of_input_file num_proc restart_step)
+macro(four_c_test_and_post_ensight_test name_of_input_file num_proc restart_step)
   set(test_directory framework_test_output/${name_of_input_file}_p${num_proc})
   set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat)
 
   # run normal testing
   if("${ARGN}" STREQUAL "")
-    baci_test(${name_of_input_file} ${num_proc} "${restart_step}")
+    four_c_test(${name_of_input_file} ${num_proc} "${restart_step}")
   else()
-    baci_test(${name_of_input_file} ${num_proc} "${restart_step}" ${ARGN})
+    four_c_test(${name_of_input_file} ${num_proc} "${restart_step}" ${ARGN})
   endif()
 
   # additionally run postprocessing in serial mode
@@ -255,12 +255,12 @@ macro(baci_test_and_post_ensight_test name_of_input_file num_proc restart_step)
   set_processors(${name_of_input_file}-p${num_proc}-post_ensight-par ${num_proc})
   set_timeout(${name_of_input_file}-p${num_proc}-post_ensight-par)
 
-endmacro(baci_test_and_post_ensight_test)
+endmacro(four_c_test_and_post_ensight_test)
 
 ###########
 # RESTART SIMULATION
 # CAUTION: This tests bases on results of a previous simulation/test
-# Usage in TestingFrameworkListOfTests.cmake: "baci_test_restartonly(<name_of_input_file> <num_proc> <restart_step> <optional: identifier>)"
+# Usage in TestingFrameworkListOfTests.cmake: "four_c_restart_only(<name_of_input_file> <num_proc> <restart_step> <optional: identifier>)"
 # <name_of_test>: give it a name, typically equal to a test file name
 # <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <name_of_input_file_restart>: the name of an input file the current restart can base on
@@ -269,7 +269,7 @@ endmacro(baci_test_and_post_ensight_test)
 # <restart_step>: number of restart step; <""> indicates no restart
 # <optional: identifier>: add an identifier to the file results are read from
 macro(
-  baci_test_restartonly_with_name
+  four_c_restart_only_with_name
   name_of_restart_test
   name_of_input_file
   name_of_input_file_restart
@@ -303,11 +303,11 @@ macro(
 
   # Set "RUN_SERIAL TRUE" because result files can only be read by one process.
   set_run_serial(${name_of_test})
-endmacro(baci_test_restartonly_with_name)
+endmacro(four_c_restart_only_with_name)
 
 # RESTART SIMULATION
 # CAUTION: This tests bases on results of a previous simulation/test
-# Usage in TestingFrameworkListOfTests.cmake: "baci_test_restartonly(<name_of_input_file> <num_proc> <restart_step> <optional: identifier>)"
+# Usage in TestingFrameworkListOfTests.cmake: "four_c_restart_only(<name_of_input_file> <num_proc> <restart_step> <optional: identifier>)"
 # <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <name_of_input_file_restart>: the name of an input file the current restart can base on
 # <num_proc>: number of processors the test should use
@@ -315,7 +315,7 @@ endmacro(baci_test_restartonly_with_name)
 # <restart_step>: number of restart step; <""> indicates no restart
 # <optional: identifier>: add an identifier to the file results are read from
 macro(
-  baci_test_restartonly
+  four_c_restart_only
   name_of_input_file
   name_of_input_file_restart
   num_proc
@@ -323,7 +323,7 @@ macro(
   restart_step
   )
   set(name_of_test ${name_of_input_file})
-  baci_test_restartonly_with_name(
+  four_c_restart_only_with_name(
     ${name_of_test}
     ${name_of_input_file}
     ${name_of_input_file_restart}
@@ -331,15 +331,15 @@ macro(
     ${num_proc_base_run}
     ${restart_step}
     )
-endmacro(baci_test_restartonly)
+endmacro(four_c_restart_only)
 
 ###########
 # NESTED PARALLELISM
-# Usage in TestingFrameworkListOfTests.cmake: "baci_test_Nested_Par(<name_of_input_file_1> <name_of_input_file_2> <restart_step>)"
+# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_nested_par(<name_of_input_file_1> <name_of_input_file_2> <restart_step>)"
 # <name_of_input_file_1>: must equal the name of a .dat file in directory tests/input_files for the first test; without ".dat". This test will be executed using 1 process.
 # <name_of_input_file_2>: must equal the name of a .dat file in directory tests/input_files for the second test; without ".dat". This test will be executed using 2 processes.
 # <restart_step>: number of restart step; <""> indicates no restart
-macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_step)
+macro(four_c_test_nested_par name_of_input_file_1 name_of_input_file_2 restart_step)
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file_1})
 
   add_test(
@@ -367,15 +367,15 @@ macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_ste
       )
     set_processors(${name_of_input_file_1}-nestedPar-restart 3)
   endif(${restart_step})
-endmacro(baci_test_Nested_Par)
+endmacro(four_c_test_nested_par)
 
 ###########
-# FRAMEWORK TESTS - testing the whole framework: pre_exodus, BACI, and post-filter
-# Usage in TestingFrameworkListOfTests.cmake: "baci_framework_test(<name_of_input_file> <num_proc> <xml_filename>)"
+# FRAMEWORK TESTS - testing the whole framework: pre_exodus, 4C, and post-filter
+# Usage in TestingFrameworkListOfTests.cmake: "four_c_framework_test(<name_of_input_file> <num_proc> <xml_filename>)"
 # <name_of_input_file>: must equal the name of a .e/.bc/.head file in directory tests/framework-test
 # <num_proc>: number of processors the test should use
 # <xml_filename>: copy any xml-file to the build directory. May also be ""
-macro(baci_framework_test name_of_input_file num_proc xml_filename)
+macro(four_c_framework_test name_of_input_file num_proc xml_filename)
   set(name_of_test ${name_of_input_file}-p${num_proc}-fw)
   set(test_directory framework_test_output/${name_of_input_file})
 
@@ -384,7 +384,7 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
       ) # pre_exodus is run to generate a Dat file
 
   if(NOT ${xml_filename} STREQUAL "")
-    # if a XML file name is given, it is copied from the baci input directory to the build directory
+    # if a XML file name is given, it is copied from the 4C input directory to the build directory
     set(RUNCOPYXML
         "cp ${PROJECT_SOURCE_DIR}/tests/input_files/${xml_filename} ./${test_directory}/"
         )
@@ -393,9 +393,9 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
     set(RUNCOPYXML :)
   endif(NOT ${xml_filename} STREQUAL "")
 
-  set(RUNBACI
+  set(RUNFOURC
       ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ $<TARGET_FILE:${baciname}>\ ${test_directory}/xxx.dat\ ${test_directory}/xxx
-      ) # baci is run using the generated dat file
+      ) # 4C is run using the generated dat file
   set(RUNPOSTFILTER
       ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx
       ) # post_ensight is run for the resulting output
@@ -404,7 +404,7 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
     NAME ${name_of_test}
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} && ${RUNCOPYXML} && ${RUNPREEXODUS} && ${RUNBACI} && ${RUNPOSTFILTER}"
+      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} && ${RUNCOPYXML} && ${RUNPREEXODUS} && ${RUNFOURC} && ${RUNPOSTFILTER}"
     )
 
   require_fixture(${name_of_test} test_cleanup)
@@ -412,7 +412,7 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
   set_fail_expression(${name_of_test})
   set_processors(${name_of_test} ${num_proc})
   set_timeout(${name_of_test})
-endmacro(baci_framework_test)
+endmacro(four_c_framework_test)
 
 ###########
 # CUT TESTS
