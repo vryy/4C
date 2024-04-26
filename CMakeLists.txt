@@ -115,9 +115,7 @@ if(FOUR_C_WITH_ADDRESS_SANITIZER)
   set(FOUR_C_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
 endif()
 
-string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
-set(FOUR_C_EXECUTABLE_NAME baci-${BUILD_TYPE})
-
+set(FOUR_C_EXECUTABLE_NAME 4C)
 set(FULL_TARGETS
     post_processor
     post_monitor
@@ -132,8 +130,10 @@ add_custom_target(full DEPENDS ${FOUR_C_EXECUTABLE_NAME} ${FULL_TARGETS})
 include(cmake/setup_tests.cmake)
 
 # Create one large library: every module adds itself to this target
-set(FOUR_C_LIBRARY_NAME 4C)
+set(FOUR_C_LIBRARY_NAME lib4C)
 add_library(${FOUR_C_LIBRARY_NAME})
+# Remove the CMake generated prefix "lib" because we already added it manually, to have a distinct target name.
+set_target_properties(${FOUR_C_LIBRARY_NAME} PROPERTIES PREFIX "")
 target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE four_c_private_compile_interface)
 
 # Read in the source directory which defines all modules

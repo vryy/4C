@@ -11,7 +11,7 @@ very well. You can ask it. Just type
 
 ::
 
-        ${PATH_TO_BACI}/baci-release --parameters
+        ${PATH_TO_BACI}/4C --parameters
 
 and you will get a (partial) input file with all the default parameters
 and documentation.

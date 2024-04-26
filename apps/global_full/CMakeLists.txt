@@ -13,4 +13,15 @@ set_target_properties(
   )
 four_c_set_up_executable(${FOUR_C_EXECUTABLE_NAME})
 
-add_custom_target(baci DEPENDS ${FOUR_C_EXECUTABLE_NAME})
+# Create a symbolic link for the old project name
+string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
+set(FOUR_C_EXECUTABLE_NAME_LEGACY baci-${BUILD_TYPE})
+
+add_custom_command(
+  TARGET ${FOUR_C_EXECUTABLE_NAME}
+  POST_BUILD
+  COMMAND
+    ${CMAKE_COMMAND} -E create_symlink ${FOUR_C_EXECUTABLE_NAME}
+    ${CMAKE_BINARY_DIR}/${FOUR_C_EXECUTABLE_NAME_LEGACY}
+  COMMENT "Creating symbolic link"
+  )

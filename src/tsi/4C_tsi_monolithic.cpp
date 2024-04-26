@@ -2533,7 +2533,7 @@ void TSI::Monolithic::SetDefaultParameters()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::CalculateNeckingTSIResults()
 {
-  // be aware, parallel bug arises using baci-debug
+  // be aware, parallel bug arises in debug mode
 
   // --------------------------------------------- initialise/ define constants
 

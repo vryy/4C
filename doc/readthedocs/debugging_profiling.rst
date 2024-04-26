@@ -74,7 +74,7 @@ You can start attach gdb to each process after it has already started. Start |FO
 
 ::
 
-    mpirun -np 2 ./baci-debug ../path/to/input.dat ../path/to/output --interactive
+    mpirun -np 2 ./4C ../path/to/input.dat ../path/to/output --interactive
 
 
 The process id of each mpi process is being displayed.
@@ -84,7 +84,7 @@ Once all gdb instances are connected, you can press any key to start the executi
 
 ::
 
-    valgrind --tool=memcheck -q --vgdb-error=0 ./baci-debug path/to/input.dat path/to/output
+    valgrind --tool=memcheck -q --vgdb-error=0 ./4C path/to/input.dat path/to/output
 
 
 Then, you can connect with a gdb debugger:
@@ -128,7 +128,7 @@ If you need to run it in combination with mpirun, start it with
 
 ::
 
-    mpirun -np 2 valgrind --tool=memcheck -q --vgdb-error=0 ./baci-debug path/to/input.dat path/to/output
+    mpirun -np 2 valgrind --tool=memcheck -q --vgdb-error=0 ./4C path/to/input.dat path/to/output
 
 and connect to each process individually.
 

@@ -178,7 +178,7 @@ To start the solver use the call
 
 .. container:: center
 
-   ``./baci-release <inputdirectory>/datfile.dat <outputdirectory>/outputprefix``
+   ``./4C <inputdirectory>/datfile.dat <outputdirectory>/outputprefix``
 
 in the ``build-release`` folder. You may have to adapt the name of the
 executable in this command. The prefix that you have chosen before will
