@@ -133,7 +133,7 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
         reader.Update()
         type = reader.GetOutput().GetDataObjectType()
 
-        # use the respective reader for both .vtk types used in baci
+        # use the respective reader for both .vtk types used in 4C
         if type == 4:
             preader = vtkXMLPUnstructuredGridReader()
             preader.SetFileName(pvtkpath)

@@ -1,5 +1,6 @@
 -----------------------------------------------------------------------TITLE
-BACI Structural Analysis
+4C Structural Analysis
+
 This example tests the restart capability of the singlestep nonlinear solver.
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                         1

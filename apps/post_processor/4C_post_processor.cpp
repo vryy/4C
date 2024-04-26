@@ -916,7 +916,7 @@ int main(int argc, char** argv)
   {
     std::string filter = get_filter(argc, argv);
     Teuchos::CommandLineProcessor My_CLP;
-    My_CLP.setDocString("Main BACI post-processor\n");
+    My_CLP.setDocString("Main 4C post-processor\n");
 
     PostProblem problem(My_CLP, argc, argv);
 

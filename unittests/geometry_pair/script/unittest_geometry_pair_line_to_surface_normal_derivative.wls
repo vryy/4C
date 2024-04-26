@@ -185,7 +185,7 @@ rFace=patchPosition[[iFace]];
 (*All DOFs of the patch*)
 
 
-patchDOFBaci=Flatten[Table[Table[q[iDim+3(index-1)],{iDim,3}],{index,{43,38,40,44,41,35,34,37,39}}]];
+patchDOFFourC=Flatten[Table[Table[q[iDim+3(index-1)],{iDim,3}],{index,{43,38,40,44,41,35,34,37,39}}]];
 
 
 (* ::Text:: *)
@@ -211,7 +211,7 @@ SMSModule["averagedNormal",Real[q$$[nDof$$],normal$$[12],dnormal$$[12,nPatch$$],
 qAce\[RightTee]Table[SMSReal[q$$[i]],{i,Length@replacePosition}];
 
 (*Patch DOFs in AceGen*)
-qPatchAce\[DoubleRightTee](patchDOFBaci/.replaceQAceGen);
+qPatchAce\[DoubleRightTee](patchDOFFourC/.replaceQAceGen);
 nPatchDof=Length[qPatchAce];
 
 (*Averaged normals in AceGen*)
@@ -238,8 +238,8 @@ SMSWrite[];
 
 
 SMSInstallMathLink[];
-averagedNormalEvaluatedRef=averagedNormal[replacePosition[[All,2]],Length@patchDOF,Length@patchDOFBaci];
-averagedNormalEvaluatedCurrent=averagedNormal[replacePositionCurrent[[All,2]],Length@patchDOF,Length@patchDOFBaci];
+averagedNormalEvaluatedRef=averagedNormal[replacePosition[[All,2]],Length@patchDOF,Length@patchDOFFourC];
+averagedNormalEvaluatedCurrent=averagedNormal[replacePositionCurrent[[All,2]],Length@patchDOF,Length@patchDOFFourC];
 SMSUninstallMathLink[];
 
 
@@ -267,7 +267,7 @@ SMSModule["facePosition",Real[q$$[nDof$$],position$$[3],dposition$$[3,nPatch$$],
 qAce\[RightTee]Table[SMSReal[q$$[i]],{i,Length@replacePosition}];
 
 (*Patch DOFs in AceGen*)
-qPatchAce\[DoubleRightTee](patchDOFBaci/.replaceQAceGen);
+qPatchAce\[DoubleRightTee](patchDOFFourC/.replaceQAceGen);
 nPatchDof=Length[qPatchAce];
 
 (*Replace parameter coordinates*)
@@ -299,8 +299,8 @@ SMSWrite[];
 
 
 SMSInstallMathLink[];
-(*Be aware that the parameter coordinates might differ from the ones in Baci since the face elements are rotated*)
-facePositionEvaluated=facePosition[replacePositionCurrent[[All,2]],0.2,-0.8,0.69,Length@patchDOF,Length@patchDOFBaci];
+(*Be aware that the parameter coordinates might differ from the ones in 4C since the face elements are rotated*)
+facePositionEvaluated=facePosition[replacePositionCurrent[[All,2]],0.2,-0.8,0.69,Length@patchDOF,Length@patchDOFFourC];
 SMSUninstallMathLink[];
 
 
@@ -322,7 +322,7 @@ Export["results_position.txt",cppString];
 rBeam=fieldFunction["hermite3",3];
 unknownsBeam=discreteValues["hermite3",3];
 beamCoordinates={{0.1,0.8,0.4},Normalize[{0.7,-0.2,0.3}],{1.2,1.0,0.25},Normalize[{1,0.2,0.1}]};
-replaceUnkownsBeam=Flatten[{Thread[Flatten[unknownsBeam\[Transpose]]->Flatten[beamCoordinates]],(*The ref length is taken from baci*){lenDof->1.8041928576815500218}}];
+replaceUnkownsBeam=Flatten[{Thread[Flatten[unknownsBeam\[Transpose]]->Flatten[beamCoordinates]],(*The ref length is taken from 4C*){lenDof->1.8041928576815500218}}];
 
 
 (* ::Text:: *)

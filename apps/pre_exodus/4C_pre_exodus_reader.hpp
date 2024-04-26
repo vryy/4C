@@ -69,7 +69,7 @@ namespace EXODUS
     int GetNumDim() const { return num_dim_; }
 
     //! Get number of dimensions
-    int GetBACIDim() const { return baci_dim_; }
+    int GetFourCDim() const { return four_c_dim_; }
 
     //! Get exodus file id
     int GetExoId() const { return exoid_; }
@@ -189,9 +189,9 @@ namespace EXODUS
 
     //! number of dimensions
     int num_dim_;
-    //! number of dimensions for BACI problem (wall and fluid2 elements require 2d, although we have
+    //! number of dimensions for 4C problem (wall and fluid2 elements require 2d, although we have
     //! spatial dimensions)
-    int baci_dim_;
+    int four_c_dim_;
     //! number of elements
     int num_elem_;
     //! exoid
@@ -532,8 +532,8 @@ namespace EXODUS
   void PrintSet(std::ostream& os, const std::set<int> actset);
 
 
-  int HexSideNumberExoToBaci(const int exoface);
-  int PyrSideNumberExoToBaci(const int exoface);
+  int HexSideNumberExoToFourC(const int exoface);
+  int PyrSideNumberExoToFourC(const int exoface);
 
 }  // namespace EXODUS
 

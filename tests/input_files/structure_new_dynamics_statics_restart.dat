@@ -1,8 +1,9 @@
-// Free vibration analysis of a beam. The initial displacement is obtained
-// from the static analysis, see structure_new_dynamics_statics_restart_input.dat.
-// This is to test if a dynamics analysis can (re-)start from a statics one.
 -----------------------------------------------------------------------TITLE
-BACI Structural Analysis
+4C Structural Analysis
+
+Free vibration analysis of a beam. The initial displacement is obtained
+from the static analysis, see structure_new_dynamics_statics_restart_input.dat.
+This is to test if a dynamics analysis can (re-)start from a statics one.
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                         10
 NODES                            44

@@ -5,7 +5,7 @@ page 255ff
 double-notched tensile specimen:
   due to symmetry only a fourth is simulated
   a total displacement of uy_max = 0.17 is applied according to literature
-  good agreement of results using BACI with results of literature can be observed
+  good agreement of results using 4C with results of literature can be observed
     to compare results a normalised edge deflection and a normalised net stress
     have to be calculated afterwards
 

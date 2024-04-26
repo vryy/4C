@@ -1,9 +1,6 @@
-//
-//
-// This example is sensitive to the choice of solver
-// and to the time integration scheme
 -----------------------------------------------------------------------TITLE
-Created from EXODUS II file
+This example is sensitive to the choice of solver
+and to the time integration scheme
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        928
 NODES                           1513

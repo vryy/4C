@@ -7,11 +7,11 @@
 
 
 Pre_exodus contains classes to open and preprocess exodusII files into the
-drt of Baci. It uses the "valid-parameters"-list defined in Baci for preparing
-a up-to-date Baci header and another file specifying element and boundary
+drt of 4C. It uses the "valid-parameters"-list defined in 4C for preparing
+a up-to-date 4C header and another file specifying element and boundary
 specifications based on "valid-conditions". As result either a preliminary
 input file set is suggestioned, or the well-known .dat file is created.
-Addionally, specify an already existing BACI input file in order to validate
+Addionally, specify an already existing 4C input file in order to validate
 its parameters and conditions.
 
 */
@@ -205,11 +205,11 @@ int main(int argc, char** argv)
     bool quadtri = false;
 
     Teuchos::CommandLineProcessor My_CLP;
-    My_CLP.setDocString("Preprocessor Exodus2Baci \n");
+    My_CLP.setDocString("Preprocessor Exodus2FourC \n");
     My_CLP.throwExceptions(false);
     My_CLP.setOption("exo", &exofile, "exodus file to open");
     My_CLP.setOption("bc", &bcfile, "bc's and ele's file to open");
-    My_CLP.setOption("head", &headfile, "baci header file to open");
+    My_CLP.setOption("head", &headfile, "4C header file to open");
     My_CLP.setOption("dat", &datfile, "output .dat file name [defaults to exodus file name]");
     // here options related to solid shell extrusion are defined
     My_CLP.setOption("gensosh", &soshthickness, "generate solid-shell body with given thickness");
@@ -276,7 +276,7 @@ int main(int argc, char** argv)
     {
       if (datfile != "")
       {
-        // just validate a given BACI input file
+        // just validate a given 4C input file
         EXODUS::ValidateInputFile(comm, datfile);
         return 0;
       }
@@ -431,7 +431,7 @@ int main(int argc, char** argv)
     }
 
     /**************************************************************************
-     * Finally, create and validate the BACI input file
+     * Finally, create and validate the 4C input file
      **************************************************************************/
     if ((headfile != "") && (bcfile != "") && (exofile != ""))
     {
@@ -443,7 +443,7 @@ int main(int argc, char** argv)
       }
 
       // screen info
-      std::cout << "creating and checking BACI input file       --> " << datfile << std::endl;
+      std::cout << "creating and checking 4C input file       --> " << datfile << std::endl;
       Teuchos::RCP<Teuchos::Time> timer = Teuchos::TimeMonitor::getNewTimer("pre-exodus timer");
 
       // check for positive Element-Center-Jacobians and otherwise rewind them
@@ -474,7 +474,7 @@ int main(int argc, char** argv)
         }
       }
 
-      // write the BACI input file
+      // write the 4C input file
       {
         if (twodim) mymesh.SetNsd(2);
         std::cout << "...Writing dat-file";
@@ -486,7 +486,7 @@ int main(int argc, char** argv)
         timer->reset();
       }
 
-      // validate the generated BACI input file
+      // validate the generated 4C input file
       EXODUS::ValidateInputFile(comm, datfile);
     }
   }

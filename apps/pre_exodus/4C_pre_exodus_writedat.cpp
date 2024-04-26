@@ -65,17 +65,17 @@ void EXODUS::WriteDatIntro(
     const std::string& headfile, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   dat << "==================================================================\n"
-         "                  General Data File BACI\n"
+         "                   General Data File 4C\n"
          "==================================================================\n"
          "-------------------------------------------------------------TITLE\n"
          "created by pre_exodus\n"
          "------------------------------------------------------PROBLEM SIZE\n";
   // print number of elements and nodes just as an comment instead of
-  // a valid parameter (prevents possible misuse of these parameters in BACI)
+  // a valid parameter (prevents possible misuse of these parameters in 4C)
   dat << "//ELEMENTS    " << mymesh.GetNumEle() << std::endl;
   dat << "//NODES       " << mymesh.GetNumNodes() << std::endl;
   // parameter for the number of spatial dimensions
-  dat << "DIM           " << mymesh.GetBACIDim() << std::endl;
+  dat << "DIM           " << mymesh.GetFourCDim() << std::endl;
 }
 
 
@@ -152,7 +152,7 @@ void EXODUS::WriteDatConditions(
   for (int i_cond = 0; i_cond < static_cast<int>(condefs.size()); ++i_cond)
     (count_cond[condefs.at(i_cond).sec]).push_back(i_cond);
 
-  // loop all valid conditions that BACI knows
+  // loop all valid conditions that 4C knows
   for (auto& condition : *condlist)
   {
     size_t linelength = 66;
@@ -312,7 +312,7 @@ void EXODUS::WriteDatDesignTopology(
 {
   using namespace FourC;
 
-  // sort baciconds w.r.t. underlying topology
+  // sort 4C conditions w.r.t. underlying topology
   std::map<int, EXODUS::CondDef> dpoints;
   std::map<int, EXODUS::CondDef> dlines;
   std::map<int, EXODUS::CondDef> dsurfs;
@@ -497,7 +497,7 @@ void EXODUS::WriteDatEles(const std::vector<ElemDef>& eledefs, const EXODUS::Mes
     }
   }
 
-  // BACI-Dat eles start with 1, this int is adapted for more than one element section
+  // element ids in 4C dat files start with 1, this int is adapted for more than one element section
   int startele = 1;
 
   const auto printElementSection =

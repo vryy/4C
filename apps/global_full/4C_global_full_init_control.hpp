@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief general initialization routine of BACI
+\brief general initialization routine of 4C
 
 
 \level 0

@@ -48,7 +48,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
   // read database parameters
   int num_elem_blk, num_node_sets, num_side_sets, num_nodes;
   char title[MAX_LINE_LENGTH + 1];
-  error = ex_get_init(exoid_, title, &baci_dim_, &num_nodes, &num_elem_, &num_elem_blk,
+  error = ex_get_init(exoid_, title, &four_c_dim_, &num_nodes, &num_elem_, &num_elem_blk,
       &num_node_sets, &num_side_sets);
   title_ = std::string(title);
 
@@ -255,7 +255,7 @@ EXODUS::Mesh::Mesh()
 {
   nodes_ = Teuchos::rcp(new std::map<int, std::vector<double>>);
   num_dim_ = 3;
-  baci_dim_ = 3;
+  four_c_dim_ = 3;
   num_elem_ = 0;
   exoid_ = 0;
   title_ = "emptymesh";
@@ -274,7 +274,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
 {
   // get all data from basemesh
   const int basedim = basemesh.GetNumDim();
-  const int bacidim = basemesh.GetBACIDim();
+  const int fourcdim = basemesh.GetFourCDim();
   const int basenumele = basemesh.GetNumEle();
   Teuchos::RCP<std::map<int, std::vector<double>>> baseNodes =
       Teuchos::rcp(new std::map<int, std::vector<double>>);
@@ -289,7 +289,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
 
   /********************* merge everything into new mesh ***********************/
   num_dim_ = basedim;
-  baci_dim_ = bacidim;
+  four_c_dim_ = fourcdim;
   int total_num_elem = basenumele;
   //  num_elem_ = basenumele; // + extnumele;
   exoid_ =
@@ -492,7 +492,7 @@ void EXODUS::Mesh::SetNsd(const int nsd)
 {
   if (nsd != 2 && nsd != 3) return;
 
-  baci_dim_ = nsd;
+  four_c_dim_ = nsd;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -574,7 +574,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
     std::vector<int> parent_ele = econns[actebid].find(parent_ele_id)->second;
     tm4 = Teuchos::null;
     // Face to ElementNode Map
-    //// **** temporary hex map due to conflicts between side numbering exo<->baci
+    //// **** temporary hex map due to conflicts between side numbering exo<->4C
     Teuchos::RCP<Teuchos::TimeMonitor> tm5 = Teuchos::rcp(new Teuchos::TimeMonitor(*time5));
     switch (actshape)
     {
@@ -585,7 +585,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
       }
       case ElementBlock::hex8:
       {
-        actface = HexSideNumberExoToBaci(actface);
+        actface = HexSideNumberExoToFourC(actface);
         hexc++;
         break;
       }
@@ -594,7 +594,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
         //      vector<std::vector<int> > test =
         //      CORE::FE::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned
         //      int j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
-        actface = PyrSideNumberExoToBaci(actface);
+        actface = PyrSideNumberExoToFourC(actface);
         pyrc++;
         break;
       }
@@ -711,7 +711,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(
     std::vector<int> parent_ele = econns[actebid].find(parent_ele_id)->second;
 
     // Face to ElementNode Map
-    //// **** temporary hex map due to conflicts between side numbering exo<->baci
+    //// **** temporary hex map due to conflicts between side numbering exo<->4C
     switch (actshape)
     {
       case ElementBlock::tet4:
@@ -721,13 +721,13 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(
       }
       case ElementBlock::hex8:
       {
-        actface = HexSideNumberExoToBaci(actface);
+        actface = HexSideNumberExoToFourC(actface);
         hexc++;
         break;
       }
       case ElementBlock::pyramid5:
       {
-        actface = PyrSideNumberExoToBaci(actface);
+        actface = PyrSideNumberExoToFourC(actface);
         pyrc++;
         break;
       }
@@ -1843,7 +1843,7 @@ void EXODUS::PrintSet(std::ostream& os, const std::set<int> actset)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EXODUS::HexSideNumberExoToBaci(const int exoface)
+int EXODUS::HexSideNumberExoToFourC(const int exoface)
 {
   constexpr std::array<int, 6> map = {1, 2, 3, 4, 0, 5};
   return map[exoface];
@@ -1851,7 +1851,7 @@ int EXODUS::HexSideNumberExoToBaci(const int exoface)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EXODUS::PyrSideNumberExoToBaci(const int exoface)
+int EXODUS::PyrSideNumberExoToFourC(const int exoface)
 {
   constexpr std::array<int, 5> map = {1, 2, 3, 4, 0};
   return map[exoface];

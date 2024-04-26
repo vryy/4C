@@ -29,7 +29,7 @@ xBeam:={
 (*Reference position of beam.*)
 
 
-(*The element length is taken from the baci simulation*)
+(*The element length is taken from the 4C simulation*)
 replaceBeamRef:={
     beamLength->0.6069705610916388,
     posBx[0][1]->-0.05,

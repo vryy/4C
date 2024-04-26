@@ -1,8 +1,9 @@
-// Free vibration analysis of a beam using (explicit) Forward Euler scheme.
-// The initial displacement is obtained from the static analysis,
-// see structure_new_dynamics_statics_restart_input.dat.
 -----------------------------------------------------------------------TITLE
-BACI Structural Analysis
+4C Structural Analysis
+
+Free vibration analysis of a beam using (explicit) Forward Euler scheme.
+The initial displacement is obtained from the static analysis,
+see structure_new_dynamics_statics_restart_input.dat.
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                         10
 NODES                            44

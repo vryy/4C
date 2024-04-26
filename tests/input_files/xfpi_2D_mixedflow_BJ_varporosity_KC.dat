@@ -1,9 +1,7 @@
-//
-//
-// XFluid_Poroelastic_Interaction (Poro is cut out)
-// Flow threw interface (mixed normal and tangential direction)
-// with Beavers-Joseph interface law between Fluid and Poro
 -----------------------------------------------------------------------TITLE
+XFluid_Poroelastic_Interaction (Poro is cut out)
+Flow threw interface (mixed normal and tangential direction)
+with Beavers-Joseph interface law between Fluid and Poro
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP

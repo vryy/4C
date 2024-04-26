@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Global control routine of baci
+\brief Global control routine of 4C
 
 \level 0
 
@@ -18,7 +18,7 @@
 
 #include <string>
 
-//> general input routine for baci
+//> general input routine for 4C
 void ntainp_ccadiscret(std::string& inputfile_name,  //!< input file name
     std::string& outputfile_kenner,                  //!< output file kenner
     std::string& restartfile_kenner                  //!< restart file kenner

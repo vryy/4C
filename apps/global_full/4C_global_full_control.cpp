@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief the basic baci routine
+\brief the basic 4C routine
 
 \level 0
 
