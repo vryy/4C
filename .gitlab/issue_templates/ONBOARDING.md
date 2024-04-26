@@ -49,7 +49,7 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 - [ ] Browse through the [Wiki pages](https://gitlab.lrz.de/baci/baci/wikis/home) containing a loose collection of further helpful information
 - [ ] Get familiar with our [4C teams concept](https://gitlab.lrz.de/baci/baci/-/wikis/the-baci-community#baci-teams) and browse through the [list of 4C teams](https://gitlab.lrz.de/baci)
 - [ ] Request access to at least two 4C **core teams** and to any other teams that fit your research topics/interests
-- [ ] Join our [Slack-Channel](https://join.slack.com/t/bacigruppe/shared_invite/zt-1op8nl6zo-uHzDMAXWSKN9SDA~usAI6Q)
+- [ ] Join our [Slack-Channel](https://join.slack.com/t/4c-multiphysics/shared_invite/zt-2hnyldrnp-q0PxYKkHdCgeL0V9jkirvQ)
 
 ## Checklist for the 4C team
 <!---
