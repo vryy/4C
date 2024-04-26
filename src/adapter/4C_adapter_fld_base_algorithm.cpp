@@ -178,9 +178,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       {
         case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
         case CORE::LINEAR_SOLVER::PreconditionerType::
-            block_gauss_seidel_2x2:  // block preconditioners,
-                                     // that are implemented in
-                                     // BACI
+            block_gauss_seidel_2x2:  // block preconditioners, that are implemented in 4C
           break;
         default:
           FOUR_C_THROW(
@@ -200,9 +198,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
           break;  // CheapSIMPLE adds its own Inverse1 and Inverse2 blocks
         case CORE::LINEAR_SOLVER::PreconditionerType::
-            block_gauss_seidel_2x2:  // block preconditioners,
-                                     // that are implemented in
-                                     // BACI
+            block_gauss_seidel_2x2:  // block preconditioners, that are implemented in 4C
         {
           // set Inverse blocks for block preconditioner
           // for BGS preconditioner
@@ -284,7 +280,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
         switch (azprectype)
         {
-          // block preconditioners, that are implemented in BACI
+          // block preconditioners, that are implemented in 4C
           case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
           {
             actdis->ComputeNullSpaceIfNecessary(

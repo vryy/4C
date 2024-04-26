@@ -31,8 +31,8 @@ namespace CORE::COMM
    *----------------------------------------------------------------------*/
   Teuchos::RCP<Communicators> CreateComm(std::vector<std::string> argv)
   {
-    // for coupled simulations: color = 1 for BACI and color = 0 for other programs
-    // so far: either nested parallelism within BACI or coupling with further
+    // for coupled simulations: color = 1 for 4C and color = 0 for other programs
+    // so far: either nested parallelism within 4C or coupling with further
     // executables is possible
     // default values without nested parallelism
     int myrank = -1;
@@ -96,7 +96,7 @@ namespace CORE::COMM
           // final check whether a correct group layout is specified
           if (ngroup != int(grouplayout.size()) or size != sumprocs or ngroup < 1)
           {
-            if (myrank == (size - 1))  // myrank == 0 is eventually not within BACI (i.e. coupling
+            if (myrank == (size - 1))  // myrank == 0 is eventually not within 4C (i.e. coupling
                                        // to external codes)
             {
               printf(
@@ -113,7 +113,7 @@ namespace CORE::COMM
         // case without given group layout
         else
         {
-          if (myrank == (size - 1))  // myrank == 0 is eventually not within BACI (i.e. coupling to
+          if (myrank == (size - 1))  // myrank == 0 is eventually not within 4C (i.e. coupling to
                                      // external codes)
           {
             printf(
@@ -187,7 +187,7 @@ namespace CORE::COMM
         }
         else
         {
-          if (myrank == (size - 1))  // myrank == 0 is eventually not within BACI (i.e. coupling to
+          if (myrank == (size - 1))  // myrank == 0 is eventually not within 4C (i.e. coupling to
                                      // external codes)
           {
             printf(
@@ -201,7 +201,7 @@ namespace CORE::COMM
       }
 
       //----------------------------------------------------------------
-      // check for valid arguments that can be used in baci.cpp
+      // check for valid arguments that can be used in 4C.cpp
       //----------------------------------------------------------------
       else if ((argument.substr(0, 9) != "-glayout=") and (argument.substr(0, 2) != "-v") and
                (argument.substr(0, 2) != "-h") and (argument.substr(0, 6) != "--help") and
@@ -210,7 +210,7 @@ namespace CORE::COMM
                (argument.substr(0, 13) != "--interactive"))
       {
         printf(
-            "\n\n You have specified an argument ( %s ) for BACI starting with a \"-\" that is not "
+            "\n\n You have specified an argument ( %s ) for 4C starting with a \"-\" that is not "
             "valid!\n",
             argument.c_str());
         printf("Please refer to ./baci-release --help and try again!\n");
@@ -224,8 +224,7 @@ namespace CORE::COMM
     if ((int(conf.size()) > 1) and (ngroupisset == false or nptypeisset == false))
     {
       if (myrank ==
-          (size -
-              1))  // myrank == 0 is eventually not within BACI (i.e. coupling to external codes)
+          (size - 1))  // myrank == 0 is eventually not within 4C (i.e. coupling to external codes)
       {
         printf(
             "\n\nAt least -nptype= and -ngroup= must be specified for nested parallelism. -glayout "
@@ -248,13 +247,13 @@ namespace CORE::COMM
     if (ngroup == 1)
     {
       gcomm = lcomm;
-      // TODO: INCA needs color = 1 and BACI needs color = 0, then the proceeding line can be
+      // TODO: INCA needs color = 1 and 4C needs color = 0, then the proceeding line can be
       // removed
       color = 0;
     }
     else
     {
-      // TODO: consider a second executable that is coupled to BACI in case of nested parallelism
+      // TODO: consider a second executable that is coupled to 4C in case of nested parallelism
       // TODO: the procs owned by another executable have to be removed from world_group, e.g.
       // MPI_Group_excl
       MPI_Comm mpi_global_comm;
@@ -351,7 +350,7 @@ namespace CORE::COMM
     if (result == 0)
     {
       IO::cout << "WARNING:: Vectors " << name
-               << " cannot be compared because second baci run is missing" << IO::endl;
+               << " cannot be compared because second 4C run is missing" << IO::endl;
       return false;
     }
 
@@ -494,7 +493,7 @@ namespace CORE::COMM
     if (result == 0)
     {
       IO::cout << "WARNING:: Matrices " << name
-               << " cannot be compared because second baci run is missing" << IO::endl;
+               << " cannot be compared because second 4C run is missing" << IO::endl;
       return false;
     }
 

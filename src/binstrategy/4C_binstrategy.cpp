@@ -467,7 +467,7 @@ void BINSTRATEGY::BinningStrategy::GetBinCorners(
     }    // end for int j
   }      // end for int i
 
-  // change entries to get node numbering according to baci convention
+  // change entries to get node numbering according to 4C convention
   std::swap(bincorners[2], bincorners[3]);
   std::swap(bincorners[6], bincorners[7]);
 

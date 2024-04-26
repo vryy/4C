@@ -485,7 +485,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   // MORTAR::Node(s) in the meshtying interface discretization AND to the
   // DRT::Node(s) in the underlying problem discretization. However, the
   // second aspect needs to be done by the respective control routine,
-  // i.e. in the case of BACI in strtimint.cpp and NOT here.
+  // i.e. in the case of 4C in strtimint.cpp and NOT here.
   //**********************************************************************
 
   // loop over all interfaces

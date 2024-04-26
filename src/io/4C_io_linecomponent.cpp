@@ -44,7 +44,7 @@ namespace
       const std::string& variablename, const std::string& sectionname)
   {
     FOUR_C_THROW(
-        "Failed to read value '%s' while reading variable '%s' in '%s'. BACI could only read "
+        "Failed to read value '%s' while reading variable '%s' in '%s'. 4C could only read "
         "'%d', so the specified number format is probably not supported. The variable '%s' "
         "has to be an integer.",
         snumbersubstring.c_str(), variablename.c_str(), sectionname.c_str(), nnumber,
@@ -56,7 +56,7 @@ namespace
       const std::string& variablename, const std::string& sectionname)
   {
     FOUR_C_THROW(
-        "Failed to read value '%s' while reading variable '%s' in '%s'. BACI could only read "
+        "Failed to read value '%s' while reading variable '%s' in '%s'. 4C could only read "
         "'%f', so the specified number format is probably not supported. The variable '%s' "
         "has to be a floating point.",
         snumbersubstring.c_str(), variablename.c_str(), sectionname.c_str(), nnumber,

@@ -45,7 +45,7 @@ namespace BINSTRATEGY
       Solid,  ///< solid element (all elements derived from So_base, if more distinction is needed,
               ///< split this type)
 
-      enumsize  ///< NOTE: This entry gives the size of the enum and is used somewhere else in baci
+      enumsize  ///< NOTE: This entry gives the size of the enum and is used somewhere else in 4C
                 ///< therefore put it ALWAYS in last place
     };
 

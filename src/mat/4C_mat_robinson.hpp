@@ -7,7 +7,7 @@
       geometrically nonlinear analysis.
       In original implementation, on material level it is decided if calculation
       uses linear or Green-Lagrange strains
-      --> In BACI a strain vector is passed to material, that can be linear or
+      --> In 4C a strain vector is passed to material, that can be linear or
       Green-Lagrange strain
 
       example input line:

@@ -293,7 +293,7 @@ void IO::OutputControl::WriteHeader(
     user_entry = getpwuid(getuid());
     gethostname(hostname.data(), 256);
 
-    controlfile_ << "# baci output control file\n"
+    controlfile_ << "# 4C output control file\n"
                  << "# created by " << user_entry->pw_name << " on " << hostname.data() << " at "
                  << ctime(&time_value) << "# using code version (git SHA1) " << BaciGitHash
                  << " \n\n"

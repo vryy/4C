@@ -302,7 +302,7 @@ class EnsightWriter : public PostWriterBase
 
     \param std::ofstream                    (used for o) direct print to file
     \param int                              (i)          number of degrees of freedom
-    \param Teuchos::RCP<Epetra_Vector>      (i)          the result data read from the baci output
+    \param Teuchos::RCP<Epetra_Vector>      (i)          the result data read from the 4C output
     \param string                           (i)          name of the thing we are writing
                                                          (velocity, pressure etc.)
     \param int                              (i)          potential offset in dof numbering
@@ -405,7 +405,7 @@ class EnsightWriter : public PostWriterBase
           filesetmap  ///< filesets when using multiple huge binary files
   ) const;
 
-  bool nodeidgiven_;  ///< indicates whether BACI global node ids are written to geometry file.
+  bool nodeidgiven_;  ///< indicates whether 4C global node ids are written to geometry file.
                       ///< default value: true
   bool
       writecp_;  ///< NURBS-specific: defines if control point information should be written to file

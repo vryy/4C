@@ -3,7 +3,7 @@
 
 \brief routines doing coordinate transformation between various coordinate systems
        a integration cell is lying in
---> THIS FUNCTIONALITY IS JUST USED IN COMBUST AND WILL LEAVE BACI SOON
+--> THIS FUNCTIONALITY IS JUST USED IN COMBUST AND WILL LEAVE 4C SOON
 
 \level 3
 

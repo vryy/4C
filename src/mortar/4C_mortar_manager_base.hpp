@@ -62,8 +62,8 @@ namespace MORTAR
 
     One needs a derived class for a concrete implementation of the Manager
     class into a given FE code environment (see e.g. contact_manager.H and
-    contact_manager.cpp for the BACI mortar contact implementation or
-    contact_meshtying_manager.H and meshtying_manager.coo for the BACI mortar
+    contact_manager.cpp for the 4C mortar contact implementation or
+    contact_meshtying_manager.H and meshtying_manager.coo for the 4C mortar
     meshtying implementation).
 
     This constructor then has to be fed with a discretization that is expected

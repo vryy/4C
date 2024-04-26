@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Declaration of Baci's interface to Krylov solvers
+\brief Declaration of 4C's interface to Krylov solvers
 
 \level 0
 

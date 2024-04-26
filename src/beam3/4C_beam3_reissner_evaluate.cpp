@@ -1159,9 +1159,9 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
    * page 146, a time integration scheme that delivers angular velocities and angular
    * accelerations as needed for the inertia terms of geometrically exact beams has to be
    * based on multiplicative rotation angle increments between two successive time steps.
-   * Since BACI does all displacement updates in an additive manner, the global vector of
+   * Since 4C does all displacement updates in an additive manner, the global vector of
    * rotational displacements has no physical meaning and, consequently the global velocity
-   * and acceleration vectors resulting from the BACI time integration schemes have no
+   * and acceleration vectors resulting from the 4C time integration schemes have no
    * physical meaning, too. Therefore, a mass matrix in combination with this global
    * acceleration vector is meaningless from a physical point of view. For these reasons, we
    * have to apply our own time integration scheme at element level. Up to now, the only

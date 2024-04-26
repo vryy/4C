@@ -33,7 +33,7 @@ namespace EHL
 
   };  // namespace Utils
 
-  //! prints the BACI EHL-logo on the screen
+  //! prints the 4C EHL-logo on the screen
   void printlogo();
 
 }  // namespace EHL

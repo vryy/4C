@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief
-Be sure to include 'AAA' in your BACI configurations file!!!
+Be sure to include 'AAA' in your 4C configurations file!!!
 This file contains the routines required for OGDEN-like material model
 according to GASSER: "Failure properties of intraluminal thrombus in abdominal
 aortic aneurysm under static and pulsating mechanical load", Journal of Vascular
@@ -82,7 +82,7 @@ namespace MAT
   };
 
   /*----------------------------------------------------------------------*/
-  /// Be sure to include 'AAA' in your BACI configurations file!!! <br>
+  /// Be sure to include 'AAA' in your 4C configurations file!!! <br>
   ///
   /// <h3>Isochoric Material Description:</h3>
   ///

@@ -264,14 +264,14 @@ namespace CORE::LINEAR_SOLVER
   namespace MUELU::UTILS
   {
     /*!
-     * \brief Extract nullspace from Baci-provided ML list and convert to Xpetra::MultiVector
+     * \brief Extract nullspace from 4C-provided ML list and convert to Xpetra::MultiVector
      *
      * \pre The input parameter list \c mllist needs to contain these entries:
      *   - "null space: dimension" (type: \c int )
      *   - "nullspace" (type: \c RCP<std::vector<double>> )
      *
      * @param[in] rowMap Map to be used to create the null space vectors
-     * @param[in] mllist Parameter list, where Baci has stored the null space data in ML style
+     * @param[in] mllist Parameter list, where 4C has stored the null space data in ML style
      * @return MultiVector with nullspace data
      */
     Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>

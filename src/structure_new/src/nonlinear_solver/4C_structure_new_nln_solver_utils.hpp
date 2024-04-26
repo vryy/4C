@@ -66,7 +66,7 @@ namespace STR
        *
        *  A status test parameter list for the outer status test is created. The
        *  information comes from the dat file. Actually we consider only convergence
-       *  tests which were already in BACI before the NOX framework was introduced.
+       *  tests which were already in 4C before the NOX framework was introduced.
        *
        *  Feel free to extend the given framework, to generalize it or to use a xml
        *  file, where the path is specified in the "STRUCT NOX/Status Test" sublist.

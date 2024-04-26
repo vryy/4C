@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief Contains a baci-specific implementation of a bounding
+\brief Contains a 4C-specific implementation of a bounding
        volume defined as k-DOP (discrete oriented polytope).
 
 \level 3

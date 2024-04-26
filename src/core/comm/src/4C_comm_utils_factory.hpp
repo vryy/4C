@@ -76,7 +76,7 @@ namespace CORE::COMM
    * and fills handed over vectors with Teuchos::RCPs and raw pointers of these boundary elements
    * This method is a very powerful helper function for implementing the necessary
    * Surfaces() and Lines() methods for every element class (especially in 3D)
-   * using the BACI conventions for element connectivity
+   * using the 4C conventions for element connectivity
    *
    * \return boundaryeles   vector filled with Teuchos::RCPs of allocated boundary elements
    *
@@ -153,7 +153,7 @@ namespace CORE::COMM
    * and fills an Teuchos::RCP and raw pointers of this internal faces elements
    * This method is a very powerful helper function for implementing the necessary
    * Surfaces() and Lines() methods for every element class (especially in 3D)
-   * using the BACI conventions for element connectivity
+   * using the 4C conventions for element connectivity
    *
    * \return intface   Teuchos::RCP of allocated internal face element
    *

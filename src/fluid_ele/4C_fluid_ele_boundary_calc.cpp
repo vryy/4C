@@ -396,7 +396,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
                 << std::endl;
       std::cout << "          WARNING:                                                  "
                 << std::endl;
-      std::cout << "                  BACI scales your NEUMANN BC with the DENSITY!!!   "
+      std::cout << "                  4C scales your NEUMANN BC with the DENSITY!!!   "
                 << std::endl;
       std::cout << "                                                                    "
                 << std::endl;

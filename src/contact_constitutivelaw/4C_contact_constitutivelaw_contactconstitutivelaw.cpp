@@ -89,7 +89,7 @@ CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::Factory(
 #else
       FOUR_C_THROW(
           "You are trying to use MIRCO contact consitutive law with FOUR_C_WITH_MIRCO flag turned "
-          "off. Please enable this flag and build BACI again");
+          "off. Please enable this flag and build 4C again");
 #endif
     }
     case INPAR::CONTACT::ConstitutiveLawType::colaw_none:

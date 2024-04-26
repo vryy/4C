@@ -13,7 +13,7 @@
  * rods", Romero 2004)
  *
  * Attention: For this implementation, prescribed 3D rotation values have no
- * direct physical interpretation so far because DBC handling is always additive in BACI.
+ * direct physical interpretation so far because DBC handling is always additive in 4C.
  * For 2D rotations, multiplicative and additive increments are identical and
  * rotations can be prescribed without problems. */
 

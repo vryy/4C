@@ -40,9 +40,9 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   CORE::UTILS::BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &tsidyn);
 
-  // coupling strategy for BACI-INCA coupling
+  // coupling strategy for 4C-INCA coupling
   setStringToIntegralParameter<int>("TFSI_COUPALGO", "tfsi",
-      "Coupling strategies for BACI-INCA coupling (TFSI)",
+      "Coupling strategies for 4C-INCA coupling (TFSI)",
       tuple<std::string>("tfsi", "fsi", "conj_heat_transfer", "no_inca_fsi"),
       tuple<int>(TFSI, FSI, ConjHeatTransfer, NoIncaFSI), &tsidyn);
 

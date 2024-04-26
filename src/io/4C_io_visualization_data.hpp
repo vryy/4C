@@ -33,7 +33,7 @@ namespace IO
   using visualization_vector_type_variant = std::variant<std::vector<int>, std::vector<double>>;
 
   //! The polyhedral cell type requires special treatment. This cell has the vtk cell type 42. We
-  //! define this variable here to be used in BACI when referring to that cell type.
+  //! define this variable here to be used in 4C when referring to that cell type.
   static constexpr int polyhedron_cell_type = 42;
 
   namespace INTERNAL

@@ -38,7 +38,7 @@ namespace CORE::COMM
   //! create a local and a global communicator for the problem
   Teuchos::RCP<Communicators> CreateComm(std::vector<std::string> argv);
 
-  /*! \brief debug routine to compare vectors from different parallel baci runs
+  /*! \brief debug routine to compare vectors from different parallel 4C runs
    *
    * You can add CORE::COMM::AreDistributedVectorsIdentical in your code which will lead to a
    * comparison of the given vector for different executables and/or configurations.
@@ -63,7 +63,7 @@ namespace CORE::COMM
   bool AreDistributedVectorsIdentical(const Communicators& communicators,
       Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol = 1.0e-14);
 
-  /*! \brief debug routine to compare sparse matrices from different parallel baci runs
+  /*! \brief debug routine to compare sparse matrices from different parallel 4C runs
    *
    * You can add CORE::COMM::AreDistributedSparseMatricesIdentical in your code which will lead to a
    * comparison of the given sparse matrices for different executables and/or configurations.

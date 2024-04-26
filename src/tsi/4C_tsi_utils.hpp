@@ -104,7 +104,7 @@ namespace TSI
 
   }  // namespace UTILS
 
-  //! prints the BACI tsi-logo on the screen
+  //! prints the 4C tsi-logo on the screen
   void printlogo();
 
 }  // namespace TSI

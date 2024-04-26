@@ -44,7 +44,7 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::SetNod
   const unsigned int nodeJ = (unsigned int)std::floor(0.5 * (double)(numnodes + 2));
 
   // The node numbering applied in Crisfield 1999 differs from the order in which nodal quantities
-  // are stored in BACI.
+  // are stored in 4C.
   // Therefore we have to apply the following transformation:
   node_i_ = CORE::LARGEROTATIONS::NumberingTrafo(nodeI, numnodes);
   node_j_ = CORE::LARGEROTATIONS::NumberingTrafo(nodeJ, numnodes);

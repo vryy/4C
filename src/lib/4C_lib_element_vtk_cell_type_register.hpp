@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A register that matches BACI element shape types to VTK cell types
+\brief A register that matches 4C element shape types to VTK cell types
 
 \level 2
 

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Declaration of general BACI 4-tensor
+\brief Declaration of general 4C 4-tensor
 
 \level 0
 

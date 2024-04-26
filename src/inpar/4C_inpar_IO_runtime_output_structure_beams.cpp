@@ -109,7 +109,7 @@ namespace INPAR
 
         // write element GIDs
         CORE::UTILS::BoolParameter(
-            "ELEMENT_GID", "No", "write the BACI internal element GIDs", &sublist_IO_output_beams);
+            "ELEMENT_GID", "No", "write the 4C internal element GIDs", &sublist_IO_output_beams);
 
         // write element ghosting information
         CORE::UTILS::BoolParameter("ELEMENT_GHOSTING", "No",

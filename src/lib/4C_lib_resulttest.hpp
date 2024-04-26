@@ -119,7 +119,7 @@ namespace DRT
     /// Definition of valid input section
     INPUT::Lines ValidResultLines();
 
-    /// read the baci input file and set up all curves
+    /// read the 4C input file and set up all curves
     void ReadInput(INPUT::DatFileReader& reader);
 
    private:

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief Base class of all elements used in BACI
+\brief Base class of all elements used in 4C
 
 \level 0
 

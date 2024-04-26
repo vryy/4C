@@ -35,7 +35,7 @@ namespace GEOMETRYPAIR
   /**
    * \brief Specialization for Lagrange elements and elements with averaged nodal normals (face
    * elements which require averaged nodal normals are currently always based on Lagrange elements
-   * in BACI)
+   * in 4C)
    */
   template <typename element_type>
   struct EvaluateShapeFunction<element_type,

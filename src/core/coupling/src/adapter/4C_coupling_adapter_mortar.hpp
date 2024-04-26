@@ -48,7 +48,7 @@ namespace CORE::ADAPTER
 { /*!
 This is a generic class used to couple any non-matching meshes
 (or more general: discretizations) at interfaces. The current
-applications in BACI encompass FSI coupling algorithms (i.e. to
+applications in 4C encompass FSI coupling algorithms (i.e. to
 interpolate between fluid and structure fields at the interface)
 and fluid mesh tying algorithms (i.e. to couple non-matching
 Eulerian fluid meshes). All the hard work is actually done by

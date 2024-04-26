@@ -29,10 +29,10 @@ namespace CORE
   }
 
   /**
-   * @brief Base class for all BACI exceptions.
+   * @brief Base class for all 4C exceptions.
    *
-   * Any exceptions generated directly by BACI will have this or a derived type. This allows to
-   * catch BACI exceptions specifically by using this type in the `catch` clause.
+   * Any exceptions generated directly by 4C will have this or a derived type. This allows to
+   * catch 4C exceptions specifically by using this type in the `catch` clause.
    */
   class Exception : public std::exception
   {

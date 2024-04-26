@@ -208,7 +208,7 @@ namespace STR
      *  and corresponding stiffnesses based on the current solution state.
      *
      *  On the level of STR::TimIntImpl, we deal with forces and their stiffness
-     *  contributions since an implicit time integration in BACI often requires
+     *  contributions since an implicit time integration in 4C often requires
      *  full linearization.
      *
      *  For application of forces only (without stiffness), see STR::TimInt.

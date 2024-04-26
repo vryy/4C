@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-//! note for chemotaxis in BACI:
+//! note for chemotaxis in 4C:
 //! assume the following situation: scalar A does follow the gradient of scalar B (i.e. B is the
 //! attractant and scalar A the chemotractant) with chemotactic coefficient 3.0
 //!
@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 //! chemotracted)
 //!                              \partial_t B = 0
 //!
-//! this equation is in BACI achieved by the MAT_scatra_reaction material:
+//! this equation is in 4C achieved by the MAT_scatra_reaction material:
 //! ----------------------------------------------------------MATERIALS
 //! MAT 1 MAT_matlist_chemotaxis LOCAL No NUMMAT 2 MATIDS 101 102 NUMPAIR 1 PAIRIDS 111 END
 //! MAT 101 MAT_scatra DIFFUSIVITY 0.0

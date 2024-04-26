@@ -1176,7 +1176,7 @@ namespace FLD
     if (fldpara->TurbModAction() == INPAR::FLUID::dynamic_vreman)
     {
       // In the literature about the Vreman model, the indices i and j are swapped compared to the
-      // standard definition in baci. All variables used for the Vreman model are used as in
+      // standard definition in 4C. All variables used for the Vreman model are used as in
       // literature and matrices are transposed, if necessary.
 
       double strainrateproduct = 0.0;
@@ -1932,7 +1932,7 @@ namespace FLD
 
 
     // In the literature about the Vreman model, the indices i and j are swapped compared to the
-    // standard definition in baci. All variables used for the Vreman model are used as in
+    // standard definition in 4C. All variables used for the Vreman model are used as in
     // literature and matrices are transposed, if necessary.
     volume = wquad * det;
     // calculate nominator and denominator

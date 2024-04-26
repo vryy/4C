@@ -51,7 +51,7 @@ namespace CONTACT
     class Container;
     class Bundle;
     /**
-     * \brief Definition of a valid contact constitutive law in BACI input
+     * \brief Definition of a valid contact constitutive law in 4C input
      *
      * This is basically a clone of \see MaterialDefinition
      * A ConstitutivelawDefinition is the definition of a --Contact Constitutive Law in the DAT

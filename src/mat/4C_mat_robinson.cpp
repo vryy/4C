@@ -361,7 +361,7 @@ void MAT::Robinson::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   // iterative update of the current history vectors at current Gauss point gp
   IterativeUpdateOfInternalVariables(gp, straininc);
 
-  // name:                 BACI
+  // name:                 4C
   // total strain:         strain
   // elastic strain:       strain_e
   // thermal strain:       strain_t

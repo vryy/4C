@@ -195,7 +195,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     if (supg_ and (physicaltype_ == INPAR::FLUID::stokes))
       FOUR_C_THROW(
           "Having SUPG-stabilization switched on (by default?) for Stokes problems, does not make "
-          "sense! Please turn on brain before using BACI!");
+          "sense! Please turn on brain before using 4C!");
 
     // overrule higher_order_ele if input-parameter is set
     // this might be interesting for fast (but slightly
@@ -377,7 +377,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
                   "---+\n";
       IO::cout << "+                                   WARNING\n";
       IO::cout << " No stabilization selected: all stabilization terms are switched off!\n";
-      IO::cout << "                            BACI says: Good luck!\n";
+      IO::cout << "                            4C says: Good luck!\n";
       IO::cout << "+-------------------------------------------------------------------------------"
                   "---+\n"
                << IO::endl;

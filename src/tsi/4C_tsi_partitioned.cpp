@@ -730,7 +730,7 @@ void TSI::Partitioned::OuterIterationLoop()
           // Irons & Tuck:
           // increment r := old - new
 
-          // BACI:
+          // 4C:
           // increment inc := new - old
           // nu^{i+1}_{n+1} = nu^i_{n+1} +
           //
@@ -957,7 +957,7 @@ void TSI::Partitioned::OuterIterationLoop()
           // Irons & Tuck:
           // increment r := old - new
 
-          // BACI:
+          // 4C:
           // increment inc := new - old
           // mu^{i+1}_{n+1} = mu^i_{n+1} +
           //

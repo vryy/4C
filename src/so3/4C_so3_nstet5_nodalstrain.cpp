@@ -118,7 +118,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
   ElementDeformationGradient(dis);
 
   //-----------------------------------------------------------------
-  // create a temporary matrix to assemble to in a baci-unusual way
+  // create a temporary matrix to assemble to in a 4C-unusual way
   // (across-parallel-interface assembly)
   const Epetra_Map* rmap = nullptr;
   const Epetra_Map* dmap = nullptr;
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
 
 
     //---------------------- do assembly of stiffness and internal force
-    // (note: this is non-standard-baci assembly and therefore a do it all yourself version!)
+    // (note: this is non-standard-4C assembly and therefore a do it all yourself version!)
     // there is no guarantee that systemmatrix exists
     // (e.g. if systemmatrix1 is actually a BlockSparseMatrix)
     bool fastassemble = false;

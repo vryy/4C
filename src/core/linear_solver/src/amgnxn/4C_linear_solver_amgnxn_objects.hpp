@@ -10,14 +10,12 @@
 #ifndef FOUR_C_LINEAR_SOLVER_AMGNXN_OBJECTS_HPP
 #define FOUR_C_LINEAR_SOLVER_AMGNXN_OBJECTS_HPP
 
-// Trilinos includes
 #include "4C_config.hpp"
+
+#include "4C_linalg_blocksparsematrix.hpp"
 
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
-
-// Baci includes
-#include "4C_linalg_blocksparsematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

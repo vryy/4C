@@ -54,7 +54,7 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   //    entries!
 
   // --> It's clear that this is not really easily comprehensible, but as the alternatives to this
-  // approach requires quite some modifications in BACI
+  // approach requires quite some modifications in 4C
   //     (e.g. extra interface for FSI and FPSI for every Field ...), therefore this version should
   //     be used at the moment.
 
@@ -240,14 +240,14 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
     FOUR_C_THROW(
         "No Structural Predictor for FPSI implemented at the moment, choose <PREDICT = ConstDis> "
         "in you .dat file! \n --> Or feel free to add the missing terms coming from the predictors "
-        "to BACI!");
+        "to 4C!");
 
   const Teuchos::ParameterList& fdynparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
   if (fdynparams.get<std::string>("PREDICTOR") != "steady_state")
     FOUR_C_THROW(
         "No Fluid Predictor for FPSI implemented at the moment, choose <PREDICTOR = steady_state> "
         "in you .dat file! \n --> Or feel free to add the missing terms coming from the predictors "
-        "to BACI!");
+        "to 4C!");
 
   active_FD_check_ = false;  // to avoid adding RHS of firstiter moreoften!
 }
@@ -559,7 +559,7 @@ void FPSI::Monolithic::SetupSolver()
         "Parameter 'LineSearch' is set to 'Yes' in the FPSI Dynamic section in your input-file.  \n"
         "Though the framework for a line search algorithm is implemented in fpsi_monolithic.cpp, \n"
         "a proper routine to reset the participating single fields is still required. In Chuck's \n"
-        "experimental baci this was solved by performing an evaluate with the negative increment.\n"
+        "experimental 4C this was solved by performing an evaluate with the negative increment.\n"
         "However this has not yet been committed.\n");
   linesearch_counter = 0.;
 

@@ -23,7 +23,7 @@ namespace CORE::LINEAR_SOLVER
    * parameters can be found here:
    * https://de.mathworks.com/help/matlab/math/iterative-methods-for-linear-systems.html
    *
-   * The available methods in BACI are very similar to the ones available in MATLAB:
+   * The available methods in 4C are very similar to the ones available in MATLAB:
    *
    * For small problems e.g. smaller than 50.000 global degrees of freedom, choose a direct solver
    * (UMFPACK is very popular and also used as direct solver in MATLAB, you just don't see it).
@@ -36,7 +36,7 @@ namespace CORE::LINEAR_SOLVER
    * solver. This ensures scalability and realistic computation times. Also try to use MueLU as
    * your multigrid package of choice!
    *
-   * In BACI equilibration and reordering is also available, but not for everything yet. An
+   * In 4C equilibration and reordering is also available, but not for everything yet. An
    * experimental approach on permuting the system matrix to obtain better conditioning and
    * faster solution times is given by the permuation strategy.
    *

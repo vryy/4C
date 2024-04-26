@@ -66,7 +66,7 @@ namespace MAT
                                      \partial_t B = -(4*2*A)*B  (negative since reactant)
                                      \partial_t C = + 4*3*A*B   (positive since product)
 
-    This equation is achieved in BACI via the MAT_scatra_reaction material:
+    This equation is achieved in 4C via the MAT_scatra_reaction material:
     ----------------------------------------------------------MATERIALS
     MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect
     Concentrations MAT 2 MAT_scatra DIFFUSIVITY 0.0 MAT 4 MAT_scatra DIFFUSIVITY 0.0 MAT 5
@@ -135,7 +135,7 @@ namespace MAT
                                      \partial_t B = -(4*2*A^3)*B^2  (negative since reactant)
                                      \partial_t C = + 4*3*A^3*B^2   (positive since product)
 
-    This equation is in BACI achieved by the MAT_scatra_reaction material:
+    This equation is in 4C achieved by the MAT_scatra_reaction material:
     ----------------------------------------------------------MATERIALS
     MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect
     Concentrations MAT 2 MAT_scatra DIFFUSIVITY 0.0 MAT 4 MAT_scatra DIFFUSIVITY 0.0 MAT 5
@@ -161,7 +161,7 @@ namespace MAT
                \partial_t C =  0
                \partial_t D =  0
 
-    This equation is in BACI achieved by the MAT_scatra_reaction material combined with the reaction
+    This equation is in 4C achieved by the MAT_scatra_reaction material combined with the reaction
     by function feature as:
     ----------------------------------------------------------MATERIALS
     MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect
@@ -187,7 +187,7 @@ namespace MAT
     equivalent as reactant with negative reaction coefficient) \partial_t B = 0 \partial_t c
     = 3.0*4.0*A*(B - 2.0)_{+}   (positive since product)
 
-    This equation is achieved in BACI via the boundary condition:
+    This equation is achieved in 4C via the boundary condition:
     MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 2 2 NUMREAC 2 REACIDS 3 4 END //collect
     Concentrations MAT 2 MAT_scatra DIFFUSIVITY 0.0 MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 0
     0 REACCOEFF -1.0 COUPLING simple_multiplicative ROLE -1 0 0 MAT 4 MAT_scatra_reaction NUMSCAL 3
@@ -211,7 +211,7 @@ namespace MAT
                                w(x) &=& 0.5\pi+1.5\pi\frac{x+4}{8}
                 \f}
 
-    This equation is achieved in BACI via the MAT_scatra_reaction material:
+    This equation is achieved in 4C via the MAT_scatra_reaction material:
 
     <CODE>
             MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 2  MATIDS 2 2 NUMREAC 2 REACIDS 4 5 END

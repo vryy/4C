@@ -777,7 +777,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::MaterialDefinition>>> INPUT::ValidM
     AddNamedReal(m, "VALENCE", "valence (= charge number)");
     AddNamedReal(m, "DENSIFICATION", "densification coefficient", 0.0, true);
     // via these two optional parameters we can bring the material parameters
-    // of one eliminated ionic species into BACI if needed
+    // of one eliminated ionic species into 4C if needed
     AddNamedReal(m, "ELIM_DIFFUSIVITY", "kinematic diffusivity of elim. species", 0.0, true);
     AddNamedReal(m, "ELIM_VALENCE", "valence of elim. species", 0.0, true);
 

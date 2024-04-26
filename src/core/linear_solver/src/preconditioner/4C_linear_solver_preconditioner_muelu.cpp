@@ -7,7 +7,6 @@
 
 */
 
-// Baci
 #include "4C_linear_solver_preconditioner_muelu.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -475,7 +474,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
   // These maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that has access
   // to the contact manager class
   //
-  // Note: Baci provides Epetra_Map objects. We will transform them to Xpetra::Map later.
+  // Note: 4C provides Epetra_Map objects. We will transform them to Xpetra::Map later.
   //
   Teuchos::RCP<Epetra_Map> epSlaveDofMap =
       muelulist_.sublist("Belos Parameters").get<Teuchos::RCP<Epetra_Map>>("contact slaveDofMap");
@@ -650,7 +649,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 = Teuchos::null;
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 = Teuchos::null;
     {
-      // Extract pre-computed nullspace for block (0,0) from Baci's ML parameter list
+      // Extract pre-computed nullspace for block (0,0) from 4C's ML parameter list
       nullspace11 = CORE::LINEAR_SOLVER::MUELU::UTILS::ExtractNullspaceFromParameterlist(
           stridedRangeMapPrimal, contactList);
 

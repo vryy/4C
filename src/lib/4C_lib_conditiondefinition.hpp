@@ -45,7 +45,7 @@ namespace INPUT
 
   //--------------------------------------------------------------
 
-  /// definition of a valid condition in baci input
+  /// definition of a valid condition in 4C input
   /*!
 
     A ConditionDefinition is the definition of a condition dat file
@@ -58,7 +58,7 @@ namespace INPUT
     DRT::Discretization.
 
     So this is quite sophisticated internal stuff here. If you want to
-    introduce a new condition to baci, all you have to do is add an
+    introduce a new condition to 4C, all you have to do is add an
     appropriate definition in ValidConditions(). This will take care of the
     reading part and you will get your DRT::Discretization filled with proper
     DRT::Condition objects.

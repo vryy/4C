@@ -583,7 +583,7 @@ namespace ADAPTER
     /*! \brief Create linear solver for pure structure problems
      *
      * The solver block in the input file is specified by the parameter <tt>LINEAR_SOLVER</tt> in
-     * the <tt>STRUCTURAL DYNAMICS</tt> block of the Baci input file. This solver is used for pure
+     * the <tt>STRUCTURAL DYNAMICS</tt> block of the 4C input file. This solver is used for pure
      * structural problems, whenever there is no contact.
      *
      * To create the solver, we use the ID of the solver block to access the solver parameter list.

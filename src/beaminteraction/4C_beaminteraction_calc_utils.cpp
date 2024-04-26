@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
       if (beameles and othereles)
         FOUR_C_THROW(
             "Beam elements and other (solid, rigid sphere) elements sharing the same node is "
-            "currently not allowed in BACI!");
+            "currently not allowed in 4C!");
 
       return beameles;
     }
@@ -110,7 +110,7 @@ namespace BEAMINTERACTION
       if (sphereele and othereles)
         FOUR_C_THROW(
             "Rigid sphere elements and other (solid, beam) elements sharing "
-            "the same node is currently not allowed in BACI!");
+            "the same node is currently not allowed in 4C!");
 
       return sphereele;
     }

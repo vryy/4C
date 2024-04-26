@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 void elch_dyn(int restart /* do we have to perform a restart?  */
 );
 
-/*! prints the BACI electrochemistry-module logo on the screen */
+/*! prints the 4C electrochemistry-module logo on the screen */
 void printlogo();
 
 

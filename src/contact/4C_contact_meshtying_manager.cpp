@@ -3,7 +3,7 @@
 \level 1
 
 
-\brief BACI implementation of main class to control all solid meshtying
+\brief 4C implementation of main class to control all solid meshtying
 */
 /*----------------------------------------------------------------------*/
 

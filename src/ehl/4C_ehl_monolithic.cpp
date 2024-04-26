@@ -263,7 +263,7 @@ void EHL::Monolithic::CreateLinearSolver()
       solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
       solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
 
-      // ... BACI calculates the null space vectors. These are then stored in the sublists
+      // ... 4C calculates the null space vectors. These are then stored in the sublists
       //     Inverse1 and Inverse2 from where they...
       StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
           solver_->Params().sublist("Inverse1"));

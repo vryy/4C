@@ -80,12 +80,12 @@ def check_unittests(look_cmd, allerrors):
                 cmakelists.add(fname)
 
         # check the content of the unittest file itself
-        # the name of the class must be in the same line as ": public BACICxxTestWrapper"
+        # the name of the class must be in the same line as ": public FourCCxxTestWrapper"
         with open(fname, "r") as file:
             # go through all lines
-            testsuite_re = re.compile(r":\s*public\s*BACICxxTestWrapper")
+            testsuite_re = re.compile(r":\s*public\s*FourCCxxTestWrapper")
             testsuite_test_re = re.compile(
-                r"class *([a-zA-Z0-9\-_:]*) *: *public *BACICxxTestWrapper"
+                r"class *([a-zA-Z0-9\-_:]*) *: *public *FourCCxxTestWrapper"
             )
             for line in file:
                 if testsuite_re.search(line) is not None:

@@ -21,7 +21,7 @@ Reference:
     Remark:
     alphaij=transpose(velderxy)
     rows and colums of the jacobian alphaij are swapped in comparison
-    to the jacobian velderxy used in baciroutines for bfda test case
+    to the jacobian velderxy used in 4C routines for bfda test case
 
 
 \level 2

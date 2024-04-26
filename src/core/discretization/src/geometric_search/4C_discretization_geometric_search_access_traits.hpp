@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Contains access traits definitions used by ArborX to access
-       the baci-specific bounding volume data structure
+       the 4C-specific bounding volume data structure
 
 \level 3
 
