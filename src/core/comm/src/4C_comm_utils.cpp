@@ -39,7 +39,7 @@ namespace CORE::COMM
     int size = -1;
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    int color = 1;
+    int color = 0;
     int ngroup = 1;
     NestedParallelismType npType = NestedParallelismType::no_nested_parallelism;
 
@@ -247,7 +247,6 @@ namespace CORE::COMM
     if (ngroup == 1)
     {
       gcomm = lcomm;
-      color = 0;
     }
     else
     {
