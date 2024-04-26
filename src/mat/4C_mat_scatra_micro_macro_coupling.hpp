@@ -83,6 +83,13 @@ namespace Mat
     void prepare_time_step(const int gp_id, const std::vector<double>& phinp_macro) const;
 
     /*!
+     * @brief collect the output data on micro scale
+     *
+     * @param[in] gp_id  macro-scale Gauss point ID
+     */
+    void collect_output_data(const int gp_id) const;
+
+    /*!
      * @brief evaluate multi-scale scalar transport material
      *
      * @param[in] gp_id        macro-scale Gauss point ID

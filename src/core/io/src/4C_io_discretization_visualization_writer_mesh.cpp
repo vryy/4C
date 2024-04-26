@@ -16,6 +16,7 @@ to disk
 #include "4C_io.hpp"
 #include "4C_io_element_vtk_cell_type_register.hpp"
 #include "4C_io_visualization_manager.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
@@ -90,7 +91,6 @@ namespace Core::IO
         ++num_skipped_eles;
     }
 
-
     // safety checks
     FOUR_C_THROW_UNLESS(point_coordinates.size() == num_spatial_dimensions * pointcounter,
         "Expected %i coordinate values, but got %i.", num_spatial_dimensions * pointcounter,
@@ -124,6 +124,63 @@ namespace Core::IO
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
+  void DiscretizationVisualizationWriterMesh::append_result_data_vector_with_context(
+      const Epetra_MultiVector& result_data, const OutputEntity output_entity,
+      const std::vector<std::optional<std::string>>& context)
+  {
+    std::set<std::string> unique_names;
+    std::multimap<std::string, unsigned int> context_map;
+
+    // interpret the given context
+    const unsigned int number_context_elements = context.size();
+    for (unsigned int context_item = 0; context_item < number_context_elements; ++context_item)
+    {
+      const auto& item_string = context[context_item];
+      if (item_string.has_value())
+      {
+        unique_names.insert(item_string.value());
+        context_map.insert(std::make_pair(item_string.value(), context_item));
+      }
+    }
+
+    for (const auto& name : unique_names)
+    {
+      switch (output_entity)
+      {
+        case OutputEntity::dof:
+        {
+          // obtain minimum offset index of quantity 'name' we currently want to append to the
+          // output
+          unsigned int min_index_of_name = context.size();
+          auto [first_ele_with_name, last_ele_with_name] = context_map.equal_range(name);
+          for (auto item = first_ele_with_name; item != last_ele_with_name; ++item)
+          {
+            min_index_of_name = std::min(min_index_of_name, item->second);
+          }
+
+          // finally append the data
+          append_dof_based_result_data_vector(
+              *result_data(0), context_map.count(name), min_index_of_name, name);
+          break;
+        }
+        case OutputEntity::element:
+        {
+          append_element_based_result_data_vector(result_data, context_map.count(name), name);
+          break;
+        }
+        case OutputEntity::node:
+        {
+          append_node_based_result_data_vector(result_data, context_map.count(name), name);
+          break;
+        }
+        default:
+          FOUR_C_THROW("The output entity you try to output is unknown!");
+      }
+    }
+  }
+
+  /*-----------------------------------------------------------------------------------------------*
+   *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::append_dof_based_result_data_vector(
       const Epetra_Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
       const unsigned int read_result_data_from_dofindex, const std::string& resultname)
@@ -132,10 +189,27 @@ namespace Core::IO
      * collected solution data vectors by calling
      * append_visualization_dof_based_result_data_vector() */
 
+    auto convert_to_col_map_if_necessary = [&](const Epetra_Vector& vector)
+    {
+      if (discretization_->dof_col_map()->SameAs(vector.Map()))
+      {
+        return vector;
+      }
+      else if (discretization_->dof_row_map()->SameAs(vector.Map()))
+      {
+        auto vector_col_map = Epetra_Vector(*discretization_->dof_col_map(), true);
+        Core::LinAlg::export_to(vector, vector_col_map);
+        return vector_col_map;
+      }
+      FOUR_C_THROW("'dof_vector' is neither in column nor in row map!");
+    };
+
+    auto result_data_dofbased_col_map = convert_to_col_map_if_necessary(result_data_dofbased);
+
     // safety checks
-    FOUR_C_ASSERT(discretization_->dof_col_map()->SameAs(result_data_dofbased.Map()),
-        "Received map of dof-based result data vector does not match the discretization's dof col "
-        "map.");
+    FOUR_C_ASSERT(discretization_->dof_col_map()->SameAs(result_data_dofbased_col_map.Map()),
+        "Received map of dof-based result data vector does not match the discretization's dof "
+        "col map.");
 
     // count number of nodes for this visualization
     unsigned int num_nodes = 0;
@@ -154,7 +228,7 @@ namespace Core::IO
       if (element_filter_(ele))
       {
         pointcounter += ele->append_visualization_dof_based_result_data_vector(*discretization_,
-            result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
+            result_data_dofbased_col_map, result_num_dofs_per_node, read_result_data_from_dofindex,
             point_result_data);
       }
     }
@@ -175,15 +249,34 @@ namespace Core::IO
       const unsigned int result_num_components_per_node, const std::string& resultname)
   {
     /* the idea is to transform the given data to a 'point data vector' and append it to the
-     * collected solution data vectors by calling AppendVisualizationPointDataVector() */
+     * collected solution data vectors by calling
+     * append_visualization_node_based_result_data_vector() */
+
+    auto convert_to_col_map_if_necessary = [&](const Epetra_MultiVector& vector)
+    {
+      if (discretization_->node_col_map()->SameAs(vector.Map()))
+      {
+        return vector;
+      }
+      else if (discretization_->node_row_map()->SameAs(vector.Map()))
+      {
+        auto vector_col_map = Epetra_MultiVector(
+            *discretization_->node_col_map(), result_num_components_per_node, true);
+        Core::LinAlg::export_to(vector, vector_col_map);
+        return vector_col_map;
+      }
+      FOUR_C_THROW("'node_vector' is neither in column nor in row map!");
+    };
+
+    auto result_data_nodebased_col_map = convert_to_col_map_if_necessary(result_data_nodebased);
 
     // safety checks
-    FOUR_C_ASSERT(static_cast<unsigned int>(result_data_nodebased.NumVectors()) ==
+    FOUR_C_ASSERT(static_cast<unsigned int>(result_data_nodebased_col_map.NumVectors()) ==
                       result_num_components_per_node,
         "Expected Epetra_MultiVector with %i columns but got %i.", result_num_components_per_node,
-        result_data_nodebased.NumVectors());
+        result_data_nodebased_col_map.NumVectors());
 
-    FOUR_C_ASSERT(discretization_->node_col_map()->SameAs(result_data_nodebased.Map()),
+    FOUR_C_ASSERT(discretization_->node_col_map()->SameAs(result_data_nodebased_col_map.Map()),
         "Received map of node-based result data vector does not match the discretization's node "
         "col map.");
 
@@ -201,29 +294,11 @@ namespace Core::IO
 
     for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
     {
-      if (!element_filter_(ele)) continue;
-
-      const std::vector<int>& numbering =
-          Core::IO::get_vtk_cell_type_from_element_cell_type(ele->shape()).second;
-
-      for (unsigned int inode = 0; inode < (unsigned int)ele->num_node(); ++inode)
+      if (element_filter_(ele))
       {
-        const Core::Nodes::Node* node = ele->nodes()[numbering[inode]];
-
-        const int lid = node->lid();
-
-        for (unsigned int icpn = 0; icpn < result_num_components_per_node; ++icpn)
-        {
-          const auto* column = result_data_nodebased(icpn);
-
-          if (lid > -1)
-            point_result_data.push_back((*column)[lid]);
-          else
-            FOUR_C_THROW("Received illegal node local id: %d", lid);
-        }
+        pointcounter += ele->append_visualization_node_based_result_data_vector(*discretization_,
+            result_data_nodebased_col_map, result_num_components_per_node, point_result_data);
       }
-
-      pointcounter += ele->num_node();
     }
 
     // sanity check
@@ -239,10 +314,11 @@ namespace Core::IO
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::append_element_based_result_data_vector(
       const Epetra_MultiVector& result_data_elementbased,
-      unsigned int result_num_components_per_element, const std::string& resultname)
+      const unsigned int result_num_components_per_element, const std::string& resultname)
   {
     /* the idea is to transform the given data to a 'cell data vector' and append it to the
-     *  collected solution data vectors by calling AppendVisualizationCellDataVector() */
+     * collected solution data vectors by adding it to the cell_data_vector of the visualization
+     * data */
 
     // safety check
     FOUR_C_ASSERT(static_cast<unsigned int>(result_data_elementbased.NumVectors()) ==

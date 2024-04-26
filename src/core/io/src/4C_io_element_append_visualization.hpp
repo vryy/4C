@@ -138,7 +138,6 @@ namespace Core::IO
             default:
               FOUR_C_THROW("The node numbering for the nurbs element shape %s is not implemented",
                   Core::FE::CellTypeToString(ele.shape()).c_str());
-              break;
           }
         }
 
@@ -173,19 +172,19 @@ namespace Core::IO
   }
 
   /**
-   * \brief Add dof based results to point data vector for elements
-   * that use Lagrange shape functions.
+   * \brief Add dof based results to point data vector for elements that use Lagrange shape
+   * functions.
    *
    * @param ele (in) Element
    * @param discret (in) discretization
    * @param result_data_dofbased (in) Global vector with results
-   * @param result_num_dofs_per_node (in/out) Number of scalar values per point.
+   * @param result_num_dofs_per_node (in) Number of scalar values per point.
    * @param read_result_data_from_dofindex (in) Starting DOF index for the nodal DOFs. This is
    * used if not all nodal DOFs should be output, e.g., velocity or pressure in fluid.
    * @param vtu_point_result_data (in/out) Result data vector.
    * @return Number of points added by this element.
    */
-  unsigned int AppendVisualizationDofBasedResultDataVectorLagrangeEle(
+  unsigned int append_visualization_dof_based_result_data_vector_lagrange_ele(
       const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
       const Epetra_Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
       const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
@@ -193,7 +192,7 @@ namespace Core::IO
     const std::vector<int>& numbering =
         get_vtk_cell_type_from_element_cell_type(ele.shape()).second;
 
-    for (unsigned int inode = 0; inode < (unsigned int)ele.num_node(); ++inode)
+    for (unsigned int inode = 0; inode < static_cast<unsigned int>(ele.num_node()); ++inode)
     {
       std::vector<int> nodedofs;
       nodedofs.clear();
@@ -209,7 +208,48 @@ namespace Core::IO
         if (lid > -1)
           vtu_point_result_data.push_back((result_data_dofbased)[lid]);
         else
-          FOUR_C_THROW("received illegal dof local id: %d", lid);
+        {
+          // This is not nice, but necessary for fields, e.g., in multiscale simulations where
+          // different nodes in the mesh have different number of dofs. Since this is not supported
+          // by vtu, we add a NaN here
+          vtu_point_result_data.push_back(std::numeric_limits<double>::quiet_NaN());
+        }
+      }
+    }
+
+    return ele.num_node();
+  }
+
+  /*!
+   * \brief Add node based results to point data vector for elements that use Lagrange shape
+   * functions.
+   *
+   * @param ele (in) Element
+   * @param result_data_nodebased (in) Global node-based vector with results.
+   * @param result_num_components_per_node (in) Number of components per node.
+   * @param point_result_data (in/out) Result data vector.
+   * @return Number of points added by this element.
+   */
+  unsigned int append_visualization_node_based_result_data_vector_lagrange_ele(
+      const Core::Elements::Element& ele, const Epetra_MultiVector& result_data_nodebased,
+      const int result_num_components_per_node, std::vector<double>& point_result_data)
+  {
+    const std::vector<int>& numbering =
+        Core::IO::get_vtk_cell_type_from_element_cell_type(ele.shape()).second;
+
+    for (unsigned int inode = 0; inode < static_cast<unsigned int>(ele.num_node()); ++inode)
+    {
+      const Core::Nodes::Node* node = ele.nodes()[numbering[inode]];
+      const int lid = node->lid();
+
+      for (int component_i = 0; component_i < result_num_components_per_node; ++component_i)
+      {
+        const Epetra_Vector* column = (result_data_nodebased)(component_i);
+
+        if (lid > -1)
+          point_result_data.push_back((*column)[lid]);
+        else
+          FOUR_C_THROW("received illegal node local id: %d", lid);
       }
     }
 
@@ -217,8 +257,7 @@ namespace Core::IO
   }
 
   /**
-   * \brief Add dof based results to point data vector for 3-dimensional elements
-   * that use second-order NURBS shape functions.
+   * \brief Add dof based results to point data vector that use second-order NURBS shape functions.
    *
    * @param ele (in) Element
    * @param discret (in) discretization
@@ -229,13 +268,11 @@ namespace Core::IO
    * @return Number of points added by this element.
    */
   template <Core::FE::CellType celltype, unsigned int result_num_dofs_per_node>
-  unsigned int AppendVisualizationDofBasedResultDataVectorNURBS(const Core::Elements::Element& ele,
-      const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
-      const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
+  unsigned int append_visualization_dof_based_result_data_vector_nurbs(
+      const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
+      const Epetra_Vector& result_data_dofbased, const unsigned int read_result_data_from_dofindex,
+      std::vector<double>& vtu_point_result_data)
   {
-    if (read_result_data_from_dofindex != 0)
-      FOUR_C_THROW("Nurbs output is only implemented for read_result_data_from_dofindex == 0");
-
     constexpr int number_of_output_points = Core::FE::num_nodes<celltype>;
     constexpr int dim_nurbs = Core::FE::dim<celltype>;
 
@@ -255,11 +292,23 @@ namespace Core::IO
       // Get the element result vector.
       Core::LinAlg::Matrix<number_of_output_points * result_num_dofs_per_node, 1, double>
           dof_result;
-      std::vector<double> eledisp;
+      std::vector<double> ele_dof_values;
       std::vector<int> lm, lmowner, lmstride;
       ele.location_vector(discret, lm, lmowner, lmstride);
-      Core::FE::ExtractMyValues(result_data_dofbased, eledisp, lm);
-      dof_result.set_view(eledisp.data());
+      Core::FE::ExtractMyValues(result_data_dofbased, ele_dof_values, lm);
+
+      const auto total_dofs_per_node = ele_dof_values.size() / number_of_output_points;
+      FOUR_C_ASSERT((ele_dof_values.size() % total_dofs_per_node) == 0,
+          "Unequal number of dofs per node within an element! ");
+
+      for (auto i_node_nurbs = 0; i_node_nurbs < number_of_output_points; ++i_node_nurbs)
+      {
+        for (unsigned int i_result = 0; i_result < result_num_dofs_per_node; ++i_result)
+        {
+          dof_result(i_node_nurbs * result_num_dofs_per_node + i_result) = ele_dof_values.at(
+              i_node_nurbs * total_dofs_per_node + read_result_data_from_dofindex + i_result);
+        }
+      }
 
       // Loop over the nodes of the nurbs element.
       Core::LinAlg::Matrix<result_num_dofs_per_node, 1, double> point_result;
@@ -294,20 +343,100 @@ namespace Core::IO
     return number_of_output_points;
   }
 
+  /*!
+   * @brief Add node based results to point data vector that use second-order NURBS shape functions.
+   *
+   * @tparam celltype cell type of the element
+   * @tparam result_num_components_per_node result vector has this many components per node
+   * @param ele (in) element
+   * @param discret (in) discretization
+   * @param result_data_nodebased (in) Global node based vector with results
+   * @param vtu_point_result_data (in/out) Result data vector
+   * @return Number of points added by this element
+   */
+  template <Core::FE::CellType celltype, unsigned int result_num_components_per_node>
+  unsigned int append_visualization_node_based_result_data_vector_nurbs(
+      const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
+      const Epetra_MultiVector& result_data_nodebased, std::vector<double>& vtu_point_result_data)
+  {
+    constexpr int number_of_output_points = Core::FE::num_nodes<celltype>;
+    constexpr int dim_nurbs = Core::FE::dim<celltype>;
+
+    // Get the vtk cell information
+    const auto vtk_cell_info = GetVTKCellTypeForNURBSElements<celltype>();
+    const std::vector<int>& numbering = vtk_cell_info.second;
+
+    // Add the data at the nodes of the nurbs visualization.
+    {
+      // Get the knots and weights for this element.
+      Core::LinAlg::Matrix<number_of_output_points, 1, double> weights(true);
+      std::vector<Core::LinAlg::SerialDenseVector> knots(true);
+      const bool zero_size =
+          Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discret, &ele, knots, weights);
+      if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+
+      // Get the element result vector.
+      Core::LinAlg::Matrix<number_of_output_points * result_num_components_per_node, 1, double>
+          result;
+      std::vector<double> ele_node_values;
+      Core::FE::ExtractMyNodeBasedValues(&ele, ele_node_values, result_data_nodebased);
+
+      for (auto i_node_nurbs = 0; i_node_nurbs < number_of_output_points; ++i_node_nurbs)
+      {
+        for (unsigned int component_i = 0; component_i < result_num_components_per_node;
+             ++component_i)
+        {
+          result(i_node_nurbs * result_num_components_per_node + component_i) =
+              ele_node_values.at(i_node_nurbs * result_num_components_per_node + component_i);
+        }
+      }
+
+      // Loop over the nodes of the nurbs element.
+      Core::LinAlg::Matrix<result_num_components_per_node, 1, double> point_result;
+      Core::LinAlg::Matrix<dim_nurbs, 1, double> xi;
+      for (unsigned int i_node_nurbs = 0; i_node_nurbs < number_of_output_points; i_node_nurbs++)
+      {
+        for (unsigned int i = 0; i < dim_nurbs; i++)
+        {
+          switch (celltype)
+          {
+            case Core::FE::CellType::nurbs9:
+              xi(i) = Core::FE::eleNodeNumbering_quad9_nodes_reference[numbering[i_node_nurbs]][i];
+              break;
+            case Core::FE::CellType::nurbs27:
+              xi(i) = Core::FE::eleNodeNumbering_hex27_nodes_reference[numbering[i_node_nurbs]][i];
+              break;
+            default:
+              FOUR_C_THROW("The node numbering for the nurbs element shape %s is not implemented",
+                  Core::FE::CellTypeToString(ele.shape()).c_str());
+          }
+        }
+
+        // Get the field value at the parameter coordinate
+        point_result = Core::FE::Nurbs::EvalNurbsInterpolation<number_of_output_points, dim_nurbs,
+            result_num_components_per_node>(result, xi, weights, knots, ele.shape());
+
+        for (unsigned int i_dim = 0; i_dim < result_num_components_per_node; i_dim++)
+          vtu_point_result_data.push_back(point_result(i_dim));
+      }
+    }
+
+    return number_of_output_points;
+  }
+
   /**
-   * \brief Add dof based results to point data vector for elements
-   * that use NURBS shape functions.
+   * \brief Add dof based results to point data vector for elements that use NURBS shape functions.
    *
    * @param ele (in) Element
    * @param discret (in) discretization
    * @param result_data_dofbased (in) Global vector with results
-   * @param result_num_dofs_per_node (in/out) Number of scalar values per point.
+   * @param result_num_dofs_per_node (in) Number of scalar values per point.
    * @param read_result_data_from_dofindex (in) Starting DOF index for the nodal DOFs. This is
    * used if not all nodal DOFs should be output, e.g., velocity or pressure in fluid.
    * @param vtu_point_result_data (in/out) Result data vector.
    * @return Number of points added by this element.
    */
-  unsigned int AppendVisualizationDofBasedResultDataVectorNURBSEle(
+  unsigned int append_visualization_dof_based_result_data_vector_nurbs_ele(
       const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
       const Epetra_Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
       const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
@@ -320,17 +449,55 @@ namespace Core::IO
           switch (result_num_dofs_per_node)
           {
             case 1:
-              return AppendVisualizationDofBasedResultDataVectorNURBS<celltype_t(), 1>(ele, discret,
-                  result_data_dofbased, read_result_data_from_dofindex, vtu_point_result_data);
+              return append_visualization_dof_based_result_data_vector_nurbs<celltype_t(), 1>(ele,
+                  discret, result_data_dofbased, read_result_data_from_dofindex,
+                  vtu_point_result_data);
             case 2:
-              return AppendVisualizationDofBasedResultDataVectorNURBS<celltype_t(), 2>(ele, discret,
-                  result_data_dofbased, read_result_data_from_dofindex, vtu_point_result_data);
+              return append_visualization_dof_based_result_data_vector_nurbs<celltype_t(), 2>(ele,
+                  discret, result_data_dofbased, read_result_data_from_dofindex,
+                  vtu_point_result_data);
             case 3:
-              return AppendVisualizationDofBasedResultDataVectorNURBS<celltype_t(), 3>(ele, discret,
-                  result_data_dofbased, read_result_data_from_dofindex, vtu_point_result_data);
+              return append_visualization_dof_based_result_data_vector_nurbs<celltype_t(), 3>(ele,
+                  discret, result_data_dofbased, read_result_data_from_dofindex,
+                  vtu_point_result_data);
             default:
-              FOUR_C_THROW("The case of result_num_dofs_per_node = %d is not implemented",
+              FOUR_C_THROW("The case for result_num_dofs_per_node = %i is not implemented",
                   result_num_dofs_per_node);
+          }
+        });
+  }
+
+  /*!
+   * @brief Add node based results to point data vector for elements that use NURBS shape functions.
+   *
+   * @param ele (in) element
+   * @param discret (in) discretization
+   * @param result_data_nodebased (in) global vector with node based result data
+   * @param result_num_components_per_node (in) result vector has this many components per node
+   * @param vtu_point_result_data (in/out) result data vector
+   * @return number of points added by this element
+   */
+  unsigned int append_visualization_node_based_result_data_vector_nurbs_ele(
+      const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
+      const Epetra_MultiVector& result_data_nodebased,
+      const unsigned int result_num_components_per_node, std::vector<double>& vtu_point_result_data)
+  {
+    using implemented_celltypes =
+        Core::FE::CelltypeSequence<Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs27>;
+    return Core::FE::CellTypeSwitch<implemented_celltypes>(ele.shape(),
+        [&](auto celltype_t)
+        {
+          switch (result_num_components_per_node)
+          {
+            case 2:
+              return append_visualization_node_based_result_data_vector_nurbs<celltype_t(), 2>(
+                  ele, discret, result_data_nodebased, vtu_point_result_data);
+            case 6:
+              return append_visualization_node_based_result_data_vector_nurbs<celltype_t(), 6>(
+                  ele, discret, result_data_nodebased, vtu_point_result_data);
+            default:
+              FOUR_C_THROW("The case for result_num_components_per_node = %i is not implemented",
+                  result_num_components_per_node);
           }
         });
   }

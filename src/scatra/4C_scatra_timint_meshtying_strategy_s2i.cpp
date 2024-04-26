@@ -3231,7 +3231,7 @@ Core::FE::Discretization& ScaTra::MeshtyingStrategyS2I::mortar_discretization(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::output() const
+void ScaTra::MeshtyingStrategyS2I::collect_output_data() const
 {
   // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer
   // growth
@@ -3246,8 +3246,7 @@ void ScaTra::MeshtyingStrategyS2I::output() const
 
     // for proper output, initialize target state vector of discrete scatra-scatra interface layer
     // thicknesses based on map of row nodes
-    const Teuchos::RCP<Epetra_Vector> intlayerthickness =
-        Teuchos::rcp(new Epetra_Vector(*scatratimint_->discretization()->node_row_map(), true));
+    auto intlayerthickness = Epetra_Vector(*scatratimint_->discretization()->node_row_map(), true);
 
     // extract boundary condition for scatra-scatra interface layer growth
     const Core::Conditions::Condition* const condition =
@@ -3283,14 +3282,21 @@ void ScaTra::MeshtyingStrategyS2I::output() const
 
           // copy thickness variable into target state vector of discrete scatra-scatra interface
           // layer thicknesses
-          (*intlayerthickness)[nodelid] = growth[doflid_growth];
+          (intlayerthickness)[nodelid] = growth[doflid_growth];
         }  // nodes owned by current processor
       }    // nodes stored by current processor
     }      // loop over all nodes
 
     // output target state vector of discrete scatra-scatra interface layer thicknesses
-    scatratimint_->disc_writer()->write_vector("intlayerthickness", intlayerthickness);
+    scatratimint_->visualization_writer().append_result_data_vector_with_context(
+        intlayerthickness, Core::IO::OutputEntity::node, {"intlayerthickness"});
   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ScaTra::MeshtyingStrategyS2I::output() const
+{
   if (output_interface_flux_) output_interface_flux();
 }
 

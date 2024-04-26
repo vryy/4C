@@ -273,6 +273,21 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
       break;
     }
 
+    case ScaTra::Action::collect_micro_scale_output:
+    {
+      const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+          ScaTra::DisTypeToOptGaussRule<distype>::rule);
+
+      // loop over all Gauss points
+      for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
+      {
+        // create output on micro scale
+        newmanmultiscale->collect_output_data(iquad);
+      }
+
+      break;
+    }
+
     case ScaTra::Action::micro_scale_read_restart:
     {
       const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(

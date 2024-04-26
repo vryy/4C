@@ -3446,43 +3446,45 @@ void FLD::FluidImplicitTimeInt::statistics_output()
 
 void FLD::FluidImplicitTimeInt::write_runtime_output()
 {
-  auto col_version = Epetra_Vector(*(discretization()->dof_col_map()), true);
-
   runtime_output_writer_->reset();
 
   if (runtime_output_params_.output_velocity_state())
   {
-    Core::LinAlg::export_to(*velnp_, col_version);
-    runtime_output_writer_->append_dof_based_result_data_vector(col_version, 3, 0, "velocity");
+    std::vector<std::optional<std::string>> context(3, "velocity");
+    context.emplace_back(std::nullopt);
+    runtime_output_writer_->append_result_data_vector_with_context(
+        *velnp_, Core::IO::OutputEntity::dof, context);
   }
 
   if (runtime_output_params_.output_pressure_state())
   {
-    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->extract_cond_vector(velnp_);
-    Core::LinAlg::export_to(*pressure, col_version);
-    runtime_output_writer_->append_dof_based_result_data_vector(col_version, 1, 3, "pressure");
+    std::vector<std::optional<std::string>> context(3, std::nullopt);
+    context.emplace_back("pressure");
+    runtime_output_writer_->append_result_data_vector_with_context(
+        *velnp_, Core::IO::OutputEntity::dof, context);
   }
 
   if (runtime_output_params_.output_acceleration_state())
   {
-    Core::LinAlg::export_to(*accnp_, col_version);
-    runtime_output_writer_->append_dof_based_result_data_vector(col_version, 3, 0, "acceleration");
+    std::vector<std::optional<std::string>> context(3, "acceleration");
+    runtime_output_writer_->append_result_data_vector_with_context(
+        *accnp_, Core::IO::OutputEntity::dof, context);
   }
 
   if (alefluid_)
   {
     if (runtime_output_params_.output_displacement_state())
     {
-      Core::LinAlg::export_to(*dispnp_, col_version);
-      runtime_output_writer_->append_dof_based_result_data_vector(
-          col_version, 3, 0, "displacement");
+      std::vector<std::optional<std::string>> context(3, "displacement");
+      runtime_output_writer_->append_result_data_vector_with_context(
+          *dispnp_, Core::IO::OutputEntity::dof, context);
     }
 
     if (runtime_output_params_.output_grid_velocity_state())
     {
-      Core::LinAlg::export_to(*gridvn_, col_version);
-      runtime_output_writer_->append_dof_based_result_data_vector(
-          col_version, 3, 0, "grid-velocity");
+      std::vector<std::optional<std::string>> context(3, "grid-velocity");
+      runtime_output_writer_->append_result_data_vector_with_context(
+          *gridvn_, Core::IO::OutputEntity::dof, context);
     }
   }
 

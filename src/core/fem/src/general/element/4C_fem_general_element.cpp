@@ -1023,10 +1023,14 @@ unsigned int Core::Elements::Element::append_visualization_geometry(
     std::vector<double>& point_coordinates) const
 {
   if (Core::FE::is_nurbs_celltype(shape()))
+  {
     return IO::AppendVisualizationGeometryNURBSEle(*this, discret, cell_types, point_coordinates);
+  }
   else
+  {
     return IO::AppendVisualizationGeometryLagrangeEle(
         *this, discret, cell_types, point_coordinates);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1038,15 +1042,33 @@ unsigned int Core::Elements::Element::append_visualization_dof_based_result_data
 {
   if (Core::FE::is_nurbs_celltype(shape()))
   {
-    return IO::AppendVisualizationDofBasedResultDataVectorNURBSEle(*this, discret,
+    return IO::append_visualization_dof_based_result_data_vector_nurbs_ele(*this, discret,
         result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
         vtu_point_result_data);
   }
   else
   {
-    return IO::AppendVisualizationDofBasedResultDataVectorLagrangeEle(*this, discret,
+    return IO::append_visualization_dof_based_result_data_vector_lagrange_ele(*this, discret,
         result_data_dofbased, result_num_dofs_per_node, read_result_data_from_dofindex,
         vtu_point_result_data);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+unsigned int Core::Elements::Element::append_visualization_node_based_result_data_vector(
+    const Core::FE::Discretization& discret, const Epetra_MultiVector& result_data_nodebased,
+    const int result_num_components_per_node, std::vector<double>& point_result_data) const
+{
+  if (Core::FE::is_nurbs_celltype(shape()))
+  {
+    return IO::append_visualization_node_based_result_data_vector_nurbs_ele(
+        *this, discret, result_data_nodebased, result_num_components_per_node, point_result_data);
+  }
+  else
+  {
+    return IO::append_visualization_node_based_result_data_vector_lagrange_ele(
+        *this, result_data_nodebased, result_num_components_per_node, point_result_data);
   }
 }
 

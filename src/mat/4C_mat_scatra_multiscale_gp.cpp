@@ -13,6 +13,7 @@ transport problems
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
+#include "4C_io_visualization_parameters.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
@@ -243,7 +244,8 @@ void Mat::ScatraMultiScaleGP::prepare_time_step(const std::vector<double>& phinp
       microdisnum_microtimint_map_[microdisnum_];
 
   // set current state in micro-scale time integrator
-  microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_, phinp_macro, step_,
+  microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
+      micro_visualization_writer_, phinp_macro, step_,
       Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time());
 
   // prepare time step
@@ -266,7 +268,8 @@ void Mat::ScatraMultiScaleGP::evaluate(const std::vector<double>& phinp_macro, d
       microdisnum_microtimint_map_[microdisnum_];
 
   // set current state in micro-scale time integrator
-  microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_, phinp_macro, step_,
+  microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
+      micro_visualization_writer_, phinp_macro, step_,
       Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time());
 
   if (is_ale_)
@@ -383,7 +386,7 @@ void Mat::ScatraMultiScaleGP::update()
 
   // set current state in micro-scale time integrator
   microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
-      std::vector<double>(0, 0.), step_,
+      micro_visualization_writer_, std::vector<double>(0, 0.), step_,
       Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time());
 
   // update micro-scale time integrator
@@ -437,6 +440,12 @@ void Mat::ScatraMultiScaleGP::new_result_file()
     micro_output_->set_output(microcontrol);
     micro_output_->write_mesh(
         step_, Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time());
+
+    micro_visualization_writer_ = std::make_shared<Core::IO::DiscretizationVisualizationWriterMesh>(
+        microdis,
+        Core::IO::VisualizationParametersFactory(
+            Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"), *microcontrol,
+            Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time()));
   }
 }
 
@@ -478,6 +487,30 @@ std::string Mat::ScatraMultiScaleGP::new_result_file_path(const std::string& new
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+void Mat::ScatraMultiScaleGP::collect_and_write_output_data()
+{
+  // skip ghosted macro-scale elements
+  if (eleowner_)
+  {
+    // extract micro-scale time integrator
+    Teuchos::RCP<ScaTra::TimIntOneStepTheta> microtimint =
+        microdisnum_microtimint_map_[microdisnum_];
+
+    // set current state in micro-scale time integrator
+    microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
+        micro_visualization_writer_, std::vector<double>(0, 0.0), step_,
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time());
+
+    // output micro-scale results
+    if (microtimint->is_result_step()) microtimint->write_runtime_output();
+
+    // clear state in micro-scale time integrator
+    microtimint->clear_state();
+  }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 void Mat::ScatraMultiScaleGP::output()
 {
   // skip ghosted macro-scale elements
@@ -489,7 +522,7 @@ void Mat::ScatraMultiScaleGP::output()
 
     // set current state in micro-scale time integrator
     microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
-        std::vector<double>(0, 0.), step_,
+        micro_visualization_writer_, std::vector<double>(0, 0.), step_,
         Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time());
 
     // output micro-scale results
@@ -523,7 +556,7 @@ void Mat::ScatraMultiScaleGP::read_restart()
 
   // set current state in micro-scale time integrator
   microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
-      std::vector<double>(0, 0.), step_,
+      micro_visualization_writer_, std::vector<double>(0, 0.), step_,
       Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time());
 
   // read restart on micro scale

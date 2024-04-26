@@ -108,9 +108,6 @@ namespace ScaTra
 
     void check_and_write_output_and_restart() override;
 
-    //! problem-specific outputs
-    void output_problem_specific() override;
-
     //! read problem-specific restart data
     void read_restart_problem_specific(int step, Core::IO::DiscretizationReader& reader) override;
 
@@ -157,6 +154,8 @@ namespace ScaTra
     void output_cell_voltage();
 
     void write_restart() const override;
+
+    void collect_runtime_output_data() override;
 
     //! output type of closing equation for electric potential
     Inpar::ElCh::EquPot equ_pot() const { return equpot_; }
@@ -331,8 +330,6 @@ namespace ScaTra
     void check_concentration_values(
         Teuchos::RCP<Epetra_Vector> vec  //!< current phi vector to be checked
     );
-
-    void output_flux(Teuchos::RCP<Epetra_MultiVector> flux, const std::string& fluxtype) override;
 
     /*========================================================================*/
     //! @name ELCH variables

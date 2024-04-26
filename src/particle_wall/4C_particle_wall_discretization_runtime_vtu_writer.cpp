@@ -48,8 +48,11 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
   // node displacements
   {
     if (walldatastate_->get_disp_col() != Teuchos::null)
-      runtime_vtuwriter_->append_dof_based_result_data_vector(
-          *walldatastate_->get_ref_disp_col(), 3, 0, "disp");
+    {
+      std::vector<std::optional<std::string>> context(3, "disp");
+      runtime_vtuwriter_->append_result_data_vector_with_context(
+          *walldatastate_->get_ref_disp_col(), Core::IO::OutputEntity::dof, context);
+    }
   }
 
   // node owner
@@ -60,7 +63,8 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
       const Core::Nodes::Node* node = walldiscretization_->l_col_node(inode);
       (nodeowner)[inode] = node->owner();
     }
-    runtime_vtuwriter_->append_node_based_result_data_vector(nodeowner, 1, "owner");
+    runtime_vtuwriter_->append_result_data_vector_with_context(
+        nodeowner, Core::IO::OutputEntity::node, {"owner"});
   }
 
   // element owner
@@ -76,7 +80,8 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
       const Core::Elements::Element* ele = walldiscretization_->l_row_element(iele);
       (eleid)[iele] = ele->id();
     }
-    runtime_vtuwriter_->append_element_based_result_data_vector(eleid, 1, "id");
+    runtime_vtuwriter_->append_result_data_vector_with_context(
+        eleid, Core::IO::OutputEntity::element, {"id"});
   }
 
   // finalize everything and write all required files to filesystem

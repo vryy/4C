@@ -93,6 +93,7 @@ namespace ScaTra
             phidtnp,  //!< time derivative of micro-scale state vector at new time step
         Teuchos::RCP<Epetra_Vector> hist,                     //!< micro-scale history vector
         Teuchos::RCP<Core::IO::DiscretizationWriter> output,  //!< micro-scale discretization writer
+        std::shared_ptr<Core::IO::DiscretizationVisualizationWriterMesh> visualization_writer,
         const std::vector<double>&
             phinp_macro,   //!< values of state variables at macro-scale Gauss point
         const int step,    //!< time step

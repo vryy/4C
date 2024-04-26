@@ -1224,6 +1224,20 @@ might become invalid after a redistribution of the discretization.
         unsigned int result_num_dofs_per_node, unsigned int read_result_data_from_dofindex,
         std::vector<double>& vtu_point_result_data) const;
 
+    /*!
+     * \brief Add node based results to point data vector, such that the data matches the geometry
+     * created in append_visualization_geometry.
+     *
+     * @param discret (in) discretization
+     * @param result_data_nodebased (in) Global node-based vector with results.
+     * @param result_num_components_per_node (in) Number of scalar values per point.
+     * @param point_result_data (in/out) Result data vector.
+     * @return Number of points added by this element.
+     */
+    virtual unsigned int append_visualization_node_based_result_data_vector(
+        const Core::FE::Discretization& discret, const Epetra_MultiVector& result_data_nodebased,
+        int result_num_components_per_node, std::vector<double>& point_result_data) const;
+
     /**
      * \brief Add the current position of all nodes of the element to a boundary volume.
      */

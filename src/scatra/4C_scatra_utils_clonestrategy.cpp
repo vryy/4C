@@ -75,17 +75,16 @@ void ScaTra::ScatraFluidCloneStrategy::set_element_data(
   // element type in order to access the material property
 
   // note: set_material() was reimplemented by the transport element!
-  Discret::ELEMENTS::Transport* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
+  auto* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
   if (trans != nullptr)
   {
     trans->set_material(matid, oldele);
-    trans->set_dis_type(oldele->shape());  // set distype as well!
+    trans->set_dis_type(oldele->shape());
   }
   else
   {
     FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
   }
-  return;
 }
 
 

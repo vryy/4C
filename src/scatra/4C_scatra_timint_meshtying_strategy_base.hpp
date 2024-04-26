@@ -193,8 +193,11 @@ namespace ScaTra
     //! return interface map extractor
     virtual Teuchos::RCP<Core::LinAlg::MultiMapExtractor> interface_maps() const = 0;
 
+    //! collect data that shall be written to output
+    virtual void collect_output_data() const {};
+
     //! output solution for post-processing
-    virtual void output() const { return; };
+    virtual void output() const {};
 
     //! output restart information
     virtual void write_restart() const {};

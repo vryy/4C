@@ -24,6 +24,13 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
+  enum class OutputEntity
+  {
+    dof,      ///< The quantity to be written for output is dof-based
+    element,  ///< The quantity to be written for output is element-based
+    node      ///< The quantity to be written for output is node-based
+  };
+
   /*!
    * \brief This object allows to write visualization output for a discretization, i.e., write the
    * mesh and results on the mesh to disk
@@ -56,6 +63,31 @@ namespace Core::IO
      */
     void reset();
 
+    /*!
+     * @brief result data vector appended for output based on the provided output entity and context
+     *
+     * The result data vector can provide data in several forms, i.e. dof-based, element-based, or
+     * node-based. The corresponding form is handed in from outside using the output_entity. Then
+     * the method analyses the context vector to check whether the quantity is a vector or scalar
+     * quantity.
+     *
+     * @example Consider your result vector consists of four components per node, i.e. 3 velocities
+     * and one pressure (e.g. output of a fluid field). Then your context vector would be:
+     * {"velocity", "velocity", "velocity", "pressure"}.
+     * You could also decide to only output the pressure by assigning std::nullopt to the respective
+     * position of the quantities you do not want to output. Consider you only want to output the
+     * pressure the context vector would be: {std::nullopt, std::nullopt, std::nullopt, "pressure"}.
+     *
+     * @param result_data (in)    result data vector (dof-based, element-based, or node-based)
+     * @param output_entity (in)  defining the output entity, i.e. dof-based, element-based, or
+     *                            node-based
+     * @param context (in)        context vector of size number components per node or element
+     *                            defining the output name of the i-th component
+     */
+    void append_result_data_vector_with_context(const Epetra_MultiVector& result_data,
+        const OutputEntity output_entity, const std::vector<std::optional<std::string>>& context);
+
+   private:
     /**
      * @brief Append result vector with num_dof values per node to output data
      *
@@ -106,12 +138,13 @@ namespace Core::IO
     void append_element_based_result_data_vector(const Epetra_MultiVector& result_data_elementbased,
         unsigned int result_num_components_per_element, const std::string& resultname);
 
+   public:
     /**
      * \brief Write owner id for each element
      *
      * In order to process all solid elements (beam elements are handled by a separate output
-     * writer), it is sufficient that each processor writes all elements in his row map. This can
-     * easily be achieved by appending the PID of the writing processor.
+     * writer), it is sufficient that each processor writes all elements in its row map. This
+     * can easily be achieved by appending the PID of the writing processor.
      *
      * @param resultname (in) Name of the owner field in the visualization file
      */

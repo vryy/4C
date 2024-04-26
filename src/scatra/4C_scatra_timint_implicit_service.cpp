@@ -1203,21 +1203,24 @@ void ScaTra::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::write_restart() const
 {
+  // step number and time (only after that data output is possible)
+  output_->new_step(step_, time_);
+
+  // solution
+  output_->write_vector("phinp", phinp_);
+
   // output restart information associated with mesh tying strategy
   strategy_->write_restart();
 }
 
-
 /*----------------------------------------------------------------------*
- |  write mass / heat flux vector to BINIO                   gjb   08/08|
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux,  //!< flux vector
-    const std::string& fluxtype  //!< flux type ("domain" or "boundary")
-)
+void ScaTra::ScaTraTimIntImpl::collect_output_flux_data(
+    Teuchos::RCP<Epetra_MultiVector> flux, const std::string& fluxtype)
 {
   // safety checks
   if (flux == Teuchos::null)
-    FOUR_C_THROW("Null pointer for flux vector output. output() called before update() ??");
+    FOUR_C_THROW("Null pointer for flux vector output. Output() called before Update() ??");
   if (fluxtype != "domain" and fluxtype != "boundary")
     FOUR_C_THROW("Unknown flux type. Must be either 'domain' or 'boundary'!");
 
@@ -1227,24 +1230,22 @@ void ScaTra::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux
   auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*discret_));
   if (nurbsdis != nullptr)
   {
-    Teuchos::RCP<Epetra_Vector> normalflux = Teuchos::rcp(((*flux)(0)), false);
-    output_->write_vector("normalflux", normalflux, Core::IO::dofvector);
+    auto normalflux = *(*flux)(0);
+    std::vector<std::optional<std::string>> context(nsd_, "normalflux");
+    visualization_writer_->append_result_data_vector_with_context(
+        normalflux, Core::IO::OutputEntity::dof, context);
     return;  // leave here
   }
 
-  // post_ensight does not support multivectors based on the dofmap
-  // for now, I create single vectors that can be handled by the filter
-
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->node_row_map();
-  Teuchos::RCP<Epetra_MultiVector> fluxk =
-      Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
+  auto fluxk = Epetra_MultiVector(*noderowmap, 3, true);
   for (int writefluxid : *writefluxids_)
   {
     std::ostringstream temp;
     temp << writefluxid;
     std::string name = "flux_" + fluxtype + "_phi_" + temp.str();
-    for (int i = 0; i < fluxk->MyLength(); ++i)
+    for (int i = 0; i < fluxk.MyLength(); ++i)
     {
       Core::Nodes::Node* actnode = discret_->l_row_node(i);
       int dofgid = discret_->dof(0, actnode, writefluxid - 1);
@@ -1263,15 +1264,16 @@ void ScaTra::ScaTraTimIntImpl::output_flux(Teuchos::RCP<Epetra_MultiVector> flux
         yvalue = yvalue_rot;
       }
       // insert values
-      int err = fluxk->ReplaceMyValue(i, 0, xvalue);
-      err += fluxk->ReplaceMyValue(i, 1, yvalue);
-      err += fluxk->ReplaceMyValue(i, 2, zvalue);
+      int err = fluxk.ReplaceMyValue(i, 0, xvalue);
+      err += fluxk.ReplaceMyValue(i, 1, yvalue);
+      err += fluxk.ReplaceMyValue(i, 2, zvalue);
       if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
     }
-    output_->write_vector(name, fluxk, Core::IO::nodevector);
+    std::vector<std::optional<std::string>> context(fluxk.NumVectors(), name);
+    visualization_writer_->append_result_data_vector_with_context(
+        fluxk, Core::IO::OutputEntity::node, context);
   }
-}  // ScaTraTimIntImpl::OutputFlux
-
+}
 
 // TODO: SCATRA_ELE_CLEANING: BIOFILM
 // This action is not called at element level!!
@@ -3041,6 +3043,10 @@ void ScaTra::ScalarHandler::setup(const ScaTraTimIntImpl* const scatratimint)
 }
 
 /*-------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------*/
+int ScaTra::ScalarHandler::max_num_dof_per_node() const { return *(numdofpernode_.rbegin()); }
+
+/*-------------------------------------------------------------------------*
 |  Determine number of DoFs per node in given condition       vuong   04/16|
  *-------------------------------------------------------------------------*/
 int ScaTra::ScalarHandler::num_dof_per_node_in_condition(
@@ -3106,7 +3112,6 @@ int ScaTra::ScalarHandler::num_dof_per_node_in_condition(
 }
 
 /*-------------------------------------------------------------------------*
-|  Get number of DoFs per node within discretization            vuong   04/16|
  *-------------------------------------------------------------------------*/
 int ScaTra::ScalarHandler::num_dof_per_node() const
 {

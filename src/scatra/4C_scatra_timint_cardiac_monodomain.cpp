@@ -82,13 +82,12 @@ void ScaTra::TimIntCardiacMonodomain::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntCardiacMonodomain::output_state()
+void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
 {
-  // Call function from base class
-  ScaTra::ScaTraTimIntImpl::output_state();
+  // call base class first
+  ScaTraTimIntImpl::collect_runtime_output_data();
 
   // electrophysiology
-
   // Compute and write activation time
   if (activation_time_np_ != Teuchos::null)
   {
@@ -97,7 +96,9 @@ void ScaTra::TimIntCardiacMonodomain::output_state()
       if ((*phinp_)[k] >= activation_threshold_ && (*activation_time_np_)[k] <= dta_ * 0.9)
         (*activation_time_np_)[k] = time_;
     }
-    output_->write_vector("activation_time_np", activation_time_np_);
+    std::vector<std::optional<std::string>> context(num_dof_per_node(), "activation_time");
+    visualization_writer().append_result_data_vector_with_context(
+        *activation_time_np_, Core::IO::OutputEntity::dof, context);
   }
 
   // Recover internal state of the material (for electrophysiology)
@@ -118,8 +119,10 @@ void ScaTra::TimIntCardiacMonodomain::output_state()
       temp << k + 1;
       material_internal_state_np_component_ =
           Teuchos::rcp((*material_internal_state_np_)(k), false);
-      output_->write_vector("mat_int_state_" + temp.str(), material_internal_state_np_component_,
-          Core::IO::elementvector);
+
+      visualization_writer().append_result_data_vector_with_context(
+          *material_internal_state_np_component_, Core::IO::OutputEntity::element,
+          {"mat_int_state_" + temp.str()});
     }
   }
 
@@ -141,11 +144,13 @@ void ScaTra::TimIntCardiacMonodomain::output_state()
       temp << k + 1;
       material_ionic_currents_np_component_ =
           Teuchos::rcp((*material_ionic_currents_np_)(k), false);
-      output_->write_vector("mat_ionic_currents_" + temp.str(),
-          material_ionic_currents_np_component_, Core::IO::elementvector);
+
+      visualization_writer().append_result_data_vector_with_context(
+          *material_ionic_currents_np_component_, Core::IO::OutputEntity::element,
+          {"mat_ionic_currents_" + temp.str()});
     }
   }
-}  // TimIntCardiacMonodomain::output_state
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -187,6 +192,22 @@ void ScaTra::TimIntCardiacMonodomain::set_element_specific_scatra_parameters(
   }
 
   eleparams.set<bool>("semiimplicit", Core::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ScaTra::TimIntCardiacMonodomain::write_restart() const
+{
+  // Compute and write activation time
+  if (activation_time_np_ != Teuchos::null)
+  {
+    for (int k = 0; k < phinp_->MyLength(); k++)
+    {
+      if ((*phinp_)[k] >= activation_threshold_ && (*activation_time_np_)[k] <= dta_ * 0.9)
+        (*activation_time_np_)[k] = time_;
+    }
+    output_->write_vector("activation_time_np", activation_time_np_);
+  }
 }
 
 FOUR_C_NAMESPACE_CLOSE

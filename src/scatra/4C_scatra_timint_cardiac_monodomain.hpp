@@ -46,10 +46,12 @@ namespace ScaTra
     //! time update of time-dependent materials
     virtual void element_material_time_update();
 
-    void output_state() override;
+    void collect_runtime_output_data() override;
 
     //! Set ep-specific parameters
     void set_element_specific_scatra_parameters(Teuchos::ParameterList& eleparams) const override;
+
+    void write_restart() const override;
 
     /*========================================================================*/
     //! @name electrophysiology

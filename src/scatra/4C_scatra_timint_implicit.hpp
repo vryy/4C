@@ -30,6 +30,7 @@
 #include "4C_fem_condition.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
+#include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_result_test.hpp"
@@ -39,6 +40,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <utility>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -184,9 +186,12 @@ namespace ScaTra
 
     \warning none
     \return void
-    \date 08/16
-    \author rauch  */
+    */
     virtual void setup();
+
+    //! setup the context vector that defines the names for the output of the solution vector
+    //! #phinp_
+    virtual void setup_context_vector();
 
     //! Initialization of turbulence models
     void init_turbulence_model(const Epetra_Map* dofrowmap, const Epetra_Map* noderowmap);
@@ -587,6 +592,12 @@ namespace ScaTra
     //! write results to disk
     void write_result();
 
+    //! collect runtime output data
+    virtual void collect_runtime_output_data();
+
+    //! collect the runtime output data and write it to disk
+    void write_runtime_output();
+
     //! Convergence check for two way coupled ScaTra problems.
     bool convergence_check(int itnum, int itmax, const double ittol);
 
@@ -736,6 +747,9 @@ namespace ScaTra
 
     /*--- query and output ---------------------------------------------------*/
 
+    //! return maximum number of dofs per node
+    [[nodiscard]] int max_num_dof_per_node() const;
+
     //! return number of transported scalars
     int num_scal() const;
 
@@ -811,9 +825,6 @@ namespace ScaTra
 
     //! return density field at time n+alpha_F (gen-alpha) or n+1 (otherwise) for natural convection
     Teuchos::RCP<Epetra_Vector> densafnp() { return densafnp_; }
-
-    //! problem-specific outputs
-    virtual void output_problem_specific(){};
 
     //! problem-specific restart
     virtual void read_restart_problem_specific(
@@ -912,6 +923,19 @@ namespace ScaTra
     {
       additional_model_evaluator_ = adapter_scatra_wrapper;
     };
+
+    //! set the visualization writer
+    void set_visualization_writer(
+        std::shared_ptr<Core::IO::DiscretizationVisualizationWriterMesh> visualization_writer)
+    {
+      visualization_writer_ = std::move(visualization_writer);
+    }
+
+    //! return the visualization writer
+    Core::IO::DiscretizationVisualizationWriterMesh& visualization_writer()
+    {
+      return *visualization_writer_;
+    }
 
    protected:
     //! create vectors for Krylov projection if necessary
@@ -1084,16 +1108,17 @@ namespace ScaTra
                   (calcflux_boundary_ == Inpar::ScaTra::flux_convective)));
     };
 
-    //! write state vectors (phinp and convective velocity) to BINIO
-    virtual void output_state();
-
     //! write state vectors (phinp and convective velocity) to Gmsh postprocessing files
     void output_to_gmsh(const int step, const double time) const;
 
-    //! write flux vectors to BINIO
-    virtual void output_flux(Teuchos::RCP<Epetra_MultiVector> flux,  //!< flux vector
-        const std::string& fluxtype  //!< flux type ("domain" or "boundary")
-    );
+    /*!
+     * @brief collect flux vectors for runtime output
+     *
+     * @param[in] flux      flux vector
+     * @param[in] fluxtype  flux type ("domain" or "boundary")
+     */
+    virtual void collect_output_flux_data(
+        Teuchos::RCP<Epetra_MultiVector> flux, const std::string& fluxtype);
 
     /*========================================================================*/
     //! @name Time, time-step and related methods
@@ -1374,6 +1399,9 @@ namespace ScaTra
     //! domain integral manager
     Teuchos::RCP<OutputDomainIntegralStrategy> outputdomainintegralstrategy_;
 
+    //! stores the components phi is composed of necessary for the output
+    std::vector<std::optional<std::string>> phi_components_{};
+
     //! phi at time n
     Teuchos::RCP<Epetra_Vector> phin_;
     //! phi at time n+1
@@ -1620,6 +1648,9 @@ namespace ScaTra
     //! flag indicating if time step was changed
     bool timestepadapted_;
 
+    //! pointer to visualization writer object
+    std::shared_ptr<Core::IO::DiscretizationVisualizationWriterMesh> visualization_writer_;
+
     //! flag indicating if class is setup
     bool issetup_;
 
@@ -1676,8 +1707,11 @@ namespace ScaTra
       return num_dof_per_node_in_condition(condition, discret);
     };
 
-    //! return maximum number of dofs per node
+    //! return number of dofs per node
     virtual int num_dof_per_node() const;
+
+    //! return maximum number of dofs per node
+    [[nodiscard]] int max_num_dof_per_node() const;
 
     //! return maximum number of transported scalars per node
     virtual int num_scal() const { return num_dof_per_node(); }
