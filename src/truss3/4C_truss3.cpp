@@ -389,10 +389,10 @@ void DRT::ELEMENTS::Truss3::LocationVector(
           DRT::Condition* dirich = node->GetCondition("Dirichlet");
           if (dirich)
           {
-            if (dirich->Type() != DRT::Condition::PointDirichlet &&
-                dirich->Type() != DRT::Condition::LineDirichlet &&
-                dirich->Type() != DRT::Condition::SurfaceDirichlet &&
-                dirich->Type() != DRT::Condition::VolumeDirichlet)
+            if (dirich->Type() != CORE::Conditions::PointDirichlet &&
+                dirich->Type() != CORE::Conditions::LineDirichlet &&
+                dirich->Type() != CORE::Conditions::SurfaceDirichlet &&
+                dirich->Type() != CORE::Conditions::VolumeDirichlet)
               FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
             flag = &dirich->Get<std::vector<int>>("onoff");
           }
@@ -423,10 +423,10 @@ void DRT::ELEMENTS::Truss3::LocationVector(
       DRT::Condition* dirich = GetCondition("Dirichlet");
       if (dirich)
       {
-        if (dirich->Type() != DRT::Condition::PointDirichlet &&
-            dirich->Type() != DRT::Condition::LineDirichlet &&
-            dirich->Type() != DRT::Condition::SurfaceDirichlet &&
-            dirich->Type() != DRT::Condition::VolumeDirichlet)
+        if (dirich->Type() != CORE::Conditions::PointDirichlet &&
+            dirich->Type() != CORE::Conditions::LineDirichlet &&
+            dirich->Type() != CORE::Conditions::SurfaceDirichlet &&
+            dirich->Type() != CORE::Conditions::VolumeDirichlet)
           FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
         flag = &dirich->Get<std::vector<int>>("onoff");
       }

@@ -2442,7 +2442,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
   for (unsigned int i = 0; i < numnodecond; ++i)
   {
     DRT::Condition* actcond = nodecond[i];
-    if (actcond->Type() == DRT::Condition::RedAirwayNodeTissue)
+    if (actcond->Type() == CORE::Conditions::RedAirwayNodeTissue)
     {
       auto condID = actcond->Get<int>("coupling id");
       coupcond_[condID] = actcond;

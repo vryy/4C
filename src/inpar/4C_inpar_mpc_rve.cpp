@@ -45,7 +45,7 @@ void INPAR::RVE_MPC::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> rve_lineperiodic_condition =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE PERIODIC RVE 2D BOUNDARY CONDITIONS",
           "LinePeriodicRve", "definition of edges forming 2D periodic boundary conditions",
-          DRT::Condition::LineRvePeriodic, false, DRT::Condition::Line));
+          CORE::Conditions::LineRvePeriodic, false, CORE::Conditions::geometry_type_line));
 
   rve_lineperiodic_condition->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("EDGE")));
 
@@ -59,7 +59,7 @@ void INPAR::RVE_MPC::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> rve_surfperiodic_condition =
       Teuchos::rcp(new ConditionDefinition("DESIGN SURF PERIODIC RVE 3D BOUNDARY CONDITIONS",
           "SurfacePeriodicRve", "definition of surfaces forming 3D periodic boundary conditions",
-          DRT::Condition::SurfaceRvePeriodic, false, DRT::Condition::Surface));
+          CORE::Conditions::SurfaceRvePeriodic, false, CORE::Conditions::geometry_type_surface));
 
   rve_surfperiodic_condition->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("SURF")));
 
@@ -75,7 +75,8 @@ void INPAR::RVE_MPC::SetValidConditions(
           "PointPeriodicRveReferenceNode",
           "definition of reference points defining the reference vector of the periodic boundary"
           "condition -  only required if RVE_REFERENCE_POINTS = automatic",
-          DRT::Condition::PointRvePeriodicReference, false, DRT::Condition::Point));
+          CORE::Conditions::PointRvePeriodicReference, false,
+          CORE::Conditions::geometry_type_point));
 
   rve_cornerpoint_condition->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("POSITION")));
 
@@ -91,7 +92,7 @@ void INPAR::RVE_MPC::SetValidConditions(
       "DESIGN POINT COUPLED DOF EQUATION CONDITIONS", "PointLinearCoupledEquation",
       "definition of the term of a linear couple equation coupling different degrees of freedom in "
       "2d",
-      DRT::Condition::PointLinearCoupledEquation, false, DRT::Condition::Point));
+      CORE::Conditions::PointLinearCoupledEquation, false, CORE::Conditions::geometry_type_point));
 
   linear_ce->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("EQUATION")));
 

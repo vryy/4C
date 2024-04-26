@@ -120,12 +120,12 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   // set class variables
   if (chargeconds.size() == 2)
   {
-    if (chargeconds[0]->Type() == DRT::Condition::BeamPotential_LineChargeDensity)
+    if (chargeconds[0]->Type() == CORE::Conditions::BeamPotential_LineChargeDensity)
       chargeconds_[0] = chargeconds[0];
     else
       FOUR_C_THROW("Provided condition is not of correct type BeamPotential_LineChargeDensity!");
 
-    if (chargeconds[1]->Type() == DRT::Condition::RigidspherePotential_PointCharge)
+    if (chargeconds[1]->Type() == CORE::Conditions::RigidspherePotential_PointCharge)
       chargeconds_[1] = chargeconds[1];
     else
       FOUR_C_THROW("Provided condition is not of correct type RigidspherePotential_PointCharge!");

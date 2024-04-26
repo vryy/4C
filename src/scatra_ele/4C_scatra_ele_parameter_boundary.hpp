@@ -61,7 +61,7 @@ namespace DRT
       double AlphaC() const { return alphac_; }
       double Capacitance() const { return capacitance_; }
       double ChargeTransferConstant() const { return kr_; }
-      DRT::Condition::ConditionType ConditionType() const { return conditiontype_; }
+      CORE::Conditions::ConditionType ConditionType() const { return conditiontype_; }
       double ConvtolimplicitBV() const { return convtolimplicit_bv_; }
       double Density() const { return density_; }
       bool IsPseudoContact() const { return is_pseudo_contact_; }
@@ -94,7 +94,7 @@ namespace DRT
       double alphac_;
 
       /// condition type of stored condition
-      DRT::Condition::ConditionType conditiontype_;
+      CORE::Conditions::ConditionType conditiontype_;
 
       /// convergence tolerance of local Newton-Raphson iteration for modified Butler-Volmer
       /// equation

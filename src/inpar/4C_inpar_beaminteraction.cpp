@@ -177,10 +177,10 @@ void INPAR::BEAMINTERACTION::SetValidConditions(
 
   /*-------------------------------------------------------------------*/
   // beam potential interaction: atom/charge density per unit length on LINE
-  Teuchos::RCP<ConditionDefinition> beam_filament_condition =
-      Teuchos::rcp(new ConditionDefinition("DESIGN LINE BEAM FILAMENT CONDITIONS",
-          "BeamLineFilamentCondition", "Beam_Line_Filament_Condition",
-          DRT::Condition::FilamentBeamLineCondition, false, DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> beam_filament_condition = Teuchos::rcp(
+      new ConditionDefinition("DESIGN LINE BEAM FILAMENT CONDITIONS", "BeamLineFilamentCondition",
+          "Beam_Line_Filament_Condition", CORE::Conditions::FilamentBeamLineCondition, false,
+          CORE::Conditions::geometry_type_line));
 
   beam_filament_condition->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("ID")));
   beam_filament_condition->AddComponent(Teuchos::rcp(new INPUT::IntComponent("FilamentId")));
@@ -200,7 +200,8 @@ void INPAR::BEAMINTERACTION::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> penalty_coupling_condition =
       Teuchos::rcp(new ConditionDefinition("DESIGN POINT PENALTY COUPLING CONDITIONS",
           "PenaltyPointCouplingCondition", "Couples beam nodes that lie on the same position",
-          DRT::Condition::PenaltyPointCouplingCondition, false, DRT::Condition::Point));
+          CORE::Conditions::PenaltyPointCouplingCondition, false,
+          CORE::Conditions::geometry_type_point));
 
   INPUT::AddNamedReal(penalty_coupling_condition, "POSITIONAL_PENALTY_PARAMETER");
   INPUT::AddNamedReal(penalty_coupling_condition, "ROTATIONAL_PENALTY_PARAMETER");

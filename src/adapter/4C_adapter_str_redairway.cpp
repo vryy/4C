@@ -36,7 +36,7 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
   for (unsigned int i = 0; i < numneumcond; ++i)
   {
     DRT::Condition* actcond = surfneumcond[i];
-    if (actcond->Type() == DRT::Condition::RedAirwayTissue)
+    if (actcond->Type() == CORE::Conditions::RedAirwayTissue)
     {
       int condID = actcond->Get<int>("coupling id");
       coupcond_[condID] = actcond;

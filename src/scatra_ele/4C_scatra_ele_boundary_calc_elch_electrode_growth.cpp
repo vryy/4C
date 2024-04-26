@@ -72,7 +72,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
-  if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2IKineticsGrowth)
+  if (my::scatraparamsboundary_->ConditionType() != CORE::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
@@ -176,10 +176,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   // extract condition type
-  const DRT::Condition::ConditionType& s2iconditiontype =
+  const CORE::Conditions::ConditionType& s2iconditiontype =
       my::scatraparamsboundary_->ConditionType();
-  if (s2iconditiontype != DRT::Condition::S2IKinetics and
-      s2iconditiontype != DRT::Condition::S2IKineticsGrowth)
+  if (s2iconditiontype != CORE::Conditions::S2IKinetics and
+      s2iconditiontype != CORE::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
@@ -226,7 +226,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
 
     switch (s2iconditiontype)
     {
-      case DRT::Condition::S2IKinetics:
+      case CORE::Conditions::S2IKinetics:
       {
         // equilibrium electric potential difference and its derivative w.r.t. concentration at
         // electrode surface
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
 
         break;
       }
-      case DRT::Condition::S2IKineticsGrowth:
+      case CORE::Conditions::S2IKineticsGrowth:
       {
         // equilibrium electric potential difference and its derivative w.r.t. concentration at
         // electrode surface
@@ -428,10 +428,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   // extract condition type
-  const DRT::Condition::ConditionType& s2iconditiontype =
+  const CORE::Conditions::ConditionType& s2iconditiontype =
       my::scatraparamsboundary_->ConditionType();
-  if (s2iconditiontype != DRT::Condition::S2IKinetics and
-      s2iconditiontype != DRT::Condition::S2IKineticsGrowth)
+  if (s2iconditiontype != CORE::Conditions::S2IKinetics and
+      s2iconditiontype != CORE::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
@@ -478,7 +478,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
     switch (s2iconditiontype)
     {
-      case DRT::Condition::S2IKinetics:
+      case CORE::Conditions::S2IKinetics:
       {
         // equilibrium electric potential difference at electrode surface
         const double epd =
@@ -531,7 +531,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
         break;
       }
-      case DRT::Condition::S2IKineticsGrowth:
+      case CORE::Conditions::S2IKineticsGrowth:
       {
         // equilibrium electric potential difference at electrode surface
         const double epd = 0.0;
@@ -611,7 +611,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
-  if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2IKineticsGrowth)
+  if (my::scatraparamsboundary_->ConditionType() != CORE::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition
@@ -727,7 +727,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   my::ExtractNodeValues(
       eslavegrowthhist, discretization, la, "growthhist", my::scatraparams_->NdsGrowth());
 
-  if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2IKineticsGrowth)
+  if (my::scatraparamsboundary_->ConditionType() != CORE::Conditions::S2IKineticsGrowth)
     FOUR_C_THROW("Received illegal condition type!");
 
   // access input parameters associated with condition

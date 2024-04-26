@@ -153,12 +153,14 @@ void INPAR::BEAMPOTENTIAL::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> rigidsphere_potential_charge =
       Teuchos::rcp(new ConditionDefinition("DESIGN POINT RIGIDSPHERE POTENTIAL CHARGE CONDITIONS",
           "RigidspherePotentialPointCharge", "Rigidsphere_Potential_Point_Charge",
-          DRT::Condition::RigidspherePotential_PointCharge, false, DRT::Condition::Point));
+          CORE::Conditions::RigidspherePotential_PointCharge, false,
+          CORE::Conditions::geometry_type_point));
 
   Teuchos::RCP<ConditionDefinition> beam_potential_line_charge =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE BEAM POTENTIAL CHARGE CONDITIONS",
           "BeamPotentialLineCharge", "Beam_Potential_Line_Charge_Density",
-          DRT::Condition::BeamPotential_LineChargeDensity, false, DRT::Condition::Line));
+          CORE::Conditions::BeamPotential_LineChargeDensity, false,
+          CORE::Conditions::geometry_type_line));
 
   rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new INPUT::SeparatorComponent("POTLAW")));
   rigidsphere_potential_charge->AddComponent(Teuchos::rcp(new INPUT::IntComponent("potlaw")));

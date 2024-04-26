@@ -41,7 +41,7 @@ namespace DRT::ELEMENTS
    * @return exchange mass flux density of growth reaction
    */
   double CalculateGrowthExchangeMassFluxDensity(double kr, double alpha_a, double c_el,
-      int kinetic_model, const DRT::Condition::ConditionType& s2i_condition_type);
+      int kinetic_model, const CORE::Conditions::ConditionType& s2i_condition_type);
 
   /*!
    * \brief compute the mass flux density of growth kinetics via local Newton-Raphson iteration

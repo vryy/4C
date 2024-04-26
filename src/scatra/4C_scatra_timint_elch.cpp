@@ -2943,7 +2943,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
         // check relevance of current condition
         if (condition->Get<int>("ConditionID") == cccv_condition_->GetHalfCycleConditionID())
         {
-          if (condition->GType() != DRT::Condition::Point)
+          if (condition->GType() != CORE::Conditions::geometry_type_point)
           {
             // To avoid code redundancy, we evaluate the condition using the element-based algorithm
             // for standard Neumann boundary conditions. For this purpose, we must provide the

@@ -2186,7 +2186,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
     {
       switch (curr->second->GType())
       {
-        case DRT::Condition::Point:
+        case CORE::Conditions::geometry_type_point:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dnode_fenode.size())
           {
             FOUR_C_THROW(
@@ -2196,7 +2196,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
           }
           curr->second->SetNodes(dnode_fenode[curr->first]);
           break;
-        case DRT::Condition::Line:
+        case CORE::Conditions::geometry_type_line:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dline_fenode.size())
           {
             FOUR_C_THROW(
@@ -2206,7 +2206,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
           }
           curr->second->SetNodes(dline_fenode[curr->first]);
           break;
-        case DRT::Condition::Surface:
+        case CORE::Conditions::geometry_type_surface:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dsurf_fenode.size())
           {
             FOUR_C_THROW(
@@ -2216,7 +2216,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
           }
           curr->second->SetNodes(dsurf_fenode[curr->first]);
           break;
-        case DRT::Condition::Volume:
+        case CORE::Conditions::geometry_type_volume:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dvol_fenode.size())
           {
             FOUR_C_THROW(

@@ -65,7 +65,7 @@ namespace EXODUS
     std::string sec;   ///< see valid_condition 'sectionname'
     std::string desc;  ///< see valid_condition 'description'
     int e_id;          ///< refers to datfile 'E num -'
-    DRT::Condition::GeometryType gtype;
+    CORE::Conditions::GeometryType gtype;
   };
 
   void ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>& eledefs,

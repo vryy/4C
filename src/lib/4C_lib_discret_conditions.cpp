@@ -65,10 +65,10 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     // do not build geometry description for this condition
     if (!condition->GeometryDescription()) continue;
     // do not build geometry description for this condition
-    else if (condition->GType() == DRT::Condition::NoGeom)
+    else if (condition->GType() == CORE::Conditions::geometry_type_no_geom)
       continue;
     // do not build anything for point wise conditions
-    else if (condition->GType() == DRT::Condition::Point)
+    else if (condition->GType() == CORE::Conditions::geometry_type_point)
       continue;
     // build element geometry description without creating new elements if the
     // condition is not a boundary condition; this would be:
@@ -81,10 +81,10 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     else if ((int)(condition->GType()) > GLOBAL::Problem::Instance()->NDim())
       FOUR_C_THROW("Dimension of condition is larger than the problem dimension.");
     // build a line element geometry description
-    else if (condition->GType() == DRT::Condition::Line)
+    else if (condition->GType() == CORE::Conditions::geometry_type_line)
       havenewelements = BuildLinesinCondition(name, condition);
     // build a surface element geometry description
-    else if (condition->GType() == DRT::Condition::Surface)
+    else if (condition->GType() == CORE::Conditions::geometry_type_surface)
       havenewelements = BuildSurfacesinCondition(name, condition);
     // this should be it. if not: FOUR_C_THROW.
     else
@@ -342,14 +342,14 @@ bool DRT::Discretization::BuildSurfacesinCondition(
   // is associated to only one of the two volume elements.
   // these volume elements are inserted into VolEleIDs via the method FindAssociatedEleIDs.
   std::set<int> VolEleIDs;
-  if (cond->Type() == DRT::Condition::StructFluidSurfCoupling)
+  if (cond->Type() == CORE::Conditions::StructFluidSurfCoupling)
   {
     if ((cond->Get<std::string>("field")) == "structure")
     {
       FindAssociatedEleIDs(cond, VolEleIDs, "StructFluidVolCoupling");
     }
   }
-  else if (cond->Type() == DRT::Condition::RedAirwayTissue)
+  else if (cond->Type() == CORE::Conditions::RedAirwayTissue)
     FindAssociatedEleIDs(cond, VolEleIDs, "StructFluidVolCoupling");
 
   /* First: Create the surface objects that belong to the condition. */
@@ -444,8 +444,8 @@ bool DRT::Discretization::BuildSurfacesinCondition(
               sort(nodes.begin(), nodes.end());
 
               // special treatment of RedAirwayTissue and StructFluidSurfCoupling
-              if ((cond->Type() == DRT::Condition::StructFluidSurfCoupling) or
-                  (cond->Type() == DRT::Condition::RedAirwayTissue))
+              if ((cond->Type() == CORE::Conditions::StructFluidSurfCoupling) or
+                  (cond->Type() == CORE::Conditions::RedAirwayTissue))
               {
                 // fill map with 'surfmap' std::vector<int> -> Teuchos::RCP<DRT::Element>
                 {

@@ -48,7 +48,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   for (unsigned int i = 0; i < numneumcond; ++i)
   {
     DRT::Condition* actcond = surfneumcond[i];
-    if (actcond->Type() == DRT::Condition::RedAirwayTissue) coupcond.push_back(actcond);
+    if (actcond->Type() == CORE::Conditions::RedAirwayTissue) coupcond.push_back(actcond);
   }
   unsigned int numcond = coupcond.size();
   if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
@@ -84,7 +84,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
   for (unsigned int i = 0; i < numnodecond; ++i)
   {
     DRT::Condition* actcond = nodecond[i];
-    if (actcond->Type() == DRT::Condition::RedAirwayNodeTissue) nodecoupcond.push_back(actcond);
+    if (actcond->Type() == CORE::Conditions::RedAirwayNodeTissue) nodecoupcond.push_back(actcond);
   }
   unsigned int numnodecoupcond = nodecoupcond.size();
   if (numnodecoupcond == 0) FOUR_C_THROW("no coupling conditions found");

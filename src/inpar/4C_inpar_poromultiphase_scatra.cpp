@@ -148,17 +148,20 @@ void INPAR::POROMULTIPHASESCATRA::SetValidConditions(
         new ConditionDefinition("DESIGN OXYGEN PARTIAL PRESSURE CALCULATION LINE CONDITIONS",
             "PoroMultiphaseScatraOxyPartPressCalcCond",
             "PoroMultiphaseScatra Oxygen Partial Pressure Calculation line condition",
-            DRT::Condition::PoroMultiphaseScatraOxyPartPressCalcCond, true, DRT::Condition::Line));
-    Teuchos::RCP<ConditionDefinition> oxypartpresssurf = Teuchos::rcp(new ConditionDefinition(
-        "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION SURF CONDITIONS",
-        "PoroMultiphaseScatraOxyPartPressCalcCond",
-        "PoroMultiphaseScatra Oxygen Partial Pressure Calculation surface condition",
-        DRT::Condition::PoroMultiphaseScatraOxyPartPressCalcCond, true, DRT::Condition::Surface));
-    Teuchos::RCP<ConditionDefinition> oxypartpressvol = Teuchos::rcp(new ConditionDefinition(
-        "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION VOL CONDITIONS",
-        "PoroMultiphaseScatraOxyPartPressCalcCond",
-        "PoroMultiphaseScatra Oxygen Partial Pressure Calculation volume condition",
-        DRT::Condition::PoroMultiphaseScatraOxyPartPressCalcCond, true, DRT::Condition::Volume));
+            CORE::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
+            CORE::Conditions::geometry_type_line));
+    Teuchos::RCP<ConditionDefinition> oxypartpresssurf = Teuchos::rcp(
+        new ConditionDefinition("DESIGN OXYGEN PARTIAL PRESSURE CALCULATION SURF CONDITIONS",
+            "PoroMultiphaseScatraOxyPartPressCalcCond",
+            "PoroMultiphaseScatra Oxygen Partial Pressure Calculation surface condition",
+            CORE::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
+            CORE::Conditions::geometry_type_surface));
+    Teuchos::RCP<ConditionDefinition> oxypartpressvol = Teuchos::rcp(
+        new ConditionDefinition("DESIGN OXYGEN PARTIAL PRESSURE CALCULATION VOL CONDITIONS",
+            "PoroMultiphaseScatraOxyPartPressCalcCond",
+            "PoroMultiphaseScatra Oxygen Partial Pressure Calculation volume condition",
+            CORE::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
+            CORE::Conditions::geometry_type_volume));
 
     // equip condition definitions with input file line components
     std::vector<Teuchos::RCP<INPUT::LineComponent>> oxypartpresscomponents;

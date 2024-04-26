@@ -164,12 +164,12 @@ void INPAR::EHL::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   ehlcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("FrCoeffOrBound", "", true)));
   ehlcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("FrCoeffOrBound")));
 
-  Teuchos::RCP<ConditionDefinition> lineehl = Teuchos::rcp(
-      new ConditionDefinition("DESIGN LINE EHL MORTAR COUPLING CONDITIONS 2D", "EHLCoupling",
-          "Line EHL Coupling", DRT::Condition::EHLCoupling, true, DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surfehl = Teuchos::rcp(
-      new ConditionDefinition("DESIGN SURF EHL MORTAR COUPLING CONDITIONS 3D", "EHLCoupling",
-          "Surface EHL Coupling", DRT::Condition::EHLCoupling, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> lineehl = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN LINE EHL MORTAR COUPLING CONDITIONS 2D", "EHLCoupling", "Line EHL Coupling",
+      CORE::Conditions::EHLCoupling, true, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<ConditionDefinition> surfehl = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SURF EHL MORTAR COUPLING CONDITIONS 3D", "EHLCoupling", "Surface EHL Coupling",
+      CORE::Conditions::EHLCoupling, true, CORE::Conditions::geometry_type_surface));
 
 
   for (unsigned i = 0; i < ehlcomponents.size(); ++i)

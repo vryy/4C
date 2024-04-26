@@ -1386,7 +1386,7 @@ void INPAR::FLUID::SetValidConditions(
 
   Teuchos::RCP<ConditionDefinition> tbc_turb_inflow = Teuchos::rcp(new ConditionDefinition(
       "DESIGN SURF TURBULENT INFLOW TRANSFER", "TransferTurbulentInflow", "TransferTurbulentInflow",
-      DRT::Condition::TransferTurbulentInflow, true, DRT::Condition::Surface));
+      CORE::Conditions::TransferTurbulentInflow, true, CORE::Conditions::geometry_type_surface));
 
   // we attach all the components of this condition to this weak line DBC
   for (unsigned i = 0; i < tbc_turb_inflow_components.size(); ++i)
@@ -1403,7 +1403,7 @@ void INPAR::FLUID::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> turbulentinflowgeneration =
       Teuchos::rcp(new ConditionDefinition("FLUID TURBULENT INFLOW VOLUME",
           "TurbulentInflowSection", "TurbulentInflowSection",
-          DRT::Condition::TurbulentInflowSection, true, DRT::Condition::Volume));
+          CORE::Conditions::TurbulentInflowSection, true, CORE::Conditions::geometry_type_volume));
 
   condlist.push_back(turbulentinflowgeneration);
 
@@ -1441,14 +1441,15 @@ void INPAR::FLUID::SetValidConditions(
       Teuchos::rcp(new INPUT::IntComponent("curve", {0, true, true})));
 
 
-  Teuchos::RCP<ConditionDefinition> lineflowdeppressure = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN LINE FLOW-DEPENDENT PRESSURE CONDITIONS", "LineFlowDepPressure",
-      "LineFlowDepPressure", DRT::Condition::LineFlowDepPressure, true, DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> lineflowdeppressure =
+      Teuchos::rcp(new ConditionDefinition("DESIGN LINE FLOW-DEPENDENT PRESSURE CONDITIONS",
+          "LineFlowDepPressure", "LineFlowDepPressure", CORE::Conditions::LineFlowDepPressure, true,
+          CORE::Conditions::geometry_type_line));
 
   Teuchos::RCP<ConditionDefinition> surfflowdeppressure =
       Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE FLOW-DEPENDENT PRESSURE CONDITIONS",
           "SurfaceFlowDepPressure", "SurfaceFlowDepPressure",
-          DRT::Condition::SurfaceFlowDepPressure, true, DRT::Condition::Surface));
+          CORE::Conditions::SurfaceFlowDepPressure, true, CORE::Conditions::geometry_type_surface));
 
   // we attach all the components of this condition to this weak line DBC
   for (unsigned i = 0; i < flowdeppressurecomponents.size(); ++i)
@@ -1471,11 +1472,12 @@ void INPAR::FLUID::SetValidConditions(
 
   Teuchos::RCP<ConditionDefinition> lineslipsupp = Teuchos::rcp(new ConditionDefinition(
       "DESIGN LINE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS", "LineSlipSupp", "LineSlipSupp",
-      DRT::Condition::LineSlipSupp, true, DRT::Condition::Line));
+      CORE::Conditions::LineSlipSupp, true, CORE::Conditions::geometry_type_line));
 
-  Teuchos::RCP<ConditionDefinition> surfslipsupp = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN SURFACE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS", "SurfaceSlipSupp",
-      "SurfaceSlipSupp", DRT::Condition::SurfaceSlipSupp, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> surfslipsupp = Teuchos::rcp(
+      new ConditionDefinition("DESIGN SURFACE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS",
+          "SurfaceSlipSupp", "SurfaceSlipSupp", CORE::Conditions::SurfaceSlipSupp, true,
+          CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < slipsuppcomponents.size(); ++i)
   {
@@ -1494,13 +1496,13 @@ void INPAR::FLUID::SetValidConditions(
   navierslipcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("SLIPCOEFFICIENT")));
   navierslipcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("slipcoefficient")));
 
-  Teuchos::RCP<ConditionDefinition> linenavierslip = Teuchos::rcp(
-      new ConditionDefinition("DESIGN LINE NAVIER-SLIP BOUNDARY CONDITIONS", "LineNavierSlip",
-          "LineNavierSlip", DRT::Condition::LineNavierSlip, true, DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> linenavierslip = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN LINE NAVIER-SLIP BOUNDARY CONDITIONS", "LineNavierSlip", "LineNavierSlip",
+      CORE::Conditions::LineNavierSlip, true, CORE::Conditions::geometry_type_line));
 
-  Teuchos::RCP<ConditionDefinition> surfnavierslip = Teuchos::rcp(
-      new ConditionDefinition("DESIGN SURF NAVIER-SLIP BOUNDARY CONDITIONS", "SurfNavierSlip",
-          "SurfNavierSlip", DRT::Condition::SurfNavierSlip, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> surfnavierslip = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SURF NAVIER-SLIP BOUNDARY CONDITIONS", "SurfNavierSlip", "SurfNavierSlip",
+      CORE::Conditions::SurfNavierSlip, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < navierslipcomponents.size(); ++i)
   {
@@ -1517,7 +1519,8 @@ void INPAR::FLUID::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> surfconsistentoutflowconsistency =
       Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY",
           "SurfaceConservativeOutflowConsistency", "SurfaceConservativeOutflowConsistency",
-          DRT::Condition::SurfaceConservativeOutflowConsistency, true, DRT::Condition::Surface));
+          CORE::Conditions::SurfaceConservativeOutflowConsistency, true,
+          CORE::Conditions::geometry_type_surface));
 
   condlist.push_back(surfconsistentoutflowconsistency);
 
@@ -1526,10 +1529,10 @@ void INPAR::FLUID::SetValidConditions(
 
   Teuchos::RCP<ConditionDefinition> linefluidneumanninflow = Teuchos::rcp(new ConditionDefinition(
       "FLUID NEUMANN INFLOW LINE CONDITIONS", "FluidNeumannInflow", "Line Fluid Neumann Inflow",
-      DRT::Condition::FluidNeumannInflow, true, DRT::Condition::Line));
+      CORE::Conditions::FluidNeumannInflow, true, CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> surffluidneumanninflow = Teuchos::rcp(new ConditionDefinition(
       "FLUID NEUMANN INFLOW SURF CONDITIONS", "FluidNeumannInflow", "Surface Fluid Neumann Inflow",
-      DRT::Condition::FluidNeumannInflow, true, DRT::Condition::Surface));
+      CORE::Conditions::FluidNeumannInflow, true, CORE::Conditions::geometry_type_surface));
 
   condlist.push_back(linefluidneumanninflow);
   condlist.push_back(surffluidneumanninflow);
@@ -1567,13 +1570,13 @@ void INPAR::FLUID::SetValidConditions(
 
   Teuchos::RCP<ConditionDefinition> linemixhybDirichlet = Teuchos::rcp(new ConditionDefinition(
       "DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS", "LineMixHybDirichlet", "LineMixHybDirichlet",
-      DRT::Condition::LineMixHybDirichlet, true, DRT::Condition::Line));
+      CORE::Conditions::LineMixHybDirichlet, true, CORE::Conditions::geometry_type_line));
 
 
   Teuchos::RCP<ConditionDefinition> surfmixhybDirichlet =
       Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS",
           "SurfaceMixHybDirichlet", "SurfaceMixHybDirichlet",
-          DRT::Condition::SurfaceMixHybDirichlet, true, DRT::Condition::Surface));
+          CORE::Conditions::SurfaceMixHybDirichlet, true, CORE::Conditions::geometry_type_surface));
 
   // we attach all the components of this condition to this condition
   for (unsigned i = 0; i < mixhybDirichletcomponents.size(); ++i)
@@ -1591,7 +1594,7 @@ void INPAR::FLUID::SetValidConditions(
 
   Teuchos::RCP<ConditionDefinition> surftension = Teuchos::rcp(new ConditionDefinition(
       "SURFACE TENSION CONDITIONS", "SurfaceStress", "Surface Stress (ideal water)",
-      DRT::Condition::SurfaceTension, true, DRT::Condition::Surface));
+      CORE::Conditions::SurfaceTension, true, CORE::Conditions::geometry_type_surface));
 
   surftension->AddComponent(Teuchos::rcp(new INPUT::IntComponent("curve", {0, true, true})));
   INPUT::AddNamedReal(surftension, "gamma");
@@ -1621,12 +1624,12 @@ void INPAR::FLUID::SetValidConditions(
   freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("NODENORMALFUNCT")));
   freesurfcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("nodenormalfunct")));
 
-  Teuchos::RCP<ConditionDefinition> linefreesurf = Teuchos::rcp(
-      new ConditionDefinition("DESIGN FLUID FREE SURFACE LINE CONDITIONS", "FREESURFCoupling",
-          "FREESURF Coupling", DRT::Condition::FREESURFCoupling, true, DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surffreesurf = Teuchos::rcp(
-      new ConditionDefinition("DESIGN FLUID FREE SURFACE SURF CONDITIONS", "FREESURFCoupling",
-          "FREESURF Coupling", DRT::Condition::FREESURFCoupling, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> linefreesurf = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN FLUID FREE SURFACE LINE CONDITIONS", "FREESURFCoupling", "FREESURF Coupling",
+      CORE::Conditions::FREESURFCoupling, true, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<ConditionDefinition> surffreesurf = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN FLUID FREE SURFACE SURF CONDITIONS", "FREESURFCoupling", "FREESURF Coupling",
+      CORE::Conditions::FREESURFCoupling, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < freesurfcomponents.size(); ++i)
   {
@@ -1644,12 +1647,12 @@ void INPAR::FLUID::SetValidConditions(
 
   Teuchos::RCP<ConditionDefinition> linefluidstress =
       Teuchos::rcp(new ConditionDefinition("DESIGN FLUID STRESS CALC LINE CONDITIONS",
-          "FluidStressCalc", "Line Fluid Stress Calculation", DRT::Condition::FluidStressCalc, true,
-          DRT::Condition::Line));
+          "FluidStressCalc", "Line Fluid Stress Calculation", CORE::Conditions::FluidStressCalc,
+          true, CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> surffluidstress =
       Teuchos::rcp(new ConditionDefinition("DESIGN FLUID STRESS CALC SURF CONDITIONS",
-          "FluidStressCalc", "Surf Fluid Stress Calculation", DRT::Condition::FluidStressCalc, true,
-          DRT::Condition::Surface));
+          "FluidStressCalc", "Surf Fluid Stress Calculation", CORE::Conditions::FluidStressCalc,
+          true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < fluidstresscomponents.size(); ++i)
   {
@@ -1672,12 +1675,12 @@ void INPAR::FLUID::SetValidConditions(
   liftdragcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("AXIS", "", true)));
   liftdragcomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("axis", 3, {0, true})));
 
-  Teuchos::RCP<ConditionDefinition> lineliftdrag =
-      Teuchos::rcp(new ConditionDefinition("DESIGN FLUID LINE LIFT&DRAG", "LIFTDRAG",
-          "Line LIFTDRAG", DRT::Condition::LineLIFTDRAG, true, DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surfliftdrag =
-      Teuchos::rcp(new ConditionDefinition("DESIGN FLUID SURF LIFT&DRAG", "LIFTDRAG",
-          "Surface LIFTDRAG", DRT::Condition::SurfLIFTDRAG, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> lineliftdrag = Teuchos::rcp(
+      new ConditionDefinition("DESIGN FLUID LINE LIFT&DRAG", "LIFTDRAG", "Line LIFTDRAG",
+          CORE::Conditions::LineLIFTDRAG, true, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<ConditionDefinition> surfliftdrag = Teuchos::rcp(
+      new ConditionDefinition("DESIGN FLUID SURF LIFT&DRAG", "LIFTDRAG", "Surface LIFTDRAG",
+          CORE::Conditions::SurfLIFTDRAG, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < liftdragcomponents.size(); ++i)
   {
@@ -1695,9 +1698,9 @@ void INPAR::FLUID::SetValidConditions(
   std::vector<Teuchos::RCP<INPUT::LineComponent>> lineflowratecomponents;
   lineflowratecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
-  Teuchos::RCP<ConditionDefinition> lineflowrate =
-      Teuchos::rcp(new ConditionDefinition("DESIGN FLOW RATE LINE CONDITIONS", "LineFlowRate",
-          "Line Flow Rate", DRT::Condition::FlowRateThroughLine_2D, true, DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> lineflowrate = Teuchos::rcp(
+      new ConditionDefinition("DESIGN FLOW RATE LINE CONDITIONS", "LineFlowRate", "Line Flow Rate",
+          CORE::Conditions::FlowRateThroughLine_2D, true, CORE::Conditions::geometry_type_line));
 
   for (unsigned i = 0; i < lineflowratecomponents.size(); ++i)
   {
@@ -1713,7 +1716,7 @@ void INPAR::FLUID::SetValidConditions(
 
   Teuchos::RCP<ConditionDefinition> surfflowrate = Teuchos::rcp(new ConditionDefinition(
       "DESIGN FLOW RATE SURF CONDITIONS", "SurfFlowRate", "Surface Flow Rate",
-      DRT::Condition::FlowRateThroughSurface_3D, true, DRT::Condition::Surface));
+      CORE::Conditions::FlowRateThroughSurface_3D, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < flowratecomponents.size(); ++i)
   {
@@ -1727,9 +1730,10 @@ void INPAR::FLUID::SetValidConditions(
   std::vector<Teuchos::RCP<INPUT::LineComponent>> impulsratecomponents;
   impulsratecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
-  Teuchos::RCP<ConditionDefinition> surfimpulsrate = Teuchos::rcp(new ConditionDefinition(
-      "DESIGN IMPULS RATE SURF CONDITIONS", "SurfImpulsRate", "Surface Impuls Rate",
-      DRT::Condition::ImpulsRateThroughSurface_3D, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> surfimpulsrate =
+      Teuchos::rcp(new ConditionDefinition("DESIGN IMPULS RATE SURF CONDITIONS", "SurfImpulsRate",
+          "Surface Impuls Rate", CORE::Conditions::ImpulsRateThroughSurface_3D, true,
+          CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < impulsratecomponents.size(); ++i)
   {
@@ -1740,10 +1744,10 @@ void INPAR::FLUID::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // Volumetric surface flow profile condition
-  Teuchos::RCP<ConditionDefinition> volumetric_surface_flow_cond =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SURF VOLUMETRIC FLOW CONDITIONS",
-          "VolumetricSurfaceFlowCond", "volumetric surface flow condition",
-          DRT::Condition::VolumetricSurfaceFlowCond, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volumetric_surface_flow_cond = Teuchos::rcp(
+      new ConditionDefinition("DESIGN SURF VOLUMETRIC FLOW CONDITIONS", "VolumetricSurfaceFlowCond",
+          "volumetric surface flow condition", CORE::Conditions::VolumetricSurfaceFlowCond, true,
+          CORE::Conditions::geometry_type_surface));
 
   std::vector<Teuchos::RCP<INPUT::LineComponent>> inflownormalcomponents;
 
@@ -1802,7 +1806,7 @@ void INPAR::FLUID::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> volumetric_border_nodes_cond =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE VOLUMETRIC FLOW BORDER NODES",
           "VolumetricFlowBorderNodesCond", "volumetric flow border nodes condition",
-          DRT::Condition::VolumetricFlowBorderNodes, true, DRT::Condition::Line));
+          CORE::Conditions::VolumetricFlowBorderNodes, true, CORE::Conditions::geometry_type_line));
 
   volumetric_border_nodes_cond->AddComponent(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
 
@@ -1814,7 +1818,8 @@ void INPAR::FLUID::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> total_traction_correction_cond =
       Teuchos::rcp(new ConditionDefinition("DESIGN SURF TOTAL TRACTION CORRECTION CONDITIONS",
           "TotalTractionCorrectionCond", "total traction correction condition",
-          DRT::Condition::TotalTractionCorrectionCond, true, DRT::Condition::Surface));
+          CORE::Conditions::TotalTractionCorrectionCond, true,
+          CORE::Conditions::geometry_type_surface));
 
 
   total_traction_correction_cond->AddComponent(
@@ -1870,7 +1875,8 @@ void INPAR::FLUID::SetValidConditions(
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE TOTAL TRACTION CORRECTION BORDER NODES",
           "TotalTractionCorrectionBorderNodesCond",
           "total traction correction border nodes condition",
-          DRT::Condition::TotalTractionCorrectionBorderNodes, true, DRT::Condition::Line));
+          CORE::Conditions::TotalTractionCorrectionBorderNodes, true,
+          CORE::Conditions::geometry_type_line));
 
   traction_corrector_border_nodes_cond->AddComponent(
       Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
@@ -1883,72 +1889,72 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // no penetration for darcy flow in porous media
 
-  Teuchos::RCP<ConditionDefinition> nopenetration_surf = Teuchos::rcp(
-      new ConditionDefinition("DESIGN SURFACE NORMAL NO PENETRATION CONDITION", "NoPenetration",
-          "No Penetration", DRT::Condition::NoPenetration, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> nopenetration_surf = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SURFACE NORMAL NO PENETRATION CONDITION", "NoPenetration", "No Penetration",
+      CORE::Conditions::NoPenetration, true, CORE::Conditions::geometry_type_surface));
 
   condlist.push_back(nopenetration_surf);
 
   /*--------------------------------------------------------------------*/
   // no penetration for darcy flow in porous media
 
-  Teuchos::RCP<ConditionDefinition> nopenetration_line = Teuchos::rcp(
-      new ConditionDefinition("DESIGN LINE NORMAL NO PENETRATION CONDITION", "NoPenetration",
-          "No Penetration", DRT::Condition::NoPenetration, true, DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> nopenetration_line = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN LINE NORMAL NO PENETRATION CONDITION", "NoPenetration", "No Penetration",
+      CORE::Conditions::NoPenetration, true, CORE::Conditions::geometry_type_line));
 
   condlist.push_back(nopenetration_line);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of coupling terms in porous media
 
-  Teuchos::RCP<ConditionDefinition> porocoupling_vol =
-      Teuchos::rcp(new ConditionDefinition("DESIGN VOLUME POROCOUPLING CONDITION", "PoroCoupling",
-          "Poro Coupling", DRT::Condition::PoroCoupling, true, DRT::Condition::Volume));
+  Teuchos::RCP<ConditionDefinition> porocoupling_vol = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN VOLUME POROCOUPLING CONDITION", "PoroCoupling", "Poro Coupling",
+      CORE::Conditions::PoroCoupling, true, CORE::Conditions::geometry_type_volume));
 
   condlist.push_back(porocoupling_vol);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of coupling terms in porous media
 
-  Teuchos::RCP<ConditionDefinition> porocoupling_surf =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE POROCOUPLING CONDITION", "PoroCoupling",
-          "Poro Coupling", DRT::Condition::PoroCoupling, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> porocoupling_surf = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SURFACE POROCOUPLING CONDITION", "PoroCoupling", "Poro Coupling",
+      CORE::Conditions::PoroCoupling, true, CORE::Conditions::geometry_type_surface));
 
   condlist.push_back(porocoupling_surf);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in porous media problems
 
-  Teuchos::RCP<ConditionDefinition> poropartint_surf =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE PORO PARTIAL INTEGRATION", "PoroPartInt",
-          "Poro Partial Integration", DRT::Condition::PoroPartInt, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> poropartint_surf = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SURFACE PORO PARTIAL INTEGRATION", "PoroPartInt", "Poro Partial Integration",
+      CORE::Conditions::PoroPartInt, true, CORE::Conditions::geometry_type_surface));
 
   condlist.push_back(poropartint_surf);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in porous media problems
 
-  Teuchos::RCP<ConditionDefinition> poropartint_line =
-      Teuchos::rcp(new ConditionDefinition("DESIGN LINE PORO PARTIAL INTEGRATION", "PoroPartInt",
-          "Poro Partial Integration", DRT::Condition::PoroPartInt, true, DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> poropartint_line = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN LINE PORO PARTIAL INTEGRATION", "PoroPartInt", "Poro Partial Integration",
+      CORE::Conditions::PoroPartInt, true, CORE::Conditions::geometry_type_line));
 
   condlist.push_back(poropartint_line);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in porous media problems
 
-  Teuchos::RCP<ConditionDefinition> poropresint_surf = Teuchos::rcp(
-      new ConditionDefinition("DESIGN SURFACE PORO PRESSURE INTEGRATION", "PoroPresInt",
-          "Poro Pressure Integration", DRT::Condition::PoroPresInt, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> poropresint_surf = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SURFACE PORO PRESSURE INTEGRATION", "PoroPresInt", "Poro Pressure Integration",
+      CORE::Conditions::PoroPresInt, true, CORE::Conditions::geometry_type_surface));
 
   condlist.push_back(poropresint_surf);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in porous media problems
 
-  Teuchos::RCP<ConditionDefinition> poropresint_line =
-      Teuchos::rcp(new ConditionDefinition("DESIGN LINE PORO PRESSURE INTEGRATION", "PoroPresInt",
-          "Poro Pressure Integration", DRT::Condition::PoroPresInt, true, DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> poropresint_line = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN LINE PORO PRESSURE INTEGRATION", "PoroPresInt", "Poro Pressure Integration",
+      CORE::Conditions::PoroPresInt, true, CORE::Conditions::geometry_type_line));
 
   condlist.push_back(poropresint_line);
 
@@ -1966,7 +1972,8 @@ void INPAR::FLUID::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> fluctHydro_statisticsSurf =
       Teuchos::rcp(new ConditionDefinition("DESIGN FLUCTHYDRO STATISTICS SURF CONDITIONS",
           "FluctHydroStatisticsSurf", "FluctHydro_StatisticsSurf",
-          DRT::Condition::FluctHydro_StatisticsSurf, true, DRT::Condition::Surface));
+          CORE::Conditions::FluctHydro_StatisticsSurf, true,
+          CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < flucthydrostatsurfcomponents.size(); ++i)
     fluctHydro_statisticsSurf->AddComponent(flucthydrostatsurfcomponents[i]);
@@ -1986,7 +1993,7 @@ void INPAR::FLUID::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> fluctHydro_statisticsLine =
       Teuchos::rcp(new ConditionDefinition("DESIGN FLUCTHYDRO STATISTICS LINE CONDITIONS",
           "FluctHydroStatisticsLine", "FluctHydro_StatisticsLine",
-          DRT::Condition::FluctHydro_StatisticsLine, true, DRT::Condition::Line));
+          CORE::Conditions::FluctHydro_StatisticsLine, true, CORE::Conditions::geometry_type_line));
 
   for (unsigned i = 0; i < flucthydrostatlinecomponents.size(); ++i)
     fluctHydro_statisticsLine->AddComponent(flucthydrostatlinecomponents[i]);

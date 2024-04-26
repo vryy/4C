@@ -356,7 +356,8 @@ void INPAR::BEAMTOSOLID::SetValidConditions(
     Teuchos::RCP<ConditionDefinition> beam_to_solid_volume_meshtying_condition = Teuchos::rcp(
         new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING VOLUME",
             condition_names[1], "Beam-to-volume mesh tying conditions - volume definition",
-            DRT::Condition::BeamToSolidVolumeMeshtyingVolume, true, DRT::Condition::Volume));
+            CORE::Conditions::BeamToSolidVolumeMeshtyingVolume, true,
+            CORE::Conditions::geometry_type_volume));
     beam_to_solid_volume_meshtying_condition->AddComponent(
         Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING_ID")));
     beam_to_solid_volume_meshtying_condition->AddComponent(
@@ -366,7 +367,8 @@ void INPAR::BEAMTOSOLID::SetValidConditions(
     beam_to_solid_volume_meshtying_condition =
         Teuchos::rcp(new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING LINE",
             condition_names[0], "Beam-to-volume mesh tying conditions - line definition",
-            DRT::Condition::BeamToSolidVolumeMeshtyingLine, true, DRT::Condition::Line));
+            CORE::Conditions::BeamToSolidVolumeMeshtyingLine, true,
+            CORE::Conditions::geometry_type_line));
     beam_to_solid_volume_meshtying_condition->AddComponent(
         Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING_ID")));
     beam_to_solid_volume_meshtying_condition->AddComponent(
@@ -384,7 +386,8 @@ void INPAR::BEAMTOSOLID::SetValidConditions(
     Teuchos::RCP<ConditionDefinition> beam_to_solid_surface_meshtying_condition = Teuchos::rcp(
         new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING SURFACE",
             condition_names[1], "Beam-to-surface mesh tying conditions - surface definition",
-            DRT::Condition::BeamToSolidSurfaceMeshtyingSurface, true, DRT::Condition::Surface));
+            CORE::Conditions::BeamToSolidSurfaceMeshtyingSurface, true,
+            CORE::Conditions::geometry_type_surface));
     beam_to_solid_surface_meshtying_condition->AddComponent(
         Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING_ID")));
     beam_to_solid_surface_meshtying_condition->AddComponent(
@@ -394,7 +397,8 @@ void INPAR::BEAMTOSOLID::SetValidConditions(
     beam_to_solid_surface_meshtying_condition = Teuchos::rcp(
         new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING LINE",
             condition_names[0], "Beam-to-surface mesh tying conditions - line definition",
-            DRT::Condition::BeamToSolidSurfaceMeshtyingLine, true, DRT::Condition::Line));
+            CORE::Conditions::BeamToSolidSurfaceMeshtyingLine, true,
+            CORE::Conditions::geometry_type_line));
     beam_to_solid_surface_meshtying_condition->AddComponent(
         Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING_ID")));
     beam_to_solid_surface_meshtying_condition->AddComponent(
@@ -412,7 +416,8 @@ void INPAR::BEAMTOSOLID::SetValidConditions(
     Teuchos::RCP<ConditionDefinition> beam_to_solid_surface_contact_condition = Teuchos::rcp(
         new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT SURFACE",
             condition_names[1], "Beam-to-surface contact conditions - surface definition",
-            DRT::Condition::BeamToSolidSurfaceContactSurface, true, DRT::Condition::Surface));
+            CORE::Conditions::BeamToSolidSurfaceContactSurface, true,
+            CORE::Conditions::geometry_type_surface));
     beam_to_solid_surface_contact_condition->AddComponent(
         Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING_ID")));
     beam_to_solid_surface_contact_condition->AddComponent(
@@ -422,7 +427,8 @@ void INPAR::BEAMTOSOLID::SetValidConditions(
     beam_to_solid_surface_contact_condition =
         Teuchos::rcp(new ConditionDefinition("BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT LINE",
             condition_names[0], "Beam-to-surface contact conditions - line definition",
-            DRT::Condition::BeamToSolidSurfaceContactLine, true, DRT::Condition::Line));
+            CORE::Conditions::BeamToSolidSurfaceContactLine, true,
+            CORE::Conditions::geometry_type_line));
     beam_to_solid_surface_contact_condition->AddComponent(
         Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING_ID")));
     beam_to_solid_surface_contact_condition->AddComponent(

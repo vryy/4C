@@ -136,12 +136,12 @@ void INPAR::FPSI::SetValidConditions(
 
   fpsicomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
 
-  Teuchos::RCP<ConditionDefinition> linefpsi =
-      Teuchos::rcp(new ConditionDefinition("DESIGN FPSI COUPLING LINE CONDITIONS", "FPSICoupling",
-          "FPSI Coupling", DRT::Condition::FPSICoupling, true, DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surffpsi =
-      Teuchos::rcp(new ConditionDefinition("DESIGN FPSI COUPLING SURF CONDITIONS", "FPSICoupling",
-          "FPSI Coupling", DRT::Condition::FPSICoupling, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> linefpsi = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN FPSI COUPLING LINE CONDITIONS", "FPSICoupling", "FPSI Coupling",
+      CORE::Conditions::FPSICoupling, true, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<ConditionDefinition> surffpsi = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN FPSI COUPLING SURF CONDITIONS", "FPSICoupling", "FPSI Coupling",
+      CORE::Conditions::FPSICoupling, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < fpsicomponents.size(); ++i)
   {
@@ -161,16 +161,16 @@ void INPAR::FPSI::SetValidConditions(
 
   Teuchos::RCP<ConditionDefinition> neumannintegration_surf = Teuchos::rcp(new ConditionDefinition(
       "DESIGN SURFACE NEUMANN INTEGRATION", "NeumannIntegration", "Neumann Integration",
-      DRT::Condition::NeumannIntegration, true, DRT::Condition::Surface));
+      CORE::Conditions::NeumannIntegration, true, CORE::Conditions::geometry_type_surface));
 
   condlist.push_back(neumannintegration_surf);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in fpsi problems
 
-  Teuchos::RCP<ConditionDefinition> neumannintegration_line =
-      Teuchos::rcp(new ConditionDefinition("DESIGN LINE NEUMANN INTEGRATION", "NeumannIntegration",
-          "Neumann Integration", DRT::Condition::NeumannIntegration, true, DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> neumannintegration_line = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN LINE NEUMANN INTEGRATION", "NeumannIntegration", "Neumann Integration",
+      CORE::Conditions::NeumannIntegration, true, CORE::Conditions::geometry_type_line));
 
   condlist.push_back(neumannintegration_line);
 }

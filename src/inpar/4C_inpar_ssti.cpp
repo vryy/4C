@@ -147,11 +147,11 @@ void INPAR::SSTI::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> linesstiinterfacemeshtying =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSTI INTERFACE MESHTYING LINE CONDITIONS",
           "SSTIInterfaceMeshtying", "SSTI Interface Meshtying",
-          DRT::Condition::SSTIInterfaceMeshtying, true, DRT::Condition::Line));
+          CORE::Conditions::SSTIInterfaceMeshtying, true, CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> surfsstiinterfacemeshtying =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS",
           "SSTIInterfaceMeshtying", "SSTI Interface Meshtying",
-          DRT::Condition::SSTIInterfaceMeshtying, true, DRT::Condition::Surface));
+          CORE::Conditions::SSTIInterfaceMeshtying, true, CORE::Conditions::geometry_type_surface));
 
   // equip condition definitions with input file line components
   std::vector<Teuchos::RCP<INPUT::LineComponent>> sstiinterfacemeshtyingcomponents;

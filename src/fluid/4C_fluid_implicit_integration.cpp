@@ -2496,19 +2496,22 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
   // - first volume conditions
   for (auto& unsortedCond : unsortedConds)
   {
-    if (unsortedCond->GType() == DRT::Condition::Volume) conds.push_back(unsortedCond);
+    if (unsortedCond->GType() == CORE::Conditions::geometry_type_volume)
+      conds.push_back(unsortedCond);
   }
 
   // - then surface conditions
   for (auto& unsortedCond : unsortedConds)
   {
-    if (unsortedCond->GType() == DRT::Condition::Surface) conds.push_back(unsortedCond);
+    if (unsortedCond->GType() == CORE::Conditions::geometry_type_surface)
+      conds.push_back(unsortedCond);
   }
 
   // - and finally line conditions
   for (auto& unsortedCond : unsortedConds)
   {
-    if (unsortedCond->GType() == DRT::Condition::Line) conds.push_back(unsortedCond);
+    if (unsortedCond->GType() == CORE::Conditions::geometry_type_line)
+      conds.push_back(unsortedCond);
   }
 
   // Loop through all conditions and do the Ale update according to the coupling type
@@ -2523,11 +2526,11 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
 
     // Get condition name
     std::string condName;
-    if (selectedCond[0]->Type() == DRT::Condition::FREESURFCoupling)
+    if (selectedCond[0]->Type() == CORE::Conditions::FREESURFCoupling)
     {
       condName = "FREESURFCoupling";
     }
-    else if (selectedCond[0]->Type() == DRT::Condition::ALEUPDATECoupling)
+    else if (selectedCond[0]->Type() == CORE::Conditions::ALEUPDATECoupling)
     {
       condName = "ALEUPDATECoupling";
     }

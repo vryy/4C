@@ -320,7 +320,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       {
         if (kinetics_slave_cond.second->Get<int>("kinetic model") !=
                 static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux) and
-            kinetics_slave_cond.second->GType() != DRT::Condition::GeometryType::Point)
+            kinetics_slave_cond.second->GType() != CORE::Conditions::geometry_type_point)
         {
           // collect condition specific data and store to scatra boundary parameter class
           SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
@@ -2965,18 +2965,18 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
 {
   // get kinetic model and condition type
   const int kineticmodel = s2ikinetics_cond.Get<int>("kinetic model");
-  const DRT::Condition::ConditionType conditiontype = s2ikinetics_cond.Type();
+  const CORE::Conditions::ConditionType conditiontype = s2ikinetics_cond.Type();
 
   // set action, kinetic model, condition type and numscal
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_scatra_ele_boundary_parameter, s2icouplingparameters);
   s2icouplingparameters.set<int>("kinetic model", kineticmodel);
-  s2icouplingparameters.set<DRT::Condition::ConditionType>("condition type", conditiontype);
+  s2icouplingparameters.set<CORE::Conditions::ConditionType>("condition type", conditiontype);
 
   // set the condition type specific parameters
   switch (conditiontype)
   {
-    case DRT::Condition::ConditionType::S2IKinetics:
+    case CORE::Conditions::ConditionType::S2IKinetics:
     {
       // set the kinetic model specific parameters
       switch (kineticmodel)
@@ -3067,7 +3067,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
       break;
     }
 
-    case DRT::Condition::ConditionType::S2IKineticsGrowth:
+    case CORE::Conditions::ConditionType::S2IKineticsGrowth:
     {
       // set the kinetic model specific parameters
       switch (kineticmodel)

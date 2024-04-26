@@ -79,7 +79,7 @@ namespace STR
     void Execute(IO::DiscretizationWriter& writer);
 
    private:
-    int GetUniqueId(int tagged_id, DRT::Condition::GeometryType gtype) const;
+    int GetUniqueId(int tagged_id, CORE::Conditions::GeometryType gtype) const;
 
     void CreateReactionForceCondition(
         const DRT::Condition& tagged_cond, DRT::Discretization& discret) const;

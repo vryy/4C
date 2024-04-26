@@ -115,7 +115,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
   {
     for (unsigned int i = 0; i < 2; ++i)
     {
-      if (linechargeconds[i]->Type() == DRT::Condition::BeamPotential_LineChargeDensity)
+      if (linechargeconds[i]->Type() == CORE::Conditions::BeamPotential_LineChargeDensity)
         linechargeconds_[i] = linechargeconds[i];
       else
         FOUR_C_THROW(

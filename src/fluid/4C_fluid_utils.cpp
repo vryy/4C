@@ -663,7 +663,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
       ldcoordmap[label] = &ldconds[i]->Get<std::vector<double>>("centerCoord");
 
       // axis of rotation for present label (only needed for 3D)
-      if (ldconds[i]->Type() == DRT::Condition::SurfLIFTDRAG)
+      if (ldconds[i]->Type() == CORE::Conditions::SurfLIFTDRAG)
       {
         ldaxismap[label] = &ldconds[i]->Get<std::vector<double>>("axis");
         // get pointer to axis vector (if available)

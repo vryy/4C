@@ -79,8 +79,8 @@ namespace INPUT
       \param gtype type of geometry the condition lives on
      */
     ConditionDefinition(std::string sectionname, std::string conditionname, std::string description,
-        DRT::Condition::ConditionType condtype, bool buildgeometry,
-        DRT::Condition::GeometryType gtype);
+        CORE::Conditions::ConditionType condtype, bool buildgeometry,
+        CORE::Conditions::GeometryType gtype);
 
     /// add a concrete component to the condition line definition
     /*!
@@ -115,15 +115,15 @@ namespace INPUT
     std::vector<Teuchos::RCP<INPUT::LineComponent>> Inputline() const { return inputline_; }
 
     /// my GeometryType
-    DRT::Condition::GeometryType GeometryType() const { return gtype_; }
+    CORE::Conditions::GeometryType GeometryType() const { return gtype_; }
 
    private:
     std::string sectionname_;
     std::string conditionname_;
     std::string description_;
-    DRT::Condition::ConditionType condtype_;
+    CORE::Conditions::ConditionType condtype_;
     bool buildgeometry_;
-    DRT::Condition::GeometryType gtype_;
+    CORE::Conditions::GeometryType gtype_;
 
     ///
     std::vector<Teuchos::RCP<INPUT::LineComponent>> inputline_;

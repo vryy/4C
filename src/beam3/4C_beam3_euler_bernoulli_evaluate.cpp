@@ -293,7 +293,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   const std::vector<int>* nodeids = condition.GetNodes();
 
   // if a point neumann condition needs to be linearized
-  if (condition.Type() == DRT::Condition::PointNeumannEB)
+  if (condition.Type() == CORE::Conditions::PointNeumannEB)
   {
     // find out local element number --> this is done since the first element of a neumann point
     // condition is used for this function in this case we do not know whether it is the left or the
@@ -412,7 +412,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     }
   }
   // if a line neumann condition needs to be linearized
-  else if (condition.Type() == DRT::Condition::LineNeumann)
+  else if (condition.Type() == CORE::Conditions::LineNeumann)
   {
     // Check if MOMENT line Neumann conditions are applied accidentally and throw error
     for (int dof = 3; dof < 6; ++dof)

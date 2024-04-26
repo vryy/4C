@@ -329,7 +329,7 @@ namespace DRT
       void ReadDirichletCondition(const DRT::Discretization& discret,
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids,
-          const enum DRT::Condition::ConditionType& type) const;
+          const enum CORE::Conditions::ConditionType& type) const;
 
       /** \brief Determine dofs subject to Dirichlet condition from input file
        *
@@ -378,7 +378,7 @@ namespace DRT
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids,
-          const enum DRT::Condition::ConditionType& type) const;
+          const enum CORE::Conditions::ConditionType& type) const;
 
       /** \brief Apply the Dirichlet values to the system vectors
        *

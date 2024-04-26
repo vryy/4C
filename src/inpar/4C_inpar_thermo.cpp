@@ -183,10 +183,10 @@ void INPAR::THR::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
 
   Teuchos::RCP<ConditionDefinition> linethermoconvect = Teuchos::rcp(new ConditionDefinition(
       "DESIGN THERMO CONVECTION LINE CONDITIONS", "ThermoConvections", "Line Thermo Convections",
-      DRT::Condition::ThermoConvections, true, DRT::Condition::Line));
+      CORE::Conditions::ThermoConvections, true, CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> surfthermoconvect = Teuchos::rcp(new ConditionDefinition(
       "DESIGN THERMO CONVECTION SURF CONDITIONS", "ThermoConvections", "Surface Thermo Convections",
-      DRT::Condition::ThermoConvections, true, DRT::Condition::Surface));
+      CORE::Conditions::ThermoConvections, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < thermoconvectcomponents.size(); ++i)
   {
@@ -202,10 +202,10 @@ void INPAR::THR::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   // NOTE: this condition must be
   Teuchos::RCP<ConditionDefinition> thermorobinline = Teuchos::rcp(new ConditionDefinition(
       "DESIGN THERMO ROBIN LINE CONDITIONS", "ThermoRobin", "Thermo Robin boundary condition",
-      DRT::Condition::ThermoRobin, true, DRT::Condition::Line));
+      CORE::Conditions::ThermoRobin, true, CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> thermorobinsurf = Teuchos::rcp(new ConditionDefinition(
       "DESIGN THERMO ROBIN SURF CONDITIONS", "ThermoRobin", "Thermo Robin boundary condition",
-      DRT::Condition::ThermoRobin, true, DRT::Condition::Surface));
+      CORE::Conditions::ThermoRobin, true, CORE::Conditions::geometry_type_surface));
 
   std::vector<Teuchos::RCP<INPUT::LineComponent>> thermorobincomponents;
 

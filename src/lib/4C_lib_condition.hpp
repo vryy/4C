@@ -16,6 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_inpar_container.hpp"
+#include "4C_legacy_enum_definitions_conditions.hpp"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
@@ -54,257 +55,6 @@ namespace DRT
     */
     friend class DRT::Discretization;
 
-    /*!
-    \brief Type of condition
-
-    */
-    enum ConditionType
-    {
-      none,
-      PointDirichlet,    ///< Dirichlet condition defined on a (set of) point(s)
-      LineDirichlet,     ///< Dirichlet condition defined on a (set of) line(s)
-      SurfaceDirichlet,  ///< Dirichlet condition defined on a (set of) surface(s)
-      VolumeDirichlet,   ///< Dirichlet condition defined on a (set of) volume(s)
-      PointNeumann,      ///< Neumann condition defined on a (set of) point(s)
-      PointNeumannEB,
-      LineNeumann,       ///< Neumann condition defined on a (set of) line(s)
-      SurfaceNeumann,    ///< Neumann condition defined on a (set of) surface(s)
-      VolumeNeumann,     ///< Neumann condition defined on a (set of) volume(s)
-      PointInitfield,    ///< Initial field defined on a (set of) point(s)
-      LineInitfield,     ///< Initial field defined on a (set of) line(s)
-      SurfaceInitfield,  ///< Initial field defined on a (set of) surface(s)
-      VolumeInitfield,   ///< Initial field defined on a (set of) volume(s)
-      PointCoupling,
-      Mortar,  ///< Surface coupling condition for Mortar coupling (2D and 3D)
-      MortarMulti,
-      Contact,  ///< Contact between two volumetric bodies
-      AleWear,
-      LineMrtrSym,
-      PointMrtrSym,
-      EdgeMrtr,
-      CornerMrtr,
-      PointLocsys,
-      LineLocsys,
-      SurfaceLocsys,
-      VolumeLocsys,
-      LinePeriodic,
-      PointLinearCoupledEquation,
-      PointRvePeriodicReference,
-      LineRvePeriodic,
-      SurfacePeriodic,
-      SurfaceRvePeriodic,
-      TransferTurbulentInflow,
-      TurbulentInflowSection,
-      BlendMaterial,
-      LineFlowDepPressure,
-      SurfaceFlowDepPressure,
-      LineSlipSupp,
-      SurfaceSlipSupp,
-      LineNavierSlip,
-      SurfNavierSlip,
-      LineWeakDirichlet,
-      SurfaceWeakDirichlet,
-      LineMixHybDirichlet,
-      SurfaceMixHybDirichlet,
-      SurfaceConservativeOutflowConsistency,
-      FSICoupling,  ///< Surface coupling condition for fluid-structure interaction (2D and 3D)
-      FPSICoupling,
-      IMMERSEDCoupling,
-      FSICouplingNoSlide,
-      FSICouplingCenterDisp,
-      FREESURFCoupling,
-      ALEUPDATECoupling,
-      SurfaceTension,
-      Surfactant,
-      MicroBoundary,
-      XFEM_Surf_Displacement,
-      XFEM_Levelset_Weak_Dirichlet,
-      XFEM_Levelset_Neumann,
-      XFEM_Levelset_Navier_Slip,
-      XFEM_Robin_Dirichlet_Volume,
-      XFEM_Robin_Neumann_Volume,
-      XFEM_Levelset_Twophase,
-      XFEM_Levelset_Combustion,
-      XFEM_Surf_FSIPart,
-      XFEM_Surf_FSIMono,
-      XFEM_Surf_FPIMono,
-      XFEM_Surf_FluidFluid,
-      XFEM_Surf_Weak_Dirichlet,
-      XFEM_Surf_Neumann,
-      XFEM_Surf_Navier_Slip,
-      XFEM_Surf_Navier_Slip_Twophase,
-      XFEM_Robin_Dirichlet_Surf,
-      XFEM_Robin_Neumann_Surf,
-      FluidFluidCoupling,
-      FluidMesh,
-      ALEFluidCoupling,
-      FluidStressCalc,
-      LineLIFTDRAG,
-      SurfLIFTDRAG,
-      VolSTCLayer,
-      VolumeConstraint_3D,
-      VolumeConstraint_3D_pen,
-      AreaConstraint_3D,
-      AreaConstraint_3D_pen,
-      AreaConstraint_2D,
-      VolumeMonitor_3D,
-      AreaMonitor_3D,
-      AreaMonitor_2D,
-      Cardiovascular0D4ElementWindkessel_Structure,
-      Cardiovascular0DArterialProxDist_Structure,
-      Cardiovascular0DSysPulCirculation_Structure,
-      CardiovascularRespiratory0DSysPulPeriphCirculation_Structure,
-      Cardiovascular0DStructureCoupling,
-      ImpedanceCond,
-      Impedance_Calb_Cond,
-      MPC_NodeOnPlane_3D,
-      MPC_NodeOnLine_3D,
-      MPC_NormalComponent_3D,
-      MPC_NormalComponent_3D_pen,
-      MPC_NodeOnLine_2D,
-      LJ_Potential_Volume,
-      LJ_Potential_Surface,
-      LJ_Potential_Line,
-      VanDerWaals_Potential_Volume,
-      VanDerWaals_Potential_Surface,
-      VanDerWaals_Potential_Line,
-      ElectroRepulsion_Potential_Surface,
-      ElectroRepulsion_Potential_Line,
-      RigidspherePotential_PointCharge,
-      PenaltyPointCouplingCondition,
-      FilamentBeamLineCondition,
-      BeamPotential_LineChargeDensity,
-      BeamToBeamContact,
-      BeamToSolidVolumeMeshtyingLine,
-      BeamToSolidVolumeMeshtyingVolume,
-      BeamToSolidSurfaceMeshtyingLine,
-      BeamToSolidSurfaceMeshtyingSurface,
-      BeamToSolidSurfaceContactLine,
-      BeamToSolidSurfaceContactSurface,
-      ElchBoundaryKinetics,
-      ElchDomainKinetics,
-      SurfacePermeability,
-      TransportNeumannInflow,
-      FluidNeumannInflow,
-      TaylorGalerkinOutflow,
-      TaylorGalerkinNeumannInflow,
-      ReinitializationTaylorGalerkin,
-      FluctHydro_StatisticsSurf,
-      FluctHydro_StatisticsLine,
-      FlowRateThroughLine_2D,
-      FlowRateThroughSurface_3D,
-      ImpulsRateThroughSurface_3D,
-      SurfaceModeKrylovProjection,
-      VolumeModeKrylovProjection,
-      ArtJunctionCond,
-      ArtWriteGnuplotCond,
-      ArtPrescribedCond,
-      ArtPorofluidCouplingCondNodebased,
-      ArtScatraCouplingCondNodebased,
-      ArtPorofluidCouplingCondNodeToPoint,
-      ArtScatraCouplingCondNodeToPoint,
-      ArtRfCond,
-      ArtWkCond,
-      StructAleCoupling,
-      StructFluidSurfCoupling,
-      StructFluidVolCoupling,
-      BioGrCoupling,
-      ArtInOutletCond,
-      ArtRedTo3DCouplingCond,
-      Art3DToRedCouplingCond,
-      WindkesselOptimCond,
-      RedAirwayPrescribedCond,
-      RedAirwayPrescribedSwitchCond,
-      RedAirwayPrescribedExternalPressure,
-      PatientSpecificData,
-      VolumetricSurfaceFlowCond,
-      VolumetricFlowBorderNodes,
-      ThermoConvections,
-      TransportThermoConvections,
-      S2IKinetics,
-      S2IMeshtying,
-      S2INoEvaluation,
-      S2IKineticsGrowth,
-      S2ISCLCoupling,
-      ElectrodeSOC,
-      CCCVCycling,
-      CCCVHalfCycle,
-      CellVoltage,
-      DomainIntegral,
-      BoundaryIntegral,
-      ScaTraFluxCalc,
-      TotalAndMeanScalar,
-      ScaTraCoupling,
-      RobinSpringDashpot,
-      RobinSpringDashpotCoupling,
-      TotalTractionCorrectionCond,
-      NoPenetration,
-      TotalTractionCorrectionBorderNodes,
-      PoroCoupling,
-      PoroPartInt,
-      PoroPresInt,
-      PoroMultiphaseScatraOxyPartPressCalcCond,
-      SSICoupling,
-      EHLCoupling,
-      SSICouplingSolidToScatra,
-      SSICouplingScatraToSolid,
-      SSIInterfaceContact,
-      SSIInterfaceMeshtying,
-      SSIMeshtying3DomainIntersection,
-      SSISurfaceManifold,
-      SSISurfaceManifoldKinetics,
-      SSTIInterfaceMeshtying,
-      SSTIMeshtying3DomainIntersection,
-      RedAirwayVentilatorCond,
-      RedAirwayTissue,
-      RedAirwayNodeTissue,
-      ParticleWall,
-      ArtPrescribedScatraCond,
-      RedAirwayPrescribedScatraCond,
-      RedAirwayInitialScatraCond,
-      RedAirwayScatraExchangeCond,
-      RedAirwayScatraHemoglobinCond,
-      RedAirwayScatraAirCond,
-      RedAirwayScatraCapillaryCond,
-      NeumannIntegration,
-      SurfaceCurrent,
-      UncertainSurface,
-      AAASurface,
-      LsContact,
-      Absorb,
-      PressureMonitor,
-      ImmersedSearchbox,
-      RedAirwayVolDependentPleuralPressureCond,
-      RedAirwayEvalLungVolCond,
-      SPRboundary,
-      TransportRobin,
-      ThermoRobin,
-      ScatraMultiScaleCoupling,
-      ScatraRelError,
-      CellFocalAdhesion,
-      ScatraHeteroReactionCondMaster,
-      ScatraHeteroReactionCondSlave,
-      ScatraPartitioning,
-      SilverMueller,
-      ElementTag,
-      NodeTag
-    };
-
-    /*!
-    \brief Type of geometry this conditions lives on
-
-    \warning The order is crucial for and must not be changed!!!
-             (used in BoundaryConditionsGeometry())
-    */
-    enum GeometryType
-    {
-      Point,
-      Line,
-      Surface,
-      Volume,
-      NoGeom
-    };
-
     //@}
 
     //! @name Constructors and destructors
@@ -326,8 +76,8 @@ namespace DRT
                                (elements) have to be build
     \param gtype (in): type of geometric entity this condition lives on
     */
-    Condition(
-        const int id, const ConditionType type, const bool buildgeometry, const GeometryType gtype);
+    Condition(const int id, const CORE::Conditions::ConditionType type, const bool buildgeometry,
+        const CORE::Conditions::GeometryType gtype);
 
     /*!
     \brief Empty Constructor with type condition_none
@@ -390,7 +140,7 @@ namespace DRT
     geometry description is build for this condition iff GeometryDescription()==true
 
     */
-    [[nodiscard]] inline virtual DRT::Condition::GeometryType GType() const { return gtype_; }
+    [[nodiscard]] inline virtual CORE::Conditions::GeometryType GType() const { return gtype_; }
 
     /*!
     \brief Print this Condition (ostream << is also implemented for DRT::Condition)
@@ -405,7 +155,7 @@ namespace DRT
     /*!
     \brief Return type of condition
     */
-    [[nodiscard]] inline virtual ConditionType Type() const { return type_; }
+    [[nodiscard]] inline virtual CORE::Conditions::ConditionType Type() const { return type_; }
 
     /*!
     \brief Get a reference to the geometry description of the condition
@@ -478,10 +228,10 @@ namespace DRT
     bool buildgeometry_{};
 
     //! Type of this condition
-    ConditionType type_{};
+    CORE::Conditions::ConditionType type_{};
 
     //! Type of geometry the condition lives on
-    GeometryType gtype_{};
+    CORE::Conditions::GeometryType gtype_{};
 
     //! Geometry description of this condition
     Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geometry_{};
@@ -495,8 +245,8 @@ namespace DRT
     /// compare two conditions by type and id
     bool operator()(const Condition& lhs, const Condition& rhs) const
     {
-      Condition::ConditionType lhs_type = lhs.Type();
-      Condition::ConditionType rhs_type = rhs.Type();
+      CORE::Conditions::ConditionType lhs_type = lhs.Type();
+      CORE::Conditions::ConditionType rhs_type = rhs.Type();
       if (lhs_type == rhs_type)
       {
         return lhs.Id() < rhs.Id();

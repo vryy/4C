@@ -145,7 +145,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
 
   switch (spring_->GType())
   {
-    case DRT::Condition::Surface:
+    case CORE::Conditions::geometry_type_surface:
     {
       std::map<int, Teuchos::RCP<DRT::Element>>& geom = spring_->Geometry();
 
@@ -196,7 +196,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
       } /* end of loop over geometry */
       break;
     }
-    case DRT::Condition::Point:
+    case CORE::Conditions::geometry_type_point:
     {
       if (*direction == "xyz")
       {

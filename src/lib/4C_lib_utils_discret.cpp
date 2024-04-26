@@ -42,9 +42,9 @@ void DRT::UTILS::EvaluateInitialField(const DRT::Discretization& discret,
   //                LineInitfield
   //                PointInitfield
   // This way, lower entities override higher ones.
-  const std::vector<Condition::ConditionType> evaluation_type_order = {
-      DRT::Condition::VolumeInitfield, DRT::Condition::SurfaceInitfield,
-      DRT::Condition::LineInitfield, DRT::Condition::PointInitfield};
+  const std::vector<CORE::Conditions::ConditionType> evaluation_type_order = {
+      CORE::Conditions::VolumeInitfield, CORE::Conditions::SurfaceInitfield,
+      CORE::Conditions::LineInitfield, CORE::Conditions::PointInitfield};
 
   for (const auto& type : evaluation_type_order)
   {
