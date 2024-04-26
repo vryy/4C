@@ -247,8 +247,6 @@ namespace CORE::COMM
     if (ngroup == 1)
     {
       gcomm = lcomm;
-      // TODO: INCA needs color = 1 and 4C needs color = 0, then the proceeding line can be
-      // removed
       color = 0;
     }
     else

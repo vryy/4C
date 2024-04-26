@@ -38,15 +38,6 @@ namespace INPAR
       Monolithic
     };
 
-    //! Type of coupling strategy for 4C-INCA coupling (TFSI)
-    enum FourCIncaCoupling
-    {
-      TFSI,
-      FSI,
-      ConjHeatTransfer,
-      NoIncaFSI
-    };
-
     //! @name Solution technique and related stuff
 
     //! type of norm to check for convergence
