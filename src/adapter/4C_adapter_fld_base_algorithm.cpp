@@ -1426,8 +1426,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
     const Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams,
     const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn)
 {
-  fluidtimeparams->set<int>(
-      "Simple Preconditioner", CORE::UTILS::IntegralValue<int>(fdyn, "SIMPLER"));
+  fluidtimeparams->set<bool>("BLOCKMATRIX", CORE::UTILS::IntegralValue<bool>(fdyn, "BLOCKMATRIX"));
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
@@ -1611,7 +1610,7 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
   // The SIMPLER (yes,no) parameter only controls whether the fluid matrix is
   // assembled into a 2x2 blocked operator or a plain 1x1 block matrix
   // A "second solver" for the preconditioner is only needed if SIMPLER == yes
-  if (CORE::UTILS::IntegralValue<int>(fdyn, "SIMPLER"))
+  if (CORE::UTILS::IntegralValue<bool>(fdyn, "BLOCKMATRIX"))
   {
     const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
     const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(

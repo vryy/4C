@@ -279,25 +279,28 @@ void FLD::FluidImplicitTimeInt::Init()
     }
   }
 
-  if (not params_->get<int>("Simple Preconditioner", 0) &&
-      not params_->get<int>("AMG BS Preconditioner", 0) &&
-      params_->get<int>("MESHTYING") == INPAR::FLUID::no_meshtying)
+  if (!params_->get<bool>("BLOCKMATRIX"))
   {
-    // initialize standard (stabilized) system matrix (construct its graph already)
-    // off_proc_assembly_ requires an EpetraFECrs matrix
-    if (off_proc_assembly_)
+    if (params_->get<int>("MESHTYING") == INPAR::FLUID::no_meshtying)
     {
-      sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-          *dofrowmap, 108, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+      // initialize standard (stabilized) system matrix (construct its graph already)
+      // off_proc_assembly_ requires an EpetraFECrs matrix
+      if (off_proc_assembly_)
+      {
+        sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+            *dofrowmap, 108, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+      }
+      else
+      {
+        sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 108, false, true));
+      }
     }
-    else
-      sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 108, false, true));
-  }
-  else if (params_->get<int>("MESHTYING") != INPAR::FLUID::no_meshtying)
-  {
-    SetupMeshtying();
-    if (off_proc_assembly_)
-      FOUR_C_THROW("Off processor assembly currently not available for this matrix type");
+    else if (params_->get<int>("MESHTYING") != INPAR::FLUID::no_meshtying)
+    {
+      SetupMeshtying();
+      if (off_proc_assembly_)
+        FOUR_C_THROW("Off processor assembly currently not available for this matrix type");
+    }
   }
   else
   {
