@@ -14,7 +14,7 @@ if(FOUR_C_MIRCO_FIND_INSTALLED)
   endif()
 
 else() # Fetch MIRCO from GIT repository
-  # Turn off googletest and Trilinos in MIRCO so that they don't interfere with BACI
+  # Turn off googletest and Trilinos in MIRCO so that they don't interfere with 4C
   set(GTEST_IN_MIRCO "OFF")
   set(TRILINOS_IN_MIRCO "OFF")
 

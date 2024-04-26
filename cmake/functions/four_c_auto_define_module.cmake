@@ -10,7 +10,7 @@ function(four_c_auto_define_module)
     set(_target "${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE}_${_target}")
   endif()
 
-  message(VERBOSE "Defining BACI module target: ${_target}")
+  message(VERBOSE "Defining module target: ${_target}")
 
   list(APPEND CMAKE_MESSAGE_INDENT "  ")
 

@@ -25,65 +25,62 @@ function(four_c_get_git_revision_information)
     endif()
   endif()
 
-  # get Baci git hash
   execute_process(
     COMMAND ${GIT_EXECUTABLE} show -s --format=%H
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     RESULT_VARIABLE res_var
-    OUTPUT_VARIABLE BaciGitHash
+    OUTPUT_VARIABLE FOUR_C_GIT_HASH
     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
   if(NOT ${res_var} EQUAL 0)
-    set(BaciGitHash
-        "Unable to determine Baci git hash!"
+    set(FOUR_C_GIT_HASH
+        "Unable to determine 4C git hash!"
         PARENT_SCOPE
         )
     message(WARNING "Git command failed! Build will not contain git revision information.")
   else()
-    set(BaciGitHash
-        "${BaciGitHash}"
+    set(FOUR_C_GIT_HASH
+        "${FOUR_C_GIT_HASH}"
         PARENT_SCOPE
         )
   endif()
 
-  # get Baci git hash (short)
   execute_process(
     COMMAND ${GIT_EXECUTABLE} show -s --format=%h
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     RESULT_VARIABLE res_var
-    OUTPUT_VARIABLE BaciGitHashShort
+    OUTPUT_VARIABLE FOUR_C_GIT_HASH_SHORT
     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
   if(NOT ${res_var} EQUAL 0)
-    set(BaciGitHashShort
-        "Unable to determine Baci git hash (short)!"
+    set(FOUR_C_GIT_HASH_SHORT
+        "Unable to determine 4C git hash (short)!"
         PARENT_SCOPE
         )
     message(WARNING "Git command failed! Build will not contain git revision information.")
   else()
-    set(BaciGitHashShort
-        "${BaciGitHashShort}"
+    set(FOUR_C_GIT_HASH_SHORT
+        "${FOUR_C_GIT_HASH_SHORT}"
         PARENT_SCOPE
         )
   endif()
 
-  # get Baci git branch name
   execute_process(
     COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     RESULT_VARIABLE res_var
-    OUTPUT_VARIABLE BaciGitBranch
+    OUTPUT_VARIABLE FOUR_C_GIT_BRANCH
     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
   if(NOT ${res_var} EQUAL 0)
-    set(BaciGitBranch
-        "Unable to determine Baci git branch!"
+    set(FOUR_C_GIT_BRANCH
+        "Unable to determine 4C git branch!"
         PARENT_SCOPE
         )
     message(WARNING "Git command failed! Build will not contain git revision information.")
   else()
-    set(BaciGitBranch
-        "${BaciGitBranch}"
+    set(FOUR_C_GIT_BRANCH
+        "${FOUR_C_GIT_BRANCH}"
         PARENT_SCOPE
         )
   endif()

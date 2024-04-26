@@ -1,5 +1,5 @@
 #
-# This function adds a library target with the given sources and headers and sets all BACI-wide defaults on it.
+# This function adds a library target with the given sources and headers and sets all project-wide defaults on it.
 # The type of target is determined automatically depending on whether any sources or headers are given,
 #
 # Usage:

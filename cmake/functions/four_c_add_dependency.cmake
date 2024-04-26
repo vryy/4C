@@ -4,7 +4,7 @@ function(_four_c_internal_link_with_debug_message target link_type deps)
 endfunction()
 
 function(four_c_add_dependency target)
-  # Internal BACI target in the library
+  # Internal target in the library
   if(TARGET ${target}_deps)
     foreach(_dep ${ARGN})
       _four_c_internal_link_with_debug_message(${target}_deps INTERFACE ${_dep}_deps)
@@ -32,7 +32,7 @@ function(four_c_add_dependency target)
 endfunction()
 
 function(four_c_add_external_dependency target)
-  # Internal BACI target in the library: adjust name
+  # Internal target in the library: adjust name
   if(TARGET ${target}_deps)
     set(target ${target}_deps)
   endif()

@@ -1,4 +1,4 @@
-# Build system for baci and support tools.
+# Build system for 4C and support tools.
 
 #
 ### General Setup
@@ -16,7 +16,7 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
     )
 endif()
 
-project(baci CXX C)
+project(4C CXX C)
 
 # Print CMake version to screen
 message(STATUS "Using CMake ${CMAKE_VERSION}")
@@ -27,8 +27,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 
 # The version number.
-set(baci_VERSION_MAJOR 1)
-set(baci_VERSION_MINOR 0)
+set(FOUR_C_VERSION_MAJOR 1)
+set(FOUR_C_VERSION_MINOR 0)
 
 # Assert a valid build configuration
 set(_allowed_build_types "DEBUG" "RELEASE" "RELWITHDEBINFO")
@@ -116,7 +116,7 @@ if(FOUR_C_WITH_ADDRESS_SANITIZER)
 endif()
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
-set(baciname baci-${BUILD_TYPE})
+set(FOUR_C_EXECUTABLE_NAME baci-${BUILD_TYPE})
 
 set(FULL_TARGETS
     post_processor
@@ -127,12 +127,12 @@ set(FULL_TARGETS
     cut_test
     )
 
-add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
+add_custom_target(full DEPENDS ${FOUR_C_EXECUTABLE_NAME} ${FULL_TARGETS})
 
 include(cmake/setup_tests.cmake)
 
 # Create one large library: every module adds itself to this target
-set(FOUR_C_LIBRARY_NAME baci_lib)
+set(FOUR_C_LIBRARY_NAME 4C)
 add_library(${FOUR_C_LIBRARY_NAME})
 target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE four_c_private_compile_interface)
 

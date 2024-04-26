@@ -72,7 +72,7 @@ macro(four_c_test name_of_input_file num_proc restart_step)
     NAME ${name_of_input_file}-p${num_proc}
     COMMAND
       bash -c
-      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx"
+      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${source_file} ${test_directory}/xxx"
     )
 
   require_fixture(${name_of_test} test_cleanup)
@@ -89,7 +89,7 @@ macro(four_c_test name_of_input_file num_proc restart_step)
       NAME ${name_of_test}-restart
       COMMAND
         bash -c
-        "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}"
+        "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${source_file} ${test_directory}/xxx restart=${restart_step}"
       )
 
     require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
@@ -123,7 +123,7 @@ macro(
     NAME ${name_of_test}
     COMMAND
       bash -c
-      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx"
+      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${source_file} ${test_directory}/xxx"
     )
 
   require_fixture(${name_of_test} test_cleanup)
@@ -136,7 +136,7 @@ macro(
       NAME ${name_of_test}-restart
       COMMAND
         bash -c
-        "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}"
+        "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${source_file} ${test_directory}/xxx restart=${restart_step}"
       )
 
     require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
@@ -170,7 +170,7 @@ macro(
     NAME ${name_of_input_file}-p${num_proc}-t${num_omp_threads}
     COMMAND
       bash -c
-      "export OMP_NUM_THREADS=${num_omp_threads}; mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx; unset OMP_NUM_THREADS"
+      "export OMP_NUM_THREADS=${num_omp_threads}; mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${source_file} ${test_directory}/xxx; unset OMP_NUM_THREADS"
     )
 
   # Calculate the total number of processors required
@@ -190,7 +190,7 @@ macro(
       NAME ${name_of_test}-restart
       COMMAND
         bash -c
-        "export OMP_NUM_THREADS=${num_omp_threads}; ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} ${test_directory}/xxx restart=${restart_step}; unset OMP_NUM_THREADS"
+        "export OMP_NUM_THREADS=${num_omp_threads}; ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${source_file} ${test_directory}/xxx restart=${restart_step}; unset OMP_NUM_THREADS"
       )
 
     require_fixture(${name_of_test}-restart "${name_of_test};test_cleanup")
@@ -292,7 +292,7 @@ macro(
     NAME ${name_of_test}
     COMMAND
       bash -c
-      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> ${source_file} framework_test_output/${name_of_input_file}_p${num_proc}/xxx${IDENTIFIER} restartfrom=framework_test_output/${name_of_input_file_restart}_p${num_proc_base_run}/xxx${IDENTIFIER} restart=${restart_step}"
+      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${source_file} framework_test_output/${name_of_input_file}_p${num_proc}/xxx${IDENTIFIER} restartfrom=framework_test_output/${name_of_input_file_restart}_p${num_proc_base_run}/xxx${IDENTIFIER} restart=${restart_step}"
     )
 
   require_fixture(
@@ -346,7 +346,7 @@ macro(four_c_test_nested_par name_of_input_file_1 name_of_input_file_2 restart_s
     NAME ${name_of_input_file_1}-nestedPar
     COMMAND
       bash -c
-      "mkdir -p ${test_directory} &&  ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional"
+      "mkdir -p ${test_directory} &&  ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional"
     )
 
   require_fixture(${name_of_input_file_1}-nestedPar test_cleanup)
@@ -359,7 +359,7 @@ macro(four_c_test_nested_par name_of_input_file_1 name_of_input_file_2 restart_s
       NAME ${name_of_input_file_1}-nestedPar-restart
       COMMAND
         bash -c
-        "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx restart=${restart_step} ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional restart=${restart_step}"
+        "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx restart=${restart_step} ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional restart=${restart_step}"
       )
 
     require_fixture(
@@ -394,7 +394,7 @@ macro(four_c_framework_test name_of_input_file num_proc xml_filename)
   endif(NOT ${xml_filename} STREQUAL "")
 
   set(RUNFOURC
-      ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ $<TARGET_FILE:${baciname}>\ ${test_directory}/xxx.dat\ ${test_directory}/xxx
+      ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}>\ ${test_directory}/xxx.dat\ ${test_directory}/xxx
       ) # 4C is run using the generated dat file
   set(RUNPOSTFILTER
       ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx
