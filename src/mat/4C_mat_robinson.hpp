@@ -57,7 +57,7 @@ namespace MAT
 
       //! kind of Robinson material (slight
       //! differences:vague,butler,arya,arya_narloyz,arya_crmosteel)
-      const std::string* kind_;
+      const std::string kind_;
       //! Young's modulus (temperature dependent --> polynomial expression)
       // 'E' [N/m^2]
       const std::vector<double> youngs_;

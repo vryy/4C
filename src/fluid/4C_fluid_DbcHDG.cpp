@@ -47,7 +47,7 @@ void FLD::UTILS::DbcHdgFluid::ReadDirichletCondition(const DRT::DiscretizationFa
   if (discret.FaceRowMap() == nullptr) return;
 
   // get onoff toggles
-  const auto* onoff = cond.Get<std::vector<int>>("onoff");
+  const auto& onoff = cond.Get<std::vector<int>>("onoff");
 
   if (discret.NumMyRowFaces() > 0)
   {
@@ -64,7 +64,7 @@ void FLD::UTILS::DbcHdgFluid::ReadDirichletCondition(const DRT::DiscretizationFa
           faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
       const unsigned int component = dofperface / dofpercomponent;
 
-      if (onoff->size() <= component || (*onoff)[component] == 0 ||
+      if (onoff.size() <= component || onoff[component] == 0 ||
           GLOBAL::Problem::Instance(0)->GetProblemType() != GLOBAL::ProblemType::fluid)
         pressureDone = true;
       if (!pressureDone)
@@ -111,7 +111,7 @@ void FLD::UTILS::DbcHdgFluid::ReadDirichletCondition(const DRT::DiscretizationFa
         // get position of label for this dof in condition line
         int onesetj = j / dofpercomponent;
 
-        if ((*onoff)[onesetj] == 0)
+        if (onoff[onesetj] == 0)
         {
           // no DBC on this dof, set toggle zero
           info.toggle[lid] = 0;
@@ -165,9 +165,9 @@ void FLD::UTILS::DbcHdgFluid::DoDirichletCondition(const DRT::DiscretizationFace
   if (!nodeids) FOUR_C_THROW("Dirichlet condition does not have nodal cloud");
 
   // get curves, functs, vals, and onoff toggles from the condition
-  const auto* funct = cond.Get<std::vector<int>>("funct");
-  const auto* val = cond.Get<std::vector<double>>("val");
-  const auto* onoff = cond.Get<std::vector<int>>("onoff");
+  const auto* funct = &cond.Get<std::vector<int>>("funct");
+  const auto* val = &cond.Get<std::vector<double>>("val");
+  const auto* onoff = &cond.Get<std::vector<int>>("onoff");
 
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to

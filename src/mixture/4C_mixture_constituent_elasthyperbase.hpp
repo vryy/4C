@@ -49,7 +49,7 @@ namespace MIXTURE
       const int nummat_;
 
       /// List of material ids of the summands
-      const std::vector<int>* matids_;
+      const std::vector<int> matids_;
       /// @}
     };
   }  // namespace PAR

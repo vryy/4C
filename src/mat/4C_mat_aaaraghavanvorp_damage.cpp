@@ -34,13 +34,13 @@ FOUR_C_NAMESPACE_OPEN
 MAT::PAR::AaAraghavanvorpDamage::AaAraghavanvorpDamage(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
 
-      bulk_(*matdata->Get<double>("BULK")),          /// Bulk's modulus (Volumetric)
-      alpha_(*matdata->Get<double>("ALPHA")),        /// 1st parameter, alpha (Isochoric)
-      beta_(*matdata->Get<double>("BETA")),          /// 2nd parameter, beta (Isochoric)
-      eqstrmin_(*matdata->Get<double>("EQSTRMIN")),  /// equivalent strain initial damage
-      a_(*matdata->Get<double>("A")),                /// 1st parameter, a
-      b_(*matdata->Get<double>("B")),                /// 2nd parameter, b
-      density_(*matdata->Get<double>("DENS"))        /// Density
+      bulk_(matdata->Get<double>("BULK")),          /// Bulk's modulus (Volumetric)
+      alpha_(matdata->Get<double>("ALPHA")),        /// 1st parameter, alpha (Isochoric)
+      beta_(matdata->Get<double>("BETA")),          /// 2nd parameter, beta (Isochoric)
+      eqstrmin_(matdata->Get<double>("EQSTRMIN")),  /// equivalent strain initial damage
+      a_(matdata->Get<double>("A")),                /// 1st parameter, a
+      b_(matdata->Get<double>("B")),                /// 2nd parameter, b
+      density_(matdata->Get<double>("DENS"))        /// Density
 {
 }
 

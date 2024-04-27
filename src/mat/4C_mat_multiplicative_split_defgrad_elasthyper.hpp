@@ -52,14 +52,14 @@ namespace MAT
       const int nummat_elast_;
 
       /// the list of elastic material IDs
-      const std::vector<int>* matids_elast_;
+      const std::vector<int> matids_elast_;
 
       /// number of factors of inelastic deformation gradient F_{in} = F_{in,1} . F_{in,2}. ... .
       /// F_{in,n} (n factors)
       const int numfac_inel_;
 
       /// IDs of inelastic deformation gradient factors (i-th ID specifies calculation of F_{in,i})
-      const std::vector<int>* inel_defgradfacids_;
+      const std::vector<int> inel_defgradfacids_;
 
       /// material mass density
       const double density_;

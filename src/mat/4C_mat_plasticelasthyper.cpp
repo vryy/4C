@@ -32,34 +32,34 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::PlasticElastHyper::PlasticElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
     : MAT::PAR::ElastHyper(matdata),
-      inityield_(*matdata->Get<double>("INITYIELD")),
-      isohard_(*matdata->Get<double>("ISOHARD")),
-      expisohard_(*matdata->Get<double>("EXPISOHARD")),
-      infyield_(*matdata->Get<double>("INFYIELD")),
-      kinhard_(*matdata->Get<double>("KINHARD")),
-      visc_(*matdata->Get<double>("VISC")),
-      rate_dependency_(*matdata->Get<double>("RATE_DEPENDENCY")),
-      visc_soft_(*matdata->Get<double>("VISC_SOFT")),
-      cte_(*matdata->Get<double>("CTE")),
-      inittemp_(*matdata->Get<double>("INITTEMP")),
-      yieldsoft_(*matdata->Get<double>("YIELDSOFT")),
-      hardsoft_(*matdata->Get<double>("HARDSOFT")),
-      taylor_quinney_(*matdata->Get<double>("TAYLOR_QUINNEY")),
-      plspin_chi_(-1. * *matdata->Get<double>("PL_SPIN_CHI")),
-      rY_11_(*matdata->Get<double>("rY_11")),
-      rY_22_(*matdata->Get<double>("rY_22")),
-      rY_33_(*matdata->Get<double>("rY_33")),
-      rY_12_(*matdata->Get<double>("rY_12")),
-      rY_23_(*matdata->Get<double>("rY_23")),
-      rY_13_(*matdata->Get<double>("rY_13")),
+      inityield_(matdata->Get<double>("INITYIELD")),
+      isohard_(matdata->Get<double>("ISOHARD")),
+      expisohard_(matdata->Get<double>("EXPISOHARD")),
+      infyield_(matdata->Get<double>("INFYIELD")),
+      kinhard_(matdata->Get<double>("KINHARD")),
+      visc_(matdata->Get<double>("VISC")),
+      rate_dependency_(matdata->Get<double>("RATE_DEPENDENCY")),
+      visc_soft_(matdata->Get<double>("VISC_SOFT")),
+      cte_(matdata->Get<double>("CTE")),
+      inittemp_(matdata->Get<double>("INITTEMP")),
+      yieldsoft_(matdata->Get<double>("YIELDSOFT")),
+      hardsoft_(matdata->Get<double>("HARDSOFT")),
+      taylor_quinney_(matdata->Get<double>("TAYLOR_QUINNEY")),
+      plspin_chi_(-1. * matdata->Get<double>("PL_SPIN_CHI")),
+      rY_11_(matdata->Get<double>("rY_11")),
+      rY_22_(matdata->Get<double>("rY_22")),
+      rY_33_(matdata->Get<double>("rY_33")),
+      rY_12_(matdata->Get<double>("rY_12")),
+      rY_23_(matdata->Get<double>("rY_23")),
+      rY_13_(matdata->Get<double>("rY_13")),
       cpl_(0.),
       stab_s_(0.),
       dis_mode_(INPAR::TSI::pl_multiplier)
 {
   // check if sizes fit
-  if (nummat_ != (int)matids_->size())
+  if (nummat_ != (int)matids_.size())
     FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
-        matids_->size());
+        matids_.size());
 
   // check plastic parameter validity
   if (inityield_ <= 0.)
@@ -155,7 +155,7 @@ MAT::PlasticElastHyper::PlasticElastHyper(MAT::PAR::PlasticElastHyper* params)
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
-  for (m = MatParams()->matids_->begin(); m != MatParams()->matids_->end(); ++m)
+  for (m = MatParams()->matids_.begin(); m != MatParams()->matids_.end(); ++m)
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
@@ -265,7 +265,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
-    for (m = MatParams()->matids_->begin(); m != MatParams()->matids_->end(); ++m)
+    for (m = MatParams()->matids_.begin(); m != MatParams()->matids_.end(); ++m)
     {
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);

@@ -16,9 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::VolOgden::VolOgden(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata),
-      kappa_(*matdata->Get<double>("KAPPA")),
-      beta_(*matdata->Get<double>("BETA"))
+    : Parameter(matdata), kappa_(matdata->Get<double>("KAPPA")), beta_(matdata->Get<double>("BETA"))
 {
 }
 

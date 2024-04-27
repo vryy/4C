@@ -23,16 +23,16 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Scl::Scl(Teuchos::RCP<MAT::PAR::Material> matdata)
     : ElchSingleMat(matdata),
-      valence_(*matdata->Get<double>("VALENCE")),
-      transnrcurve_(*matdata->Get<int>("TRANSNR")),
-      transnrparanum_(*matdata->Get<int>("TRANS_PARA_NUM")),
-      transnr_(*matdata->Get<std::vector<double>>("TRANS_PARA")),
-      cmax_(*matdata->Get<double>("MAX_CONC")),
-      extrapolation_diffussion_coeff_strategy_(*matdata->Get<int>("EXTRAPOL_DIFF")),
-      clim_(*matdata->Get<double>("LIM_CONC")),
-      cbulk_(*matdata->Get<double>("BULK_CONC")),
-      susceptibility_(*matdata->Get<double>("SUSCEPT")),
-      delta_nu_(*matdata->Get<double>("DELTA_NU")),
+      valence_(matdata->Get<double>("VALENCE")),
+      transnrcurve_(matdata->Get<int>("TRANSNR")),
+      transnrparanum_(matdata->Get<int>("TRANS_PARA_NUM")),
+      transnr_(matdata->Get<std::vector<double>>("TRANS_PARA")),
+      cmax_(matdata->Get<double>("MAX_CONC")),
+      extrapolation_diffussion_coeff_strategy_(matdata->Get<int>("EXTRAPOL_DIFF")),
+      clim_(matdata->Get<double>("LIM_CONC")),
+      cbulk_(matdata->Get<double>("BULK_CONC")),
+      susceptibility_(matdata->Get<double>("SUSCEPT")),
+      delta_nu_(matdata->Get<double>("DELTA_NU")),
       faraday_(GLOBAL::Problem::Instance()->ELCHControlParams().get<double>("FARADAY_CONSTANT")),
       epsilon_0_(GLOBAL::Problem::Instance()
                      ->ELCHControlParams()

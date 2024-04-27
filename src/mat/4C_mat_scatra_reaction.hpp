@@ -251,7 +251,7 @@ namespace MAT
       const int numscal_;
 
       /// the list of material IDs
-      const std::vector<int>* stoich_;
+      const std::vector<int> stoich_;
 
       /// reaction coefficient
       const double reaccoeff_;
@@ -263,10 +263,10 @@ namespace MAT
       const MAT::PAR::ReactionCoupling coupling_;
 
       /// specifies scalar type in reaction
-      const std::vector<double>* couprole_;
+      const std::vector<double> couprole_;
 
       /// parameter to define start of reaction
-      const std::vector<double>* reacstart_;
+      const std::vector<double> reacstart_;
 
       /// flag if there is a spatial distribution of reaction coefficient
       const bool isdistrfunctreaccoeff_;
@@ -401,16 +401,16 @@ namespace MAT
     ) const;
 
     /// return stoichometrie
-    const std::vector<int>* Stoich() const { return params_->stoich_; }
+    const std::vector<int>* Stoich() const { return &params_->stoich_; }
 
     /// return type of coupling
     MAT::PAR::ReactionCoupling Coupling() const { return params_->coupling_; }
 
     /// return role in coupling
-    const std::vector<double>* Couprole() const { return params_->couprole_; }
+    const std::vector<double>* Couprole() const { return &params_->couprole_; }
 
     /// delayed reaction start coefficient
-    const std::vector<double>* ReacStart() const { return params_->reacstart_; }
+    const std::vector<double>* ReacStart() const { return &params_->reacstart_; }
 
     /// return flag if there is a reacstart value
     bool IsReacStart() const { return params_->isreacstart_; }

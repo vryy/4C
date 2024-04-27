@@ -27,9 +27,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::MicroMaterial::MicroMaterial(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      microfile_(*(matdata->Get<std::string>("MICROFILE"))),
-      microdisnum_(*matdata->Get<int>("MICRODIS_NUM")),
-      initvol_(*matdata->Get<double>("INITVOL"))
+      microfile_((matdata->Get<std::string>("MICROFILE"))),
+      microdisnum_(matdata->Get<int>("MICRODIS_NUM")),
+      initvol_(matdata->Get<double>("INITVOL"))
 {
 }
 

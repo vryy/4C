@@ -344,7 +344,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
   std::set<int> VolEleIDs;
   if (cond->Type() == DRT::Condition::StructFluidSurfCoupling)
   {
-    if (*(cond->Get<std::string>("field")) == "structure")
+    if ((cond->Get<std::string>("field")) == "structure")
     {
       FindAssociatedEleIDs(cond, VolEleIDs, "StructFluidVolCoupling");
     }
@@ -615,14 +615,14 @@ void DRT::Discretization::FindAssociatedEleIDs(
     Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string& name)
 {
   // determine constraint number
-  int condID = *cond->Get<int>("coupling id");
+  int condID = cond->Get<int>("coupling id");
 
   std::vector<DRT::Condition*> volconds;
   GetCondition(name, volconds);
 
   for (auto& actvolcond : volconds)
   {
-    if (*actvolcond->Get<int>("coupling id") == condID)
+    if (actvolcond->Get<int>("coupling id") == condID)
     {
       // get ptrs to all node ids that have this condition
       const std::vector<int>* nodeids = actvolcond->GetNodes();

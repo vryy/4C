@@ -39,13 +39,13 @@ namespace MAT
       //@{
 
       /// provide ids of the individual reaction materials
-      const std::vector<int>* ReacIds() const { return reacids_; }
+      const std::vector<int>* ReacIds() const { return &reacids_; }
 
       /// length of reaction list
       const int numreac_;
 
       /// the list of reaction IDs
-      const std::vector<int>* reacids_;
+      const std::vector<int> reacids_;
 
       //@}
 

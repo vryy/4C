@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::Iso2Pow::Iso2Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata), c_(*matdata->Get<double>("C")), d_(*matdata->Get<int>("D"))
+    : Parameter(matdata), c_(matdata->Get<double>("C")), d_(matdata->Get<int>("D"))
 {
 }
 

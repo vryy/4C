@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : MIXTURE::PAR::MixtureGrowthStrategy(matdata), kappa_(*matdata->Get<double>("KAPPA"))
+    : MIXTURE::PAR::MixtureGrowthStrategy(matdata), kappa_(matdata->Get<double>("KAPPA"))
 {
 }
 

@@ -153,11 +153,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
 
     for (auto& k : conditions_element1)
     {
-      int npotlaw1 = *k->Get<int>("potlaw");
+      int npotlaw1 = k->Get<int>("potlaw");
 
       for (auto& j : conditions_element2)
       {
-        int npotlaw2 = *j->Get<int>("potlaw");
+        int npotlaw2 = j->Get<int>("potlaw");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
@@ -242,11 +242,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
 
     for (unsigned int k = 0; k < conditions_element1.size(); ++k)
     {
-      int npotlaw1 = *conditions_element1[k]->Get<int>("potlaw");
+      int npotlaw1 = conditions_element1[k]->Get<int>("potlaw");
 
       for (unsigned int j = 0; j < conditions_element2.size(); ++j)
       {
-        int npotlaw2 = *conditions_element2[j]->Get<int>("potlaw");
+        int npotlaw2 = conditions_element2[j]->Get<int>("potlaw");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
@@ -342,11 +342,11 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
 
     for (unsigned int k = 0; k < conditions_element1.size(); ++k)
     {
-      int npotlaw1 = *conditions_element1[k]->Get<int>("potlaw");
+      int npotlaw1 = conditions_element1[k]->Get<int>("potlaw");
 
       for (unsigned int j = 0; j < conditions_element2.size(); ++j)
       {
-        int npotlaw2 = *conditions_element2[j]->Get<int>("potlaw");
+        int npotlaw2 = conditions_element2[j]->Get<int>("potlaw");
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
@@ -685,11 +685,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
 
       for (unsigned int i = 0; i < conds1.size(); ++i)
       {
-        int npotlaw1 = *conds1[i]->Get<int>("potlaw");
+        int npotlaw1 = conds1[i]->Get<int>("potlaw");
 
         for (unsigned int j = 0; j < conds2.size(); ++j)
         {
-          int npotlaw2 = *conds2[j]->Get<int>("potlaw");
+          int npotlaw2 = conds2[j]->Get<int>("potlaw");
 
           // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical
           // beam

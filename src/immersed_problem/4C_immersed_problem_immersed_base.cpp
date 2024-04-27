@@ -452,7 +452,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
     if (fool->first == condstring)
     {
       DRT::Condition& cond = *(fool->second);
-      if (condid == -1 || condid == *cond.Get<int>("ConditionID"))
+      if (condid == -1 || condid == cond.Get<int>("ConditionID"))
       {
         std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
         if (geom.empty())

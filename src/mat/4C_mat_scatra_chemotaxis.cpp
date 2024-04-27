@@ -22,23 +22,23 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ScatraChemotaxisMat::ScatraChemotaxisMat(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      numscal_(*matdata->Get<int>("NUMSCAL")),
+      numscal_(matdata->Get<int>("NUMSCAL")),
       pair_(matdata->Get<std::vector<int>>("PAIR")),
-      chemocoeff_(*matdata->Get<double>("CHEMOCOEFF"))
+      chemocoeff_(matdata->Get<double>("CHEMOCOEFF"))
 {
   // Some checks for more safety
-  if (numscal_ != (int)pair_->size())
+  if (numscal_ != (int)pair_.size())
     FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", numscal_,
-        pair_->size());
+        pair_.size());
 
   // is there exactly one '1' (i.e. attractant) and at least one '-1' (i.e. chemotractant)?
   int numpos = 0;
   int numneg = 0;
   for (int i = 0; i < numscal_; i++)
   {
-    if (pair_->at(i) > 1e-10)
+    if (pair_.at(i) > 1e-10)
       numpos++;
-    else if (pair_->at(i) < -1e-10)
+    else if (pair_.at(i) < -1e-10)
       numneg++;
   }
   if (numpos != 1 or numneg != 1)

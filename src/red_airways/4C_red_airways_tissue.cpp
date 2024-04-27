@@ -64,7 +64,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(
     std::vector<double> val(6, 0.0);
     cond->Add("val", val);
 
-    int condID = *coupcond[i]->Get<int>("coupling id");
+    int condID = coupcond[i]->Get<int>("coupling id");
     tmp.push_back(condID);
   }
 

@@ -20,27 +20,27 @@ FOUR_C_NAMESPACE_OPEN
 MAT::PAR::Mixture::Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), constituents_(0)
 {
-  const int num_constituents = *matdata->Get<int>("NUMCONST");
-  const auto* constituent_matids = matdata->Get<std::vector<int>>("MATIDSCONST");
+  const int num_constituents = matdata->Get<int>("NUMCONST");
+  const auto& constituent_matids = matdata->Get<std::vector<int>>("MATIDSCONST");
 
   // check, if size of constituents fits to the number of constituents
-  if (num_constituents != (int)constituent_matids->size())
+  if (num_constituents != (int)constituent_matids.size())
   {
     FOUR_C_THROW(
         "number of constituents %d does not fit to the size of the constituents material vector"
         " %d",
-        num_constituents, constituent_matids->size());
+        num_constituents, constituent_matids.size());
   }
 
   // Create constituents
   for (int i = 0; i < num_constituents; ++i)
   {
     // Create constituent material
-    constituents_.emplace_back(MIXTURE::PAR::MixtureConstituent::Factory((*constituent_matids)[i]));
+    constituents_.emplace_back(MIXTURE::PAR::MixtureConstituent::Factory(constituent_matids[i]));
   }
 
   // Create mixture rule
-  mixture_rule_ = MIXTURE::PAR::MixtureRule::Factory(*matdata->Get<int>("MATIDMIXTURERULE"));
+  mixture_rule_ = MIXTURE::PAR::MixtureRule::Factory(matdata->Get<int>("MATIDMIXTURERULE"));
 }
 
 // Create a material instance from parameters

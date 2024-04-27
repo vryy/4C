@@ -28,14 +28,14 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_(*(matdata->Get<std::vector<double>>("YOUNG"))),
-      poissonratio_(*matdata->Get<double>("NUE")),
-      density_(*matdata->Get<double>("DENS")),
-      thermexpans_(*matdata->Get<double>("THEXPANS")),
-      capa_(*matdata->Get<double>("CAPA")),
-      conduct_(*matdata->Get<double>("CONDUCT")),
-      thetainit_(*matdata->Get<double>("INITTEMP")),
-      thermomat_(*matdata->Get<int>("THERMOMAT"))
+      youngs_((matdata->Get<std::vector<double>>("YOUNG"))),
+      poissonratio_(matdata->Get<double>("NUE")),
+      density_(matdata->Get<double>("DENS")),
+      thermexpans_(matdata->Get<double>("THEXPANS")),
+      capa_(matdata->Get<double>("CAPA")),
+      conduct_(matdata->Get<double>("CONDUCT")),
+      thetainit_(matdata->Get<double>("INITTEMP")),
+      thermomat_(matdata->Get<int>("THERMOMAT"))
 {
   if (poissonratio_ >= 0.5 || poissonratio_ < -1.)
     FOUR_C_THROW("Poisson's ratio must be in [-1;0.5)");

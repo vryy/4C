@@ -27,13 +27,13 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<MAT::PAR::Material> matdata)
     : MatList(matdata),
-      numpair_((*matdata->Get<int>("NUMPAIR"))),
+      numpair_((matdata->Get<int>("NUMPAIR"))),
       pairids_((matdata->Get<std::vector<int>>("PAIRIDS")))
 {
   // check if sizes fit
-  if (numpair_ != (int)pairids_->size())
+  if (numpair_ != (int)pairids_.size())
     FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
-        pairids_->size());
+        pairids_.size());
 
   if (numpair_ < 1)
     FOUR_C_THROW(
@@ -43,7 +43,7 @@ MAT::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<MAT::PAR::Material> 
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
-    for (m = pairids_->begin(); m != pairids_->end(); ++m)
+    for (m = pairids_.begin(); m != pairids_.end(); ++m)
     {
       const int pairid = *m;
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(pairid);
@@ -194,7 +194,7 @@ void MAT::MatListChemotaxis::Unpack(const std::vector<char>& data)
 int MAT::MatListChemotaxis::PairID(const unsigned index) const
 {
   if ((int)index < paramschemo_->numpair_)
-    return paramschemo_->pairids_->at(index);
+    return paramschemo_->pairids_.at(index);
   else
   {
     FOUR_C_THROW("Index too large");

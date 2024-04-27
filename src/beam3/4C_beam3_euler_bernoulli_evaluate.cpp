@@ -273,16 +273,16 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     time = params.get("total time", -1.0);
 
   // find out whether we will use a time curve and get the factor
-  const auto* tmp_funct = condition.Get<std::vector<int>>("funct");
+  const auto* tmp_funct = &condition.Get<std::vector<int>>("funct");
 
   // get values and switches from the condition
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
-  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* onoff = &condition.Get<std::vector<int>>("onoff");
 
   // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-  const auto* val = condition.Get<std::vector<double>>("val");
+  const auto* val = &condition.Get<std::vector<double>>("val");
 
 #ifndef BEAM3EBDISCRETELINENEUMANN
 // funct is related to the 6 "funct" fields after the val field of the Neumann condition

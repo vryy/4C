@@ -239,7 +239,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::WriteOutputBe
 
       // Get the coupling ID for the current condition.
       const int coupling_id =
-          *beam_to_surface_condition->GetOtherCondition()->Get<int>("COUPLING_ID");
+          beam_to_surface_condition->GetOtherCondition()->Get<int>("COUPLING_ID");
 
       // Create the output for the averaged normal field.
       AddAveragedNodalNormals(visualization_averaged_normals,

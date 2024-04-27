@@ -51,7 +51,7 @@ void DRT::UTILS::EvaluateInitialField(const DRT::Discretization& discret,
     for (const auto& initfieldcondition : initfieldconditions)
     {
       if (initfieldcondition->Type() != type) continue;
-      const std::string condstring = *initfieldcondition->Get<std::string>("Field");
+      const std::string condstring = initfieldcondition->Get<std::string>("Field");
       if (condstring != fieldstring) continue;
       DoInitialField(discret, *initfieldcondition, *fieldvector, locids);
     }
@@ -69,7 +69,7 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Conditi
 
   // loop nodes to identify and evaluate spatial distributions
   // of Initfield boundary conditions
-  const auto funct_num = *cond.Get<int>("funct");
+  const auto funct_num = cond.Get<int>("funct");
 
   for (const int cond_nodeid : cond_nodeids)
   {

@@ -37,9 +37,9 @@ CONSTRAINTS::MPConstraint3::MPConstraint3(Teuchos::RCP<DRT::Discretization> disc
     // control the constraint by absolute or relative values
     for (auto* cond : constrcond_)
     {
-      const int condID = *cond->Get<int>("ConditionID");
+      const int condID = cond->Get<int>("ConditionID");
       if (offsetID > maxID) offsetID = maxID;
-      const std::string type = *cond->Get<std::string>("control");
+      const std::string type = cond->Get<std::string>("control");
       if (type == "abs")
         absconstraint_[condID] = true;
       else
@@ -73,7 +73,7 @@ void CONSTRAINTS::MPConstraint3::Initialize(const double& time)
   for (auto* cond : constrcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = *cond->Get<int>("ConditionID");
+    int condID = cond->Get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second < time) && (!activecons_.find(condID)->second))
@@ -108,7 +108,7 @@ void CONSTRAINTS::MPConstraint3::Initialize(
   {
     DRT::Condition& cond = *(constrcond_[i]);
 
-    int condID = *cond.Get<int>("ConditionID");
+    int condID = cond.Get<int>("ConditionID");
     if (inittimes_.find(condID)->second <= time && (!(activecons_.find(condID)->second)))
     {
       // control absolute values
@@ -119,7 +119,7 @@ void CONSTRAINTS::MPConstraint3::Initialize(
         //          amplit[i]=0.0;
         //        else
         //        {
-        double MPCampl = *constrcond_[i]->Get<double>("amplitude");
+        double MPCampl = constrcond_[i]->Get<double>("amplitude");
         amplit[i] = MPCampl;
         //        }
         const int mid = params.get("OffsetID", 0);
@@ -230,14 +230,14 @@ CONSTRAINTS::MPConstraint3::CreateDiscretizationFromCondition(
       case mpcnodeonplane3d:
       {
         // take three nodes defining plane as specified by user and put them into a set
-        const auto* defnvp = (*conditer)->Get<std::vector<int>>("planeNodes");
-        defnv = *defnvp;
+        const auto& defnvp = (*conditer)->Get<std::vector<int>>("planeNodes");
+        defnv = defnvp;
       }
       break;
       case mpcnormalcomp3d:
       {
         // take master node
-        const int defn = *(*conditer)->Get<int>("masterNode");
+        const int defn = (*conditer)->Get<int>("masterNode");
         defnv.push_back(defn);
       }
       break;
@@ -293,7 +293,7 @@ CONSTRAINTS::MPConstraint3::CreateDiscretizationFromCondition(
         newdis->AddElement(constraintele);
       }
       // save the connection between element and condition
-      eletocond_id_[nodeiter + startID] = *(*conditer)->Get<int>("ConditionID");
+      eletocond_id_[nodeiter + startID] = (*conditer)->Get<int>("ConditionID");
       eletocondvecindex_[nodeiter + startID] = index;
     }
     // adjust starting ID for next condition, in this case nodeiter=ngid.size(), hence the counter
@@ -320,7 +320,7 @@ CONSTRAINTS::MPConstraint3::CreateDiscretizationFromCondition(
     constraintnodecolvec.clear();
     newdis->Redistribute(*constraintnoderowmap, *constraintnodecolmap);
     // put new discretization into the map
-    newdiscmap[*(*conditer)->Get<int>("ConditionID")] = newdis;
+    newdiscmap[(*conditer)->Get<int>("ConditionID")] = newdis;
     // increase counter
     index++;
   }

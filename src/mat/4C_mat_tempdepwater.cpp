@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::TempDepWater::TempDepWater(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      critdens_(*matdata->Get<double>("CRITDENS")),
-      crittemp_(*matdata->Get<double>("CRITTEMP")),
-      shc_(*matdata->Get<double>("SHC"))
+      critdens_(matdata->Get<double>("CRITDENS")),
+      crittemp_(matdata->Get<double>("CRITTEMP")),
+      shc_(matdata->Get<double>("SHC"))
 {
 }
 

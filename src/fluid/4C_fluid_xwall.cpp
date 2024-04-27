@@ -685,9 +685,9 @@ void FLD::XWall::SetupL2Projection()
         {
           for (unsigned numcondper = 0; numcondper < periodiccond.size(); ++numcondper)
           {
-            const std::string* mymasterslavetoggle =
+            const std::string& mymasterslavetoggle =
                 periodiccond[numcondper]->Get<std::string>("Is slave periodic boundary condition");
-            if (*mymasterslavetoggle == "Slave")
+            if (mymasterslavetoggle == "Slave")
             {
               includedofs = false;
             }
@@ -1401,8 +1401,8 @@ void FLD::XWall::OverwriteTransferredValues()
         for (std::vector<DRT::Condition*>::iterator cond = nodecloudstocouple.begin();
              cond != nodecloudstocouple.end(); ++cond)
         {
-          const std::string* mytoggle = (*cond)->Get<std::string>("toggle");
-          if (*mytoggle == "slave")
+          const std::string& mytoggle = (*cond)->Get<std::string>("toggle");
+          if (mytoggle == "slave")
           {
             inctauwtmp->ReplaceMyValue(i, 0, (*oldinctauw_)[i]);
             tauwtmp->ReplaceMyValue(i, 0, (*oldtauw_)[i]);
@@ -1465,9 +1465,9 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
       {
         for (unsigned numcondper = 0; numcondper < periodiccond.size(); ++numcondper)
         {
-          const std::string* mymasterslavetoggle =
+          const std::string& mymasterslavetoggle =
               periodiccond[numcondper]->Get<std::string>("Is slave periodic boundary condition");
-          if (*mymasterslavetoggle == "Slave")
+          if (mymasterslavetoggle == "Slave")
           {
             includedofs = false;
           }
@@ -1490,9 +1490,9 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
             bool isuglydirnode = false;
             for (unsigned numcond = 0; numcond < dircond.size(); ++numcond)
             {
-              const auto* flag = dircond[numcond]->Get<std::vector<int>>("onoff");
+              const auto& flag = dircond[numcond]->Get<std::vector<int>>("onoff");
 
-              if ((*flag)[4] or (*flag)[5] or (*flag)[6]) isuglydirnode = true;
+              if (flag[4] or flag[5] or flag[6]) isuglydirnode = true;
             }
 
             if (isuglydirnode)
@@ -1534,8 +1534,8 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
                     {
                       for (auto& numcond : dircond)
                       {
-                        const auto* flag = numcond->Get<std::vector<int>>("onoff");
-                        if ((*flag)[4] or (*flag)[5] or (*flag)[6]) isuglydirnode = true;
+                        const auto& flag = numcond->Get<std::vector<int>>("onoff");
+                        if (flag[4] or flag[5] or flag[6]) isuglydirnode = true;
                       }
                     }
 

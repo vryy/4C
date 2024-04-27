@@ -27,16 +27,16 @@ FOUR_C_NAMESPACE_OPEN
 
 MAT::PAR::PlasticDruckerPrager::PlasticDruckerPrager(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_(*matdata->Get<double>("YOUNG")),
-      poissonratio_(*matdata->Get<double>("NUE")),
-      density_(*matdata->Get<double>("DENS")),
-      isohard_(*matdata->Get<double>("ISOHARD")),
-      abstol_(*matdata->Get<double>("TOL")),
-      cohesion_(*matdata->Get<double>("C")),
-      eta_(*matdata->Get<double>("ETA")),
-      xi_(*matdata->Get<double>("XI")),
-      etabar_(*matdata->Get<double>("ETABAR")),
-      itermax_(*matdata->Get<int>("MAXITER"))
+      youngs_(matdata->Get<double>("YOUNG")),
+      poissonratio_(matdata->Get<double>("NUE")),
+      density_(matdata->Get<double>("DENS")),
+      isohard_(matdata->Get<double>("ISOHARD")),
+      abstol_(matdata->Get<double>("TOL")),
+      cohesion_(matdata->Get<double>("C")),
+      eta_(matdata->Get<double>("ETA")),
+      xi_(matdata->Get<double>("XI")),
+      etabar_(matdata->Get<double>("ETABAR")),
+      itermax_(matdata->Get<int>("MAXITER"))
 {
 }
 

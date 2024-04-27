@@ -14,7 +14,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::IsoVarga::IsoVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata), mue_(*matdata->Get<double>("MUE")), beta_(*matdata->Get<double>("BETA"))
+    : Parameter(matdata), mue_(matdata->Get<double>("MUE")), beta_(matdata->Get<double>("BETA"))
 {
 }
 

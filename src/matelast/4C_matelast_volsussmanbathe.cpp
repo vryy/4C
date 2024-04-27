@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::VolSussmanBathe::VolSussmanBathe(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata), kappa_(*matdata->Get<double>("KAPPA"))
+    : Parameter(matdata), kappa_(matdata->Get<double>("KAPPA"))
 {
 }
 

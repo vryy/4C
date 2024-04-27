@@ -646,44 +646,44 @@ namespace MAT::FLUIDPORO
 
 MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      viscosity_(*matdata->Get<double>("DYNVISCOSITY")),
-      density_(*matdata->Get<double>("DENSITY")),
-      permeability_(*matdata->Get<double>("PERMEABILITY")),
-      axial_permeability_(*matdata->Get<double>("AXIALPERMEABILITY")),
+      viscosity_(matdata->Get<double>("DYNVISCOSITY")),
+      density_(matdata->Get<double>("DENSITY")),
+      permeability_(matdata->Get<double>("PERMEABILITY")),
+      axial_permeability_(matdata->Get<double>("AXIALPERMEABILITY")),
       type_(undefined),
       varying_permeability_(false),
       permeability_func_(MAT::PAR::pf_undefined),
       permeability_correction_factor_(1.0),
       initial_porosity_(1.0)
 {
-  const auto* typestring = matdata->Get<std::string>("TYPE");
+  const auto& typestring = matdata->Get<std::string>("TYPE");
 
-  if (*typestring == "Darcy")
+  if (typestring == "Darcy")
     type_ = darcy;
-  else if (*typestring == "Darcy-Brinkman")
+  else if (typestring == "Darcy-Brinkman")
     type_ = darcy_brinkman;
 
-  const auto* pfuncstring = matdata->Get<std::string>("PERMEABILITYFUNCTION");
+  const auto& pfuncstring = matdata->Get<std::string>("PERMEABILITYFUNCTION");
 
-  if (*pfuncstring == "Const")
+  if (pfuncstring == "Const")
     permeability_func_ = MAT::PAR::constant;
-  else if (*pfuncstring == "Kozeny_Carman")
+  else if (pfuncstring == "Kozeny_Carman")
     permeability_func_ = MAT::PAR::kozeny_carman;
-  else if (*pfuncstring == "Const_Material_Transverse")
+  else if (pfuncstring == "Const_Material_Transverse")
     permeability_func_ = MAT::PAR::const_material_transverse;
-  else if (*pfuncstring == "Const_Material_Orthotropy")
+  else if (pfuncstring == "Const_Material_Orthotropy")
     permeability_func_ = MAT::PAR::const_material_orthotropic;
-  else if (*pfuncstring == "Const_Material_Nodal_Orthotropy")
+  else if (pfuncstring == "Const_Material_Nodal_Orthotropy")
     permeability_func_ = MAT::PAR::const_material_nodal_orthotropic;
   else
-    FOUR_C_THROW("Unknown permeability function: %s", pfuncstring->c_str());
+    FOUR_C_THROW("Unknown permeability function: %s", pfuncstring.c_str());
 
   orthotropic_permeabilities_.resize(3, 0.0);
   if (permeability_func_ == MAT::PAR::const_material_orthotropic)
   {
     for (int dim = 0; dim < 3; ++dim)
       orthotropic_permeabilities_[dim] =
-          *matdata->Get<double>("ORTHOPERMEABILITY" + std::to_string(dim + 1));
+          matdata->Get<double>("ORTHOPERMEABILITY" + std::to_string(dim + 1));
   }
 }
 

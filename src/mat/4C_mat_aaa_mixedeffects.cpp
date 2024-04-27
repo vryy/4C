@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::AaaMixedeffects::AaaMixedeffects(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      nue_(*matdata->Get<double>("NUE")),
-      age_(*matdata->Get<double>("AGE")),
-      refdia_(*matdata->Get<double>("REFDIA")),
-      density_(*matdata->Get<double>("DENS"))
+      nue_(matdata->Get<double>("NUE")),
+      age_(matdata->Get<double>("AGE")),
+      refdia_(matdata->Get<double>("REFDIA")),
+      density_(matdata->Get<double>("DENS"))
 {
 }
 

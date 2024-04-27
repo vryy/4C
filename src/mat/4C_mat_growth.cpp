@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      idmatelastic_(*matdata->Get<int>("IDMATELASTIC")),
-      idgrowthlaw_(*matdata->Get<int>("GROWTHLAW")),
-      starttime_(*matdata->Get<double>("STARTTIME")),
-      endtime_(*matdata->Get<double>("ENDTIME"))
+      idmatelastic_(matdata->Get<int>("IDMATELASTIC")),
+      idgrowthlaw_(matdata->Get<int>("GROWTHLAW")),
+      starttime_(matdata->Get<double>("STARTTIME")),
+      endtime_(matdata->Get<double>("ENDTIME"))
 {
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();

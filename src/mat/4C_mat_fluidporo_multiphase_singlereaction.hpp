@@ -94,7 +94,7 @@ namespace MAT
       const int numfluidphases_;
 
       /// the list of material IDs
-      const std::vector<int>* scale_;
+      const std::vector<int> scale_;
 
       /// type of coupling
       const MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling coupling_;
@@ -246,7 +246,7 @@ namespace MAT
         const std::vector<double>& scalar);
 
     /// return whether phase 'phasenum' is involved in this reaction
-    bool IsReactive(int phasenum) const { return params_->scale_->at(phasenum) != 0; };
+    bool IsReactive(int phasenum) const { return params_->scale_.at(phasenum) != 0; };
 
     /// Check sizes of vectors
     int TotalNumDof() { return params_->totalnummultiphasedof_; }

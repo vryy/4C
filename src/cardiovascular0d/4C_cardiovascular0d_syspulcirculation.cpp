@@ -611,7 +611,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     // elements might need condition
     params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
 
-    const std::string* conditiontype = cardiovascular0dcond_[i]->Get<std::string>("type");
+    const std::string* conditiontype = &cardiovascular0dcond_[i]->Get<std::string>("type");
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elematrix1;
@@ -758,7 +758,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
   for (auto* cond : cardiovascular0dcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = *cond->Get<int>("id");
+    int condID = cond->Get<int>("id");
     params.set("id", condID);
 
     params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(cond, false));
@@ -770,7 +770,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
     CORE::LINALG::SerialDenseVector elevector2;
     CORE::LINALG::SerialDenseVector elevector3;
 
-    const std::string conditiontype = *cond->Get<std::string>("type");
+    const std::string conditiontype = cond->Get<std::string>("type");
 
     std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
     // no check for empty geometry here since in parallel computations

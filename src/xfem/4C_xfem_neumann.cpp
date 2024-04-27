@@ -37,7 +37,6 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
     EvaluateNeumann(params, discret, *systemvector);
   else
     EvaluateNeumann(params, discret, *systemvector, systemmatrix.get());
-  return;
 }
 
 

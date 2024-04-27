@@ -25,15 +25,15 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::MatListReactions::MatListReactions(Teuchos::RCP<MAT::PAR::Material> matdata)
     : MatList(matdata),
-      numreac_((*matdata->Get<int>("NUMREAC"))),
+      numreac_((matdata->Get<int>("NUMREAC"))),
       reacids_((matdata->Get<std::vector<int>>("REACIDS")))
 {
   // check if sizes fit
-  if (numreac_ != (int)reacids_->size())
+  if (numreac_ != (int)reacids_.size())
 
 
     FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
-        reacids_->size());
+        reacids_.size());
 
   if (numreac_ < 1)
     FOUR_C_THROW("if you don't have reactions, use MAT_matlist instead of MAT_matlist_reactions!");
@@ -42,7 +42,7 @@ MAT::PAR::MatListReactions::MatListReactions(Teuchos::RCP<MAT::PAR::Material> ma
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
-    for (m = reacids_->begin(); m != reacids_->end(); ++m)
+    for (m = reacids_.begin(); m != reacids_.end(); ++m)
     {
       const int reacid = *m;
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
@@ -243,7 +243,7 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
 int MAT::MatListReactions::ReacID(const unsigned index) const
 {
   if ((int)index < paramsreac_->numreac_)
-    return paramsreac_->reacids_->at(index);
+    return paramsreac_->reacids_.at(index);
   else
   {
     FOUR_C_THROW("Index too large");

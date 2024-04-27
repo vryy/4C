@@ -69,21 +69,21 @@ FOUR_C_NAMESPACE_OPEN
 MAT::PAR::Robinson::Robinson(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       kind_((matdata->Get<std::string>("KIND"))),
-      youngs_(*(matdata->Get<std::vector<double>>("YOUNG"))),
-      poissonratio_(*matdata->Get<double>("NUE")),
-      density_(*matdata->Get<double>("DENS")),
-      thermexpans_(*matdata->Get<double>("THEXPANS")),
-      inittemp_(*matdata->Get<double>("INITTEMP")),
-      hrdn_fact_(*matdata->Get<double>("HRDN_FACT")),
-      hrdn_expo_(*matdata->Get<double>("HRDN_EXPO")),
-      shrthrshld_(*(matdata->Get<std::vector<double>>("SHRTHRSHLD"))),
-      rcvry_(*matdata->Get<double>("RCVRY")),
-      actv_ergy_(*matdata->Get<double>("ACTV_ERGY")),
-      actv_tmpr_(*matdata->Get<double>("ACTV_TMPR")),
-      g0_(*matdata->Get<double>("G0")),
-      m_(*matdata->Get<double>("M_EXPO")),
-      beta_(*(matdata->Get<std::vector<double>>("BETA"))),
-      h_(*matdata->Get<double>("H_FACT"))
+      youngs_((matdata->Get<std::vector<double>>("YOUNG"))),
+      poissonratio_(matdata->Get<double>("NUE")),
+      density_(matdata->Get<double>("DENS")),
+      thermexpans_(matdata->Get<double>("THEXPANS")),
+      inittemp_(matdata->Get<double>("INITTEMP")),
+      hrdn_fact_(matdata->Get<double>("HRDN_FACT")),
+      hrdn_expo_(matdata->Get<double>("HRDN_EXPO")),
+      shrthrshld_((matdata->Get<std::vector<double>>("SHRTHRSHLD"))),
+      rcvry_(matdata->Get<double>("RCVRY")),
+      actv_ergy_(matdata->Get<double>("ACTV_ERGY")),
+      actv_tmpr_(matdata->Get<double>("ACTV_TMPR")),
+      g0_(matdata->Get<double>("G0")),
+      m_(matdata->Get<double>("M_EXPO")),
+      beta_((matdata->Get<std::vector<double>>("BETA"))),
+      h_(matdata->Get<double>("H_FACT"))
 {
 }
 
@@ -668,7 +668,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,      // (i) time st
   // hardening factor 'A' --> aa
   // calculate the temperature dependent material constant \bar{\mu} := aa
   double aa = 0.0;
-  if (*(params_->kind_) == "Arya_CrMoSteel")
+  if (params_->kind_ == "Arya_CrMoSteel")
   {
     double mu = params_->hrdn_fact_;
     // calculate theta1 used for the material constant \bar{\mu}
@@ -932,11 +932,11 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   // 'H' at current temperature
   double hh = 0.0;
   hh = GetMatParameterAtTempnp(params_->h_, tempnp);
-  if (*(params_->kind_) == "Arya_NarloyZ")
+  if (params_->kind_ == "Arya_NarloyZ")
   {
     hh *= std::pow(6.896, (1.0 + beta)) / (3.0 * kk0sq);
   }
-  if (*(params_->kind_) == "Arya_CrMoSteel")
+  if (params_->kind_ == "Arya_CrMoSteel")
   {
     double mu = params_->hrdn_fact_;
     hh *= 2.0 * mu;
@@ -951,7 +951,7 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   rr0 = GetMatParameterAtTempnp(params_->rcvry_, tempnp);
   // exponent 'm'
   double mm = params_->m_;
-  if (*(params_->kind_) == "Arya_NarloyZ")
+  if (params_->kind_ == "Arya_NarloyZ")
   {
     // pressure unit scale : cN/cm^2 = 10^-4 MPa
     const double pus = 1.0e-4;

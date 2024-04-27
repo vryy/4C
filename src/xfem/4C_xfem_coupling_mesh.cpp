@@ -640,9 +640,9 @@ bool XFEM::MeshCouplingBC::HasMovingInterface()
 
   DRT::Condition* cond = mycond[0];
 
-  const std::string* evaltype = cond->Get<std::string>("evaltype");
+  const std::string& evaltype = cond->Get<std::string>("evaltype");
 
-  return *evaltype != "zero";
+  return evaltype != "zero";
 }
 
 /*--------------------------------------------------------------------------*
@@ -669,7 +669,7 @@ void XFEM::MeshCouplingBC::EvaluateCondition(Teuchos::RCP<Epetra_Vector> ivec,
 
     for (auto* cond : mycond)
     {
-      if (*cond->Get<int>("label") == coupling_id_) mycond_by_coupid.push_back(cond);
+      if (cond->Get<int>("label") == coupling_id_) mycond_by_coupid.push_back(cond);
     }
 
     // safety check for unique condition
@@ -712,7 +712,7 @@ void XFEM::MeshCouplingBC::EvaluateCondition(Teuchos::RCP<Epetra_Vector> ivec,
 void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(std::vector<double>& final_values,
     DRT::Node* node, DRT::Condition* cond, const double time, const double dt)
 {
-  const std::string* evaltype = cond->Get<std::string>("evaltype");
+  const std::string* evaltype = &cond->Get<std::string>("evaltype");
 
   if (*evaltype == "zero")
   {
@@ -754,18 +754,18 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(std::vector<double>& final_
 void XFEM::MeshCouplingBC::EvaluateInterfaceDisplacement(
     std::vector<double>& final_values, DRT::Node* node, DRT::Condition* cond, const double time)
 {
-  const std::string* evaltype = cond->Get<std::string>("evaltype");
+  const std::string& evaltype = cond->Get<std::string>("evaltype");
 
-  if (*evaltype == "zero")
+  if (evaltype == "zero")
   {
     // take initialized vector with zero values
   }
-  else if (*evaltype == "funct")
+  else if (evaltype == "funct")
   {
     // evaluate function at node at current time
     EvaluateFunction(final_values, node->X().data(), cond, time);
   }
-  else if (*evaltype == "implementation")
+  else if (evaltype == "implementation")
   {
     // evaluate implementation
     // TODO: get the function name from the condition!!!
@@ -773,7 +773,7 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceDisplacement(
     EvaluateImplementation(final_values, node->X().data(), cond, time, function_name);
   }
   else
-    FOUR_C_THROW("evaltype not supported %s", evaltype->c_str());
+    FOUR_C_THROW("evaltype not supported %s", evaltype.c_str());
 }
 
 
@@ -1050,11 +1050,11 @@ void XFEM::MeshCouplingNeumann::DoConditionSpecificSetup()
   // Check if Inflow Stabilisation is active
   if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
   DRT::Condition* cond = (cutterele_conds_[0]).second;
-  auto inflow_stab = *cond->Get<bool>("InflowStab");
+  auto inflow_stab = cond->Get<bool>("InflowStab");
   for (auto& cutterele_cond : cutterele_conds_)
   {
     DRT::Condition* cond = cutterele_cond.second;
-    auto this_inflow = *cond->Get<bool>("InflowStab");
+    auto this_inflow = cond->Get<bool>("InflowStab");
     if (inflow_stab != this_inflow)
       FOUR_C_THROW(
           "You want to stabilized just some of your Neumann Boundaries? - feel free to implement!");
@@ -1240,7 +1240,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::Matr
   if (eval_dirich_at_gp)
   {
     // evaluate interface velocity (given by weak Dirichlet condition)
-    robin_id_dirch = *cond->Get<int>("robin_id_dirch");
+    robin_id_dirch = cond->Get<int>("robin_id_dirch");
     // Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
     if (!std::signbit(static_cast<double>(robin_id_dirch)))
       EvaluateDirichletFunction(
@@ -1257,7 +1257,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::Matr
   }
 
   // evaluate interface traction (given by Neumann condition)
-  robin_id_dirch = *cond->Get<int>("robin_id_neumann");
+  robin_id_dirch = cond->Get<int>("robin_id_neumann");
   if (!std::signbit(static_cast<double>(robin_id_dirch)))
   {
     // This is maybe not the most efficient implementation as we evaluate dynvisc as well as the
@@ -1330,14 +1330,14 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditionsOldState(
   //  }
 
   // evaluate interface velocity (given by weak Dirichlet condition)
-  int robin_id_dirch = *cond->Get<int>("robin_id_dirch");
+  int robin_id_dirch = cond->Get<int>("robin_id_dirch");
   // Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
   if (!std::signbit(static_cast<double>(robin_id_dirch)))
     EvaluateDirichletFunction(
         ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second, time_ - dt_);
 
   // evaluate interface traction (given by Neumann condition)
-  robin_id_dirch = *cond->Get<int>("robin_id_neumann");
+  robin_id_dirch = cond->Get<int>("robin_id_neumann");
   if (!std::signbit(static_cast<double>(robin_id_dirch)))
     EvaluateNeumannFunction(
         itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second, time_ - dt_);
@@ -1375,7 +1375,7 @@ void XFEM::MeshCouplingNavierSlip::CreateRobinIdMap(
   for (unsigned i = 0; i < conditions_NS.size(); ++i)
   {
     // Extract its robin id (either dirichlet or neumann)
-    const int tmp_robin_id = *conditions_NS[i]->Get<int>(robin_id_name);
+    const int tmp_robin_id = conditions_NS[i]->Get<int>(robin_id_name);
 
     // Is this robin id active? I.e. is it not 0 or negative?
     if (!(tmp_robin_id < 0))
@@ -1450,12 +1450,12 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters()
   {
     int cond_int = cond->Id();
 
-    double sliplength = *cond->Get<double>("slipcoeff");
+    double sliplength = cond->Get<double>("slipcoeff");
 
     // Is the slip length constant? Don't call functions at GP-level unnecessary.
-    bool slip_bool = (*cond->Get<int>("funct") < 1);
+    bool slip_bool = (cond->Get<int>("funct") < 1);
 
-    bool force_tangential = (*cond->Get<int>("force_tang_vel") == 1);
+    bool force_tangential = (cond->Get<int>("force_tang_vel") == 1);
 
     if (!sliplength_map_.insert(std::make_pair(cond_int, std::make_pair(sliplength, slip_bool)))
              .second)
@@ -1469,11 +1469,11 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters()
   //       Robin Dirichlet section (Safety check! (not beautiful structure but could be worse..))
   for (auto* tmp_cond : conditions_NS)
   {
-    const int tmp_robin_id = *tmp_cond->Get<int>("robin_id_dirch");
+    const int tmp_robin_id = tmp_cond->Get<int>("robin_id_dirch");
     if (!std::signbit(static_cast<double>(tmp_robin_id)))
     {
-      if ((*conditionsmap_robin_dirch_.find(tmp_robin_id)->second->Get<std::string>("evaltype")) !=
-          *(tmp_cond->Get<std::string>("evaltype")))
+      if ((conditionsmap_robin_dirch_.find(tmp_robin_id)->second->Get<std::string>("evaltype")) !=
+          (tmp_cond->Get<std::string>("evaltype")))
         FOUR_C_THROW("Not same function to evaluate in Dirichlet cond as in Main Cond.");
     }
   }
@@ -1487,7 +1487,7 @@ void XFEM::MeshCouplingNavierSlip::GetConditionByRobinId(const std::vector<DRT::
   // select the conditions with specified "couplingID"
   for (auto* cond : mycond)
   {
-    const int id = *cond->Get<int>("robin_id");
+    const int id = cond->Get<int>("robin_id");
 
     if (id == coupling_id) mynewcond.push_back(cond);
   }
@@ -1785,17 +1785,17 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters()
   {
     int cond_int = cond->Id();
 
-    double sliplength = *cond->Get<double>("slipcoeff");
+    double sliplength = cond->Get<double>("slipcoeff");
 
     // Is the slip length constant? Don't call functions at GP-level unnecessary.
-    bool slip_bool = (*cond->Get<int>("funct") < 1);
+    bool slip_bool = (cond->Get<int>("funct") < 1);
 
     if (!sliplength_map_.insert(std::make_pair(cond_int, std::make_pair(sliplength, slip_bool)))
              .second)
       FOUR_C_THROW("ID already existing! For sliplength_map_.");
 
     INPAR::XFEM::InterfaceLaw interfacelaw =
-        static_cast<INPAR::XFEM::InterfaceLaw>(*cond->Get<int>("INTLAW"));
+        static_cast<INPAR::XFEM::InterfaceLaw>(cond->Get<int>("INTLAW"));
     if (i != conditions_XFSI.begin())
     {
       if (interfacelaw_ != interfacelaw)

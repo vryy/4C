@@ -679,10 +679,9 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   // sort out solid-to-solid contact pairs, since these are treated in the contact framework
   for (int i = 0; i < (int)beamandsolidcontactconditions.size(); ++i)
   {
-    if (*(beamandsolidcontactconditions[i]->Get<std::string>("Application")) ==
-        "Beamtosolidcontact")
+    if ((beamandsolidcontactconditions[i]->Get<std::string>("Application")) == "Beamtosolidcontact")
       btscontactconditions.push_back(beamandsolidcontactconditions[i]);
-    if (*(beamandsolidcontactconditions[i]->Get<std::string>("Application")) ==
+    if ((beamandsolidcontactconditions[i]->Get<std::string>("Application")) ==
         "Beamtosolidmeshtying")
       btsmeshtyingconditions.push_back(beamandsolidcontactconditions[i]);
   }
@@ -1522,11 +1521,11 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
 
     for (unsigned int i = 0; i < conds1.size(); ++i)
     {
-      int npotlaw1 = *conds1[i]->Get<int>("potlaw");
+      int npotlaw1 = conds1[i]->Get<int>("potlaw");
 
       for (unsigned int j = 0; j < conds2.size(); ++j)
       {
-        int npotlaw2 = *conds2[j]->Get<int>("potlaw");
+        int npotlaw2 = conds2[j]->Get<int>("potlaw");
 
         // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical
         // beam

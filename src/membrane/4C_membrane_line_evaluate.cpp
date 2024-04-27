@@ -36,8 +36,8 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
   };
   LoadType ltype;
 
-  const std::string* type = condition.Get<std::string>("type");
-  if (*type == "neum_live")
+  const std::string& type = condition.Get<std::string>("type");
+  if (type == "neum_live")
   {
     ltype = neum_live;
   }
@@ -45,9 +45,9 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
     FOUR_C_THROW("Unknown type of LineNeumann condition");
 
   // get values and switches from the condition
-  const auto* onoff = condition.Get<std::vector<int>>("onoff");
-  const auto* val = condition.Get<std::vector<double>>("val");
-  const auto* spa_func = condition.Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.Get<std::vector<int>>("onoff");
+  const auto* val = &condition.Get<std::vector<double>>("val");
+  const auto* spa_func = &condition.Get<std::vector<int>>("funct");
 
   /*
   **    TIME CURVE BUSINESS

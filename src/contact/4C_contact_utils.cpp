@@ -29,7 +29,7 @@ int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& contact_c
    * beam3contact framework */
   for (auto* beamandsolidcontactcondition : beamandsolidcontactconditions)
   {
-    if (*(beamandsolidcontactcondition->Get<std::string>("Application")) != "Beamtosolidcontact")
+    if ((beamandsolidcontactcondition->Get<std::string>("Application")) != "Beamtosolidcontact")
     {
       contact_conditions.push_back(beamandsolidcontactcondition);
     }
@@ -44,8 +44,8 @@ int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& contact_c
   }
   if (contact_conditions.size() == 1)
   {
-    const auto* side = contact_conditions[0]->Get<std::string>("Side");
-    if (*side != "Selfcontact")
+    const auto& side = contact_conditions[0]->Get<std::string>("Side");
+    if (side != "Selfcontact")
     {
       if (throw_error) FOUR_C_THROW("Not enough contact conditions in discretization");
       return -2;
@@ -91,19 +91,19 @@ void CONTACT::UTILS::GetContactConditionGroups(
 
     // try to build contact group around this condition
     current_grp.push_back(cconds[i]);
-    const auto groupid1 = *current_grp[0]->Get<int>("Interface ID");
+    const auto groupid1 = current_grp[0]->Get<int>("Interface ID");
     bool foundit = false;
 
     // only one surface per group is ok for self contact
-    const auto* side = cconds[i]->Get<std::string>("Side");
-    if (*side == "Selfcontact") foundit = true;
+    const auto& side = cconds[i]->Get<std::string>("Side");
+    if (side == "Selfcontact") foundit = true;
 
     for (std::size_t j = 0; j < cconds.size(); ++j)
     {
       // do not compare ids of one and the same contact condition
       if (j == i) continue;
       tempcond = cconds[j];
-      const auto groupid2 = *tempcond->Get<int>("Interface ID");
+      const auto groupid2 = tempcond->Get<int>("Interface ID");
 
       // Do the IDs coincide?
       if (groupid1 != groupid2) continue;  // not in the group
@@ -153,7 +153,7 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vec
 
   for (int j = 0; j < (int)sides.size(); ++j)
   {
-    sides[j] = cond_grp[j]->Get<std::string>("Side");
+    sides[j] = &cond_grp[j]->Get<std::string>("Side");
     if (*sides[j] == "Slave")
     {
       hasslave = true;
@@ -211,7 +211,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 
   for (std::size_t j = 0; j < cond_grp.size(); ++j)
   {
-    active[j] = cond_grp[j]->Get<std::string>("Initialization");
+    active[j] = &cond_grp[j]->Get<std::string>("Initialization");
     if (isslave[j])
     {
       // slave sides may be initialized as "Active" or as "Inactive"
@@ -244,12 +244,12 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
     }
 
     // check for two half pass approach
-    two_half_pass[j] = *cond_grp[j]->Get<double>("TwoHalfPass");
+    two_half_pass[j] = cond_grp[j]->Get<double>("TwoHalfPass");
     if (two_half_pass[j]) Two_half_pass = true;
 
     // check for reference configuration check for non-smooth self contact surfaces
     check_nonsmooth_selfcontactsurface[j] =
-        *cond_grp[j]->Get<double>("RefConfCheckNonSmoothSelfContactSurface");
+        cond_grp[j]->Get<double>("RefConfCheckNonSmoothSelfContactSurface");
     if (check_nonsmooth_selfcontactsurface[j]) Check_nonsmooth_selfcontactsurface = true;
   }
 
@@ -427,7 +427,7 @@ void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodesAndElements(
 
       const DRT::Condition* sl_cond = ccond_grp[i];
 
-      const int dbc_handling_id = *sl_cond->Get<int>("dbc_handling");
+      const int dbc_handling_id = sl_cond->Get<int>("dbc_handling");
       const auto dbc_handling = static_cast<INPAR::MORTAR::DBCHandling>(dbc_handling_id);
 
       switch (dbc_handling)

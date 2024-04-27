@@ -111,14 +111,14 @@ namespace INPAR
 
 
     /*!
-     * Get the const pointer to the data stored at the key @p name from the container. An error
+     * Get a const reference to the data stored at the key @p name from the container. An error
      * is thrown in case no value of specified type is stored under @p name in the container.
      */
     template <typename T>
-    const T* Get(const std::string& name) const
+    const T& Get(const std::string& name) const
     {
       if (const T* p = GetIf<T>(name))
-        return p;
+        return *p;
       else
         FOUR_C_THROW("Key %s cannot be found in the container's map!", name.c_str());
     }

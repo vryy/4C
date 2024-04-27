@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Spring::Spring(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      stiffness_(*matdata->Get<double>("STIFFNESS")),
-      density_(*matdata->Get<double>("DENS"))
+      stiffness_(matdata->Get<double>("STIFFNESS")),
+      density_(matdata->Get<double>("DENS"))
 {
 }
 

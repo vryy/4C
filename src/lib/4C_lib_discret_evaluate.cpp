@@ -187,8 +187,8 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
     const std::vector<int>* nodeids = cond->GetNodes();
     if (!nodeids) FOUR_C_THROW("PointNeumann condition does not have nodal cloud");
     const auto* tmp_funct = cond->GetIf<std::vector<int>>("funct");
-    const auto& onoff = *cond->Get<std::vector<int>>("onoff");
-    const auto& val = *cond->Get<std::vector<double>>("val");
+    const auto& onoff = cond->Get<std::vector<int>>("onoff");
+    const auto& val = cond->Get<std::vector<double>>("val");
 
     for (const int nodeid : *nodeids)
     {
@@ -378,7 +378,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
   {
     if (name == condstring)
     {
-      if (condid == -1 || condid == *cond->Get<int>("ConditionID"))
+      if (condid == -1 || condid == cond->Get<int>("ConditionID"))
       {
         std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
         // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
@@ -543,7 +543,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
     if (name == condstring)
     {
       // additional filtering by condition ID if explicitly provided
-      if (condid == -1 or condid == *condition->Get<int>("ConditionID"))
+      if (condid == -1 or condid == condition->Get<int>("ConditionID"))
       {
         // extract geometry map of current condition
         std::map<int, Teuchos::RCP<DRT::Element>>& geometry = condition->Geometry();
@@ -580,7 +580,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
             cpuscalars += elescalars;
           }  // if(element.Owner() == Comm().MyPID())
         }    // loop over elements
-      }      // if(condid == -1 or condid == *condition.Get<int>("ConditionID"))
+      }      // if(condid == -1 or condid == condition.Get<int>("ConditionID"))
     }        // if(conditionpair->first == condstring)
   }          // loop over conditions
 

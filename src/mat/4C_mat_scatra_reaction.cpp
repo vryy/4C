@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      numscal_(*matdata->Get<int>("NUMSCAL")),
+      numscal_(matdata->Get<int>("NUMSCAL")),
       stoich_(matdata->Get<std::vector<int>>("STOICH")),
-      reaccoeff_(*matdata->Get<double>("REACCOEFF")),
-      distrfunctreaccoeffid_(*matdata->Get<int>("DISTRFUNCT")),
+      reaccoeff_(matdata->Get<double>("REACCOEFF")),
+      distrfunctreaccoeffid_(matdata->Get<int>("DISTRFUNCT")),
       coupling_(SetCouplingType(matdata)),
       couprole_(matdata->Get<std::vector<double>>("ROLE")),
       reacstart_(matdata->Get<std::vector<double>>("REACSTART")),
@@ -41,27 +41,27 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
     FOUR_C_THROW(
         "The coupling '%s' is not a valid reaction coupling. Valid couplings are "
         "'simple_multiplicative', 'constant' and 'michaelis_menten'.",
-        (matdata->Get<std::string>("COUPLING"))->c_str());
+        (matdata->Get<std::string>("COUPLING")).c_str());
 
-  if (numscal_ != (int)stoich_->size())
+  if (numscal_ != (int)stoich_.size())
     FOUR_C_THROW("number of scalars %d does not fit to size of the STOICH vector %d", numscal_,
-        stoich_->size());
+        stoich_.size());
 
-  if (numscal_ != (int)couprole_->size())
+  if (numscal_ != (int)couprole_.size())
     FOUR_C_THROW("number of scalars %d does not fit to size of the ROLE vector %d", numscal_,
-        couprole_->size());
+        couprole_.size());
 
-  if (numscal_ != (int)reacstart_->size())
+  if (numscal_ != (int)reacstart_.size())
     FOUR_C_THROW("number of scalars %d does not fit to size of the REACSTART vector %d", numscal_,
-        reacstart_->size());
+        reacstart_.size());
 
   for (int ii = 0; ii < numscal_; ii++)
   {
-    if (reacstart_->at(ii) < 0)
+    if (reacstart_.at(ii) < 0)
     {
       FOUR_C_THROW("In the REACSTART vector only non-negative values are allowed!");
     }
-    else if (reacstart_->at(ii) > 0)
+    else if (reacstart_.at(ii) > 0)
     {
       isreacstart_ = true;
     }
@@ -77,8 +77,8 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
         bool roleallzero = true;
         for (int ii = 0; ii < numscal_; ii++)
         {
-          if (stoich_->at(ii) != 0) stoichallzero = false;
-          if (couprole_->at(ii) != 0.0) roleallzero = false;
+          if (stoich_.at(ii) != 0) stoichallzero = false;
+          if (couprole_.at(ii) != 0.0) roleallzero = false;
         }
         if (roleallzero)
           FOUR_C_THROW(
@@ -98,8 +98,8 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
         bool roleallzero = true;
         for (int ii = 0; ii < numscal_; ii++)
         {
-          if (stoich_->at(ii) != 0) stoichallzero = false;
-          if (couprole_->at(ii) != 0.0) roleallzero = false;
+          if (stoich_.at(ii) != 0) stoichallzero = false;
+          if (couprole_.at(ii) != 0.0) roleallzero = false;
         }
         if (roleallzero)
           FOUR_C_THROW(
@@ -118,12 +118,12 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
         bool issomepositiv = false;
         for (int ii = 0; ii < numscal_; ii++)
         {
-          if (stoich_->at(ii) < 0)
+          if (stoich_.at(ii) < 0)
             FOUR_C_THROW(
                 "reac_coup_constant must only contain positive entries in the STOICH list");
-          if (couprole_->at(ii) != 0.0)
+          if (couprole_.at(ii) != 0.0)
             FOUR_C_THROW("reac_coup_constant must only contain zero entries in the ROLE list");
-          if (stoich_->at(ii) > 0) issomepositiv = true;
+          if (stoich_.at(ii) > 0) issomepositiv = true;
         }
         if (not issomepositiv)
           FOUR_C_THROW(
@@ -138,8 +138,8 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
         bool roleallzero = true;
         for (int ii = 0; ii < numscal_; ii++)
         {
-          if (stoich_->at(ii) != 0) stoichallzero = false;
-          if (couprole_->at(ii) != 0) roleallzero = false;
+          if (stoich_.at(ii) != 0) stoichallzero = false;
+          if (couprole_.at(ii) != 0) roleallzero = false;
         }
         if (roleallzero)
           FOUR_C_THROW(
@@ -158,15 +158,15 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
         int functID = -1;
         for (int ii = 0; ii < numscal_; ii++)
         {
-          if (stoich_->at(ii) != 0)
+          if (stoich_.at(ii) != 0)
           {
-            if (round(couprole_->at(ii)) < 1)
+            if (round(couprole_.at(ii)) < 1)
               FOUR_C_THROW(
                   "reac_coup_byfunction: no function defined in the ROLE list for scalar with "
                   "positive entry in the STOICH list");
             if (functID == -1)
-              functID = round(couprole_->at(ii));
-            else if (functID != round(couprole_->at(ii)))
+              functID = round(couprole_.at(ii));
+            else if (functID != round(couprole_.at(ii)))
               FOUR_C_THROW("The FUNC IDs defined in the ROLE list should all match");
           }
         }
@@ -189,14 +189,14 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> 
 
   // if all checks are passed, we can build the reaction class
   reaction_ = MAT::PAR::REACTIONCOUPLING::ReactionInterface::CreateReaction(
-      coupling_, isreacstart_, *reacstart_);
+      coupling_, isreacstart_, reacstart_);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::ScatraReactionMat::Initialize() { reaction_->Initialize(numscal_, *couprole_); }
+void MAT::PAR::ScatraReactionMat::Initialize() { reaction_->Initialize(numscal_, couprole_); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -214,27 +214,27 @@ MAT::ScatraReactionMatType MAT::ScatraReactionMatType::instance_;
 MAT::PAR::ReactionCoupling MAT::PAR::ScatraReactionMat::SetCouplingType(
     Teuchos::RCP<MAT::PAR::Material> matdata)
 {
-  if (*(matdata->Get<std::string>("COUPLING")) == "simple_multiplicative")
+  if ((matdata->Get<std::string>("COUPLING")) == "simple_multiplicative")
   {
     return reac_coup_simple_multiplicative;
   }
-  else if (*(matdata->Get<std::string>("COUPLING")) == "power_multiplicative")
+  else if ((matdata->Get<std::string>("COUPLING")) == "power_multiplicative")
   {
     return reac_coup_power_multiplicative;
   }
-  else if (*(matdata->Get<std::string>("COUPLING")) == "constant")
+  else if ((matdata->Get<std::string>("COUPLING")) == "constant")
   {
     return reac_coup_constant;
   }
-  else if (*(matdata->Get<std::string>("COUPLING")) == "michaelis_menten")
+  else if ((matdata->Get<std::string>("COUPLING")) == "michaelis_menten")
   {
     return reac_coup_michaelis_menten;
   }
-  else if (*(matdata->Get<std::string>("COUPLING")) == "by_function")
+  else if ((matdata->Get<std::string>("COUPLING")) == "by_function")
   {
     return reac_coup_byfunction;
   }
-  else if (*(matdata->Get<std::string>("COUPLING")) == "no_coupling")
+  else if ((matdata->Get<std::string>("COUPLING")) == "no_coupling")
   {
     return reac_coup_none;
   }

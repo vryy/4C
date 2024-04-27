@@ -85,12 +85,12 @@ namespace
       std::vector<double> x(3, 0.0);
       std::vector<int> dofs(3);
 
-      double hurstexponentfunct = *container->Get<int>("HurstExponentFunct");
-      double initialtopologystddevfunct = *container->Get<int>("InitialTopologyStdDeviationFunct");
-      int resolution = *container->Get<int>("Resolution");
-      bool randomtopologyflag = *container->Get<bool>("RandomTopologyFlag");
-      bool randomseedflag = *container->Get<bool>("RandomSeedFlag");
-      int randomgeneratorseed = *container->Get<int>("RandomGeneratorSeed");
+      double hurstexponentfunct = container->Get<int>("HurstExponentFunct");
+      double initialtopologystddevfunct = container->Get<int>("InitialTopologyStdDeviationFunct");
+      int resolution = container->Get<int>("Resolution");
+      bool randomtopologyflag = container->Get<bool>("RandomTopologyFlag");
+      bool randomseedflag = container->Get<bool>("RandomSeedFlag");
+      int randomgeneratorseed = container->Get<int>("RandomGeneratorSeed");
 
       cnode = Teuchos::rcp(new CONTACT::RoughNode(1, x, 1, dofs, true, true, hurstexponentfunct,
           initialtopologystddevfunct, resolution, randomtopologyflag, randomseedflag,

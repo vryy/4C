@@ -183,7 +183,7 @@ MAT::ELASTIC::PAR::CoupAnisoExpoShear::CoupAnisoExpoShear(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MAT::PAR::Parameter(matdata), MAT::ELASTIC::PAR::CoupAnisoExpoBase(matdata)
 {
-  std::copy_n(matdata->Get<std::vector<int>>("FIBER_IDS")->begin(), 2, fiber_id_.begin());
+  std::copy_n(matdata->Get<std::vector<int>>("FIBER_IDS").begin(), 2, fiber_id_.begin());
 
   for (int& i : fiber_id_) i -= 1;
 }

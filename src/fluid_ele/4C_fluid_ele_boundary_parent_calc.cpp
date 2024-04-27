@@ -529,7 +529,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
   const double time =
       fldparatimint_->Time() + (1 - fldparatimint_->AlphaF()) * fldparatimint_->Dt();
   if (time < 0.0) usetime = false;
-  const int curve = *fdp_cond->Get<int>("curve");
+  const int curve = fdp_cond->Get<int>("curve");
   int curvenum = -1;
   if (curve) curvenum = curve;
   double curvefac = 1.0;
@@ -543,31 +543,31 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
   if (curvefac > 0.0)
   {
     // decide on whether it is a flow-rate- or flow-volume-based condition
-    const std::string* condtype = (*fdp_cond).Get<std::string>("type of flow dependence");
+    const std::string& condtype = (*fdp_cond).Get<std::string>("type of flow dependence");
 
     // flow-rate-based condition
-    if (*condtype == "flow_rate")
+    if (condtype == "flow_rate")
     {
       // get flow rate in this case
       const double flowrate = params.get<double>("flow rate");
 
       // get constant and linear coefficient for linear flow rate - pressure relation
       // and compute pressure accordingly
-      const double const_coeff = *fdp_cond->Get<double>("ConstCoeff");
-      const double lin_coeff = *fdp_cond->Get<double>("LinCoeff");
+      const double const_coeff = fdp_cond->Get<double>("ConstCoeff");
+      const double lin_coeff = fdp_cond->Get<double>("LinCoeff");
       pressure = const_coeff + lin_coeff * flowrate;
       pressder = lin_coeff;
     }
     // flow-volume-based condition
-    else if (*condtype == "flow_volume")
+    else if (condtype == "flow_volume")
     {
       // get flow volume in this case
       const double flow_volume = params.get<double>("flow volume");
 
       // get initial volume, reference pressure and adiabatic exponent
-      const double vol0 = *fdp_cond->Get<double>("InitialVolume");
-      const double ref_pre = *fdp_cond->Get<double>("ReferencePressure");
-      const double kappa = *fdp_cond->Get<double>("AdiabaticExponent");
+      const double vol0 = fdp_cond->Get<double>("InitialVolume");
+      const double ref_pre = fdp_cond->Get<double>("ReferencePressure");
+      const double kappa = fdp_cond->Get<double>("AdiabaticExponent");
 
       // compute rise in pressure due to volume reduction at boundary
       pressure = ref_pre * pow((vol0 / (vol0 - flow_volume)), kappa);
@@ -576,12 +576,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       pressure -= ref_pre;
     }
     // fixed-pressure condition (with potential time curve)
-    else if (*condtype == "fixed_pressure")
+    else if (condtype == "fixed_pressure")
     {
-      pressure = *fdp_cond->Get<double>("ConstCoeff") * curvefac;
+      pressure = fdp_cond->Get<double>("ConstCoeff") * curvefac;
     }
     else
-      FOUR_C_THROW("Unknown type of flow-dependent pressure condition: %s", (*condtype).c_str());
+      FOUR_C_THROW("Unknown type of flow-dependent pressure condition: %s", condtype.c_str());
 
     // get thermodynamic pressure at n+1/n+alpha_F
     const double thermpressaf = params.get<double>("thermpress at n+alpha_F/n+1", 1.0);
@@ -1840,35 +1840,34 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   Teuchos::RCP<DRT::Condition> wdbc_cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
 
   // type of consistency (default: adjoint-consistent)
-  const std::string* consistency = (*wdbc_cond).Get<std::string>("Choice of gamma parameter");
+  const std::string& consistency = (*wdbc_cond).Get<std::string>("Choice of gamma parameter");
   double wd_gamma = 0.0;
-  if (*consistency == "adjoint-consistent")
+  if (consistency == "adjoint-consistent")
     wd_gamma = 1.0;
-  else if (*consistency == "diffusive-optimal")
+  else if (consistency == "diffusive-optimal")
     wd_gamma = -1.0;
   else
-    FOUR_C_THROW("unknown type of consistency for weak DBC: %s", (*consistency).c_str());
+    FOUR_C_THROW("unknown type of consistency for weak DBC: %s", consistency.c_str());
 
   // decide whether to use it or not
-  const std::string* deftauB = (*wdbc_cond).Get<std::string>("Definition of penalty parameter");
+  const std::string& deftauB = (*wdbc_cond).Get<std::string>("Definition of penalty parameter");
   bool spalding = false;
-  if (*deftauB == "Spalding")
+  if (deftauB == "Spalding")
     spalding = true;
-  else if (*deftauB == "constant")
+  else if (deftauB == "constant")
     spalding = false;
   else
-    FOUR_C_THROW(
-        "unknown definition of penalty parameter tauB for weak DBC: %s", (*deftauB).c_str());
+    FOUR_C_THROW("unknown definition of penalty parameter tauB for weak DBC: %s", deftauB.c_str());
 
   // linearisation of adjoint convective flux
-  const std::string* linearisation_approach = (*wdbc_cond).Get<std::string>("Linearisation");
+  const std::string& linearisation_approach = (*wdbc_cond).Get<std::string>("Linearisation");
   bool complete_linearisation = false;
-  if (*linearisation_approach == "lin_all")
+  if (linearisation_approach == "lin_all")
     complete_linearisation = true;
-  else if (*linearisation_approach == "no_lin_conv_inflow")
+  else if (linearisation_approach == "no_lin_conv_inflow")
     complete_linearisation = false;
   else
-    FOUR_C_THROW("unknown linearisation for weak DBC: %s", (*linearisation_approach).c_str());
+    FOUR_C_THROW("unknown linearisation for weak DBC: %s", linearisation_approach.c_str());
 
   // find out whether there is a time curve and get factor
   // (time curve at n+1 applied for all time-integration schemes, but
@@ -1880,22 +1879,22 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
   // get values and switches from condition
   // (assumed to be constant on element boundary)
-  const auto* functions = wdbc_cond->Get<std::vector<int>>("funct");
+  const auto* functions = &wdbc_cond->Get<std::vector<int>>("funct");
 
   // find out whether to apply weak DBC only in normal direction
   bool onlynormal = false;
-  const std::string* active_components =
+  const std::string& active_components =
       wdbc_cond->Get<std::string>("Directions to apply weak dbc");
-  if (*active_components == "all_directions")
+  if (active_components == "all_directions")
     onlynormal = false;
-  else if (*active_components == "only_in_normal_direction")
+  else if (active_components == "only_in_normal_direction")
     onlynormal = true;
   else
     FOUR_C_THROW(
-        "unknown definition of active components for weak DBC: %s", (*active_components).c_str());
+        "unknown definition of active components for weak DBC: %s", active_components.c_str());
 
   // optional scaling of penalty parameter
-  const double scaling = *wdbc_cond->Get<double>("TauBscaling");
+  const double scaling = wdbc_cond->Get<double>("TauBscaling");
   if (spalding && fabs(scaling - 1.0) > 1e-9)
     FOUR_C_THROW(
         "Parameter tauB for weak DBC will be computed according to Spaldings law. Do not apply "
@@ -1906,12 +1905,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
   // get value for boundary condition and
   // check for Spalding's law in case of prescribed non-zero velocity
-  const auto* val = wdbc_cond->Get<std::vector<double>>("val");
+  const auto& val = wdbc_cond->Get<std::vector<double>>("val");
   if (spalding)
   {
     for (int i = 0; i < 3; ++i)
     {
-      if ((*val)[i] * (*val)[i] > 1e-9)
+      if (val[i] * val[i] > 1e-9)
         FOUR_C_THROW("Applying Spaldings law to a wall with non-zero velocity!\n");
     }
   }
@@ -2420,7 +2419,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     for (int idim = 0; idim < nsd; idim++)
     {
       normvel += pvelintaf(idim) * unitnormal(idim);
-      bvres(idim) = pvelintaf(idim) - (*val)[idim] * functionfac(idim);
+      bvres(idim) = pvelintaf(idim) - val[idim] * functionfac(idim);
     }
 
     //---------------------------------------------------------------------
@@ -2498,9 +2497,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       for (int vi = 0; vi < piel; ++vi)
       {
         elevec(vi * 4 + 3) += timefacfacrhs * pfunct(vi) *
-                              ((pvelintnp(0) - (*val)[0] * functionfac(0)) * unitnormal(0) +
-                                  (pvelintnp(1) - (*val)[1] * functionfac(1)) * unitnormal(1) +
-                                  (pvelintnp(2) - (*val)[2] * functionfac(2)) * unitnormal(2));
+                              ((pvelintnp(0) - val[0] * functionfac(0)) * unitnormal(0) +
+                                  (pvelintnp(1) - val[1] * functionfac(1)) * unitnormal(1) +
+                                  (pvelintnp(2) - val[2] * functionfac(2)) * unitnormal(2));
       }
 
       //---------------------------------------------------------------------
@@ -3202,8 +3201,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       for (int vi = 0; vi < piel; ++vi)
       {
         elevec(vi * 3 + 2) += timefacfacrhs * pfunct(vi) *
-                              ((pvelintnp(0) - (*val)[0] * functionfac(0)) * unitnormal(0) +
-                                  (pvelintnp(1) - (*val)[1] * functionfac(1)) * unitnormal(1));
+                              ((pvelintnp(0) - val[0] * functionfac(0)) * unitnormal(0) +
+                                  (pvelintnp(1) - val[1] * functionfac(1)) * unitnormal(1));
       }
 
       //---------------------------------------------------------------------
@@ -4346,7 +4345,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       params.get<Teuchos::RCP<DRT::Condition>>("condition");
 
   // get value for boundary condition
-  const auto* val = (*hixhybdbc_cond).Get<std::vector<double>>("val");
+  const auto& val = (*hixhybdbc_cond).Get<std::vector<double>>("val");
 
   //
   const int myid = (*((*hixhybdbc_cond).GetNodes()))[0];
@@ -4359,42 +4358,42 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   double hB_divided_by = 1.0;
 
   // get a characteristic velocity
-  double u_C = *hixhybdbc_cond->Get<double>("u_C");
+  double u_C = hixhybdbc_cond->Get<double>("u_C");
 
   // decide whether to use it or not
-  const std::string* deftauB =
+  const std::string& deftauB =
       (*hixhybdbc_cond).Get<std::string>("Definition of penalty parameter");
 
   bool spalding = false;
 
-  if (*deftauB == "Spalding")
+  if (deftauB == "Spalding")
   {
     spalding = true;
 
     // get actual scaling
-    hB_divided_by = *hixhybdbc_cond->Get<double>("hB_divided_by");
+    hB_divided_by = hixhybdbc_cond->Get<double>("hB_divided_by");
   }
-  else if (*deftauB == "constant")
+  else if (deftauB == "constant")
   {
     spalding = false;
   }
   else
   {
-    FOUR_C_THROW("Unknown definition of penalty parameter: %s", (*deftauB).c_str());
+    FOUR_C_THROW("Unknown definition of penalty parameter: %s", deftauB.c_str());
   }
 
   // flag for utau computation (viscous tangent or at wall (a la Michler))
-  const std::string* utau_computation = hixhybdbc_cond->Get<std::string>("utau_computation");
+  const std::string* utau_computation = &hixhybdbc_cond->Get<std::string>("utau_computation");
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
-  const auto* functions = hixhybdbc_cond->Get<std::vector<int>>("funct");
+  const auto* functions = &hixhybdbc_cond->Get<std::vector<int>>("funct");
 
   CORE::LINALG::Matrix<nsd, 1> u_dirich(true);
 
   for (int rr = 0; rr < nsd; ++rr)
   {
-    u_dirich(rr) = (*val)[rr];
+    u_dirich(rr) = val[rr];
   }
 
   // --------------------------------------------------

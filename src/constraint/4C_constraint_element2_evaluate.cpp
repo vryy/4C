@@ -32,11 +32,11 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
   else if (action == "calc_MPC_stiff")
   {
     Teuchos::RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition>>("condition");
-    const std::string* type = condition->Get<std::string>("control value");
+    const std::string& type = condition->Get<std::string>("control value");
 
-    if (*type == "dist")
+    if (type == "dist")
       act = calc_MPC_dist_stiff;
-    else if (*type == "angle")
+    else if (type == "angle")
       act = calc_MPC_angle_stiff;
     else
       FOUR_C_THROW(

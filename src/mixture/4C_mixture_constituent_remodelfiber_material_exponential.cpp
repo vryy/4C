@@ -20,8 +20,8 @@ template <typename T>
 MIXTURE::PAR::RemodelFiberMaterialExponential<T>::RemodelFiberMaterialExponential(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : RemodelFiberMaterial<T>(matdata),
-      params_{*matdata->Get<double>("K1"), *matdata->Get<double>("K2"),
-          *matdata->Get<bool>("COMPRESSION")}
+      params_{
+          matdata->Get<double>("K1"), matdata->Get<double>("K2"), matdata->Get<bool>("COMPRESSION")}
 {
 }
 

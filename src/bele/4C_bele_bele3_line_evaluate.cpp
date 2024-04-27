@@ -93,9 +93,9 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
-  const auto* onoff = condition.Get<std::vector<int>>("onoff");
-  const auto* val = condition.Get<std::vector<double>>("val");
-  const auto* functions = condition.Get<std::vector<int>>("funct");
+  const auto& onoff = condition.Get<std::vector<int>>("onoff");
+  const auto& val = condition.Get<std::vector<double>>("val");
+  const auto& functions = condition.Get<std::vector<int>>("funct");
 
   // set number of nodes
   const size_t iel = this->NumNode();
@@ -161,7 +161,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
       for (size_t dim = 0; dim < 3; dim++)
       {
         // factor given by spatial function
-        if (functions) functnum = (*functions)[dim];
+        functnum = functions[dim];
         {
           if (functnum > 0)
             // evaluate function at current gauss point (3D position vector required!)
@@ -172,8 +172,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
             functionfac = 1.0;
         }
 
-        elevec1[node * numdf + dim] +=
-            funct[node] * (*onoff)[dim] * (*val)[dim] * fac * functionfac;
+        elevec1[node * numdf + dim] += funct[node] * onoff[dim] * val[dim] * fac * functionfac;
       }
     }
   }  // end of loop over integrationen points

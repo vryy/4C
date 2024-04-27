@@ -354,13 +354,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKineticsPoint'!");
 
   // access parameters of the condition
-  const int kinetics = *cond->Get<int>("kinetic model");
-  double pot0 = *cond->Get<double>("pot");
-  const int functnum = *cond->Get<int>("funct");
-  const int nume = *cond->Get<int>("e-");
+  const int kinetics = cond->Get<int>("kinetic model");
+  double pot0 = cond->Get<double>("pot");
+  const int functnum = cond->Get<int>("funct");
+  const int nume = cond->Get<int>("e-");
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman
   // condition) but the electrode status is evaluated
-  const int zerocur = *cond->Get<int>("zero_cur");
+  const int zerocur = cond->Get<int>("zero_cur");
   if (nume < 0)
   {
     FOUR_C_THROW(
@@ -370,7 +370,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
 
   // convention for stoichiometric coefficients s_i:
   // Sum_i (s_i  M_i^(z_i)) -> n e- (n needs to be positive)
-  const auto* stoich = cond->Get<std::vector<int>>("stoich");
+  const auto* stoich = &cond->Get<std::vector<int>>("stoich");
   if ((unsigned int)my::numscal_ != (*stoich).size())
   {
     FOUR_C_THROW(
@@ -490,7 +490,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKin
 )
 {
   // get boundary porosity from condition if available, or set equal to volume porosity otherwise
-  double epsilon = *cond->Get<double>("epsilon");
+  double epsilon = cond->Get<double>("epsilon");
   if (epsilon == -1)
     epsilon = scalar;
   else if (epsilon <= 0 or epsilon > 1)
@@ -588,10 +588,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
 
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neumann
   // condition) but the electrode status is evaluated
-  const int zerocur = *cond->Get<int>("zero_cur");
+  const int zerocur = cond->Get<int>("zero_cur");
 
   // get boundary porosity from condition if available, or set equal to volume porosity otherwise
-  double epsilon = *cond->Get<double>("epsilon");
+  double epsilon = cond->Get<double>("epsilon");
   if (epsilon == -1)
     epsilon = scalar;
   else if (epsilon <= 0 or epsilon > 1)

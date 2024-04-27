@@ -102,7 +102,7 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
           coupling_id_map;
       for (const auto& condition : condition_lines)
       {
-        const int coupling_id = *condition->Get<int>("COUPLING_ID");
+        const int coupling_id = condition->Get<int>("COUPLING_ID");
         auto& condition_1 = coupling_id_map[coupling_id].first;
         auto& condition_2 = coupling_id_map[coupling_id].second;
         if (condition_1 == Teuchos::null)
@@ -166,9 +166,9 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
           std::pair<Teuchos::RCP<const DRT::Condition>, Teuchos::RCP<const DRT::Condition>>>
           coupling_id_map;
       for (const auto& condition : condition_line)
-        coupling_id_map[*condition->Get<int>("COUPLING_ID")].first = condition;
+        coupling_id_map[condition->Get<int>("COUPLING_ID")].first = condition;
       for (const auto& condition : condition_other)
-        coupling_id_map[*condition->Get<int>("COUPLING_ID")].second = condition;
+        coupling_id_map[condition->Get<int>("COUPLING_ID")].second = condition;
       for (const auto& map_item : coupling_id_map)
       {
         if (map_item.second.first != Teuchos::null && map_item.second.second != Teuchos::null)
@@ -220,8 +220,8 @@ void BEAMINTERACTION::BeamInteractionConditions::SetBeamInteractionConditions(
         Teuchos::RCP<BeamInteractionConditionBase> new_condition;
 
         new_condition = Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPointCouplingCondition(
-            condition, *condition->Get<double>("POSITIONAL_PENALTY_PARAMETER"),
-            *condition->Get<double>("ROTATIONAL_PENALTY_PARAMETER")));
+            condition, condition->Get<double>("POSITIONAL_PENALTY_PARAMETER"),
+            condition->Get<double>("ROTATIONAL_PENALTY_PARAMETER")));
 
         interaction_vector.push_back(new_condition);
       }

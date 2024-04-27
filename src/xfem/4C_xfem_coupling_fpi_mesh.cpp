@@ -728,12 +728,12 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
   auto i = conditions_XFPI.begin();
   for (const auto& cond : conditions_XFPI)
   {
-    const bool full_BJ = (*cond->Get<std::string>("Variant") == "BJ");
-    const bool Sub_tang = (*cond->Get<std::string>("Method") == "SUB");
-    const bool contact = (*cond->Get<std::string>("Contact") == "contact_yes");
+    const bool full_BJ = (cond->Get<std::string>("Variant") == "BJ");
+    const bool Sub_tang = (cond->Get<std::string>("Method") == "SUB");
+    const bool contact = (cond->Get<std::string>("Contact") == "contact_yes");
     if (i != conditions_XFPI.begin())
     {
-      if (fabs(bj_coeff_ - *cond->Get<double>("bj_coeff")) > 1e-16)
+      if (fabs(bj_coeff_ - cond->Get<double>("bj_coeff")) > 1e-16)
         FOUR_C_THROW(
             "XFEM::MeshCouplingFPI::SetConditionSpecificParameters: You defined two FPI "
             "conditions, with different BJ_coeff!");
@@ -754,7 +754,7 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
             "conditions, with different contact specification!");
     }
 
-    bj_coeff_ = *cond->Get<double>("bj_coeff");
+    bj_coeff_ = cond->Get<double>("bj_coeff");
     full_bj_ = full_BJ;
     sub_tang_ = Sub_tang;
     contact_ = contact;

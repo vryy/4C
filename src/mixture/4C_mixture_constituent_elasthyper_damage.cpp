@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 MIXTURE::PAR::MixtureConstituentElastHyperDamage::MixtureConstituentElastHyperDamage(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureConstituentElastHyperBase(matdata),
-      damage_function_id_(*matdata->Get<int>("DAMAGE_FUNCT"))
+      damage_function_id_(matdata->Get<int>("DAMAGE_FUNCT"))
 {
   // nothing to do here
 }

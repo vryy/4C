@@ -93,17 +93,17 @@ namespace MAT
       /// at this time turnover of collagen starts
       const double starttime_;
       /// time integration scheme (Explicit,Implicit)
-      const std::string* integration_;
+      const std::string integration_;
       /// tolerance for local Newton iteration
       const double abstol_;
       /// driving force of growth (Single,All,ElaCol)
-      const std::string* growthforce_;
+      const std::string growthforce_;
       /// form of elastin  degradation
-      const std::string* elastindegrad_;
+      const std::string elastindegrad_;
       /// how mass depends on driving force
-      const std::string* massprodfunc_;
+      const std::string massprodfunc_;
       /// how to set stretches in the beginning
-      const std::string* initstretch_;
+      const std::string initstretch_;
       /// number of timecurve for increase of prestretch in time
       const int timecurve_;
       /// which degradation function

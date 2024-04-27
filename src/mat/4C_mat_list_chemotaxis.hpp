@@ -42,13 +42,13 @@ namespace MAT
       //@{
 
       /// provide ids of the individual pair materials
-      const std::vector<int>* PairIds() const { return pairids_; }
+      const std::vector<int>* PairIds() const { return &pairids_; }
 
       /// length of pair list
       const int numpair_;
 
       /// the list of pair IDs
-      const std::vector<int>* pairids_;
+      const std::vector<int> pairids_;
 
       //@}
 

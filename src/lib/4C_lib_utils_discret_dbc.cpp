@@ -219,11 +219,11 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
   // get onoff toggles from condition
-  const auto* onoff = cond.Get<std::vector<int>>("onoff");
+  const auto* onoff = &cond.Get<std::vector<int>>("onoff");
   // get val from condition
-  const auto* val = cond.Get<std::vector<double>>("val");
+  const auto* val = &cond.Get<std::vector<double>>("val");
   // get funct from condition
-  const auto* funct = cond.Get<std::vector<int>>("funct");
+  const auto* funct = &cond.Get<std::vector<int>>("funct");
 
   // loop nodes to identify spatial distributions of Dirichlet boundary conditions
   for (unsigned i = 0; i < nnode; ++i)
@@ -459,9 +459,9 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
   // get onoff, funct, and val from condition
-  const auto* onoff = cond.Get<std::vector<int>>("onoff");
-  const auto* funct = cond.Get<std::vector<int>>("funct");
-  const auto* val = cond.Get<std::vector<double>>("val");
+  const auto* onoff = &cond.Get<std::vector<int>>("onoff");
+  const auto* funct = &cond.Get<std::vector<int>>("funct");
+  const auto* val = &cond.Get<std::vector<double>>("val");
 
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to

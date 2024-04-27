@@ -23,19 +23,19 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ArrheniusPV::ArrheniusPV(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      refvisc_(*matdata->Get<double>("REFVISC")),
-      reftemp_(*matdata->Get<double>("REFTEMP")),
-      suthtemp_(*matdata->Get<double>("SUTHTEMP")),
-      pranum_(*matdata->Get<double>("PRANUM")),
-      preexcon_(*matdata->Get<double>("PREEXCON")),
-      tempexp_(*matdata->Get<double>("TEMPEXP")),
-      actemp_(*matdata->Get<double>("ACTEMP")),
-      unbshc_(*matdata->Get<double>("UNBSHC")),
-      burshc_(*matdata->Get<double>("BURSHC")),
-      unbtemp_(*matdata->Get<double>("UNBTEMP")),
-      burtemp_(*matdata->Get<double>("BURTEMP")),
-      unbdens_(*matdata->Get<double>("UNBDENS")),
-      burdens_(*matdata->Get<double>("BURDENS"))
+      refvisc_(matdata->Get<double>("REFVISC")),
+      reftemp_(matdata->Get<double>("REFTEMP")),
+      suthtemp_(matdata->Get<double>("SUTHTEMP")),
+      pranum_(matdata->Get<double>("PRANUM")),
+      preexcon_(matdata->Get<double>("PREEXCON")),
+      tempexp_(matdata->Get<double>("TEMPEXP")),
+      actemp_(matdata->Get<double>("ACTEMP")),
+      unbshc_(matdata->Get<double>("UNBSHC")),
+      burshc_(matdata->Get<double>("BURSHC")),
+      unbtemp_(matdata->Get<double>("UNBTEMP")),
+      burtemp_(matdata->Get<double>("BURTEMP")),
+      unbdens_(matdata->Get<double>("UNBDENS")),
+      burdens_(matdata->Get<double>("BURDENS"))
 {
 }
 

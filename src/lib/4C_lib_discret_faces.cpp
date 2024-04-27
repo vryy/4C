@@ -279,10 +279,10 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
         std::map<int, std::set<int>> slavetopbcset;
         for (auto& mypbc : mypbcs)
         {
-          const int myid = *mypbc->Get<int>("Id of periodic boundary condition");
+          const int myid = mypbc->Get<int>("Id of periodic boundary condition");
 
           const auto mymasterslavetoggle =
-              *mypbc->Get<std::string>("Is slave periodic boundary condition");
+              mypbc->Get<std::string>("Is slave periodic boundary condition");
 
           if (mymasterslavetoggle == "Master")
           {

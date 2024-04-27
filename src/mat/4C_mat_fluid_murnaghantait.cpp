@@ -20,12 +20,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::MurnaghanTaitFluid::MurnaghanTaitFluid(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      viscosity_(*matdata->Get<double>("DYNVISCOSITY")),
-      refdensity_(*matdata->Get<double>("REFDENSITY")),
-      refpressure_(*matdata->Get<double>("REFPRESSURE")),
-      refbulkmodulus_(*matdata->Get<double>("REFBULKMODULUS")),
-      matparameter_(*matdata->Get<double>("MATPARAMETER")),
-      gamma_(*matdata->Get<double>("GAMMA"))
+      viscosity_(matdata->Get<double>("DYNVISCOSITY")),
+      refdensity_(matdata->Get<double>("REFDENSITY")),
+      refpressure_(matdata->Get<double>("REFPRESSURE")),
+      refbulkmodulus_(matdata->Get<double>("REFBULKMODULUS")),
+      matparameter_(matdata->Get<double>("MATPARAMETER")),
+      gamma_(matdata->Get<double>("GAMMA"))
 {
 }
 

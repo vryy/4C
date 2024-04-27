@@ -308,14 +308,14 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
   for (const auto& kinetics_slave_cond :
       MeshtyingStrategyScaTra()->KineticsConditionsMeshtyingSlaveSide())
   {
-    if (*kinetics_slave_cond.second->Get<int>("kinetic model") !=
+    if (kinetics_slave_cond.second->Get<int>("kinetic model") !=
         static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class
       MeshtyingStrategyScaTra()->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
       // evaluate the condition
       ScaTraField()->Discretization()->EvaluateCondition(condparams, strategyscatrathermos2i,
-          "S2IKinetics", *kinetics_slave_cond.second->Get<int>("ConditionID"));
+          "S2IKinetics", kinetics_slave_cond.second->Get<int>("ConditionID"));
     }
   }
 
@@ -485,14 +485,14 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
   for (const auto& kinetics_slave_cond :
       MeshtyingStrategyThermo()->KineticsConditionsMeshtyingSlaveSide())
   {
-    if (*kinetics_slave_cond.second->Get<int>("kinetic model") !=
+    if (kinetics_slave_cond.second->Get<int>("kinetic model") !=
         static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class
       MeshtyingStrategyThermo()->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
       // evaluate the condition
       ThermoField()->Discretization()->EvaluateCondition(condparams, strategythermoscatras2i,
-          "S2IKinetics", *kinetics_slave_cond.second->Get<int>("ConditionID"));
+          "S2IKinetics", kinetics_slave_cond.second->Get<int>("ConditionID"));
     }
   }
 
@@ -650,7 +650,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockScatraT
   for (const auto& condition : conditions)
   {
     // consider conditions for slave side only
-    if (*condition->Get<int>("interface side") == INPAR::S2I::side_slave)
+    if (condition->Get<int>("interface side") == INPAR::S2I::side_slave)
     {
       // add condition to parameter list
       condparams.set<DRT::Condition*>("condition", condition);
@@ -659,7 +659,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockScatraT
       MeshtyingStrategyScaTra()->SetConditionSpecificScaTraParameters(*condition);
       // evaluate mortar integration cells
       MeshtyingStrategyScaTra()->EvaluateMortarCells(
-          MeshtyingStrategyScaTra()->MortarDiscretization(*condition->Get<int>("ConditionID")),
+          MeshtyingStrategyScaTra()->MortarDiscretization(condition->Get<int>("ConditionID")),
           condparams, strategyscatrathermos2i);
     }
   }
@@ -794,7 +794,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockThermoS
   for (const auto& condition : conditions)
   {
     // consider conditions for slave side only
-    if (*condition->Get<int>("interface side") == INPAR::S2I::side_slave)
+    if (condition->Get<int>("interface side") == INPAR::S2I::side_slave)
     {
       // add condition to parameter list
       condparams.set<DRT::Condition*>("condition", condition);
@@ -803,7 +803,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockThermoS
       MeshtyingStrategyThermo()->SetConditionSpecificScaTraParameters(*condition);
       // evaluate mortar integration cells
       MeshtyingStrategyThermo()->EvaluateMortarCells(
-          MeshtyingStrategyThermo()->MortarDiscretization(*condition->Get<int>("ConditionID")),
+          MeshtyingStrategyThermo()->MortarDiscretization(condition->Get<int>("ConditionID")),
           condparams, strategythermoscatras2i);
     }
   }

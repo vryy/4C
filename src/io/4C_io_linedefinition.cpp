@@ -409,7 +409,7 @@ namespace INPUT
       template <typename T>
       void TryExtract(const std::string& name, T& dst)
       {
-        dst = *container_.Get<T>(name);
+        dst = container_.Get<T>(name);
       }
 
       /// Gather all added required components.
@@ -978,7 +978,7 @@ namespace INPUT
   std::size_t LengthFromIntNamed::operator()(
       const INPAR::InputParameterContainer& already_read_line)
   {
-    int length = *already_read_line.Get<int>(definition_name_);
+    int length = already_read_line.Get<int>(definition_name_);
     return length;
   }
 }  // namespace INPUT

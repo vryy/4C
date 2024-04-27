@@ -135,9 +135,9 @@ void DRT::UTILS::LocsysManager::Update(
       {
         typelocsys_[i] = currlocsys->Type();
 
-        const auto* rotangle = currlocsys->Get<std::vector<double>>("rotangle");
-        const auto* funct = currlocsys->Get<std::vector<int>>("funct");
-        const auto* useUpdatedNodePos = currlocsys->Get<int>("useupdatednodepos");
+        const auto* rotangle = &currlocsys->Get<std::vector<double>>("rotangle");
+        const auto* funct = &currlocsys->Get<std::vector<int>>("funct");
+        const auto* useUpdatedNodePos = &currlocsys->Get<int>("useupdatednodepos");
 
         const auto* useConsistentNodeNormal =
             (currlocsys->Type() == DRT::Condition::SurfaceLocsys or

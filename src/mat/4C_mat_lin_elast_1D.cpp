@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::LinElast1D::LinElast1D(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_(*matdata->Get<double>("YOUNG")),
-      density_(*matdata->Get<double>("DENS"))
+      youngs_(matdata->Get<double>("YOUNG")),
+      density_(matdata->Get<double>("DENS"))
 {
   if (youngs_ <= 0.) FOUR_C_THROW("Young's modulus must be greater zero");
   if (density_ <= 0.) FOUR_C_THROW("Density must be greater zero");
@@ -102,10 +102,10 @@ void MAT::LinElast1D::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 MAT::PAR::LinElast1DGrowth::LinElast1DGrowth(Teuchos::RCP<MAT::PAR::Material> matdata)
     : LinElast1D(matdata),
-      c0_(*matdata->Get<double>("C0")),
-      poly_num_(*matdata->Get<int>("POLY_PARA_NUM")),
-      poly_params_(*matdata->Get<std::vector<double>>("POLY_PARAMS")),
-      amount_prop_growth_(*matdata->Get<bool>("AOS_PROP_GROWTH"))
+      c0_(matdata->Get<double>("C0")),
+      poly_num_(matdata->Get<int>("POLY_PARA_NUM")),
+      poly_params_(matdata->Get<std::vector<double>>("POLY_PARAMS")),
+      amount_prop_growth_(matdata->Get<bool>("AOS_PROP_GROWTH"))
 {
   if (c0_ <= 0.0) FOUR_C_THROW("Reference concentration must be greater than zero");
   if (poly_num_ <= 0) FOUR_C_THROW("Polynomial order must be greater than zero");

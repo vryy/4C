@@ -37,7 +37,7 @@ namespace MAT
       //@{
 
       /// problem type: Darcy or Darcy-Stokes
-      const std::string* type_;
+      const std::string type_;
       /// kinematic or dynamic viscosity
       const double viscosity_;
       /// density
@@ -137,7 +137,7 @@ namespace MAT
     double SetViscosity() const;
 
     /// return type
-    std::string Type() const { return *params_->type_; }
+    std::string Type() const { return params_->type_; }
 
     /// return density
     double Density() const override { return params_->density_; }

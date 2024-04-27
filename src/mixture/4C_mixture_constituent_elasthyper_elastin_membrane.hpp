@@ -97,7 +97,7 @@ namespace MIXTURE
       const int nummat_membrane_;
 
       /// List of material ids of the summands
-      const std::vector<int>* matids_membrane_;
+      const std::vector<int> matids_membrane_;
       /// @}
     };
   }  // namespace PAR

@@ -37,37 +37,37 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      nummat_remodelfiber_(*matdata->Get<int>("NUMMATRF")),
-      nummat_elastiniso_(*matdata->Get<int>("NUMMATEL3D")),
-      nummat_elastinmem_(*matdata->Get<int>("NUMMATEL2D")),
+      nummat_remodelfiber_(matdata->Get<int>("NUMMATRF")),
+      nummat_elastiniso_(matdata->Get<int>("NUMMATEL3D")),
+      nummat_elastinmem_(matdata->Get<int>("NUMMATEL2D")),
       matids_remodelfiber_(matdata->Get<std::vector<int>>("MATIDSRF")),
       matids_elastiniso_(matdata->Get<std::vector<int>>("MATIDSEL3D")),
       matids_elastinmem_(matdata->Get<std::vector<int>>("MATIDSEL2D")),
-      matid_penalty_(*matdata->Get<int>("MATIDELPENALTY")),
-      init_w_el_(*matdata->Get<double>("ELMASSFRAC")),
-      density_(*matdata->Get<double>("DENS")),
-      lamb_prestretch_cir_(*matdata->Get<double>("PRESTRETCHELASTINCIR")),
-      lamb_prestretch_ax_(*matdata->Get<double>("PRESTRETCHELASTINAX")),
-      t_ref_(*matdata->Get<double>("THICKNESS")),
-      p_mean_(*matdata->Get<double>("MEANPRESSURE")),
-      ri_(*matdata->Get<double>("RADIUS")),
-      damage_(*matdata->Get<int>("DAMAGE")),
-      growthtype_(*matdata->Get<int>("GROWTHTYPE")),
-      loctimeint_(*matdata->Get<int>("LOCTIMEINT")),
-      membrane_(*matdata->Get<int>("MEMBRANE")),
-      cylinder_(*matdata->Get<int>("CYLINDER"))
+      matid_penalty_(matdata->Get<int>("MATIDELPENALTY")),
+      init_w_el_(matdata->Get<double>("ELMASSFRAC")),
+      density_(matdata->Get<double>("DENS")),
+      lamb_prestretch_cir_(matdata->Get<double>("PRESTRETCHELASTINCIR")),
+      lamb_prestretch_ax_(matdata->Get<double>("PRESTRETCHELASTINAX")),
+      t_ref_(matdata->Get<double>("THICKNESS")),
+      p_mean_(matdata->Get<double>("MEANPRESSURE")),
+      ri_(matdata->Get<double>("RADIUS")),
+      damage_(matdata->Get<int>("DAMAGE")),
+      growthtype_(matdata->Get<int>("GROWTHTYPE")),
+      loctimeint_(matdata->Get<int>("LOCTIMEINT")),
+      membrane_(matdata->Get<int>("MEMBRANE")),
+      cylinder_(matdata->Get<int>("CYLINDER"))
 {
   // check if sizes fit
-  if (nummat_remodelfiber_ != (int)matids_remodelfiber_->size())
+  if (nummat_remodelfiber_ != (int)matids_remodelfiber_.size())
     FOUR_C_THROW(
         "number of remodelfiber materials %d does not fit to size of remodelfiber material vector "
         "%d",
-        nummat_remodelfiber_, matids_remodelfiber_->size());
+        nummat_remodelfiber_, matids_remodelfiber_.size());
 
-  if (nummat_elastinmem_ != (int)matids_elastinmem_->size())
+  if (nummat_elastinmem_ != (int)matids_elastinmem_.size())
     FOUR_C_THROW(
         "number of elastin materials %d does not fit to size of elastin material vector %d",
-        nummat_elastinmem_, matids_elastinmem_->size());
+        nummat_elastinmem_, matids_elastinmem_.size());
 
   if (membrane_ == 1)
   {
@@ -78,10 +78,10 @@ MAT::PAR::GrowthRemodelElastHyper::GrowthRemodelElastHyper(Teuchos::RCP<MAT::PAR
   }
   else
   {
-    if (nummat_elastiniso_ != (int)matids_elastiniso_->size())
+    if (nummat_elastiniso_ != (int)matids_elastiniso_.size())
       FOUR_C_THROW(
           "number of elastin materials %d does not fit to size of elastin material vector %d",
-          nummat_elastiniso_, matids_elastiniso_->size());
+          nummat_elastiniso_, matids_elastiniso_.size());
     if (nummat_elastiniso_ == 0) FOUR_C_THROW("you have to set a 3D elastin material");
     if (matid_penalty_ == -1) FOUR_C_THROW("you have to set a volumetric penalty material");
     if ((p_mean_ == -1) || (ri_ == -1) || (t_ref_ == -1))
@@ -148,7 +148,7 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
   std::vector<int>::const_iterator m;
 
   // RemodelFiber
-  for (m = params_->matids_remodelfiber_->begin(); m != params_->matids_remodelfiber_->end(); ++m)
+  for (m = params_->matids_remodelfiber_.begin(); m != params_->matids_remodelfiber_.end(); ++m)
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::RemodelFiber> sum =
@@ -159,7 +159,7 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
   }
 
   // 2d Elastin matrix
-  for (m = params_->matids_elastinmem_->begin(); m != params_->matids_elastinmem_->end(); ++m)
+  for (m = params_->matids_elastinmem_.begin(); m != params_->matids_elastinmem_.end(); ++m)
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
@@ -176,7 +176,7 @@ MAT::GrowthRemodelElastHyper::GrowthRemodelElastHyper(MAT::PAR::GrowthRemodelEla
   if (params_->membrane_ != 1)
   {
     // 3d Elastin matrix
-    for (m = params_->matids_elastiniso_->begin(); m != params_->matids_elastiniso_->end(); ++m)
+    for (m = params_->matids_elastiniso_.begin(); m != params_->matids_elastiniso_.end(); ++m)
     {
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
@@ -324,7 +324,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
     std::vector<int>::const_iterator m;
 
     // RemodelFiber
-    for (m = params_->matids_remodelfiber_->begin(); m != params_->matids_remodelfiber_->end(); ++m)
+    for (m = params_->matids_remodelfiber_.begin(); m != params_->matids_remodelfiber_.end(); ++m)
     {
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::RemodelFiber> sum =
@@ -341,7 +341,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
     }
 
     // 2D Elastin matrix
-    for (m = params_->matids_elastinmem_->begin(); m != params_->matids_elastinmem_->end(); ++m)
+    for (m = params_->matids_elastinmem_.begin(); m != params_->matids_elastinmem_.end(); ++m)
     {
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
@@ -363,7 +363,7 @@ void MAT::GrowthRemodelElastHyper::Unpack(const std::vector<char>& data)
     if (params_->membrane_ != 1)
     {
       // 3D Elastin matrix
-      for (m = params_->matids_elastiniso_->begin(); m != params_->matids_elastiniso_->end(); ++m)
+      for (m = params_->matids_elastiniso_.begin(); m != params_->matids_elastiniso_.end(); ++m)
       {
         const int matid = *m;
         Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);

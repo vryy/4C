@@ -81,11 +81,11 @@ void CORE::ADAPTER::CouplingMortar::Setup(
 
     for (unsigned i = 0; i < conds.size(); i++)
     {
-      const std::string* side = conds[i]->Get<std::string>("Side");
+      const std::string& side = conds[i]->Get<std::string>("Side");
 
-      if (*side == "Master")
+      if (side == "Master")
         conds_master.push_back(conds[i]);
-      else if (*side == "Slave")
+      else if (side == "Slave")
         conds_slave.push_back(conds[i]);
     }
 

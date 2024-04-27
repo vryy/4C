@@ -22,13 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Sutherland::Sutherland(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      refvisc_(*matdata->Get<double>("REFVISC")),
-      reftemp_(*matdata->Get<double>("REFTEMP")),
-      suthtemp_(*matdata->Get<double>("SUTHTEMP")),
-      shc_(*matdata->Get<double>("SHC")),
-      pranum_(*matdata->Get<double>("PRANUM")),
-      thermpress_(*matdata->Get<double>("THERMPRESS")),
-      gasconst_(*matdata->Get<double>("GASCON"))
+      refvisc_(matdata->Get<double>("REFVISC")),
+      reftemp_(matdata->Get<double>("REFTEMP")),
+      suthtemp_(matdata->Get<double>("SUTHTEMP")),
+      shc_(matdata->Get<double>("SHC")),
+      pranum_(matdata->Get<double>("PRANUM")),
+      thermpress_(matdata->Get<double>("THERMPRESS")),
+      gasconst_(matdata->Get<double>("GASCON"))
 {
 }
 

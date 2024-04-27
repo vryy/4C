@@ -92,7 +92,7 @@ namespace INPUT
     LengthFromInt(std::string name) : name_(std::move(name)) {}
     int operator()(const INPAR::InputParameterContainer& already_read_line)
     {
-      return *already_read_line.Get<int>(name_);
+      return already_read_line.Get<int>(name_);
     }
 
    private:

@@ -276,11 +276,11 @@ int DRT::DofSet::AssignDegreesOfFreedom(
           specialtreatment = true;
 
           // check total number of dofs and determine which dofs are to be coupled
-          if (*couplingconditions[relevantcondid]->Get<int>("numdof") != numdfrownodes[i])
+          if (couplingconditions[relevantcondid]->Get<int>("numdof") != numdfrownodes[i])
             FOUR_C_THROW(
                 "ERROR: Number of DoFs in coupling condition (%i) does not match node (%i)",
-                *couplingconditions[relevantcondid]->Get<int>("numdof"), numdfrownodes[i]);
-          const std::vector<int>* onoffcond =
+                couplingconditions[relevantcondid]->Get<int>("numdof"), numdfrownodes[i]);
+          const std::vector<int>& onoffcond =
               couplingconditions[relevantcondid]->Get<std::vector<int>>("onoff");
 
           // get master node of this condition
@@ -300,7 +300,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
           for (int j = 0; j < numdf; ++j)
           {
             // push back master node DoF ID if coupled
-            if ((*onoffcond)[j] == 1)
+            if (onoffcond[j] == 1)
             {
               dofs.push_back(mdofs[j]);
               duplicatedofs.push_back(1);

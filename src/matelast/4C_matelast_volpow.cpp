@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::VolPow::VolPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata), a_(*matdata->Get<double>("A")), expon_(*matdata->Get<double>("EXPON"))
+    : Parameter(matdata), a_(matdata->Get<double>("A")), expon_(matdata->Get<double>("EXPON"))
 {
 }
 

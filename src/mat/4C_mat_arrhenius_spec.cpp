@@ -23,14 +23,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ArrheniusSpec::ArrheniusSpec(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      refvisc_(*matdata->Get<double>("REFVISC")),
-      reftemp_(*matdata->Get<double>("REFTEMP")),
-      suthtemp_(*matdata->Get<double>("SUTHTEMP")),
-      schnum_(*matdata->Get<double>("SCHNUM")),
-      preexcon_(*matdata->Get<double>("PREEXCON")),
-      tempexp_(*matdata->Get<double>("TEMPEXP")),
-      actemp_(*matdata->Get<double>("ACTEMP")),
-      gasconst_(*matdata->Get<double>("GASCON"))
+      refvisc_(matdata->Get<double>("REFVISC")),
+      reftemp_(matdata->Get<double>("REFTEMP")),
+      suthtemp_(matdata->Get<double>("SUTHTEMP")),
+      schnum_(matdata->Get<double>("SCHNUM")),
+      preexcon_(matdata->Get<double>("PREEXCON")),
+      tempexp_(matdata->Get<double>("TEMPEXP")),
+      actemp_(matdata->Get<double>("ACTEMP")),
+      gasconst_(matdata->Get<double>("GASCON"))
 {
 }
 
