@@ -17,7 +17,7 @@ its parameters and conditions.
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_pre_exodus.hpp"
+#include "4C_config.hpp"
 
 #include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
@@ -29,10 +29,8 @@ its parameters and conditions.
 #include "4C_lib_elementdefinition.hpp"
 #include "4C_lib_resulttest.hpp"
 #include "4C_lib_utils_createdis.hpp"
-#include "4C_pre_exodus_centerline.hpp"
 #include "4C_pre_exodus_readbc.hpp"
 #include "4C_pre_exodus_reader.hpp"
-#include "4C_pre_exodus_soshextrusion.hpp"
 #include "4C_pre_exodus_validate.hpp"
 #include "4C_pre_exodus_writedat.hpp"
 
@@ -42,123 +40,134 @@ its parameters and conditions.
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-FOUR_C_NAMESPACE_OPEN
 
-/*----------------------------------------------------------------------*/
-/* create default bc file                                               */
-/*----------------------------------------------------------------------*/
-int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
+using namespace FourC;
+
+namespace
 {
-  using namespace FourC;
-
-  std::string defaultbcfilename = "default.bc";
-  std::cout << "found no BC specification file --> creating " << defaultbcfilename << std::endl;
-
-  // open default bc specification file
-  std::ofstream defaultbc(defaultbcfilename.c_str());
-  if (!defaultbc) FOUR_C_THROW("failed to open file: %s", defaultbcfilename.c_str());
-
-  // write mesh verbosely
-  defaultbc << "----------- Mesh contents -----------" << std::endl << std::endl;
-  mymesh.Print(defaultbc, false);
-
-  // give examples for element and boundary condition syntax
-  defaultbc
-      << "---------- Syntax examples ----------" << std::endl
-      << std::endl
-      << "Element Block, named: " << std::endl
-      << "of Shape: TET4" << std::endl
-      << "has 9417816 Elements" << std::endl
-      << "'*eb0=\"ELEMENT\"'" << std::endl
-      << "sectionname=\"FLUID\"" << std::endl
-      << "description=\"MAT 1 NA Euler\"" << std::endl
-      << "elementname=\"FLUID\" \n"
-      << std::endl
-      << "Element Block, named: " << std::endl
-      << "of Shape: HEX8" << std::endl
-      << "has 9417816 Elements" << std::endl
-      << "'*eb0=\"ELEMENT\"'" << std::endl
-      << "sectionname=\"STRUCTURE\"" << std::endl
-      << "description=\"MAT 1 KINEM nonlinear EAS none\"" << std::endl
-      << "elementname=\"SOLIDH8\" \n"
-      << std::endl
-      << "Node Set, named:" << std::endl
-      << "Property Name: INFLOW" << std::endl
-      << "has 45107 Nodes" << std::endl
-      << "'*ns0=\"CONDITION\"'" << std::endl
-      << "sectionname=\"DESIGN SURF DIRICH CONDITIONS\"" << std::endl
-      << "description=\"NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0\""
-      << std::endl
-      << std::endl;
-
-  defaultbc << "MIND that you can specify a condition also on an ElementBlock, just replace "
-               "'ELEMENT' with 'CONDITION'"
-            << std::endl;
-  defaultbc << "The 'E num' in the dat-file depends on the order of the specification below"
-            << std::endl;
-  defaultbc << "------------------------------------------------BCSPECS" << std::endl << std::endl;
-
-  // write ElementBlocks with specification proposal
-  const std::map<int, Teuchos::RCP<EXODUS::ElementBlock>> myblocks = mymesh.GetElementBlocks();
-  std::map<int, Teuchos::RCP<EXODUS::ElementBlock>>::const_iterator it;
-  for (it = myblocks.begin(); it != myblocks.end(); ++it)
+  /*----------------------------------------------------------------------*/
+  /* create default bc file                                               */
+  /*----------------------------------------------------------------------*/
+  int CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   {
-    it->second->Print(defaultbc);
-    defaultbc << "*eb" << it->first << "=\"ELEMENT\"" << std::endl
-              << "sectionname=\"\"" << std::endl
-              << "description=\"\"" << std::endl
-              << "elementname=\"\""
+    using namespace FourC;
+
+    std::string defaultbcfilename = "default.bc";
+    std::cout << "found no BC specification file --> creating " << defaultbcfilename << std::endl;
+
+    // open default bc specification file
+    std::ofstream defaultbc(defaultbcfilename.c_str());
+    if (!defaultbc) FOUR_C_THROW("failed to open file: %s", defaultbcfilename.c_str());
+
+    // write mesh verbosely
+    defaultbc << "----------- Mesh contents -----------" << std::endl << std::endl;
+    mymesh.Print(defaultbc, false);
+
+    // give examples for element and boundary condition syntax
+    defaultbc << "---------- Syntax examples ----------" << std::endl
               << std::endl
-              //<<"elementshape=\""
-              //<< CORE::FE::CellTypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<std::endl
+              << "Element Block, named: " << std::endl
+              << "of Shape: TET4" << std::endl
+              << "has 9417816 Elements" << std::endl
+              << "'*eb0=\"ELEMENT\"'" << std::endl
+              << "sectionname=\"FLUID\"" << std::endl
+              << "description=\"MAT 1 NA Euler\"" << std::endl
+              << "elementname=\"FLUID\" \n"
+              << std::endl
+              << "Element Block, named: " << std::endl
+              << "of Shape: HEX8" << std::endl
+              << "has 9417816 Elements" << std::endl
+              << "'*eb0=\"ELEMENT\"'" << std::endl
+              << "sectionname=\"STRUCTURE\"" << std::endl
+              << "description=\"MAT 1 KINEM nonlinear EAS none\"" << std::endl
+              << "elementname=\"SOLIDH8\" \n"
+              << std::endl
+              << "Node Set, named:" << std::endl
+              << "Property Name: INFLOW" << std::endl
+              << "has 45107 Nodes" << std::endl
+              << "'*ns0=\"CONDITION\"'" << std::endl
+              << "sectionname=\"DESIGN SURF DIRICH CONDITIONS\"" << std::endl
+              << "description=\"NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 "
+                 "0 0 0\""
+              << std::endl
               << std::endl;
-  }
 
-  // write NodeSets with specification proposal
-  const std::map<int, EXODUS::NodeSet> mynodesets = mymesh.GetNodeSets();
-  std::map<int, EXODUS::NodeSet>::const_iterator ins;
-  for (ins = mynodesets.begin(); ins != mynodesets.end(); ++ins)
-  {
-    ins->second.Print(defaultbc);
-    defaultbc << "*ns" << ins->first << "=\"CONDITION\"" << std::endl
-              << "sectionname=\"\"" << std::endl
-              << "description=\"\"" << std::endl
+    defaultbc << "MIND that you can specify a condition also on an ElementBlock, just replace "
+                 "'ELEMENT' with 'CONDITION'"
               << std::endl;
-  }
-
-  // write SideSets with specification proposal
-  const std::map<int, EXODUS::SideSet> mysidesets = mymesh.GetSideSets();
-  std::map<int, EXODUS::SideSet>::const_iterator iss;
-  for (iss = mysidesets.begin(); iss != mysidesets.end(); ++iss)
-  {
-    iss->second.Print(defaultbc);
-    defaultbc << "*ss" << iss->first << "=\"CONDITION\"" << std::endl
-              << "sectionname=\"\"" << std::endl
-              << "description=\"\"" << std::endl
+    defaultbc << "The 'E num' in the dat-file depends on the order of the specification below"
               << std::endl;
+    defaultbc << "------------------------------------------------BCSPECS" << std::endl
+              << std::endl;
+
+    // write ElementBlocks with specification proposal
+    const std::map<int, Teuchos::RCP<EXODUS::ElementBlock>> myblocks = mymesh.GetElementBlocks();
+    std::map<int, Teuchos::RCP<EXODUS::ElementBlock>>::const_iterator it;
+    for (it = myblocks.begin(); it != myblocks.end(); ++it)
+    {
+      it->second->Print(defaultbc);
+      defaultbc
+          << "*eb" << it->first << "=\"ELEMENT\"" << std::endl
+          << "sectionname=\"\"" << std::endl
+          << "description=\"\"" << std::endl
+          << "elementname=\"\""
+          << std::endl
+          //<<"elementshape=\""
+          //<< CORE::FE::CellTypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<std::endl
+          << std::endl;
+    }
+
+    // write NodeSets with specification proposal
+    const std::map<int, EXODUS::NodeSet> mynodesets = mymesh.GetNodeSets();
+    std::map<int, EXODUS::NodeSet>::const_iterator ins;
+    for (ins = mynodesets.begin(); ins != mynodesets.end(); ++ins)
+    {
+      ins->second.Print(defaultbc);
+      defaultbc << "*ns" << ins->first << "=\"CONDITION\"" << std::endl
+                << "sectionname=\"\"" << std::endl
+                << "description=\"\"" << std::endl
+                << std::endl;
+    }
+
+    // write SideSets with specification proposal
+    const std::map<int, EXODUS::SideSet> mysidesets = mymesh.GetSideSets();
+    std::map<int, EXODUS::SideSet>::const_iterator iss;
+    for (iss = mysidesets.begin(); iss != mysidesets.end(); ++iss)
+    {
+      iss->second.Print(defaultbc);
+      defaultbc << "*ss" << iss->first << "=\"CONDITION\"" << std::endl
+                << "sectionname=\"\"" << std::endl
+                << "description=\"\"" << std::endl
+                << std::endl;
+    }
+
+    // print validconditions as proposal
+    defaultbc << "-----------------------------------------VALIDCONDITIONS" << std::endl;
+    Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> condlist =
+        INPUT::ValidConditions();
+    INPUT::PrintEmptyConditionDefinitions(defaultbc, *condlist);
+
+    // print valid element lines as proposal (parobjects have to be registered for doing this!)
+    defaultbc << std::endl << std::endl;
+    INPUT::ElementDefinition ed;
+    ed.PrintElementDatHeaderToStream(defaultbc);
+
+    // close default bc specification file
+    if (defaultbc.is_open()) defaultbc.close();
+
+    return 0;
   }
+}  // namespace
 
-  // print validconditions as proposal
-  defaultbc << "-----------------------------------------VALIDCONDITIONS" << std::endl;
-  Teuchos::RCP<std::vector<Teuchos::RCP<INPUT::ConditionDefinition>>> condlist =
-      INPUT::ValidConditions();
-  INPUT::PrintEmptyConditionDefinitions(defaultbc, *condlist);
-
-  // print valid element lines as proposal (parobjects have to be registered for doing this!)
-  defaultbc << std::endl << std::endl;
-  INPUT::ElementDefinition ed;
-  ed.PrintElementDatHeaderToStream(defaultbc);
-
-  // close default bc specification file
-  if (defaultbc.is_open()) defaultbc.close();
-
-  return 0;
-}
-
-FOUR_C_NAMESPACE_CLOSE
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/**
+ *
+ * Pre_exodus contains classes to open and preprocess exodusII files into the
+ * discretization of 4C. It uses the "valid-parameters"-list defined in 4C for preparing
+ * a up-to-date 4C header and another file specifying element and boundary
+ * specifications. As result either a preliminary input file set is suggestioned,
+ * or the well-known .dat file is created.
+ *
+ */
 int main(int argc, char** argv)
 {
   using namespace FourC;
@@ -193,12 +202,6 @@ int main(int argc, char** argv)
     int concat2loose = 0;
     int diveblocks = 0;
 
-    // related to centerline
-    std::vector<double> cline_coordcorr(3);
-    double clinedx = 0.0;
-    double clinedy = 0.0;
-    double clinedz = 0.0;
-
     bool twodim = false;
 
     // related to quad->tri conversion
@@ -225,15 +228,6 @@ int main(int argc, char** argv)
 
     // switch for genarating a 2d .dat - file
     My_CLP.setOption("d2", "d3", &twodim, "space dimensions in .dat-file: d2: 2D, d3: 3D");
-
-    // centerline related
-    My_CLP.setOption("cline", &cline,
-        "generate local element coordinate systems based on centerline file, or mesh line (set to "
-        "'mesh'");
-    My_CLP.setOption("clinedx", &clinedx, "move centerline coords to align with mesh: delta x");
-    My_CLP.setOption("clinedy", &clinedy, "move centerline coords to align with mesh: delta y");
-    My_CLP.setOption("clinedz", &clinedz, "move centerline coords to align with mesh: delta z");
-    std::map<int, std::map<int, std::vector<std::vector<double>>>> elecenterlineinfo;
 
     // check for quad->tri conversion
     My_CLP.setOption(
@@ -264,10 +258,6 @@ int main(int argc, char** argv)
           true, false, false, IO::standard, comm, 0, 0, "xxx_pre");  // necessary setup of IO::cout
     }
 
-    // centerline related: transfer separate doubles into vector
-    cline_coordcorr[0] = clinedx;
-    cline_coordcorr[1] = clinedy;
-    cline_coordcorr[2] = clinedz;
 
     /**************************************************************************
      * Start with the preprocessing
@@ -296,26 +286,6 @@ int main(int argc, char** argv)
      * Edit a existing Mesh, e.g. extrusion of surface
      **************************************************************************/
 
-    // generate solid shell extrusion based on exodus file
-    if (soshthickness != 0.0)
-    {
-      if (exofile == "") FOUR_C_THROW("no exofile specified for extrusion");
-      if (soshnumlayer <= diveblocks)
-        FOUR_C_THROW(
-            "number of layers and inner-layer elements mismatch, check if numlayer>diveblocks!");
-      EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer,
-          soshseedid, soshgmsh, concat2loose, diveblocks, cline, cline_coordcorr);
-      mysosh.WriteMesh("extr_" + exofile);
-
-      exit(0);
-    }
-
-    // generate local element coordinate systems based on centerline
-    if (cline != "")
-    {
-      elecenterlineinfo = EleCenterlineInfo(cline, mymesh, cline_coordcorr);
-    }
-
     // transform quads->tris
     if (quadtri)
     {
@@ -334,7 +304,7 @@ int main(int argc, char** argv)
 
     if (bcfile == "")
     {
-      int error = EXODUS::CreateDefaultBCFile(mymesh);
+      int error = CreateDefaultBCFile(mymesh);
       if (error != 0) FOUR_C_THROW("Creation of default bc-file not successful.");
     }
     else
@@ -479,7 +449,7 @@ int main(int argc, char** argv)
         if (twodim) mymesh.SetNsd(2);
         std::cout << "...Writing dat-file";
         timer->start();
-        EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs, elecenterlineinfo);
+        EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
         timer->stop();
         std::cout << "                         in...." << timer->totalElapsedTime(true) << " secs"
                   << std::endl;

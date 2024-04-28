@@ -15,7 +15,6 @@ Here is everything related with writing a dat-file
 #include "4C_inpar_validconditions.hpp"
 #include "4C_lib_conditiondefinition.hpp"
 #include "4C_pre_exodus_reader.hpp"
-#include "4C_pre_exodus_soshextrusion.hpp"  // to calculate normal
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -23,8 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 int EXODUS::WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
     const std::string& headfile, const std::vector<EXODUS::ElemDef>& eledefs,
-    const std::vector<EXODUS::CondDef>& condefs,
-    const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo)
+    const std::vector<EXODUS::CondDef>& condefs)
 {
   // open datfile
   std::ofstream dat(datfile.c_str());
@@ -46,7 +44,7 @@ int EXODUS::WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
   EXODUS::WriteDatNodes(mymesh, dat);
 
   // write elements
-  EXODUS::WriteDatEles(eledefs, mymesh, dat, elecenterlineinfo);
+  EXODUS::WriteDatEles(eledefs, mymesh, dat);
 
   // write END
   dat << "---------------------------------------------------------------END\n"
@@ -264,11 +262,39 @@ std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::
 
   std::set<int>::iterator thirdnode;
 
+  const auto compute_normal = [](int head1, int origin, int head2, const EXODUS::Mesh& basemesh)
+  {
+    std::vector<double> normal(3);
+    std::vector<double> h1 = basemesh.GetNode(head1);
+    std::vector<double> h2 = basemesh.GetNode(head2);
+    std::vector<double> o = basemesh.GetNode(origin);
+
+    normal[0] = ((h1[1] - o[1]) * (h2[2] - o[2]) - (h1[2] - o[2]) * (h2[1] - o[1]));
+    normal[1] = -((h1[0] - o[0]) * (h2[2] - o[2]) - (h1[2] - o[2]) * (h2[0] - o[0]));
+    normal[2] = ((h1[0] - o[0]) * (h2[1] - o[1]) - (h1[1] - o[1]) * (h2[0] - o[0]));
+
+    double length = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
+    const double epsilon = 1.E-4;
+    if (length > epsilon)
+    {
+      normal[0] = normal[0] / length;
+      normal[1] = normal[1] / length;
+      normal[2] = normal[2] / length;
+    }
+    else
+    {  // normal is undefined, vectors seem collinear
+      normal.resize(1);
+      normal[0] = 0.0;
+    }
+
+    return normal;
+  };
+
   // find third node such that a proper normal can be computed
   for (it = surfit; it != nodes_from_nodeset.end(); ++it)
   {
     thirdnode = it;
-    normaltangent = EXODUS::Normal(head1, origin, *thirdnode, m);
+    normaltangent = compute_normal(head1, origin, *thirdnode, m);
     if (normaltangent.size() != 1) break;
   }
   if (normaltangent.size() == 1)
@@ -446,9 +472,8 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::WriteDatEles(const std::vector<ElemDef>& eledefs, const EXODUS::Mesh& mymesh,
-    std::ostream& dat,
-    const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo)
+void EXODUS::WriteDatEles(
+    const std::vector<ElemDef>& eledefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   // sort elements w.r.t. structure, fluid, ale, scalar transport, thermo, etc.
   std::vector<EXODUS::ElemDef> structure_elements;
@@ -519,7 +544,7 @@ void EXODUS::WriteDatEles(const std::vector<ElemDef>& eledefs, const EXODUS::Mes
     for (const auto& ele : ele_vector)
     {
       Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(ele.id);
-      EXODUS::DatEles(eb, ele, startele, dat, elecenterlineinfo, ele.id);
+      EXODUS::DatEles(eb, ele, startele, dat, ele.id);
     }
   };
 
@@ -562,9 +587,7 @@ void EXODUS::WriteDatEles(const std::vector<ElemDef>& eledefs, const EXODUS::Mes
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::ElemDef& acte,
-    int& startele, std::ostream& datfile,
-    const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo,
-    const int eb_id)
+    int& startele, std::ostream& datfile, const int eb_id)
 {
   auto eles = eb->GetEleConn();
   for (const auto& ele : *eles)
@@ -578,21 +601,7 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     dat << "  ";
     for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"
-    if (elecenterlineinfo.size() != 0)
-    {
-      // quick check wether elements in ele Block have a fiber direction
-      if (elecenterlineinfo.find(eb_id) != elecenterlineinfo.end())
-      {
-        // write local cosy from centerline to each element
-        std::vector<std::vector<double>> ecli =
-            (elecenterlineinfo.find(eb_id)->second).find(ele.first)->second;
-        dat << " RAD " << std::fixed << std::setprecision(8) << ecli[0][0] << " " << ecli[0][1]
-            << " " << ecli[0][2];
-        dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];
-        dat << " CIR " << ecli[2][0] << " " << ecli[2][1] << " " << ecli[2][2];
-      }
-    }
-    dat << std::endl;  // finish this element line
+    dat << std::endl;           // finish this element line
 
     startele++;
     datfile << dat.str();  // only one access to the outfile (saves system time)
