@@ -10,6 +10,7 @@ formulation
 
 #include "4C_discretization_fem_general_cell_type.hpp"
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based_linear_kinematics.hpp"
@@ -23,68 +24,190 @@ formulation
 #include "4C_solid_3D_ele_formulation.hpp"
 #include "4C_solid_3D_ele_interface_serializable.hpp"
 #include "4C_utils_demangle.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
+#include <memory>
 #include <optional>
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  template <CORE::FE::CellType celltype>
-  DRT::ELEMENTS::CauchyNDirAndLinearization<3> EvaluateCauchyNDirAndDerivatives(
-      MAT::So3Material& mat,
+
+  template <CORE::FE::CellType celltype, typename SolidFormulation>
+  class ElementFormulationDerivativeEvaluator
+  {
+   public:
+    ElementFormulationDerivativeEvaluator(const DRT::Element& ele,
+        const DRT::ELEMENTS::ElementNodes<celltype>& element_nodes,
+        const CORE::LINALG::Matrix<3, 1>& xi,
+        const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const DRT::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
+        const CORE::LINALG::Matrix<3, 3>& deformation_gradient,
+        const DRT::ELEMENTS::PreparationData<SolidFormulation>& preparation_data,
+        DRT::ELEMENTS::SolidFormulationHistory<SolidFormulation>& history_data)
+        : ele_(ele),
+          element_nodes_(element_nodes),
+          xi_(xi),
+          shape_functions_(shape_functions),
+          jacobian_mapping_(jacobian_mapping),
+          deformation_gradient_(deformation_gradient),
+          preparation_data_(preparation_data),
+          history_data_(history_data)
+    {
+    }
+
+    [[nodiscard]] CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+    evaluate_d_deformation_gradient_d_displacements() const
+    {
+      return EvaluateDDeformationGradientDDisplacements(ele_, element_nodes_, xi_, shape_functions_,
+          jacobian_mapping_, deformation_gradient_, preparation_data_, history_data_);
+    }
+
+    [[nodiscard]] CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>
+    evaluate_d_deformation_gradient_d_xi() const
+    {
+      return EvaluateDDeformationGradientDXi(ele_, element_nodes_, xi_, shape_functions_,
+          jacobian_mapping_, deformation_gradient_, preparation_data_, history_data_);
+    }
+
+    [[nodiscard]] CORE::LINALG::Matrix<9,
+        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
+    evaluate_d2_deformation_gradient_d_displacements_d_xi() const
+    {
+      return EvaluateDDeformationGradientDDisplacementsDXi(ele_, element_nodes_, xi_,
+          shape_functions_, jacobian_mapping_, deformation_gradient_, preparation_data_,
+          history_data_);
+    }
+
+   private:
+    const DRT::Element& ele_;
+    const DRT::ELEMENTS::ElementNodes<celltype>& element_nodes_;
+    const CORE::LINALG::Matrix<3, 1>& xi_;
+    const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions_;
+    const DRT::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping_;
+    const CORE::LINALG::Matrix<3, 3>& deformation_gradient_;
+    const DRT::ELEMENTS::PreparationData<SolidFormulation>& preparation_data_;
+    DRT::ELEMENTS::SolidFormulationHistory<SolidFormulation>& history_data_;
+  };
+
+  template <typename T>
+  T* get_ptr(std::optional<T>& opt)
+  {
+    return opt.has_value() ? &opt.value() : nullptr;
+  }
+
+  template <typename T, typename... Args>
+  std::optional<T> make_optional_if(bool condition, Args&&... params)
+  {
+    if (condition) return std::optional<T>(std::forward<Args>(params)...);
+    return std::nullopt;
+  }
+
+  template <CORE::FE::CellType celltype, typename SolidFormulation>
+  double EvaluateCauchyNDirAtXi(MAT::So3Material& mat,
       const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>>&
           deformation_gradient,
-      const DRT::ELEMENTS::SolidFormulationLinearization<celltype>& solid_formulation_linearization,
-      const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir, int eleGID)
+      const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir, int eleGID,
+      const ElementFormulationDerivativeEvaluator<celltype, SolidFormulation>& evaluator,
+      DRT::ELEMENTS::CauchyNDirLinearizations<3>& linearizations)
   {
-    CORE::LINALG::Matrix<9, 1> d_cauchyndir_dF(true);
-    CORE::LINALG::Matrix<9, 9> d2_cauchyndir_dF2(true);
-    CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>> d2_cauchyndir_dF_dn(true);
-    CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>> d2_cauchyndir_dF_ddir(true);
+    auto d_cauchyndir_dF = make_optional_if<CORE::LINALG::Matrix<9, 1>>(
+        linearizations.d_cauchyndir_dd || linearizations.d_cauchyndir_dxi ||
+            linearizations.d2_cauchyndir_dd_dxi,
+        true);
 
-    DRT::ELEMENTS::CauchyNDirAndLinearization<3> cauchy_n_dir_with_linearization{};
+    auto d2_cauchyndir_dF2 =
+        make_optional_if<CORE::LINALG::Matrix<9, 9>>(linearizations.d2_cauchyndir_dd2, true);
 
-    mat.EvaluateCauchyNDirAndDerivatives(deformation_gradient, n, dir,
-        cauchy_n_dir_with_linearization.cauchy_n_dir,
-        &cauchy_n_dir_with_linearization.d_cauchyndir_dn,
-        &cauchy_n_dir_with_linearization.d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2,
-        &d2_cauchyndir_dF_dn, &d2_cauchyndir_dF_ddir, -1, eleGID, nullptr, nullptr, nullptr,
-        nullptr);
+    auto d2_cauchyndir_dF_dn =
+        make_optional_if<CORE::LINALG::Matrix<9, 3>>(linearizations.d2_cauchyndir_dd_dn, true);
+
+    auto d2_cauchyndir_dF_ddir =
+        make_optional_if<CORE::LINALG::Matrix<9, 3>>(linearizations.d2_cauchyndir_dd_ddir, true);
+
+    std::optional<CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>>
+        d_F_dd{};
+    if (linearizations.d_cauchyndir_dd != nullptr ||
+        linearizations.d2_cauchyndir_dd_dn != nullptr ||
+        linearizations.d2_cauchyndir_dd_ddir != nullptr ||
+        linearizations.d2_cauchyndir_dd2 != nullptr)
+    {
+      d_F_dd.emplace(evaluator.evaluate_d_deformation_gradient_d_displacements());
+    }
+
+    std::optional<CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>> d_F_dxi{};
+    if (linearizations.d_cauchyndir_dxi != nullptr)
+    {
+      d_F_dxi.emplace(evaluator.evaluate_d_deformation_gradient_d_xi());
+    }
+
+    std::optional<CORE::LINALG::Matrix<9,
+        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>>
+        d2_F_dxi_dd{};
+    if (linearizations.d2_cauchyndir_dd_dxi != nullptr)
+    {
+      d2_F_dxi_dd.emplace(evaluator.evaluate_d2_deformation_gradient_d_displacements_d_xi());
+    }
+
+    double cauchy_n_dir = 0;
+    mat.EvaluateCauchyNDirAndDerivatives(deformation_gradient, n, dir, cauchy_n_dir,
+        linearizations.d_cauchyndir_dn, linearizations.d_cauchyndir_ddir, get_ptr(d_cauchyndir_dF),
+        get_ptr(d2_cauchyndir_dF2), get_ptr(d2_cauchyndir_dF_dn), get_ptr(d2_cauchyndir_dF_ddir),
+        -1, eleGID, nullptr, nullptr, nullptr, nullptr);
 
     // evaluate first derivative w.r.t. displacements
-    DRT::ELEMENTS::EvaluateDCauchyNDirDDisplacements<celltype>(
-        solid_formulation_linearization.d_F_dd, d_cauchyndir_dF,
-        cauchy_n_dir_with_linearization.d_cauchyndir_dd);
+    if (linearizations.d_cauchyndir_dd != nullptr)
+    {
+      FOUR_C_ASSERT(d_F_dd && d_cauchyndir_dF, "Not all tensors are computed!");
+      DRT::ELEMENTS::EvaluateDCauchyNDirDDisplacements<celltype>(
+          *d_F_dd, *d_cauchyndir_dF, *linearizations.d_cauchyndir_dd);
+    }
 
 
     // evaluate second derivative w.r.t. displacements, normal
-    DRT::ELEMENTS::EvaluateD2CauchyNDirDDisplacementsDNormal<celltype>(
-        solid_formulation_linearization.d_F_dd, d2_cauchyndir_dF_dn,
-        cauchy_n_dir_with_linearization.d2_cauchyndir_dd_dn);
+    if (linearizations.d2_cauchyndir_dd_dn != nullptr)
+    {
+      FOUR_C_ASSERT(d_F_dd && d2_cauchyndir_dF_dn, "Not all tensors are computed!");
+      DRT::ELEMENTS::EvaluateD2CauchyNDirDDisplacementsDNormal<celltype>(
+          *d_F_dd, *d2_cauchyndir_dF_dn, *linearizations.d2_cauchyndir_dd_dn);
+    }
 
     // evaluate second derivative w.r.t. displacements, direction
-    DRT::ELEMENTS::EvaluateD2CauchyNDirDDisplacementsDDir<celltype>(
-        solid_formulation_linearization.d_F_dd, d2_cauchyndir_dF_ddir,
-        cauchy_n_dir_with_linearization.d2_cauchyndir_dd_ddir);
+    if (linearizations.d2_cauchyndir_dd_ddir != nullptr)
+    {
+      FOUR_C_ASSERT(d_F_dd && d2_cauchyndir_dF_ddir, "Not all tensors are computed!");
+      DRT::ELEMENTS::EvaluateD2CauchyNDirDDisplacementsDDir<celltype>(
+          *d_F_dd, *d2_cauchyndir_dF_ddir, *linearizations.d2_cauchyndir_dd_ddir);
+    }
 
     // evaluate second derivative w.r.t. displacements, displacements
-    DRT::ELEMENTS::EvaluateD2CauchyNDirDDisplacements2<celltype>(
-        solid_formulation_linearization.d_F_dd, d2_cauchyndir_dF2,
-        cauchy_n_dir_with_linearization.d2_cauchyndir_dd2);
+    if (linearizations.d2_cauchyndir_dd2 != nullptr)
+    {
+      FOUR_C_ASSERT(d_F_dd && d2_cauchyndir_dF2, "Not all tensors are computed!");
+      DRT::ELEMENTS::EvaluateD2CauchyNDirDDisplacements2<celltype>(
+          *d_F_dd, *d2_cauchyndir_dF2, *linearizations.d2_cauchyndir_dd2);
+    }
 
     // evaluate first derivative w.r.t. xi
-    DRT::ELEMENTS::EvaluateDCauchyNDirDXi<celltype>(solid_formulation_linearization.d_F_dxi,
-        d_cauchyndir_dF, cauchy_n_dir_with_linearization.d_cauchyndir_dxi);
+    if (linearizations.d_cauchyndir_dxi != nullptr)
+    {
+      FOUR_C_ASSERT(d_F_dxi && d_cauchyndir_dF, "Not all tensors are computed!");
+      DRT::ELEMENTS::EvaluateDCauchyNDirDXi<celltype>(
+          *d_F_dxi, *d_cauchyndir_dF, *linearizations.d_cauchyndir_dxi);
+    }
 
     // evaluate second derivative w.r.t. displacements, xi
-    DRT::ELEMENTS::EvaluateD2CauchyNDirDDisplacementsDXi<celltype>(
-        solid_formulation_linearization.d2_F_dxi_dd, d_cauchyndir_dF,
-        cauchy_n_dir_with_linearization.d2_cauchyndir_dd_dxi);
+    if (linearizations.d2_cauchyndir_dd_dxi != nullptr)
+    {
+      FOUR_C_ASSERT(d2_F_dxi_dd && d_cauchyndir_dF, "Not all tensors are computed!");
+      DRT::ELEMENTS::EvaluateD2CauchyNDirDDisplacementsDXi<celltype>(
+          *d2_F_dxi_dd, *d_cauchyndir_dF, *linearizations.d2_cauchyndir_dd_dxi);
+    }
 
-    return cauchy_n_dir_with_linearization;
+    return cauchy_n_dir;
   }
 }  // namespace
 
@@ -401,11 +524,10 @@ void DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::ResetToLastConve
 }
 
 template <CORE::FE::CellType celltype, typename ElementFormulation>
-DRT::ELEMENTS::CauchyNDirAndLinearization<3>
-DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::GetCauchyNDirAndDerivativesAtXi(
+double DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::GetCauchyNDirAtXi(
     const DRT::Element& ele, MAT::So3Material& solid_material, const std::vector<double>& disp,
     const CORE::LINALG::Matrix<3, 1>& xi, const CORE::LINALG::Matrix<3, 1>& n,
-    const CORE::LINALG::Matrix<3, 1>& dir)
+    const CORE::LINALG::Matrix<3, 1>& dir, CauchyNDirLinearizations<3>& linearizations)
 {
   if constexpr (has_gauss_point_history<ElementFormulation>)
   {
@@ -433,12 +555,12 @@ DRT::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::GetCauchyNDirAndDeriv
                 deformation_gradient,
             const CORE::LINALG::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
         {
-          SolidFormulationLinearization<celltype> solid_linearization =
-              EvaluateFullLinearization(ele, element_nodes, xi, shape_functions, jacobian_mapping,
-                  deformation_gradient, preparation_data, history_data_);
+          const ElementFormulationDerivativeEvaluator<celltype, ElementFormulation> evaluator(ele,
+              element_nodes, xi, shape_functions, jacobian_mapping, deformation_gradient,
+              preparation_data, history_data_);
 
-          return EvaluateCauchyNDirAndDerivatives<celltype>(
-              solid_material, deformation_gradient, solid_linearization, n, dir, ele.Id());
+          return EvaluateCauchyNDirAtXi<celltype>(
+              solid_material, deformation_gradient, n, dir, ele.Id(), evaluator, linearizations);
         });
   }
 }

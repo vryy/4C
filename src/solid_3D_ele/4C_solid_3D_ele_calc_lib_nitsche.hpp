@@ -182,41 +182,38 @@ namespace DRT::ELEMENTS
    * @tparam dim
    */
   template <int dim>
-  struct CauchyNDirAndLinearization
+  struct CauchyNDirLinearizations
   {
-    /// Cauchy stress in a specific direction
-    double cauchy_n_dir = 0.0;
-
     /// @brief first derivatives
     ///@{
 
     /// first derivative w.r.t. normal
-    CORE::LINALG::Matrix<dim, 1> d_cauchyndir_dn{};
+    CORE::LINALG::Matrix<dim, 1>* d_cauchyndir_dn = nullptr;
 
     /// first derivative w.r.t. given direction
-    CORE::LINALG::Matrix<dim, 1> d_cauchyndir_ddir{};
+    CORE::LINALG::Matrix<dim, 1>* d_cauchyndir_ddir = nullptr;
 
     /// first derivative w.r.t. xi
-    CORE::LINALG::Matrix<dim, 1> d_cauchyndir_dxi{};
+    CORE::LINALG::Matrix<dim, 1>* d_cauchyndir_dxi = nullptr;
 
     /// first derivative w.r.t. displacements
-    CORE::LINALG::SerialDenseMatrix d_cauchyndir_dd;
+    CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd = nullptr;
     ///@}
 
     /// @brief second derivatives
     ///@{
 
     /// second derivative w.r.t. displacements
-    CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd2;
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2 = nullptr;
 
     /// second derivative w.r.t. displacements, normal
-    CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd_dn;
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn = nullptr;
 
     /// second derivative w.r.t. displacements, given direction
-    CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd_ddir;
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir = nullptr;
 
     /// second derivative w.r.t. displacements, xi
-    CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd_dxi;
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi = nullptr;
     ///@}
   };
 
@@ -227,12 +224,12 @@ namespace DRT::ELEMENTS
 
   template <typename T, int dim>
   constexpr bool CanEvaluateEvaluateCauchyNDir<T, dim,
-      std::void_t<decltype(std::declval<T>()->GetCauchyNDirAndDerivativesAtXi(
-          std::declval<const DRT::Element&>(), std::declval<MAT::So3Material&>(),
-          std::declval<const std::vector<double>&>(),
+      std::void_t<decltype(std::declval<T>()->GetCauchyNDirAtXi(std::declval<const DRT::Element&>(),
+          std::declval<MAT::So3Material&>(), std::declval<const std::vector<double>&>(),
           std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
           std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
-          std::declval<const CORE::LINALG::Matrix<dim, 1>&>()))>> = true;
+          std::declval<const CORE::LINALG::Matrix<dim, 1>&>(),
+          std::declval<CauchyNDirLinearizations<dim>&>()))>> = true;
 
   namespace DETAILS
   {
@@ -241,20 +238,21 @@ namespace DRT::ELEMENTS
     {
       EvaluateCauchyNDirAction(const DRT::Element& e, MAT::So3Material& m,
           const std::vector<double>& d, const CORE::LINALG::Matrix<dim, 1>& x,
-          const CORE::LINALG::Matrix<dim, 1>& normal, const CORE::LINALG::Matrix<dim, 1>& direction)
-          : element(e), mat(m), disp(d), xi(x), n(normal), dir(direction)
+          const CORE::LINALG::Matrix<dim, 1>& normal, const CORE::LINALG::Matrix<dim, 1>& direction,
+          CauchyNDirLinearizations<dim>& lins)
+          : element(e), mat(m), disp(d), xi(x), n(normal), dir(direction), linearizations(lins)
       {
       }
 
       template <typename T, std::enable_if_t<CanEvaluateEvaluateCauchyNDir<T&, dim>, bool> = true>
-      CauchyNDirAndLinearization<dim> operator()(T& cauchy_n_dir_evaluatable)
+      double operator()(T& cauchy_n_dir_evaluatable)
       {
-        return cauchy_n_dir_evaluatable->GetCauchyNDirAndDerivativesAtXi(
-            element, mat, disp, xi, n, dir);
+        return cauchy_n_dir_evaluatable->GetCauchyNDirAtXi(
+            element, mat, disp, xi, n, dir, linearizations);
       }
 
       template <typename T, std::enable_if_t<!CanEvaluateEvaluateCauchyNDir<T&, dim>, bool> = true>
-      CauchyNDirAndLinearization<dim> operator()(T& other)
+      double operator()(T& other)
       {
         FOUR_C_THROW(
             "Your element evaluation %s does not allow to evaluate the Cauchy stress at a specific "
@@ -268,23 +266,25 @@ namespace DRT::ELEMENTS
       const CORE::LINALG::Matrix<dim, 1>& xi;
       const CORE::LINALG::Matrix<dim, 1>& n;
       const CORE::LINALG::Matrix<dim, 1>& dir;
+      CauchyNDirLinearizations<dim>& linearizations;
     };
   }  // namespace DETAILS
 
   /*!
-   * @brief Evaluate optional function @p GetCauchyNDirAndDerivativesAtXi(....) on SolidVariant @p
+   * @brief Evaluate optional function @p GetCauchyNDirAtXi(....) on SolidVariant @p
    * variant. If the function does not exist, an error will be thrown.
    *
-   * @return CauchyNDirAndLinearization<dim>
+   * @return double
    */
   template <int dim, typename VariantType>
-  CauchyNDirAndLinearization<dim> GetCauchyNDirAndDerivativesAtXi(VariantType& variant,
-      const DRT::Element& element, MAT::So3Material& mat, const std::vector<double>& disp,
-      const CORE::LINALG::Matrix<dim, 1>& xi, const CORE::LINALG::Matrix<dim, 1>& n,
-      const CORE::LINALG::Matrix<dim, 1>& dir)
+  double GetCauchyNDirAtXi(VariantType& variant, const DRT::Element& element, MAT::So3Material& mat,
+      const std::vector<double>& disp, const CORE::LINALG::Matrix<dim, 1>& xi,
+      const CORE::LINALG::Matrix<dim, 1>& n, const CORE::LINALG::Matrix<dim, 1>& dir,
+      CauchyNDirLinearizations<dim>& linearizations)
   {
     return std::visit(
-        DETAILS::EvaluateCauchyNDirAction<dim>(element, mat, disp, xi, n, dir), variant);
+        DETAILS::EvaluateCauchyNDirAction<dim>(element, mat, disp, xi, n, dir, linearizations),
+        variant);
   }
 }  // namespace DRT::ELEMENTS
 FOUR_C_NAMESPACE_CLOSE

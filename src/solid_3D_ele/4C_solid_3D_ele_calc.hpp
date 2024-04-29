@@ -111,10 +111,10 @@ namespace DRT::ELEMENTS
 
     void ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material);
 
-    CauchyNDirAndLinearization<3> GetCauchyNDirAndDerivativesAtXi(const DRT::Element& ele,
-        MAT::So3Material& solid_material, const std::vector<double>& disp,
-        const CORE::LINALG::Matrix<3, 1>& xi, const CORE::LINALG::Matrix<3, 1>& n,
-        const CORE::LINALG::Matrix<3, 1>& dir);
+    double GetCauchyNDirAtXi(const DRT::Element& ele, MAT::So3Material& solid_material,
+        const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& xi,
+        const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+        CauchyNDirLinearizations<3>& linearizations);
 
    private:
     /// static values for matrix sizes

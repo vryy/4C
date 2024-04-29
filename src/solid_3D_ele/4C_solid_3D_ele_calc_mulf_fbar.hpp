@@ -195,20 +195,6 @@ namespace DRT::ELEMENTS
           spatial_material_mapping_bar.deformation_gradient_, gl_strain_bar, linearization);
     }
 
-    static inline SolidFormulationLinearization<celltype> EvaluateFullLinearization(
-        const DRT::Element& ele, const ElementNodes<celltype>& nodal_coordinates,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
-        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-        const JacobianMapping<celltype>& jacobian_mapping,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
-            deformation_gradient,
-        const MulfFBarPreparationData<celltype>& mapping_center,
-        MulfHistoryData<celltype>& mulf_data_centeroid, MulfHistoryData<celltype>& mulf_data_gp)
-    {
-      FOUR_C_THROW(
-          "The full linearization is not yet implemented for the displacement based formulation "
-          "with MULF prestressing.");
-    }
 
     static CORE::LINALG::Matrix<DETAILS::num_str<celltype>,
         CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
