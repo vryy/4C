@@ -13,6 +13,7 @@
 
 #include "4C_mat_anisotropy_extension_default.hpp"
 #include "4C_mat_anisotropy_extension_provider.hpp"
+#include "4C_mat_par_aniso.hpp"
 #include "4C_mat_par_parameter.hpp"
 #include "4C_matelast_activesummand.hpp"
 
@@ -73,7 +74,7 @@ namespace MAT
           return Teuchos::null;
         };
       };  // class CoupAnisoExpoActive
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * @brief Coupled anisotropic active fiber function, implemented for one possible fiber family

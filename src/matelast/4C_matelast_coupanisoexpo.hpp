@@ -13,6 +13,7 @@
 
 #include "4C_mat_anisotropy_extension_default.hpp"
 #include "4C_mat_anisotropy_extension_provider.hpp"
+#include "4C_mat_par_aniso.hpp"
 #include "4C_matelast_coupanisoexpobase.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -11,6 +11,7 @@ with space-time varying coefficients
 
 #include "4C_config.hpp"
 
+#include "4C_mat_par_aniso.hpp"
 #include "4C_mat_par_parameter.hpp"
 #include "4C_matelast_summand.hpp"
 

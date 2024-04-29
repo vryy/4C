@@ -12,6 +12,7 @@ strain computations
 
 #include "4C_config.hpp"
 
+#include "4C_mat_par_aniso.hpp"
 #include "4C_mat_par_parameter.hpp"
 #include "4C_matelast_summand.hpp"
 
@@ -101,7 +102,7 @@ namespace MAT
           return Teuchos::null;
         };
       };  // class CoupAnisoSimple
-    }     // namespace PAR
+    }  // namespace PAR
 
     /*!
      * \brief Implementation of the simple orthotropic, transversely isotropic hyperelastic
