@@ -13,9 +13,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,14 +25,14 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material
-    class ScatraMat : public Parameter
+    class ScatraMat : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      ScatraMat(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ScatraMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       enum Matparamnames
       {
@@ -66,7 +66,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material
-  class ScatraMat : public Material
+  class ScatraMat : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -120,7 +120,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new ScatraMat(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new ScatraMat(*this));
+    }
 
     /// diffusivity
     double Diffusivity(int eleid = -1) const { return params_->GetParameter(params_->diff, eleid); }
@@ -142,7 +145,7 @@ namespace MAT
 
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

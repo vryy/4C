@@ -39,7 +39,8 @@ namespace MIXTURE
       friend class MIXTURE::RemodelFiberMaterialExponential<T>;
 
      public:
-      explicit RemodelFiberMaterialExponential(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit RemodelFiberMaterialExponential(
+          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       [[nodiscard]] std::unique_ptr<MIXTURE::RemodelFiberMaterial<T>> CreateRemodelFiberMaterial()
           const override;

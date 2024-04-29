@@ -18,8 +18,8 @@
 #include "4C_mat_anisotropy_extension_default.hpp"
 #include "4C_mat_anisotropy_extension_provider.hpp"
 #include "4C_mat_muscle_utils.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_utils_local_numeric_methods.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -30,13 +30,13 @@ namespace MAT
 {
   namespace PAR
   {
-    class MuscleGiantesio : public Parameter
+    class MuscleGiantesio : public CORE::MAT::PAR::Parameter
     {
      public:
       /// constructor
-      MuscleGiantesio(Teuchos::RCP<MAT::PAR::Material> matdata);
+      MuscleGiantesio(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// @name material parameters
       //@{
@@ -140,12 +140,12 @@ namespace MAT
     // Constructor for the material given the material parameters
     explicit MuscleGiantesio(MAT::PAR::MuscleGiantesio* params);
 
-    [[nodiscard]] Teuchos::RCP<Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new MuscleGiantesio(*this));
     }
 
-    [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
     {

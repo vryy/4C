@@ -31,8 +31,8 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -46,11 +46,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     //! material parameters for visco-plastic Robinson's material
-    class Robinson : public Parameter
+    class Robinson : public CORE::MAT::PAR::Parameter
     {
      public:
       //! standard constructor
-      Robinson(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Robinson(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! @name material parameters
       //@{
@@ -98,7 +98,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class Robinson
 
@@ -177,7 +177,10 @@ namespace MAT
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Robinson(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new Robinson(*this));
+    }
 
     //! initialise internal stress variables
     void Setup(const int numgp,  //!< number of Gauss points
@@ -362,7 +365,7 @@ namespace MAT
     bool Initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
 
     //! return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! flag plastic step was called
     bool plastic_step;
@@ -441,7 +444,7 @@ namespace MAT
     //! strain at last evaluation
     std::vector<CORE::LINALG::Matrix<6, 1>> strain_last_;
 
-  };  // class Robinson : public Material
+  };  // class Robinson : public CORE::MAT::Material
 }  // namespace MAT
 
 

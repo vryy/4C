@@ -29,10 +29,10 @@ namespace MAT
 
      public:
       /// standard constructor
-      StructPoroReaction(Teuchos::RCP<MAT::PAR::Material> matdata);
+      StructPoroReaction(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// @name material parameters
       //@{
@@ -147,7 +147,7 @@ namespace MAT
         ) override;
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new StructPoroReaction(*this));
     }
@@ -157,7 +157,7 @@ namespace MAT
         INPUT::LineDefinition* linedef) override;
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return reference porosity average
     double RefPorosityAv() const;

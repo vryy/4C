@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Bundle holds all read-in materials of a #GLOBAL::Problem
+\brief Declaration of a base class for anisotropic material parameters
 
 \level 1
 
@@ -35,11 +35,11 @@ namespace MAT
   namespace PAR
   {
     /// Extension to hold 'quick' access material parameters for anisotropy
-    class ParameterAniso : public Parameter
+    class ParameterAniso : public CORE::MAT::PAR::Parameter
     {
      public:
       /// construct the material object given material parameters
-      ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> matdata);
+      ParameterAniso(Teuchos::RCP<const CORE::MAT::PAR::Material> matdata);
 
       /// return pointer to strategy
       const Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase>& StructuralTensorStrategy()

@@ -45,7 +45,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::PreEvaluate(Teuchos::ParameterList& para
         CORE::FE::ExtractMyValues(*scalarnp, myscalar, la[2].lm_);
 
         if (NumMaterial() < 3) FOUR_C_THROW("no third material defined for Wall poro element!");
-        Teuchos::RCP<MAT::Material> scatramat = Material(2);
+        Teuchos::RCP<CORE::MAT::Material> scatramat = Material(2);
 
         int numscal = 1;
         if (scatramat->MaterialType() == CORE::Materials::m_matlist or

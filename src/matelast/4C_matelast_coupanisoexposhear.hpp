@@ -98,16 +98,16 @@ namespace MAT
        * <h3>Input line</h3>
        * MAT 1 ELAST_CoupAnisoExpoShear K1 10.0 K2 1.0 K1COMP 0.0 K2COMP 1.0 INIT 0 FIBER_IDS 1 2
        */
-      class CoupAnisoExpoShear : public MAT::PAR::Parameter,
+      class CoupAnisoExpoShear : public CORE::MAT::PAR::Parameter,
                                  public MAT::ELASTIC::PAR::CoupAnisoExpoBase
       {
        public:
         /// standard constructor
-        explicit CoupAnisoExpoShear(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+        explicit CoupAnisoExpoShear(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "

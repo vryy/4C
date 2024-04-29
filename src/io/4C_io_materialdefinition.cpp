@@ -15,8 +15,8 @@
 #include "4C_io_materialdefinition.hpp"
 
 #include "4C_io_line_parser.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 
 #include <iostream>
 #include <string>
@@ -83,8 +83,8 @@ void INPUT::MaterialDefinition::Read(
         if (mmap->Find(matid) != -1) FOUR_C_THROW("More than one material with 'MAT %d'", matid);
 
         // the read-in material line
-        Teuchos::RCP<MAT::PAR::Material> material =
-            Teuchos::rcp(new MAT::PAR::Material(matid, mattype_, materialname_));
+        Teuchos::RCP<CORE::MAT::PAR::Material> material =
+            Teuchos::rcp(new CORE::MAT::PAR::Material(matid, mattype_, materialname_));
         // fill the latter
 
         for (auto& j : inputline_) condline = j->Read(Name(), condline, *material);

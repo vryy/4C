@@ -7,25 +7,26 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
+#include "4C_material_input_base.hpp"
 
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::PAR::Parameter::Parameter(Teuchos::RCP<const MAT::PAR::Material> matdata)
+CORE::MAT::PAR::Parameter::Parameter(Teuchos::RCP<const CORE::MAT::PAR::Material> matdata)
     : id_(matdata->Id()), type_(matdata->Type()), name_(matdata->Name())
 {
 }
 
-void MAT::PAR::Parameter::SetParameter(int parametername, Teuchos::RCP<Epetra_Vector> myparameter)
+void CORE::MAT::PAR::Parameter::SetParameter(
+    int parametername, Teuchos::RCP<Epetra_Vector> myparameter)
 {
   // security check
   int length_old = matparams_.at(parametername)->GlobalLength();
@@ -63,7 +64,7 @@ void MAT::PAR::Parameter::SetParameter(int parametername, Teuchos::RCP<Epetra_Ve
   }
 }
 
-void MAT::PAR::Parameter::SetParameter(int parametername, const double val, const int eleGID)
+void CORE::MAT::PAR::Parameter::SetParameter(int parametername, const double val, const int eleGID)
 {
   // check if we own this element
   Teuchos::RCP<Epetra_Vector> fool = matparams_.at(parametername);
@@ -78,7 +79,7 @@ void MAT::PAR::Parameter::SetParameter(int parametername, const double val, cons
   (*matparams_.at(parametername))[matparams_[parametername]->Map().LID(eleGID)] = val;
 }
 
-void MAT::PAR::Parameter::ExpandParametersToEleColLayout()
+void CORE::MAT::PAR::Parameter::ExpandParametersToEleColLayout()
 {
   for (auto& matparam : matparams_)
   {
@@ -95,7 +96,7 @@ void MAT::PAR::Parameter::ExpandParametersToEleColLayout()
     }
   }
 }
-double MAT::PAR::Parameter::GetParameter(int parametername, const int EleId)
+double CORE::MAT::PAR::Parameter::GetParameter(int parametername, const int EleId)
 {
   // check if we have an element based value via size
   if (matparams_[parametername]->GlobalLength() == 1)

@@ -13,8 +13,8 @@ growth laws.
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,11 +34,11 @@ namespace MAT
      *  \author kehl
      *  \date 6/2015
      */
-    class Growth : public Parameter
+    class Growth : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      Growth(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Growth(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
 
       /// @name material parameters
@@ -56,7 +56,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class Growth
 
@@ -130,7 +130,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override = 0;
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override = 0;
 
     /// Setup
     void Setup(int numgp, INPUT::LineDefinition* linedef) override;
@@ -361,7 +361,7 @@ namespace MAT
     //@}
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new GrowthVolumetric(*this));
     }

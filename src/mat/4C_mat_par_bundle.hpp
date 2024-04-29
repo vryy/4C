@@ -18,7 +18,7 @@
 #include "4C_inpar_material.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -68,8 +68,8 @@ namespace MAT
       Bundle();
 
       /// insert new par of material ID and its data
-      void Insert(int matid,                    ///< material ID
-          Teuchos::RCP<MAT::PAR::Material> mat  ///< (validated) material parameters
+      void Insert(int matid,                          ///< material ID
+          Teuchos::RCP<CORE::MAT::PAR::Material> mat  ///< (validated) material parameters
       );
 
       /// check if a material exists to provided ID
@@ -78,7 +78,10 @@ namespace MAT
       int Find(const int id) const;
 
       /// provide access to material map (a li'l dirty)
-      const std::map<int, Teuchos::RCP<MAT::PAR::Material>>* Map() const { return &(matmap_); }
+      const std::map<int, Teuchos::RCP<CORE::MAT::PAR::Material>>* Map() const
+      {
+        return &(matmap_);
+      }
 
       /// make quick access parameters
       void MakeParameters();
@@ -87,11 +90,13 @@ namespace MAT
       int Num() const { return matmap_.size(); }
 
       /// return materials by ID
-      Teuchos::RCP<MAT::PAR::Material> ById(const int num  ///< request is made for this material ID
+      Teuchos::RCP<CORE::MAT::PAR::Material> ById(
+          const int num  ///< request is made for this material ID
       ) const;
 
       /// return material parameters
-      MAT::PAR::Parameter* ParameterById(const int num  ///< request is made for this material ID
+      CORE::MAT::PAR::Parameter* ParameterById(
+          const int num  ///< request is made for this material ID
       ) const
       {
         return ById(num)->Parameter();
@@ -118,7 +123,7 @@ namespace MAT
 
      private:
       /// the map linking material IDs to input materials
-      std::map<int, Teuchos::RCP<MAT::PAR::Material>> matmap_;
+      std::map<int, Teuchos::RCP<CORE::MAT::PAR::Material>> matmap_;
 
       /// the index of problem instance of which material read-in shall be performed
       int materialreadfromproblem_;

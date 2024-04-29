@@ -9,11 +9,11 @@ Cauchy-Green invariant
 
 #include "4C_matelast_coup2pow.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::ELASTIC::PAR::Coup2Pow::Coup2Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::Coup2Pow::Coup2Pow(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->Get<double>("C")), d_(matdata->Get<int>("D"))
 {
 }

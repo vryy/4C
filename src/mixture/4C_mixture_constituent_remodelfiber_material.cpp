@@ -14,8 +14,8 @@ FOUR_C_NAMESPACE_OPEN
 
 template <typename T>
 MIXTURE::PAR::RemodelFiberMaterial<T>::RemodelFiberMaterial(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : MAT::PAR::Parameter(matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    : CORE::MAT::PAR::Parameter(matdata)
 {
 }
 

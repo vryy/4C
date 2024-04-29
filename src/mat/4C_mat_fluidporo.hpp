@@ -12,9 +12,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -46,11 +46,11 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     //! material parameters for fluid poro
     //! This object exists only once for each read Newton fluid.
-    class FluidPoro : public Parameter
+    class FluidPoro : public CORE::MAT::PAR::Parameter
     {
      public:
       //! standard constructor
-      FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata);
+      FluidPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! set initial porosity from structural material and calculate
       //! permeability_correction_factor_
@@ -81,7 +81,7 @@ namespace MAT
       double initial_porosity_;
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
     };
 
   }  // namespace PAR
@@ -102,7 +102,7 @@ namespace MAT
   /*----------------------------------------------------------------------*/
   //! Wrapper for poro fluid flow material
   //! This object exists (several times) at every element
-  class FluidPoro : public Material
+  class FluidPoro : public CORE::MAT::Material
   {
    public:
     //! construct empty material object
@@ -156,7 +156,10 @@ namespace MAT
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new FluidPoro(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new FluidPoro(*this));
+    }
 
     //! compute reaction tensor - 2D
     void ComputeReactionTensor(CORE::LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
@@ -200,7 +203,7 @@ namespace MAT
     }
 
     //! Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! flag indicating a varying permeability
     bool VaryingPermeability() const { return params_->varying_permeability_; }

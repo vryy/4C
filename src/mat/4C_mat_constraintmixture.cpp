@@ -44,7 +44,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::PAR::ConstraintMixture::ConstraintMixture(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ConstraintMixture::ConstraintMixture(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       density_(matdata->Get<double>("DENS")),
       mue_(matdata->Get<double>("MUE")),
@@ -90,7 +90,7 @@ MAT::PAR::ConstraintMixture::ConstraintMixture(Teuchos::RCP<MAT::PAR::Material> 
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::PAR::ConstraintMixture::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ConstraintMixture::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ConstraintMixture(this));
 }
@@ -194,7 +194,7 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ConstraintMixture*>(mat);
@@ -3137,7 +3137,7 @@ void MAT::ConstraintMixtureOutputToGmsh(
     std::vector<double> mydisp(lm.size(), 0);
     CORE::FE::ExtractMyValues(*disp, mydisp, lm);
 
-    Teuchos::RCP<MAT::Material> mat = actele->Material();
+    Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
     MAT::ConstraintMixture* grow = static_cast<MAT::ConstraintMixture*>(mat.get());
 
     // material plot at gauss points

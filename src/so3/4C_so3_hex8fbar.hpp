@@ -230,9 +230,9 @@ namespace DRT
           const INPAR::STR::StrainType ioplstrain);  ///< strain output option
 
       //! Update history variables at the end of time step (inelastic deformation) (braeu 07/16)
-      void Update_element(std::vector<double>& disp,  // current displacements
-          Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
-          const Teuchos::RCP<MAT::Material>& mat);    // material
+      void Update_element(std::vector<double>& disp,      // current displacements
+          Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
+          const Teuchos::RCP<CORE::MAT::Material>& mat);  // material
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       void InitJacobianMapping() override;

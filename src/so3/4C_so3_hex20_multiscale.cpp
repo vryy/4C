@@ -49,7 +49,7 @@ void DRT::ELEMENTS::SoHex20::soh20_homog(Teuchos::ParameterList& params)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoHex20::soh20_read_restart_multi()
 {
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
   {

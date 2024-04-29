@@ -50,7 +50,7 @@ using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 /*----------------------------------------------------------------------*
  | constructor (public)                                   hemmler 09/16 |
  *----------------------------------------------------------------------*/
-MAT::PAR::SuperElasticSMA::SuperElasticSMA(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::SuperElasticSMA::SuperElasticSMA(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       density_(matdata->Get<double>("DENS")),
       youngs_(matdata->Get<double>("YOUNG")),
@@ -127,7 +127,7 @@ struct MAT::SuperElasticSMA::LoadingData
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()    hemmler 09/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::SuperElasticSMA::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::SuperElasticSMA::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::SuperElasticSMA(this));
 }
@@ -222,7 +222,7 @@ void MAT::SuperElasticSMA::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::SuperElasticSMA*>(mat);

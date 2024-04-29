@@ -22,9 +22,9 @@ parameters or totally different strain energy function).
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_material.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_input_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,11 +43,11 @@ namespace MAT
      *  \author thon
      *  \date 12/2015
      */
-    class ScalarDepInterp : public Parameter
+    class ScalarDepInterp : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      ScalarDepInterp(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ScalarDepInterp(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -58,7 +58,7 @@ namespace MAT
       //@}
 
       // create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class ScalarDepInterp
 
@@ -165,7 +165,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new ScalarDepInterp(*this));
     }
@@ -204,7 +204,7 @@ namespace MAT
     void Setup(int numgp, INPUT::LineDefinition* linedef) override;
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;

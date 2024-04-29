@@ -17,8 +17,8 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::MixtureGrowthStrategy::MixtureGrowthStrategy(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : MAT::PAR::Parameter(matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    : CORE::MAT::PAR::Parameter(matdata)
 {
 }
 
@@ -39,7 +39,7 @@ MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::Factor
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat =
+  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(matid);
 
   switch (curmat->Type())

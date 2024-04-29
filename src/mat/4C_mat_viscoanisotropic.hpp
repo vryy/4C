@@ -16,8 +16,8 @@ BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -30,11 +30,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters
-    class ViscoAnisotropic : public Parameter
+    class ViscoAnisotropic : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      ViscoAnisotropic(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ViscoAnisotropic(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -52,7 +52,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class ViscoAnisotropic
 
@@ -139,7 +139,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new ViscoAnisotropic(*this));
     }
@@ -186,7 +186,7 @@ namespace MAT
 
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;

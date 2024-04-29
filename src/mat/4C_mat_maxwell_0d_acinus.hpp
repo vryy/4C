@@ -19,9 +19,9 @@ spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_red_airways_elem_params.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -33,11 +33,11 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /// material parameters for Maxwell 0D acinar material
     ///
-    class Maxwell0dAcinus : public Parameter
+    class Maxwell0dAcinus : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      Maxwell0dAcinus(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Maxwell0dAcinus(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -52,7 +52,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class Maxwell_0d_acinus
 
@@ -75,7 +75,7 @@ namespace MAT
   /// Wrapper for Maxwell 0D acinar material
   ///
   /// This object exists (several times) at every element
-  class Maxwell0dAcinus : public Material
+  class Maxwell0dAcinus : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -154,7 +154,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new Maxwell0dAcinus(*this));
     }
@@ -175,7 +175,7 @@ namespace MAT
     double Viscosity2() const { return params_->viscosity2_; }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return value of class parameter
     virtual double GetParams(std::string parametername);

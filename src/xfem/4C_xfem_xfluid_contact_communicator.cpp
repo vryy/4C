@@ -533,7 +533,7 @@ void XFEM::XFluidContactComm::Get_Penalty_Param(DRT::Element* fluidele,
   mc_[mcidx_]->Get_ViscPenalty_Stabfac(fluidele, nullptr, kappa_m, kappa_s, inv_h_k, visc_stab_fac,
       dummy, nit_stab_gamma_, nit_stab_gamma_, is_pseudo_2_d_, visc_stab_trace_estimate_);
 
-  Teuchos::RCP<MAT::Material> mat;
+  Teuchos::RCP<CORE::MAT::Material> mat;
   XFEM::UTILS::GetVolumeCellMaterial(fluidele, mat);
   const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
   if (actmat == nullptr) FOUR_C_THROW("Cast of Fluidmat failed!");

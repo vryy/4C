@@ -48,7 +48,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::ScaTraEleUtilsElchElectrode
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::MatElectrode(
-    Teuchos::RCP<const MAT::Material> material, const double concentration,
+    Teuchos::RCP<const CORE::MAT::Material> material, const double concentration,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> diffmanager)
 {
   const auto* matelectrode = static_cast<const MAT::Electrode*>(material.get());

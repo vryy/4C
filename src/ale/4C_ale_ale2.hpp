@@ -355,13 +355,13 @@ namespace DRT
       void EvaluateOddy(const CORE::LINALG::SerialDenseMatrix& xjm, double det, double& qm);
 
       void CallMatGeoNonl(
-          const CORE::LINALG::SerialDenseVector& strain,  ///< Green-Lagrange strain vector
-          CORE::LINALG::SerialDenseMatrix& stress,        ///< stress vector
-          CORE::LINALG::SerialDenseMatrix& C,             ///< elasticity matrix
-          const int numeps,                               ///< number of strains
-          Teuchos::RCP<const MAT::Material> material,     ///< the material data
-          Teuchos::ParameterList& params,                 ///< element parameter list
-          int gp                                          ///< Integration point
+          const CORE::LINALG::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
+          CORE::LINALG::SerialDenseMatrix& stress,           ///< stress vector
+          CORE::LINALG::SerialDenseMatrix& C,                ///< elasticity matrix
+          const int numeps,                                  ///< number of strains
+          Teuchos::RCP<const CORE::MAT::Material> material,  ///< the material data
+          Teuchos::ParameterList& params,                    ///< element parameter list
+          int gp                                             ///< Integration point
       );
 
       void MaterialResponse3dPlane(

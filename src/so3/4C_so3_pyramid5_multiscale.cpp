@@ -49,7 +49,7 @@ void DRT::ELEMENTS::SoPyramid5::sop5_homog(Teuchos::ParameterList& params)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoPyramid5::sop5_read_restart_multi()
 {
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
   {

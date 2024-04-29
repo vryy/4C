@@ -41,8 +41,8 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -52,11 +52,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     //! material parameters for neo-Hooke
-    class SuperElasticSMA : public Parameter
+    class SuperElasticSMA : public CORE::MAT::PAR::Parameter
     {
      public:
       //! standard constructor
-      SuperElasticSMA(Teuchos::RCP<MAT::PAR::Material> matdata);
+      SuperElasticSMA(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! @name material parameters
       //@{
@@ -108,7 +108,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
 
     };  // class SuperElasticSMA
@@ -198,7 +198,7 @@ namespace MAT
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new SuperElasticSMA(*this));
     }
@@ -207,7 +207,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     //! return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! check if history variables are already initialized
     bool Initialized() const { return (isinit_ and (xi_s_curr_ != Teuchos::null)); }

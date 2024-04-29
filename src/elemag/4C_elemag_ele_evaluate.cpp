@@ -34,7 +34,7 @@ int DRT::ELEMENTS::Elemag::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     CORE::LINALG::SerialDenseVector& elevec3)
 {
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   if (dynamic_cast<const DRT::ELEMENTS::ElemagDiff*>(this))
     return DRT::ELEMENTS::ElemagFactory::ProvideImpl(Shape(), "diff")

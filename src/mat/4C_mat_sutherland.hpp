@@ -14,9 +14,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,11 +26,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// parameters for material with temperature dependence according to Sutherland law
-    class Sutherland : public Parameter
+    class Sutherland : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      Sutherland(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Sutherland(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -53,7 +53,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class Sutherland
 
@@ -74,7 +74,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// material with temperature dependence according to Sutherland law
-  class Sutherland : public Material
+  class Sutherland : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -132,7 +132,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Sutherland(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new Sutherland(*this));
+    }
 
     /// compute viscosity
     double ComputeViscosity(const double temp) const;
@@ -164,7 +167,7 @@ namespace MAT
     //@}
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

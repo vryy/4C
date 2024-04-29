@@ -13,8 +13,8 @@
 #include "4C_lib_element.hpp"
 #include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_so3_base.hpp"
 
 

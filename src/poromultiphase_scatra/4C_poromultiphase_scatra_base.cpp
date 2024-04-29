@@ -329,7 +329,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
     DRT::ELEMENTS::Transport* myele = dynamic_cast<DRT::ELEMENTS::Transport*>(
         ScatraAlgo()->ScaTraField()->Discretization()->gElement(elecolmap->GID(iele)));
 
-    const MAT::Material& material2 = *(myele->Material(2));
+    const CORE::MAT::Material& material2 = *(myele->Material(2));
 
     // check the material
     if (material2.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
@@ -348,7 +348,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
     // TODO: this works only if we have the same number of phases in every element
     if (numfluidmat == numfluidphases) return;
 
-    const MAT::Material& material = *(myele->Material());
+    const CORE::MAT::Material& material = *(myele->Material());
 
     // cast scatra material
     const MAT::MatList& scatramat = static_cast<const MAT::MatList&>(material);
@@ -373,7 +373,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ApplyAdditionalDBCForVolFra
         for (int idof = 0; idof < numscatramat; ++idof)
         {
           int matid = scatramat.MatID(idof);
-          Teuchos::RCP<MAT::Material> singlemat = scatramat.MaterialById(matid);
+          Teuchos::RCP<CORE::MAT::Material> singlemat = scatramat.MaterialById(matid);
           if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_fluid ||
               singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_solid ||
               singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_temperature)

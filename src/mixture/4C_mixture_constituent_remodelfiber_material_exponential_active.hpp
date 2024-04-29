@@ -40,7 +40,7 @@ namespace MIXTURE
 
      public:
       explicit RemodelFiberMaterialExponentialActive(
-          const Teuchos::RCP<MAT::PAR::Material>& matdata);
+          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       [[nodiscard]] std::unique_ptr<MIXTURE::RemodelFiberMaterial<T>> CreateRemodelFiberMaterial()
           const override;

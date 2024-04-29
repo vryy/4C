@@ -11,8 +11,8 @@
 
 #include "4C_mat_ion.hpp"
 #include "4C_mat_list.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_parameter_elch.hpp"
 #include "4C_utils_singleton_owner.hpp"
@@ -152,7 +152,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateElchB
         ephinp,  ///< nodal values of concentration and electric potential
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
     double timefac,                                           ///< time factor
-    Teuchos::RCP<const MAT::Material> material,               ///< material
+    Teuchos::RCP<const CORE::MAT::Material> material,         ///< material
     Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
     const int nume,                     ///< number of transferred electrons
     const std::vector<int> stoich,      ///< stoichiometry of the reaction
@@ -245,8 +245,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::EvaluateElchB
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::GetValence(
-    const Teuchos::RCP<const MAT::Material>& material,  // element material
-    const int k                                         // species number
+    const Teuchos::RCP<const CORE::MAT::Material>& material,  // element material
+    const int k                                               // species number
 ) const
 {
   double valence(0.);
@@ -256,7 +256,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::GetValence(
     const Teuchos::RCP<const MAT::MatList> matlist =
         Teuchos::rcp_static_cast<const MAT::MatList>(material);
 
-    const Teuchos::RCP<const MAT::Material> species = matlist->MaterialById(matlist->MatID(k));
+    const Teuchos::RCP<const CORE::MAT::Material> species =
+        matlist->MaterialById(matlist->MatID(k));
 
     if (species->MaterialType() == CORE::Materials::m_ion)
     {

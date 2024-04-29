@@ -14,9 +14,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,11 +28,11 @@ namespace MAT
     /// parameters for "Yoghurt-type" material with nonlinear viscosity
     /// determined via power law by Oswald and extended by an Arrhenius-type
     /// term to account for temperature dependence
-    class Yoghurt : public Parameter
+    class Yoghurt : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      Yoghurt(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Yoghurt(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -56,7 +56,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class Yoghurt
 
@@ -77,7 +77,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// wrapper for "Yoghurt-type" material
-  class Yoghurt : public Material
+  class Yoghurt : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -132,7 +132,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Yoghurt(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new Yoghurt(*this));
+    }
 
     /// compute viscosity
     double ComputeViscosity(const double rateofstrain, const double temp) const;
@@ -161,7 +164,7 @@ namespace MAT
     double Delta() const { return params_->delta_; }  //@}
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

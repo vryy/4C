@@ -15,8 +15,8 @@
 #include "4C_lib_elementtype.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_so3_base.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -399,10 +399,10 @@ namespace DRT
           const INPAR::STR::StrainType iostrain);  ///< strain output option
 
       //! remodeling for fibers at the end of time step (st 01/10)
-      void sow6_remodel(std::vector<int>& lm,       // location matrix
-          std::vector<double>& disp,                // current displacements
-          Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
-          const Teuchos::RCP<MAT::Material>& mat);  // material
+      void sow6_remodel(std::vector<int>& lm,             // location matrix
+          std::vector<double>& disp,                      // current displacements
+          Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
+          const Teuchos::RCP<CORE::MAT::Material>& mat);  // material
 
       //! Evaluate Wedge6 Shapefcts to keep them static
       std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> sow6_shapefcts();

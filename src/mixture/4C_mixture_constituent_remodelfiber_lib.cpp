@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat =
+  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(matid);
 
   switch (curmat->Type())

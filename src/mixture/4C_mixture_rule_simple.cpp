@@ -11,7 +11,7 @@
 #include "4C_mixture_rule_simple.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_mixture_constituent.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -24,7 +24,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),
       initial_reference_density_(matdata->Get<double>("DENS")),
       mass_fractions_(matdata->Get<std::vector<double>>("MASSFRAC"))

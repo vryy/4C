@@ -440,7 +440,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     // read restart of microscale
     case ELEMENTS::multi_readrestart:
     {
-      Teuchos::RCP<MAT::Material> mat = Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
       if (mat->MaterialType() == CORE::Materials::m_struct_multiscale) soh8_read_restart_multi();
     }

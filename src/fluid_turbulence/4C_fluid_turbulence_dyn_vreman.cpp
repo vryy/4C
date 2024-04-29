@@ -124,7 +124,8 @@ double FLD::Vreman::DynVremanComputeCv()
   double cv_numerator_volumeav = 0.0;
   double cv_denominator_volumeav = 0.0;
   int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
-  const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+  const CORE::MAT::PAR::Parameter* mat =
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
   const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
   double dens = actmat->density_;
   double visc = actmat->viscosity_ / dens;
@@ -180,7 +181,7 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList& extraparams)
   double dt_numerator_volumeav = 0.0;
   double dt_denominator_volumeav = 0.0;
   int idscatra = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_scatra);
-  const MAT::PAR::Parameter* matscatra =
+  const CORE::MAT::PAR::Parameter* matscatra =
       GLOBAL::Problem::Instance()->Materials()->ParameterById(idscatra);
   const MAT::PAR::ScatraMat* actmatscatra = static_cast<const MAT::PAR::ScatraMat*>(matscatra);
   double diffus = MAT::PAR::ScatraMat(*actmatscatra)

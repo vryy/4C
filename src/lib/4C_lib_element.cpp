@@ -19,8 +19,8 @@
 #include "4C_lib_discret.hpp"
 #include "4C_lib_element_append_visualization.hpp"
 #include "4C_lib_node.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Shards_BasicTopologies.hpp>
@@ -227,7 +227,7 @@ void DRT::Element::SetNodeIds(const std::string& distype, INPUT::LineDefinition*
  *----------------------------------------------------------------------*/
 void DRT::Element::SetMaterial(int matnum)
 {
-  Teuchos::RCP<MAT::Material> mat = MAT::Factory(matnum);
+  Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(matnum);
   if (mat == Teuchos::null)
     FOUR_C_THROW(
         "Invalid material given to the element. \n"
@@ -237,7 +237,7 @@ void DRT::Element::SetMaterial(int matnum)
   mat_[0] = mat;
 }
 
-void DRT::Element::SetMaterial(int index, Teuchos::RCP<MAT::Material> mat)
+void DRT::Element::SetMaterial(int index, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   if (NumMaterial() > index)
     mat_[index] = mat;
@@ -253,7 +253,7 @@ void DRT::Element::SetMaterial(int index, Teuchos::RCP<MAT::Material> mat)
 /*----------------------------------------------------------------------*
  |  add material to element (public)                          vuong 02/14|
  *----------------------------------------------------------------------*/
-int DRT::Element::AddMaterial(const Teuchos::RCP<MAT::Material>& mat)
+int DRT::Element::AddMaterial(const Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   mat_.push_back(mat);
 
@@ -317,7 +317,7 @@ void DRT::Element::Unpack(const std::vector<char>& data)
   if (!tmp.empty())
   {
     CORE::COMM::ParObject* o = CORE::COMM::Factory(tmp);
-    auto* mat = dynamic_cast<MAT::Material*>(o);
+    auto* mat = dynamic_cast<CORE::MAT::Material*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack only first material
     mat_[0] = Teuchos::rcp(mat);

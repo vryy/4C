@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                           sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-MAT::PAR::MembraneElastHyper::MembraneElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::MembraneElastHyper::MembraneElastHyper(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : MAT::PAR::ElastHyper(matdata)
 {
   return;
@@ -32,7 +32,7 @@ MAT::PAR::MembraneElastHyper::MembraneElastHyper(Teuchos::RCP<MAT::PAR::Material
 /*----------------------------------------------------------------------*
  |                                                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::MembraneElastHyper::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MembraneElastHyper::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::MembraneElastHyper(this));
 }  // MAT::PAR::MembraneElastHyper::CreateMaterial

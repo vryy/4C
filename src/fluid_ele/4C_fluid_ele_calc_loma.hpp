@@ -39,7 +39,7 @@ namespace DRT
 
       int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -48,7 +48,7 @@ namespace DRT
       /// Evaluate the element at specified gauss points for porous flow
       virtual int EvaluateOD(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -80,7 +80,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
           const CORE::LINALG::Matrix<nen_, 1>& escaam,
           const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
-          const CORE::LINALG::Matrix<nsd_, nen_>& egridv, Teuchos::RCP<MAT::Material> mat,
+          const CORE::LINALG::Matrix<nsd_, nen_>& egridv, Teuchos::RCP<CORE::MAT::Material> mat,
           bool isale, double CsDeltaSq, double CiDeltaSq,
           const CORE::FE::GaussIntegration& intpoints);
 
@@ -123,8 +123,8 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nen_>& estif, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-          Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
-          bool isale, const CORE::FE::GaussIntegration& intpoints);
+          Teuchos::RCP<const CORE::MAT::Material> material, double& Cs_delta_sq,
+          double& Ci_delta_sq, bool isale, const CORE::FE::GaussIntegration& intpoints);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

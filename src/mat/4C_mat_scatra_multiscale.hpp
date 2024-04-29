@@ -28,11 +28,11 @@ namespace MAT
     {
      public:
       //! constructor
-      ScatraMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ScatraMultiScale(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
 
       //! create material
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! return porosity
       double Porosity() const { return porosity_; };
@@ -124,7 +124,7 @@ namespace MAT
     };
 
     //! clone material
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraMultiScale(*this));
     };

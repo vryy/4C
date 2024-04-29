@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       density_(matdata->Get<double>("DENSITY")),
       lubricationlawID_(matdata->Get<int>("LUBRICATIONLAWID")),
@@ -38,7 +38,7 @@ MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<MAT::PAR::Material> matdat
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat =
+  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(lubricationlawID_);
 
   switch (curmat->Type())
@@ -71,7 +71,7 @@ MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<MAT::PAR::Material> matdat
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::PAR::LubricationMat::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationMat::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::LubricationMat(this));
 }
@@ -130,7 +130,7 @@ void MAT::LubricationMat::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::LubricationMat*>(mat);

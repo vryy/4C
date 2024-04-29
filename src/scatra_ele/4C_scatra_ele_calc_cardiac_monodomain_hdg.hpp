@@ -66,36 +66,36 @@ namespace DRT
       /*========================================================================*/
 
       //! evaluate material
-      void PrepareMaterials(DRT::Element* ele,               //!< the element we are dealing with
-          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-          const int k,                                       //!< id of current scalar
+      void PrepareMaterials(DRT::Element* ele,  //!< the element we are dealing with
+          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const int k,                                             //!< id of current scalar
           Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor) override;
 
       //! evaluate material
-      virtual void PrepareMaterialsAll(DRT::Element* ele,    //!< the element we are dealing with
-          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-          const int k,                                       //!< id of current scalar
+      virtual void PrepareMaterialsAll(DRT::Element* ele,  //!< the element we are dealing with
+          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const int k,                                             //!< id of current scalar
           Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor);
 
       //! evaluate material
-      virtual void PrepareMaterialsTet(DRT::Element* ele,    //!< the element we are dealing with
-          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-          const int k,                                       //!< id of current scalar
+      virtual void PrepareMaterialsTet(DRT::Element* ele,  //!< the element we are dealing with
+          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const int k,                                             //!< id of current scalar
           Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor);
 
 
       //! evaluate material
       void Materials(
-          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-          const int k,                                       //!< id of current scalar
+          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const int k,                                             //!< id of current scalar
           CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
           CORE::LINALG::SerialDenseVector& ivecnp,
           CORE::LINALG::SerialDenseMatrix& ivecnpderiv) override;
 
       //! material ScaTra
       void MatMyocard(
-          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-          const int k,                                       //!< id of current scalar
+          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const int k,                                             //!< id of current scalar
           CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
           CORE::LINALG::SerialDenseVector& ivecnp, CORE::LINALG::SerialDenseMatrix& ivecnpderiv);
 

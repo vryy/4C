@@ -216,7 +216,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
 )
 {
   // get the material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   // We may have some chemotactic and some non-chemotactic discretisation.
   // But since the calculation classes are singleton, we have to reset all chemotaxis stuff each
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       my::Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -249,7 +249,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       my::Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -279,7 +279,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ClearChemotaxisTerms()
  *-----------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetChemotaxisCoefficients(
-    const Teuchos::RCP<const MAT::Material> material  //!< pointer to current material
+    const Teuchos::RCP<const CORE::MAT::Material> material  //!< pointer to current material
 )
 {
   const Teuchos::RCP<const MAT::MatListChemotaxis>& actmat =

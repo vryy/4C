@@ -10,16 +10,16 @@
 
 #include "4C_global_data.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::AnisoActiveStressEvolution::AnisoActiveStressEvolution(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       sigma_(matdata->Get<double>("SIGMA")),
       tauc0_(matdata->Get<double>("TAUC0")),
@@ -105,7 +105,7 @@ void MAT::ELASTIC::AnisoActiveStressEvolution::AddStressAnisoPrincipal(
   }
 
   double activationFunction = 0.0;
-  Teuchos::RCP<MAT::Material> scatramat;
+  Teuchos::RCP<CORE::MAT::Material> scatramat;
   if (params_->sourceactiv_ == 0)
   {
     activationFunction = params.get<double>("scalar", 0.0);

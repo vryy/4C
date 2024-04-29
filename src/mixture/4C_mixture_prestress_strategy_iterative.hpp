@@ -15,7 +15,7 @@
 
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_mixture_prestress_strategy.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -40,7 +40,7 @@ namespace MIXTURE
 
      public:
       /// constructor
-      explicit IterativePrestressStrategy(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit IterativePrestressStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       /// create prestress strategy instance of matching type with my parameters
       std::unique_ptr<MIXTURE::PrestressStrategy> CreatePrestressStrategy() override;

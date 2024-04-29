@@ -380,7 +380,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
         xyze_, intpoints, gpid, &myknots, &weights, IsNurbs<distype>::isnurbs);
 
     // get the required material information
-    Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
+    Teuchos::RCP<CORE::MAT::Material> material = ele->ParentElement()->Material();
 
     // get density
     // (evaluation always at integration point, in contrast to parent element)
@@ -672,7 +672,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
     if (normvel < -0.0001)
     {
       // get the required material information
-      Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
+      Teuchos::RCP<CORE::MAT::Material> material = ele->ParentElement()->Material();
 
       // get density
       // (evaluation always at integration point, in contrast to parent element)
@@ -1026,7 +1026,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
   // isotropic and isothermal surface tension coefficient
   double SFgamma = 0.0;
   // get material data
-  Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = ele->ParentElement()->Material();
   if (mat == Teuchos::null)
     FOUR_C_THROW("no mat from parent!");
   else if (mat->MaterialType() == CORE::Materials::m_fluid)
@@ -1154,7 +1154,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::F
   // get and set density and viscosity (still required for following routines:
   // FluidImpedanceBc/FluidVolumetricSurfaceFlowBc/FluidCouplingBc::Area)
   //------------------------------------------------------------------
-  Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = ele->ParentElement()->Material();
   if (mat->MaterialType() == CORE::Materials::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
@@ -1948,8 +1948,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundar
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
-    Teuchos::RCP<const MAT::Material> material, const CORE::LINALG::Matrix<bdrynen_, 1>& escaaf,
-    const double thermpressaf, const CORE::LINALG::Matrix<bdrynen_, 1>& epreaf)
+    Teuchos::RCP<const CORE::MAT::Material> material,
+    const CORE::LINALG::Matrix<bdrynen_, 1>& escaaf, const double thermpressaf,
+    const CORE::LINALG::Matrix<bdrynen_, 1>& epreaf)
 {
   // initially set density and density factor for Neumann boundary conditions to 1.0
   // (the latter only changed for low-Mach-number flow/combustion problems)
@@ -2162,7 +2163,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   double density = 0.0;  // inverse density of my parent element
 
   // get material of volume element this surface belongs to
-  Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = ele->ParentElement()->Material();
 
   if (mat->MaterialType() != CORE::Materials::m_carreauyasuda &&
       mat->MaterialType() != CORE::Materials::m_modpowerlaw &&

@@ -15,7 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ENull.hpp>
@@ -63,19 +63,19 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class PrestressStrategy : public MAT::PAR::Parameter
+    class PrestressStrategy : public CORE::MAT::PAR::Parameter
     {
       friend class MIXTURE::PrestressStrategy;
 
      public:
       /// constructor
-      explicit PrestressStrategy(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+      explicit PrestressStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
           : Parameter(matdata)
       {
       }
 
       /// Override this method and throw error, as only the CreateRule() should be used.
-      Teuchos::RCP<MAT::Material> CreateMaterial() final
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() final
       {
         FOUR_C_THROW(
             "Cannot create prestress strategy from this method. Use CreateRule() instead.");

@@ -66,7 +66,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 11/11 |
  *----------------------------------------------------------------------*/
-MAT::PAR::Robinson::Robinson(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::Robinson::Robinson(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       kind_((matdata->Get<std::string>("KIND"))),
       youngs_((matdata->Get<std::vector<double>>("YOUNG"))),
@@ -91,7 +91,7 @@ MAT::PAR::Robinson::Robinson(Teuchos::RCP<MAT::PAR::Material> matdata)
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::Robinson::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Robinson::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::Robinson(this));
 }
@@ -191,7 +191,7 @@ void MAT::Robinson::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Robinson*>(mat);

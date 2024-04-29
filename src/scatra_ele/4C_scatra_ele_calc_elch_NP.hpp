@@ -95,9 +95,9 @@ namespace DRT
 
       //! evaluate material
       void Materials(
-          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-          const int k,                                       //!< index of current scalar
-          double& densn,                                     //!< density at t_(n)
+          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const int k,                                             //!< index of current scalar
+          double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity

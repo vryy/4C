@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::LubricationLaw::LubricationLaw(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::LubricationLaw::LubricationLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata)
 {
   return;
@@ -23,7 +23,8 @@ MAT::PAR::LubricationLaw::LubricationLaw(Teuchos::RCP<MAT::PAR::Material> matdat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::LubricationLawConstant::LubricationLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::LubricationLawConstant::LubricationLawConstant(
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : LubricationLaw(matdata), viscosity_(matdata->Get<double>("VISCOSITY"))
 {
   return;
@@ -31,7 +32,7 @@ MAT::PAR::LubricationLawConstant::LubricationLawConstant(Teuchos::RCP<MAT::PAR::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::LubricationLawConstant::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawConstant::CreateMaterial()
 {
   return Teuchos::null;
 }
@@ -59,7 +60,7 @@ void MAT::PAR::LubricationLawConstant::ConstitutiveDerivatives(
  *---------------------------------------------------------------------*/
 
 // Standard Constructor
-MAT::PAR::LubricationLawBarus::LubricationLawBarus(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::LubricationLawBarus::LubricationLawBarus(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : LubricationLaw(matdata),
       ABSViscosity_(matdata->Get<double>("ABSViscosity")),
       PreVisCoeff_(matdata->Get<double>("PreVisCoeff"))
@@ -68,7 +69,7 @@ MAT::PAR::LubricationLawBarus::LubricationLawBarus(Teuchos::RCP<MAT::PAR::Materi
 }
 
 // Create material instance of matching type with my parameters
-Teuchos::RCP<MAT::Material> MAT::PAR::LubricationLawBarus::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawBarus::CreateMaterial()
 {
   return Teuchos::null;
 }
@@ -95,7 +96,8 @@ void MAT::PAR::LubricationLawBarus::ConstitutiveDerivatives(
  *---------------------------------------------------------------------*/
 
 // Standard Constructor
-MAT::PAR::LubricationLawRoeland::LubricationLawRoeland(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::LubricationLawRoeland::LubricationLawRoeland(
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : LubricationLaw(matdata),
       ABSViscosity_(matdata->Get<double>("ABSViscosity")),
       PreVisCoeff_(matdata->Get<double>("PreVisCoeff")),
@@ -107,7 +109,7 @@ MAT::PAR::LubricationLawRoeland::LubricationLawRoeland(Teuchos::RCP<MAT::PAR::Ma
 }
 
 // Create material instance of matching type with my parameters
-Teuchos::RCP<MAT::Material> MAT::PAR::LubricationLawRoeland::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawRoeland::CreateMaterial()
 {
   return Teuchos::null;
 }

@@ -22,11 +22,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
-namespace MAT
+namespace CORE::MAT
 {
   class Material;
+}  // namespace CORE::MAT
+
+namespace MAT
+{
   class CrosslinkerMat;
-}  // namespace MAT
+}
 
 namespace CROSSLINKING
 {
@@ -268,7 +272,7 @@ namespace CROSSLINKING
     /*!
      \brief Set material for crosslinker node
      */
-    virtual void SetMaterial(Teuchos::RCP<MAT::Material> material);
+    virtual void SetMaterial(Teuchos::RCP<CORE::MAT::Material> material);
 
     //  /*!
     //   \brief Resets the data container of the node

@@ -163,7 +163,8 @@ namespace
 /*----------------------------------------------------------------------*
  | constructor (public)                                                 |
  *----------------------------------------------------------------------*/
-MAT::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       youngs_(matdata->Get<double>("YOUNG")),
       poissonratio_(matdata->Get<double>("NUE")),
@@ -188,7 +189,7 @@ MAT::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(Teuchos::RCP<MAT::PAR::Ma
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()                  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::PlasticNlnLogNeoHooke::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PlasticNlnLogNeoHooke::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::PlasticNlnLogNeoHooke(this));
 }
@@ -282,7 +283,7 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::PlasticNlnLogNeoHooke*>(mat);

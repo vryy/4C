@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // constructor of the parameters
-MAT::PAR::Mixture::Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::PAR::Mixture::Mixture(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata), constituents_(0)
 {
   const int num_constituents = matdata->Get<int>("NUMCONST");
@@ -44,7 +44,7 @@ MAT::PAR::Mixture::Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata)
 }
 
 // Create a material instance from parameters
-Teuchos::RCP<MAT::Material> MAT::PAR::Mixture::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Mixture::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::Mixture(this));
 }
@@ -154,7 +154,7 @@ void MAT::Mixture::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {

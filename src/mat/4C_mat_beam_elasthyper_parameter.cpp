@@ -10,7 +10,7 @@
 #include "4C_mat_beam_elasthyper_parameter.hpp"
 
 #include "4C_mat_beam_elasthyper.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double MAT::PAR::DetermineShearModulus(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+double MAT::PAR::DetermineShearModulus(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
 {
   double shearmodulus = 0.0;
   double poissonratio = 0.0;
@@ -58,7 +58,8 @@ double MAT::PAR::DetermineShearModulus(const Teuchos::RCP<MAT::PAR::Material>& m
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double MAT::PAR::DetermineDefaultInteractionRadius(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+double MAT::PAR::DetermineDefaultInteractionRadius(
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
 {
   double radius = matdata->Get<double>("INTERACTIONRADIUS");
 
@@ -75,7 +76,7 @@ double MAT::PAR::DetermineDefaultInteractionRadius(const Teuchos::RCP<MAT::PAR::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 double MAT::PAR::DetermineDefaultInteractionRadiusIsotropic(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
 {
   double radius = matdata->Get<double>("INTERACTIONRADIUS");
 
@@ -93,7 +94,7 @@ double MAT::PAR::DetermineDefaultInteractionRadiusIsotropic(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamElastHyperMaterialParameterGeneric::BeamElastHyperMaterialParameterGeneric(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata), use_fad_(matdata->Get<bool>("FAD"))
 {
   // empty constructor
@@ -101,12 +102,12 @@ MAT::PAR::BeamElastHyperMaterialParameterGeneric::BeamElastHyperMaterialParamete
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::BeamElastHyperMaterialParameterGeneric::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::BeamElastHyperMaterialParameterGeneric::CreateMaterial()
 {
   /* all the different parameter sets (Reissner/Kirchhoff/..., 'classic'/'by modes') are used to
    * parameterize the same constitutive relations based on a hyperelastic stored energy function
    * formulated for cross-section resultants which are implemented in BeamElastHyperMaterial */
-  Teuchos::RCP<MAT::Material> matobject;
+  Teuchos::RCP<CORE::MAT::Material> matobject;
 
   if (Uses_FAD())
   {
@@ -122,7 +123,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::BeamElastHyperMaterialParameterGeneric::Cr
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamReissnerElastHyperMaterialParams::BeamReissnerElastHyperMaterialParams(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
       youngs_modulus_(matdata->Get<double>("YOUNG")),
       shear_modulus_(DetermineShearModulus(matdata)),
@@ -167,7 +168,7 @@ MAT::PAR::BeamReissnerElastHyperMaterialParams::BeamReissnerElastHyperMaterialPa
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamReissnerElastHyperMaterialParamsByMode::BeamReissnerElastHyperMaterialParamsByMode(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
       axial_rigidity_(matdata->Get<double>("EA")),
       shear_rigidity_2_(matdata->Get<double>("GA2")),
@@ -214,7 +215,7 @@ MAT::PAR::BeamReissnerElastHyperMaterialParamsByMode::BeamReissnerElastHyperMate
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamKirchhoffElastHyperMaterialParams::BeamKirchhoffElastHyperMaterialParams(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
       youngs_modulus_(matdata->Get<double>("YOUNG")),
       shear_modulus_(DetermineShearModulus(matdata)),
@@ -255,7 +256,7 @@ MAT::PAR::BeamKirchhoffElastHyperMaterialParams::BeamKirchhoffElastHyperMaterial
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamKirchhoffElastHyperMaterialParamsByMode::BeamKirchhoffElastHyperMaterialParamsByMode(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
       axial_rigidity_(matdata->Get<double>("EA")),
       torsional_rigidity_(matdata->Get<double>("GI_T")),
@@ -297,7 +298,7 @@ MAT::PAR::BeamKirchhoffElastHyperMaterialParamsByMode::BeamKirchhoffElastHyperMa
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParams::
-    BeamKirchhoffTorsionFreeElastHyperMaterialParams(Teuchos::RCP<MAT::PAR::Material> matdata)
+    BeamKirchhoffTorsionFreeElastHyperMaterialParams(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
       youngs_modulus_(matdata->Get<double>("YOUNG")),
       density_(matdata->Get<double>("DENS")),
@@ -328,7 +329,8 @@ MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParams::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode::
-    BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode(Teuchos::RCP<MAT::PAR::Material> matdata)
+    BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode(
+        Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
       axial_rigidity_(matdata->Get<double>("EA")),
       bending_rigidity_(matdata->Get<double>("EI")),

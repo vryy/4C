@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Bundle holds all read-in materials of a #GLOBAL::Problem
+\brief Declaration of a base class for anisotropic material parameters
 
 \level 1
 
@@ -22,13 +22,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> matdata)
+MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata)
 {
   // get MAT ID for definiton of structural tensor
   int mat_id_structural_tensor = matdata->Get<int>("STR_TENS_ID");
   // get pointer to material
-  Teuchos::RCP<MAT::PAR::Material> mat_str_tens =
+  Teuchos::RCP<CORE::MAT::PAR::Material> mat_str_tens =
       GLOBAL::Problem::Instance()->Materials()->ById(mat_id_structural_tensor);
   // construct parameter class
   if (mat_str_tens->Parameter() == nullptr)

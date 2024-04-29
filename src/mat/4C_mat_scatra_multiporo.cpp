@@ -21,7 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid(
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : ScatraMat(matdata),
       phaseID_(matdata->Get<int>("PHASEID")),
       delta_(matdata->Get<double>("DELTA")),
@@ -30,7 +31,7 @@ MAT::PAR::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid(Teuchos::RCP<MAT::PAR
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiPoroFluid::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroFluid::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ScatraMatMultiPoroFluid(this));
 }
@@ -94,7 +95,7 @@ void MAT::ScatraMatMultiPoroFluid::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatMultiPoroFluid*>(mat);
@@ -112,7 +113,7 @@ void MAT::ScatraMatMultiPoroFluid::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : ScatraMat(matdata),
       phaseID_(matdata->Get<int>("PHASEID")),
       delta_(matdata->Get<double>("DELTA")),
@@ -120,7 +121,7 @@ MAT::PAR::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac(
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiPoroVolFrac::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroVolFrac::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ScatraMatMultiPoroVolFrac(this));
 }
@@ -185,7 +186,7 @@ void MAT::ScatraMatMultiPoroVolFrac::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatMultiPoroVolFrac*>(mat);
@@ -203,12 +204,13 @@ void MAT::ScatraMatMultiPoroVolFrac::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-MAT::PAR::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid(
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : ScatraMat(matdata), delta_(matdata->Get<double>("DELTA"))
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiPoroSolid::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroSolid::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ScatraMatMultiPoroSolid(this));
 }
@@ -269,7 +271,7 @@ void MAT::ScatraMatMultiPoroSolid::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatMultiPoroSolid*>(mat);
@@ -288,7 +290,7 @@ void MAT::ScatraMatMultiPoroSolid::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 
 MAT::PAR::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : ScatraMat(matdata),
       numfluidphases_(matdata->Get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
       numvolfrac_(matdata->Get<int>("NUMVOLFRAC")),
@@ -301,7 +303,7 @@ MAT::PAR::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature(
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatMultiPoroTemperature::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatMultiPoroTemperature::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ScatraMatMultiPoroTemperature(this));
 }
@@ -363,7 +365,7 @@ void MAT::ScatraMatMultiPoroTemperature::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatMultiPoroTemperature*>(mat);

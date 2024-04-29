@@ -14,7 +14,7 @@
 #include "4C_global_data.hpp"
 #include "4C_lib_element.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_scatra_ele.hpp"
 
 FOUR_C_NAMESPACE_OPEN

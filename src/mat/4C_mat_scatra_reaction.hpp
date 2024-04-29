@@ -16,9 +16,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -233,17 +233,17 @@ namespace MAT
 
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material
-    class ScatraReactionMat : public Parameter
+    class ScatraReactionMat : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// returns the enum of the current coupling type
-      MAT::PAR::ReactionCoupling SetCouplingType(Teuchos::RCP<MAT::PAR::Material> matdata);
+      MAT::PAR::ReactionCoupling SetCouplingType(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// Initialize
       void Initialize();
@@ -300,7 +300,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material
-  class ScatraReactionMat : public Material
+  class ScatraReactionMat : public CORE::MAT::Material
   {
     friend class MAT::MatListReactions;
 
@@ -362,7 +362,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraReactionMat(*this));
     }
@@ -423,7 +423,7 @@ namespace MAT
     bool GetIsDistrFunctReacCoeff() const { return params_->isdistrfunctreaccoeff_; }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// calculate advanced reaction terms
     double CalcReaBodyForceTerm(const int k,  //!< current scalar id

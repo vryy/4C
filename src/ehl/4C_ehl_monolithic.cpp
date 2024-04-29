@@ -1908,7 +1908,7 @@ void EHL::Monolithic::LinCouetteForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatri
     const double p = lubrication_->LubricationField()->Prenp()->operator[](
         lubrication_->LubricationField()->Prenp()->Map().LID(lub_dis.Dof(0, lnode, 0)));
 
-    Teuchos::RCP<MAT::Material> mat = lnode->Elements()[0]->Material(0);
+    Teuchos::RCP<CORE::MAT::Material> mat = lnode->Elements()[0]->Material(0);
     if (mat.is_null()) FOUR_C_THROW("null pointer");
     Teuchos::RCP<MAT::LubricationMat> lmat =
         Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(mat, true);
@@ -2069,7 +2069,7 @@ void EHL::Monolithic::LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatri
     const double p = lubrication_->LubricationField()->Prenp()->operator[](
         lubrication_->LubricationField()->Prenp()->Map().LID(lub_dis.Dof(0, lnode, 0)));
 
-    Teuchos::RCP<MAT::Material> mat = lnode->Elements()[0]->Material(0);
+    Teuchos::RCP<CORE::MAT::Material> mat = lnode->Elements()[0]->Material(0);
     if (mat.is_null()) FOUR_C_THROW("null pointer");
     Teuchos::RCP<MAT::LubricationMat> lmat =
         Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(mat, true);

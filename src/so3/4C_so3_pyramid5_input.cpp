@@ -23,7 +23,7 @@ bool DRT::ELEMENTS::SoPyramid5::ReadElement(
   linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   SolidMaterial()->Setup(NUMGPT_SOP5, linedef);
 

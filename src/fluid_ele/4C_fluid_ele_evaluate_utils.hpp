@@ -1011,7 +1011,7 @@ namespace FLD
 
     // get material at gauss point
     double dens = 0.0;
-    Teuchos::RCP<MAT::Material> material = ele->Material();
+    Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
     if (material->MaterialType() == CORE::Materials::m_fluid)
     {
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
@@ -1671,7 +1671,7 @@ namespace FLD
     else
     {
       // get density from material
-      Teuchos::RCP<MAT::Material> material = ele->Material();
+      Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
       if (material->MaterialType() == CORE::Materials::m_fluid)
       {
         const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
@@ -2007,8 +2007,8 @@ namespace FLD
   */
   template <int NEN, int NSD, CORE::FE::CellType DISTYPE>
   void f3_get_mf_params(DRT::ELEMENTS::Fluid* ele, DRT::ELEMENTS::FluidEleParameterStd* fldpara,
-      Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material> mat, std::vector<double>& vel,
-      std::vector<double>& fsvel)
+      Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material> mat,
+      std::vector<double>& vel, std::vector<double>& fsvel)
   {
     // get mfs parameter
     Teuchos::ParameterList* turbmodelparamsmfs = &(params.sublist("MULTIFRACTAL SUBGRID SCALES"));
@@ -2849,7 +2849,7 @@ namespace FLD
         // get material
         double dens = 0.0;
         double visc = 0.0;
-        Teuchos::RCP<MAT::Material> material = ele->Material();
+        Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
         if (material->MaterialType() == CORE::Materials::m_sutherland)
         {
           const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());

@@ -25,8 +25,8 @@ rY_13 0.7
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_inpar_tsi.hpp"
 #include "4C_mat_elasthyper.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #define AS_CONVERGENCE_TOL 1.e-12
 
@@ -58,7 +58,7 @@ namespace MAT
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      PlasticElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
+      PlasticElastHyper(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -112,7 +112,7 @@ namespace MAT
 
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
       //@}
 
     };  // class PlasticElastHyper
@@ -196,7 +196,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new PlasticElastHyper(*this));
     }
@@ -423,7 +423,7 @@ namespace MAT
     virtual void UpdateGP(const int gp, const CORE::LINALG::Matrix<3, 3>* deltaDp);
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return MatParams(); }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return MatParams(); }
 
     /// Access to material params
     virtual MAT::PAR::PlasticElastHyper* MatParams() const { return params_; }

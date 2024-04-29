@@ -14,8 +14,8 @@ multiplicatively into elastic and inelastic parts
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_anisotropy.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -40,13 +40,13 @@ namespace MAT
       temperature
     };
 
-    class MultiplicativeSplitDefgradElastHyper : public Parameter
+    class MultiplicativeSplitDefgradElastHyper : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      explicit MultiplicativeSplitDefgradElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit MultiplicativeSplitDefgradElastHyper(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// length of elastic material list
       const int nummat_elast_;
@@ -172,14 +172,14 @@ namespace MAT
       return CORE::Materials::m_multiplicative_split_defgrad_elasthyper;
     }
 
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new MultiplicativeSplitDefgradElastHyper(*this));
     }
 
     double Density() const override { return params_->density_; }
 
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrad,
         const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,

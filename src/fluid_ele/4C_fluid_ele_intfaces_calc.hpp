@@ -17,8 +17,8 @@
 
 #include "4C_inpar_xfem.hpp"
 #include "4C_lib_element.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -59,10 +59,10 @@ namespace DRT
       virtual ~FluidIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void AssembleInternalFacesUsingNeighborData(
-          DRT::ELEMENTS::FluidIntFace* intface,    ///< internal face element
-          Teuchos::RCP<MAT::Material>& material,   ///< material associated with the faces
-          std::vector<int>& nds_master,            ///< nodal dofset w.r.t. master element
-          std::vector<int>& nds_slave,             ///< nodal dofset w.r.t. slave element
+          DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
+          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+          std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
+          std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
           const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
           DRT::DiscretizationFaces& discretization,               ///< faces discretization
@@ -72,14 +72,14 @@ namespace DRT
 
       //! Evaluate internal faces
       virtual int EvaluateInternalFaces(
-          DRT::ELEMENTS::FluidIntFace* intface,   ///< internal face element
-          Teuchos::RCP<MAT::Material>& material,  ///< material associated with the faces
-          Teuchos::ParameterList& params,         ///< parameter list
-          DRT::Discretization& discretization,    ///< discretization
-          std::vector<int>& patchlm,              ///< patch local map
-          std::vector<int>& lm_masterToPatch,     ///< local map between master dofs and patchlm
-          std::vector<int>& lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-          std::vector<int>& lm_faceToPatch,       ///< local map between face dofs and patchlm
+          DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
+          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+          Teuchos::ParameterList& params,               ///< parameter list
+          DRT::Discretization& discretization,          ///< discretization
+          std::vector<int>& patchlm,                    ///< patch local map
+          std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
+          std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm
+          std::vector<int>& lm_faceToPatch,    ///< local map between face dofs and patchlm
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
@@ -130,10 +130,10 @@ namespace DRT
 
       //! Assemble internal faces integrals using data from both parent elements
       void AssembleInternalFacesUsingNeighborData(
-          DRT::ELEMENTS::FluidIntFace* intface,    ///< internal face element
-          Teuchos::RCP<MAT::Material>& material,   ///< material associated with the faces
-          std::vector<int>& nds_master,            ///< nodal dofset w.r.t. master element
-          std::vector<int>& nds_slave,             ///< nodal dofset w.r.t. slave element
+          DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
+          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+          std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
+          std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
           const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
           DRT::DiscretizationFaces& discretization,               ///< faces discretization
@@ -143,13 +143,13 @@ namespace DRT
 
       //! Evaluate internal faces
       int EvaluateInternalFaces(DRT::ELEMENTS::FluidIntFace* intface,  ///< internal face element
-          Teuchos::RCP<MAT::Material>& material,  ///< material associated with the faces
-          Teuchos::ParameterList& params,         ///< parameter list
-          DRT::Discretization& discretization,    ///< discretization
-          std::vector<int>& patchlm,              ///< patch local map
-          std::vector<int>& lm_masterToPatch,     ///< local map between master dofs and patchlm
-          std::vector<int>& lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-          std::vector<int>& lm_faceToPatch,       ///< local map between face dofs and patchlm
+          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+          Teuchos::ParameterList& params,               ///< parameter list
+          DRT::Discretization& discretization,          ///< discretization
+          std::vector<int>& patchlm,                    ///< patch local map
+          std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
+          std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm
+          std::vector<int>& lm_faceToPatch,    ///< local map between face dofs and patchlm
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&

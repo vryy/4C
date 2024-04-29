@@ -45,7 +45,7 @@ void DRT::ELEMENTS::NStet5::nstet5_read_restart_multi()
 {
   const int gp = 0;  // there is only one Gauss point
 
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
   {

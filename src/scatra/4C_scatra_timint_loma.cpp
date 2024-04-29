@@ -89,7 +89,7 @@ void SCATRA::ScaTraTimIntLoma::SetInitialThermPressure()
   int id = problem_->Materials()->FirstIdByType(CORE::Materials::m_sutherland);
   if (id != -1)  // i.e., Sutherland material found
   {
-    const MAT::PAR::Parameter* mat = problem_->Materials()->ParameterById(id);
+    const CORE::MAT::PAR::Parameter* mat = problem_->Materials()->ParameterById(id);
     const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
 
     thermpressn_ = actmat->thermpress_;

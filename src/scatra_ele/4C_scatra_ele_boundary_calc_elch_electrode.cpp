@@ -941,7 +941,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::GetValence(
-    const Teuchos::RCP<const MAT::Material>& material, const int k) const
+    const Teuchos::RCP<const CORE::MAT::Material>& material, const int k) const
 {
   // valence cannot be computed for electrode material
   FOUR_C_THROW("Valence cannot be computed for electrode material!");

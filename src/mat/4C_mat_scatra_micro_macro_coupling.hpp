@@ -18,6 +18,11 @@ problems. This material handles the communication between micro and macro materi
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace CORE::MAT::PAR
+{
+  class Material;
+}
+
 namespace MAT
 {
   // forward declaration
@@ -25,14 +30,12 @@ namespace MAT
 
   namespace PAR
   {
-    class Material;
-
     //! material parameters
     class ScatraMicroMacroCoupling
     {
      public:
       //! constructor
-      ScatraMicroMacroCoupling(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ScatraMicroMacroCoupling(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! return name of micro-scale input file
       std::string MicroInputFileName() const { return microfile_; }

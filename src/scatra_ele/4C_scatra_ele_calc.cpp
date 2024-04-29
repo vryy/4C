@@ -118,7 +118,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
   // rotationally symmetric periodic bc's: do setup for current element
   rotsymmpbc_->Setup(ele);
 
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
   if (material->MaterialType() == CORE::Materials::m_matlist or
       material->MaterialType() == CORE::Materials::m_matlist_reactions)
   {
@@ -1136,7 +1136,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMaterialParams(const DRT
     double& visc, const int iquad)
 {
   // get the material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   if (material->MaterialType() == CORE::Materials::m_matlist)
   {
@@ -1147,7 +1147,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMaterialParams(const DRT
     for (int k = 0; k < numscal_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -1160,8 +1160,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMaterialParams(const DRT
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Materials(
-    const Teuchos::RCP<const MAT::Material> material, const int k, double& densn, double& densnp,
-    double& densam, double& visc, const int iquad)
+    const Teuchos::RCP<const CORE::MAT::Material> material, const int k, double& densn,
+    double& densnp, double& densam, double& visc, const int iquad)
 {
   switch (material->MaterialType())
   {
@@ -1198,8 +1198,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Materials(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
-    const Teuchos::RCP<const MAT::Material> material, const int k, double& densn, double& densnp,
-    double& densam, double& visc, const int iquad)
+    const Teuchos::RCP<const CORE::MAT::Material> material, const int k, double& densn,
+    double& densnp, double& densam, double& visc, const int iquad)
 {
   const Teuchos::RCP<const MAT::ScatraMat>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
@@ -1224,7 +1224,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
     else
     {
       // get fluid material
-      Teuchos::RCP<MAT::Material> fluidmat = fluidele->Material();
+      Teuchos::RCP<CORE::MAT::Material> fluidmat = fluidele->Material();
       if (fluidmat->MaterialType() != CORE::Materials::m_fluid)
         FOUR_C_THROW("Invalid fluid material for passive scalar transport in turbulent flow!");
 
@@ -1250,7 +1250,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTraMultiScale(
-    const Teuchos::RCP<const MAT::Material> material, double& densn, double& densnp,
+    const Teuchos::RCP<const CORE::MAT::Material> material, double& densn, double& densnp,
     double& densam) const
 {
   // safety check
@@ -1273,7 +1273,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTraMultiScale(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatElectrode(
-    const Teuchos::RCP<const MAT::Material> material)
+    const Teuchos::RCP<const CORE::MAT::Material> material)
 {
   // set constant diffusivity
   diffmanager_->SetIsotropicDiff(

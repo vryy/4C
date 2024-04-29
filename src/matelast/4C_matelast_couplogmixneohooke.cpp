@@ -10,13 +10,13 @@ Comput. Methods Appl. Mech. Engrg. 260, 2013"
 
 #include "4C_matelast_couplogmixneohooke.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupLogMixNeoHooke::CoupLogMixNeoHooke(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata)
 {
   std::string parmode = (matdata->Get<std::string>("MODE"));

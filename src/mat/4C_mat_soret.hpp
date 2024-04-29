@@ -24,11 +24,11 @@ namespace MAT
     {
      public:
       //! constructor
-      Soret(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Soret(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
 
       //! create instance of Soret material
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! return Soret coefficient
       double SoretCoefficient() const { return soretcoefficient_; };
@@ -111,14 +111,17 @@ namespace MAT
     };
 
     //! clone Soret material
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Soret(*this)); };
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new Soret(*this));
+    };
 
     //! return Soret coefficient
     double SoretCoefficient() const { return params_->SoretCoefficient(); };
 
    private:
     //! return material parameters
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! material parameters
     MAT::PAR::Soret* params_;

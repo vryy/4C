@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_mat_anisotropy_extension_default.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_mixture_constituent.hpp"
 #include "4C_mixture_constituent_remodelfiber_material.hpp"
 #include "4C_mixture_remodelfiber.hpp"
@@ -33,7 +33,8 @@ namespace MIXTURE
     class MixtureConstituentRemodelFiberExpl : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituentRemodelFiberExpl(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureConstituentRemodelFiberExpl(
+          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 

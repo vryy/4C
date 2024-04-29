@@ -315,7 +315,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
 
   // the special part:
   // now the element knows its material, and we can use it to determine numdofpernode
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
   if (mat->MaterialType() == CORE::Materials::m_scatra or
       mat->MaterialType() == CORE::Materials::m_scatra_aniso or
       mat->MaterialType() == CORE::Materials::m_scatra_multiscale or
@@ -559,7 +559,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum, DRT::Element* oldele)
 {
   SetMaterial(matnum);
 
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   if (mat->MaterialType() == CORE::Materials::m_myocard)
   {
@@ -710,7 +710,7 @@ void DRT::ELEMENTS::Transport ::SetImplType(const INPAR::SCATRA::ImplType implty
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Transport::Initialize()
 {
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
   // for now, we only need to do something in case of reactions (for the initialization of functions
   // in case of reactions by function)
   if (mat->MaterialType() == CORE::Materials::m_matlist_reactions or

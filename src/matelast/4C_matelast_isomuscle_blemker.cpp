@@ -15,15 +15,15 @@ stress approach)
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_muscle_utils.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::IsoMuscleBlemker::IsoMuscleBlemker(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       G1_(matdata->Get<double>("G1")),
       G2_(matdata->Get<double>("G2")),

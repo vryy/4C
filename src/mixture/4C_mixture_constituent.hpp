@@ -17,7 +17,7 @@
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -45,16 +45,16 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureConstituent : public MAT::PAR::Parameter
+    class MixtureConstituent : public CORE::MAT::PAR::Parameter
     {
      public:
-      explicit MixtureConstituent(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureConstituent(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       /// create material instance of matching type with my parameters
       virtual std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) = 0;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() final;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() final;
 
       static MIXTURE::PAR::MixtureConstituent* Factory(int matnum);
     };

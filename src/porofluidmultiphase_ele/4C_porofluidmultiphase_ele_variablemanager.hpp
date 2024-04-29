@@ -106,7 +106,7 @@ namespace DRT
         //! factory method
         static Teuchos::RCP<VariableManagerInterface<nsd, nen>> CreateVariableManager(
             const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
-            const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<MAT::Material> mat,
+            const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<CORE::MAT::Material> mat,
             const int numdofpernode, const int numfluidphases);
 
         //! extract element and node values from the discretization
@@ -696,7 +696,7 @@ namespace DRT
         //! constructor
         VariableManagerMaximumNodalVolFracValue(const int numvolfrac,
             Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager,
-            Teuchos::RCP<MAT::Material> multiphasemat)
+            Teuchos::RCP<CORE::MAT::Material> multiphasemat)
             : VariableManagerDecorator<nsd, nen>(varmanager),
               numvolfrac_(numvolfrac),
               ele_has_valid_volfrac_press_(numvolfrac_, false),
@@ -752,7 +752,7 @@ namespace DRT
         //! check if volume fraction species equation can be evaluated within this element
         std::vector<bool> ele_has_valid_volfrac_spec_;
 
-        Teuchos::RCP<MAT::Material> multiphasemat_;
+        Teuchos::RCP<CORE::MAT::Material> multiphasemat_;
       };
 
     }  // namespace POROFLUIDMANAGER

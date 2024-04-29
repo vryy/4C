@@ -119,7 +119,7 @@ void DRT::ELEMENTS::SoHex8::soh8_eas_init_multi(Teuchos::ParameterList& params)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoHex8::soh8_read_restart_multi()
 {
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
   {

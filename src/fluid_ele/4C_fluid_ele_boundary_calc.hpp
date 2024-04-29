@@ -282,8 +282,8 @@ namespace DRT
 
       //! get density
       void GetDensity(
-          Teuchos::RCP<const MAT::Material> material,       ///< reference pointer to material
-          const CORE::LINALG::Matrix<bdrynen_, 1>& escaaf,  ///< scalar at time n+alpha_f / n+1
+          Teuchos::RCP<const CORE::MAT::Material> material,  ///< reference pointer to material
+          const CORE::LINALG::Matrix<bdrynen_, 1>& escaaf,   ///< scalar at time n+alpha_f / n+1
           const double thermpressaf,  ///< thermodynamic pressure at time n+alpha_f / n+1
           const CORE::LINALG::Matrix<bdrynen_, 1>& epreaf);  ///< pressure at time n+alpha_f / n+1
 

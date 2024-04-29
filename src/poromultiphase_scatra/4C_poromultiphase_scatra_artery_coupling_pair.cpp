@@ -310,7 +310,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       for (int idof = 0; idof < numcoupleddofs_; idof++)
       {
         const int matid = multiphasemat->MatID(coupleddofs_cont_[idof]);
-        Teuchos::RCP<MAT::Material> singlemat = multiphasemat->MaterialById(matid);
+        Teuchos::RCP<CORE::MAT::Material> singlemat = multiphasemat->MaterialById(matid);
 
         // safety check
         if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_volfracpressure &&
@@ -379,7 +379,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       for (int idof = 0; idof < numcoupleddofs_; idof++)
       {
         const int matid = contscatramat->MatID(coupleddofs_cont_[idof]);
-        Teuchos::RCP<MAT::Material> singlemat = contscatramat->MaterialById(matid);
+        Teuchos::RCP<CORE::MAT::Material> singlemat = contscatramat->MaterialById(matid);
 
         // safety check
         if (singlemat->MaterialType() != CORE::Materials::m_scatra_multiporo_volfrac &&
@@ -2041,7 +2041,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       for (int idof = 0; idof < numdof_cont_; idof++)
       {
         const int matid = contscatramat->MatID(idof);
-        Teuchos::RCP<MAT::Material> singlemat = contscatramat->MaterialById(matid);
+        Teuchos::RCP<CORE::MAT::Material> singlemat = contscatramat->MaterialById(matid);
         int phaseid = -1;
         if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_fluid)
         {

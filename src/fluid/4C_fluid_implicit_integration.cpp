@@ -1167,8 +1167,8 @@ void FLD::FluidImplicitTimeInt::EvaluateMatAndRHS(Teuchos::ParameterList& elepar
     for (int i = 0; i < numrowele; ++i)
     {
       DRT::Element* actele = discret_->lRowElement(i);
-      // Teuchos::RCP<MAT::Material> mat = actele->Material();
-      Teuchos::RCP<MAT::Material> mat = actele->Material();
+      // Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
       if (mat->MaterialType() == CORE::Materials::m_matlist)
         FOUR_C_THROW("No matlists allowed here!!");
       // get element location vector, dirichlet flags and ownerships
@@ -1958,11 +1958,11 @@ void FLD::FluidImplicitTimeInt::EvaluateFluidEdgeBased(
 
 
       // Set master ele to the Material for evaluation.
-      Teuchos::RCP<MAT::Material> material = p_master->Material();
+      Teuchos::RCP<CORE::MAT::Material> material = p_master->Material();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // Set master ele to the Material for slave.
-      Teuchos::RCP<MAT::Material> material_s = p_slave->Material();
+      Teuchos::RCP<CORE::MAT::Material> material_s = p_slave->Material();
 
       // Test whether the materials for the parent and slave element are the same.
       if (material->MaterialType() != material_s->MaterialType())
@@ -4538,7 +4538,8 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       // compute initial pressure
       int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
       if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
-      const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+      const CORE::MAT::PAR::Parameter* mat =
+          GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const auto* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
       double dens = actmat->density_;
       double visc = actmat->viscosity_;

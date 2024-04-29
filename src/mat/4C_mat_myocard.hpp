@@ -20,10 +20,10 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_myocard_general.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -36,11 +36,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material
-    class Myocard : public Parameter
+    class Myocard : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      Myocard(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Myocard(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -68,7 +68,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class myocard
   }     // namespace PAR
@@ -94,7 +94,7 @@ namespace MAT
   ///
   /// \date 08/13
 
-  class Myocard : public Material
+  class Myocard : public CORE::MAT::Material
 
   {
    public:
@@ -148,7 +148,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Myocard(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new Myocard(*this));
+    }
 
     /// material call from DRT::ELEMENTS::Transport::ReadElement function
     /// to setup conductivity tensor for each element

@@ -11,8 +11,8 @@
 
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_lib_discret.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
 #include "4C_scatra_ele_utils_elch_diffcond.hpp"
@@ -1188,7 +1188,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::GetMaterialPara
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // extract material from element
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   // evaluate electrolyte material
   if (material->MaterialType() == CORE::Materials::m_elchmat)

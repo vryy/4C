@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ArrheniusPV::ArrheniusPV(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ArrheniusPV::ArrheniusPV(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       refvisc_(matdata->Get<double>("REFVISC")),
       reftemp_(matdata->Get<double>("REFTEMP")),
@@ -39,7 +39,7 @@ MAT::PAR::ArrheniusPV::ArrheniusPV(Teuchos::RCP<MAT::PAR::Material> matdata)
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::ArrheniusPV::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ArrheniusPV::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ArrheniusPV(this));
 }
@@ -99,7 +99,7 @@ void MAT::ArrheniusPV::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ArrheniusPV*>(mat);

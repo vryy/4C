@@ -13,7 +13,7 @@ functions
 
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_mixture_constituent.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -50,7 +50,7 @@ namespace
 }  // namespace
 
 MIXTURE::PAR::FunctionMixtureRule::FunctionMixtureRule(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),
       initial_reference_density_(matdata->Get<double>("DENS")),
       mass_fractions_funct_ids_(matdata->Get<std::vector<int>>("MASSFRACFUNCT")){};

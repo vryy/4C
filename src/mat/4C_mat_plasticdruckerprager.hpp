@@ -17,8 +17,8 @@ John Wiley & Sons, Ltd, 2008
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_inpar_material.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_utils_local_newton.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -37,11 +37,11 @@ namespace MAT
      * Following the approach provided by EA de Souza Neto, D Peric, DRJ Owen.
      * Computational Methods of Plasticity: Theory and Applications, Page 338-339
      */
-    class PlasticDruckerPrager : public Parameter
+    class PlasticDruckerPrager : public CORE::MAT::PAR::Parameter
     {
      public:
       //! standard constructor
-      PlasticDruckerPrager(Teuchos::RCP<MAT::PAR::Material> matdata);
+      PlasticDruckerPrager(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
       //! @name material parameters
       //@{
       //! Young's modulus
@@ -64,7 +64,7 @@ namespace MAT
       const int itermax_;
       //@}
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
     };
   }  // namespace PAR
   class PlasticDruckerPragerType : public CORE::COMM::ParObjectType
@@ -100,7 +100,7 @@ namespace MAT
         FOUR_C_THROW(
             "The plastic Drucker Prager material model is only compatible with linear kinematics.");
     }
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new PlasticDruckerPrager(*this));
     }
@@ -179,7 +179,7 @@ namespace MAT
         double eta,                                         // Mohr-columb parameter
         double etabar                                       // Mohr-columb parameter
     );
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
     double Density() const override { return params_->density_; }
     template <typename T>
     std::pair<T, T> ReturnToConeFunctAndDeriv(T Dgamma, T G, T kappa, T Phi_trial);

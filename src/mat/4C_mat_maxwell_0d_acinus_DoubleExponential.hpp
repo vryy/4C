@@ -36,10 +36,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      Maxwell0dAcinusDoubleExponential(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Maxwell0dAcinusDoubleExponential(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class Maxwell_0d_acinus_DoubleExponential
   }     // namespace PAR
@@ -119,7 +119,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new Maxwell0dAcinus(*this));
     }

@@ -116,7 +116,7 @@ namespace DRT
         Interface function for supporting methods of the element
        */
       int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
+          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2,
@@ -143,7 +143,7 @@ namespace DRT
       virtual int CalcMassMatrix(DRT::ELEMENTS::Fluid* ele,
           //    Teuchos::ParameterList&              params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra
           //    const CORE::FE::GaussIntegration & intpoints
       );
 
@@ -171,7 +171,7 @@ namespace DRT
        */
       int CorrectImmersedBoundVelocities(Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra);
 
       /*---------------------------------------------------------------------*
@@ -218,7 +218,7 @@ namespace DRT
        */
       virtual int CalcChannelStatistics(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material>& mat);
+          Teuchos::RCP<CORE::MAT::Material>& mat);
 
       /*! \brief Calculate mass flow for periodic hill
        *
@@ -227,7 +227,7 @@ namespace DRT
       virtual int CalcMassFlowPeriodicHill(DRT::ELEMENTS::Fluid* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
           const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-          Teuchos::RCP<MAT::Material>& mat);
+          Teuchos::RCP<CORE::MAT::Material>& mat);
 
       /*! \brief Project velocity gradient to nodal level
        *
@@ -264,11 +264,11 @@ namespace DRT
           general function to compute the error (analytical solution) for particular problem type
        */
       virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
+          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec);
 
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
+          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const CORE::FE::GaussIntegration& intpoints2) override;
 
@@ -277,7 +277,7 @@ namespace DRT
        */
       static void EvaluateAnalyticSolutionPoint(const CORE::LINALG::Matrix<nsd_, 1>& xyzint,
           const double t, const INPAR::FLUID::CalcError calcerr, const int calcerrfunctno,
-          const Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::Matrix<nsd_, 1>& u, double& p,
+          const Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::Matrix<nsd_, 1>& u, double& p,
           CORE::LINALG::Matrix<nsd_, nsd_>& dervel, bool isFullImplPressure = false,
           double deltat = 0.0);
 
@@ -287,7 +287,7 @@ namespace DRT
        */
       int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -296,7 +296,7 @@ namespace DRT
       /// Evaluate the element at specified gauss points
       int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -307,7 +307,7 @@ namespace DRT
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          Teuchos::RCP<MAT::Material>& mat,                          ///< material
+          Teuchos::RCP<CORE::MAT::Material>& mat,                    ///< material
           CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
@@ -324,7 +324,7 @@ namespace DRT
       /// Evaluate the XFEM cut element
       int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -341,7 +341,7 @@ namespace DRT
       */
       virtual int CalcDissipation(Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat);
+          Teuchos::RCP<CORE::MAT::Material> mat);
 
       /*!
         \brief finite difference check for debugging
@@ -360,8 +360,8 @@ namespace DRT
           const CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
           const CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-          const Teuchos::RCP<const MAT::Material> material, const double timefac, const double& Cs,
-          const double& Cs_delta_sq, const double& l_tau);
+          const Teuchos::RCP<const CORE::MAT::Material> material, const double timefac,
+          const double& Cs, const double& Cs_delta_sq, const double& l_tau);
 
 
       void ElementXfemInterfaceHybridLM(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
@@ -376,9 +376,9 @@ namespace DRT
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
           std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
-              side_coupling,                 ///< side coupling matrices
-          Teuchos::ParameterList& params,    ///< parameter list
-          Teuchos::RCP<MAT::Material>& mat,  ///< material
+              side_coupling,                       ///< side coupling matrices
+          Teuchos::ParameterList& params,          ///< parameter list
+          Teuchos::RCP<CORE::MAT::Material>& mat,  ///< material
           CORE::LINALG::SerialDenseMatrix&
               elemat1_epetra,  ///< local system matrix of intersected element
           CORE::LINALG::SerialDenseVector&
@@ -402,8 +402,8 @@ namespace DRT
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
           Teuchos::ParameterList& params,                     ///< parameter list
-          Teuchos::RCP<MAT::Material>& mat_master,            ///< material for the coupled side
-          Teuchos::RCP<MAT::Material>& mat_slave,             ///< material for the coupled side
+          Teuchos::RCP<CORE::MAT::Material>& mat_master,      ///< material for the coupled side
+          Teuchos::RCP<CORE::MAT::Material>& mat_slave,       ///< material for the coupled side
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,    ///< element matrix
           CORE::LINALG::SerialDenseVector& elevec1_epetra,    ///< element vector
           const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
@@ -491,9 +491,10 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
           const CORE::LINALG::Matrix<nen_, 1>& eporo,
           const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
-          const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, Teuchos::RCP<MAT::Material> mat,
-          bool isale, bool isowned, double CsDeltaSq, double CiDeltaSq, double* saccn,
-          double* sveln, double* svelnp, const CORE::FE::GaussIntegration& intpoints, bool offdiag);
+          const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature,
+          Teuchos::RCP<CORE::MAT::Material> mat, bool isale, bool isowned, double CsDeltaSq,
+          double CiDeltaSq, double* saccn, double* sveln, double* svelnp,
+          const CORE::FE::GaussIntegration& intpoints, bool offdiag);
 
       /*!
         \brief calculate element matrix and rhs
@@ -568,8 +569,8 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
           const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-          Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
-          double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
+          Teuchos::RCP<const CORE::MAT::Material> material, double& Cs_delta_sq,
+          double& Ci_delta_sq, double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
           const CORE::FE::GaussIntegration& intpoints);
 
 
@@ -603,8 +604,8 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
           const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-          Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
-          double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
+          Teuchos::RCP<const CORE::MAT::Material> material, double& Cs_delta_sq,
+          double& Ci_delta_sq, double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
           const CORE::FE::GaussIntegration& intpoints);
 
 
@@ -671,12 +672,12 @@ namespace DRT
 
       //! get material parameters
       void GetMaterialParams(
-          Teuchos::RCP<const MAT::Material> material,      ///< reference pointer to material
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
-          const CORE::LINALG::Matrix<nen_, 1>& epreaf,     ///< pressure at time n+alpha_f / n+1
-          const CORE::LINALG::Matrix<nen_, 1>& epream,     ///< pressure at time n+alpha_m / n
-          const CORE::LINALG::Matrix<nen_, 1>& escaaf,     ///< scalar at time n+alpha_f / n+1
-          const CORE::LINALG::Matrix<nen_, 1>& escaam,     ///< scalar at time n+alpha_m / n
+          Teuchos::RCP<const CORE::MAT::Material> material,  ///< reference pointer to material
+          const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,    ///< velocity at time n+alpha_f / n+1
+          const CORE::LINALG::Matrix<nen_, 1>& epreaf,       ///< pressure at time n+alpha_f / n+1
+          const CORE::LINALG::Matrix<nen_, 1>& epream,       ///< pressure at time n+alpha_m / n
+          const CORE::LINALG::Matrix<nen_, 1>& escaaf,       ///< scalar at time n+alpha_f / n+1
+          const CORE::LINALG::Matrix<nen_, 1>& escaam,       ///< scalar at time n+alpha_m / n
           const CORE::LINALG::Matrix<nen_, 1>&
               escabofoaf,               ///< body force for scalar transport at time n+alpha_f / n+1
           const double thermpressaf,    ///< thermodynamic pressure at time n+alpha_f / n+1
@@ -689,7 +690,7 @@ namespace DRT
       );
 
       //! get material parameters
-      void GetMaterialParams(Teuchos::RCP<const MAT::Material> material,
+      void GetMaterialParams(Teuchos::RCP<const CORE::MAT::Material> material,
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
           const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
           const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam,
@@ -1047,12 +1048,12 @@ namespace DRT
 
       //! update material parameters including subgrid-scale part of scalar
       void UpdateMaterialParams(
-          Teuchos::RCP<const MAT::Material> material,      ///< reference pointer to material
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
-          const CORE::LINALG::Matrix<nen_, 1>& epreaf,     ///< pressure at time n+alpha_f / n+1
-          const CORE::LINALG::Matrix<nen_, 1>& epream,     ///< pressure at time n+alpha_m / n
-          const CORE::LINALG::Matrix<nen_, 1>& escaaf,     ///< scalar at time n+alpha_f / n+1
-          const CORE::LINALG::Matrix<nen_, 1>& escaam,     ///< scalar at time n+alpha_m / n
+          Teuchos::RCP<const CORE::MAT::Material> material,  ///< reference pointer to material
+          const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,    ///< velocity at time n+alpha_f / n+1
+          const CORE::LINALG::Matrix<nen_, 1>& epreaf,       ///< pressure at time n+alpha_f / n+1
+          const CORE::LINALG::Matrix<nen_, 1>& epream,       ///< pressure at time n+alpha_m / n
+          const CORE::LINALG::Matrix<nen_, 1>& escaaf,       ///< scalar at time n+alpha_f / n+1
+          const CORE::LINALG::Matrix<nen_, 1>& escaam,       ///< scalar at time n+alpha_m / n
           const double thermpressaf,  ///< thermodynamic pressure at time n+alpha_f / n+1
           const double thermpressam,  ///< thermodynamic pressure at time n+alpha_m / n
           const double sgsca          ///< subgrid scalar at integration point

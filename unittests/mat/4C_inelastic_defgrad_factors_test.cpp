@@ -88,8 +88,8 @@ namespace
       params_lin.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_lin);
 
       // create InelasticDefgradLinScalarIso object initialize container for material parameters
-      const Teuchos::RCP<MAT::PAR::Material> inelastic_defgrad_scalar_data =
-          Teuchos::rcp(new MAT::PAR::Material());
+      const Teuchos::RCP<CORE::MAT::PAR::Material> inelastic_defgrad_scalar_data =
+          Teuchos::rcp(new CORE::MAT::PAR::Material());
 
       inelastic_defgrad_scalar_data->Add("SCALAR1", 1);
       inelastic_defgrad_scalar_data->Add("SCALAR1_MolarGrowthFac", growth_fac);
@@ -110,8 +110,8 @@ namespace
       lin_scalar_iso_->PreEvaluate(params_lin, 0);
 
       // create InelasticDefgradLinScalarAniso object initialize container for material parameters
-      const Teuchos::RCP<MAT::PAR::Material> inelastic_defgrad_lin_scalar_aniso_data =
-          Teuchos::rcp(new MAT::PAR::Material());
+      const Teuchos::RCP<CORE::MAT::PAR::Material> inelastic_defgrad_lin_scalar_aniso_data =
+          Teuchos::rcp(new CORE::MAT::PAR::Material());
 
       inelastic_defgrad_lin_scalar_aniso_data->Add("SCALAR1", 1);
       inelastic_defgrad_lin_scalar_aniso_data->Add("SCALAR1_MolarGrowthFac", growth_fac);
@@ -142,8 +142,8 @@ namespace
       problem.Materials()->SetReadFromProblem(problemid);
       // set up material to be added to problem instance
       const int matid(1);
-      const Teuchos::RCP<MAT::PAR::Material> electrode_mat = Teuchos::rcp(
-          new MAT::PAR::Material(matid, CORE::Materials::m_electrode, "MAT_electrode"));
+      const Teuchos::RCP<CORE::MAT::PAR::Material> electrode_mat = Teuchos::rcp(
+          new CORE::MAT::PAR::Material(matid, CORE::Materials::m_electrode, "MAT_electrode"));
 
       // add dummy parameters to electrode material
       electrode_mat->Add("DIFFCOEF", 0);
@@ -176,8 +176,8 @@ namespace
       params_poly.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_poly);
 
       // initialize container for material parameters
-      const Teuchos::RCP<MAT::PAR::Material> inelastic_defgrad_poly_intercal_frac_data =
-          Teuchos::rcp(new MAT::PAR::Material());
+      const Teuchos::RCP<CORE::MAT::PAR::Material> inelastic_defgrad_poly_intercal_frac_data =
+          Teuchos::rcp(new CORE::MAT::PAR::Material());
 
       inelastic_defgrad_poly_intercal_frac_data->Add("MATID", matid);
       inelastic_defgrad_poly_intercal_frac_data->Add("SCALAR1", 1);
@@ -214,8 +214,8 @@ namespace
 
       // create InelasticDefgradPolyIntercalFracAniso object initialize container for material
       // parameters
-      const Teuchos::RCP<MAT::PAR::Material> inelastic_defgrad_poly_intercal_frac_aniso_data =
-          Teuchos::rcp(new MAT::PAR::Material());
+      const Teuchos::RCP<CORE::MAT::PAR::Material> inelastic_defgrad_poly_intercal_frac_aniso_data =
+          Teuchos::rcp(new CORE::MAT::PAR::Material());
 
       inelastic_defgrad_poly_intercal_frac_aniso_data->Add("MATID", matid);
       inelastic_defgrad_poly_intercal_frac_aniso_data->Add("SCALAR1", 1);
@@ -248,8 +248,8 @@ namespace
       poly_intercal_frac_aniso_->PreEvaluate(params_poly, 0);
 
       // create InelasticDefgradLinTempIso object initialize container for material parameters
-      const Teuchos::RCP<MAT::PAR::Material> inelastic_defgrad_temp_iso_data =
-          Teuchos::rcp(new MAT::PAR::Material());
+      const Teuchos::RCP<CORE::MAT::PAR::Material> inelastic_defgrad_temp_iso_data =
+          Teuchos::rcp(new CORE::MAT::PAR::Material());
 
       inelastic_defgrad_temp_iso_data->Add("MATID", matid);
       inelastic_defgrad_temp_iso_data->Add("RefTemp", 298.0);

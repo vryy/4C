@@ -323,7 +323,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      Teuchos::RCP<MAT::Material> mat = Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = Material();
       if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
       {
         auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
@@ -785,7 +785,7 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
       Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
   const CORE::LINALG::SerialDenseVector glstrain_e(Teuchos::View, glstrain.A(), glstrain.numRows());
 
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
     case CORE::Materials::m_stvenant: /*------------------ st.venant-kirchhoff-material */

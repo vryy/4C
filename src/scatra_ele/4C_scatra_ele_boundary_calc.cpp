@@ -288,7 +288,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
     {
       // get the parent element including its material
       DRT::Element* parentele = ele->ParentElement();
-      Teuchos::RCP<MAT::Material> mat = parentele->Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = parentele->Material();
 
       // get values of scalar
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -318,7 +318,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
     {
       // get the parent element including its material
       DRT::Element* parentele = ele->ParentElement();
-      Teuchos::RCP<MAT::Material> mat = parentele->Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = parentele->Material();
 
       if (numscal_ > 1) FOUR_C_THROW("not yet implemented for more than one scalar\n");
 
@@ -619,7 +619,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
   DRT::Element* parentele = ele->ParentElement();
 
   // get material of parent element
-  Teuchos::RCP<MAT::Material> material = parentele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = parentele->Material();
 
   // we don't know the parent element's lm vector; so we have to build it here
   const int nenparent = parentele->NumNode();
@@ -733,7 +733,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetDensity(
-    Teuchos::RCP<const MAT::Material> material,
+    Teuchos::RCP<const CORE::MAT::Material> material,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k)
 {
   // initialization
@@ -829,7 +829,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Calc
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ConvectiveHeatTransfer(
-    const DRT::FaceElement* ele, Teuchos::RCP<const MAT::Material> material,
+    const DRT::FaceElement* ele, Teuchos::RCP<const CORE::MAT::Material> material,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, CORE::LINALG::SerialDenseMatrix& emat,
     CORE::LINALG::SerialDenseVector& erhs, const double heatranscoeff, const double surtemp)
 {
@@ -2088,8 +2088,8 @@ template <CORE::FE::CellType distype, int probdim>
 template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    Teuchos::RCP<const MAT::Material> material, CORE::LINALG::SerialDenseMatrix& elemat_epetra,
-    CORE::LINALG::SerialDenseVector& elevec_epetra)
+    Teuchos::RCP<const CORE::MAT::Material> material,
+    CORE::LINALG::SerialDenseMatrix& elemat_epetra, CORE::LINALG::SerialDenseVector& elevec_epetra)
 {
   //------------------------------------------------------------------------
   // Dirichlet boundary condition
@@ -2803,12 +2803,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
 template <CORE::FE::CellType distype, int probdim>
 template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristicGalerkinBoundary(
-    DRT::FaceElement* ele,                           //!< transport element
-    Teuchos::ParameterList& params,                  //!< parameter list
-    DRT::Discretization& discretization,             //!< discretization
-    Teuchos::RCP<const MAT::Material> material,      //!< material
-    CORE::LINALG::SerialDenseMatrix& elemat_epetra,  //!< ele sysmat
-    CORE::LINALG::SerialDenseVector& elevec_epetra   //!< ele rhs
+    DRT::FaceElement* ele,                             //!< transport element
+    Teuchos::ParameterList& params,                    //!< parameter list
+    DRT::Discretization& discretization,               //!< discretization
+    Teuchos::RCP<const CORE::MAT::Material> material,  //!< material
+    CORE::LINALG::SerialDenseMatrix& elemat_epetra,    //!< ele sysmat
+    CORE::LINALG::SerialDenseVector& elevec_epetra     //!< ele rhs
 )
 {
   //------------------------------------------------------------------------

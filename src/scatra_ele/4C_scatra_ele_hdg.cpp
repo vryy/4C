@@ -261,7 +261,7 @@ void DRT::ELEMENTS::ScaTraHDG::PackMaterial(CORE::COMM::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraHDG::UnpackMaterial(const std::vector<char>& data) const
 {
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
   if (mat->MaterialType() == CORE::Materials::m_myocard)
   {
     // Note: We need to do a dynamic_cast here
@@ -277,7 +277,7 @@ void DRT::ELEMENTS::ScaTraHDG::UnpackMaterial(const std::vector<char>& data) con
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ScaTraHDG::Initialize()
 {
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
   // for now, we only need to do something in case of reactions (for the initialization of functions
   // in case of reactions by function)
   if (mat->MaterialType() == CORE::Materials::m_myocard)
@@ -449,7 +449,7 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
   }
 
   // get material
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   // switch between different physical types as used below
   switch (act)

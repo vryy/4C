@@ -11,15 +11,15 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_mat_service.hpp"
+#include "4C_material_input_base.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       nummat_(matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),

@@ -50,7 +50,8 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
 
       //! evaluate service (other quantities apart from rhs and matrix)
       virtual int EvaluateService(Artery* ele, const ARTERY::Action action,
@@ -59,7 +60,8 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
 
       //! evaluate scalar transport (only lin-exp formulation uses this)
       virtual int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
@@ -68,7 +70,8 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

@@ -10,15 +10,15 @@
 
 #include "4C_config.hpp"
 
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_trait_thermo.hpp"
+#include "4C_material_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
-  class ThermoMaterial : public Material, public TRAIT::Thermo
+  class ThermoMaterial : public CORE::MAT::Material, public TRAIT::Thermo
   {
   };
 }  // namespace MAT

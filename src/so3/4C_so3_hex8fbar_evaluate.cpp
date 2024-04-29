@@ -344,7 +344,7 @@ int DRT::ELEMENTS::SoHex8fbar::Evaluate(Teuchos::ParameterList& params,
     // read restart of microscale
     case ELEMENTS::multi_readrestart:
     {
-      Teuchos::RCP<MAT::Material> mat = Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
       if (mat->MaterialType() == CORE::Materials::m_struct_multiscale) soh8_read_restart_multi();
     }
@@ -1590,7 +1590,7 @@ void DRT::ELEMENTS::SoHex8fbar::UpdateJacobianMapping(
  |  Update inelastic deformation (G&R)                       braeu 07/16|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoHex8fbar::Update_element(std::vector<double>& disp,
-    Teuchos::ParameterList& params, const Teuchos::RCP<MAT::Material>& mat)
+    Teuchos::ParameterList& params, const Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   if (SolidMaterial()->UsesExtendedUpdate())
   {

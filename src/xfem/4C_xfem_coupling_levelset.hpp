@@ -95,7 +95,8 @@ namespace XFEM
 
     bool HasMovingInterface() override { return true; }
 
-    void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat) override
+    void GetInterfaceSlaveMaterial(
+        DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat) override
     {
       mat = Teuchos::null;
     }
@@ -555,7 +556,7 @@ namespace XFEM
 
 
   /// set material pointer for coupling slave side
-  void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat);
+  void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat);
 
   template <CORE::FE::CellType DISTYPE, class M1, class M2>
   void EvaluateCurvature(double& icurvature,  ///< curvature to be computed

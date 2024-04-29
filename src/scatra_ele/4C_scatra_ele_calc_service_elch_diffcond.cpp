@@ -44,7 +44,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
     {
       // access phase material
       const int phaseid = actmat->PhaseID(iphase);
-      Teuchos::RCP<const MAT::Material> singlephase = actmat->PhaseById(phaseid);
+      Teuchos::RCP<const CORE::MAT::Material> singlephase = actmat->PhaseById(phaseid);
 
       // dynmic cast: get access to mat_phase
       const Teuchos::RCP<const MAT::ElchPhase>& actphase =
@@ -80,7 +80,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
       for (int imat = 0; imat < actphase->NumMat(); ++imat)
       {
         const int matid = actphase->MatID(imat);
-        Teuchos::RCP<const MAT::Material> singlemat = actphase->MatById(matid);
+        Teuchos::RCP<const CORE::MAT::Material> singlemat = actphase->MatById(matid);
 
         if (singlemat->MaterialType() == CORE::Materials::m_newman)
         {
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
     case SCATRA::Action::calc_elch_boundary_kinetics_point:
     {
       // access material of parent element
-      Teuchos::RCP<MAT::Material> material = ele->Material();
+      Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
       // extract porosity from material and store in diffusion manager
       if (material->MaterialType() == CORE::Materials::m_elchmat)
@@ -166,7 +166,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
 
         for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
         {
-          Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
+          Teuchos::RCP<const CORE::MAT::Material> phase =
+              elchmat->PhaseById(elchmat->PhaseID(iphase));
 
           if (phase->MaterialType() == CORE::Materials::m_elchphase)
           {
@@ -217,7 +218,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
     CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
   // from scatra_ele_boundary_calc_elch_diffcond.cpp
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   if (material->MaterialType() == CORE::Materials::m_elchmat)
   {
@@ -225,7 +226,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
 
     for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
     {
-      Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
+      Teuchos::RCP<const CORE::MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
 
       if (phase->MaterialType() == CORE::Materials::m_elchphase)
       {

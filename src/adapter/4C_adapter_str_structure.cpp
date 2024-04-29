@@ -242,11 +242,11 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
     // make sure we IMR-like generalised-alpha requested for multi-scale
     // simulations
     Teuchos::RCP<MAT::PAR::Bundle> materials = problem->Materials();
-    for (std::map<int, Teuchos::RCP<MAT::PAR::Material>>::const_iterator i =
+    for (std::map<int, Teuchos::RCP<CORE::MAT::PAR::Material>>::const_iterator i =
              materials->Map()->begin();
          i != materials->Map()->end(); ++i)
     {
-      Teuchos::RCP<MAT::PAR::Material> mat = i->second;
+      Teuchos::RCP<CORE::MAT::PAR::Material> mat = i->second;
       if (mat->Type() == CORE::Materials::m_struct_multiscale)
       {
         if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") !=

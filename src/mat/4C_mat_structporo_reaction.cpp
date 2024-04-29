@@ -17,14 +17,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::StructPoroReaction::StructPoroReaction(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::StructPoroReaction::StructPoroReaction(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : StructPoro(matdata), dofIDReacScalar_(matdata->Get<int>("DOFIDREACSCALAR"))
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::StructPoroReaction::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StructPoroReaction::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::StructPoroReaction(this));
 }
@@ -105,7 +105,7 @@ void MAT::StructPoroReaction::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::StructPoroReaction*>(mat);

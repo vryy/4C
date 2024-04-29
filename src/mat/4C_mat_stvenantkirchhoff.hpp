@@ -14,8 +14,8 @@ St. Venant-Kirchhoff material
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,11 +25,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for St. Venant--Kirchhoff
-    class StVenantKirchhoff : public Parameter
+    class StVenantKirchhoff : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      StVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata);
+      StVenantKirchhoff(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -43,7 +43,7 @@ namespace MAT
 
       //@}
 
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class StVenantKirchhoff
   }     // namespace PAR
@@ -96,7 +96,7 @@ namespace MAT
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
-    [[nodiscard]] Teuchos::RCP<Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new StVenantKirchhoff(*this));
     }
@@ -115,7 +115,7 @@ namespace MAT
       return 0.5 * params_->youngs_ / (1.0 + params_->poissonratio_);
     }
 
-    [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //@}
 

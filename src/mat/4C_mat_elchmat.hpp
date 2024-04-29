@@ -14,9 +14,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,14 +26,14 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of materials
-    class ElchMat : public Parameter
+    class ElchMat : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      ElchMat(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ElchMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// @name material parameters
       //@{
@@ -42,11 +42,11 @@ namespace MAT
       const std::vector<int>& PhaseIds() const { return phaseids_; }
 
       /// provide access to phases by its ID
-      Teuchos::RCP<MAT::Material> PhaseById(const int id) const
+      Teuchos::RCP<CORE::MAT::Material> PhaseById(const int id) const
       {
         if (not local_)
         {
-          std::map<int, Teuchos::RCP<MAT::Material>>::const_iterator m = mat_.find(id);
+          std::map<int, Teuchos::RCP<CORE::MAT::Material>>::const_iterator m = mat_.find(id);
 
           if (m == mat_.end())
           {
@@ -79,7 +79,7 @@ namespace MAT
 
      private:
       /// map to materials (only used for local_==true)
-      std::map<int, Teuchos::RCP<MAT::Material>> mat_;
+      std::map<int, Teuchos::RCP<CORE::MAT::Material>> mat_;
 
       //@}
 
@@ -102,7 +102,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
-  class ElchMat : public Material
+  class ElchMat : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -156,7 +156,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new ElchMat(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new ElchMat(*this));
+    }
 
     // return number of Dof used for this problem type
     int NumDOF() const { return params_->numdof_; }
@@ -180,11 +183,11 @@ namespace MAT
     }
 
     /// provide access to material by its ID
-    Teuchos::RCP<MAT::Material> PhaseById(const int id) const
+    Teuchos::RCP<CORE::MAT::Material> PhaseById(const int id) const
     {
       if (params_->local_)
       {
-        std::map<int, Teuchos::RCP<MAT::Material>>::const_iterator m = mat_.find(id);
+        std::map<int, Teuchos::RCP<CORE::MAT::Material>>::const_iterator m = mat_.find(id);
         if (m == mat_.end())
         {
           FOUR_C_THROW("Material %d could not be found", id);
@@ -198,7 +201,7 @@ namespace MAT
     }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// setup of material map
@@ -211,7 +214,7 @@ namespace MAT
     MAT::PAR::ElchMat* params_;
 
     /// map to materials
-    std::map<int, Teuchos::RCP<MAT::Material>> mat_;
+    std::map<int, Teuchos::RCP<CORE::MAT::Material>> mat_;
   };
 
 }  // namespace MAT

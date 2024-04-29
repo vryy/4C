@@ -20,7 +20,7 @@ bool DRT::ELEMENTS::SoTet4::ReadElement(
   linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   SolidMaterial()->Setup(NUMGPT_SOTET4, linedef);
 

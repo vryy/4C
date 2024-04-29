@@ -59,7 +59,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs) override;
 
       //! get density at integration point
-      double GetDensity(Teuchos::RCP<const MAT::Material> material,
+      double GetDensity(Teuchos::RCP<const CORE::MAT::Material> material,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k) override;
 
       //! integral of normal diffusive flux and velocity over boundary surface

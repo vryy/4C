@@ -166,7 +166,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
 
       // get the material of the first element
       // we assume here, that the material is equal for all elements in this discretization
-      Teuchos::RCP<MAT::Material> material = Material();
+      Teuchos::RCP<CORE::MAT::Material> material = Material();
       if (material->MaterialType() == CORE::Materials::m_elchmat)
       {
         const auto* actmat = static_cast<const MAT::ElchMat*>(material.get());

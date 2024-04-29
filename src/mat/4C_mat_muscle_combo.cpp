@@ -29,7 +29,7 @@ namespace
   using ActivationMapType = std::unordered_map<int, std::vector<std::pair<double, double>>>;
 
   MAT::PAR::MuscleCombo::ActivationParameterVariant GetActivationParams(
-      const Teuchos::RCP<MAT::PAR::Material>& matdata,
+      const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata,
       const INPAR::MAT::ActivationType& activation_type)
   {
     if (activation_type == INPAR::MAT::ActivationType::function_of_space_time)
@@ -96,7 +96,7 @@ namespace
 }  // namespace
 
 
-MAT::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       alpha_(matdata->Get<double>("ALPHA")),
       beta_(matdata->Get<double>("BETA")),
@@ -131,7 +131,7 @@ MAT::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<MAT::PAR::Material> matdata)
   if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::MuscleCombo::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MuscleCombo::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::MuscleCombo(this));
 }
@@ -212,7 +212,7 @@ void MAT::MuscleCombo::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {

@@ -11,12 +11,12 @@
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_FADmatrix_utils.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_mat_plasticdruckerprager.hpp"
 #include "4C_mat_service.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 namespace
 {
@@ -27,8 +27,9 @@ namespace
    protected:
     void SetUp() override
     {
-      const Teuchos::RCP<MAT::PAR::Material> container = Teuchos::rcp(new MAT::PAR::Material(
-          1, CORE::Materials::MaterialType::m_pldruckprag, "MAT_Struct_DruckerPrager"));
+      const Teuchos::RCP<CORE::MAT::PAR::Material> container =
+          Teuchos::rcp(new CORE::MAT::PAR::Material(
+              1, CORE::Materials::MaterialType::m_pldruckprag, "MAT_Struct_DruckerPrager"));
       container->Add("YOUNG", 1.0);
       container->Add("NUE", 0.25);
       container->Add("DENS", 0.0);

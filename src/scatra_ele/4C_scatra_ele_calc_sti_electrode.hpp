@@ -139,14 +139,14 @@ namespace DRT
           ) override;
 
       //! evaluate Soret material
-      void MatSoret(const Teuchos::RCP<const MAT::Material> material,  //!< Soret material
-          double& densn,                                               //!< density at time t_(n)
+      void MatSoret(const Teuchos::RCP<const CORE::MAT::Material> material,  //!< Soret material
+          double& densn,   //!< density at time t_(n)
           double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
           double& densam   //!< density at time t_(n+alpha_M)
       );
 
-      void MatFourier(const Teuchos::RCP<const MAT::Material> material,  //!< Fourier material
-          double& densn,                                                 //!< density at time t_(n)
+      void MatFourier(const Teuchos::RCP<const CORE::MAT::Material> material,  //!< Fourier material
+          double& densn,   //!< density at time t_(n)
           double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
           double& densam   //!< density at time t_(n+alpha_M)
       );

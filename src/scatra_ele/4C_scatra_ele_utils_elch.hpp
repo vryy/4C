@@ -95,8 +95,8 @@ namespace DRT
       ) const;
 
       //! evaluate ion material
-      void MatIon(const Teuchos::RCP<const MAT::Material> material,  //!< ion material
-          const int k,                                               //!< ID of ion material
+      void MatIon(const Teuchos::RCP<const CORE::MAT::Material> material,  //!< ion material
+          const int k,                                                     //!< ID of ion material
           const INPAR::ELCH::EquPot equpot,  //!< type of closing equation for electric potential
           const Teuchos::RCP<ScaTraEleDiffManagerElch>& diffmanager  //!< diffusion manager
       );

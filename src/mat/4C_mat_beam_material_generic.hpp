@@ -15,8 +15,8 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_inpar_material.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
@@ -40,7 +40,7 @@ namespace MAT
 
   /*---------------------------------------------------------------------------------------------*/
   /// constitutive relations for beam cross-section resultants (hyperelastic stored energy function)
-  class BeamMaterial : public Material
+  class BeamMaterial : public CORE::MAT::Material
   {
    public:
     /**

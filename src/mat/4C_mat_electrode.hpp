@@ -35,11 +35,11 @@ namespace MAT
     {
      public:
       //! constructor
-      explicit Electrode(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit Electrode(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
 
       //! create instance of electrode material
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! @name parameters for electrode material
       //! @{
@@ -158,7 +158,7 @@ namespace MAT
     };
 
     //! clone electrode material
-    [[nodiscard]] Teuchos::RCP<Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new Electrode(*this));
     };
@@ -292,7 +292,7 @@ namespace MAT
 
    protected:
     //! return material parameters
-    [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     //! my material parameters

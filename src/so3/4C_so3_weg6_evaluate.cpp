@@ -1248,7 +1248,7 @@ void DRT::ELEMENTS::SoWeg6::UpdateJacobianMapping(
 void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                  // current displacements
     Teuchos::ParameterList& params,                             // algorithmic parameters e.g. time
-    const Teuchos::RCP<MAT::Material>& mat)                     // material
+    const Teuchos::RCP<CORE::MAT::Material>& mat)               // material
 {
   if ((Material()->MaterialType() == CORE::Materials::m_constraintmixture) ||
       (Material()->MaterialType() == CORE::Materials::m_elasthyper))

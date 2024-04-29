@@ -272,12 +272,12 @@ namespace DRT
         virtual double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const = 0;
         //! get dynamic viscosity of phase
         virtual double DynViscosity(
-            const MAT::Material& material, int phasenum, double abspressgrad) const = 0;
+            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const = 0;
         //! get derivative of dynamic viscosity of phase
         virtual double DynViscosityDeriv(int phasenum, double abspressgrad) const = 0;
         //! get derivative dynamic viscosity of phase
         virtual double DynViscosityDeriv(
-            const MAT::Material& material, int phasenum, double abspressgrad) const = 0;
+            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const = 0;
 
         //! check for constant dynamic viscosity of volume fraction pressure
         virtual bool HasConstantDynViscosityVolFracPressure(int volfracpressnum) const = 0;
@@ -288,14 +288,14 @@ namespace DRT
         virtual double DynViscosityVolFracPressure(
             int volfracpressnum, double abspressgrad, int matnum = 0) const = 0;
         //! get dynamic viscosity of volume fraction pressure
-        virtual double DynViscosityVolFracPressure(
-            const MAT::Material& material, int volfracpressnum, double abspressgrad) const = 0;
+        virtual double DynViscosityVolFracPressure(const CORE::MAT::Material& material,
+            int volfracpressnum, double abspressgrad) const = 0;
         //! get derivative of dynamic viscosity of volume fraction pressure
         virtual double DynViscosityDerivVolFracPressure(
             int volfracpressnum, double abspressgrad) const = 0;
         //! get derivative dynamic viscosity of volume fraction pressure
-        virtual double DynViscosityDerivVolFracPressure(
-            const MAT::Material& material, int volfracpressnum, double abspressgrad) const = 0;
+        virtual double DynViscosityDerivVolFracPressure(const CORE::MAT::Material& material,
+            int volfracpressnum, double abspressgrad) const = 0;
 
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
@@ -632,7 +632,7 @@ namespace DRT
         };
         //! get dynamic viscosity of phase
         double DynViscosity(
-            const MAT::Material& material, int phasenum, double abspressgrad) const override
+            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override
         {
           FOUR_C_THROW("Dynamic Viscosity not available for this phase manager!");
           return 0.0;
@@ -645,7 +645,7 @@ namespace DRT
         };
         //! get derivative dynamic viscosity of phase
         double DynViscosityDeriv(
-            const MAT::Material& material, int phasenum, double abspressgrad) const override
+            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override
         {
           FOUR_C_THROW("Derivative of dynamic Viscosity not available for this phase manager!");
           return 0.0;
@@ -667,8 +667,8 @@ namespace DRT
           return 0.0;
         };
         //! get dynamic viscosity of volume fraction pressure
-        double DynViscosityVolFracPressure(
-            const MAT::Material& material, int volfracpressnum, double abspressgrad) const override
+        double DynViscosityVolFracPressure(const CORE::MAT::Material& material, int volfracpressnum,
+            double abspressgrad) const override
         {
           FOUR_C_THROW("Dynamic Viscosity (VolFracPressure) not available for this phase manager!");
           return 0.0;
@@ -683,8 +683,8 @@ namespace DRT
           return 0.0;
         };
         //! get derivative dynamic viscosity of volume fraction pressure
-        double DynViscosityDerivVolFracPressure(
-            const MAT::Material& material, int volfracpressnum, double abspressgrad) const override
+        double DynViscosityDerivVolFracPressure(const CORE::MAT::Material& material,
+            int volfracpressnum, double abspressgrad) const override
         {
           FOUR_C_THROW(
               "Derivative of dynamic Viscosity (VolFracPressure) not available for this phase "
@@ -1113,7 +1113,7 @@ namespace DRT
         };
         //! get dynamic viscosity of phase
         double DynViscosity(
-            const MAT::Material& material, int phasenum, double abspressgrad) const override
+            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override
         {
           return phasemanager_->DynViscosity(material, phasenum, abspressgrad);
         };
@@ -1124,7 +1124,7 @@ namespace DRT
         };
         //! get derivative dynamic viscosity of phase
         double DynViscosityDeriv(
-            const MAT::Material& material, int phasenum, double abspressgrad) const override
+            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override
         {
           return phasemanager_->DynViscosityDeriv(material, phasenum, abspressgrad);
         };
@@ -1142,8 +1142,8 @@ namespace DRT
               volfracpressnum, abspressgrad, matnum = 0);
         };
         //! get dynamic viscosity of volume fraction pressure
-        double DynViscosityVolFracPressure(
-            const MAT::Material& material, int volfracpressnum, double abspressgrad) const override
+        double DynViscosityVolFracPressure(const CORE::MAT::Material& material, int volfracpressnum,
+            double abspressgrad) const override
         {
           return phasemanager_->DynViscosityVolFracPressure(
               material, volfracpressnum, abspressgrad);
@@ -1155,8 +1155,8 @@ namespace DRT
           return phasemanager_->DynViscosityDerivVolFracPressure(volfracpressnum, abspressgrad);
         };
         //! get derivative dynamic viscosity of volume fraction pressure
-        double DynViscosityDerivVolFracPressure(
-            const MAT::Material& material, int volfracpressnum, double abspressgrad) const override
+        double DynViscosityDerivVolFracPressure(const CORE::MAT::Material& material,
+            int volfracpressnum, double abspressgrad) const override
         {
           return phasemanager_->DynViscosityDerivVolFracPressure(
               material, volfracpressnum, abspressgrad);
@@ -1520,12 +1520,12 @@ namespace DRT
         double DynViscosity(int phasenum, double abspressgrad, int matnum = 0) const override;
         //! get dynamic viscosity of phase
         double DynViscosity(
-            const MAT::Material& material, int phasenum, double abspressgrad) const override;
+            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override;
         //! get derivative of dynamic viscosity of phase
         double DynViscosityDeriv(int phasenum, double abspressgrad) const override;
         //! get derivative dynamic viscosity of phase
         double DynViscosityDeriv(
-            const MAT::Material& material, int phasenum, double abspressgrad) const override;
+            const CORE::MAT::Material& material, int phasenum, double abspressgrad) const override;
 
         //! get the permeability tensor for volume fraction pressures
         void PermeabilityTensorVolFracPressure(int volfracpressnum,
@@ -1540,14 +1540,14 @@ namespace DRT
         double DynViscosityVolFracPressure(
             int volfracpressnum, double abspressgrad, int matnum = 0) const override;
         //! get dynamic viscosity of volume fraction pressure
-        double DynViscosityVolFracPressure(
-            const MAT::Material& material, int volfracpressnum, double abspressgrad) const override;
+        double DynViscosityVolFracPressure(const CORE::MAT::Material& material, int volfracpressnum,
+            double abspressgrad) const override;
         //! get derivative of dynamic viscosity of volume fraction pressure
         double DynViscosityDerivVolFracPressure(
             int volfracpressnum, double abspressgrad) const override;
         //! get derivative dynamic viscosity of volume fraction pressure
-        double DynViscosityDerivVolFracPressure(
-            const MAT::Material& material, int volfracpressnum, double abspressgrad) const override;
+        double DynViscosityDerivVolFracPressure(const CORE::MAT::Material& material,
+            int volfracpressnum, double abspressgrad) const override;
 
         //@}
 

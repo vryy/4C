@@ -35,10 +35,10 @@ namespace MAT
     {
      public:
       //! constructor
-      ParticleMaterialSPHBoundary(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ParticleMaterialSPHBoundary(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! create material instance of matching type with parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
     };
 
   }  // namespace PAR
@@ -56,7 +56,7 @@ namespace MAT
     static ParticleMaterialSPHBoundaryType instance_;
   };
 
-  class ParticleMaterialSPHBoundary : public Material
+  class ParticleMaterialSPHBoundary : public CORE::MAT::Material
   {
    public:
     //! constructor (empty material object)
@@ -115,13 +115,13 @@ namespace MAT
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new ParticleMaterialSPHBoundary(*this));
     }
 
     //! return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     //! my material parameters

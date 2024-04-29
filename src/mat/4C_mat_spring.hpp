@@ -13,9 +13,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,11 +25,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for spring
-    class Spring : public Parameter
+    class Spring : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      Spring(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Spring(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -43,7 +43,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class Spring
 
@@ -64,7 +64,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for spring material
-  class Spring : public Material
+  class Spring : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -118,7 +118,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Spring(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new Spring(*this));
+    }
 
     /// stiffness (translational or rotational)
     double Stiffness() const { return params_->stiffness_; }
@@ -127,7 +130,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

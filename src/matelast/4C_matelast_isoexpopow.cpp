@@ -8,12 +8,12 @@
 
 #include "4C_matelast_isoexpopow.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       k1_(matdata->Get<double>("K1")),
       k2_(matdata->Get<double>("K2")),

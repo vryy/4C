@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::MixFrac::MixFrac(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::MixFrac::MixFrac(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       kinvisc_(matdata->Get<double>("KINVISC")),
       kindiff_(matdata->Get<double>("KINDIFF")),
@@ -28,7 +28,7 @@ MAT::PAR::MixFrac::MixFrac(Teuchos::RCP<MAT::PAR::Material> matdata)
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::MixFrac::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MixFrac::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::MixFrac(this));
 }
@@ -89,7 +89,7 @@ void MAT::MixFrac::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::MixFrac*>(mat);

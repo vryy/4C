@@ -644,7 +644,7 @@ namespace MAT::FLUIDPORO
 
 }  // namespace MAT::FLUIDPORO
 
-MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       viscosity_(matdata->Get<double>("DYNVISCOSITY")),
       density_(matdata->Get<double>("DENSITY")),
@@ -687,7 +687,7 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
   }
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoro::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoro::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::FluidPoro(this));
 }
@@ -754,7 +754,7 @@ void MAT::FluidPoro::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoro*>(mat);

@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroPhaseLaw::FluidPoroPhaseLaw(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::FluidPoroPhaseLaw::FluidPoroPhaseLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata)
 {
   return;
@@ -41,7 +41,7 @@ MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int pha
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat =
+  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(phaselawId);
 
   // phase law
@@ -88,7 +88,8 @@ MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int pha
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
       numdof_(matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
@@ -177,7 +178,7 @@ double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateGenPressure(double saturation)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroPhaseLawTangent::FluidPoroPhaseLawTangent(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
       numdof_(matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
@@ -290,7 +291,7 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateGenPressure(double saturation
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
       numdof_(matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),

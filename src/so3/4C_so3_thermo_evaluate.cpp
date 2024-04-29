@@ -2117,7 +2117,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Materialize(
   // All materials that have a pure CORE::LINALG::Matrix
   // interface go to the material law here.
   // the old interface does not exist anymore...
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
     // small strain von Mises thermoelastoplastic material

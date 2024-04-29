@@ -10,15 +10,15 @@
 
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_mixture_growth_strategy.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : MIXTURE::PAR::MixtureGrowthStrategy(matdata),
       init_mode_(matdata->Get<int>("INIT")),
       fiber_id_(matdata->Get<int>("FIBER_ID"))

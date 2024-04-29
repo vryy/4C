@@ -322,7 +322,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     // read restart of microscale
     case multi_readrestart:
     {
-      Teuchos::RCP<MAT::Material> mat = Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
       if (mat->MaterialType() == CORE::Materials::m_struct_multiscale) sop5_read_restart_multi();
     }

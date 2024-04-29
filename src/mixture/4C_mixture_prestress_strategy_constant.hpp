@@ -36,7 +36,7 @@ namespace MIXTURE
 
      public:
       /// constructor
-      explicit ConstantPrestressStrategy(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit ConstantPrestressStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       /// create prestress strategy instance of matching type with my parameters
       std::unique_ptr<MIXTURE::PrestressStrategy> CreatePrestressStrategy() override;

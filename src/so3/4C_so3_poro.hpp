@@ -688,7 +688,7 @@ namespace DRT
       DRT::Node** Nodes() override;
 
       //! get material of element
-      Teuchos::RCP<MAT::Material> Material() const;
+      Teuchos::RCP<CORE::MAT::Material> Material() const;
 
       //! get global id of element
       int Id() const;

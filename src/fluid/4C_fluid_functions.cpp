@@ -28,10 +28,11 @@ namespace
   /// returns Weakly Compressible Fluid quick access parameters from given material id
   const MAT::PAR::WeaklyCompressibleFluid& GetWeaklyCompressibleFluidMatPars(int mat_id)
   {
-    Teuchos::RCP<MAT::PAR::Material> mat = GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
+    Teuchos::RCP<CORE::MAT::PAR::Material> mat =
+        GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
     if (mat->Type() != CORE::Materials::m_fluid_weakly_compressible)
       FOUR_C_THROW("Material %d is not a weakly compressible fluid", mat_id);
-    MAT::PAR::Parameter* params = mat->Parameter();
+    CORE::MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to Weakly compressible fluid");
     return *fparams;
@@ -40,9 +41,10 @@ namespace
   /// returns Newton Fluid quick access parameters from given material id
   const MAT::PAR::NewtonianFluid& GetNewtonianFluidMatPars(int mat_id)
   {
-    Teuchos::RCP<MAT::PAR::Material> mat = GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
+    Teuchos::RCP<CORE::MAT::PAR::Material> mat =
+        GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
     if (mat->Type() != CORE::Materials::m_fluid) FOUR_C_THROW("Material %d is not a fluid", mat_id);
-    MAT::PAR::Parameter* params = mat->Parameter();
+    CORE::MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
     return *fparams;
@@ -51,10 +53,11 @@ namespace
   /// returns St. Venant Kirchhof quick access parameters from given material id
   const MAT::PAR::StVenantKirchhoff& GetSVKMatPars(int mat_id)
   {
-    Teuchos::RCP<MAT::PAR::Material> mat = GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
+    Teuchos::RCP<CORE::MAT::PAR::Material> mat =
+        GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
     if (mat->Type() != CORE::Materials::m_stvenant)
       FOUR_C_THROW("Material %d is not a St.Venant-Kirchhoff structure material", mat_id);
-    MAT::PAR::Parameter* params = mat->Parameter();
+    CORE::MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to St.Venant-Kirchhoff structure material");
     return *fparams;
@@ -538,7 +541,8 @@ double FLD::BeltramiFunction::Evaluate(
 
   int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
   if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
-  const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+  const CORE::MAT::PAR::Parameter* mat =
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
   const auto* actmat = dynamic_cast<const MAT::PAR::NewtonianFluid*>(mat);
   double dens = actmat->density_;
   double dynvisc = actmat->viscosity_;
@@ -586,7 +590,8 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
 
   int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
   if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
-  const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+  const CORE::MAT::PAR::Parameter* mat =
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
   const auto* actmat = dynamic_cast<const MAT::PAR::NewtonianFluid*>(mat);
   double dens = actmat->density_;
   double dynvisc = actmat->viscosity_;
@@ -706,7 +711,8 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
       FOUR_C_THROW(
           "Fluid with Murnaghan-Tait equation of state or with "
           "linear law (pressure-dependent) for the density and the viscosity could not be found");
-    const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+    const CORE::MAT::PAR::Parameter* mat =
+        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const auto* actmat = dynamic_cast<const MAT::PAR::LinearDensityViscosity*>(mat);
 
     double x = xp[0];
@@ -827,7 +833,8 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
   }
   else
   {
-    const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+    const CORE::MAT::PAR::Parameter* mat =
+        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const auto* actmat = dynamic_cast<const MAT::PAR::MurnaghanTaitFluid*>(mat);
 
     if (actmat->matparameter_ != 1.0)
@@ -947,7 +954,8 @@ double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
       FOUR_C_THROW(
           "Fluid with Murnaghan-Tait equation of state or with "
           "linear law (pressure-dependent) for the density and the viscosity could not be found");
-    const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+    const CORE::MAT::PAR::Parameter* mat =
+        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const auto* actmat = dynamic_cast<const MAT::PAR::LinearDensityViscosity*>(mat);
 
     double x = xp[0];
@@ -1002,7 +1010,8 @@ double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
   }
   else
   {
-    const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+    const CORE::MAT::PAR::Parameter* mat =
+        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const auto* actmat = dynamic_cast<const MAT::PAR::MurnaghanTaitFluid*>(mat);
 
     if (actmat->matparameter_ != 1.0)

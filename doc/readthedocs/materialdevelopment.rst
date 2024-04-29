@@ -48,12 +48,12 @@ Define the class for Material Parameters in the namespace ``MAT::PAR`` as
 
 ::
 
-   class MyNewMaterial : public Parameter
+   class MyNewMaterial : public CORE::MAT::PAR::Parameter
 
 Here we need the methods
 
--	Constructor ``MyNewMaterial(Teuchos::RCP<MAT::PAR::Material> matdata)``
--	``Teuchos::RCP<MAT::Material> CreateMaterial()``
+-	Constructor ``MyNewMaterial(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)``
+-	``Teuchos::RCP<CORE::MAT::Material> CreateMaterial()``
 
 **Definition of the material type class**
 

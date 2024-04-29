@@ -9,12 +9,12 @@ thesis)
 
 #include "4C_matelast_volpenalty.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::VolPenalty::VolPenalty(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::VolPenalty::VolPenalty(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata), eps_(matdata->Get<double>("EPSILON")), gam_(matdata->Get<double>("GAMMA"))
 {
   if (eps_ < 0. || gam_ <= 0.)

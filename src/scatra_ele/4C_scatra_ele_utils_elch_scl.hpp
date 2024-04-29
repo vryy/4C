@@ -44,22 +44,22 @@ namespace DRT
       );
 
       //! evaluate electrolyte material
-      void MatElchMat(Teuchos::RCP<const MAT::Material> material,  //!< electrolyte material
-          const std::vector<double>& concentrations,               //!< local concentration values
-          double temperature,                                      //!< temperature
-          Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,   //!< diffusion manager
-          INPAR::ELCH::DiffCondMat& diffcondmat                    //!< ion type
+      void MatElchMat(Teuchos::RCP<const CORE::MAT::Material> material,  //!< electrolyte material
+          const std::vector<double>& concentrations,              //!< local concentration values
+          double temperature,                                     //!< temperature
+          Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,  //!< diffusion manager
+          INPAR::ELCH::DiffCondMat& diffcondmat                   //!< ion type
       );
       //! evaluate electrolyte phase
-      void MatElchPhase(Teuchos::RCP<const MAT::Material> material,  //!< electrolyte phase
-          const std::vector<double>& concentrations,                 //!< local concentration values
-          double temperature,                                        //!< temperature
-          Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,     //!< diffusion manager
-          INPAR::ELCH::DiffCondMat& diffcondmat                      //!< ion type
+      void MatElchPhase(Teuchos::RCP<const CORE::MAT::Material> material,  //!< electrolyte phase
+          const std::vector<double>& concentrations,              //!< local concentration values
+          double temperature,                                     //!< temperature
+          Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,  //!< diffusion manager
+          INPAR::ELCH::DiffCondMat& diffcondmat                   //!< ion type
       );
 
       //! evaluate Space Charge Layer Material
-      void MatScl(Teuchos::RCP<const MAT::Material> material, const double concentration,
+      void MatScl(Teuchos::RCP<const CORE::MAT::Material> material, const double concentration,
           const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager);
 
      protected:

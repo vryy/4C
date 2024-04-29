@@ -244,7 +244,8 @@ namespace XFEM
     };
 
     /// set material pointer for coupling slave side
-    virtual void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat)
+    virtual void GetInterfaceSlaveMaterial(
+        DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat)
     {
       mat = Teuchos::null;
     }

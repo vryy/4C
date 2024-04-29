@@ -14,9 +14,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,11 +26,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters
-    class HerschelBulkley : public Parameter
+    class HerschelBulkley : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      HerschelBulkley(Teuchos::RCP<MAT::PAR::Material> matdata);
+      HerschelBulkley(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -46,7 +46,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class HerschelBulkley
 
@@ -66,7 +66,7 @@ namespace MAT
   };
 
   /// Nonlinear viscosity according to HerschelBulkley
-  class HerschelBulkley : public Material
+  class HerschelBulkley : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -124,7 +124,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new HerschelBulkley(*this));
     }
@@ -150,7 +150,7 @@ namespace MAT
     //@}
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

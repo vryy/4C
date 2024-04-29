@@ -13,8 +13,8 @@
 #include "4C_lib_element.hpp"
 #include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_so3_base.hpp"
 
 
@@ -441,10 +441,10 @@ namespace DRT
           CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* emass);  //!< element mass matrix
 
       //! remodeling for fibers at the end of time step (st 01/10)
-      void so_tet4_remodel(std::vector<int>& lm,    // location matrix
-          std::vector<double>& disp,                // current displacements
-          Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
-          const Teuchos::RCP<MAT::Material>& mat);  // material
+      void so_tet4_remodel(std::vector<int>& lm,          // location matrix
+          std::vector<double>& disp,                      // current displacements
+          Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
+          const Teuchos::RCP<CORE::MAT::Material>& mat);  // material
 
       //! Evaluate Tet4 Shapefcts at 1 gausspoint to keep them static
       std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_1gp_shapefcts();

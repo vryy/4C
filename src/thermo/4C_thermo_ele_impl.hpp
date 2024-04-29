@@ -346,7 +346,7 @@ namespace DRT
       );
 
       //! get corresponding structural material
-      Teuchos::RCP<MAT::Material> GetSTRMaterial(
+      Teuchos::RCP<CORE::MAT::Material> GetSTRMaterial(
           DRT::Element* ele  //!< the element whose matrix is calculated
       );
 

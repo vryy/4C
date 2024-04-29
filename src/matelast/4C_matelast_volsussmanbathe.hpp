@@ -13,8 +13,8 @@ Mechanics, 2000"
 
 #include "4C_config.hpp"
 
-#include "4C_mat_par_parameter.hpp"
 #include "4C_matelast_summand.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -30,11 +30,11 @@ namespace MAT
        *  <h3>Input line</h3>
        *  MAT 1 ELAST_VolSussmanBathe KAPPA 10000
        */
-      class VolSussmanBathe : public MAT::PAR::Parameter
+      class VolSussmanBathe : public CORE::MAT::PAR::Parameter
       {
        public:
         /// standard constructor
-        VolSussmanBathe(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+        VolSussmanBathe(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -46,7 +46,7 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "

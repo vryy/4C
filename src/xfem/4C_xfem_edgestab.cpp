@@ -24,9 +24,9 @@ continuous interior penalty) scheme
 #include "4C_lib_assemblestrategy.hpp"
 #include "4C_lib_discret_faces.hpp"
 #include "4C_mat_list.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_newtonianfluid.hpp"
+#include "4C_material_base.hpp"
 #include "4C_xfem_utils.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -123,8 +123,8 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
 
 
   // Provide material at both sides:
-  Teuchos::RCP<MAT::Material> matptr_m;
-  Teuchos::RCP<MAT::Material> matptr_s;
+  Teuchos::RCP<CORE::MAT::Material> matptr_m;
+  Teuchos::RCP<CORE::MAT::Material> matptr_s;
   matptr_m = p_master->Material();
   matptr_s = p_slave->Material();
 
@@ -597,14 +597,14 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabGhostPenalty(
  | and ghost penaly in the XFEM                            schott 03/12 |
  *----------------------------------------------------------------------*/
 void XFEM::XfemEdgeStab::AssembleEdgeStabGhostPenalty(
-    Teuchos::ParameterList& eleparams,        ///< element parameter list
-    const INPAR::XFEM::FaceType& face_type,   ///< which type of face std, ghost, ghost-penalty
-    DRT::ELEMENTS::FluidIntFace* intface,     ///< internal face element
-    Teuchos::RCP<MAT::Material>& material_m,  ///< material of the master side
-    Teuchos::RCP<MAT::Material>& material_s,  ///< material of the slave side
-    std::vector<int>& nds_master,             ///< nodal dofset vector w.r.t. master element
-    std::vector<int>& nds_slave,              ///< nodal dofset vector w.r.t. slave element
-    DRT::DiscretizationFaces& xdiscret,       ///< XFEM discretization
+    Teuchos::ParameterList& eleparams,       ///< element parameter list
+    const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
+    DRT::ELEMENTS::FluidIntFace* intface,    ///< internal face element
+    Teuchos::RCP<CORE::MAT::Material>& material_m,  ///< material of the master side
+    Teuchos::RCP<CORE::MAT::Material>& material_s,  ///< material of the slave side
+    std::vector<int>& nds_master,                   ///< nodal dofset vector w.r.t. master element
+    std::vector<int>& nds_slave,                    ///< nodal dofset vector w.r.t. slave element
+    DRT::DiscretizationFaces& xdiscret,             ///< XFEM discretization
     Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
     Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
@@ -699,8 +699,8 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabStd(
   std::vector<int> nds_slave(p_slave_numnode, 0);
 
   // Provide material at both sides:
-  Teuchos::RCP<MAT::Material> matptr_m;
-  Teuchos::RCP<MAT::Material> matptr_s;
+  Teuchos::RCP<CORE::MAT::Material> matptr_m;
+  Teuchos::RCP<CORE::MAT::Material> matptr_s;
   matptr_m = p_master->Material();
   matptr_s = p_slave->Material();
 
@@ -771,8 +771,8 @@ void XFEM::XfemEdgeStab::EvaluateEdgeStabBoundaryGP(
     return;
 
   // Provide material at both sides:
-  Teuchos::RCP<MAT::Material> matptr_m;
-  Teuchos::RCP<MAT::Material> matptr_s;
+  Teuchos::RCP<CORE::MAT::Material> matptr_m;
+  Teuchos::RCP<CORE::MAT::Material> matptr_s;
   matptr_m = p_master->Material();
   matptr_s = p_slave->Material();
 

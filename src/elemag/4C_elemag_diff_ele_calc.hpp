@@ -66,7 +66,7 @@ namespace DRT
       /// Generic virtual interface function.Called via base pointer.
       int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -75,7 +75,7 @@ namespace DRT
       /// Evaluate the element at specified gauss points.
       virtual int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -119,7 +119,7 @@ namespace DRT
 
         /// Add terms corresponding to the absorbing boundary condition.
         void ComputeAbsorbingBC(DRT::Discretization& discretization, DRT::ELEMENTS::ElemagDiff* ele,
-            Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat, int face,
+            Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat, int face,
             CORE::LINALG::SerialDenseMatrix& elemat, int indexstart,
             CORE::LINALG::SerialDenseVector& elevec1);
 
@@ -129,7 +129,7 @@ namespace DRT
 
         /// Calls local solver to compute matrices: internal and face
         void ComputeMatrices(DRT::Discretization& discretization,
-            const Teuchos::RCP<MAT::Material>& mat, DRT::ELEMENTS::ElemagDiff& ele, double dt,
+            const Teuchos::RCP<CORE::MAT::Material>& mat, DRT::ELEMENTS::ElemagDiff& ele, double dt,
             INPAR::ELEMAG::DynamicType dyna, const double tau);
 
         /// Set up interior matrices
@@ -159,7 +159,7 @@ namespace DRT
 
         /// Projection of scatra computed gradients into elements
         int ProjectElectricFieldFromScatra(DRT::ELEMENTS::ElemagDiff* ele,
-            Teuchos::ParameterList& params, const Teuchos::RCP<MAT::Material>& mat,
+            Teuchos::ParameterList& params, const Teuchos::RCP<CORE::MAT::Material>& mat,
             CORE::LINALG::SerialDenseVector& elevec1);
 
         /// Compute the error with respect to an analytical field.
@@ -254,7 +254,7 @@ namespace DRT
 
       /// Updates interior variables and calculates residual.
       void UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList& params,
-          DRT::ELEMENTS::ElemagDiff& ele, const Teuchos::RCP<MAT::Material>& mat,
+          DRT::ELEMENTS::ElemagDiff& ele, const Teuchos::RCP<CORE::MAT::Material>& mat,
           CORE::LINALG::SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly);
 
       /// Reads from global vectors.

@@ -14,8 +14,8 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -29,11 +29,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for micro material
-    class MicroMaterial : public Parameter
+    class MicroMaterial : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      MicroMaterial(Teuchos::RCP<MAT::PAR::Material> matdata);
+      MicroMaterial(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -48,7 +48,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class MicroMaterial
 
@@ -137,7 +137,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new MicroMaterial(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new MicroMaterial(*this));
+    }
 
     /// evaluate micro material on a processor with macro scale
     void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
@@ -178,7 +181,7 @@ namespace MAT
     //@}
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     std::map<int, Teuchos::RCP<MicroMaterialGP>> matgp_;

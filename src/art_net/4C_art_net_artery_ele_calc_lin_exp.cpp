@@ -71,7 +71,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   // the number of nodes
   const int numnode = my::iel_;
@@ -139,7 +139,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateService(Artery* ele,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   switch (action)
   {
@@ -197,7 +197,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   // the number of nodes
   const int numnode = my::iel_;
@@ -284,7 +284,7 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Initial(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<const MAT::Material> material)
+    Teuchos::RCP<const CORE::MAT::Material> material)
 {
   Teuchos::RCP<Epetra_Vector> qa0 = params.get<Teuchos::RCP<Epetra_Vector>>("qa0");
   Teuchos::RCP<Epetra_Vector> wfo = params.get<Teuchos::RCP<Epetra_Vector>>("wfo");
@@ -395,7 +395,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
     const CORE::LINALG::Matrix<my::iel_, 1>& eqnp, const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
     CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
-    CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const MAT::Material> material,
+    CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const CORE::MAT::Material> material,
     double dt)
 {
   CORE::LINALG::Matrix<2 * my::iel_, 1> qan;
@@ -862,7 +862,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
     const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
     const CORE::LINALG::Matrix<my::iel_, 1>& earean,
     CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
-    CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const MAT::Material> material,
+    CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const CORE::MAT::Material> material,
     double dt)
 {
   // get the nodal coordinates of the element
@@ -916,7 +916,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
 template <CORE::FE::CellType distype>
 bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<const MAT::Material> material)
+    Teuchos::RCP<const CORE::MAT::Material> material)
 {
   // Define Geometric variables
   double Ao1 = 0.0;
@@ -1151,7 +1151,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   Teuchos::RCP<Epetra_Vector> Wfnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wfnp");
   Teuchos::RCP<Epetra_Vector> Wbnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wbnp");
@@ -1463,7 +1463,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& disctretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   //  const int numnode = my::iel_;
 
@@ -1528,7 +1528,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcPostprocessingValues(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   Teuchos::RCP<const Epetra_Vector> qanp = discretization.GetState("qanp");
   //  Teuchos::RCP<const Epetra_Vector> Wfnp  = discretization.GetState("Wfnp");
@@ -1674,7 +1674,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcPostprocessingValues(Arter
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcScatraFromScatraFW(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   Teuchos::RCP<Epetra_Vector> scatra_fb = params.get<Teuchos::RCP<Epetra_Vector>>("scatra_fb");
   Teuchos::RCP<Epetra_Vector> scatra = params.get<Teuchos::RCP<Epetra_Vector>>("scatra");
@@ -1707,7 +1707,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcScatraFromScatraFW(Artery*
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   // Define Geometric variables
   double Ao1 = 0.0;
@@ -1840,7 +1840,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveScatraAnalytically(Artery* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   // the number of nodes
   const int numnode = my::iel_;

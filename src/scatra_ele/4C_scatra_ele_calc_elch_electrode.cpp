@@ -10,8 +10,8 @@ within isothermal electrodes
 /*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_elch_electrode.hpp"
 
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
 #include "4C_scatra_ele_utils_elch_electrode.hpp"
@@ -275,7 +275,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetMaterialPar
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // get material
-  Teuchos::RCP<const MAT::Material> material = ele->Material();
+  Teuchos::RCP<const CORE::MAT::Material> material = ele->Material();
 
   // evaluate electrode material
   if (material->MaterialType() == CORE::Materials::m_electrode)

@@ -70,7 +70,7 @@ namespace DRT
         Interface function for supporting methods of the element
        */
       int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
+          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2,
@@ -81,7 +81,7 @@ namespace DRT
       */
       virtual int CalcDissipation(Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat)
+          Teuchos::RCP<CORE::MAT::Material> mat)
       {
         FOUR_C_THROW("Not implemented!");
         return 1;
@@ -92,11 +92,11 @@ namespace DRT
           general function to compute the error (analytical solution) for particular problem type
        */
       virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
+          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec);
 
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
+          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec,
           const CORE::FE::GaussIntegration&) override
       {
@@ -105,7 +105,7 @@ namespace DRT
 
       /// projection of function field
       virtual int ProjectField(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
+          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2);
 
@@ -142,7 +142,7 @@ namespace DRT
        */
       int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -151,7 +151,7 @@ namespace DRT
       /// Evaluate the element at specified gauss points
       int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -162,7 +162,7 @@ namespace DRT
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          Teuchos::RCP<MAT::Material>& mat,                          ///< material
+          Teuchos::RCP<CORE::MAT::Material>& mat,                    ///< material
           CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
@@ -179,7 +179,7 @@ namespace DRT
       /// Evaluate the XFEM cut element
       int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -204,9 +204,9 @@ namespace DRT
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
           std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
-              side_coupling,                 ///< side coupling matrices
-          Teuchos::ParameterList& params,    ///< parameter list
-          Teuchos::RCP<MAT::Material>& mat,  ///< material
+              side_coupling,                       ///< side coupling matrices
+          Teuchos::ParameterList& params,          ///< parameter list
+          Teuchos::RCP<CORE::MAT::Material>& mat,  ///< material
           CORE::LINALG::SerialDenseMatrix&
               elemat1_epetra,  ///< local system matrix of intersected element
           CORE::LINALG::SerialDenseVector&
@@ -229,8 +229,8 @@ namespace DRT
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
           Teuchos::ParameterList& params,                     ///< parameter list
-          Teuchos::RCP<MAT::Material>& mat_master,            ///< material master side
-          Teuchos::RCP<MAT::Material>& mat_slave,             ///< material slave side
+          Teuchos::RCP<CORE::MAT::Material>& mat_master,      ///< material master side
+          Teuchos::RCP<CORE::MAT::Material>& mat_slave,       ///< material slave side
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,    ///< element matrix
           CORE::LINALG::SerialDenseVector& elevec1_epetra,    ///< element vector
           const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
@@ -261,7 +261,7 @@ namespace DRT
 
       /// Evaluate the pressure average inside the element from an analytical expression
       virtual int EvaluatePressureAverage(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec);
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec);
 
       /// Singleton access method
       static FluidEleCalcHDG<distype>* Instance(
@@ -294,21 +294,21 @@ namespace DRT
             const CORE::FE::ShapeValues<distype>& shapeValues,
             CORE::FE::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly);
 
-        void ComputeInteriorResidual(const Teuchos::RCP<MAT::Material>& mat,
+        void ComputeInteriorResidual(const Teuchos::RCP<CORE::MAT::Material>& mat,
             const std::vector<double>& valnp, const std::vector<double>& accel,
             const double avgPressure, const CORE::LINALG::Matrix<nsd_, nen_>& ebodyforce,
             const std::vector<double>& intebodyforce, CORE::LINALG::SerialDenseVector& eleVec,
             const std::vector<double>& interiorecorrectionterm,
             const std::vector<double>& interiorebodyforce);
 
-        void ComputeFaceResidual(const int face, const Teuchos::RCP<MAT::Material>& mat,
+        void ComputeFaceResidual(const int face, const Teuchos::RCP<CORE::MAT::Material>& mat,
             const std::vector<double>& val, const std::vector<double>& traceval,
             CORE::LINALG::SerialDenseVector& eleVec);
 
         void ComputeInteriorMatrices(
-            const Teuchos::RCP<MAT::Material>& mat, const bool evaluateOnlyNonlinear);
+            const Teuchos::RCP<CORE::MAT::Material>& mat, const bool evaluateOnlyNonlinear);
 
-        void ComputeFaceMatrices(const int face, const Teuchos::RCP<MAT::Material>& mat,
+        void ComputeFaceMatrices(const int face, const Teuchos::RCP<CORE::MAT::Material>& mat,
             const bool evaluateOnlyNonlinear, CORE::LINALG::SerialDenseMatrix& elemat);
 
         // inverts the velocity gradient matrix and puts its contribution into the velocity matrix

@@ -22,7 +22,7 @@ bool DRT::ELEMENTS::SoHex27::ReadElement(
   linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   SolidMaterial()->Setup(NUMGPT_SOH27, linedef);
 

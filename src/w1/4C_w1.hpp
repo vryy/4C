@@ -356,16 +356,16 @@ namespace DRT
           const std::vector<double>& residual,          ///< residual displacements
           const std::vector<double>& dispmat,           ///< residual displacements
           std::vector<CORE::LINALG::SerialDenseVector>&
-              myknots,                                   ///< knot vector for nurbs elements
-          CORE::LINALG::SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix
-          CORE::LINALG::SerialDenseMatrix* massmatrix,   ///< element mass matrix
-          CORE::LINALG::SerialDenseVector* force,        ///< element internal force vector
-          CORE::LINALG::SerialDenseMatrix* elestress,    ///< element stresses
-          CORE::LINALG::SerialDenseMatrix* elestrain,    ///< element strains
-          Teuchos::RCP<const MAT::Material> material,    ///< element material
-          Teuchos::ParameterList& params,                ///< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,         ///< stress output option
-          const INPAR::STR::StrainType iostrain          ///< strain output option
+              myknots,                                       ///< knot vector for nurbs elements
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,      ///< element stiffness matrix
+          CORE::LINALG::SerialDenseMatrix* massmatrix,       ///< element mass matrix
+          CORE::LINALG::SerialDenseVector* force,            ///< element internal force vector
+          CORE::LINALG::SerialDenseMatrix* elestress,        ///< element stresses
+          CORE::LINALG::SerialDenseMatrix* elestrain,        ///< element strains
+          Teuchos::RCP<const CORE::MAT::Material> material,  ///< element material
+          Teuchos::ParameterList& params,                    ///< algorithmic parameters e.g. time
+          const INPAR::STR::StressType iostress,             ///< stress output option
+          const INPAR::STR::StrainType iostrain              ///< strain output option
       );
 
       /// evaluate the geometrically linear element forces and stiffness and mass
@@ -374,16 +374,16 @@ namespace DRT
           const std::vector<double>& residual,          ///< residual displacements
           const std::vector<double>& dispmat,           ///< residual displacements
           std::vector<CORE::LINALG::SerialDenseVector>&
-              myknots,                                   ///< knot vector for nurbs elements
-          CORE::LINALG::SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix
-          CORE::LINALG::SerialDenseMatrix* massmatrix,   ///< element mass matrix
-          CORE::LINALG::SerialDenseVector* force,        ///< element internal force vector
-          CORE::LINALG::SerialDenseMatrix* elestress,    ///< element stresses
-          CORE::LINALG::SerialDenseMatrix* elestrain,    ///< element strains
-          Teuchos::RCP<const MAT::Material> material,    ///< element material
-          Teuchos::ParameterList& params,                ///< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,         ///< stress output option
-          const INPAR::STR::StrainType iostrain          ///< strain output option
+              myknots,                                       ///< knot vector for nurbs elements
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,      ///< element stiffness matrix
+          CORE::LINALG::SerialDenseMatrix* massmatrix,       ///< element mass matrix
+          CORE::LINALG::SerialDenseVector* force,            ///< element internal force vector
+          CORE::LINALG::SerialDenseMatrix* elestress,        ///< element stresses
+          CORE::LINALG::SerialDenseMatrix* elestrain,        ///< element strains
+          Teuchos::RCP<const CORE::MAT::Material> material,  ///< element material
+          Teuchos::ParameterList& params,                    ///< algorithmic parameters e.g. time
+          const INPAR::STR::StressType iostress,             ///< stress output option
+          const INPAR::STR::StrainType iostrain              ///< strain output option
       );
 
       /// Jacobian matrix for mapping from parameter space in physical material space
@@ -497,8 +497,8 @@ namespace DRT
           const std::vector<int>& lm,              ///< location vector
           const std::vector<double>&
               dis,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n}\f$
-          CORE::LINALG::SerialDenseVector* energies,  ///< (in/out) energies
-          Teuchos::RCP<const MAT::Material> material  ///< element material
+          CORE::LINALG::SerialDenseVector* energies,        ///< (in/out) energies
+          Teuchos::RCP<const CORE::MAT::Material> material  ///< element material
       );
 
       //@}
@@ -628,13 +628,13 @@ namespace DRT
       /// Constitutive matrix \f$C\f$ and stresses
       /// \author mgit \date 05/07
       void w1_call_matgeononl(
-          const CORE::LINALG::SerialDenseVector& strain,  ///< Green-Lagrange strain vector
-          CORE::LINALG::SerialDenseMatrix& stress,        ///< stress matrix
-          CORE::LINALG::SerialDenseMatrix& C,             ///< elasticity matrix
-          const int numeps,                               ///< number of strains
-          Teuchos::RCP<const MAT::Material> material,     ///< the material data
-          Teuchos::ParameterList& params,                 ///< element parameter list
-          int gp                                          ///< Gauss point
+          const CORE::LINALG::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
+          CORE::LINALG::SerialDenseMatrix& stress,           ///< stress matrix
+          CORE::LINALG::SerialDenseMatrix& C,                ///< elasticity matrix
+          const int numeps,                                  ///< number of strains
+          Teuchos::RCP<const CORE::MAT::Material> material,  ///< the material data
+          Teuchos::ParameterList& params,                    ///< element parameter list
+          int gp                                             ///< Gauss point
       );
 
       /// Stress and constitutive matrix mapper from 3d to 2d
@@ -666,8 +666,8 @@ namespace DRT
       );
 
       /// Internal/strain energy
-      double EnergyInternal(Teuchos::RCP<const MAT::Material> material,  ///< element material
-          Teuchos::ParameterList& params,                                ///< element parameter list
+      double EnergyInternal(Teuchos::RCP<const CORE::MAT::Material> material,  ///< element material
+          Teuchos::ParameterList& params,             ///< element parameter list
           const CORE::LINALG::SerialDenseVector& Ev,  ///< Green-Lagrange strain vector
           int gp                                      ///< Gauss point
       );

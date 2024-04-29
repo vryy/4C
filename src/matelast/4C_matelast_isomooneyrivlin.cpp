@@ -8,12 +8,13 @@
 
 #include "4C_matelast_isomooneyrivlin.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::IsoMooneyRivlin::IsoMooneyRivlin(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::IsoMooneyRivlin::IsoMooneyRivlin(
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata), c1_(matdata->Get<double>("C1")), c2_(matdata->Get<double>("C2"))
 {
 }

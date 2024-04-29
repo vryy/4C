@@ -239,24 +239,24 @@ namespace DRT
 
       //! evaluate material
       virtual void Materials(
-          const Teuchos::RCP<MAT::Material> material,  //!< pointer to current material
-          double& densn,                               //!< density at t_(n)
-          double& densnp,                              //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,                              //!< density at t_(n+alpha_M)
-          double& visc,                                //!< fluid viscosity
-          double& dvisc,                               //!< derivative of the fluid viscosity
-          const int iquad = -1                         //!< id of current gauss point (default = -1)
+          const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
+          double& densn,                                     //!< density at t_(n)
+          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,       //!< density at t_(n+alpha_M)
+          double& visc,         //!< fluid viscosity
+          double& dvisc,        //!< derivative of the fluid viscosity
+          const int iquad = -1  //!< id of current gauss point (default = -1)
       );
 
       //! material Lubrication
       virtual void MatLubrication(
-          const Teuchos::RCP<MAT::Material> material,  //!< pointer to current material
-          double& densn,                               //!< density at t_(n)
-          double& densnp,                              //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,                              //!< density at t_(n+alpha_M)
-          double& visc,                                //!< fluid viscosity
-          double& dvisc,                               //!< derivative of the fluid viscosity
-          const int iquad = -1                         //!< id of current gauss point (default = -1)
+          const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
+          double& densn,                                     //!< density at t_(n)
+          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,       //!< density at t_(n+alpha_M)
+          double& visc,         //!< fluid viscosity
+          double& dvisc,        //!< derivative of the fluid viscosity
+          const int iquad = -1  //!< id of current gauss point (default = -1)
       );
       /*========================================================================*/
       //! @name methods for evaluation of individual terms

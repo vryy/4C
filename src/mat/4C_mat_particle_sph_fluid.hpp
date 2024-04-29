@@ -35,7 +35,7 @@ namespace MAT
     {
      public:
       //! constructor
-      ParticleMaterialSPHFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ParticleMaterialSPHFluid(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! speed of sound
       double SpeedOfSound() const { return std::sqrt(bulkModulus_ / initDensity_); };
@@ -67,7 +67,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
     };
 
   }  // namespace PAR
@@ -85,7 +85,7 @@ namespace MAT
     static ParticleMaterialSPHFluidType instance_;
   };
 
-  class ParticleMaterialSPHFluid : public Material
+  class ParticleMaterialSPHFluid : public CORE::MAT::Material
   {
    public:
     //! constructor (empty material object)
@@ -144,13 +144,13 @@ namespace MAT
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new ParticleMaterialSPHFluid(*this));
     }
 
     //! return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     //! my material parameters

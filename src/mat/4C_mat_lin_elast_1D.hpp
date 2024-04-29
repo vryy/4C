@@ -15,8 +15,8 @@ quantity (e.g. concentration)
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -24,10 +24,10 @@ namespace MAT
 {
   namespace PAR
   {
-    class LinElast1D : public Parameter
+    class LinElast1D : public CORE::MAT::PAR::Parameter
     {
      public:
-      LinElast1D(Teuchos::RCP<MAT::PAR::Material> matdata);
+      LinElast1D(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -38,13 +38,13 @@ namespace MAT
       const double density_;
       //@}
 
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
     };
 
     class LinElast1DGrowth : public LinElast1D
     {
      public:
-      LinElast1DGrowth(Teuchos::RCP<MAT::PAR::Material> matdata);
+      LinElast1DGrowth(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -61,7 +61,7 @@ namespace MAT
       const bool amount_prop_growth_;
       //@}
 
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
     };
   }  // namespace PAR
 
@@ -78,12 +78,15 @@ namespace MAT
     static LinElast1DType instance_;
   };
 
-  class LinElast1D : public Material
+  class LinElast1D : public CORE::MAT::Material
   {
    public:
     explicit LinElast1D(MAT::PAR::LinElast1D* params);
 
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new LinElast1D(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new LinElast1D(*this));
+    }
 
     /// mass density
     double Density() const override { return params_->density_; }
@@ -108,7 +111,7 @@ namespace MAT
 
     void Pack(CORE::COMM::PackBuffer& data) const override;
 
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     int UniqueParObjectId() const override
     {
@@ -144,7 +147,7 @@ namespace MAT
     /// growth proportional to amount of substance or to concentration
     bool AmountPropGrowth() const { return growth_params_->amount_prop_growth_; }
 
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new LinElast1DGrowth(*this));
     }
@@ -165,7 +168,7 @@ namespace MAT
 
     void Pack(CORE::COMM::PackBuffer& data) const override;
 
-    MAT::PAR::Parameter* Parameter() const override { return growth_params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return growth_params_; }
 
     int UniqueParObjectId() const override
     {

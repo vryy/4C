@@ -7,9 +7,9 @@
 */
 
 /*----------------------------------------------------------------------*/
-/* macros */
-#ifndef FOUR_C_MAT_PAR_PARAMETER_HPP
-#define FOUR_C_MAT_PAR_PARAMETER_HPP
+
+#ifndef FOUR_C_MATERIAL_PARAMETER_BASE_HPP
+#define FOUR_C_MATERIAL_PARAMETER_BASE_HPP
 
 
 /*----------------------------------------------------------------------*/
@@ -26,24 +26,24 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* forward declarations */
-namespace MAT
+namespace CORE::MAT
 {
   class Material;
   namespace PAR
   {
     class Material;
   }
-}  // namespace MAT
+}  // namespace CORE::MAT
 
 /*----------------------------------------------------------------------*/
 /* declarations */
 
-namespace MAT::PAR
+namespace CORE::MAT::PAR
 {
   /*----------------------------------------------------------------------*/
   /// Base object to hold 'quick' access material parameters
   ///
-  /// MAT::PAR::Parameters is derived for the various implemented
+  /// CORE::MAT::PAR::Parameters is derived for the various implemented
   /// materials. These provide the 'quick' access to the read-in
   /// material parameters.
   ///
@@ -53,7 +53,7 @@ namespace MAT::PAR
   {
    public:
     /// construct the material object given material parameters
-    Parameter(Teuchos::RCP<const MAT::PAR::Material>
+    Parameter(Teuchos::RCP<const CORE::MAT::PAR::Material>
             matdata  ///< read and validated material data (of 'slow' access)
     );
 
@@ -70,7 +70,7 @@ namespace MAT::PAR
     [[nodiscard]] std::string Name() const { return name_; }
 
     /// create material instance of matching type with my parameters
-    virtual Teuchos::RCP<MAT::Material> CreateMaterial() = 0;
+    virtual Teuchos::RCP<CORE::MAT::Material> CreateMaterial() = 0;
 
     //! \brief set element specific or global material parameter using enum parametername which is
     //! defined in respective MAT::PAR classes
@@ -111,7 +111,7 @@ namespace MAT::PAR
 
   };  // class Parameter
 
-}  // namespace MAT::PAR
+}  // namespace CORE::MAT::PAR
 
 
 FOUR_C_NAMESPACE_CLOSE

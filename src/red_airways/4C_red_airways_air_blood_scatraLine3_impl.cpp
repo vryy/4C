@@ -70,7 +70,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Evaluate(RedAirBloodScat
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   return 0;
 }
@@ -82,7 +82,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Evaluate(RedAirBloodScat
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBloodScatraLine3* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<const MAT::Material> material)
+    Teuchos::RCP<const CORE::MAT::Material> material)
 {
   REDAIRWAYS::EvaluationData& evaluation_data = REDAIRWAYS::EvaluationData::get();
 
@@ -105,7 +105,8 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBloodScat
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::GetCoupledValues(
     RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
 }
 

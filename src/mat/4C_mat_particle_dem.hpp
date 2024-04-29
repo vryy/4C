@@ -34,10 +34,10 @@ namespace MAT
     {
      public:
       //! constructor
-      ParticleMaterialDEM(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ParticleMaterialDEM(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! create material instance of matching type with parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
     };
 
   }  // namespace PAR
@@ -55,7 +55,7 @@ namespace MAT
     static ParticleMaterialDEMType instance_;
   };
 
-  class ParticleMaterialDEM : public Material
+  class ParticleMaterialDEM : public CORE::MAT::Material
   {
    public:
     //! constructor (empty material object)
@@ -114,13 +114,13 @@ namespace MAT
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new ParticleMaterialDEM(*this));
     }
 
     //! return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //@}
 

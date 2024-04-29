@@ -12,8 +12,8 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,16 +25,16 @@ namespace MAT
   {
     class PoroLaw;
 
-    class StructPoro : public Parameter
+    class StructPoro : public CORE::MAT::PAR::Parameter
     {
       friend class MAT::StructPoro;
 
      public:
       //! standard constructor
-      StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata);
+      StructPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! @name material parameters
       //!@{
@@ -162,7 +162,7 @@ namespace MAT
     void ValidKinematics(INPAR::STR::KinemType kinem) override { mat_->ValidKinematics(kinem); }
 
     //! return material
-    Teuchos::RCP<MAT::Material> GetMaterial() const { return mat_; }
+    Teuchos::RCP<CORE::MAT::Material> GetMaterial() const { return mat_; }
 
     //! return material ID
     int MatID() const { return params_->matid_; }
@@ -223,7 +223,10 @@ namespace MAT
         bool save = true);
 
     //! return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new StructPoro(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new StructPoro(*this));
+    }
 
     //! Initialize internal variables
     virtual void PoroSetup(int numgp,  //!< number of Gauss points
@@ -275,7 +278,7 @@ namespace MAT
     );
 
     //! Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! @name Evaluation methods
 

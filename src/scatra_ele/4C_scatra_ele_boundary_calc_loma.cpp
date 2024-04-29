@@ -16,13 +16,13 @@
 #include "4C_mat_arrhenius_temp.hpp"
 #include "4C_mat_ferech_pv.hpp"
 #include "4C_mat_list.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_mixfrac.hpp"
 #include "4C_mat_sutherland.hpp"
 #include "4C_mat_tempdepwater.hpp"
 #include "4C_mat_thermostvenantkirchhoff.hpp"
 #include "4C_mat_yoghurt.hpp"
+#include "4C_material_base.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 #include "4C_utils_singleton_owner.hpp"
@@ -209,7 +209,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NeumannInflow(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
-    Teuchos::RCP<const MAT::Material> material,
+    Teuchos::RCP<const CORE::MAT::Material> material,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k)
 {
   // initialization

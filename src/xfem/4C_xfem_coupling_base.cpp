@@ -661,7 +661,7 @@ void XFEM::CouplingBase::GetViscosityMaster(DRT::Element* xfele,  ///< xfluid el
     double& visc_m)                                               ///< viscosity mastersided
 {
   // Get Materials of master
-  Teuchos::RCP<MAT::Material> mat_m;
+  Teuchos::RCP<CORE::MAT::Material> mat_m;
 
   // Todo: As soon as the master side may not be position = outside anymore we need to take that
   // into account

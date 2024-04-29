@@ -26,7 +26,7 @@ MAT::ParticleMaterialDEMType MAT::ParticleMaterialDEMType::instance_;
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-MAT::PAR::ParticleMaterialDEM::ParticleMaterialDEM(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ParticleMaterialDEM::ParticleMaterialDEM(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata), ParticleMaterialBase(matdata)
 {
   // empty constructor
@@ -35,7 +35,7 @@ MAT::PAR::ParticleMaterialDEM::ParticleMaterialDEM(Teuchos::RCP<MAT::PAR::Materi
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ParticleMaterialDEM::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleMaterialDEM::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ParticleMaterialDEM(this));
 }
@@ -102,7 +102,7 @@ void MAT::ParticleMaterialDEM::Unpack(const std::vector<char>& data)
     {
       // note: dynamic_cast needed due diamond inheritance structure
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = dynamic_cast<MAT::PAR::ParticleMaterialDEM*>(mat);

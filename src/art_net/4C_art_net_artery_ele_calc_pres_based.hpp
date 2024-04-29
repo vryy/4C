@@ -58,7 +58,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<MAT::Material> mat) override;
+          Teuchos::RCP<CORE::MAT::Material> mat) override;
 
       int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
@@ -67,7 +67,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<MAT::Material> mat) override;
+          Teuchos::RCP<CORE::MAT::Material> mat) override;
 
       int EvaluateService(Artery* ele, const ARTERY::Action action, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -76,7 +76,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<MAT::Material> mat) override;
+          Teuchos::RCP<CORE::MAT::Material> mat) override;
 
 
      protected:
@@ -92,7 +92,7 @@ namespace DRT
         */
       void Sysmat(Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::Matrix<my::iel_, my::iel_>& sysmat, CORE::LINALG::Matrix<my::iel_, 1>& rhs,
-          Teuchos::RCP<const MAT::Material> material);
+          Teuchos::RCP<const CORE::MAT::Material> material);
 
       /*!
         \brief Evaluate volumetric flow inside the element (for post-processing)
@@ -107,7 +107,7 @@ namespace DRT
         */
       void EvaluateFlow(Artery* ele, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& flowVec,
-          Teuchos::RCP<const MAT::Material> material);
+          Teuchos::RCP<const CORE::MAT::Material> material);
 
       /*!
         \brief Calculate element length (either in current or deformed configuration)

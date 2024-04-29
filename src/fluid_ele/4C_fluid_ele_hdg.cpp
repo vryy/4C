@@ -259,7 +259,7 @@ int DRT::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList& params,
   const FLD::Action act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   // get material
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   // switch between different physical types as used below
   std::string impltype = "hdg";

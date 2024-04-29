@@ -47,25 +47,27 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
 
       virtual void Initial(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<const MAT::Material> material) = 0;
+          Teuchos::RCP<const CORE::MAT::Material> material) = 0;
 
       virtual void EvaluateTerminalBC(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
 
       virtual void CalcFlowRates(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& a_volumen,
           CORE::LINALG::SerialDenseVector& a_volumenp, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat) = 0;
+          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
 
       virtual void GetCoupledValues(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) = 0;
+          Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
       /// Internal implementation class for inter-acinar linker element
       static RedInterAcinarDepImplInterface* Impl(DRT::ELEMENTS::RedInterAcinarDep* acinus);
@@ -106,7 +108,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<MAT::Material> mat) override;
+          Teuchos::RCP<CORE::MAT::Material> mat) override;
 
       /*!
         \brief calculate element matrix and rhs
@@ -128,7 +130,8 @@ namespace DRT
 
       void EvaluateTerminalBC(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material) override;
+          CORE::LINALG::SerialDenseVector& rhs,
+          Teuchos::RCP<CORE::MAT::Material> material) override;
 
       /*!
         \brief get the initial values of the degrees of freedom at the node
@@ -147,7 +150,7 @@ namespace DRT
       void Initial(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& n_intr_acn_l,
-          Teuchos::RCP<const MAT::Material> material) override;
+          Teuchos::RCP<const CORE::MAT::Material> material) override;
 
       /*!
        \Essential functions to compute the results of essential matrices
@@ -155,14 +158,14 @@ namespace DRT
       void CalcFlowRates(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& a_volumen_strain_np,
           CORE::LINALG::SerialDenseVector& a_volumenp, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat) override{};
+          Teuchos::RCP<CORE::MAT::Material> mat) override{};
 
       /*!
        \Essential functions to evaluate the coupled results
       */
       void GetCoupledValues(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) override{};
+          Teuchos::RCP<CORE::MAT::Material> material) override{};
 
      private:
     };

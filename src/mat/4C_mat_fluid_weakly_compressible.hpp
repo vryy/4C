@@ -14,9 +14,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,11 +28,11 @@ namespace MAT
     /// material parameters for weakly compressible fluid
     ///
     /// This object exists only once for each read fluid.
-    class WeaklyCompressibleFluid : public Parameter
+    class WeaklyCompressibleFluid : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      WeaklyCompressibleFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
+      WeaklyCompressibleFluid(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -49,7 +49,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class WeaklyCompressibleFluid
 
@@ -72,7 +72,7 @@ namespace MAT
   /// Wrapper for weakly compressible fluid
   ///
   /// This object exists (several times) at every element
-  class WeaklyCompressibleFluid : public Material
+  class WeaklyCompressibleFluid : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -129,7 +129,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new WeaklyCompressibleFluid(*this));
     }
@@ -156,7 +156,7 @@ namespace MAT
     double ComprCoeff() const { return params_->comprcoeff_; }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

@@ -683,7 +683,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   // initialization of the densification coefficient vector
   densific_.resize(NumScal());
   DRT::Element* element = discret_->lRowElement(0);
-  Teuchos::RCP<MAT::Material> mat = element->Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = element->Material();
 
   if (mat->MaterialType() == CORE::Materials::m_matlist or
       mat->MaterialType() == CORE::Materials::m_matlist_reactions)
@@ -693,7 +693,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
     for (int k = 0; k < NumScal(); ++k)
     {
       const int matid = actmat->MatID(k);
-      Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<const CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       if (singlemat->MaterialType() == CORE::Materials::m_scatra)
       {

@@ -26,7 +26,8 @@ MAT::ParticleWallMaterialDEMType MAT::ParticleWallMaterialDEMType::instance_;
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-MAT::PAR::ParticleWallMaterialDEM::ParticleWallMaterialDEM(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ParticleWallMaterialDEM::ParticleWallMaterialDEM(
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       frictionTang_(matdata->Get<double>("FRICT_COEFF_TANG")),
       frictionRoll_(matdata->Get<double>("FRICT_COEFF_ROLL")),
@@ -38,7 +39,7 @@ MAT::PAR::ParticleWallMaterialDEM::ParticleWallMaterialDEM(Teuchos::RCP<MAT::PAR
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ParticleWallMaterialDEM::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleWallMaterialDEM::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ParticleWallMaterialDEM(this));
 }
@@ -104,7 +105,7 @@ void MAT::ParticleWallMaterialDEM::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ParticleWallMaterialDEM*>(mat);

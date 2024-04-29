@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -30,17 +30,17 @@ namespace MAT
   namespace PAR
   {
     //! interface class for generic phase (pressure-saturation) law
-    class FluidPoroPhaseLaw : public Parameter
+    class FluidPoroPhaseLaw : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseLaw(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit FluidPoroPhaseLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! build the phase law
       static FluidPoroPhaseLaw* CreatePhaseLaw(int phaselawId);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       /// initialize
       virtual void Initialize() = 0;
@@ -72,7 +72,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseLawLinear(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit FluidPoroPhaseLawLinear(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// initialize
       void Initialize() override { return; };
@@ -117,7 +117,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseLawTangent(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit FluidPoroPhaseLawTangent(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// initialize
       void Initialize() override { return; };
@@ -165,7 +165,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseLawConstraint(Teuchos::RCP<MAT::PAR::Material> matdata)
+      explicit FluidPoroPhaseLawConstraint(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
           : FluidPoroPhaseLaw(matdata){};
 
       /// initialize
@@ -226,7 +226,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseLawByFunction(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit FluidPoroPhaseLawByFunction(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// initialize
       void Initialize() override;

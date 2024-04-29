@@ -588,7 +588,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
   if (matequal)  // element patch has single material
   {
     double density;  // just a dummy density
-    Teuchos::RCP<MAT::Material> mat = adjele[0]->Material();
+    Teuchos::RCP<CORE::MAT::Material> mat = adjele[0]->Material();
     // EleGID is set to -1 errorcheck is performed in
     // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
     SelectMaterial(mat, stress, cmat, density, glstrain, Fnode, 0, -1);
@@ -609,7 +609,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
       for (unsigned j = 0; j < adjsubele[actele->Id()].size(); ++j)
         V += (actele->SubV(adjsubele[actele->Id()][j]) / 3.0);
       // material of the element
-      Teuchos::RCP<MAT::Material> mat = actele->Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
       // EleGID is set to -1 errorcheck is performed in
       // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
       SelectMaterial(mat, stressele, cmatele, density, glstrain, Fnode, 0, -1);
@@ -706,7 +706,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
 /*----------------------------------------------------------------------*
  | material laws for NStet5 (protected)                        gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::SelectMaterial(const Teuchos::RCP<MAT::Material>& mat,
+void DRT::ELEMENTS::NStet5Type::SelectMaterial(const Teuchos::RCP<CORE::MAT::Material>& mat,
     CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat, double& density,
     CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& defgrd, const int gp,
     const int eleGID)

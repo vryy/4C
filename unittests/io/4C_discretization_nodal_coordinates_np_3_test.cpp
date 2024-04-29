@@ -15,7 +15,7 @@
 #include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 #include <Epetra_MpiComm.h>
 
@@ -25,7 +25,7 @@ namespace
 
   void CreateMaterialInGlobalProblem()
   {
-    const auto mat_stvenant = Teuchos::rcp(new MAT::PAR::Material(
+    const auto mat_stvenant = Teuchos::rcp(new CORE::MAT::PAR::Material(
         1, CORE::Materials::MaterialType::m_stvenant, "MAT_Struct_StVenantKirchhoff"));
 
     mat_stvenant->Add("YOUNG", 1.0);

@@ -35,7 +35,7 @@ namespace MAT
     /// material parameters for a single phase of porous multiphase fluid
     ///
     /// This object exists only once for each read fluid.
-    class FluidPoroSingleReaction : public Parameter
+    class FluidPoroSingleReaction : public CORE::MAT::PAR::Parameter
     {
       enum PorofluidReactionCoupling
       {
@@ -46,10 +46,10 @@ namespace MAT
 
      public:
       /// standard constructor
-      FluidPoroSingleReaction(Teuchos::RCP<MAT::PAR::Material> matdata);
+      FluidPoroSingleReaction(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// initialize
       void Initialize();
@@ -106,7 +106,7 @@ namespace MAT
      private:
       /// returns the enum of the current coupling type
       MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling SetCouplingType(
-          Teuchos::RCP<MAT::PAR::Material> matdata);
+          Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! templated internal Initialize implementation
       template <int dim>
@@ -181,7 +181,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroSingleReaction(*this));
     }
@@ -231,7 +231,7 @@ namespace MAT
     void Initialize() override;
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// evaluate reaction
     void EvaluateReaction(std::vector<double>& reacval,

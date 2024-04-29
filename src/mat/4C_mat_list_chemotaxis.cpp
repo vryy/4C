@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | standard constructor                                      thon 06/15 |
  *----------------------------------------------------------------------*/
-MAT::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : MatList(matdata),
       numpair_((matdata->Get<int>("NUMPAIR"))),
       pairids_((matdata->Get<std::vector<int>>("PAIRIDS")))
@@ -46,13 +46,13 @@ MAT::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<MAT::PAR::Material> 
     for (m = pairids_.begin(); m != pairids_.end(); ++m)
     {
       const int pairid = *m;
-      Teuchos::RCP<MAT::Material> mat = MAT::Factory(pairid);
-      MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<MAT::Material>>(pairid, mat));
+      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(pairid);
+      MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(pairid, mat));
     }
   }
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::MatListChemotaxis::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatListChemotaxis::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::MatListChemotaxis(this));
 }
@@ -102,9 +102,9 @@ void MAT::MatListChemotaxis::SetupMatMap()
   for (m = paramschemo_->PairIds()->begin(); m != paramschemo_->PairIds()->end(); ++m)
   {
     const int pairid = *m;
-    Teuchos::RCP<MAT::Material> mat = MAT::Factory(pairid);
+    Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(pairid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<MAT::Material>>(pairid, mat));
+    MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(pairid, mat));
   }
   return;
 }
@@ -163,7 +163,7 @@ void MAT::MatListChemotaxis::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {

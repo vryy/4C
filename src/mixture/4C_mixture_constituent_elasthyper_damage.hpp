@@ -44,7 +44,8 @@ namespace MIXTURE
        * \param matdata Material parameters
        * \param ref_mass_fraction reference mass fraction
        */
-      explicit MixtureConstituentElastHyperDamage(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureConstituentElastHyperDamage(
+          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;

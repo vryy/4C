@@ -8,8 +8,8 @@
 
 #include <gtest/gtest.h>
 
-#include "4C_mat_par_material.hpp"
 #include "4C_mat_stvenantkirchhoff.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
 namespace
@@ -22,7 +22,8 @@ namespace
     void SetUp() override
     {
       // initialize container for material parameters
-      const Teuchos::RCP<MAT::PAR::Material> container = Teuchos::rcp(new MAT::PAR::Material());
+      const Teuchos::RCP<CORE::MAT::PAR::Material> container =
+          Teuchos::rcp(new CORE::MAT::PAR::Material());
 
       // add material parameters to container
       container->Add("YOUNG", young_);

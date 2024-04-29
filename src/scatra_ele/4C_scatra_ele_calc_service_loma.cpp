@@ -12,10 +12,10 @@
 #include "4C_lib_discret.hpp"
 #include "4C_mat_arrhenius_temp.hpp"
 #include "4C_mat_list.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_sutherland.hpp"
 #include "4C_mat_tempdepwater.hpp"
+#include "4C_material_base.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_calc_loma.hpp"
@@ -154,7 +154,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(DRT:
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element* ele,
-    Teuchos::RCP<const MAT::Material> material, Teuchos::ParameterList& params, const double tempnp)
+    Teuchos::RCP<const CORE::MAT::Material> material, Teuchos::ParameterList& params,
+    const double tempnp)
 {
   // initialization
   double density(0.);

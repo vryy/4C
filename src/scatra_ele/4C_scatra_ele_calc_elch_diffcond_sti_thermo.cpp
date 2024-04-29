@@ -71,7 +71,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialPara
   mydiffcond::GetMaterialParams(ele, densn, densnp, densam, visc, iquad);
 
   // get parameters of secondary, thermodynamic electrolyte material
-  Teuchos::RCP<const MAT::Material> material = ele->Material(1);
+  Teuchos::RCP<const CORE::MAT::Material> material = ele->Material(1);
   materialtype_ = material->MaterialType();
   if (materialtype_ == CORE::Materials::m_soret) mythermo::MatSoret(material);
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialParams

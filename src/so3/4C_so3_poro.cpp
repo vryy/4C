@@ -293,7 +293,7 @@ inline DRT::Node** DRT::ELEMENTS::So3Poro<so3_ele, distype>::Nodes()
 }
 
 template <class so3_ele, CORE::FE::CellType distype>
-inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3Poro<so3_ele, distype>::Material() const
+inline Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::So3Poro<so3_ele, distype>::Material() const
 {
   return so3_ele::Material();
 }

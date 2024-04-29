@@ -639,7 +639,7 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
             FOUR_C_THROW("Could not find Newtonian fluid material");
           else
           {
-            const MAT::PAR::Parameter* mat =
+            const CORE::MAT::PAR::Parameter* mat =
                 GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
             const MAT::PAR::NewtonianFluid* actmat =
                 static_cast<const MAT::PAR::NewtonianFluid*>(mat);

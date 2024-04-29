@@ -31,7 +31,7 @@ MAT::BeamElastHyperMaterialType<T> MAT::BeamElastHyperMaterialType<T>::instance_
 template <typename T>
 CORE::COMM::ParObject* MAT::BeamElastHyperMaterialType<T>::Create(const std::vector<char>& data)
 {
-  MAT::Material* matobject = new MAT::BeamElastHyperMaterial<T>();
+  CORE::MAT::Material* matobject = new MAT::BeamElastHyperMaterial<T>();
   matobject->Unpack(data);
   return matobject;
 }
@@ -128,7 +128,7 @@ void MAT::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
 
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
 
       /* the idea is that we have a generic type of material (this class), but various
@@ -153,7 +153,7 @@ void MAT::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-MAT::PAR::Parameter* MAT::BeamElastHyperMaterial<T>::Parameter() const
+CORE::MAT::PAR::Parameter* MAT::BeamElastHyperMaterial<T>::Parameter() const
 {
   return params_;
 }

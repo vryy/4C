@@ -45,7 +45,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
   linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   {
     const CORE::FE::IntegrationPoints2D intpoints(gaussrule_);

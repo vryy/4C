@@ -45,7 +45,7 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>::FluidEleCalcHDG() : usescompletepoly_(t
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -92,7 +92,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
+    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
     CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&, bool offdiag)
 {
@@ -253,7 +253,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::UpdateSecondarySolution(const DRT:
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
@@ -312,7 +312,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Flui
 
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec)
 {
@@ -394,7 +394,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(DRT::ELEMENTS::Fluid* 
 /// projection of function field
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
 {
@@ -1329,7 +1329,7 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     CORE::LINALG::SerialDenseVector& elevec)
 {
   double pressureint = 0.;
@@ -1437,7 +1437,7 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(const DRT::ELE
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorResidual(
-    const Teuchos::RCP<MAT::Material>& mat, const std::vector<double>& val,
+    const Teuchos::RCP<CORE::MAT::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& accel, const double avgPressure,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebodyforce, const std::vector<double>& intebodyforce,
     CORE::LINALG::SerialDenseVector& elevec, const std::vector<double>& interiorecorrectionterm,
@@ -1653,7 +1653,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorResidu
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatrices(
-    const Teuchos::RCP<MAT::Material>& mat, const bool evaluateOnlyNonlinear)
+    const Teuchos::RCP<CORE::MAT::Material>& mat, const bool evaluateOnlyNonlinear)
 {
   // get physical type
   INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
@@ -1906,7 +1906,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatric
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(const int face,
-    const Teuchos::RCP<MAT::Material>& mat, const std::vector<double>& val,
+    const Teuchos::RCP<CORE::MAT::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& traceval, CORE::LINALG::SerialDenseVector& elevec)
 {
   // get physical type
@@ -2061,7 +2061,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(c
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(const int face,
-    const Teuchos::RCP<MAT::Material>& mat, const bool evaluateOnlyNonlinear,
+    const Teuchos::RCP<CORE::MAT::Material>& mat, const bool evaluateOnlyNonlinear,
     CORE::LINALG::SerialDenseMatrix& elemat)
 {
   // get physical type

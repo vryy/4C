@@ -21,9 +21,8 @@
 #include "4C_io_pstream.hpp"
 #include "4C_lib_condition_utils.hpp"
 #include "4C_lib_immersed_node.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_nurbs_discret.hpp"
 
 #include <Teuchos_Time.hpp>
@@ -783,7 +782,7 @@ namespace DRT
           // This is again really ugly as we have to extract the actual
           // element type in order to access the material property
           // note: SetMaterial() was reimplemented by the transport element!
-          Teuchos::RCP<MAT::Material> mat_ptr = sourceele->Material();
+          Teuchos::RCP<CORE::MAT::Material> mat_ptr = sourceele->Material();
           /* Check if the material pointer is null. If necessary, try to cast
            * the condition element to a FaceElement and ask the parent element for
            * the material.                                                      */

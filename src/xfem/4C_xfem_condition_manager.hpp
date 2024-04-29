@@ -676,16 +676,16 @@ namespace XFEM
     );
 
     /// set material pointer for volume
-    void GetVolumeCellMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat,
+    void GetVolumeCellMaterial(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat,
         const CORE::GEO::CUT::VolumeCell* vc);
 
     /// set material pointer for volume cell for (coupling) master side
-    void GetInterfaceMasterMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat,
+    void GetInterfaceMasterMaterial(DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat,
         const CORE::GEO::CUT::VolumeCell* vc);
 
     /// set material pointer for coupling slave side
     void GetInterfaceSlaveMaterial(
-        DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, int coup_sid);
+        DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat, int coup_sid);
 
     /// Initialize Fluid Intersection/Cut State
     bool InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,

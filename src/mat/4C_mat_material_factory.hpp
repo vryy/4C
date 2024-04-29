@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Interface class for materials at Gauss points
+\brief Factory for materials
 
 \level 1
 
@@ -16,6 +16,7 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_inpar_material.hpp"
+#include "4C_material_base.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -28,7 +29,7 @@ namespace MAT
   const int NUM_STRESS_3D = 6;  ///< 6 stresses for 3D
 
   /// create element material object given the number of a material definition
-  Teuchos::RCP<Material> Factory(int matnum  ///< material ID
+  Teuchos::RCP<CORE::MAT::Material> Factory(int matnum  ///< material ID
   );
 
 }  // namespace MAT

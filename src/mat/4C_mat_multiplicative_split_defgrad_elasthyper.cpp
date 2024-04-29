@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 MAT::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       nummat_elast_(matdata->Get<int>("NUMMATEL")),
       matids_elast_(matdata->Get<std::vector<int>>("MATIDSEL")),
@@ -48,7 +48,7 @@ MAT::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastH
   }
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::MultiplicativeSplitDefgradElastHyper::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MultiplicativeSplitDefgradElastHyper::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::MultiplicativeSplitDefgradElastHyper(this));
 }

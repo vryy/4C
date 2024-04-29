@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ScatraMatPoroECM::ScatraMatPoroECM(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ScatraMatPoroECM::ScatraMatPoroECM(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : ScatraReactionMat(matdata), reacscale_(matdata->Get<double>("REACSCALE"))
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatPoroECM::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatPoroECM::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ScatraMatPoroECM(this));
 }
@@ -93,7 +93,7 @@ void MAT::ScatraMatPoroECM::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ScatraMatPoroECM*>(mat);

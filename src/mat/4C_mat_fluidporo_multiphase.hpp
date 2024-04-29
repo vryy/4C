@@ -22,9 +22,9 @@
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_list.hpp"
-#include "4C_mat_material.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -38,10 +38,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      FluidPoroMultiPhase(Teuchos::RCP<MAT::PAR::Material> matdata);
+      FluidPoroMultiPhase(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// initialize the material
       virtual void Initialize();
@@ -144,7 +144,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroMultiPhase(*this));
     }

@@ -65,7 +65,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
-          Teuchos::RCP<const MAT::Material> material, Teuchos::RCP<DRT::Condition> cond,
+          Teuchos::RCP<const CORE::MAT::Material> material, Teuchos::RCP<DRT::Condition> cond,
           const int nume, const std::vector<int> stoich, const int kinetics, const double pot0,
           const double frt, const double scalar) override;
 
@@ -80,7 +80,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& eslavematrix) override;
 
       double GetValence(
-          const Teuchos::RCP<const MAT::Material>& material, const int k) const override;
+          const Teuchos::RCP<const CORE::MAT::Material>& material, const int k) const override;
 
       //! diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc_;

@@ -9,12 +9,12 @@ Implementation of a coupled Saint-Venant-Kirchhoff material
 
 #include "4C_matelast_coupSaintVenantKirchhoff.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata)
 {
   double c1 = matdata->Get<double>("YOUNG");

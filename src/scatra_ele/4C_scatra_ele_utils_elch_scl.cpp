@@ -49,7 +49,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::ScaTraEleUtilsElchScl(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchMat(
-    Teuchos::RCP<const MAT::Material> material, const std::vector<double>& concentrations,
+    Teuchos::RCP<const CORE::MAT::Material> material, const std::vector<double>& concentrations,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,
     INPAR::ELCH::DiffCondMat& diffcondmat)
 {
@@ -73,7 +73,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchMat(
 }
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
-    Teuchos::RCP<const MAT::Material> material, const double concentration,
+    Teuchos::RCP<const CORE::MAT::Material> material, const double concentration,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager)
 {
   // cast material to Scl material
@@ -124,7 +124,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatScl(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchPhase(
-    Teuchos::RCP<const MAT::Material> material, const std::vector<double>& concentrations,
+    Teuchos::RCP<const CORE::MAT::Material> material, const std::vector<double>& concentrations,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,
     INPAR::ELCH::DiffCondMat& diffcondmat)
 {
