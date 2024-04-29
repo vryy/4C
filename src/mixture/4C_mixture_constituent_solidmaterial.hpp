@@ -60,7 +60,7 @@ namespace MIXTURE
     void UnpackConstituent(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
-    INPAR::MAT::MaterialType MaterialType() const override;
+    CORE::Materials::MaterialType MaterialType() const override;
 
     void ReadElement(int numgp, INPUT::LineDefinition* linedef) override;
 

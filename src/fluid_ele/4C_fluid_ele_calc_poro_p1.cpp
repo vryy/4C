@@ -736,7 +736,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(Teuchos::Par
 
     // compute strong residual of mixture (structural) equation
     if (Base::porofldpara_->StabBiot() and (not Base::porofldpara_->IsStationaryConti()) and
-        Base::struct_mat_->PoroLawType() != INPAR::MAT::m_poro_law_constant)
+        Base::struct_mat_->PoroLawType() != CORE::Materials::m_poro_law_constant)
       Base::ComputeMixtureStrongResidual(params, defgrd, edispnp, edispn, F_X, *iquad, true);
 
     //----------------------------------------------------------------------

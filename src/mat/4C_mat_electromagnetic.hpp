@@ -122,9 +122,9 @@ namespace MAT
     //! @name Access methods
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_electromagneticmat;
+      return CORE::Materials::m_electromagneticmat;
     }
 
     /// return copy of this material object

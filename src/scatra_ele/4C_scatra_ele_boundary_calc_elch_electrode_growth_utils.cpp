@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 double DRT::ELEMENTS::CalculateGrowthExchangeMassFluxDensity(const double kr, const double alpha_a,
     const double c_el, const int kinetic_model,
-    const DRT::Condition::ConditionType& s2i_condition_type)
+    const CORE::Conditions::ConditionType& s2i_condition_type)
 {
-  FOUR_C_ASSERT(s2i_condition_type == DRT::Condition::S2IKineticsGrowth,
+  FOUR_C_ASSERT(s2i_condition_type == CORE::Conditions::S2IKineticsGrowth,
       "This method is called with the wrong condition type. Check the implementation!");
 
   switch (kinetic_model)
@@ -65,7 +65,7 @@ void DRT::ELEMENTS::CalculateS2IGrowthElchLinearizations(const double j0, const 
       // compute linearizations of Butler-Volmer mass flux density via implicit differentiation,
       // where F = j0*expterm - j = 0
       dF_dc_slave =
-          scatraeleparamsboundary->ConditionType() == DRT::Condition::S2IKinetics
+          scatraeleparamsboundary->ConditionType() == CORE::Conditions::S2IKinetics
               ? kr * std::pow(emasterphiint, alphaa) * std::pow(cmax - eslavephiint, alphaa - 1.0) *
                         std::pow(eslavephiint, alphac - 1.0) *
                         (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm -
@@ -269,14 +269,14 @@ double DRT::ELEMENTS::GetRegularizationFactor(const double thickness, const doub
   double regfac(1.0);
 
   // get the S2I condition type
-  const DRT::Condition::ConditionType conditiontype = scatraeleparamsboundary->ConditionType();
+  const CORE::Conditions::ConditionType conditiontype = scatraeleparamsboundary->ConditionType();
 
   // get the S2I coupling growth regularization type
   const INPAR::S2I::RegularizationType regularizationtype =
       scatraeleparamsboundary->RegularizationType();
 
   // actually compute regularization factor if lithium stripping is relevant
-  if (conditiontype == DRT::Condition::S2IKineticsGrowth and
+  if (conditiontype == CORE::Conditions::S2IKineticsGrowth and
       (eta > 0.0 or regularizationtype == INPAR::S2I::RegularizationType::regularization_hein))
   {
     // get the S2I coupling growth regularization parameter
@@ -344,14 +344,14 @@ double DRT::ELEMENTS::GetRegularizationFactorDerivative(const double thickness, 
   double regfacderiv(0.0);
 
   // get the S2I condition type
-  const DRT::Condition::ConditionType conditiontype = scatraeleparamsboundary->ConditionType();
+  const CORE::Conditions::ConditionType conditiontype = scatraeleparamsboundary->ConditionType();
 
   // get the S2I coupling growth regularization type
   const INPAR::S2I::RegularizationType regularizationtype =
       scatraeleparamsboundary->RegularizationType();
 
   // actually compute derivative of regularization factor if lithium stripping is relevant
-  if (conditiontype == DRT::Condition::S2IKineticsGrowth and thickness > 0.0 and
+  if (conditiontype == CORE::Conditions::S2IKineticsGrowth and thickness > 0.0 and
       (eta > 0.0 or regularizationtype == INPAR::S2I::RegularizationType::regularization_hein))
   {
     // get the S2I coupling growth regularization parameter

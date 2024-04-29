@@ -324,7 +324,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_update_istep:
     {
       Teuchos::RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
       {
         auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
         micro->Update();
@@ -788,14 +788,14 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
   Teuchos::RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    case CORE::Materials::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(&glstrain_e, &cmat_e, &stress_e);
       density = stvk->Density();
     }
     break;
-    case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
+    case CORE::Materials::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
                                        Raghavan, Vorp */
     {
       auto* aaa = dynamic_cast<MAT::AAAneohooke*>(mat.get());
@@ -804,7 +804,7 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
       density = aaa->Density();
     }
     break;
-    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
+    case CORE::Materials::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       auto* hyper = dynamic_cast<MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;

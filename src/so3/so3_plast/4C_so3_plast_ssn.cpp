@@ -619,7 +619,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
   if (SolidMaterial()->UsesExtendedUpdate())
     FOUR_C_THROW("This element currently does not support the extended update call.");
 
-  if (so3mat->MaterialType() != INPAR::MAT::m_plelasthyper)
+  if (so3mat->MaterialType() != CORE::Materials::m_plelasthyper)
     std::cout << "*** warning *** so3plast used w/o PlasticElastHyper material. Better use "
                  "standard solid element!\n";
   if (HavePlasticSpin())
@@ -767,7 +767,7 @@ void DRT::ELEMENTS::So3Plast<distype>::ReadParameterList(
 {
   double cpl = plparams->get<double>("SEMI_SMOOTH_CPL");
   double s = plparams->get<double>("STABILIZATION_S");
-  if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+  if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
     static_cast<MAT::PlasticElastHyper*>(Material().get())->GetParams(s, cpl);
 
   GLOBAL::ProblemType probtype =
@@ -780,7 +780,7 @@ void DRT::ELEMENTS::So3Plast<distype>::ReadParameterList(
   {
     // get plastic hyperelastic material
     MAT::PlasticElastHyper* plmat = nullptr;
-    if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+    if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
       plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
     else
       FOUR_C_THROW("so3_ssn_plast elements only with PlasticElastHyper material");
@@ -910,7 +910,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::HavePlasticSpin()
 {
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+  if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
 
   if (plmat != nullptr) return plmat->HavePlasticSpin();

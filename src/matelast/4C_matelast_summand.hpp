@@ -13,6 +13,7 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_inpar_material.hpp"
+#include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_linalg_FADmatrix_utils.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
@@ -93,7 +94,7 @@ namespace MAT
       //@}
 
       /// provide material type
-      virtual INPAR::MAT::MaterialType MaterialType() const = 0;
+      virtual CORE::Materials::MaterialType MaterialType() const = 0;
 
       /// Create summand object by input parameter ID
       static Teuchos::RCP<Summand> Factory(int matnum  ///< material ID
@@ -753,7 +754,8 @@ namespace MAT
 
       //! Return names of visualization data
       virtual void VisNames(std::map<std::string, int>& names){
-          /* do nothing for simple material models */};
+          /* do nothing for simple material models */
+      };
 
       //! Return visualization data
       virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleId)

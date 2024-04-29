@@ -50,11 +50,11 @@ bool DRT::ELEMENTS::SoPyramid5::ReadElement(
 
   // only for linear SVK materials and small strain plastic materials
   bool admissibl_mat = false;
-  if ((mat->MaterialType() == INPAR::MAT::m_stvenant) or
-      (mat->MaterialType() == INPAR::MAT::m_thermostvenant) or
-      (mat->MaterialType() == INPAR::MAT::m_pllinelast) or
-      (mat->MaterialType() == INPAR::MAT::m_thermopllinelast) or
-      (mat->MaterialType() == INPAR::MAT::m_elpldamage))
+  if ((mat->MaterialType() == CORE::Materials::m_stvenant) or
+      (mat->MaterialType() == CORE::Materials::m_thermostvenant) or
+      (mat->MaterialType() == CORE::Materials::m_pllinelast) or
+      (mat->MaterialType() == CORE::Materials::m_thermopllinelast) or
+      (mat->MaterialType() == CORE::Materials::m_elpldamage))
     admissibl_mat = true;
 
   // check for SVK material if geometrically linear

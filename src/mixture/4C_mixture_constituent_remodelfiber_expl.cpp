@@ -80,9 +80,9 @@ MIXTURE::MixtureConstituentRemodelFiberExpl::MixtureConstituentRemodelFiberExpl(
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-INPAR::MAT::MaterialType MIXTURE::MixtureConstituentRemodelFiberExpl::MaterialType() const
+CORE::Materials::MaterialType MIXTURE::MixtureConstituentRemodelFiberExpl::MaterialType() const
 {
-  return INPAR::MAT::mix_remodelfiber_expl;
+  return CORE::Materials::mix_remodelfiber_expl;
 }
 
 void MIXTURE::MixtureConstituentRemodelFiberExpl::PackConstituent(

@@ -140,7 +140,7 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_scl; }
+    CORE::Materials::MaterialType MaterialType() const override { return CORE::Materials::m_scl; }
 
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Scl(*this)); }

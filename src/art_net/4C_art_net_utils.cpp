@@ -150,8 +150,9 @@ void ART::ArteryScatraCloneStrategy::CheckMaterialType(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  INPAR::MAT::MaterialType mtype = GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
-  if ((mtype != INPAR::MAT::m_scatra) && (mtype != INPAR::MAT::m_matlist))
+  CORE::Materials::MaterialType mtype =
+      GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type();
+  if ((mtype != CORE::Materials::m_scatra) && (mtype != CORE::Materials::m_matlist))
     FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 

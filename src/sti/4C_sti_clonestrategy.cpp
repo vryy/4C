@@ -22,8 +22,8 @@ void STI::ScatraThermoCloneStrategy::CheckMaterialType(const int matid)
   // check whether material with specified ID is compatible with cloned element or not
   switch (GLOBAL::Problem::Instance()->Materials()->ById(matid)->Type())
   {
-    case INPAR::MAT::m_soret:
-    case INPAR::MAT::m_th_fourier_iso:
+    case CORE::Materials::m_soret:
+    case CORE::Materials::m_th_fourier_iso:
       // do nothing in case of compatible material
       break;
 

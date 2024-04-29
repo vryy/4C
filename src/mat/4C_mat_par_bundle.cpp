@@ -86,7 +86,7 @@ Teuchos::RCP<MAT::PAR::Material> MAT::PAR::Bundle::ById(const int num) const
 }
 
 /*----------------------------------------------------------------------*/
-int MAT::PAR::Bundle::FirstIdByType(const INPAR::MAT::MaterialType type) const
+int MAT::PAR::Bundle::FirstIdByType(const CORE::Materials::MaterialType type) const
 {
   std::map<int, Teuchos::RCP<MAT::PAR::Material>>::const_iterator m;
 

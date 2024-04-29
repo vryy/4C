@@ -76,7 +76,10 @@ namespace MAT
       IsoOgden(MAT::ELASTIC::PAR::IsoOgden* params);
 
       /// Provide the material type
-      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_isoogden; }
+      CORE::Materials::MaterialType MaterialType() const override
+      {
+        return CORE::Materials::mes_isoogden;
+      }
 
       /// Answer if coefficients with respect to modified principal stretches are provided
       bool HaveCoefficientsStretchesModified() override { return true; }

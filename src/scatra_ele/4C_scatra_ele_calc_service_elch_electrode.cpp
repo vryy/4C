@@ -69,7 +69,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CheckElchEleme
 )
 {
   // safety checks
-  if (ele->Material()->MaterialType() != INPAR::MAT::m_electrode)
+  if (ele->Material()->MaterialType() != CORE::Materials::m_electrode)
     FOUR_C_THROW("Invalid material type!");
 
   if (my::numscal_ != 1) FOUR_C_THROW("Invalid number of transported scalars!");

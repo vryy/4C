@@ -285,7 +285,7 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+  if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
     plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
 
   // get time integration data
@@ -593,9 +593,9 @@ void DRT::ELEMENTS::SoSh18Plast::nln_stiffmass(std::vector<double>& disp,  // cu
               gp_temp, params, force, stiffmatrix);
       }
     }  // plastic modifications
-       /* =========================================================================*/
-  }    /* ==================================================== end of Loop over GP */
-       /* =========================================================================*/
+    /* =========================================================================*/
+  } /* ==================================================== end of Loop over GP */
+  /* =========================================================================*/
 
   if ((stiffmatrix || force) && eas_)
   {

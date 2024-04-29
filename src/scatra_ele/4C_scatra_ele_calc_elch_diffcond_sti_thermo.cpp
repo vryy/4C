@@ -73,7 +73,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialPara
   // get parameters of secondary, thermodynamic electrolyte material
   Teuchos::RCP<const MAT::Material> material = ele->Material(1);
   materialtype_ = material->MaterialType();
-  if (materialtype_ == INPAR::MAT::m_soret) mythermo::MatSoret(material);
+  if (materialtype_ == CORE::Materials::m_soret) mythermo::MatSoret(material);
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialParams
 
 
@@ -103,7 +103,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
   mydiffcond::CalcMatAndRhs(
       emat, erhs, k, fac, timefacfac, rhsfac, taufac, timetaufac, rhstaufac, tauderpot, rhsint);
 
-  if (materialtype_ == INPAR::MAT::m_soret)
+  if (materialtype_ == CORE::Materials::m_soret)
   {
     // extract variables and parameters
     const double& concentration = VarManager()->Phinp(0);
@@ -239,7 +239,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
     std::vector<double> dummyvec(my::numscal_, 0.);
     GetMaterialParams(ele, dummyvec, dummyvec, dummyvec, dummy, iquad);
 
-    if (materialtype_ == INPAR::MAT::m_soret)
+    if (materialtype_ == CORE::Materials::m_soret)
     {
       // extract variables and parameters
       const double& concentration = VarManager()->Phinp(0);

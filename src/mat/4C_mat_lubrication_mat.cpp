@@ -43,21 +43,21 @@ MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<MAT::PAR::Material> matdat
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::m_lubrication_law_constant:
+    case CORE::Materials::m_lubrication_law_constant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LubricationLawConstant(curmat));
       lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_lubrication_law_barus:
+    case CORE::Materials::m_lubrication_law_barus:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LubricationLawBarus(curmat));
       lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_lubrication_law_roeland:
+    case CORE::Materials::m_lubrication_law_roeland:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LubricationLawRoeland(curmat));

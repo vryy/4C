@@ -52,8 +52,8 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterLis
         Teuchos::RCP<MAT::Material> scatramat = so3_ele::Material(2);
 
         int numscal = 1;
-        if (scatramat->MaterialType() == INPAR::MAT::m_matlist or
-            scatramat->MaterialType() == INPAR::MAT::m_matlist_reactions)
+        if (scatramat->MaterialType() == CORE::Materials::m_matlist or
+            scatramat->MaterialType() == CORE::Materials::m_matlist_reactions)
         {
           Teuchos::RCP<MAT::MatList> matlist = Teuchos::rcp_dynamic_cast<MAT::MatList>(scatramat);
           numscal = matlist->NumMat();
@@ -1156,7 +1156,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::CouplingStressPoroelast(
 
   // get structure material
   Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-  if (structmat->MaterialType() != INPAR::MAT::m_structporo)
+  if (structmat->MaterialType() != CORE::Materials::m_structporo)
     FOUR_C_THROW("invalid structure material for poroelasticity");
 
   CORE::LINALG::Matrix<numnod_, 1> shapefct;
@@ -1585,9 +1585,9 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::GetMaterials()
   if (struct_mat_ == Teuchos::null)
   {
     struct_mat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-    if (struct_mat_->MaterialType() != INPAR::MAT::m_structporo and
-        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeaction and
-        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
+    if (struct_mat_->MaterialType() != CORE::Materials::m_structporo and
+        struct_mat_->MaterialType() != CORE::Materials::m_structpororeaction and
+        struct_mat_->MaterialType() != CORE::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
@@ -1598,7 +1598,7 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::GetMaterials()
     if (so3_ele::NumMaterial() > 1)
     {
       fluid_mat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(so3_ele::Material(1));
-      if (fluid_mat_->MaterialType() != INPAR::MAT::m_fluidporo)
+      if (fluid_mat_->MaterialType() != CORE::Materials::m_fluidporo)
         FOUR_C_THROW("invalid fluid material for poroelasticity");
     }
     else
@@ -1615,9 +1615,9 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::GetMaterialsPressureBased()
     struct_mat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
     if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
-    if (struct_mat_->MaterialType() != INPAR::MAT::m_structporo and
-        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeaction and
-        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
+    if (struct_mat_->MaterialType() != CORE::Materials::m_structporo and
+        struct_mat_->MaterialType() != CORE::Materials::m_structpororeaction and
+        struct_mat_->MaterialType() != CORE::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
@@ -1630,8 +1630,8 @@ void DRT::ELEMENTS::So3Poro<so3_ele, distype>::GetMaterialsPressureBased()
       fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(so3_ele::Material(1));
       if (fluidmulti_mat_ == Teuchos::null)
         FOUR_C_THROW("cast to multiphase fluid poro material failed");
-      if (fluidmulti_mat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-          fluidmulti_mat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+      if (fluidmulti_mat_->MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+          fluidmulti_mat_->MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
         FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");
       if (fluidmulti_mat_->NumFluidPhases() == 0)
       {

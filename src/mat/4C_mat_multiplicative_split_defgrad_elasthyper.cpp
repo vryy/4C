@@ -865,13 +865,13 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgradEla
     for (const auto& inelasitc_factor : facdefgradin_)
     {
       const auto materialtype = inelasitc_factor.second->MaterialType();
-      if ((materialtype != INPAR::MAT::mfi_lin_scalar_aniso) and
-          (materialtype != INPAR::MAT::mfi_lin_scalar_iso) and
-          (materialtype != INPAR::MAT::mfi_lin_temp_iso) and
-          (materialtype != INPAR::MAT::mfi_no_growth) and
-          (materialtype != INPAR::MAT::mfi_time_funct) and
-          (materialtype != INPAR::MAT::mfi_poly_intercal_frac_aniso) and
-          (materialtype != INPAR::MAT::mfi_poly_intercal_frac_iso))
+      if ((materialtype != CORE::Materials::mfi_lin_scalar_aniso) and
+          (materialtype != CORE::Materials::mfi_lin_scalar_iso) and
+          (materialtype != CORE::Materials::mfi_lin_temp_iso) and
+          (materialtype != CORE::Materials::mfi_no_growth) and
+          (materialtype != CORE::Materials::mfi_time_funct) and
+          (materialtype != CORE::Materials::mfi_poly_intercal_frac_aniso) and
+          (materialtype != CORE::Materials::mfi_poly_intercal_frac_iso))
       {
         FOUR_C_THROW(
             "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section, you need "

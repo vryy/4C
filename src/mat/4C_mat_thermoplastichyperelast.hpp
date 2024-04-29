@@ -160,9 +160,9 @@ namespace MAT
     //! @name Access methods
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_thermoplhyperelast;
+      return CORE::Materials::m_thermoplhyperelast;
     }
 
     /// check if element kinematics and material kinematics are compatible

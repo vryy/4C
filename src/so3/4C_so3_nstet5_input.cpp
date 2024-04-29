@@ -25,7 +25,7 @@ bool DRT::ELEMENTS::NStet5::ReadElement(
   linedef->ExtractInt("MAT", material);
   SetMaterial(material);
 
-  if (Material()->MaterialType() == INPAR::MAT::m_elasthyper)
+  if (Material()->MaterialType() == CORE::Materials::m_elasthyper)
   {
     MAT::ElastHyper* elahy = dynamic_cast<MAT::ElastHyper*>(Material().get());
     elahy->Setup(0, linedef);

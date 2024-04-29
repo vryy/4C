@@ -100,12 +100,12 @@ void INPAR::ALE::SetValidConditions(std::vector<Teuchos::RCP<INPUT::ConditionDef
   aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("NODENORMALFUNCT")));
   aleupdatecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("nodenormalfunct")));
 
-  Teuchos::RCP<ConditionDefinition> linealeupdate =
-      Teuchos::rcp(new ConditionDefinition("DESIGN ALE UPDATE LINE CONDITIONS", "ALEUPDATECoupling",
-          "ALEUPDATE Coupling", DRT::Condition::ALEUPDATECoupling, true, DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surfaleupdate =
-      Teuchos::rcp(new ConditionDefinition("DESIGN ALE UPDATE SURF CONDITIONS", "ALEUPDATECoupling",
-          "ALEUPDATE Coupling", DRT::Condition::ALEUPDATECoupling, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> linealeupdate = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN ALE UPDATE LINE CONDITIONS", "ALEUPDATECoupling", "ALEUPDATE Coupling",
+      CORE::Conditions::ALEUPDATECoupling, true, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<ConditionDefinition> surfaleupdate = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN ALE UPDATE SURF CONDITIONS", "ALEUPDATECoupling", "ALEUPDATE Coupling",
+      CORE::Conditions::ALEUPDATECoupling, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < aleupdatecomponents.size(); ++i)
   {

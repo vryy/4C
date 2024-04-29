@@ -164,7 +164,10 @@ namespace MAT
     //@}
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_vp_robinson; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_vp_robinson;
+    }
 
     /// check if element kinematics and material kinematics are compatible
     void ValidKinematics(INPAR::STR::KinemType kinem) override

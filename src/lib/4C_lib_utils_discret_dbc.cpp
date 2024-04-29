@@ -164,10 +164,10 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
   // check. This logic can be understood by contraposition: if, for example, Point DBC is read
   // first, the dof values will not be altered by Line/Surface/Volume DBC. Hence inconsistency in
   // Line/Surface/Volume DBC cannot be detected.
-  ReadDirichletCondition(discret, conds, time, info, dbcgids, DRT::Condition::VolumeDirichlet);
-  ReadDirichletCondition(discret, conds, time, info, dbcgids, DRT::Condition::SurfaceDirichlet);
-  ReadDirichletCondition(discret, conds, time, info, dbcgids, DRT::Condition::LineDirichlet);
-  ReadDirichletCondition(discret, conds, time, info, dbcgids, DRT::Condition::PointDirichlet);
+  ReadDirichletCondition(discret, conds, time, info, dbcgids, CORE::Conditions::VolumeDirichlet);
+  ReadDirichletCondition(discret, conds, time, info, dbcgids, CORE::Conditions::SurfaceDirichlet);
+  ReadDirichletCondition(discret, conds, time, info, dbcgids, CORE::Conditions::LineDirichlet);
+  ReadDirichletCondition(discret, conds, time, info, dbcgids, CORE::Conditions::PointDirichlet);
 }
 
 /*----------------------------------------------------------------------------*
@@ -175,21 +175,21 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
 void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
     const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids,
-    const enum DRT::Condition::ConditionType& type) const
+    const enum CORE::Conditions::ConditionType& type) const
 {
   int hierarchical_order;
   switch (type)
   {
-    case DRT::Condition::PointDirichlet:
+    case CORE::Conditions::PointDirichlet:
       hierarchical_order = 0;
       break;
-    case DRT::Condition::LineDirichlet:
+    case CORE::Conditions::LineDirichlet:
       hierarchical_order = 1;
       break;
-    case DRT::Condition::SurfaceDirichlet:
+    case CORE::Conditions::SurfaceDirichlet:
       hierarchical_order = 2;
       break;
-    case DRT::Condition::VolumeDirichlet:
+    case CORE::Conditions::VolumeDirichlet:
       hierarchical_order = 3;
       break;
     default:
@@ -416,13 +416,13 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   DoDirichletCondition(
-      discret, conds, time, systemvectors, toggle, dbcgids, DRT::Condition::VolumeDirichlet);
+      discret, conds, time, systemvectors, toggle, dbcgids, CORE::Conditions::VolumeDirichlet);
   DoDirichletCondition(
-      discret, conds, time, systemvectors, toggle, dbcgids, DRT::Condition::SurfaceDirichlet);
+      discret, conds, time, systemvectors, toggle, dbcgids, CORE::Conditions::SurfaceDirichlet);
   DoDirichletCondition(
-      discret, conds, time, systemvectors, toggle, dbcgids, DRT::Condition::LineDirichlet);
+      discret, conds, time, systemvectors, toggle, dbcgids, CORE::Conditions::LineDirichlet);
   DoDirichletCondition(
-      discret, conds, time, systemvectors, toggle, dbcgids, DRT::Condition::PointDirichlet);
+      discret, conds, time, systemvectors, toggle, dbcgids, CORE::Conditions::PointDirichlet);
 }
 
 /*----------------------------------------------------------------------------*
@@ -431,7 +431,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
     const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids,
-    const enum DRT::Condition::ConditionType& type) const
+    const enum CORE::Conditions::ConditionType& type) const
 {
   for (const auto& cond : conds)
   {

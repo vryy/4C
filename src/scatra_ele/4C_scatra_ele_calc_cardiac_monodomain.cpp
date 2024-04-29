@@ -73,7 +73,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Materials(
 )
 {
   // safety check
-  if (material->MaterialType() != INPAR::MAT::m_myocard)
+  if (material->MaterialType() != CORE::Materials::m_myocard)
     FOUR_C_THROW("Material type is not supported");
 
   // safety check

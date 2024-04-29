@@ -39,7 +39,7 @@ MAT::PAR::FluidPoroRelPermeabilityLaw::CreateRelPermeabilityLaw(int matID)
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::m_fluidporo_relpermeabilitylaw_constant:
+    case CORE::Materials::m_fluidporo_relpermeabilitylaw_constant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroRelPermeabilityLawConstant(curmat));
@@ -47,7 +47,7 @@ MAT::PAR::FluidPoroRelPermeabilityLaw::CreateRelPermeabilityLaw(int matID)
           static_cast<MAT::PAR::FluidPoroRelPermeabilityLawConstant*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_fluidporo_relpermeabilitylaw_exp:
+    case CORE::Materials::m_fluidporo_relpermeabilitylaw_exp:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroRelPermeabilityLawExponent(curmat));

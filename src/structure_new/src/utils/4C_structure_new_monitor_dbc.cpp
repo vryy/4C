@@ -88,15 +88,15 @@ void STR::MonitorDbc::GetTaggedCondition(std::vector<const DRT::Condition*>& tag
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::MonitorDbc::GetUniqueId(int tagged_id, DRT::Condition::GeometryType gtype) const
+int STR::MonitorDbc::GetUniqueId(int tagged_id, CORE::Conditions::GeometryType gtype) const
 {
   switch (gtype)
   {
-    case DRT::Condition::Point:
+    case CORE::Conditions::geometry_type_point:
       return tagged_id + 100;
-    case DRT::Condition::Line:
+    case CORE::Conditions::geometry_type_line:
       return tagged_id + 1000;
-    case DRT::Condition::Surface:
+    case CORE::Conditions::geometry_type_surface:
       return tagged_id + 10000;
     default:
       FOUR_C_THROW("Unsupported geometry type! (enum=%d)", gtype);
@@ -112,7 +112,7 @@ void STR::MonitorDbc::CreateReactionForceCondition(
   const int new_id = GetUniqueId(tagged_cond.Id(), tagged_cond.GType());
 
   Teuchos::RCP<DRT::Condition> rcond_ptr = Teuchos::rcp(
-      new DRT::Condition(new_id, DRT::Condition::ElementTag, true, tagged_cond.GType()));
+      new DRT::Condition(new_id, CORE::Conditions::ElementTag, true, tagged_cond.GType()));
 
   rcond_ptr->Add("onoff", (tagged_cond.Get<std::vector<int>>("onoff")));
   rcond_ptr->SetNodes(*tagged_cond.GetNodes());
@@ -417,7 +417,7 @@ const Epetra_Comm& STR::MonitorDbc::Comm() const { return discret_ptr_->Comm(); 
 void STR::MonitorDbc::GetArea(double area[], const DRT::Condition* rcond) const
 {
   // no area for point DBCs
-  if (rcond->GType() == DRT::Condition::Point)
+  if (rcond->GType() == CORE::Conditions::geometry_type_point)
   {
     std::fill(area, area + 2, 0.0);
     return;

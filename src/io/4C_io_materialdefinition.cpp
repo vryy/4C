@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*======================================================================*/
 /*======================================================================*/
 INPUT::MaterialDefinition::MaterialDefinition(
-    std::string materialname, std::string description, INPAR::MAT::MaterialType mattype)
+    std::string materialname, std::string description, CORE::Materials::MaterialType mattype)
     : materialname_(std::move(materialname)),
       description_(std::move(description)),
       mattype_(mattype)

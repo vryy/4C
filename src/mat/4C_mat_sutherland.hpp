@@ -125,7 +125,10 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_sutherland; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_sutherland;
+    }
 
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Sutherland(*this)); }

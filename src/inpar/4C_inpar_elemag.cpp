@@ -143,13 +143,13 @@ void INPAR::ELEMAG::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> silvermueller_line =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE SILVER-MUELLER CONDITIONS",
           "Silver-Mueller", "Absorbing-emitting line for electromagnetics",
-          DRT::Condition::SilverMueller, true, DRT::Condition::Line));
+          CORE::Conditions::SilverMueller, true, CORE::Conditions::geometry_type_line));
 
   // surface
   Teuchos::RCP<ConditionDefinition> silvermueller_surface =
       Teuchos::rcp(new ConditionDefinition("DESIGN SURF SILVER-MUELLER CONDITIONS",
           "Silver-Mueller", "Absorbing-emitting surface for electromagnetics",
-          DRT::Condition::SilverMueller, true, DRT::Condition::Surface));
+          CORE::Conditions::SilverMueller, true, CORE::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < abcbundcomponents.size(); ++i)
   {

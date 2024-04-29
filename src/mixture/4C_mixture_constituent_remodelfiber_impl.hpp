@@ -62,7 +62,7 @@ namespace MIXTURE
         MIXTURE::PAR::MixtureConstituentRemodelFiberImpl* params, int id);
 
     /// Returns the material type enum
-    [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override;
+    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override;
 
     void PackConstituent(CORE::COMM::PackBuffer& data) const override;
 

@@ -155,9 +155,9 @@ namespace MAT
     }
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_membrane_activestrain;
+      return CORE::Materials::m_membrane_activestrain;
     }
 
     /// return copy of this material object

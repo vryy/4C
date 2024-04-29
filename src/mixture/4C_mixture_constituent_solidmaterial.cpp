@@ -59,9 +59,9 @@ MIXTURE::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
         material_->Parameter()->Id());
 }
 
-INPAR::MAT::MaterialType MIXTURE::MixtureConstituentSolidMaterial::MaterialType() const
+CORE::Materials::MaterialType MIXTURE::MixtureConstituentSolidMaterial::MaterialType() const
 {
-  return INPAR::MAT::mix_solid_material;
+  return CORE::Materials::mix_solid_material;
 }
 
 void MIXTURE::MixtureConstituentSolidMaterial::PackConstituent(CORE::COMM::PackBuffer& data) const
@@ -127,7 +127,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
   }
 }
 
-INPAR::MAT::MaterialType MaterialType() { return INPAR::MAT::mix_solid_material; }
+CORE::Materials::MaterialType MaterialType() { return CORE::Materials::mix_solid_material; }
 
 void MIXTURE::MixtureConstituentSolidMaterial::ReadElement(
     int numgp, INPUT::LineDefinition* linedef)

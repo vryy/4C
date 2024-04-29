@@ -39,14 +39,14 @@ MAT::PAR::PoroDensityLaw* MAT::PAR::PoroDensityLaw::CreateDensityLaw(int matID)
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::m_poro_densitylaw_constant:
+    case CORE::Materials::m_poro_densitylaw_constant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroDensityLawConstant(curmat));
       densitylaw = static_cast<MAT::PAR::PoroDensityLawConstant*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_poro_densitylaw_exp:
+    case CORE::Materials::m_poro_densitylaw_exp:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroDensityLawExp(curmat));

@@ -319,7 +319,7 @@ int DRT::ELEMENTS::SoPyramid5::Evaluate(Teuchos::ParameterList& params,
       UpdateJacobianMapping(mydisp, *prestress_);
 
       // Update constraintmixture material
-      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+      if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
       {
         SolidMaterial()->Update();
       }
@@ -935,9 +935,9 @@ void DRT::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loca
       }
 
     }  // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
-       /* =========================================================================*/
-  }    /* ==================================================== end of Loop over GP */
-       /* =========================================================================*/
+    /* =========================================================================*/
+  } /* ==================================================== end of Loop over GP */
+  /* =========================================================================*/
 
   return;
 }  // DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass

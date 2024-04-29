@@ -1127,7 +1127,7 @@ int DRT::ELEMENTS::SoHex8::Evaluate(Teuchos::ParameterList& params,
           UpdateJacobianMapping(mydisp, *prestress_);
 
           // Update constraintmixture material
-          if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+          if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
           {
             SolidMaterial()->Update();
           }
@@ -2178,9 +2178,9 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
 
     UTILS::GetTemperatureForStructuralMaterial<CORE::FE::CellType::hex8>(shapefcts[gp], params);
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture)
+    if (Material()->MaterialType() == CORE::Materials::m_constraintmixture ||
+        Material()->MaterialType() == CORE::Materials::m_growthremodel_elasthyper ||
+        Material()->MaterialType() == CORE::Materials::m_mixture)
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, 1> point(true);
       soh8_GaussPointRefeCoords(point, xrefe, gp);
@@ -2499,9 +2499,9 @@ void DRT::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,    // location ma
       }
 
     }  // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
-       /* =========================================================================*/
-  }    /* ==================================================== end of Loop over GP */
-       /* =========================================================================*/
+    /* =========================================================================*/
+  } /* ==================================================== end of Loop over GP */
+  /* =========================================================================*/
 
   // rhs norm of eas equations
   if (eastype_ != soh8_easnone && split_res && force != nullptr)
@@ -2921,9 +2921,9 @@ void DRT::ELEMENTS::SoHex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // loc
       }
 
     }  // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
-       /* =========================================================================*/
-  }    /* ==================================================== end of Loop over GP */
-       /* =========================================================================*/
+    /* =========================================================================*/
+  } /* ==================================================== end of Loop over GP */
+  /* =========================================================================*/
 
   return;
 }  // DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm
@@ -3180,9 +3180,9 @@ void DRT::ELEMENTS::SoHex8::Update_element(std::vector<double>& disp,
     Teuchos::ParameterList& params, const Teuchos::RCP<MAT::Material>& mat)
 {
   // Calculate current deformation gradient
-  if ((mat->MaterialType() == INPAR::MAT::m_constraintmixture) ||
-      (mat->MaterialType() == INPAR::MAT::m_elasthyper) ||
-      (mat->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper) ||
+  if ((mat->MaterialType() == CORE::Materials::m_constraintmixture) ||
+      (mat->MaterialType() == CORE::Materials::m_elasthyper) ||
+      (mat->MaterialType() == CORE::Materials::m_growthremodel_elasthyper) ||
       (SolidMaterial()->UsesExtendedUpdate()))
   {
     CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);

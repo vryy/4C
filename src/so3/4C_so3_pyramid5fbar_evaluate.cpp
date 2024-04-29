@@ -312,7 +312,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       UpdateJacobianMapping(mydisp, *prestress_);
 
       // Update constraintmixture material
-      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+      if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
       {
         SolidMaterial()->Update();
       }
@@ -324,7 +324,7 @@ int DRT::ELEMENTS::SoPyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<MAT::Material> mat = Material();
 
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale) sop5_read_restart_multi();
+      if (mat->MaterialType() == CORE::Materials::m_struct_multiscale) sop5_read_restart_multi();
     }
     break;
 
@@ -1044,13 +1044,13 @@ void DRT::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // locat
 
     // in case of temperature-dependent material parameters, e.g. Young's modulus,
     // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
-    if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+    if (Material()->MaterialType() == CORE::Materials::m_thermoplhyperelast)
     {
       GetTemperatureForStructuralMaterial(shapefcts[gp], params);
     }
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture)
+    if (Material()->MaterialType() == CORE::Materials::m_constraintmixture ||
+        Material()->MaterialType() == CORE::Materials::m_mixture)
     {
       // gp reference coordinates
       CORE::LINALG::Matrix<NUMNOD_SOP5, 1> funct(true);

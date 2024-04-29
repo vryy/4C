@@ -366,9 +366,9 @@ namespace MAT
       //@{
 
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override
+      CORE::Materials::MaterialType MaterialType() const override
       {
-        return INPAR::MAT::mes_remodelfiber;
+        return CORE::Materials::mes_remodelfiber;
       };
 
       /// Return number of fiber families

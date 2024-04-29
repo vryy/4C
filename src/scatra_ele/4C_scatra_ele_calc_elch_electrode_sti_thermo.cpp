@@ -66,7 +66,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialPar
   // get parameters of secondary, thermodynamic electrolyte material
   Teuchos::RCP<const MAT::Material> material = ele->Material(1);
   materialtype_ = material->MaterialType();
-  if (materialtype_ == INPAR::MAT::m_soret) mythermo::MatSoret(material);
+  if (materialtype_ == CORE::Materials::m_soret) mythermo::MatSoret(material);
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialParams
 
 
@@ -85,7 +85,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::CalcMatAndRhs(
   myelectrode::CalcMatAndRhs(
       emat, erhs, k, fac, timefacfac, rhsfac, taufac, timetaufac, rhstaufac, tauderpot, rhsint);
 
-  if (materialtype_ == INPAR::MAT::m_soret)
+  if (materialtype_ == CORE::Materials::m_soret)
   {
     // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
     mythermo::CalcMatSoret(emat, timefacfac, VarManager()->Phinp(0),
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::SysmatODScatra
         myelectrode::DiffManager()->GetTempDerivIsoDiffCoef(0, 0),
         myelectrode::DiffManager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.);
 
-    if (materialtype_ == INPAR::MAT::m_soret)
+    if (materialtype_ == CORE::Materials::m_soret)
     {
       // provide element matrix with linearizations of Soret term in discrete scatra residuals
       // w.r.t. thermo dofs

@@ -224,9 +224,9 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterials()
     struct_mat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
     if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
-    if (struct_mat_->MaterialType() != INPAR::MAT::m_structporo and
-        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeaction and
-        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
+    if (struct_mat_->MaterialType() != CORE::Materials::m_structporo and
+        struct_mat_->MaterialType() != CORE::Materials::m_structpororeaction and
+        struct_mat_->MaterialType() != CORE::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
@@ -239,7 +239,7 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterials()
       fluid_mat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(Material(1));
       if (fluid_mat_ == Teuchos::null) return;
       // FOUR_C_THROW("cast to fluid poro material failed");
-      if (fluid_mat_->MaterialType() != INPAR::MAT::m_fluidporo)
+      if (fluid_mat_->MaterialType() != CORE::Materials::m_fluidporo)
         FOUR_C_THROW("invalid fluid material for poroelasticity");
     }
     else
@@ -256,9 +256,9 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterialsPressureBased()
     struct_mat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
     if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
-    if (struct_mat_->MaterialType() != INPAR::MAT::m_structporo and
-        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeaction and
-        struct_mat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
+    if (struct_mat_->MaterialType() != CORE::Materials::m_structporo and
+        struct_mat_->MaterialType() != CORE::Materials::m_structpororeaction and
+        struct_mat_->MaterialType() != CORE::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
 
@@ -271,8 +271,8 @@ void DRT::ELEMENTS::Wall1Poro<distype>::GetMaterialsPressureBased()
       fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(Material(1));
       if (fluidmulti_mat_ == Teuchos::null)
         FOUR_C_THROW("cast to multiphase fluid poro material failed");
-      if (fluidmulti_mat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-          fluidmulti_mat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+      if (fluidmulti_mat_->MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+          fluidmulti_mat_->MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
         FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");
       if (fluidmulti_mat_->NumFluidPhases() == 0)
       {

@@ -703,7 +703,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Materials(
 {
   switch (material->MaterialType())
   {
-    case INPAR::MAT::m_lubrication:
+    case CORE::Materials::m_lubrication:
       MatLubrication(material, densn, densnp, densam, visc, dvisc, iquad);
       break;
     default:

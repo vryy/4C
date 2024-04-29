@@ -305,7 +305,7 @@ int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
           UpdateJacobianMapping(mydisp, *prestress_);
 
           // Update constraintmixture material
-          if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+          if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
           {
             SolidMaterial()->Update();
           }
@@ -1251,8 +1251,8 @@ void DRT::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location matr
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture ||
-        Material()->MaterialType() == INPAR::MAT::m_mixture)
+    if (Material()->MaterialType() == CORE::Materials::m_constraintmixture ||
+        Material()->MaterialType() == CORE::Materials::m_mixture)
     {
       // gp reference coordinates
       CORE::LINALG::Matrix<NUMNOD_SOTET4, 1> funct(true);
@@ -1870,8 +1870,8 @@ void DRT::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // location m
     Teuchos::ParameterList& params,          // algorithmic parameters e.g. time
     const Teuchos::RCP<MAT::Material>& mat)  // material
 {
-  if ((Material()->MaterialType() == INPAR::MAT::m_constraintmixture) ||
-      (Material()->MaterialType() == INPAR::MAT::m_elasthyper))
+  if ((Material()->MaterialType() == CORE::Materials::m_constraintmixture) ||
+      (Material()->MaterialType() == CORE::Materials::m_elasthyper))
   {
     // in a first step ommit everything with prestress
 
@@ -1992,12 +1992,12 @@ void DRT::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // location m
       CORE::LINALG::Matrix<3, 3> locsys(true);
       CORE::LINALG::SYEV(cauchystress, lambda, locsys);
 
-      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      if (mat->MaterialType() == CORE::Materials::m_constraintmixture)
       {
         auto* comi = dynamic_cast<MAT::ConstraintMixture*>(mat.get());
         comi->EvaluateFiberVecs(gp, locsys, defgrd);
       }
-      else if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
+      else if (mat->MaterialType() == CORE::Materials::m_elasthyper)
       {
         // we only have fibers at element center, thus we interpolate stress and defgrd
         avg_stress.Update(1.0 / NUMGPT_SOTET4, cauchystress, 1.0);
@@ -2006,7 +2006,7 @@ void DRT::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // location m
       else
         FOUR_C_THROW("material not implemented for remodeling");
 
-      if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
+      if (mat->MaterialType() == CORE::Materials::m_elasthyper)
       {
         // evaluate eigenproblem based on stress of previous step
         CORE::LINALG::Matrix<3, 3> lambda(true);

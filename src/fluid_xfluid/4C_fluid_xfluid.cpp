@@ -1244,7 +1244,8 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
     {
       Teuchos::RCP<MAT::Material> mat = actele->Material();
 
-      if (mat->MaterialType() == INPAR::MAT::m_matlist) FOUR_C_THROW("No matlists allowed here!!");
+      if (mat->MaterialType() == CORE::Materials::m_matlist)
+        FOUR_C_THROW("No matlists allowed here!!");
 
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(*discret_, la, false);
@@ -4503,7 +4504,7 @@ void FLD::XFluid::SetInitialFlowField(
                       exp(a * xyz[1]) * cos(a * xyz[2] + d * xyz[0]));
 
       // compute initial pressure
-      int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+      int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
       if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
       const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
@@ -4573,8 +4574,8 @@ void FLD::XFluid::SetInitialFlowField(
     const Teuchos::RCP<MAT::Material> material = ele->Material();
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // check if we really got a list of materials
-    FOUR_C_ASSERT(
-        material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
+    FOUR_C_ASSERT(material->MaterialType() == CORE::Materials::m_matlist,
+        "Material law is not of type m_matlist");
 #endif
     // get material list for this element
     const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
@@ -4585,9 +4586,9 @@ void FLD::XFluid::SetInitialFlowField(
     Teuchos::RCP<const MAT::Material> matptr1 = matlist->MaterialById(matlist->MatID(1));
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     FOUR_C_ASSERT(
-        matptr0->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+        matptr0->MaterialType() == CORE::Materials::m_fluid, "material is not of type m_fluid");
     FOUR_C_ASSERT(
-        matptr1->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+        matptr1->MaterialType() == CORE::Materials::m_fluid, "material is not of type m_fluid");
 #endif
     const MAT::NewtonianFluid* mat0 = static_cast<const MAT::NewtonianFluid*>(matptr0.get());
     const MAT::NewtonianFluid* mat1 = static_cast<const MAT::NewtonianFluid*>(matptr1.get());

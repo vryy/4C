@@ -477,7 +477,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
 
       // check if aciuns is ogden type material
       if (discret_->gElement(GID)->Material(0)->MaterialType() ==
-          INPAR::MAT::m_0d_maxwell_acinus_ogden)
+          CORE::Materials::m_0d_maxwell_acinus_ogden)
       {
         // get material parameters kappa and beta
         Teuchos::RCP<MAT::Maxwell0dAcinusOgden> mymat =
@@ -2442,7 +2442,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
   for (unsigned int i = 0; i < numnodecond; ++i)
   {
     DRT::Condition* actcond = nodecond[i];
-    if (actcond->Type() == DRT::Condition::RedAirwayNodeTissue)
+    if (actcond->Type() == CORE::Conditions::RedAirwayNodeTissue)
     {
       auto condID = actcond->Get<int>("coupling id");
       coupcond_[condID] = actcond;

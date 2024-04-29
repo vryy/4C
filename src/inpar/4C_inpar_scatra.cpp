@@ -478,12 +478,12 @@ void INPAR::SCATRA::SetValidConditions(
   // Boundary flux evaluation condition for scalar transport
   Teuchos::RCP<ConditionDefinition> linebndryfluxeval =
       Teuchos::rcp(new ConditionDefinition("SCATRA FLUX CALC LINE CONDITIONS", "ScaTraFluxCalc",
-          "Scalar Transport Boundary Flux Calculation", DRT::Condition::ScaTraFluxCalc, true,
-          DRT::Condition::Line));
+          "Scalar Transport Boundary Flux Calculation", CORE::Conditions::ScaTraFluxCalc, true,
+          CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> surfbndryfluxeval =
       Teuchos::rcp(new ConditionDefinition("SCATRA FLUX CALC SURF CONDITIONS", "ScaTraFluxCalc",
-          "Scalar Transport Boundary Flux Calculation", DRT::Condition::ScaTraFluxCalc, true,
-          DRT::Condition::Surface));
+          "Scalar Transport Boundary Flux Calculation", CORE::Conditions::ScaTraFluxCalc, true,
+          CORE::Conditions::geometry_type_surface));
   condlist.emplace_back(linebndryfluxeval);
   condlist.emplace_back(surfbndryfluxeval);
 
@@ -492,15 +492,15 @@ void INPAR::SCATRA::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> totalandmeanscalarline =
       Teuchos::rcp(new ConditionDefinition("DESIGN TOTAL AND MEAN SCALAR LINE CONDITIONS",
           "TotalAndMeanScalar", "calculation of total and mean values of transported scalars",
-          DRT::Condition::TotalAndMeanScalar, true, DRT::Condition::Line));
+          CORE::Conditions::TotalAndMeanScalar, true, CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> totalandmeanscalarsurf =
       Teuchos::rcp(new ConditionDefinition("DESIGN TOTAL AND MEAN SCALAR SURF CONDITIONS",
           "TotalAndMeanScalar", "calculation of total and mean values of transported scalars",
-          DRT::Condition::TotalAndMeanScalar, true, DRT::Condition::Surface));
+          CORE::Conditions::TotalAndMeanScalar, true, CORE::Conditions::geometry_type_surface));
   Teuchos::RCP<ConditionDefinition> totalandmeanscalarvol =
       Teuchos::rcp(new ConditionDefinition("DESIGN TOTAL AND MEAN SCALAR VOL CONDITIONS",
           "TotalAndMeanScalar", "calculation of total and mean values of transported scalars",
-          DRT::Condition::TotalAndMeanScalar, true, DRT::Condition::Volume));
+          CORE::Conditions::TotalAndMeanScalar, true, CORE::Conditions::geometry_type_volume));
 
   // equip condition definitions with input file line components
   std::vector<Teuchos::RCP<INPUT::LineComponent>> totalandmeanscalarcomponents;
@@ -528,15 +528,15 @@ void INPAR::SCATRA::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> relerrorline =
       Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA RELATIVE ERROR LINE CONDITIONS",
           "ScatraRelError", "calculation of relative error with reference to analytical solution",
-          DRT::Condition::ScatraRelError, true, DRT::Condition::Line));
+          CORE::Conditions::ScatraRelError, true, CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> relerrorsurf =
       Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA RELATIVE ERROR SURF CONDITIONS",
           "ScatraRelError", "calculation of relative error with reference to analytical solution",
-          DRT::Condition::ScatraRelError, true, DRT::Condition::Surface));
+          CORE::Conditions::ScatraRelError, true, CORE::Conditions::geometry_type_surface));
   Teuchos::RCP<ConditionDefinition> relerrorvol =
       Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA RELATIVE ERROR VOL CONDITIONS",
           "ScatraRelError", "calculation of relative error with reference to analytical solution",
-          DRT::Condition::ScatraRelError, true, DRT::Condition::Volume));
+          CORE::Conditions::ScatraRelError, true, CORE::Conditions::geometry_type_volume));
 
   // equip condition definitions with input file line components
   std::vector<Teuchos::RCP<INPUT::LineComponent>> relerrorcomponents;
@@ -589,9 +589,9 @@ void INPAR::SCATRA::SetValidConditions(
   scatracoupcomponents.emplace_back(Teuchos::rcp(new INPUT::RealVectorComponent("wss coeffs", 2)));
 
 
-  Teuchos::RCP<ConditionDefinition> surfscatracoup = Teuchos::rcp(
-      new ConditionDefinition("DESIGN SCATRA COUPLING SURF CONDITIONS", "ScaTraCoupling",
-          "ScaTra Coupling", DRT::Condition::ScaTraCoupling, true, DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> surfscatracoup = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SCATRA COUPLING SURF CONDITIONS", "ScaTraCoupling", "ScaTra Coupling",
+      CORE::Conditions::ScaTraCoupling, true, CORE::Conditions::geometry_type_surface));
 
   for (auto& scatracoupcomponent : scatracoupcomponents)
     surfscatracoup->AddComponent(scatracoupcomponent);
@@ -604,12 +604,12 @@ void INPAR::SCATRA::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> scatrarobinline =
       Teuchos::rcp(new ConditionDefinition("DESIGN TRANSPORT ROBIN LINE CONDITIONS",
           "TransportRobin", "Scalar Transport Robin Boundary Condition",
-          DRT::Condition::TransportRobin, true, DRT::Condition::Line));
+          CORE::Conditions::TransportRobin, true, CORE::Conditions::geometry_type_line));
   // surface
   Teuchos::RCP<ConditionDefinition> scatrarobinsurf =
       Teuchos::rcp(new ConditionDefinition("DESIGN TRANSPORT ROBIN SURF CONDITIONS",
           "TransportRobin", "Scalar Transport Robin Boundary Condition",
-          DRT::Condition::TransportRobin, true, DRT::Condition::Surface));
+          CORE::Conditions::TransportRobin, true, CORE::Conditions::geometry_type_surface));
 
   std::vector<Teuchos::RCP<INPUT::LineComponent>> scatrarobincomponents;
 
@@ -640,11 +640,11 @@ void INPAR::SCATRA::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> linetransportneumanninflow =
       Teuchos::rcp(new ConditionDefinition("TRANSPORT NEUMANN INFLOW LINE CONDITIONS",
           "TransportNeumannInflow", "Line Transport Neumann Inflow",
-          DRT::Condition::TransportNeumannInflow, true, DRT::Condition::Line));
+          CORE::Conditions::TransportNeumannInflow, true, CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> surftransportneumanninflow =
       Teuchos::rcp(new ConditionDefinition("TRANSPORT NEUMANN INFLOW SURF CONDITIONS",
           "TransportNeumannInflow", "Surface Transport Neumann Inflow",
-          DRT::Condition::TransportNeumannInflow, true, DRT::Condition::Surface));
+          CORE::Conditions::TransportNeumannInflow, true, CORE::Conditions::geometry_type_surface));
 
   condlist.emplace_back(linetransportneumanninflow);
   condlist.emplace_back(surftransportneumanninflow);
@@ -683,11 +683,13 @@ void INPAR::SCATRA::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> linetransportthermoconvect =
       Teuchos::rcp(new ConditionDefinition("TRANSPORT THERMO CONVECTION LINE CONDITIONS",
           "TransportThermoConvections", "Line Transport Thermo Convections",
-          DRT::Condition::TransportThermoConvections, true, DRT::Condition::Line));
+          CORE::Conditions::TransportThermoConvections, true,
+          CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> surftransportthermoconvect =
       Teuchos::rcp(new ConditionDefinition("TRANSPORT THERMO CONVECTION SURF CONDITIONS",
           "TransportThermoConvections", "Surface Transport Thermo Convections",
-          DRT::Condition::TransportThermoConvections, true, DRT::Condition::Surface));
+          CORE::Conditions::TransportThermoConvections, true,
+          CORE::Conditions::geometry_type_surface));
 
   for (auto& transportthermoconvectcomponent : transportthermoconvectcomponents)
   {
@@ -703,11 +705,13 @@ void INPAR::SCATRA::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> scatraheteroreactionmasterline = Teuchos::rcp(
       new ConditionDefinition("DESIGN SCATRA HETEROGENEOUS REACTION LINE CONDITIONS / MASTER",
           "ScatraHeteroReactionMaster", "calculation of heterogeneous reactions",
-          DRT::Condition::ScatraHeteroReactionCondMaster, true, DRT::Condition::Line));
+          CORE::Conditions::ScatraHeteroReactionCondMaster, true,
+          CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> scatraheteroreactionmastersurf = Teuchos::rcp(
       new ConditionDefinition("DESIGN SCATRA HETEROGENEOUS REACTION SURF CONDITIONS / MASTER",
           "ScatraHeteroReactionMaster", "calculation of heterogeneous reactions",
-          DRT::Condition::ScatraHeteroReactionCondMaster, true, DRT::Condition::Surface));
+          CORE::Conditions::ScatraHeteroReactionCondMaster, true,
+          CORE::Conditions::geometry_type_surface));
 
   // insert condition definitions into global list of valid condition definitions
   condlist.emplace_back(scatraheteroreactionmasterline);
@@ -718,11 +722,13 @@ void INPAR::SCATRA::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> scatraheteroreactionslaveline = Teuchos::rcp(
       new ConditionDefinition("DESIGN SCATRA HETEROGENEOUS REACTION LINE CONDITIONS / SLAVE",
           "ScatraHeteroReactionSlave", "calculation of heterogeneous reactions",
-          DRT::Condition::ScatraHeteroReactionCondSlave, true, DRT::Condition::Line));
+          CORE::Conditions::ScatraHeteroReactionCondSlave, true,
+          CORE::Conditions::geometry_type_line));
   Teuchos::RCP<ConditionDefinition> scatraheteroreactionslavesurf = Teuchos::rcp(
       new ConditionDefinition("DESIGN SCATRA HETEROGENEOUS REACTION SURF CONDITIONS / SLAVE",
           "ScatraHeteroReactionSlave", "calculation of heterogeneous reactions",
-          DRT::Condition::ScatraHeteroReactionCondSlave, true, DRT::Condition::Surface));
+          CORE::Conditions::ScatraHeteroReactionCondSlave, true,
+          CORE::Conditions::geometry_type_surface));
 
   // insert condition definitions into global list of valid condition definitions
   condlist.emplace_back(scatraheteroreactionslaveline);
@@ -739,13 +745,13 @@ void INPAR::SCATRA::SetValidConditions(
     auto scatrasurfpartitioning =
         Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA SURF CONDITIONS / PARTITIONING",
             "ScatraPartitioning", "Domain partitioning of scatra field",
-            DRT::Condition::ScatraPartitioning, false, DRT::Condition::Surface));
+            CORE::Conditions::ScatraPartitioning, false, CORE::Conditions::geometry_type_surface));
 
     // partitioning of 3D domain into 3D subdomains
     auto scatravolpartitioning =
         Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA VOL CONDITIONS / PARTITIONING",
             "ScatraPartitioning", "Domain partitioning of scatra field",
-            DRT::Condition::ScatraPartitioning, false, DRT::Condition::Volume));
+            CORE::Conditions::ScatraPartitioning, false, CORE::Conditions::geometry_type_volume));
 
     // insert condition definitions into global list of valid condition definitions
     condlist.emplace_back(scatrasurfpartitioning);

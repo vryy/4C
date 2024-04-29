@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 MAT::PAR::Material::Material(
-    const int id, const INPAR::MAT::MaterialType type, const std::string name)
+    const int id, const CORE::Materials::MaterialType type, const std::string name)
     : InputParameterContainer(), id_(id), type_(type), name_(name), params_(Teuchos::null)
 {
 }

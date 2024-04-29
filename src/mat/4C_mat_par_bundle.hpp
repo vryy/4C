@@ -101,7 +101,7 @@ namespace MAT
       ///
       /// \return The ID of seached for material type.
       ///         If the search is unsuccessful -1 is returned
-      int FirstIdByType(const INPAR::MAT::MaterialType type) const;
+      int FirstIdByType(const CORE::Materials::MaterialType type) const;
 
       /// return problem index to read from
       int GetReadFromProblem() const { return materialreadfromproblem_; }

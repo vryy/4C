@@ -223,7 +223,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
   // time
   ClearChemotaxisTerms();
 
-  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
@@ -237,7 +237,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::GetMaterialParams(
       my::Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_matlist_chemotaxis)
+  else if (material->MaterialType() == CORE::Materials::m_matlist_chemotaxis)
   {
     const Teuchos::RCP<const MAT::MatListChemotaxis>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatListChemotaxis>(material);

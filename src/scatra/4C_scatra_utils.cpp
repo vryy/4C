@@ -79,7 +79,7 @@ void SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
   // conditions
   for (const auto& conditionToBeTested : allConditionsToBeTested)
   {
-    if (conditionToBeTested->GType() != DRT::Condition::Surface) continue;
+    if (conditionToBeTested->GType() != CORE::Conditions::geometry_type_surface) continue;
     bool isslave(true);
     const int s2ikinetics_id = conditionToBeTested->Get<int>("S2IKineticsID");
 

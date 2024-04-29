@@ -33,7 +33,7 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary* DRT::ELEMENTS::ScaTraEleParameterBoun
 DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std::string& disname)
     : alphaa_(0.0),
       alphac_(0.0),
-      conditiontype_(DRT::Condition::ConditionType::none),
+      conditiontype_(CORE::Conditions::ConditionType::none),
       convtolimplicit_bv_(-1.0),
       density_(-1.0),
       molar_heat_capacity_(-1.0),
@@ -62,13 +62,13 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::ParameterList& parameters)
 {
   kineticmodel_ = parameters.get<int>("kinetic model", std::numeric_limits<int>::infinity());
-  conditiontype_ = parameters.get<DRT::Condition::ConditionType>(
-      "condition type", DRT::Condition::ConditionType::none);
+  conditiontype_ = parameters.get<CORE::Conditions::ConditionType>(
+      "condition type", CORE::Conditions::ConditionType::none);
 
   // set parameters to internal members depending on condition type
   switch (conditiontype_)
   {
-    case DRT::Condition::ConditionType::S2IKinetics:
+    case CORE::Conditions::ConditionType::S2IKinetics:
     {
       // set parameters to internal members depending on kinetic model
       switch (kineticmodel_)
@@ -146,7 +146,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
       break;
     }
 
-    case DRT::Condition::ConditionType::S2IKineticsGrowth:
+    case CORE::Conditions::ConditionType::S2IKineticsGrowth:
     {
       // set parameters to internal members depending on kinetic model
       switch (kineticmodel_)

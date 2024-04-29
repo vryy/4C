@@ -124,7 +124,10 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_plelasthyperVCU; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_plelasthyperVCU;
+    }
 
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override

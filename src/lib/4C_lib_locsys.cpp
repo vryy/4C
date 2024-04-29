@@ -109,11 +109,11 @@ void DRT::UTILS::LocsysManager::Update(
   // different types of locsys conditions are dominated by the rule "Point
   // above Line above Surface above Volume". When two locsys conditions of
   // the same type are defined for one node, ordering in the input file matters!
-  std::vector<DRT::Condition::ConditionType> geo_hierarchy;
-  geo_hierarchy.emplace_back(DRT::Condition::VolumeLocsys);
-  geo_hierarchy.emplace_back(DRT::Condition::SurfaceLocsys);
-  geo_hierarchy.emplace_back(DRT::Condition::LineLocsys);
-  geo_hierarchy.emplace_back(DRT::Condition::PointLocsys);
+  std::vector<CORE::Conditions::ConditionType> geo_hierarchy;
+  geo_hierarchy.emplace_back(CORE::Conditions::VolumeLocsys);
+  geo_hierarchy.emplace_back(CORE::Conditions::SurfaceLocsys);
+  geo_hierarchy.emplace_back(CORE::Conditions::LineLocsys);
+  geo_hierarchy.emplace_back(CORE::Conditions::PointLocsys);
 
   //**********************************************************************
   // read locsys conditions in given hierarchical order
@@ -125,10 +125,10 @@ void DRT::UTILS::LocsysManager::Update(
       DRT::Condition* currlocsys = locsysconds_[i];
 
       // safety check
-      if (currlocsys->Type() != DRT::Condition::VolumeLocsys and
-          currlocsys->Type() != DRT::Condition::SurfaceLocsys and
-          currlocsys->Type() != DRT::Condition::LineLocsys and
-          currlocsys->Type() != DRT::Condition::PointLocsys)
+      if (currlocsys->Type() != CORE::Conditions::VolumeLocsys and
+          currlocsys->Type() != CORE::Conditions::SurfaceLocsys and
+          currlocsys->Type() != CORE::Conditions::LineLocsys and
+          currlocsys->Type() != CORE::Conditions::PointLocsys)
         FOUR_C_THROW("Unknown type of locsys condition!");
 
       if (currlocsys->Type() == geo_level)
@@ -140,23 +140,23 @@ void DRT::UTILS::LocsysManager::Update(
         const auto* useUpdatedNodePos = &currlocsys->Get<int>("useupdatednodepos");
 
         const auto* useConsistentNodeNormal =
-            (currlocsys->Type() == DRT::Condition::SurfaceLocsys or
-                currlocsys->Type() == DRT::Condition::LineLocsys)
+            (currlocsys->Type() == CORE::Conditions::SurfaceLocsys or
+                currlocsys->Type() == CORE::Conditions::LineLocsys)
                 ? currlocsys->GetIf<int>("useconsistentnodenormal")
                 : nullptr;
 
         const std::vector<int>* nodes = currlocsys->GetNodes();
 
-        if (currlocsys->Type() == DRT::Condition::SurfaceLocsys or
-            currlocsys->Type() == DRT::Condition::LineLocsys)
+        if (currlocsys->Type() == CORE::Conditions::SurfaceLocsys or
+            currlocsys->Type() == CORE::Conditions::LineLocsys)
         {
           // Check, if we have time dependent locsys conditions (through functions)
           if (((*funct)[0] > 0 or (*funct)[1] > 0 or (*funct)[2] > 0) or
               (((*useConsistentNodeNormal) == 1) and ((*useUpdatedNodePos) == 1)))
             locsysfunct_ = true;
         }
-        else if (currlocsys->Type() == DRT::Condition::VolumeLocsys or
-                 currlocsys->Type() == DRT::Condition::PointLocsys)
+        else if (currlocsys->Type() == CORE::Conditions::VolumeLocsys or
+                 currlocsys->Type() == CORE::Conditions::PointLocsys)
         {
           // Check, if we have time dependent locsys conditions (through functions)
           if (((*funct)[0] > 0 or (*funct)[1] > 0 or (*funct)[2] > 0)) locsysfunct_ = true;
@@ -170,8 +170,8 @@ void DRT::UTILS::LocsysManager::Update(
               "z-axis!");
         }
 
-        if ((currlocsys->Type() == DRT::Condition::SurfaceLocsys or
-                currlocsys->Type() == DRT::Condition::LineLocsys) and
+        if ((currlocsys->Type() == CORE::Conditions::SurfaceLocsys or
+                currlocsys->Type() == CORE::Conditions::LineLocsys) and
             (*useConsistentNodeNormal) == 1)
           CalcRotationVectorForNormalSystem(i, time);
         else
@@ -451,13 +451,13 @@ void DRT::UTILS::LocsysManager::Print() const
     {
       IO::cout << "*  *  *  *  *  *  *  *  *  *  *  *  *Locsys entity ID: "
                << locsysconds_[i]->Id();
-      if (TypeLocsys(i) == DRT::Condition::PointLocsys)
+      if (TypeLocsys(i) == CORE::Conditions::PointLocsys)
         IO::cout << " Point   " << IO::endl;
-      else if (TypeLocsys(i) == DRT::Condition::LineLocsys)
+      else if (TypeLocsys(i) == CORE::Conditions::LineLocsys)
         IO::cout << " Line    " << IO::endl;
-      else if (TypeLocsys(i) == DRT::Condition::SurfaceLocsys)
+      else if (TypeLocsys(i) == CORE::Conditions::SurfaceLocsys)
         IO::cout << " Surface " << IO::endl;
-      else if (TypeLocsys(i) == DRT::Condition::VolumeLocsys)
+      else if (TypeLocsys(i) == CORE::Conditions::VolumeLocsys)
         IO::cout << " Volume  " << IO::endl;
       else
         FOUR_C_THROW("Unknown type of locsys condition!");

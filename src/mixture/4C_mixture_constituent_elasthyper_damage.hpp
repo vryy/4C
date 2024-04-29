@@ -74,7 +74,7 @@ namespace MIXTURE
         MIXTURE::PAR::MixtureConstituentElastHyperDamage* params, int id);
 
     /// Returns the material type enum
-    INPAR::MAT::MaterialType MaterialType() const override;
+    CORE::Materials::MaterialType MaterialType() const override;
 
     /*!
      * \brief Pack data into a char vector from this class

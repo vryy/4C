@@ -101,7 +101,10 @@ namespace MAT
     /// Green-Lagrange strain
     double EvaluateStiffness() const { return params_->youngs_; }
 
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_linelast1D; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_linelast1D;
+    }
 
     void Pack(CORE::COMM::PackBuffer& data) const override;
 
@@ -155,9 +158,9 @@ namespace MAT
     /// def_grad and @p conc
     double EvaluateStiffness(double def_grad, double conc) const;
 
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_linelast1D_growth;
+      return CORE::Materials::m_linelast1D_growth;
     }
 
     void Pack(CORE::COMM::PackBuffer& data) const override;

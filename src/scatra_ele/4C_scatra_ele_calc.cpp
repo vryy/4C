@@ -119,8 +119,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
   rotsymmpbc_->Setup(ele);
 
   Teuchos::RCP<MAT::Material> material = ele->Material();
-  if (material->MaterialType() == INPAR::MAT::m_matlist or
-      material->MaterialType() == INPAR::MAT::m_matlist_reactions)
+  if (material->MaterialType() == CORE::Materials::m_matlist or
+      material->MaterialType() == CORE::Materials::m_matlist_reactions)
   {
     const Teuchos::RCP<const MAT::MatList>& material_list =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
@@ -130,7 +130,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
     {
       const int material_id = material_list->MatID(k);
 
-      if (material_list->MaterialById(material_id)->MaterialType() == INPAR::MAT::m_scatra)
+      if (material_list->MaterialById(material_id)->MaterialType() == CORE::Materials::m_scatra)
       {
         Teuchos::RCP<const MAT::ScatraMat> single_material =
             Teuchos::rcp_static_cast<const MAT::ScatraMat>(
@@ -812,7 +812,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
       // 7) macro-scale matrix and vector contributions arising from
       //    macro-micro coupling in multi-scale simulations
       //----------------------------------------------------------------
-      if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
         CalcMatAndRhsMultiScale(ele, emat, erhs, k, iquad, timefacfac, rhsfac);
 
       //----------------------------------------------------------------
@@ -1138,7 +1138,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetMaterialParams(const DRT
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
-  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     const Teuchos::RCP<const MAT::MatList>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
@@ -1165,7 +1165,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Materials(
 {
   switch (material->MaterialType())
   {
-    case INPAR::MAT::m_electrode:
+    case CORE::Materials::m_electrode:
     {
       // safety check
       if (k != 0) FOUR_C_THROW("Invalid species ID!");
@@ -1174,13 +1174,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Materials(
       break;
     }
 
-    case INPAR::MAT::m_scatra:
+    case CORE::Materials::m_scatra:
     {
       MatScaTra(material, k, densn, densnp, densam, visc, iquad);
       break;
     }
 
-    case INPAR::MAT::m_scatra_multiscale:
+    case CORE::Materials::m_scatra_multiscale:
     {
       MatScaTraMultiScale(material, densn, densnp, densam);
       break;
@@ -1225,7 +1225,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTra(
     {
       // get fluid material
       Teuchos::RCP<MAT::Material> fluidmat = fluidele->Material();
-      if (fluidmat->MaterialType() != INPAR::MAT::m_fluid)
+      if (fluidmat->MaterialType() != CORE::Materials::m_fluid)
         FOUR_C_THROW("Invalid fluid material for passive scalar transport in turbulent flow!");
 
       const Teuchos::RCP<const MAT::NewtonianFluid>& actfluidmat =

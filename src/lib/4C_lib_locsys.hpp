@@ -164,13 +164,16 @@ namespace DRT
        * \brief Get types of local system conditions
        *
        */
-      inline std::vector<DRT::Condition::ConditionType> TypeLocsys() const { return typelocsys_; };
+      inline std::vector<CORE::Conditions::ConditionType> TypeLocsys() const
+      {
+        return typelocsys_;
+      };
 
       /*!
        * \brief Get type of a specific local system condition
        *
        */
-      inline DRT::Condition::ConditionType TypeLocsys(int k) const
+      inline CORE::Conditions::ConditionType TypeLocsys(int k) const
       {
         if (k >= numlocsys_) FOUR_C_THROW("Invalid vector index");
         return typelocsys_[k];
@@ -268,7 +271,7 @@ namespace DRT
       std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals_;
 
       /// types of local system conditions
-      std::vector<DRT::Condition::ConditionType> typelocsys_;
+      std::vector<CORE::Conditions::ConditionType> typelocsys_;
 
       /// vector that indicates the existence of time curves or functions within the locsys
       /// condition

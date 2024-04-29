@@ -220,7 +220,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
          i != materials->Map()->end(); ++i)
     {
       Teuchos::RCP<MAT::PAR::Material> mat = i->second;
-      if (mat->Type() == INPAR::MAT::m_struct_multiscale)
+      if (mat->Type() == CORE::Materials::m_struct_multiscale)
       {
         if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(*sdyn_, "DYNAMICTYP") !=
             INPAR::STR::dyna_genalpha)
@@ -573,7 +573,7 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
         actele->ElementType() == DRT::ELEMENTS::SoHex18PlastType::Instance() or
         actele->ElementType() == DRT::ELEMENTS::SoSh18PlastType::Instance())
     {
-      if (actele->Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
+      if (actele->Material()->MaterialType() == CORE::Materials::m_plelasthyper)
         isplasticity_local = true;
     }
 

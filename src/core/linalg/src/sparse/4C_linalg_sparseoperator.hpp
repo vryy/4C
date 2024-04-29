@@ -63,7 +63,7 @@ namespace CORE::LINALG
                             a block matrix, then of course N is the number of all sub matrix blocks*/
     block_condition,     /*!< System matrix is a block matrix that consists of NxN sparse matrices.
                             How the system matrix is divided has to be defined by a condition (e.g.
-                            \link ::DRT::Condition::ScatraPartitioning ScatraPartitioning \endlink.)*/
+                            \link ::CORE::Conditions::ScatraPartitioning ScatraPartitioning \endlink.)*/
     block_condition_dof, /*!< System matrix is a block matrix that consists of NxN sparse
                             matrices. Each of the blocks as created by block_condition is
                             further subdivided by the dofs, meaning e.g. for two dofs per node

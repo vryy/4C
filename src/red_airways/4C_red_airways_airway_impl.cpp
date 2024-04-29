@@ -165,7 +165,7 @@ namespace
     double dens = 0.0;
     double visc = 0.0;
 
-    if (material->MaterialType() == INPAR::MAT::m_fluid)
+    if (material->MaterialType() == CORE::Materials::m_fluid)
     {
       // get actual material
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
@@ -765,7 +765,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
                               ->Get<double>("INITIAL_CONCENTRATION");
 
           int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-              INPAR::MAT::m_0d_o2_hemoglobin_saturation);
+              CORE::Materials::m_0d_o2_hemoglobin_saturation);
           // check if O2 properties material exists
           if (id == -1)
           {
@@ -800,7 +800,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
                               ->GetCondition("RedAirwayScatraAirCond")
                               ->Get<double>("INITIAL_CONCENTRATION");
           int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-              INPAR::MAT::m_0d_o2_air_saturation);
+              CORE::Materials::m_0d_o2_air_saturation);
           // check if O2 properties material exists
           if (id == -1)
           {
@@ -1883,7 +1883,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
         // -----------------------------------------------------------------
 
         int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-            INPAR::MAT::m_0d_o2_air_saturation);
+            CORE::Materials::m_0d_o2_air_saturation);
         // check if O2 properties material exists
         if (id == -1)
         {
@@ -1918,7 +1918,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
         // Get O2 properties in blood
         // -----------------------------------------------------------------
         int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-            INPAR::MAT::m_0d_o2_hemoglobin_saturation);
+            CORE::Materials::m_0d_o2_hemoglobin_saturation);
         // check if O2 properties material exists
         if (id == -1)
         {
@@ -2283,8 +2283,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
     // Get O2 properties in air
     // -----------------------------------------------------------------
 
-    int id =
-        GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
+    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
+        CORE::Materials::m_0d_o2_air_saturation);
     // check if O2 properties material exists
     if (id == -1)
     {
@@ -2323,7 +2323,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
   else if (fluidType == "blood")
   {
     int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-        INPAR::MAT::m_0d_o2_hemoglobin_saturation);
+        CORE::Materials::m_0d_o2_hemoglobin_saturation);
     // check if O2 properties material exists
     if (id == -1)
     {

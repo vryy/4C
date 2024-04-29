@@ -1682,7 +1682,7 @@ void MORTAR::Element::EstimateNitscheTraceMaxEigenvalueCombined()
   traceHE_ = 1. / surf->EstimateNitscheTraceMaxEigenvalueCombined(MoData().ParentDisp());
 
   if (ParentElement()->NumMaterial() > 1)
-    if (ParentElement()->Material(1)->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+    if (ParentElement()->Material(1)->MaterialType() == CORE::Materials::m_th_fourier_iso)
       traceHCond_ = 1. / surf->EstimateNitscheTraceMaxEigenvalueTSI(MoData().ParentDisp());
 }
 

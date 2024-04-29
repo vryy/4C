@@ -742,13 +742,13 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetDensity(
   // get density depending on material
   switch (material->MaterialType())
   {
-    case INPAR::MAT::m_matlist:
+    case CORE::Materials::m_matlist:
     {
       const auto* actmat = static_cast<const MAT::MatList*>(material.get());
 
       const int matid = actmat->MatID(0);
 
-      if (actmat->MaterialById(matid)->MaterialType() == INPAR::MAT::m_scatra)
+      if (actmat->MaterialById(matid)->MaterialType() == CORE::Materials::m_scatra)
       {
         // set density to unity
         density = 1.;
@@ -759,8 +759,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetDensity(
       break;
     }
 
-    case INPAR::MAT::m_matlist_reactions:
-    case INPAR::MAT::m_scatra:
+    case CORE::Materials::m_matlist_reactions:
+    case CORE::Materials::m_scatra:
     {
       // set density to unity
       density = 1.;
@@ -847,13 +847,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ConvectiveHeatTrans
 
       // get specific heat capacity at constant volume
       double shc = 0.0;
-      if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+      if (material->MaterialType() == CORE::Materials::m_th_fourier_iso)
       {
         const auto* actmat = static_cast<const MAT::FourierIso*>(material.get());
 
         shc = actmat->Capacity();
       }
-      else if (material->MaterialType() == INPAR::MAT::m_thermostvenant)
+      else if (material->MaterialType() == CORE::Materials::m_thermostvenant)
       {
         const auto* actmat = static_cast<const MAT::ThermoStVenantKirchhoff*>(material.get());
 
@@ -2355,7 +2355,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
       int k = 0;
       {
         // get viscosity
-        if (material->MaterialType() == INPAR::MAT::m_scatra)
+        if (material->MaterialType() == CORE::Materials::m_scatra)
         {
           const auto* actmat = static_cast<const MAT::ScatraMat*>(material.get());
 
@@ -2561,7 +2561,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
     int k = 0;
     {
       // get viscosity
-      if (material->MaterialType() == INPAR::MAT::m_scatra)
+      if (material->MaterialType() == CORE::Materials::m_scatra)
       {
         const auto* actmat = static_cast<const MAT::ScatraMat*>(material.get());
 

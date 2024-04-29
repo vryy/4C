@@ -147,9 +147,9 @@ namespace MAT
 
     [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
 
-    [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override
+    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_muscle_giantesio;
+      return CORE::Materials::m_muscle_giantesio;
     };
 
     void ValidKinematics(INPAR::STR::KinemType kinem) override

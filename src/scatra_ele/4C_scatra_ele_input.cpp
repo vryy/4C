@@ -80,7 +80,7 @@ bool DRT::ELEMENTS::Transport::ReadElement(
   // set discretization type
   SetDisType(CORE::FE::StringToCellType(distype));
 
-  if (Material()->MaterialType() == INPAR::MAT::m_myocard)
+  if (Material()->MaterialType() == CORE::Materials::m_myocard)
   {
     Teuchos::RCP<MAT::Myocard> myocard = Teuchos::rcp_dynamic_cast<MAT::Myocard>(Material());
     myocard->Setup(linedef);

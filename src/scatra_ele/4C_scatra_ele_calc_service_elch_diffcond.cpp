@@ -29,7 +29,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
 {
   // 1) Check material specific options
   // 2) Check if numdofpernode, numscal is set correctly
-  if (ele->Material()->MaterialType() == INPAR::MAT::m_elchmat)
+  if (ele->Material()->MaterialType() == CORE::Materials::m_elchmat)
   {
     const Teuchos::RCP<const MAT::ElchMat>& actmat =
         Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(ele->Material());
@@ -64,7 +64,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
       if (diffcondparams_->CurSolVar())
         numdofpernode = nummat + GLOBAL::Problem::Instance()->NDim() + numphase;
       else if (actphase->MatById(actphase->MatID(0))->MaterialType() ==
-               INPAR::MAT::m_newman_multiscale)
+               CORE::Materials::m_newman_multiscale)
         numdofpernode = 3;
       else
         numdofpernode = nummat + numphase;
@@ -82,7 +82,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
         const int matid = actphase->MatID(imat);
         Teuchos::RCP<const MAT::Material> singlemat = actphase->MatById(matid);
 
-        if (singlemat->MaterialType() == INPAR::MAT::m_newman)
+        if (singlemat->MaterialType() == CORE::Materials::m_newman)
         {
           // Newman material must be combined with divi closing equation for electric potential
           if (myelch::elchparams_->EquPot() != INPAR::ELCH::equpot_divi)
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
       Teuchos::RCP<MAT::Material> material = ele->Material();
 
       // extract porosity from material and store in diffusion manager
-      if (material->MaterialType() == INPAR::MAT::m_elchmat)
+      if (material->MaterialType() == CORE::Materials::m_elchmat)
       {
         const auto* elchmat = static_cast<const MAT::ElchMat*>(material.get());
 
@@ -168,7 +168,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
         {
           Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
 
-          if (phase->MaterialType() == INPAR::MAT::m_elchphase)
+          if (phase->MaterialType() == CORE::Materials::m_elchphase)
           {
             DiffManager()->SetPhasePoro(
                 (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
@@ -219,7 +219,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
   // from scatra_ele_boundary_calc_elch_diffcond.cpp
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
-  if (material->MaterialType() == INPAR::MAT::m_elchmat)
+  if (material->MaterialType() == CORE::Materials::m_elchmat)
   {
     const auto* elchmat = static_cast<const MAT::ElchMat*>(material.get());
 
@@ -227,7 +227,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
     {
       Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
 
-      if (phase->MaterialType() == INPAR::MAT::m_elchphase)
+      if (phase->MaterialType() == CORE::Materials::m_elchphase)
       {
         DiffManager()->SetPhasePoro(
             (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);

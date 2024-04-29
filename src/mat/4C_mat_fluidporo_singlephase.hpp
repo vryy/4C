@@ -270,9 +270,9 @@ namespace MAT
     void Initialize() override;
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_fluidporo_singlephase;
+      return CORE::Materials::m_fluidporo_singlephase;
     }
 
     /// return copy of this material object
@@ -321,10 +321,10 @@ namespace MAT
     double InvBulkmodulus() const { return params_->densitylaw_->InvBulkmodulus(); }
 
     /// return type of degree of freedom
-    INPAR::MAT::MaterialType PoroDofType() const;
+    CORE::Materials::MaterialType PoroDofType() const;
 
     /// return type of phase law
-    INPAR::MAT::MaterialType PoroPhaseLawType() const;
+    CORE::Materials::MaterialType PoroPhaseLawType() const;
 
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
     void FillDoFMatrix(CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const;
@@ -415,9 +415,9 @@ namespace MAT
     void Initialize() override;
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_fluidporo_singlevolfrac;
+      return CORE::Materials::m_fluidporo_singlevolfrac;
     }
 
     /// return copy of this material object
@@ -510,9 +510,9 @@ namespace MAT
     void Initialize() override;
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_fluidporo_volfracpressure;
+      return CORE::Materials::m_fluidporo_volfracpressure;
     }
 
     /// return copy of this material object

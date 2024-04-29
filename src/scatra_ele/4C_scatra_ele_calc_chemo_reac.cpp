@@ -81,7 +81,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
   // time
   chemo::ClearChemotaxisTerms();
 
-  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     const Teuchos::RCP<const MAT::MatList> actmat =
         Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
@@ -96,7 +96,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
     }
   }
 
-  else if (material->MaterialType() == INPAR::MAT::m_matlist_reactions)
+  else if (material->MaterialType() == CORE::Materials::m_matlist_reactions)
   {
     const Teuchos::RCP<MAT::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
@@ -115,7 +115,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
     }
   }
 
-  else if (material->MaterialType() == INPAR::MAT::m_matlist_chemotaxis)
+  else if (material->MaterialType() == CORE::Materials::m_matlist_chemotaxis)
   {
     const Teuchos::RCP<MAT::MatListChemotaxis> actmat =
         Teuchos::rcp_dynamic_cast<MAT::MatListChemotaxis>(material);
@@ -133,7 +133,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::GetMaterialParams(
     }
   }
 
-  else if (material->MaterialType() == INPAR::MAT::m_matlist_chemoreac)
+  else if (material->MaterialType() == CORE::Materials::m_matlist_chemoreac)
   {
     const Teuchos::RCP<MAT::MatListReactions> actmat =
         Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);

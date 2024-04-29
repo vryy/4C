@@ -888,7 +888,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
-    if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
+    if (Material()->MaterialType() != CORE::Materials::m_vp_robinson)
       Materialize(&couplstress, &ctemp, &NT, &cmat, &glstrain, params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1069,9 +1069,9 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Locat
 
       // Be careful: scaling with time factor is done in tsi_monolithic!!
     }  // (stiffmatrix_kdT != nullptr)
-       /* =========================================================================*/
-  }    /* ==================================================== end of Loop over GP */
-       /* =========================================================================*/
+    /* =========================================================================*/
+  } /* ==================================================== end of Loop over GP */
+  /* =========================================================================*/
 
   return;
 }  // lin_kdT_tsi()
@@ -1228,7 +1228,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
-    if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
+    if (Material()->MaterialType() != CORE::Materials::m_vp_robinson)
       Materialize(&couplstress, &ctemp, &NT, &cmat_T, &glstrain, params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1329,9 +1329,9 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
         }
       }  // end of integrate `geometric' stiffness******************************
     }    // fill k_dd
-         /* =========================================================================*/
-  }      /* ==================================================== end of Loop over GP */
-         /* =========================================================================*/
+    /* =========================================================================*/
+  } /* ==================================================== end of Loop over GP */
+  /* =========================================================================*/
 
   return;
 }  // nln_stifffint_tsi()
@@ -1472,7 +1472,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Locat
       // with shape functions)
       thermoSolidMaterial->GetdSdT(&ctemp);
     }
-    else if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+    else if (Material()->MaterialType() == CORE::Materials::m_thermoplhyperelast)
     {
       // inverse of Right Cauchy-Green tensor = F^{-1} . F^{-T}
       CORE::LINALG::Matrix<nsd_, nsd_> Cinv(false);
@@ -1512,7 +1512,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Locat
 
       // in case of temperature-dependent Young's modulus, additional term for
       // coupling stiffness matrix k_dT
-      if ((Material()->MaterialType() == INPAR::MAT::m_thermostvenant))
+      if ((Material()->MaterialType() == CORE::Materials::m_thermostvenant))
       {
         // k_dT += B_d^T . stress_T . N_T
         stiffmatrix_kdT->MultiplyNT(detJ_w, Bstress_T, shapefunct, 1.0);
@@ -1721,7 +1721,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       //            in the material: 1.) Delta T = subtract (N . T - T_0)
       //                             2.) couplstress = C . Delta T
       // do not call the material for Robinson's material
-      if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
+      if (Material()->MaterialType() != CORE::Materials::m_vp_robinson)
         Materialize(&couplstress_bar,
             &ctemp_bar,  // is not filled! pass an empty matrix
             &NT, &cmat_T_bar, &glstrain_bar, params);
@@ -1876,7 +1876,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
 
       /* =====================================================================*/
     } /* ================================================ end of Loop over GP */
-      /* =====================================================================*/
+    /* =====================================================================*/
 
   }  // end HEX8FBAR
   else
@@ -2015,7 +2015,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element::
       // --------------------------------------------------------------
       // in case of thermo-elasto-plastic material we get additional terms due
       // to temperature-dependence of the plastic multiplier Dgamma
-      if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+      if (Material()->MaterialType() == CORE::Materials::m_thermoplhyperelast)
       {
         params.set<CORE::LINALG::Matrix<nsd_, nsd_>>("defgrd", defgrd_bar);
         params.set<CORE::LINALG::Matrix<numstr_, 1>>("Cinv_vct", Cinv_barvct);
@@ -2063,7 +2063,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element::
         // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . C_T . N_T) . detJ . w(gp)
         stiffmatrix_kdT->MultiplyTN((detJ_w / f_bar_factor), bop, cn, 1.0);
 
-        if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+        if (Material()->MaterialType() == CORE::Materials::m_thermoplhyperelast)
         {
           // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . dCmat/dT . N_temp) . detJ . w(gp)
           // (24x8)                            (24x6)         (6x1)    (1x8)
@@ -2077,7 +2077,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element::
 
       /* =====================================================================*/
     } /* ================================================ end of Loop over GP */
-      /* =====================================================================*/
+    /* =====================================================================*/
 
   }  // end HEX8FBAR
   else
@@ -2121,7 +2121,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Materialize(
   switch (mat->MaterialType())
   {
     // small strain von Mises thermoelastoplastic material
-    case INPAR::MAT::m_thermopllinelast:
+    case CORE::Materials::m_thermopllinelast:
     {
       Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(Material(), true);
@@ -2130,14 +2130,14 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Materialize(
       break;
     }
     // visco-plastic Robinson's material
-    case INPAR::MAT::m_vp_robinson:
+    case CORE::Materials::m_vp_robinson:
     {
       // no temperature-dependent terms
       return;
       break;
     }
     // thermo-hyperelasto-plastic material
-    case INPAR::MAT::m_thermoplhyperelast:
+    case CORE::Materials::m_thermoplhyperelast:
     {
       Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(), true);
@@ -2165,12 +2165,12 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Ctemp(
   switch (Material()->MaterialType())
   {
     // thermo st.venant-kirchhoff-material
-    case INPAR::MAT::m_thermostvenant:
+    case CORE::Materials::m_thermostvenant:
     {
       FOUR_C_THROW("Ctemp call no longer valid for ThermoStVenantKirchhoff. Fix implementation.");
     }
     // small strain von Mises thermoelastoplastic material
-    case INPAR::MAT::m_thermopllinelast:
+    case CORE::Materials::m_thermopllinelast:
     {
       Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast =
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(Material(), true);
@@ -2178,7 +2178,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Ctemp(
       break;
     }
     // visco-plastic Robinson's material
-    case INPAR::MAT::m_vp_robinson:
+    case CORE::Materials::m_vp_robinson:
     {
       // so far: do nothing, because the displacement-dependent coupling term
       // is neglected
@@ -2186,7 +2186,7 @@ void DRT::ELEMENTS::So3Thermo<so3_ele, distype>::Ctemp(
       break;
     }
     // thermo-hyperelasto-plastic material
-    case INPAR::MAT::m_thermoplhyperelast:
+    case CORE::Materials::m_thermoplhyperelast:
     {
       Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast =
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(), true);

@@ -25,7 +25,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
 )
 {
   // check material
-  if (ele->Material()->MaterialType() != INPAR::MAT::m_matlist)
+  if (ele->Material()->MaterialType() != CORE::Materials::m_matlist)
     FOUR_C_THROW("Invalid material type!");
 
   // check type of closing equation

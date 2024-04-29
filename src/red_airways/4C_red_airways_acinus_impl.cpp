@@ -95,10 +95,10 @@ void Sysmat(DRT::ELEMENTS::RedAcinus* ele, CORE::LINALG::SerialDenseVector& epnp
   const auto acinus_params = ele->GetAcinusParams();
 
   // Decide which acinus material should be used
-  if ((material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_neohookean) ||
-      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_exponential) ||
-      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_doubleexponential) ||
-      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_ogden))
+  if ((material->MaterialType() == CORE::Materials::m_0d_maxwell_acinus_neohookean) ||
+      (material->MaterialType() == CORE::Materials::m_0d_maxwell_acinus_exponential) ||
+      (material->MaterialType() == CORE::Materials::m_0d_maxwell_acinus_doubleexponential) ||
+      (material->MaterialType() == CORE::Materials::m_0d_maxwell_acinus_ogden))
   {
     const double VolAcinus = acinus_params.volume_relaxed;
     const double volAlvDuct = acinus_params.alveolar_duct_volume;
@@ -292,7 +292,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
                             ->GetCondition("RedAirwayScatraAirCond")
                             ->Get<double>("INITIAL_CONCENTRATION");
         int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-            INPAR::MAT::m_0d_o2_air_saturation);
+            CORE::Materials::m_0d_o2_air_saturation);
         // check if O2 properties material exists
         if (id == -1)
         {
@@ -1160,7 +1160,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
       // ----------------------------------------------------
       // get O2 properties in air
       int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-          INPAR::MAT::m_0d_o2_air_saturation);
+          CORE::Materials::m_0d_o2_air_saturation);
       // check if O2 properties material exists
       if (id == -1)
       {
@@ -1415,8 +1415,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
     // Get O2 properties in air
     // -----------------------------------------------------------------
 
-    int id =
-        GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
+    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
+        CORE::Materials::m_0d_o2_air_saturation);
     // check if O2 properties material exists
     if (id == -1)
     {

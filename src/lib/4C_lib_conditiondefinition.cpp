@@ -32,8 +32,8 @@ FOUR_C_NAMESPACE_OPEN
  * -----------------------------------------------------------------------------------------------*/
 
 INPUT::ConditionDefinition::ConditionDefinition(std::string sectionname, std::string conditionname,
-    std::string description, DRT::Condition::ConditionType condtype, bool buildgeometry,
-    DRT::Condition::GeometryType gtype)
+    std::string description, CORE::Conditions::ConditionType condtype, bool buildgeometry,
+    CORE::Conditions::GeometryType gtype)
     : sectionname_(std::move(sectionname)),
       conditionname_(std::move(conditionname)),
       description_(std::move(description)),
@@ -75,13 +75,13 @@ void INPUT::ConditionDefinition::Read(const GLOBAL::Problem& problem, DatFileRea
         {
           switch (gtype_)
           {
-            case DRT::Condition::Point:
+            case CORE::Conditions::geometry_type_point:
               return "DPOINT";
-            case DRT::Condition::Line:
+            case CORE::Conditions::geometry_type_line:
               return "DLINE";
-            case DRT::Condition::Surface:
+            case CORE::Conditions::geometry_type_surface:
               return "DSURF";
-            case DRT::Condition::Volume:
+            case CORE::Conditions::geometry_type_volume:
               return "DVOL";
             default:
               FOUR_C_THROW("Geometry type unspecified");
@@ -141,16 +141,16 @@ std::ostream& INPUT::ConditionDefinition::Print(
   std::string name;
   switch (gtype_)
   {
-    case DRT::Condition::Point:
+    case CORE::Conditions::geometry_type_point:
       name = "DPOINT";
       break;
-    case DRT::Condition::Line:
+    case CORE::Conditions::geometry_type_line:
       name = "DLINE";
       break;
-    case DRT::Condition::Surface:
+    case CORE::Conditions::geometry_type_surface:
       name = "DSURF";
       break;
-    case DRT::Condition::Volume:
+    case CORE::Conditions::geometry_type_volume:
       name = "DVOL";
       break;
     default:

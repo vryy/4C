@@ -396,7 +396,7 @@ namespace MAT
     static Teuchos::RCP<InelasticDefgradFactors> Factory(int matnum);
 
     /// provide material type
-    virtual INPAR::MAT::MaterialType MaterialType() const = 0;
+    virtual CORE::Materials::MaterialType MaterialType() const = 0;
 
     /*!
      * @brief evaluate the inelastic deformation gradient and its inverse
@@ -524,7 +524,10 @@ namespace MAT
 
     PAR::InelasticSource GetInelasticSource() override;
 
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mfi_no_growth; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::mfi_no_growth;
+    }
 
     void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
 
@@ -561,7 +564,10 @@ namespace MAT
 
     PAR::InelasticSource GetInelasticSource() override;
 
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mfi_time_funct; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::mfi_time_funct;
+    }
 
     MAT::PAR::InelasticDefgradTimeFunct* Parameter() override
     {
@@ -603,7 +609,7 @@ namespace MAT
 
     PAR::InelasticSource GetInelasticSource() override = 0;
 
-    INPAR::MAT::MaterialType MaterialType() const override = 0;
+    CORE::Materials::MaterialType MaterialType() const override = 0;
 
     void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
 
@@ -664,7 +670,7 @@ namespace MAT
      */
     double EvaluatePolynomialDerivative(double concentration, double detjacobian);
 
-    INPAR::MAT::MaterialType MaterialType() const override = 0;
+    CORE::Materials::MaterialType MaterialType() const override = 0;
 
     void EvaluateInverseInelasticDefGrad(
         const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override = 0;
@@ -716,9 +722,9 @@ namespace MAT
      */
     explicit InelasticDefgradLinScalarIso(MAT::PAR::Parameter* params);
 
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::mfi_lin_scalar_iso;
+      return CORE::Materials::mfi_lin_scalar_iso;
     }
 
     void EvaluateInverseInelasticDefGrad(
@@ -777,9 +783,9 @@ namespace MAT
      */
     explicit InelasticDefgradLinScalarAniso(MAT::PAR::Parameter* params);
 
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::mfi_lin_scalar_aniso;
+      return CORE::Materials::mfi_lin_scalar_aniso;
     }
 
     void EvaluateInverseInelasticDefGrad(
@@ -833,9 +839,9 @@ namespace MAT
      */
     explicit InelasticDefgradPolyIntercalFracIso(MAT::PAR::Parameter* params);
 
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::mfi_poly_intercal_frac_iso;
+      return CORE::Materials::mfi_poly_intercal_frac_iso;
     }
 
     void EvaluateInverseInelasticDefGrad(
@@ -888,9 +894,9 @@ namespace MAT
      */
     explicit InelasticDefgradPolyIntercalFracAniso(MAT::PAR::Parameter* params);
 
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::mfi_poly_intercal_frac_aniso;
+      return CORE::Materials::mfi_poly_intercal_frac_aniso;
     }
 
     void EvaluateInverseInelasticDefGrad(
@@ -943,7 +949,10 @@ namespace MAT
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mfi_lin_temp_iso; };
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::mfi_lin_temp_iso;
+    };
 
     MAT::PAR::InelasticDefgradLinTempIso* Parameter() override
     {

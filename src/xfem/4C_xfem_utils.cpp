@@ -60,7 +60,7 @@ void XFEM::UTILS::GetVolumeCellMaterial(DRT::Element* actele, Teuchos::RCP<MAT::
 
   Teuchos::RCP<MAT::Material> material = actele->Material();
 
-  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     // get material list for this element
     const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
@@ -97,18 +97,18 @@ void XFEM::UTILS::SafetyCheckMaterials(
   if (pmat->MaterialType() != nmat->MaterialType())
     FOUR_C_THROW(" not the same material for master and slave parent element");
 
-  if (pmat->MaterialType() == INPAR::MAT::m_matlist)
+  if (pmat->MaterialType() == CORE::Materials::m_matlist)
     FOUR_C_THROW(
         "A matlist has been found in edge based stabilization! If you are running XTPF, check "
         "calls as this should NOT happen!!!");
 
-  if (pmat->MaterialType() != INPAR::MAT::m_carreauyasuda &&
-      pmat->MaterialType() != INPAR::MAT::m_modpowerlaw &&
-      pmat->MaterialType() != INPAR::MAT::m_herschelbulkley &&
-      pmat->MaterialType() != INPAR::MAT::m_fluid)
+  if (pmat->MaterialType() != CORE::Materials::m_carreauyasuda &&
+      pmat->MaterialType() != CORE::Materials::m_modpowerlaw &&
+      pmat->MaterialType() != CORE::Materials::m_herschelbulkley &&
+      pmat->MaterialType() != CORE::Materials::m_fluid)
     FOUR_C_THROW("Material law for parent element is not a fluid");
 
-  if (pmat->MaterialType() == INPAR::MAT::m_fluid)
+  if (pmat->MaterialType() == CORE::Materials::m_fluid)
   {
     {
       const MAT::NewtonianFluid* actmat_p = static_cast<const MAT::NewtonianFluid*>(pmat.get());

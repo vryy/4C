@@ -28,7 +28,7 @@ IMMERSED::ImmersedBase::ImmersedBase() : issetup_(false), isinit_(false)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discretization>& dis,
-    const std::vector<int> dvol_fenode, const DRT::Condition::ConditionType condtype,
+    const std::vector<int> dvol_fenode, const CORE::Conditions::ConditionType condtype,
     const std::string condname, bool buildgeometry)
 {
   // determine id of condition
@@ -38,8 +38,8 @@ void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discr
   id += 1;
 
   // build condition
-  Teuchos::RCP<DRT::Condition> condition =
-      Teuchos::rcp(new DRT::Condition(id, condtype, buildgeometry, DRT::Condition::Volume));
+  Teuchos::RCP<DRT::Condition> condition = Teuchos::rcp(
+      new DRT::Condition(id, condtype, buildgeometry, CORE::Conditions::geometry_type_volume));
 
   // add nodes to conditions
   condition->SetNodes(dvol_fenode);

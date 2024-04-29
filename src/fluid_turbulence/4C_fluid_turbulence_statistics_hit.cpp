@@ -264,7 +264,7 @@ namespace FLD
     dt_ = params_.get<double>("time step size");
 
     // get fluid viscosity from material definition
-    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
     if (id == -1)
       FOUR_C_THROW("Could not find Newtonian fluid material");
     else

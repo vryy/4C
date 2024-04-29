@@ -51,9 +51,9 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
           globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
       is_s2i_kinetic_with_pseudo_contact_(CheckS2IKineticsConditionForPseudoContact("structure")),
       macro_scale_(GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-                       INPAR::MAT::m_scatra_multiscale) != -1 or
+                       CORE::Materials::m_scatra_multiscale) != -1 or
                    GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-                       INPAR::MAT::m_newman_multiscale) != -1),
+                       CORE::Materials::m_newman_multiscale) != -1),
       ssiinterfacecontact_(
           GLOBAL::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
           nullptr),
@@ -312,8 +312,8 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
 
         // create new condition
         const int num_conditions = static_cast<int>(scatra_manifold_dis->GetAllConditions().size());
-        auto cond = Teuchos::rcp(new DRT::Condition(
-            num_conditions + 1, DRT::Condition::ScatraPartitioning, true, DRT::Condition::Surface));
+        auto cond = Teuchos::rcp(new DRT::Condition(num_conditions + 1,
+            CORE::Conditions::ScatraPartitioning, true, CORE::Conditions::geometry_type_surface));
         cond->Add("ConditionID", 0);
         cond->SetNodes(glob_node_ids);
 

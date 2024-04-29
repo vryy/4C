@@ -333,7 +333,10 @@ namespace MAT
     //-----------------------------------------------------------------------------
 
     //! return material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_crystplast; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_crystplast;
+    }
 
     //! check whether element kinematics and material kinematics are compatible
     void ValidKinematics(INPAR::STR::KinemType kinem) override

@@ -141,7 +141,10 @@ namespace MAT
     }
 
     /// Return material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_mixture; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_mixture;
+    }
 
     /// Create a copy of this material
     /// \return copy of this material

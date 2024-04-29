@@ -1879,7 +1879,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
   preconvfacaf_ = 0.0;
   predtfac_ = 0.0;
 
-  if (material->MaterialType() == INPAR::MAT::m_fluid)
+  if (material->MaterialType() == CORE::Materials::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
 
@@ -1943,7 +1943,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
 
     gamma = actmat->Gamma();
   }
-  else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
+  else if (material->MaterialType() == CORE::Materials::m_carreauyasuda)
   {
     const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
 
@@ -1969,7 +1969,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     // dynamic viscosity
     visc *= densaf;
   }
-  else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
+  else if (material->MaterialType() == CORE::Materials::m_modpowerlaw)
   {
     const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
 
@@ -1993,7 +1993,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     // dynamic viscosity
     visc *= densaf;
   }
-  else if (material->MaterialType() == INPAR::MAT::m_herschelbulkley)
+  else if (material->MaterialType() == CORE::Materials::m_herschelbulkley)
   {
     const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(material.get());
 
@@ -2024,7 +2024,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
       visc = tau0 * ((1.0 - exp(-mexp * rateofstrain)) / rateofstrain) +
              kfac * pow(rateofstrain, (nexp - 1.0));
   }
-  else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
+  else if (material->MaterialType() == CORE::Materials::m_yoghurt)
   {
     const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
 
@@ -2047,7 +2047,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     // compute diffusivity
     diffus_ = actmat->ComputeDiffusivity();
   }
-  else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
+  else if (material->MaterialType() == CORE::Materials::m_mixfrac)
   {
     const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
 
@@ -2094,7 +2094,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
       }
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_sutherland)
+  else if (material->MaterialType() == CORE::Materials::m_sutherland)
   {
     const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
@@ -2168,7 +2168,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     const double scatrabodyforce = funct_.Dot(escabofoaf);
     scarhs_ += scatrabodyforce / actmat->Shc();
   }
-  else if (material->MaterialType() == INPAR::MAT::m_fluid_linear_density_viscosity)
+  else if (material->MaterialType() == CORE::Materials::m_fluid_linear_density_viscosity)
   {
     const MAT::LinearDensityViscosity* actmat =
         static_cast<const MAT::LinearDensityViscosity*>(material.get());
@@ -2210,7 +2210,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
       }
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+  else if (material->MaterialType() == CORE::Materials::m_fluid_murnaghantait)
   {
     const MAT::MurnaghanTaitFluid* actmat =
         static_cast<const MAT::MurnaghanTaitFluid*>(material.get());
@@ -2253,7 +2253,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
       }
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_tempdepwater)
+  else if (material->MaterialType() == CORE::Materials::m_tempdepwater)
   {
     const MAT::TempDepWater* actmat = static_cast<const MAT::TempDepWater*>(material.get());
 
@@ -2299,7 +2299,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
     const double scatrabodyforce = funct_.Dot(escabofoaf);
     scarhs_ = scatrabodyforce / actmat->Shc();
   }
-  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+  else if (material->MaterialType() == CORE::Materials::m_arrhenius_pv)
   {
     const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
@@ -2363,7 +2363,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
       }
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+  else if (material->MaterialType() == CORE::Materials::m_ferech_pv)
   {
     const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
 
@@ -2428,7 +2428,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
       }
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
+  else if (material->MaterialType() == CORE::Materials::m_permeable_fluid)
   {
     const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
 
@@ -2453,7 +2453,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
       FOUR_C_THROW(
           "incorrect definition of stabilization parameter for Darcy or Darcy-Stokes problem");
   }
-  else if (material->MaterialType() == INPAR::MAT::m_matlist)
+  else if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     // get material list for this element
     const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
@@ -2484,7 +2484,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
       matid = matlist->MatID(nmaterial);
 
       Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
-      INPAR::MAT::MaterialType mattype = matptr->MaterialType();
+      CORE::Materials::MaterialType mattype = matptr->MaterialType();
 
       // choose from different materials
       switch (mattype)
@@ -2492,7 +2492,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
         //--------------------------------------------------------
         // Newtonian fluid for incompressible flow (standard case)
         //--------------------------------------------------------
-        case INPAR::MAT::m_fluid:
+        case CORE::Materials::m_fluid:
         {
           const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
           density[nmaterial] = mat->Density();
@@ -2573,7 +2573,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
 
   // check whether there is zero or negative (physical) viscosity
   // (expect for permeable fluid)
-  if (visc < 1e-15 and not(material->MaterialType() == INPAR::MAT::m_permeable_fluid))
+  if (visc < 1e-15 and not(material->MaterialType() == CORE::Materials::m_permeable_fluid))
     FOUR_C_THROW("zero or negative (physical) diffusivity");
 
   return;
@@ -6776,7 +6776,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
       {
         double visc = 1.;
         // get viscosity
-        if (mat->MaterialType() == INPAR::MAT::m_fluid)
+        if (mat->MaterialType() == CORE::Materials::m_fluid)
         {
           const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
 
@@ -7064,7 +7064,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
        */
 
       // get pointer to material in order to access density
-      if (mat->MaterialType() == INPAR::MAT::m_fluid)
+      if (mat->MaterialType() == CORE::Materials::m_fluid)
       {
         const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
 
@@ -7140,7 +7140,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
       // Poiseuille flows with pressure-dependent viscosity"
       // Kostas D. Housiadas, Georgios C. Georgiou
 
-      if (mat->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+      if (mat->MaterialType() == CORE::Materials::m_fluid_murnaghantait)
       {
         const MAT::MurnaghanTaitFluid* actmat =
             static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
@@ -7193,7 +7193,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoin
         else
           FOUR_C_THROW("3D analytical solution is not implemented");
       }
-      else if (mat->MaterialType() == INPAR::MAT::m_fluid_linear_density_viscosity)
+      else if (mat->MaterialType() == CORE::Materials::m_fluid_linear_density_viscosity)
       {
         const MAT::LinearDensityViscosity* actmat =
             static_cast<const MAT::LinearDensityViscosity*>(mat.get());
@@ -8871,7 +8871,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
   {
     FOUR_C_THROW("Evaluation of the mass matrix for pressure dofs");
     // check fluid material
-    if (mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
+    if (mat->MaterialType() != CORE::Materials::m_fluid_murnaghantait)
     {
       FOUR_C_THROW(
           "The evaluation of the mass matrix for pressure dofs is implemented only for "
@@ -11816,7 +11816,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
     const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam,
     const double thermpressaf, const double thermpressam, const double sgsca)
 {
-  if (material->MaterialType() == INPAR::MAT::m_mixfrac)
+  if (material->MaterialType() == CORE::Materials::m_mixfrac)
   {
     const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
 
@@ -11865,7 +11865,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
       }
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_sutherland)
+  else if (material->MaterialType() == CORE::Materials::m_sutherland)
   {
     const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
@@ -11927,7 +11927,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
       }
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_fluid_linear_density_viscosity)
+  else if (material->MaterialType() == CORE::Materials::m_fluid_linear_density_viscosity)
   {
     const MAT::LinearDensityViscosity* actmat =
         static_cast<const MAT::LinearDensityViscosity*>(material.get());
@@ -11969,7 +11969,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
       }
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_fluid_murnaghantait)
+  else if (material->MaterialType() == CORE::Materials::m_fluid_murnaghantait)
   {
     const MAT::MurnaghanTaitFluid* actmat =
         static_cast<const MAT::MurnaghanTaitFluid*>(material.get());
@@ -12009,7 +12009,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
       }
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+  else if (material->MaterialType() == CORE::Materials::m_arrhenius_pv)
   {
     const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
@@ -12066,7 +12066,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
       }
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+  else if (material->MaterialType() == CORE::Materials::m_ferech_pv)
   {
     const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
 
@@ -12123,7 +12123,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
       }
     }
   }
-  else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
+  else if (material->MaterialType() == CORE::Materials::m_yoghurt)
   {
     const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
 

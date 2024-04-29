@@ -152,9 +152,9 @@ namespace MAT
     //@}
 
     //! return material type
-    [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override
+    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_electrode;
+      return CORE::Materials::m_electrode;
     };
 
     //! clone electrode material

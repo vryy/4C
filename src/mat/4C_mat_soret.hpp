@@ -105,7 +105,10 @@ namespace MAT
     //@}
 
     //! return material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_soret; };
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_soret;
+    };
 
     //! clone Soret material
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Soret(*this)); };

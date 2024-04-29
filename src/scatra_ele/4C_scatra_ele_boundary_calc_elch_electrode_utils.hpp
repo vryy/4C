@@ -110,7 +110,7 @@ namespace DRT::ELEMENTS
    */
   double CalculateButlerVolmerExchangeMassFluxDensity(double kr, double alpha_a, double alpha_c,
       double c_max, double c_ed, double c_el, int kinetic_model,
-      const DRT::Condition::ConditionType& s2i_condition_type);
+      const CORE::Conditions::ConditionType& s2i_condition_type);
 
   /*!
    * \brief calculate modified Butler-Volmer mass flux density via Newton method

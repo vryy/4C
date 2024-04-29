@@ -687,8 +687,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::set_scatra_ele_boundary_parameter, eleparams);
 
-  eleparams.set<DRT::Condition::ConditionType>(
-      "condition type", DRT::Condition::ConditionType::S2IKinetics);
+  eleparams.set<CORE::Conditions::ConditionType>(
+      "condition type", CORE::Conditions::ConditionType::S2IKinetics);
 
   switch (scatra_manifold_coupling->ConditionKinetics()->Get<int>("kinetic model"))
   {

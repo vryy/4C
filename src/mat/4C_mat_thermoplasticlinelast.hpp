@@ -160,9 +160,9 @@ namespace MAT
     //@}
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_thermopllinelast;
+      return CORE::Materials::m_thermopllinelast;
     }
 
     /// check if element kinematics and material kinematics are compatible

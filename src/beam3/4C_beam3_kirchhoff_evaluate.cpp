@@ -2112,7 +2112,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   /***********************************************************************************************/
 
   // if a point neumann condition needs to be linearized
-  if (condition.Type() == DRT::Condition::PointNeumannEB)
+  if (condition.Type() == CORE::Conditions::PointNeumannEB)
   {
     // find out whether we will use a time curve and get the factor
     const auto* funct = &condition.Get<std::vector<int>>("funct");
@@ -2158,7 +2158,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
     EvaluatePointNeumannEB<nnodecl>(elevec1, elemat1, disp_totlag, load_vector_neumann, node);
   }
   // if a line neumann condition needs to be linearized
-  else if (condition.Type() == DRT::Condition::LineNeumann)
+  else if (condition.Type() == CORE::Conditions::LineNeumann)
   {
     // funct is related to the 6 "funct" fields after the val field of the Neumann condition
     // in the input file; funct gives the number of the function defined in the section FUNCT

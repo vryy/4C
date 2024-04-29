@@ -119,7 +119,7 @@ namespace IMMERSED
     \param buildgeometry (in) : build geometry for condition or not
     */
     void CreateVolumeCondition(const Teuchos::RCP<DRT::Discretization>& dis,
-        const std::vector<int> dvol_fenode, const DRT::Condition::ConditionType condtype,
+        const std::vector<int> dvol_fenode, const CORE::Conditions::ConditionType condtype,
         const std::string condname, bool buildgeometry);
 
     /*!

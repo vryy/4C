@@ -28,7 +28,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetSingleReactionMatFromMultiReactionsMaterial(
   Teuchos::RCP<MAT::Material> singlemat = multiphasereacmat.MaterialById(matid);
 
   // safety check and cast
-  if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlereaction)
+  if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlereaction)
     FOUR_C_THROW("only poro singleraction material valid");
 
   return static_cast<MAT::FluidPoroSingleReaction&>(*singlemat);
@@ -45,7 +45,7 @@ const MAT::FluidPoroSinglePhase& POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMa
   Teuchos::RCP<MAT::Material> singlemat = multiphasemat.MaterialById(matid);
 
   // safety check and cast
-  if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlephase)
+  if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlephase)
     FOUR_C_THROW("check at position %i/%i failed, only poro singlephase material valid",
         phasenum + 1, multiphasemat.NumMat());
 
@@ -59,8 +59,8 @@ const MAT::FluidPoroSinglePhase& POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMa
     const MAT::Material& material, int phasenum)
 {
   // safety check
-  if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-      material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+  if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+      material.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW("only poro multiphase material valid");
 
   // cast
@@ -82,7 +82,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMultiMaterial(
   Teuchos::RCP<MAT::Material> singlemat = multiphasemat.MaterialById(matid);
 
   // safety check and cast
-  if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_singlevolfrac)
+  if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlevolfrac)
     FOUR_C_THROW("check at position %i/%i failed, only poro single vol fraction material valid",
         volfracnum + 1, multiphasemat.NumMat());
 
@@ -96,8 +96,8 @@ const MAT::FluidPoroSingleVolFrac& POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFr
     const MAT::Material& material, int volfracnum)
 {
   // safety check
-  if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-      material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+  if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+      material.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW("only poro multiphase material valid");
 
   // cast
@@ -119,7 +119,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMultiMaterial(
   Teuchos::RCP<MAT::Material> singlemat = multiphasemat.MaterialById(matid);
 
   // safety check and cast
-  if (singlemat->MaterialType() != INPAR::MAT::m_fluidporo_volfracpressure)
+  if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_volfracpressure)
     FOUR_C_THROW("check at position %i/%i failed, only poro single vol fraction material valid",
         volfracnum + 1, multiphasemat.NumMat());
 
@@ -134,8 +134,8 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMaterial(
     const MAT::Material& material, int volfracnum)
 {
   // safety check
-  if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-      material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+  if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+      material.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW("only poro multiphase material valid");
 
   // cast

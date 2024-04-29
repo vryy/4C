@@ -316,27 +316,30 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
   // the special part:
   // now the element knows its material, and we can use it to determine numdofpernode
   Teuchos::RCP<MAT::Material> mat = Material();
-  if (mat->MaterialType() == INPAR::MAT::m_scatra or
-      mat->MaterialType() == INPAR::MAT::m_scatra_aniso or
-      mat->MaterialType() == INPAR::MAT::m_scatra_multiscale or
-      mat->MaterialType() == INPAR::MAT::m_myocard or
-      mat->MaterialType() == INPAR::MAT::m_mixfrac or
-      mat->MaterialType() == INPAR::MAT::m_sutherland or
-      mat->MaterialType() == INPAR::MAT::m_tempdepwater or
-      mat->MaterialType() == INPAR::MAT::m_arrhenius_pv or
-      mat->MaterialType() == INPAR::MAT::m_ferech_pv or mat->MaterialType() == INPAR::MAT::m_ion or
-      mat->MaterialType() == INPAR::MAT::m_th_fourier_iso or
-      mat->MaterialType() == INPAR::MAT::m_thermostvenant or
-      mat->MaterialType() == INPAR::MAT::m_yoghurt or mat->MaterialType() == INPAR::MAT::m_soret or
-      mat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid or
-      mat->MaterialType() == INPAR::MAT::m_scatra_multiporo_volfrac or
-      mat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid or
-      mat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature or
-      (mat->MaterialType() == INPAR::MAT::m_electrode and impltype_ == INPAR::SCATRA::impltype_std))
+  if (mat->MaterialType() == CORE::Materials::m_scatra or
+      mat->MaterialType() == CORE::Materials::m_scatra_aniso or
+      mat->MaterialType() == CORE::Materials::m_scatra_multiscale or
+      mat->MaterialType() == CORE::Materials::m_myocard or
+      mat->MaterialType() == CORE::Materials::m_mixfrac or
+      mat->MaterialType() == CORE::Materials::m_sutherland or
+      mat->MaterialType() == CORE::Materials::m_tempdepwater or
+      mat->MaterialType() == CORE::Materials::m_arrhenius_pv or
+      mat->MaterialType() == CORE::Materials::m_ferech_pv or
+      mat->MaterialType() == CORE::Materials::m_ion or
+      mat->MaterialType() == CORE::Materials::m_th_fourier_iso or
+      mat->MaterialType() == CORE::Materials::m_thermostvenant or
+      mat->MaterialType() == CORE::Materials::m_yoghurt or
+      mat->MaterialType() == CORE::Materials::m_soret or
+      mat->MaterialType() == CORE::Materials::m_scatra_multiporo_fluid or
+      mat->MaterialType() == CORE::Materials::m_scatra_multiporo_volfrac or
+      mat->MaterialType() == CORE::Materials::m_scatra_multiporo_solid or
+      mat->MaterialType() == CORE::Materials::m_scatra_multiporo_temperature or
+      (mat->MaterialType() == CORE::Materials::m_electrode and
+          impltype_ == INPAR::SCATRA::impltype_std))
     numdofpernode_ = 1;  // we only have a single scalar
-  else if (mat->MaterialType() == INPAR::MAT::m_electrode)
-    numdofpernode_ = 2;                                   // concentration and electric potential
-  else if (mat->MaterialType() == INPAR::MAT::m_matlist)  // we have a system of scalars
+  else if (mat->MaterialType() == CORE::Materials::m_electrode)
+    numdofpernode_ = 2;  // concentration and electric potential
+  else if (mat->MaterialType() == CORE::Materials::m_matlist)  // we have a system of scalars
   {
     const MAT::MatList* actmat = static_cast<const MAT::MatList*>(mat.get());
     numdofpernode_ = actmat->NumMat();
@@ -348,7 +351,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       for (int ii = 0; ii < numdofpernode_; ++ii)
       {
         // In the context of ELCH the only valid material combination is m_matlist and m_ion
-        if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_ion)
+        if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != CORE::Materials::m_ion)
           FOUR_C_THROW(
               "In the context of ELCH the material Mat_matlist can be only used in combination "
               "with Mat_ion");
@@ -370,14 +373,15 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       // equation is last equation
       for (int ii = 0; ii < (numdofpernode_ - 1); ++ii)
       {
-        if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_arrhenius_spec)
+        if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
+            CORE::Materials::m_arrhenius_spec)
           FOUR_C_THROW(
               "For problem type LOMA, only combination of Arrhenius-type species (first equations) "
               "and temperature (last equation) possible in this specific order in case of matlist: "
               "one of the first equations is not a species equation!");
       }
       if (actmat->MaterialById(actmat->MatID(numdofpernode_ - 1))->MaterialType() !=
-          INPAR::MAT::m_arrhenius_temp)
+          CORE::Materials::m_arrhenius_temp)
         FOUR_C_THROW(
             "For problem type LOMA, only combination of Arrhenius-type species (first equations) "
             "and temperature (last equation) possible in this specific order in case of matlist: "
@@ -385,7 +389,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     }
   }
   else if (mat->MaterialType() ==
-           INPAR::MAT::m_matlist_reactions)  // we have a system of reactive scalars
+           CORE::Materials::m_matlist_reactions)  // we have a system of reactive scalars
   {
     // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in
     // a diamond inheritance structure
@@ -395,15 +399,15 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     for (int ii = 0; ii < numdofpernode_; ++ii)
     {
       // In the context of reactions the only valid material combination is m_matlist and m_scatra
-      if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra and
+      if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != CORE::Materials::m_scatra and
           actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
-              INPAR::MAT::m_scatra_multiporo_fluid and
+              CORE::Materials::m_scatra_multiporo_fluid and
           actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
-              INPAR::MAT::m_scatra_multiporo_volfrac and
+              CORE::Materials::m_scatra_multiporo_volfrac and
           actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
-              INPAR::MAT::m_scatra_multiporo_temperature and
+              CORE::Materials::m_scatra_multiporo_temperature and
           actmat->MaterialById(actmat->MatID(ii))->MaterialType() !=
-              INPAR::MAT::m_scatra_multiporo_solid)
+              CORE::Materials::m_scatra_multiporo_solid)
         FOUR_C_THROW(
             "The material Mat_matlist_reaction only supports MAT_scatra and MAT_scatra_multiporo "
             "as valid main Material");
@@ -415,9 +419,9 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       // In the context of reactions the only valid material combination is m_matlist and
       // m_scatra_reaction
       if (actmat->MaterialById(actmat->ReacID(jj))->MaterialType() !=
-              INPAR::MAT::m_scatra_reaction and
+              CORE::Materials::m_scatra_reaction and
           actmat->MaterialById(actmat->ReacID(jj))->MaterialType() !=
-              INPAR::MAT::m_scatra_reaction_poroECM)
+              CORE::Materials::m_scatra_reaction_poroECM)
         FOUR_C_THROW(
             "The material MAT_matlist_reaction only supports MAT_scatra_reaction and "
             "MAT_scatra_reaction_poro as valid reaction Material");
@@ -435,7 +439,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     }
   }
   else if (mat->MaterialType() ==
-           INPAR::MAT::m_matlist_chemotaxis)  // we have a system of chemotactic scalars
+           CORE::Materials::m_matlist_chemotaxis)  // we have a system of chemotactic scalars
   {
     // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in
     // a diamond inheritance structure
@@ -445,7 +449,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     for (int ii = 0; ii < numdofpernode_; ++ii)
     {
       // In the context of chemotaxis the only valid material combination is m_matlist and m_scatra
-      if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra)
+      if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != CORE::Materials::m_scatra)
         FOUR_C_THROW(
             "The material Mat_matlist_chemotaxis only supports MAT_scatra as valid main Material");
     }
@@ -456,7 +460,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       // In the context of chemotaxis the only valid material combination is m_matlist and
       // m_scatra_chemotaxis
       if (actmat->MaterialById(actmat->PairID(jj))->MaterialType() !=
-          INPAR::MAT::m_scatra_chemotaxis)
+          CORE::Materials::m_scatra_chemotaxis)
         FOUR_C_THROW(
             "The material MAT_matlist_chemotaxis only supports MAT_scatra_chemotaxis as valid "
             "reaction Material");
@@ -474,7 +478,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     }
   }
   else if (mat->MaterialType() ==
-           INPAR::MAT::m_matlist_chemoreac)  // we have a system of chemotactic scalars
+           CORE::Materials::m_matlist_chemoreac)  // we have a system of chemotactic scalars
   {
     // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in
     // a diamond inheritance structure
@@ -485,7 +489,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     {
       // In the context of reactions/chemotaxis the only valid material combination is m_matlist and
       // m_scatra
-      if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra)
+      if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != CORE::Materials::m_scatra)
         FOUR_C_THROW(
             "The material Mat_matlist_chemoreac only supports MAT_scatra as valid main Material");
     }
@@ -495,7 +499,8 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
     {
       // In the context of reactions the only valid material combination is m_matlist and
       // m_scatra_reaction
-      if (actmat->MaterialById(actmat->ReacID(jj))->MaterialType() != INPAR::MAT::m_scatra_reaction)
+      if (actmat->MaterialById(actmat->ReacID(jj))->MaterialType() !=
+          CORE::Materials::m_scatra_reaction)
         FOUR_C_THROW(
             "The material MAT_matlist_reaction only supports MAT_scatra_reaction as valid reaction "
             "Material");
@@ -518,7 +523,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       // In the context of chemotaxis the only valid material combination is m_matlist and
       // m_scatra_chemotaxis
       if (actmat->MaterialById(actmat->PairID(jj))->MaterialType() !=
-          INPAR::MAT::m_scatra_chemotaxis)
+          CORE::Materials::m_scatra_chemotaxis)
         FOUR_C_THROW(
             "The material MAT_matlist_chemotaxis only supports MAT_scatra_chemotaxis as valid "
             "reaction Material");
@@ -535,7 +540,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
             actmat->PairID(jj));
     }
   }
-  else if (mat->MaterialType() == INPAR::MAT::m_elchmat)
+  else if (mat->MaterialType() == CORE::Materials::m_elchmat)
   {
     const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
 
@@ -556,7 +561,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum, DRT::Element* oldele)
 
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  if (mat->MaterialType() == INPAR::MAT::m_myocard)
+  if (mat->MaterialType() == CORE::Materials::m_myocard)
   {
     Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
 
@@ -708,8 +713,8 @@ int DRT::ELEMENTS::Transport::Initialize()
   Teuchos::RCP<MAT::Material> mat = Material();
   // for now, we only need to do something in case of reactions (for the initialization of functions
   // in case of reactions by function)
-  if (mat->MaterialType() == INPAR::MAT::m_matlist_reactions or
-      mat->MaterialType() == INPAR::MAT::m_matlist_chemoreac)
+  if (mat->MaterialType() == CORE::Materials::m_matlist_reactions or
+      mat->MaterialType() == CORE::Materials::m_matlist_chemoreac)
   {
     // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in
     // a diamond inheritance structure
@@ -717,7 +722,7 @@ int DRT::ELEMENTS::Transport::Initialize()
         Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(mat);
     actmat->Initialize();
   }
-  else if (mat->MaterialType() == INPAR::MAT::m_myocard)
+  else if (mat->MaterialType() == CORE::Materials::m_myocard)
   {
     Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
     int deg = 0;

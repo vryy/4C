@@ -248,7 +248,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
          i != materials->Map()->end(); ++i)
     {
       Teuchos::RCP<MAT::PAR::Material> mat = i->second;
-      if (mat->Type() == INPAR::MAT::m_struct_multiscale)
+      if (mat->Type() == CORE::Materials::m_struct_multiscale)
       {
         if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
             INPAR::STR::dyna_genalpha)

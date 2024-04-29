@@ -134,7 +134,10 @@ namespace MAT
     double Capacity() const override { return params_->capa_; }
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_th_fourier_iso; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_th_fourier_iso;
+    }
 
     /// return copy of this material object
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new FourierIso(*this)); }

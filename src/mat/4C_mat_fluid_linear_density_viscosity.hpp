@@ -128,9 +128,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_fluid_linear_density_viscosity;
+      return CORE::Materials::m_fluid_linear_density_viscosity;
     }
 
     /// return copy of this material object

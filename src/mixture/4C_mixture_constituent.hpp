@@ -114,7 +114,7 @@ namespace MIXTURE
         std::vector<char>::size_type& position, const std::vector<char>& data);
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const = 0;
+    virtual CORE::Materials::MaterialType MaterialType() const = 0;
 
     /*!
      * \brief Register anisotropy extensions of all sub-materials of the constituent

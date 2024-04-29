@@ -142,483 +142,483 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::m_fluid:
+    case CORE::Materials::m_fluid:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::NewtonianFluid(curmat));
       auto* params = static_cast<MAT::PAR::NewtonianFluid*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluid_murnaghantait:
+    case CORE::Materials::m_fluid_murnaghantait:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::MurnaghanTaitFluid(curmat));
       auto* params = static_cast<MAT::PAR::MurnaghanTaitFluid*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluid_linear_density_viscosity:
+    case CORE::Materials::m_fluid_linear_density_viscosity:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LinearDensityViscosity(curmat));
       auto* params = static_cast<MAT::PAR::LinearDensityViscosity*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluid_weakly_compressible:
+    case CORE::Materials::m_fluid_weakly_compressible:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::WeaklyCompressibleFluid(curmat));
       auto* params = static_cast<MAT::PAR::WeaklyCompressibleFluid*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_stvenant:
+    case CORE::Materials::m_stvenant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::StVenantKirchhoff(curmat));
       auto* params = static_cast<MAT::PAR::StVenantKirchhoff*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_thermostvenant:
+    case CORE::Materials::m_thermostvenant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ThermoStVenantKirchhoff(curmat));
       auto* params = static_cast<MAT::PAR::ThermoStVenantKirchhoff*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_thermopllinelast:
+    case CORE::Materials::m_thermopllinelast:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ThermoPlasticLinElast(curmat));
       auto* params = static_cast<MAT::PAR::ThermoPlasticLinElast*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_pldruckprag:
+    case CORE::Materials::m_pldruckprag:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PlasticDruckerPrager(curmat));
       auto* params = static_cast<MAT::PAR::PlasticDruckerPrager*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_thermoplhyperelast:
+    case CORE::Materials::m_thermoplhyperelast:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ThermoPlasticHyperElast(curmat));
       auto* params = static_cast<MAT::PAR::ThermoPlasticHyperElast*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_plnlnlogneohooke:
+    case CORE::Materials::m_plnlnlogneohooke:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PlasticNlnLogNeoHooke(curmat));
       auto* params = static_cast<MAT::PAR::PlasticNlnLogNeoHooke*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_pllinelast:
+    case CORE::Materials::m_pllinelast:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PlasticLinElast(curmat));
       auto* params = static_cast<MAT::PAR::PlasticLinElast*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_vp_no_yield_surface:
+    case CORE::Materials::m_vp_no_yield_surface:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ViscoPlasticNoYieldSurface(curmat));
       auto* params = static_cast<MAT::PAR::ViscoPlasticNoYieldSurface*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_vp_robinson:
+    case CORE::Materials::m_vp_robinson:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Robinson(curmat));
       auto* params = static_cast<MAT::PAR::Robinson*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_elpldamage:
+    case CORE::Materials::m_elpldamage:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Damage(curmat));
       auto* params = static_cast<MAT::PAR::Damage*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_struct_multiscale:
+    case CORE::Materials::m_struct_multiscale:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::MicroMaterial(curmat));
       auto* params = static_cast<MAT::PAR::MicroMaterial*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_visconeohooke:
+    case CORE::Materials::m_visconeohooke:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ViscoNeoHooke(curmat));
       auto* params = static_cast<MAT::PAR::ViscoNeoHooke*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_viscoanisotropic:
+    case CORE::Materials::m_viscoanisotropic:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ViscoAnisotropic(curmat));
       auto* params = static_cast<MAT::PAR::ViscoAnisotropic*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_aaaneohooke:
+    case CORE::Materials::m_aaaneohooke:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::AAAneohooke(curmat));
       auto* params = static_cast<MAT::PAR::AAAneohooke*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_aaaneohooke_stopro:
+    case CORE::Materials::m_aaaneohooke_stopro:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::AaAneohookeStopro(curmat));
       auto* params = static_cast<MAT::PAR::AaAneohookeStopro*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_aaagasser:
+    case CORE::Materials::m_aaagasser:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::AAAgasser(curmat));
       auto* params = static_cast<MAT::PAR::AAAgasser*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_aaaraghavanvorp_damage:
+    case CORE::Materials::m_aaaraghavanvorp_damage:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::AaAraghavanvorpDamage(curmat));
       auto* params = static_cast<MAT::PAR::AaAraghavanvorpDamage*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_aaa_mixedeffects:
+    case CORE::Materials::m_aaa_mixedeffects:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::AaaMixedeffects(curmat));
       auto* params = static_cast<MAT::PAR::AaaMixedeffects*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_lubrication:
+    case CORE::Materials::m_lubrication:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LubricationMat(curmat));
       auto* params = static_cast<MAT::PAR::LubricationMat*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_lubrication_law_constant:
+    case CORE::Materials::m_lubrication_law_constant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LubricationLawConstant(curmat));
       auto* params = static_cast<MAT::PAR::LubricationLawConstant*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_lubrication_law_barus:
+    case CORE::Materials::m_lubrication_law_barus:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LubricationLawBarus(curmat));
       auto* params = static_cast<MAT::PAR::LubricationLawBarus*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_lubrication_law_roeland:
+    case CORE::Materials::m_lubrication_law_roeland:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LubricationLawRoeland(curmat));
       auto* params = static_cast<MAT::PAR::LubricationLawRoeland*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scatra:
+    case CORE::Materials::m_scatra:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ScatraMat(curmat));
       auto* params = static_cast<MAT::PAR::ScatraMat*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scatra_reaction_poroECM:
+    case CORE::Materials::m_scatra_reaction_poroECM:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScatraMatPoroECM(curmat));
       auto* params = static_cast<MAT::PAR::ScatraMatPoroECM*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scatra_reaction:
+    case CORE::Materials::m_scatra_reaction:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScatraReactionMat(curmat));
       auto* params = static_cast<MAT::PAR::ScatraReactionMat*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scatra_multiporo_fluid:
+    case CORE::Materials::m_scatra_multiporo_fluid:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroFluid(curmat));
       auto* params = static_cast<MAT::PAR::ScatraMatMultiPoroFluid*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scatra_multiporo_volfrac:
+    case CORE::Materials::m_scatra_multiporo_volfrac:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroVolFrac(curmat));
       auto* params = static_cast<MAT::PAR::ScatraMatMultiPoroVolFrac*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scatra_multiporo_solid:
+    case CORE::Materials::m_scatra_multiporo_solid:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroSolid(curmat));
       auto* params = static_cast<MAT::PAR::ScatraMatMultiPoroSolid*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scatra_multiporo_temperature:
+    case CORE::Materials::m_scatra_multiporo_temperature:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScatraMatMultiPoroTemperature(curmat));
       auto* params = static_cast<MAT::PAR::ScatraMatMultiPoroTemperature*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scatra_multiscale:
+    case CORE::Materials::m_scatra_multiscale:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScatraMultiScale(curmat));
       auto* params = static_cast<MAT::PAR::ScatraMultiScale*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scatra_chemotaxis:
+    case CORE::Materials::m_scatra_chemotaxis:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScatraChemotaxisMat(curmat));
       auto* params = static_cast<MAT::PAR::ScatraChemotaxisMat*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scatra_aniso:
+    case CORE::Materials::m_scatra_aniso:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScatraMatAniso(curmat));
       auto* params = static_cast<MAT::PAR::ScatraMatAniso*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_muscle_combo:
+    case CORE::Materials::m_muscle_combo:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::MuscleCombo(curmat));
       auto* params = static_cast<MAT::PAR::MuscleCombo*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_muscle_giantesio:
+    case CORE::Materials::m_muscle_giantesio:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::MuscleGiantesio(curmat));
       auto* params = static_cast<MAT::PAR::MuscleGiantesio*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_muscle_weickenmeier:
+    case CORE::Materials::m_muscle_weickenmeier:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::MuscleWeickenmeier(curmat));
       auto* params = static_cast<MAT::PAR::MuscleWeickenmeier*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_myocard:
+    case CORE::Materials::m_myocard:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Myocard(curmat));
       auto* params = static_cast<MAT::PAR::Myocard*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_mixfrac:
+    case CORE::Materials::m_mixfrac:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::MixFrac(curmat));
       auto* params = static_cast<MAT::PAR::MixFrac*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_sutherland:
+    case CORE::Materials::m_sutherland:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Sutherland(curmat));
       auto* params = static_cast<MAT::PAR::Sutherland*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_tempdepwater:
+    case CORE::Materials::m_tempdepwater:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::TempDepWater(curmat));
       auto* params = static_cast<MAT::PAR::TempDepWater*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_arrhenius_spec:
+    case CORE::Materials::m_arrhenius_spec:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ArrheniusSpec(curmat));
       auto* params = static_cast<MAT::PAR::ArrheniusSpec*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_arrhenius_temp:
+    case CORE::Materials::m_arrhenius_temp:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ArrheniusTemp(curmat));
       auto* params = static_cast<MAT::PAR::ArrheniusTemp*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_arrhenius_pv:
+    case CORE::Materials::m_arrhenius_pv:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ArrheniusPV(curmat));
       auto* params = static_cast<MAT::PAR::ArrheniusPV*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_ferech_pv:
+    case CORE::Materials::m_ferech_pv:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::FerEchPV(curmat));
       auto* params = static_cast<MAT::PAR::FerEchPV*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_carreauyasuda:
+    case CORE::Materials::m_carreauyasuda:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::CarreauYasuda(curmat));
       auto* params = static_cast<MAT::PAR::CarreauYasuda*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_modpowerlaw:
+    case CORE::Materials::m_modpowerlaw:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ModPowerLaw(curmat));
       auto* params = static_cast<MAT::PAR::ModPowerLaw*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_herschelbulkley:
+    case CORE::Materials::m_herschelbulkley:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::HerschelBulkley(curmat));
       auto* params = static_cast<MAT::PAR::HerschelBulkley*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_yoghurt:
+    case CORE::Materials::m_yoghurt:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Yoghurt(curmat));
       auto* params = static_cast<MAT::PAR::Yoghurt*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_permeable_fluid:
+    case CORE::Materials::m_permeable_fluid:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PermeableFluid(curmat));
       auto* params = static_cast<MAT::PAR::PermeableFluid*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo:
+    case CORE::Materials::m_fluidporo:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::FluidPoro(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoro*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_multiphase:
+    case CORE::Materials::m_fluidporo_multiphase:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroMultiPhase(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroMultiPhase*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_multiphase_reactions:
+    case CORE::Materials::m_fluidporo_multiphase_reactions:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroMultiPhaseReactions(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroMultiPhaseReactions*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_singlereaction:
+    case CORE::Materials::m_fluidporo_singlereaction:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroSingleReaction(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroSingleReaction*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_singlephase:
+    case CORE::Materials::m_fluidporo_singlephase:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroSinglePhase(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroSinglePhase*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_singlevolfrac:
+    case CORE::Materials::m_fluidporo_singlevolfrac:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroSingleVolFrac(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroSingleVolFrac*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_volfracpressure:
+    case CORE::Materials::m_fluidporo_volfracpressure:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroVolFracPressure(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroVolFracPressure*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_poro_law_linear:
+    case CORE::Materials::m_poro_law_linear:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::PoroLawLinear(curmat));
       auto* params = static_cast<MAT::PAR::PoroLawLinear*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_poro_law_constant:
+    case CORE::Materials::m_poro_law_constant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroLawConstant(curmat));
       auto* params = static_cast<MAT::PAR::PoroLawConstant*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_poro_law_logNeoHooke_Penalty:
+    case CORE::Materials::m_poro_law_logNeoHooke_Penalty:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroLawNeoHooke(curmat));
       auto* params = static_cast<MAT::PAR::PoroLawNeoHooke*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_poro_law_incompr_skeleton:
+    case CORE::Materials::m_poro_law_incompr_skeleton:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroLawIncompSkeleton(curmat));
       auto* params = static_cast<MAT::PAR::PoroLawIncompSkeleton*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_poro_law_linear_biot:
+    case CORE::Materials::m_poro_law_linear_biot:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroLawLinBiot(curmat));
       auto* params = static_cast<MAT::PAR::PoroLawLinBiot*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_poro_law_density_dependent:
+    case CORE::Materials::m_poro_law_density_dependent:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroLawDensityDependent(curmat));
       auto* params = static_cast<MAT::PAR::PoroLawDensityDependent*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_poro_densitylaw_constant:
+    case CORE::Materials::m_poro_densitylaw_constant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroDensityLawConstant(curmat));
       auto* params = static_cast<MAT::PAR::PoroDensityLawConstant*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_poro_densitylaw_exp:
+    case CORE::Materials::m_poro_densitylaw_exp:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroDensityLawExp(curmat));
       auto* params = static_cast<MAT::PAR::PoroDensityLawExp*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_phaselaw_linear:
+    case CORE::Materials::m_fluidporo_phaselaw_linear:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawLinear(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroPhaseLawLinear*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_phaselaw_tangent:
+    case CORE::Materials::m_fluidporo_phaselaw_tangent:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawTangent(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_phaselaw_constraint:
+    case CORE::Materials::m_fluidporo_phaselaw_constraint:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawConstraint(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroPhaseLawConstraint*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_phaselaw_byfunction:
+    case CORE::Materials::m_fluidporo_phaselaw_byfunction:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawByFunction(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_relpermeabilitylaw_constant:
+    case CORE::Materials::m_fluidporo_relpermeabilitylaw_constant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroRelPermeabilityLawConstant(curmat));
@@ -626,7 +626,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::FluidPoroRelPermeabilityLawConstant*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_relpermeabilitylaw_exp:
+    case CORE::Materials::m_fluidporo_relpermeabilitylaw_exp:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroRelPermeabilityLawExponent(curmat));
@@ -634,14 +634,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::FluidPoroRelPermeabilityLawExponent*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_viscositylaw_constant:
+    case CORE::Materials::m_fluidporo_viscositylaw_constant:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroViscosityLawConstant(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroViscosityLawConstant*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_viscositylaw_celladh:
+    case CORE::Materials::m_fluidporo_viscositylaw_celladh:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroViscosityLawCellAdherence(curmat));
@@ -649,34 +649,34 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::FluidPoroViscosityLawCellAdherence*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_phasedof_diffpressure:
+    case CORE::Materials::m_fluidporo_phasedof_diffpressure:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroPhaseDofDiffPressure*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_phasedof_pressure:
+    case CORE::Materials::m_fluidporo_phasedof_pressure:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_fluidporo_phasedof_saturation:
+    case CORE::Materials::m_fluidporo_phasedof_saturation:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
       auto* params = static_cast<MAT::PAR::FluidPoroPhaseDofSaturation*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_matlist:
+    case CORE::Materials::m_matlist:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::MatList(curmat));
       auto* params = static_cast<MAT::PAR::MatList*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_matlist_reactions:
+    case CORE::Materials::m_matlist_reactions:
     {
       // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are
       // in a diamond inheritance structure
@@ -685,7 +685,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       auto* params = dynamic_cast<MAT::PAR::MatListReactions*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_matlist_chemotaxis:
+    case CORE::Materials::m_matlist_chemotaxis:
     {
       // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are
       // in a diamond inheritance structure
@@ -694,7 +694,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       auto* params = dynamic_cast<MAT::PAR::MatListChemotaxis*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_matlist_chemoreac:
+    case CORE::Materials::m_matlist_chemoreac:
     {
       // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are
       // in a diamond inheritance structure
@@ -703,283 +703,283 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       auto* params = dynamic_cast<MAT::PAR::MatListChemoReac*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_elchmat:
+    case CORE::Materials::m_elchmat:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ElchMat(curmat));
       auto* params = static_cast<MAT::PAR::ElchMat*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_elchphase:
+    case CORE::Materials::m_elchphase:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ElchPhase(curmat));
       auto* params = static_cast<MAT::PAR::ElchPhase*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_ion:
+    case CORE::Materials::m_ion:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Ion(curmat));
       auto* params = static_cast<MAT::PAR::Ion*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_electrode:
+    case CORE::Materials::m_electrode:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Electrode(curmat));
       auto* params = static_cast<MAT::PAR::Electrode*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_newman:
+    case CORE::Materials::m_newman:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Newman(curmat));
       auto* params = static_cast<MAT::PAR::Newman*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_newman_multiscale:
+    case CORE::Materials::m_newman_multiscale:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::NewmanMultiScale(curmat));
       auto* params = static_cast<MAT::PAR::NewmanMultiScale*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_scl:
+    case CORE::Materials::m_scl:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Scl(curmat));
       auto* params = static_cast<MAT::PAR::Scl*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_elasthyper:
+    case CORE::Materials::m_elasthyper:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::ElastHyper(curmat));
       auto* params = static_cast<MAT::PAR::ElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_viscoelasthyper:
+    case CORE::Materials::m_viscoelasthyper:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ViscoElastHyper(curmat));
       auto* params = static_cast<MAT::PAR::ViscoElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_plelasthyper:
+    case CORE::Materials::m_plelasthyper:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PlasticElastHyper(curmat));
       auto* params = static_cast<MAT::PAR::PlasticElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_plelasthyperVCU:
+    case CORE::Materials::m_plelasthyperVCU:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PlasticElastHyperVCU(curmat));
       auto* params = static_cast<MAT::PAR::PlasticElastHyperVCU*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_sc_dep_interp:
+    case CORE::Materials::m_sc_dep_interp:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScalarDepInterp(curmat));
       auto* params = static_cast<MAT::PAR::ScalarDepInterp*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_structporo:
+    case CORE::Materials::m_structporo:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::StructPoro(curmat));
       auto* params = static_cast<MAT::PAR::StructPoro*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_structpororeaction:
+    case CORE::Materials::m_structpororeaction:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::StructPoroReaction(curmat));
       auto* params = static_cast<MAT::PAR::StructPoroReaction*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_structpororeactionECM:
+    case CORE::Materials::m_structpororeactionECM:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::StructPoroReactionECM(curmat));
       auto* params = static_cast<MAT::PAR::StructPoroReactionECM*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::mes_couplogneohooke:
-    case INPAR::MAT::mes_couplogmixneohooke:
-    case INPAR::MAT::mes_coupexppol:
-    case INPAR::MAT::mes_coupneohooke:
-    case INPAR::MAT::mes_coupblatzko:
-    case INPAR::MAT::mes_isoneohooke:
-    case INPAR::MAT::mes_isoogden:
-    case INPAR::MAT::mes_isoyeoh:
-    case INPAR::MAT::mes_iso1pow:
-    case INPAR::MAT::mes_iso2pow:
-    case INPAR::MAT::mes_coup1pow:
-    case INPAR::MAT::mes_coup2pow:
-    case INPAR::MAT::mes_coup3pow:
-    case INPAR::MAT::mes_coup13apow:
-    case INPAR::MAT::mes_coupmooneyrivlin:
-    case INPAR::MAT::mes_coupsimopister:
-    case INPAR::MAT::mes_isoexpopow:
-    case INPAR::MAT::mes_isomooneyrivlin:
-    case INPAR::MAT::mes_isomuscleblemker:
-    case INPAR::MAT::mes_volsussmanbathe:
-    case INPAR::MAT::mes_volpenalty:
-    case INPAR::MAT::mes_vologden:
-    case INPAR::MAT::mes_volpow:
-    case INPAR::MAT::mes_anisoactivestress_evolution:
-    case INPAR::MAT::mes_coupanisoexpoactive:
-    case INPAR::MAT::mes_coupanisoexpo:
-    case INPAR::MAT::mes_coupanisoexposhear:
-    case INPAR::MAT::mes_coupanisopow:
-    case INPAR::MAT::mes_couptransverselyisotropic:
-    case INPAR::MAT::mes_coupanisoexpotwocoup:
-    case INPAR::MAT::mes_coupanisoneohooke:
-    case INPAR::MAT::mes_coupanisoneohooke_varprop:
-    case INPAR::MAT::mes_isoanisoexpo:
-    case INPAR::MAT::mes_structuraltensorstratgy:
-    case INPAR::MAT::mes_coupvarga:
-    case INPAR::MAT::mes_isovarga:
-    case INPAR::MAT::mes_isovolaaagasser:
-    case INPAR::MAT::mes_isotestmaterial:
-    case INPAR::MAT::mes_coupmyocard:
-    case INPAR::MAT::mes_isoratedep:
-    case INPAR::MAT::mes_genmax:
-    case INPAR::MAT::mes_fract:
-    case INPAR::MAT::mes_generalizedgenmax:
-    case INPAR::MAT::mes_viscopart:
-    case INPAR::MAT::mes_viscobranch:
-    case INPAR::MAT::mes_remodelfiber:
-    case INPAR::MAT::m_growth_aniso_strain:
-    case INPAR::MAT::m_growth_aniso_stress:
-    case INPAR::MAT::m_growth_aniso_strain_const_trig:
-    case INPAR::MAT::m_growth_aniso_stress_const_trig:
-    case INPAR::MAT::m_growth_iso_stress:
-    case INPAR::MAT::m_growth_ac:
-    case INPAR::MAT::m_growth_ac_radial:
-    case INPAR::MAT::m_growth_ac_radial_refconc:
-    case INPAR::MAT::m_growth_const:
-    case INPAR::MAT::mes_coupSVK:
-    case INPAR::MAT::mfi_lin_scalar_aniso:
-    case INPAR::MAT::mfi_lin_scalar_iso:
-    case INPAR::MAT::mfi_lin_temp_iso:
-    case INPAR::MAT::mfi_no_growth:
-    case INPAR::MAT::mfi_time_funct:
-    case INPAR::MAT::mfi_poly_intercal_frac_aniso:
-    case INPAR::MAT::mfi_poly_intercal_frac_iso:
-    case INPAR::MAT::mix_rule_function:
-    case INPAR::MAT::mix_rule_map:
-    case INPAR::MAT::mix_rule_simple:
-    case INPAR::MAT::mix_rule_growthremodel:
-    case INPAR::MAT::mix_elasthyper:
-    case INPAR::MAT::mix_elasthyper_damage:
-    case INPAR::MAT::mix_elasthyper_elastin_membrane:
-    case INPAR::MAT::mix_full_constrained_mixture_fiber:
-    case INPAR::MAT::mix_solid_material:
-    case INPAR::MAT::mix_growth_strategy_anisotropic:
-    case INPAR::MAT::mix_growth_strategy_isotropic:
-    case INPAR::MAT::mix_growth_strategy_stiffness:
-    case INPAR::MAT::mix_prestress_strategy_constant:
-    case INPAR::MAT::mix_prestress_strategy_cylinder:
-    case INPAR::MAT::mix_prestress_strategy_iterative:
-    case INPAR::MAT::mix_remodelfiber_expl:
-    case INPAR::MAT::mix_remodelfiber_impl:
-    case INPAR::MAT::mix_remodelfiber_material_exponential:
-    case INPAR::MAT::mix_remodelfiber_material_exponential_active:
+    case CORE::Materials::mes_couplogneohooke:
+    case CORE::Materials::mes_couplogmixneohooke:
+    case CORE::Materials::mes_coupexppol:
+    case CORE::Materials::mes_coupneohooke:
+    case CORE::Materials::mes_coupblatzko:
+    case CORE::Materials::mes_isoneohooke:
+    case CORE::Materials::mes_isoogden:
+    case CORE::Materials::mes_isoyeoh:
+    case CORE::Materials::mes_iso1pow:
+    case CORE::Materials::mes_iso2pow:
+    case CORE::Materials::mes_coup1pow:
+    case CORE::Materials::mes_coup2pow:
+    case CORE::Materials::mes_coup3pow:
+    case CORE::Materials::mes_coup13apow:
+    case CORE::Materials::mes_coupmooneyrivlin:
+    case CORE::Materials::mes_coupsimopister:
+    case CORE::Materials::mes_isoexpopow:
+    case CORE::Materials::mes_isomooneyrivlin:
+    case CORE::Materials::mes_isomuscleblemker:
+    case CORE::Materials::mes_volsussmanbathe:
+    case CORE::Materials::mes_volpenalty:
+    case CORE::Materials::mes_vologden:
+    case CORE::Materials::mes_volpow:
+    case CORE::Materials::mes_anisoactivestress_evolution:
+    case CORE::Materials::mes_coupanisoexpoactive:
+    case CORE::Materials::mes_coupanisoexpo:
+    case CORE::Materials::mes_coupanisoexposhear:
+    case CORE::Materials::mes_coupanisopow:
+    case CORE::Materials::mes_couptransverselyisotropic:
+    case CORE::Materials::mes_coupanisoexpotwocoup:
+    case CORE::Materials::mes_coupanisoneohooke:
+    case CORE::Materials::mes_coupanisoneohooke_varprop:
+    case CORE::Materials::mes_isoanisoexpo:
+    case CORE::Materials::mes_structuraltensorstratgy:
+    case CORE::Materials::mes_coupvarga:
+    case CORE::Materials::mes_isovarga:
+    case CORE::Materials::mes_isovolaaagasser:
+    case CORE::Materials::mes_isotestmaterial:
+    case CORE::Materials::mes_coupmyocard:
+    case CORE::Materials::mes_isoratedep:
+    case CORE::Materials::mes_genmax:
+    case CORE::Materials::mes_fract:
+    case CORE::Materials::mes_generalizedgenmax:
+    case CORE::Materials::mes_viscopart:
+    case CORE::Materials::mes_viscobranch:
+    case CORE::Materials::mes_remodelfiber:
+    case CORE::Materials::m_growth_aniso_strain:
+    case CORE::Materials::m_growth_aniso_stress:
+    case CORE::Materials::m_growth_aniso_strain_const_trig:
+    case CORE::Materials::m_growth_aniso_stress_const_trig:
+    case CORE::Materials::m_growth_iso_stress:
+    case CORE::Materials::m_growth_ac:
+    case CORE::Materials::m_growth_ac_radial:
+    case CORE::Materials::m_growth_ac_radial_refconc:
+    case CORE::Materials::m_growth_const:
+    case CORE::Materials::mes_coupSVK:
+    case CORE::Materials::mfi_lin_scalar_aniso:
+    case CORE::Materials::mfi_lin_scalar_iso:
+    case CORE::Materials::mfi_lin_temp_iso:
+    case CORE::Materials::mfi_no_growth:
+    case CORE::Materials::mfi_time_funct:
+    case CORE::Materials::mfi_poly_intercal_frac_aniso:
+    case CORE::Materials::mfi_poly_intercal_frac_iso:
+    case CORE::Materials::mix_rule_function:
+    case CORE::Materials::mix_rule_map:
+    case CORE::Materials::mix_rule_simple:
+    case CORE::Materials::mix_rule_growthremodel:
+    case CORE::Materials::mix_elasthyper:
+    case CORE::Materials::mix_elasthyper_damage:
+    case CORE::Materials::mix_elasthyper_elastin_membrane:
+    case CORE::Materials::mix_full_constrained_mixture_fiber:
+    case CORE::Materials::mix_solid_material:
+    case CORE::Materials::mix_growth_strategy_anisotropic:
+    case CORE::Materials::mix_growth_strategy_isotropic:
+    case CORE::Materials::mix_growth_strategy_stiffness:
+    case CORE::Materials::mix_prestress_strategy_constant:
+    case CORE::Materials::mix_prestress_strategy_cylinder:
+    case CORE::Materials::mix_prestress_strategy_iterative:
+    case CORE::Materials::mix_remodelfiber_expl:
+    case CORE::Materials::mix_remodelfiber_impl:
+    case CORE::Materials::mix_remodelfiber_material_exponential:
+    case CORE::Materials::mix_remodelfiber_material_exponential_active:
     {
       return Teuchos::null;
     }
-    case INPAR::MAT::m_cnst_art:
+    case CORE::Materials::m_cnst_art:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Cnst1dArt(curmat));
       auto* params = static_cast<MAT::PAR::Cnst1dArt*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_0d_maxwell_acinus:
+    case CORE::Materials::m_0d_maxwell_acinus:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::Maxwell0dAcinus(curmat));
       auto* params = static_cast<MAT::PAR::Maxwell0dAcinus*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_0d_maxwell_acinus_neohookean:
+    case CORE::Materials::m_0d_maxwell_acinus_neohookean:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::Maxwell0dAcinusNeoHookean(curmat));
       auto* params = static_cast<MAT::PAR::Maxwell0dAcinusNeoHookean*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_0d_maxwell_acinus_exponential:
+    case CORE::Materials::m_0d_maxwell_acinus_exponential:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::Maxwell0dAcinusExponential(curmat));
       auto* params = static_cast<MAT::PAR::Maxwell0dAcinusExponential*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_0d_maxwell_acinus_doubleexponential:
+    case CORE::Materials::m_0d_maxwell_acinus_doubleexponential:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::Maxwell0dAcinusDoubleExponential(curmat));
       auto* params = static_cast<MAT::PAR::Maxwell0dAcinusDoubleExponential*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_0d_maxwell_acinus_ogden:
+    case CORE::Materials::m_0d_maxwell_acinus_ogden:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::Maxwell0dAcinusOgden(curmat));
       auto* params = static_cast<MAT::PAR::Maxwell0dAcinusOgden*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_0d_o2_hemoglobin_saturation:
+    case CORE::Materials::m_0d_o2_hemoglobin_saturation:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::Hemoglobin0dO2Saturation(curmat));
       auto* params = static_cast<MAT::PAR::Hemoglobin0dO2Saturation*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_0d_o2_air_saturation:
+    case CORE::Materials::m_0d_o2_air_saturation:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::Air0dO2Saturation(curmat));
       auto* params = static_cast<MAT::PAR::Air0dO2Saturation*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_th_fourier_iso:
+    case CORE::Materials::m_th_fourier_iso:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::FourierIso(curmat));
       auto* params = static_cast<MAT::PAR::FourierIso*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_soret:
+    case CORE::Materials::m_soret:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Soret(curmat));
       auto* params = static_cast<MAT::PAR::Soret*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_membrane_elasthyper:
+    case CORE::Materials::m_membrane_elasthyper:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::MembraneElastHyper(curmat));
       auto* params = static_cast<MAT::PAR::MembraneElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_membrane_activestrain:
+    case CORE::Materials::m_membrane_activestrain:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::MembraneActiveStrain(curmat));
       auto* params = static_cast<MAT::PAR::MembraneActiveStrain*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_growthremodel_elasthyper:
+    case CORE::Materials::m_growthremodel_elasthyper:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthRemodelElastHyper(curmat));
       auto* params = static_cast<MAT::PAR::GrowthRemodelElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_mixture:
+    case CORE::Materials::m_mixture:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Mixture(curmat));
       auto* params = dynamic_cast<MAT::PAR::Mixture*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_multiplicative_split_defgrad_elasthyper:
+    case CORE::Materials::m_multiplicative_split_defgrad_elasthyper:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::MultiplicativeSplitDefgradElastHyper(curmat));
@@ -987,20 +987,20 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::MultiplicativeSplitDefgradElastHyper*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_growth_volumetric:
+    case CORE::Materials::m_growth_volumetric:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Growth(curmat));
       auto* params = static_cast<MAT::PAR::Growth*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_constraintmixture:
+    case CORE::Materials::m_constraintmixture:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ConstraintMixture(curmat));
       auto* params = static_cast<MAT::PAR::ConstraintMixture*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_beam_reissner_elast_hyper:
+    case CORE::Materials::m_beam_reissner_elast_hyper:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::BeamReissnerElastHyperMaterialParams(curmat));
@@ -1008,7 +1008,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::BeamReissnerElastHyperMaterialParams*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_beam_reissner_elast_plastic:
+    case CORE::Materials::m_beam_reissner_elast_plastic:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::BeamReissnerElastPlasticMaterialParams(curmat));
@@ -1016,7 +1016,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::BeamReissnerElastPlasticMaterialParams*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_beam_reissner_elast_hyper_bymodes:
+    case CORE::Materials::m_beam_reissner_elast_hyper_bymodes:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::BeamReissnerElastHyperMaterialParamsByMode(curmat));
@@ -1024,7 +1024,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::BeamReissnerElastHyperMaterialParamsByMode*>(curmat->Parameter());
       return params_bymode->CreateMaterial();
     }
-    case INPAR::MAT::m_beam_kirchhoff_elast_hyper:
+    case CORE::Materials::m_beam_kirchhoff_elast_hyper:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::BeamKirchhoffElastHyperMaterialParams(curmat));
@@ -1032,7 +1032,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::BeamKirchhoffElastHyperMaterialParams*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_beam_kirchhoff_elast_hyper_bymodes:
+    case CORE::Materials::m_beam_kirchhoff_elast_hyper_bymodes:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::BeamKirchhoffElastHyperMaterialParamsByMode(curmat));
@@ -1040,7 +1040,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           static_cast<MAT::PAR::BeamKirchhoffElastHyperMaterialParamsByMode*>(curmat->Parameter());
       return params_bymode->CreateMaterial();
     }
-    case INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper:
+    case CORE::Materials::m_beam_kirchhoff_torsionfree_elast_hyper:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(
@@ -1049,7 +1049,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
           curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes:
+    case CORE::Materials::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(
@@ -1059,20 +1059,20 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
               curmat->Parameter());
       return params_bymode->CreateMaterial();
     }
-    case INPAR::MAT::m_crosslinkermat:
+    case CORE::Materials::m_crosslinkermat:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::CrosslinkerMat(curmat));
       auto* params = static_cast<MAT::PAR::CrosslinkerMat*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_spring:
+    case CORE::Materials::m_spring:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::Spring(curmat));
       auto* params = static_cast<MAT::PAR::Spring*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_particle_sph_fluid:
+    case CORE::Materials::m_particle_sph_fluid:
     {
       // note: dynamic_cast needed due diamond inheritance structure
       if (curmat->Parameter() == nullptr)
@@ -1080,7 +1080,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       auto* params = dynamic_cast<MAT::PAR::ParticleMaterialSPHFluid*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_particle_sph_boundary:
+    case CORE::Materials::m_particle_sph_boundary:
     {
       // note: dynamic_cast needed due diamond inheritance structure
       if (curmat->Parameter() == nullptr)
@@ -1088,7 +1088,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       auto* params = dynamic_cast<MAT::PAR::ParticleMaterialSPHBoundary*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_particle_dem:
+    case CORE::Materials::m_particle_dem:
     {
       // note: dynamic_cast needed due diamond inheritance structure
       if (curmat->Parameter() == nullptr)
@@ -1096,41 +1096,41 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       auto* params = dynamic_cast<MAT::PAR::ParticleMaterialDEM*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_particle_wall_dem:
+    case CORE::Materials::m_particle_wall_dem:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ParticleWallMaterialDEM(curmat));
       auto* params = static_cast<MAT::PAR::ParticleWallMaterialDEM*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_electromagneticmat:
+    case CORE::Materials::m_electromagneticmat:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ElectromagneticMat(curmat));
       auto* params = static_cast<MAT::PAR::ElectromagneticMat*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_superelast:
+    case CORE::Materials::m_superelast:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::SuperElasticSMA(curmat));
       auto* params = static_cast<MAT::PAR::SuperElasticSMA*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_crystplast:
+    case CORE::Materials::m_crystplast:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::CrystalPlasticity(curmat));
       auto* params = dynamic_cast<MAT::PAR::CrystalPlasticity*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_linelast1D:
+    case CORE::Materials::m_linelast1D:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::LinElast1D(curmat));
       auto* params = static_cast<MAT::PAR::LinElast1D*>(curmat->Parameter());
       return params->CreateMaterial();
     }
-    case INPAR::MAT::m_linelast1D_growth:
+    case CORE::Materials::m_linelast1D_growth:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LinElast1DGrowth(curmat));

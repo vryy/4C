@@ -112,9 +112,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_scatra_chemotaxis;
+      return CORE::Materials::m_scatra_chemotaxis;
     }
 
     /// return copy of this material object

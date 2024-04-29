@@ -180,9 +180,9 @@ void DRT::ELEMENTS::CalculateButlerVolmerDispLinearizations(const int kineticmod
 double DRT::ELEMENTS::CalculateButlerVolmerExchangeMassFluxDensity(const double kr,
     const double alpha_a, const double alpha_c, const double c_max, const double c_ed,
     const double c_el, const int kinetic_model,
-    const DRT::Condition::ConditionType& s2i_condition_type)
+    const CORE::Conditions::ConditionType& s2i_condition_type)
 {
-  FOUR_C_ASSERT(s2i_condition_type == DRT::Condition::S2IKinetics,
+  FOUR_C_ASSERT(s2i_condition_type == CORE::Conditions::S2IKinetics,
       "This method is called with the wrong condition type. Check the implementation!");
 
   if (IsReducedButlerVolmer(kinetic_model))

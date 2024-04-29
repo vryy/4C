@@ -38,9 +38,9 @@ namespace MAT::PAR
     //@{
 
     /// Standard constructor
-    Material(const int id,                    ///< unique material ID
-        const INPAR::MAT::MaterialType type,  ///< type of material
-        const std::string name                ///< name of material
+    Material(const int id,                         ///< unique material ID
+        const CORE::Materials::MaterialType type,  ///< type of material
+        const std::string name                     ///< name of material
     );
 
     /// default constructor
@@ -73,7 +73,7 @@ namespace MAT::PAR
     void Print(std::ostream& os) const override;
 
     /// Return type of condition
-    [[nodiscard]] inline virtual INPAR::MAT::MaterialType Type() const { return type_; }
+    [[nodiscard]] inline virtual CORE::Materials::MaterialType Type() const { return type_; }
 
     /// Return quick accessible material parameter data
     ///
@@ -91,7 +91,7 @@ namespace MAT::PAR
     int id_{};
 
     /// Type of this material
-    INPAR::MAT::MaterialType type_{};
+    CORE::Materials::MaterialType type_{};
 
     /// Name
     std::string name_{};

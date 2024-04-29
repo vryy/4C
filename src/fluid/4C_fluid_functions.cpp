@@ -29,7 +29,7 @@ namespace
   const MAT::PAR::WeaklyCompressibleFluid& GetWeaklyCompressibleFluidMatPars(int mat_id)
   {
     Teuchos::RCP<MAT::PAR::Material> mat = GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
-    if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
+    if (mat->Type() != CORE::Materials::m_fluid_weakly_compressible)
       FOUR_C_THROW("Material %d is not a weakly compressible fluid", mat_id);
     MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
@@ -41,7 +41,7 @@ namespace
   const MAT::PAR::NewtonianFluid& GetNewtonianFluidMatPars(int mat_id)
   {
     Teuchos::RCP<MAT::PAR::Material> mat = GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
-    if (mat->Type() != INPAR::MAT::m_fluid) FOUR_C_THROW("Material %d is not a fluid", mat_id);
+    if (mat->Type() != CORE::Materials::m_fluid) FOUR_C_THROW("Material %d is not a fluid", mat_id);
     MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
@@ -52,7 +52,7 @@ namespace
   const MAT::PAR::StVenantKirchhoff& GetSVKMatPars(int mat_id)
   {
     Teuchos::RCP<MAT::PAR::Material> mat = GLOBAL::Problem::Instance()->Materials()->ById(mat_id);
-    if (mat->Type() != INPAR::MAT::m_stvenant)
+    if (mat->Type() != CORE::Materials::m_stvenant)
       FOUR_C_THROW("Material %d is not a St.Venant-Kirchhoff structure material", mat_id);
     MAT::PAR::Parameter* params = mat->Parameter();
     auto* fparams = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params);
@@ -536,7 +536,7 @@ double FLD::BeltramiFunction::Evaluate(
   double a = M_PI / 4.0;
   double d = M_PI / 2.0;
 
-  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
   if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
   const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
   const auto* actmat = dynamic_cast<const MAT::PAR::NewtonianFluid*>(mat);
@@ -584,7 +584,7 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
   double a = M_PI / 4.0;
   double d = M_PI / 2.0;
 
-  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
   if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
   const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
   const auto* actmat = dynamic_cast<const MAT::PAR::NewtonianFluid*>(mat);
@@ -696,12 +696,12 @@ std::vector<double> FLD::BeltramiFunction::EvaluateTimeDerivative(
 double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
-  int id =
-      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid_murnaghantait);
+  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
+      CORE::Materials::m_fluid_murnaghantait);
   if (id == -1)
   {
     int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-        INPAR::MAT::m_fluid_linear_density_viscosity);
+        CORE::Materials::m_fluid_linear_density_viscosity);
     if (id == -1)
       FOUR_C_THROW(
           "Fluid with Murnaghan-Tait equation of state or with "
@@ -937,12 +937,12 @@ std::vector<double> FLD::ChannelWeaklyCompressibleFunction::EvaluateTimeDerivati
 double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
-  int id =
-      GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid_murnaghantait);
+  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
+      CORE::Materials::m_fluid_murnaghantait);
   if (id == -1)
   {
     int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-        INPAR::MAT::m_fluid_linear_density_viscosity);
+        CORE::Materials::m_fluid_linear_density_viscosity);
     if (id == -1)
       FOUR_C_THROW(
           "Fluid with Murnaghan-Tait equation of state or with "

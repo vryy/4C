@@ -119,9 +119,9 @@ namespace MAT
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_fluidporo_multiphase_reactions;
+      return CORE::Materials::m_fluidporo_multiphase_reactions;
     }
 
     /// return copy of this material object

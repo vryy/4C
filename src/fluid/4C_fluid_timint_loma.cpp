@@ -57,7 +57,7 @@ void FLD::TimIntLoma::Init()
   // ---------------------------------------------------------------------
 
   // get gas constant
-  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
+  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_sutherland);
   if (id == -1)
     FOUR_C_THROW("Could not find sutherland material");
   else

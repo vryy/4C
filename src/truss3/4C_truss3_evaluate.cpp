@@ -165,7 +165,7 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
 void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<double>>& ele_state,
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& intenergy)
 {
-  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+  if (Material()->MaterialType() != CORE::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
@@ -331,7 +331,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
     CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
     CORE::LINALG::SerialDenseVector& DummyForce)
 {
-  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+  if (Material()->MaterialType() != CORE::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
@@ -431,7 +431,7 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
     CORE::LINALG::SerialDenseVector& forcevec, CORE::LINALG::SerialDenseMatrix& stiffmat)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+  if (Material()->MaterialType() != CORE::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   static CORE::LINALG::Matrix<6, 1> truss_disp;
@@ -483,7 +483,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
     Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+  if (Material()->MaterialType() != CORE::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
   Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;

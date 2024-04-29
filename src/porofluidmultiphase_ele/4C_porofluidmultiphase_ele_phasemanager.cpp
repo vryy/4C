@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface>
 DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::CreatePhaseManager(
     const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
-    INPAR::MAT::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
+    CORE::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
     int totalnumdofpernode, int numfluidphases)
 {
   Teuchos::RCP<PhaseManagerInterface> phasemanager = Teuchos::null;
@@ -49,7 +49,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::CreatePhaseManager(
 Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface>
 DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
     const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
-    INPAR::MAT::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
+    CORE::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
     Teuchos::RCP<PhaseManagerInterface> corephasemanager)
 {
   Teuchos::RCP<PhaseManagerInterface> phasemanager = Teuchos::null;
@@ -157,7 +157,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
           FOUR_C_THROW("invalid dimension for creating phase manager!");
       }
 
-      if (mattype == INPAR::MAT::m_fluidporo_multiphase_reactions)
+      if (mattype == CORE::Materials::m_fluidporo_multiphase_reactions)
         // enhance by scalar handling capability
         phasemanager = Teuchos::rcp(new PhaseManagerReaction(phasemanager));
 
@@ -286,8 +286,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
   const MAT::Material& material = *(ele_->Material(matnum));
 
   // check the material
-  if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-      material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+  if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+      material.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW("only poro multiphase and poro multiphase reactions material valid");
 
   // cast
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
 
   // access second material in structure element
   FOUR_C_ASSERT(ele_->NumMaterial() > 1, "no second material defined for element ");
-  FOUR_C_ASSERT(ele_->Material(1)->MaterialType() == INPAR::MAT::m_structporo,
+  FOUR_C_ASSERT(ele_->Material(1)->MaterialType() == CORE::Materials::m_structporo,
       "invalid structure material for poroelasticity");
 
   // cast second material to poro material
@@ -872,7 +872,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::EvaluateGPSt
   // access second material in structure element
   FOUR_C_ASSERT(
       phasemanager_->Element()->NumMaterial() > 1, "no second material defined for element ");
-  FOUR_C_ASSERT(phasemanager_->Element()->Material(1)->MaterialType() == INPAR::MAT::m_structporo,
+  FOUR_C_ASSERT(
+      phasemanager_->Element()->Material(1)->MaterialType() == CORE::Materials::m_structporo,
       "invalid structure material for poroelasticity");
 
   // cast second material to poro material
@@ -1051,21 +1052,21 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
   scalartophasemap_.resize(numscal_);
 
   // fill scalar to phase id vector
-  if (scatramat->MaterialType() == INPAR::MAT::m_matlist or
-      scatramat->MaterialType() == INPAR::MAT::m_matlist_reactions)
+  if (scatramat->MaterialType() == CORE::Materials::m_matlist or
+      scatramat->MaterialType() == CORE::Materials::m_matlist_reactions)
   {
     for (int k = 0; k < numscal_; ++k)
     {
       int matid = scatramat->MatID(k);
       Teuchos::RCP<MAT::Material> singlemat = scatramat->MaterialById(matid);
-      if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid)
+      if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_fluid)
       {
         const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& poromat =
             Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroFluid>(singlemat);
         scalartophasemap_[k].phaseID = poromat->PhaseID();
         scalartophasemap_[k].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid;
       }
-      else if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_volfrac)
+      else if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_volfrac)
       {
         const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& poromat =
             Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(singlemat);
@@ -1073,13 +1074,13 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
         scalartophasemap_[k].species_type =
             MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac;
       }
-      else if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid)
+      else if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_solid)
       {
         // dummy value because species in solid do not have a phaseID
         scalartophasemap_[k].phaseID = -1000;
         scalartophasemap_[k].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid;
       }
-      else if (singlemat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature)
+      else if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_temperature)
       {
         // dummy value because temperature does not have a phaseID
         scalartophasemap_[k].phaseID = -1000;
@@ -1090,27 +1091,27 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
         FOUR_C_THROW("only MAT_scatra_multiporo_(fluid,volfrac,solid,temperature) valid here");
     }
   }
-  else if (scatramat->MaterialType() == INPAR::MAT::m_scatra_multiporo_fluid)
+  else if (scatramat->MaterialType() == CORE::Materials::m_scatra_multiporo_fluid)
   {
     const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& poromat =
         Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroFluid>(scatramat);
     scalartophasemap_[0].phaseID = poromat->PhaseID();
     scalartophasemap_[0].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid;
   }
-  else if (scatramat->MaterialType() == INPAR::MAT::m_scatra_multiporo_volfrac)
+  else if (scatramat->MaterialType() == CORE::Materials::m_scatra_multiporo_volfrac)
   {
     const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& poromat =
         Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(scatramat);
     scalartophasemap_[0].phaseID = poromat->PhaseID();
     scalartophasemap_[0].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac;
   }
-  else if (scatramat->MaterialType() == INPAR::MAT::m_scatra_multiporo_solid)
+  else if (scatramat->MaterialType() == CORE::Materials::m_scatra_multiporo_solid)
   {
     // dummy value because species in solid do not have a phaseID
     scalartophasemap_[0].phaseID = -1000;
     scalartophasemap_[0].species_type = MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid;
   }
-  else if (scatramat->MaterialType() == INPAR::MAT::m_scatra_multiporo_temperature)
+  else if (scatramat->MaterialType() == CORE::Materials::m_scatra_multiporo_temperature)
   {
     // dummy value because temperature does not have a phaseID
     scalartophasemap_[0].phaseID = -1000;
@@ -1151,7 +1152,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::EvaluateGPState(
       "Material of element is null pointer!");
   const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
-  if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+  if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW(
         "Invalid material! Only MAT_FluidPoroMultiPhaseReactions material valid for reaction "
         "evaluation!");
@@ -1360,8 +1361,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::Setup(
   const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
   // check material type
-  if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-      material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+  if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+      material.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW("only poro multiphase material valid");
 
   // cast to multiphase material
@@ -1425,8 +1426,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPStat
   derrelpermeabilities_.resize(numfluidphases);
 
   // check material type
-  if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-      material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+  if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+      material.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW("only poro multiphase material valid");
 
   // cast to multiphase material
@@ -1692,8 +1693,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::Setup(
   const MAT::Material& material = *(ele->Material(matnum));
 
   // check the material
-  if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-      material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+  if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+      material.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW("only poro multiphase and poro multiphase reactions material valid");
 
   for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)

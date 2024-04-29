@@ -167,9 +167,9 @@ namespace MAT
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_multiplicative_split_defgrad_elasthyper;
+      return CORE::Materials::m_multiplicative_split_defgrad_elasthyper;
     }
 
     Teuchos::RCP<Material> Clone() const override

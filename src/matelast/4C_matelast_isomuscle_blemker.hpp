@@ -92,9 +92,9 @@ namespace MAT
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       /// Provide the material type
-      [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override
+      [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
       {
-        return INPAR::MAT::mes_isomuscleblemker;
+        return CORE::Materials::mes_isomuscleblemker;
       }
 
       void RegisterAnisotropyExtensions(Anisotropy& anisotropy) override;

@@ -116,7 +116,7 @@ namespace DRT
 
      private:
       // material type for evaluation
-      INPAR::MAT::MaterialType materialtype_;
+      CORE::Materials::MaterialType materialtype_;
 
     };  // class ScaTraEleCalcElchElectrodeSTIThermo
 

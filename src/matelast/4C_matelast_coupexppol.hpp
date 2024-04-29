@@ -83,7 +83,10 @@ namespace MAT
       //@{
 
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_coupexppol; }
+      CORE::Materials::MaterialType MaterialType() const override
+      {
+        return CORE::Materials::mes_coupexppol;
+      }
 
       // add strain energy
       void AddStrainEnergy(double& psi,  ///< strain energy function

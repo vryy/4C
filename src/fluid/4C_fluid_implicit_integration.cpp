@@ -1169,7 +1169,8 @@ void FLD::FluidImplicitTimeInt::EvaluateMatAndRHS(Teuchos::ParameterList& elepar
       DRT::Element* actele = discret_->lRowElement(i);
       // Teuchos::RCP<MAT::Material> mat = actele->Material();
       Teuchos::RCP<MAT::Material> mat = actele->Material();
-      if (mat->MaterialType() == INPAR::MAT::m_matlist) FOUR_C_THROW("No matlists allowed here!!");
+      if (mat->MaterialType() == CORE::Materials::m_matlist)
+        FOUR_C_THROW("No matlists allowed here!!");
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(*discret_, la, false);
       // get dimension of element matrices and vectors
@@ -2495,19 +2496,22 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
   // - first volume conditions
   for (auto& unsortedCond : unsortedConds)
   {
-    if (unsortedCond->GType() == DRT::Condition::Volume) conds.push_back(unsortedCond);
+    if (unsortedCond->GType() == CORE::Conditions::geometry_type_volume)
+      conds.push_back(unsortedCond);
   }
 
   // - then surface conditions
   for (auto& unsortedCond : unsortedConds)
   {
-    if (unsortedCond->GType() == DRT::Condition::Surface) conds.push_back(unsortedCond);
+    if (unsortedCond->GType() == CORE::Conditions::geometry_type_surface)
+      conds.push_back(unsortedCond);
   }
 
   // - and finally line conditions
   for (auto& unsortedCond : unsortedConds)
   {
-    if (unsortedCond->GType() == DRT::Condition::Line) conds.push_back(unsortedCond);
+    if (unsortedCond->GType() == CORE::Conditions::geometry_type_line)
+      conds.push_back(unsortedCond);
   }
 
   // Loop through all conditions and do the Ale update according to the coupling type
@@ -2522,11 +2526,11 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
 
     // Get condition name
     std::string condName;
-    if (selectedCond[0]->Type() == DRT::Condition::FREESURFCoupling)
+    if (selectedCond[0]->Type() == CORE::Conditions::FREESURFCoupling)
     {
       condName = "FREESURFCoupling";
     }
-    else if (selectedCond[0]->Type() == DRT::Condition::ALEUPDATECoupling)
+    else if (selectedCond[0]->Type() == CORE::Conditions::ALEUPDATECoupling)
     {
       condName = "ALEUPDATECoupling";
     }
@@ -4532,7 +4536,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
                       exp(a * xyz[1]) * cos(a * xyz[2] + d * xyz[0]));
 
       // compute initial pressure
-      int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+      int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
       if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
       const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const auto* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);

@@ -81,7 +81,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
       Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
 
       // extract porosity from material and store in diffusion manager
-      if (material->MaterialType() == INPAR::MAT::m_elchmat)
+      if (material->MaterialType() == CORE::Materials::m_elchmat)
       {
         const auto* elchmat = static_cast<const MAT::ElchMat*>(material.get());
 
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
         {
           Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
 
-          if (phase->MaterialType() == INPAR::MAT::m_elchphase)
+          if (phase->MaterialType() == CORE::Materials::m_elchphase)
           {
             dmedc_->SetPhasePoro(
                 (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
@@ -134,7 +134,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
   // get material of parent element
   Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
 
-  if (mat->MaterialType() == INPAR::MAT::m_elchmat)
+  if (mat->MaterialType() == CORE::Materials::m_elchmat)
   {
     const auto* actmat = static_cast<const MAT::ElchMat*>(mat.get());
 
@@ -143,7 +143,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
       const int phaseid = actmat->PhaseID(iphase);
       Teuchos::RCP<const MAT::Material> singlemat = actmat->PhaseById(phaseid);
 
-      if (singlemat->MaterialType() == INPAR::MAT::m_elchphase)
+      if (singlemat->MaterialType() == CORE::Materials::m_elchphase)
       {
         const auto* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
 
@@ -327,7 +327,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::GetVa
 {
   double valence(0.);
 
-  if (material->MaterialType() == INPAR::MAT::m_elchmat)
+  if (material->MaterialType() == CORE::Materials::m_elchmat)
   {
     const Teuchos::RCP<const MAT::ElchMat> elchmat =
         Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(material);
@@ -347,12 +347,12 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::GetVa
       {
         const Teuchos::RCP<const MAT::Material> species = phase->MatById(phase->MatID(imat));
 
-        if (species->MaterialType() == INPAR::MAT::m_newman)
+        if (species->MaterialType() == CORE::Materials::m_newman)
         {
           valence = Teuchos::rcp_static_cast<const MAT::Newman>(species)->Valence();
           if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
         }
-        else if (species->MaterialType() == INPAR::MAT::m_ion)
+        else if (species->MaterialType() == CORE::Materials::m_ion)
         {
           valence = Teuchos::rcp_static_cast<const MAT::Ion>(species)->Valence();
           if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");

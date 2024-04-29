@@ -131,9 +131,9 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<MAT::So3Material> so3mat =
           Teuchos::rcp_dynamic_cast<MAT::So3Material>(mat, true);
 
-      if (so3mat->MaterialType() != INPAR::MAT::m_elasthyper and
+      if (so3mat->MaterialType() != CORE::Materials::m_elasthyper and
           so3mat->MaterialType() !=
-              INPAR::MAT::m_stvenant)  // ToDo (mayr): allow only materials without history
+              CORE::Materials::m_stvenant)  // ToDo (mayr): allow only materials without history
       {
         FOUR_C_THROW(
             "Illegal material type for ALE. Only materials allowed that do "
@@ -141,7 +141,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
             "element line definition.");
       }
 
-      if (so3mat->MaterialType() == INPAR::MAT::m_elasthyper)
+      if (so3mat->MaterialType() == CORE::Materials::m_elasthyper)
       {
         so3mat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(mat, true);
         so3mat->Setup(0, nullptr);
@@ -1060,7 +1060,7 @@ void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
   /*--------------------------- call material law -> get tangent modulus--*/
   switch (material->MaterialType())
   {
-    case INPAR::MAT::m_stvenant: /*----------------------- linear elastic ---*/
+    case CORE::Materials::m_stvenant: /*----------------------- linear elastic ---*/
     {
       const MAT::StVenantKirchhoff* actmat =
           static_cast<const MAT::StVenantKirchhoff*>(material.get());
@@ -1120,7 +1120,7 @@ void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
 
       break;
     }
-    case INPAR::MAT::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
+    case CORE::Materials::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
     {
       MaterialResponse3dPlane(stress, C, strain, params, gp);
       break;

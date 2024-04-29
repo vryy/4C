@@ -168,16 +168,16 @@ void EXODUS::WriteDatConditions(
     std::string geo;
     switch (condition->GeometryType())
     {
-      case DRT::Condition::Point:
+      case CORE::Conditions::geometry_type_point:
         geo = "DPOINT ";
         break;
-      case DRT::Condition::Line:
+      case CORE::Conditions::geometry_type_line:
         geo = "DLINE  ";
         break;
-      case DRT::Condition::Surface:
+      case CORE::Conditions::geometry_type_surface:
         geo = "DSURF  ";
         break;
-      case DRT::Condition::Volume:
+      case CORE::Conditions::geometry_type_volume:
         geo = "DVOL   ";
         break;
       default:
@@ -322,19 +322,19 @@ void EXODUS::WriteDatDesignTopology(
   {
     switch (conditiondefinition.gtype)
     {
-      case DRT::Condition::Point:
+      case CORE::Conditions::geometry_type_point:
         dpoints.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
         break;
-      case DRT::Condition::Line:
+      case CORE::Conditions::geometry_type_line:
         dlines.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
         break;
-      case DRT::Condition::Surface:
+      case CORE::Conditions::geometry_type_surface:
         dsurfs.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
         break;
-      case DRT::Condition::Volume:
+      case CORE::Conditions::geometry_type_volume:
         dvols.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
         break;
-      case DRT::Condition::NoGeom:
+      case CORE::Conditions::geometry_type_no_geom:
         // do nothing
         break;
       default:

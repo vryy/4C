@@ -181,16 +181,16 @@ void INPAR::ELCH::SetValidConditions(
     auto electrodesocline =
         Teuchos::rcp(new ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE LINE CONDITIONS",
             "ElectrodeSOC", "electrode state of charge line condition",
-            DRT::Condition::ElectrodeSOC, true, DRT::Condition::Line));
+            CORE::Conditions::ElectrodeSOC, true, CORE::Conditions::geometry_type_line));
 
     auto electrodesocsurf =
         Teuchos::rcp(new ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS",
             "ElectrodeSOC", "electrode state of charge surface condition",
-            DRT::Condition::ElectrodeSOC, true, DRT::Condition::Surface));
+            CORE::Conditions::ElectrodeSOC, true, CORE::Conditions::geometry_type_surface));
     auto electrodesocvol =
         Teuchos::rcp(new ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS",
             "ElectrodeSOC", "electrode state of charge volume condition",
-            DRT::Condition::ElectrodeSOC, true, DRT::Condition::Volume));
+            CORE::Conditions::ElectrodeSOC, true, CORE::Conditions::geometry_type_volume));
 
     // equip condition definitions with input file line components
     std::vector<Teuchos::RCP<INPUT::LineComponent>> electrodesoccomponents;
@@ -226,15 +226,15 @@ void INPAR::ELCH::SetValidConditions(
     // definition of cell voltage point, line, and surface conditions
     auto cellvoltagepoint = Teuchos::rcp(new ConditionDefinition(
         "DESIGN CELL VOLTAGE POINT CONDITIONS", "CellVoltagePoint", "cell voltage point condition",
-        DRT::Condition::CellVoltage, false, DRT::Condition::Point));
+        CORE::Conditions::CellVoltage, false, CORE::Conditions::geometry_type_point));
 
     auto cellvoltageline = Teuchos::rcp(new ConditionDefinition(
         "DESIGN CELL VOLTAGE LINE CONDITIONS", "CellVoltage", "cell voltage line condition",
-        DRT::Condition::CellVoltage, true, DRT::Condition::Line));
+        CORE::Conditions::CellVoltage, true, CORE::Conditions::geometry_type_line));
 
     auto cellvoltagesurf = Teuchos::rcp(new ConditionDefinition(
         "DESIGN CELL VOLTAGE SURF CONDITIONS", "CellVoltage", "cell voltage surface condition",
-        DRT::Condition::CellVoltage, true, DRT::Condition::Surface));
+        CORE::Conditions::CellVoltage, true, CORE::Conditions::geometry_type_surface));
 
     // equip condition definitions with input file line components
     std::vector<Teuchos::RCP<INPUT::LineComponent>> cellvoltagecomponents;
@@ -395,17 +395,17 @@ void INPAR::ELCH::SetValidConditions(
     auto electrodeboundarykineticspoint =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE BOUNDARY KINETICS POINT CONDITIONS",
             "ElchBoundaryKineticsPoint", "point electrode boundary kinetics",
-            DRT::Condition::ElchBoundaryKinetics, false, DRT::Condition::Point));
+            CORE::Conditions::ElchBoundaryKinetics, false, CORE::Conditions::geometry_type_point));
 
     auto electrodeboundarykineticsline =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE BOUNDARY KINETICS LINE CONDITIONS",
             "ElchBoundaryKinetics", "line electrode boundary kinetics",
-            DRT::Condition::ElchBoundaryKinetics, true, DRT::Condition::Line));
+            CORE::Conditions::ElchBoundaryKinetics, true, CORE::Conditions::geometry_type_line));
 
     auto electrodeboundarykineticssurf =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE BOUNDARY KINETICS SURF CONDITIONS",
             "ElchBoundaryKinetics", "surface electrode boundary kinetics",
-            DRT::Condition::ElchBoundaryKinetics, true, DRT::Condition::Surface));
+            CORE::Conditions::ElchBoundaryKinetics, true, CORE::Conditions::geometry_type_surface));
 
     for (auto& elechemcomponent : elechemcomponents)
     {
@@ -426,17 +426,17 @@ void INPAR::ELCH::SetValidConditions(
     auto electrodedomainkineticsline =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE DOMAIN KINETICS LINE CONDITIONS",
             "ElchDomainKinetics", "line electrode domain kinetics",
-            DRT::Condition::ElchDomainKinetics, true, DRT::Condition::Line));
+            CORE::Conditions::ElchDomainKinetics, true, CORE::Conditions::geometry_type_line));
 
     auto electrodedomainkineticssurf =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE DOMAIN KINETICS SURF CONDITIONS",
             "ElchDomainKinetics", "surface electrode domain kinetics",
-            DRT::Condition::ElchDomainKinetics, true, DRT::Condition::Surface));
+            CORE::Conditions::ElchDomainKinetics, true, CORE::Conditions::geometry_type_surface));
 
     auto electrodedomainkineticsvol =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE DOMAIN KINETICS VOL CONDITIONS",
             "ElchDomainKinetics", "volume electrode domain kinetics",
-            DRT::Condition::ElchDomainKinetics, true, DRT::Condition::Volume));
+            CORE::Conditions::ElchDomainKinetics, true, CORE::Conditions::geometry_type_volume));
 
     // equip condition definition with input file line components
     std::vector<Teuchos::RCP<INPUT::LineComponent>> electrodedomainkineticscomponents;
@@ -519,17 +519,17 @@ void INPAR::ELCH::SetValidConditions(
     auto cccvcyclingpoint = Teuchos::rcp(
         new ConditionDefinition("DESIGN CCCV CELL CYCLING POINT CONDITIONS", "CCCVCycling",
             "line boundary condition for constant-current constant-voltage (CCCV) cell cycling",
-            DRT::Condition::CCCVCycling, true, DRT::Condition::Point));
+            CORE::Conditions::CCCVCycling, true, CORE::Conditions::geometry_type_point));
 
     auto cccvcyclingline = Teuchos::rcp(
         new ConditionDefinition("DESIGN CCCV CELL CYCLING LINE CONDITIONS", "CCCVCycling",
             "line boundary condition for constant-current constant-voltage (CCCV) cell cycling",
-            DRT::Condition::CCCVCycling, true, DRT::Condition::Line));
+            CORE::Conditions::CCCVCycling, true, CORE::Conditions::geometry_type_line));
 
     auto cccvcyclingsurf = Teuchos::rcp(
         new ConditionDefinition("DESIGN CCCV CELL CYCLING SURF CONDITIONS", "CCCVCycling",
             "surface boundary condition for constant-current constant-voltage (CCCV) cell cycling",
-            DRT::Condition::CCCVCycling, true, DRT::Condition::Surface));
+            CORE::Conditions::CCCVCycling, true, CORE::Conditions::geometry_type_surface));
 
     // equip condition definitions with input file line components
     std::vector<Teuchos::RCP<INPUT::LineComponent>> cccvcyclingcomponents;
@@ -589,17 +589,17 @@ void INPAR::ELCH::SetValidConditions(
     auto cccvhalfcyclepoint = Teuchos::rcp(
         new ConditionDefinition("DESIGN CCCV HALF-CYCLE POINT CONDITIONS", "CCCVHalfCycle",
             "line boundary condition for constant-current constant-voltage (CCCV) half-cycle",
-            DRT::Condition::CCCVHalfCycle, true, DRT::Condition::Point));
+            CORE::Conditions::CCCVHalfCycle, true, CORE::Conditions::geometry_type_point));
 
     auto cccvhalfcycleline = Teuchos::rcp(
         new ConditionDefinition("DESIGN CCCV HALF-CYCLE LINE CONDITIONS", "CCCVHalfCycle",
             "line boundary condition for constant-current constant-voltage (CCCV) half-cycle",
-            DRT::Condition::CCCVHalfCycle, true, DRT::Condition::Line));
+            CORE::Conditions::CCCVHalfCycle, true, CORE::Conditions::geometry_type_line));
 
     auto cccvhalfcyclesurf = Teuchos::rcp(
         new ConditionDefinition("DESIGN CCCV HALF-CYCLE SURF CONDITIONS", "CCCVHalfCycle",
             "surface boundary condition for constant-current constant-voltage (CCCV) half-cycle",
-            DRT::Condition::CCCVHalfCycle, true, DRT::Condition::Surface));
+            CORE::Conditions::CCCVHalfCycle, true, CORE::Conditions::geometry_type_surface));
 
     // equip condition definitions with input file line components
     std::vector<Teuchos::RCP<INPUT::LineComponent>> cccvhalfcyclecomponents;

@@ -63,7 +63,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchMat(
   // extract electrolyte phase
   const auto elchphase = elchmat->PhaseById(elchmat->PhaseID(0));
 
-  if (elchphase->MaterialType() == INPAR::MAT::m_elchphase)
+  if (elchphase->MaterialType() == CORE::Materials::m_elchphase)
   {
     // evaluate electrolyte phase
     MatElchPhase(elchphase, concentrations, temperature, diffmanager, diffcondmat);
@@ -144,7 +144,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchScl<distype>::MatElchPhase(
 
     switch (elchPhaseMaterial->MaterialType())
     {
-      case INPAR::MAT::m_scl:
+      case CORE::Materials::m_scl:
       {
         diffcondmat = INPAR::ELCH::diffcondmat_scl;
         MatScl(elchPhaseMaterial, concentrations[0], temperature, diffmanager);

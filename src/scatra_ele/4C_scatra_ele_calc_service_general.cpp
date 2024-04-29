@@ -498,7 +498,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
     case SCATRA::Action::micro_scale_initialize:
     {
-      if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
       {
         const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -518,7 +518,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     case SCATRA::Action::micro_scale_prepare_time_step:
     case SCATRA::Action::micro_scale_solve:
     {
-      if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
       {
         // extract state variables at element nodes
         CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
@@ -563,7 +563,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
     case SCATRA::Action::micro_scale_update:
     {
-      if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
       {
         const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -579,7 +579,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
     case SCATRA::Action::micro_scale_output:
     {
-      if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
       {
         const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -595,7 +595,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
     case SCATRA::Action::micro_scale_read_restart:
     {
-      if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
       {
         const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -611,7 +611,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
     case SCATRA::Action::micro_scale_set_time:
     {
-      if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
       {
         const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
             SCATRA::DisTypeToOptGaussRule<distype>::rule);

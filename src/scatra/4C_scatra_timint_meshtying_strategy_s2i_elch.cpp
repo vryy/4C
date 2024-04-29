@@ -164,7 +164,7 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
     auto* cond_slave = slave_condition.second;
 
     // only evaluate point coupling conditions
-    if (cond_slave->GType() != DRT::Condition::GeometryType::Point) continue;
+    if (cond_slave->GType() != CORE::Conditions::geometry_type_point) continue;
 
     auto* cond_master = MasterConditions()[slave_condition.first];
 

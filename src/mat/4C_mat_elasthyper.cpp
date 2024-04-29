@@ -979,7 +979,7 @@ bool MAT::ElastHyper::VisData(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::ElastHyper::GetPotSummandPtr(
-    const INPAR::MAT::MaterialType& materialtype) const
+    const CORE::Materials::MaterialType& materialtype) const
 {
   for (const auto& p : potsum_)
   {

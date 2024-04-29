@@ -147,10 +147,13 @@ namespace MAT
     //!@}
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_structporo; }
+    CORE::Materials::MaterialType MaterialType() const override
+    {
+      return CORE::Materials::m_structporo;
+    }
 
     //! poro law type
-    virtual INPAR::MAT::MaterialType PoroLawType() const;
+    virtual CORE::Materials::MaterialType PoroLawType() const;
 
     //! return inverse bulk modulus (=compressibility)
     double InvBulkModulus() const;

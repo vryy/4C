@@ -162,7 +162,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element*
   if (tempnp < 0.0)
     FOUR_C_THROW("Negative temperature in ScaTra low-Mach-number routine 'GetDensity'!");
 
-  if (material->MaterialType() == INPAR::MAT::m_sutherland)
+  if (material->MaterialType() == CORE::Materials::m_sutherland)
   {
     // get thermodynamic pressure
     const double thermpress = params.get<double>("thermpress");
@@ -170,11 +170,11 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element*
     density = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material)->ComputeDensity(
         tempnp, thermpress);
   }
-  else if (material->MaterialType() == INPAR::MAT::m_tempdepwater)
+  else if (material->MaterialType() == CORE::Materials::m_tempdepwater)
   {
     density = Teuchos::rcp_dynamic_cast<const MAT::TempDepWater>(material)->ComputeDensity(tempnp);
   }
-  else if (material->MaterialType() == INPAR::MAT::m_matlist)
+  else if (material->MaterialType() == CORE::Materials::m_matlist)
   {
     // get thermodynamic pressure
     const double thermpress = params.get<double>("thermpress");
@@ -184,7 +184,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element*
     const int lastmatid = actmat->NumMat() - 1;
 
     // compute density based on temperature and thermodynamic pressure
-    if (actmat->MaterialById(lastmatid)->MaterialType() == INPAR::MAT::m_arrhenius_temp)
+    if (actmat->MaterialById(lastmatid)->MaterialType() == CORE::Materials::m_arrhenius_temp)
       density = static_cast<const MAT::ArrheniusTemp*>(actmat->MaterialById(lastmatid).get())
                     ->ComputeDensity(tempnp, thermpress);
 

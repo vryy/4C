@@ -733,7 +733,7 @@ void FLD::TimIntHDGWeakComp::Output()
 
     // get weakly compressible material
     int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-        INPAR::MAT::m_fluid_weakly_compressible);
+        CORE::Materials::m_fluid_weakly_compressible);
     const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::WeaklyCompressibleFluid* actmat =
         static_cast<const MAT::PAR::WeaklyCompressibleFluid*>(mat);

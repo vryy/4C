@@ -166,9 +166,9 @@ namespace MAT
     //! @name Access methods
 
     //! material type
-    INPAR::MAT::MaterialType MaterialType() const override
+    CORE::Materials::MaterialType MaterialType() const override
     {
-      return INPAR::MAT::m_plnlnlogneohooke;
+      return CORE::Materials::m_plnlnlogneohooke;
     }
 
     /// check if element kinematics and material kinematics are compatible

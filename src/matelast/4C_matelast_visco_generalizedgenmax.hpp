@@ -124,9 +124,9 @@ namespace MAT
       //@{
 
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override
+      CORE::Materials::MaterialType MaterialType() const override
       {
-        return INPAR::MAT::mes_generalizedgenmax;
+        return CORE::Materials::mes_generalizedgenmax;
       }
       //@}
 
@@ -192,7 +192,10 @@ namespace MAT
       //@{
 
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_viscobranch; }
+      CORE::Materials::MaterialType MaterialType() const override
+      {
+        return CORE::Materials::mes_viscobranch;
+      }
 
       //@}
 
@@ -232,7 +235,10 @@ namespace MAT
       //@{
 
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_viscopart; }
+      CORE::Materials::MaterialType MaterialType() const override
+      {
+        return CORE::Materials::mes_viscopart;
+      }
 
       //@}
 

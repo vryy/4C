@@ -316,7 +316,7 @@ void STR::TimInt::Setup()
   {
     DRT::Element* actele = discret_->lColElement(i);
     Teuchos::RCP<MAT::Material> mat = actele->Material();
-    if (mat != Teuchos::null && mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    if (mat != Teuchos::null && mat->MaterialType() == CORE::Materials::m_struct_multiscale)
     {
       havemicromat_ = true;
       break;
@@ -1879,7 +1879,7 @@ void STR::TimInt::ReadRestartMultiScale()
        i != materials->Map()->end(); ++i)
   {
     Teuchos::RCP<MAT::PAR::Material> mat = i->second;
-    if (mat->Type() == INPAR::MAT::m_struct_multiscale)
+    if (mat->Type() == CORE::Materials::m_struct_multiscale)
     {
       // create the parameters for the discretization
       Teuchos::ParameterList p;
@@ -2804,7 +2804,7 @@ void STR::TimInt::OutputMicro()
   {
     DRT::Element* actele = discret_->lRowElement(i);
     Teuchos::RCP<MAT::Material> mat = actele->Material();
-    if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
     {
       MAT::MicroMaterial* micro = static_cast<MAT::MicroMaterial*>(mat.get());
       micro->Output();
@@ -2821,7 +2821,7 @@ void STR::TimInt::PrepareOutputMicro()
     DRT::Element* actele = discret_->lRowElement(i);
 
     Teuchos::RCP<MAT::Material> mat = actele->Material();
-    if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
     {
       MAT::MicroMaterial* micro = static_cast<MAT::MicroMaterial*>(mat.get());
       micro->PrepareOutput();

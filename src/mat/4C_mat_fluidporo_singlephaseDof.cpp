@@ -47,21 +47,21 @@ MAT::PAR::FluidPoroPhaseDof* MAT::PAR::FluidPoroPhaseDof::CreatePhaseDof(int pha
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::m_fluidporo_phasedof_diffpressure:
+    case CORE::Materials::m_fluidporo_phasedof_diffpressure:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
       phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofDiffPressure*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_fluidporo_phasedof_pressure:
+    case CORE::Materials::m_fluidporo_phasedof_pressure:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
       phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
       break;
     }
-    case INPAR::MAT::m_fluidporo_phasedof_saturation:
+    case CORE::Materials::m_fluidporo_phasedof_saturation:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
@@ -102,7 +102,7 @@ void MAT::PAR::FluidPoroPhaseDofDiffPressure::Initialize()
 /*----------------------------------------------------------------------*
  *  return phase law type                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofDiffPressure::PoroPhaseLawType() const
+CORE::Materials::MaterialType MAT::PAR::FluidPoroPhaseDofDiffPressure::PoroPhaseLawType() const
 {
   return phaselaw_->Type();
 }
@@ -207,7 +207,7 @@ void MAT::PAR::FluidPoroPhaseDofPressure::Initialize()
 /*----------------------------------------------------------------------*
  *  return phase law type                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofPressure::PoroPhaseLawType() const
+CORE::Materials::MaterialType MAT::PAR::FluidPoroPhaseDofPressure::PoroPhaseLawType() const
 {
   return phaselaw_->Type();
 }
@@ -304,7 +304,7 @@ void MAT::PAR::FluidPoroPhaseDofSaturation::Initialize()
 /*----------------------------------------------------------------------*
  *  return phase law type                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofSaturation::PoroPhaseLawType() const
+CORE::Materials::MaterialType MAT::PAR::FluidPoroPhaseDofSaturation::PoroPhaseLawType() const
 {
   return phaselaw_->Type();
 }

@@ -281,9 +281,9 @@ MAT::StructPoro& DRT::ELEMENTS::SolidPoro::StructPoroMaterial(int nummat) const
 
   if (porostruct_mat == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
-  if (porostruct_mat->MaterialType() != INPAR::MAT::m_structporo and
-      porostruct_mat->MaterialType() != INPAR::MAT::m_structpororeaction and
-      porostruct_mat->MaterialType() != INPAR::MAT::m_structpororeactionECM)
+  if (porostruct_mat->MaterialType() != CORE::Materials::m_structporo and
+      porostruct_mat->MaterialType() != CORE::Materials::m_structpororeaction and
+      porostruct_mat->MaterialType() != CORE::Materials::m_structpororeactionECM)
     FOUR_C_THROW("invalid structure material for poroelasticity");
 
   return *porostruct_mat;
@@ -300,8 +300,8 @@ MAT::FluidPoroMultiPhase& DRT::ELEMENTS::SolidPoro::FluidPoroMultiMaterial(int n
 
   if (fluidmulti_mat == Teuchos::null)
     FOUR_C_THROW("cast to multiphase fluid poro material failed");
-  if (fluidmulti_mat->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
-      fluidmulti_mat->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+  if (fluidmulti_mat->MaterialType() != CORE::Materials::m_fluidporo_multiphase and
+      fluidmulti_mat->MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");
   if (fluidmulti_mat->NumFluidPhases() == 0)
   {

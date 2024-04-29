@@ -235,7 +235,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::SetMaterial(int matnum)
 
   if ((Teuchos::getIntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
           INPAR::SSI::SolutionSchemeOverFields::ssi_Monolithic) and
-      (mat->MaterialType() != INPAR::MAT::m_multiplicative_split_defgrad_elasthyper))
+      (mat->MaterialType() != CORE::Materials::m_multiplicative_split_defgrad_elasthyper))
     FOUR_C_THROW(
         "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section,"
         " you need to use the material 'MAT_MultiplicativeSplitDefgradElastHyper'! If you want to "

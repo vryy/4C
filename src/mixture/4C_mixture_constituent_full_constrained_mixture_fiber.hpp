@@ -65,7 +65,7 @@ namespace MIXTURE
     MixtureConstituentFullConstrainedMixtureFiber(
         MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber* params, int id);
 
-    [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override;
+    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override;
 
     void PackConstituent(CORE::COMM::PackBuffer& data) const override;
 

@@ -98,9 +98,9 @@ namespace MAT
       //@{
 
       /// material type
-      INPAR::MAT::MaterialType MaterialType() const override
+      CORE::Materials::MaterialType MaterialType() const override
       {
-        return INPAR::MAT::mes_coupneohooke;
+        return CORE::Materials::mes_coupneohooke;
       }
 
       /// add shear modulus equivalent

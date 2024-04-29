@@ -45,7 +45,7 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::m_growth_aniso_strain:
+    case CORE::Materials::m_growth_aniso_strain:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStrain(curmat));
@@ -53,7 +53,7 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case INPAR::MAT::m_growth_aniso_stress:
+    case CORE::Materials::m_growth_aniso_stress:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStress(curmat));
@@ -61,7 +61,7 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case INPAR::MAT::m_growth_aniso_strain_const_trig:
+    case CORE::Materials::m_growth_aniso_strain_const_trig:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStrainConstTrig(curmat));
@@ -69,7 +69,7 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case INPAR::MAT::m_growth_aniso_stress_const_trig:
+    case CORE::Materials::m_growth_aniso_stress_const_trig:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStressConstTrig(curmat));
@@ -77,7 +77,7 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case INPAR::MAT::m_growth_iso_stress:
+    case CORE::Materials::m_growth_iso_stress:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawIsoStress(curmat));
@@ -85,14 +85,14 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case INPAR::MAT::m_growth_ac:
+    case CORE::Materials::m_growth_ac:
     {
       if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::GrowthLawAC(curmat));
       auto* params = static_cast<MAT::PAR::GrowthLawAC*>(curmat->Parameter());
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case INPAR::MAT::m_growth_ac_radial:
+    case CORE::Materials::m_growth_ac_radial:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawACRadial(curmat));
@@ -100,7 +100,7 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case INPAR::MAT::m_growth_ac_radial_refconc:
+    case CORE::Materials::m_growth_ac_radial_refconc:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawACRadialRefConc(curmat));
@@ -108,7 +108,7 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case INPAR::MAT::m_growth_const:
+    case CORE::Materials::m_growth_const:
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawConst(curmat));
@@ -132,15 +132,15 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Growth::CreateMaterial()
 
   switch (growthlaw_->MaterialType())
   {
-    case INPAR::MAT::m_growth_aniso_strain:
-    case INPAR::MAT::m_growth_aniso_stress:
-    case INPAR::MAT::m_growth_aniso_strain_const_trig:
-    case INPAR::MAT::m_growth_aniso_stress_const_trig:
-    case INPAR::MAT::m_growth_iso_stress:
-    case INPAR::MAT::m_growth_ac:
-    case INPAR::MAT::m_growth_ac_radial:
-    case INPAR::MAT::m_growth_ac_radial_refconc:
-    case INPAR::MAT::m_growth_const:
+    case CORE::Materials::m_growth_aniso_strain:
+    case CORE::Materials::m_growth_aniso_stress:
+    case CORE::Materials::m_growth_aniso_strain_const_trig:
+    case CORE::Materials::m_growth_aniso_stress_const_trig:
+    case CORE::Materials::m_growth_iso_stress:
+    case CORE::Materials::m_growth_ac:
+    case CORE::Materials::m_growth_ac_radial:
+    case CORE::Materials::m_growth_ac_radial_refconc:
+    case CORE::Materials::m_growth_const:
       mat = Teuchos::rcp(new MAT::GrowthVolumetric(this));
       break;
     default:
@@ -371,16 +371,16 @@ void MAT::GrowthVolumetric::VisNames(std::map<std::string, int>& names)
 
   switch (Parameter()->growthlaw_->MaterialType())
   {
-    case INPAR::MAT::m_growth_aniso_stress:
-    case INPAR::MAT::m_growth_aniso_stress_const_trig:
-    case INPAR::MAT::m_growth_iso_stress:
+    case CORE::Materials::m_growth_aniso_stress:
+    case CORE::Materials::m_growth_aniso_stress_const_trig:
+    case CORE::Materials::m_growth_iso_stress:
     {
       name = "tr_mandel_e";
       names[name] = 1;
     }
     break;
-    case INPAR::MAT::m_growth_aniso_strain:
-    case INPAR::MAT::m_growth_aniso_strain_const_trig:
+    case CORE::Materials::m_growth_aniso_strain:
+    case CORE::Materials::m_growth_aniso_strain_const_trig:
     {
       name = "lambda_fib_e";
       names[name] = 1;
@@ -490,8 +490,8 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     // not nice but currently the only way we may do that....
     switch (Parameter()->growthlaw_->MaterialType())
     {
-      case INPAR::MAT::m_growth_ac_radial:
-      case INPAR::MAT::m_growth_ac_radial_refconc:
+      case CORE::Materials::m_growth_ac_radial:
+      case CORE::Materials::m_growth_ac_radial_refconc:
       {
         // directional stuff......
         // push-forward of refdir
@@ -975,8 +975,8 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
   // setup specific anisotropic growth laws
   switch (Parameter()->growthlaw_->MaterialType())
   {
-    case INPAR::MAT::m_growth_ac_radial:
-    case INPAR::MAT::m_growth_ac_radial_refconc:
+    case CORE::Materials::m_growth_ac_radial:
+    case CORE::Materials::m_growth_ac_radial_refconc:
     {
       // CIR-AXI-RAD nomenclature
       if (not(linedef->HaveNamed("RAD")))
@@ -995,8 +995,8 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
       f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
     }
     break;
-    case INPAR::MAT::m_growth_aniso_strain:
-    case INPAR::MAT::m_growth_aniso_stress:
+    case CORE::Materials::m_growth_aniso_strain:
+    case CORE::Materials::m_growth_aniso_stress:
     {
       // FIBER1 nomenclature
       if (not(linedef->HaveNamed("FIBER1")))
@@ -1013,8 +1013,8 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
       f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
     }
     break;
-    case INPAR::MAT::m_growth_aniso_strain_const_trig:
-    case INPAR::MAT::m_growth_aniso_stress_const_trig:
+    case CORE::Materials::m_growth_aniso_strain_const_trig:
+    case CORE::Materials::m_growth_aniso_stress_const_trig:
     {
       // FIBER1 nomenclature
       if (not(linedef->HaveNamed("FIBER1")))
@@ -1062,8 +1062,8 @@ void MAT::GrowthVolumetric::Update()
   // setup anisotropic growth laws
   switch (Parameter()->growthlaw_->MaterialType())
   {
-    case INPAR::MAT::m_growth_ac_radial:
-    case INPAR::MAT::m_growth_ac_radial_refconc:
+    case CORE::Materials::m_growth_ac_radial:
+    case CORE::Materials::m_growth_ac_radial_refconc:
     {
       const CORE::LINALG::Matrix<3, 3> dummydefgrad(true);
 

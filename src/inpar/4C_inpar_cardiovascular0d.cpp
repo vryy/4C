@@ -532,8 +532,8 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
   Teuchos::RCP<ConditionDefinition> cardiovascular0d4elementwindkesselcondition = Teuchos::rcp(
       new ConditionDefinition("DESIGN SURF CARDIOVASCULAR 0D 4-ELEMENT WINDKESSEL CONDITIONS",
           "Cardiovascular0D4ElementWindkesselStructureCond", "Surface Cardiovascular0D",
-          DRT::Condition::Cardiovascular0D4ElementWindkessel_Structure, true,
-          DRT::Condition::Surface));
+          CORE::Conditions::Cardiovascular0D4ElementWindkessel_Structure, true,
+          CORE::Conditions::geometry_type_surface));
 
   INPUT::AddNamedInt(cardiovascular0d4elementwindkesselcondition, "id");
   INPUT::AddNamedReal(cardiovascular0d4elementwindkesselcondition, "C");
@@ -553,8 +553,8 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
       new ConditionDefinition("DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS",
           "Cardiovascular0DArterialProxDistStructureCond",
           "Surface 0D cardiovascular arterial proximal and distal",
-          DRT::Condition::Cardiovascular0DArterialProxDist_Structure, true,
-          DRT::Condition::Surface));
+          CORE::Conditions::Cardiovascular0DArterialProxDist_Structure, true,
+          CORE::Conditions::geometry_type_surface));
 
   INPUT::AddNamedInt(cardiovascular0darterialproxdistcond, "id");
   INPUT::AddNamedReal(cardiovascular0darterialproxdistcond, "R_arvalve_max");
@@ -590,8 +590,8 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
       new ConditionDefinition("DESIGN SURF CARDIOVASCULAR 0D SYS-PUL CIRCULATION CONDITIONS",
           "Cardiovascular0DSysPulCirculationStructureCond",
           "Surface cardiovascular 0D sys pul circulation condition",
-          DRT::Condition::Cardiovascular0DSysPulCirculation_Structure, true,
-          DRT::Condition::Surface));
+          CORE::Conditions::Cardiovascular0DSysPulCirculation_Structure, true,
+          CORE::Conditions::geometry_type_surface));
 
   INPUT::AddNamedInt(cardiovascular0dsyspulcirculationcond, "id");
   cardiovascular0dsyspulcirculationcond->AddComponent(
@@ -615,8 +615,8 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
           "DESIGN SURF CARDIOVASCULAR RESPIRATORY 0D SYS-PUL PERIPH CIRCULATION CONDITIONS",
           "CardiovascularRespiratory0DSysPulPeriphCirculationStructureCond",
           "Surface 0D cardiovascular respiratory sys-pul periph circulation condition",
-          DRT::Condition::CardiovascularRespiratory0DSysPulPeriphCirculation_Structure, true,
-          DRT::Condition::Surface));
+          CORE::Conditions::CardiovascularRespiratory0DSysPulPeriphCirculation_Structure, true,
+          CORE::Conditions::geometry_type_surface));
 
   INPUT::AddNamedInt(cardiovascularrespiratory0dsyspulperiphcirculationcond, "id");
   cardiovascularrespiratory0dsyspulperiphcirculationcond->AddComponent(
@@ -640,7 +640,8 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
       new ConditionDefinition("DESIGN SURF CARDIOVASCULAR 0D-STRUCTURE COUPLING CONDITIONS",
           "SurfaceNeumannCardiovascular0D",
           "structure 0d cardiovascular coupling surface condition",
-          DRT::Condition::Cardiovascular0DStructureCoupling, true, DRT::Condition::Surface));
+          CORE::Conditions::Cardiovascular0DStructureCoupling, true,
+          CORE::Conditions::geometry_type_surface));
 
   INPUT::AddNamedInt(cardiovascular0dstructurecouplingcond, "coupling_id");
 

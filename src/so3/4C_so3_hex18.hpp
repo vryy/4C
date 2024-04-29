@@ -315,7 +315,7 @@ namespace DRT
       */
       double EvaluationCost() override
       {
-        if (Material()->MaterialType() == INPAR::MAT::m_struct_multiscale)
+        if (Material()->MaterialType() == CORE::Materials::m_struct_multiscale)
           return 25000.0;
         else
           return 10.0;

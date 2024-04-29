@@ -92,7 +92,7 @@ void DRT::ELEMENTS::Artery::SetDiamInMaterial(const double diam)
 {
   // now the element knows its material, and we can use it to set the diameter
   Teuchos::RCP<MAT::Material> mat = Material();
-  if (mat->MaterialType() == INPAR::MAT::m_cnst_art)
+  if (mat->MaterialType() == CORE::Materials::m_cnst_art)
   {
     MAT::Cnst1dArt* arterymat = dynamic_cast<MAT::Cnst1dArt*>(mat.get());
     arterymat->SetDiam(diam);

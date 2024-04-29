@@ -44,9 +44,9 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
     const int gp                                    ///< Gauss point
 )
 {
-  if (material->MaterialType() == INPAR::MAT::m_structporo or
-      material->MaterialType() == INPAR::MAT::m_structpororeaction or
-      material->MaterialType() == INPAR::MAT::m_structpororeactionECM)
+  if (material->MaterialType() == CORE::Materials::m_structporo or
+      material->MaterialType() == CORE::Materials::m_structpororeaction or
+      material->MaterialType() == CORE::Materials::m_structpororeactionECM)
   {
     Teuchos::RCP<const MAT::StructPoro> actmat =
         Teuchos::rcp_static_cast<const MAT::StructPoro>(material);
@@ -58,7 +58,7 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
   /*--------------------------- call material law -> get tangent modulus--*/
   switch (material->MaterialType())
   {
-    case INPAR::MAT::m_stvenant: /*----------------------- linear elastic ---*/
+    case CORE::Materials::m_stvenant: /*----------------------- linear elastic ---*/
     {
       const MAT::StVenantKirchhoff* actmat =
           static_cast<const MAT::StVenantKirchhoff*>(material.get());
@@ -170,8 +170,9 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
       break;
     }
 
-    case INPAR::MAT::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
-                                    // case INPAR::MAT::m_stvenant:  // st.venant-kirchhoff-material
+    case CORE::Materials::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
+                                         // case CORE::Materials::m_stvenant:  //
+                                         // st.venant-kirchhoff-material
     {
       MaterialResponse3dPlane(stress, C, strain, params, gp);
       break;
@@ -359,7 +360,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> ma
   // switch material type
   switch (material->MaterialType())
   {
-    case INPAR::MAT::m_stvenant:  // linear elastic
+    case CORE::Materials::m_stvenant:  // linear elastic
     {
       CORE::LINALG::SerialDenseMatrix Cm(Wall1::numnstr_, Wall1::numnstr_);  // elasticity matrix
       CORE::LINALG::SerialDenseMatrix Sm(Wall1::numnstr_, Wall1::numnstr_);  // 2nd PK stress matrix
@@ -371,7 +372,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> ma
       return 0.5 * Sv.dot(Ev);
     }
     break;
-    case INPAR::MAT::m_elasthyper:
+    case CORE::Materials::m_elasthyper:
     {
       // transform the 2d Green-Lagrange strains into 3d notation
       CORE::LINALG::Matrix<6, 1> glstrain(true);
@@ -386,9 +387,9 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> ma
       return psi;
     }
     break;
-    case INPAR::MAT::m_structporo:
-    case INPAR::MAT::m_structpororeaction:
-    case INPAR::MAT::m_structpororeactionECM:
+    case CORE::Materials::m_structporo:
+    case CORE::Materials::m_structpororeaction:
+    case CORE::Materials::m_structpororeactionECM:
     {
       // transform the 2d Green-Lagrange strains into 3d notation
       CORE::LINALG::Matrix<6, 1> glstrain(true);
