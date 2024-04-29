@@ -166,10 +166,8 @@ namespace CORE::Materials
     m_plelasthyperVCU,   ///< general hyperelastic material for finite strain von-Mises plasticity
                          ///< using a variational constitutive update
     m_pllinelast,        ///< linear elasticity (St. Venant Kirchhoff) and von Mises plasticity
-    m_plneohooke,        ///< Neo-Hooke elasticity and von Mises plasticity
     m_plnlnlogneohooke,  ///< Neo-Hooke elasticity with logarithmic finite strain von Mises
                          ///< plasticity
-    m_plsemismooth,      ///< material data for von Mises plasticity and semi-smooth newton strategy
     m_poro_law_constant,             ///< constant porosity
     m_poro_law_linear,               ///< linear law for porosity
     m_poro_law_logNeoHooke_Penalty,  ///< neo hookeian like law for porosity + penalty term
