@@ -8,8 +8,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_INPAR_CONTAINER_HPP
-#define FOUR_C_INPAR_CONTAINER_HPP
+#ifndef FOUR_C_IO_INPUT_PARAMETER_CONTAINER_HPP
+#define FOUR_C_IO_INPUT_PARAMETER_CONTAINER_HPP
 
 
 #include "4C_config.hpp"
@@ -28,7 +28,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace IO
 {
   namespace INTERNAL
   {
@@ -224,10 +224,10 @@ namespace INPAR
     //! a map to store anything
     std::map<std::string, std::any> anydata_;
   };  // class InputParameterContainer
-}  // namespace INPAR
+}  // namespace IO
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const INPAR::InputParameterContainer& cont);
+std::ostream& operator<<(std::ostream& os, const IO::InputParameterContainer& cont);
 
 
 FOUR_C_NAMESPACE_CLOSE

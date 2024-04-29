@@ -11,7 +11,7 @@
 
 #include "4C_io_linedefinition.hpp"
 
-#include "4C_inpar_container.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_utils_demangle.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -190,11 +190,10 @@ namespace INPUT::INTERNAL
 
       virtual void Print(std::ostream& stream) const = 0;
 
-      virtual bool ReadRequired(
-          INPAR::InputParameterContainer& container, std::istream& stream) = 0;
+      virtual bool ReadRequired(IO::InputParameterContainer& container, std::istream& stream) = 0;
 
       virtual bool ReadOptional(
-          INPAR::InputParameterContainer& container, std::string& name, std::istream& stream) = 0;
+          IO::InputParameterContainer& container, std::string& name, std::istream& stream) = 0;
 
       [[nodiscard]] virtual bool IsNamed(const std::string& name) const = 0;
     };
@@ -220,13 +219,13 @@ namespace INPUT::INTERNAL
 
       void Print(std::ostream& stream) const override { component_.Print(stream); }
 
-      bool ReadRequired(INPAR::InputParameterContainer& container, std::istream& stream) override
+      bool ReadRequired(IO::InputParameterContainer& container, std::istream& stream) override
       {
         return component_.ReadRequired(container, stream);
       }
 
-      bool ReadOptional(INPAR::InputParameterContainer& container, std::string& name,
-          std::istream& stream) override
+      bool ReadOptional(
+          IO::InputParameterContainer& container, std::string& name, std::istream& stream) override
       {
         return component_.ReadOptional(container, name, stream);
       }
@@ -275,7 +274,7 @@ namespace INPUT::INTERNAL
 
     /// Try to read component from input line
     /// This function is called for required components.
-    bool ReadRequired(INPAR::InputParameterContainer& container, std::istream& stream)
+    bool ReadRequired(IO::InputParameterContainer& container, std::istream& stream)
     {
       return pimpl_->ReadRequired(container, stream);
     }
@@ -283,7 +282,7 @@ namespace INPUT::INTERNAL
     /// Try to read component from input line
     /// This function is called for optional components.
     bool ReadOptional(
-        INPAR::InputParameterContainer& container, std::string& name, std::istream& stream)
+        IO::InputParameterContainer& container, std::string& name, std::istream& stream)
     {
       return pimpl_->ReadOptional(container, name, stream);
     }
@@ -304,7 +303,7 @@ namespace INPUT::INTERNAL
   {
    public:
     GenericComponent(std::string name, T value, Behavior behavior = Behavior::read_print_name,
-        std::function<void(INPAR::InputParameterContainer&, T& value)> value_prepare = {})
+        std::function<void(IO::InputParameterContainer&, T& value)> value_prepare = {})
         : name_(std::move(name)),
           behavior_(behavior),
           value_prepare_(std::move(value_prepare)),
@@ -325,7 +324,7 @@ namespace INPUT::INTERNAL
     }
 
     bool ReadOptional(
-        INPAR::InputParameterContainer& container, std::string& name, std::istream& stream)
+        IO::InputParameterContainer& container, std::string& name, std::istream& stream)
     {
       if (name != name_) return false;
 
@@ -340,7 +339,7 @@ namespace INPUT::INTERNAL
       return read_succeeded;
     }
 
-    bool ReadRequired(INPAR::InputParameterContainer& container, std::istream& stream)
+    bool ReadRequired(IO::InputParameterContainer& container, std::istream& stream)
     {
       if (behavior_ == Behavior::read_print_name)
       {
@@ -362,7 +361,7 @@ namespace INPUT::INTERNAL
 
     //! An optional function that determines how to parse the value. This is useful to
     //! do prelimiary work, like querying already read data.
-    std::function<void(INPAR::InputParameterContainer&, T&)> value_prepare_;
+    std::function<void(IO::InputParameterContainer&, T&)> value_prepare_;
 
     T default_value_;
   };
@@ -422,7 +421,7 @@ namespace INPUT
       std::set<std::string> readtailcomponents_;
 
       /// Store the read data.
-      INPAR::InputParameterContainer container_;
+      IO::InputParameterContainer container_;
     };
   }  // namespace INTERNAL
 
@@ -595,7 +594,7 @@ namespace INPUT
     pimpl_->components_.emplace_back(INTERNAL::GenericComponent<std::vector<double>>(name,
         std::vector<double>{}, INTERNAL::Behavior::read_print_name,
         [lengthdef = std::move(length_definition)](
-            INPAR::InputParameterContainer& linedef, std::vector<double>& values)
+            IO::InputParameterContainer& linedef, std::vector<double>& values)
         {
           // Find expected vector on line. It has to be read already!
           const std::size_t length = lengthdef(linedef);
@@ -680,7 +679,7 @@ namespace INPUT
         name, INTERNAL::GenericComponent<std::vector<double>>(name, std::vector<double>{},
                   INTERNAL::Behavior::read_print_name,
                   [lengthdef = std::move(lengthdef)](
-                      INPAR::InputParameterContainer& linedef, std::vector<double>& values)
+                      IO::InputParameterContainer& linedef, std::vector<double>& values)
                   {
                     // Find expected vector on line. It has to be read already!
                     const std::size_t length = lengthdef(linedef);
@@ -712,7 +711,7 @@ namespace INPUT
 
     pimpl_->optionaltail_.emplace(name,
         INTERNAL::GenericComponent<T>(name, T{}, INTERNAL::Behavior::read_print_name,
-            [lengthdef = std::move(lengthdef)](INPAR::InputParameterContainer& linedef, T& values)
+            [lengthdef = std::move(lengthdef)](IO::InputParameterContainer& linedef, T& values)
             {
               // Find expected vector on line. It has to be read already!
               const std::size_t length = lengthdef(linedef);
@@ -732,7 +731,7 @@ namespace INPUT
 
     pimpl_->optionaltail_.emplace(name,
         INTERNAL::GenericComponent<T>(name, T{}, INTERNAL::Behavior::read_print_name,
-            [lengthdef = std::move(lengthdef)](INPAR::InputParameterContainer& linedef, T& values)
+            [lengthdef = std::move(lengthdef)](IO::InputParameterContainer& linedef, T& values)
             {
               // Find expected vector on line. It has to be read already!
               const std::size_t length = lengthdef(linedef);
@@ -764,14 +763,14 @@ namespace INPUT
 
 
 
-  std::optional<INPAR::InputParameterContainer> LineDefinition::Read(std::istream& stream)
+  std::optional<IO::InputParameterContainer> LineDefinition::Read(std::istream& stream)
   {
     return Read(stream, nullptr);
   }
 
 
 
-  std::optional<INPAR::InputParameterContainer> LineDefinition::Read(
+  std::optional<IO::InputParameterContainer> LineDefinition::Read(
       std::istream& stream, const std::string* skipname)
   {
     pimpl_->readtailcomponents_.clear();
@@ -975,8 +974,7 @@ namespace INPUT
   }
 
 
-  std::size_t LengthFromIntNamed::operator()(
-      const INPAR::InputParameterContainer& already_read_line)
+  std::size_t LengthFromIntNamed::operator()(const IO::InputParameterContainer& already_read_line)
   {
     int length = already_read_line.Get<int>(definition_name_);
     return length;

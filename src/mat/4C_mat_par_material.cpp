@@ -34,7 +34,7 @@ void MAT::PAR::Material::Print(std::ostream& os) const
 {
   os << "MAT " << Id() << " " << Name() << " :: ";
 
-  INPAR::InputParameterContainer::Print(os);
+  IO::InputParameterContainer::Print(os);
 }
 
 FOUR_C_NAMESPACE_CLOSE

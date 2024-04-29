@@ -25,7 +25,7 @@ CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Container::Container(
     const int id, const INPAR::CONTACT::ConstitutiveLawType type, const std::string name)
-    : INPAR::InputParameterContainer(), id_(id), type_(type), name_(name), params_(Teuchos::null)
+    : IO::InputParameterContainer(), id_(id), type_(type), name_(name), params_(Teuchos::null)
 {
 }
 /*----------------------------------------------------------------------*/
@@ -34,7 +34,7 @@ void CONTACT::CONSTITUTIVELAW::Container::Print(std::ostream& os) const
 {
   os << "ContactConstitutiveLaw " << Id() << " " << Name() << " :: ";
 
-  INPAR::InputParameterContainer::Print(os);
+  IO::InputParameterContainer::Print(os);
 }
 
 FOUR_C_NAMESPACE_CLOSE

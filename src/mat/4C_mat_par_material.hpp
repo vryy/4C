@@ -12,8 +12,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_container.hpp"
 #include "4C_inpar_material.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_mat_par_parameter.hpp"
 
 #include <Epetra_Comm.h>
@@ -30,8 +30,8 @@ namespace MAT::PAR
   /// Container for read-in materials
   ///
   /// This object stores the validated material parameters as
-  /// INPAR::InputParameterContainer.
-  class Material : public INPAR::InputParameterContainer
+  /// IO::InputParameterContainer.
+  class Material : public IO::InputParameterContainer
   {
    public:
     /// @name life span
@@ -78,7 +78,7 @@ namespace MAT::PAR
     /// Return quick accessible material parameter data
     ///
     /// These quick access parameters are stored in separate member #params_;
-    /// whereas the originally read ones are stored in INPAR::InputParameterContainer base
+    /// whereas the originally read ones are stored in IO::InputParameterContainer base
     [[nodiscard]] inline MAT::PAR::Parameter* Parameter() const { return params_.get(); }
 
     //@}

@@ -17,7 +17,7 @@
 #include "4C_binstrategy.hpp"
 #include "4C_discretization_geometry_intersection_math.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_container.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"

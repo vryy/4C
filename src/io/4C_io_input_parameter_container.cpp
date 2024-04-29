@@ -8,14 +8,14 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "4C_inpar_container.hpp"
+#include "4C_io_input_parameter_container.hpp"
 
 #include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
 
-std::ostream& operator<<(std::ostream& os, const INPAR::InputParameterContainer& cont)
+std::ostream& operator<<(std::ostream& os, const IO::InputParameterContainer& cont)
 {
   cont.Print(os);
   return os;
@@ -62,7 +62,7 @@ namespace
 }  // namespace
 
 
-void INPAR::InputParameterContainer::Print(std::ostream& os) const
+void IO::InputParameterContainer::Print(std::ostream& os) const
 {
   PrintHelper printer{os};
   printer(intdata_);

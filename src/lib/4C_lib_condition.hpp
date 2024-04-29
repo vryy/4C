@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_container.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_legacy_enum_definitions_conditions.hpp"
 
 #include <Epetra_Comm.h>
@@ -33,7 +33,7 @@ namespace DRT
   \brief A condition of any kind
 
   A condition is mainly used to realize boundary conditions. As the Condition
-  class implements INPAR::InputParameterContainer it is capable of storing almost any data
+  class implements IO::InputParameterContainer it is capable of storing almost any data
   and can be communicated in parallel as it also implements ParObject.
   the container base class of the Condition holds all specific condition data.
   The condition can additionally store a discretization of the condition which is
@@ -43,7 +43,7 @@ namespace DRT
   (I guess this whole comment is not very helpful)
 
   */
-  class Condition : public INPAR::InputParameterContainer
+  class Condition : public IO::InputParameterContainer
   {
    public:
     //! @name Enums and Friends
@@ -68,7 +68,7 @@ namespace DRT
     DRT::Discretization.
 
     \note In case you might wonder where this condition class actually stores
-          data necessary for the condition: This class implements INPAR::InputParameterContainer.
+          data necessary for the condition: This class implements IO::InputParameterContainer.
 
     \param id (in): a unique id for this condition
     \param type (in): type of the condition

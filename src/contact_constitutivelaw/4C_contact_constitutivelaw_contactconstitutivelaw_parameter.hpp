@@ -17,7 +17,7 @@ relate the contact gap to the contact pressure based on micro interactions
 /* headers */
 #include "4C_config.hpp"
 
-#include "4C_inpar_container.hpp"
+#include "4C_io_input_parameter_container.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -92,7 +92,7 @@ namespace CONTACT::CONSTITUTIVELAW
    * \brief Container to pass Contact Constitutive Law parameters around
    */
 
-  class Container : public INPAR::InputParameterContainer
+  class Container : public IO::InputParameterContainer
   {
    public:
     /// @name life span
@@ -132,7 +132,7 @@ namespace CONTACT::CONSTITUTIVELAW
      * \brief Return quickly accessible material parameter data
      *
      * These quick access parameters are stored in separate member #params_;
-     * whereas the originally read ones are stored in INPAR::InputParameterContainer base
+     * whereas the originally read ones are stored in IO::InputParameterContainer base
      */
     [[nodiscard]] inline CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const
     {
