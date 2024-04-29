@@ -281,7 +281,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
         {
           // see whether pbc is active in plane orthogonal to sampling plane
           const auto dofsforpbcplanename =
-              *pbc->Get<std::string>("degrees of freedom for the pbc plane");
+              pbc->Get<std::string>("degrees of freedom for the pbc plane");
 
           bool active = false;
 
@@ -315,7 +315,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
           {
             // see whether we have a slave node
             const auto mymasterslavetoggle =
-                *pbc->Get<std::string>("Is slave periodic boundary condition");
+                pbc->Get<std::string>("Is slave periodic boundary condition");
 
             if (mymasterslavetoggle == "Slave")
             {
@@ -539,30 +539,30 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
             DRT::Condition* pbc = mypbcs[numcond];
 
             // see whether pbc is active in plane orthogonal to sampling plane
-            const std::string* dofsforpbcplanename =
+            const std::string& dofsforpbcplanename =
                 pbc->Get<std::string>("degrees of freedom for the pbc plane");
 
             bool active = false;
 
-            if (*dofsforpbcplanename == "xyz")
+            if (dofsforpbcplanename == "xyz")
             {
               active = true;
             }
-            else if (*dofsforpbcplanename == "xy")
+            else if (dofsforpbcplanename == "xy")
             {
               if (dim == 2)
               {
                 active = true;
               }
             }
-            else if (*dofsforpbcplanename == "xz")
+            else if (dofsforpbcplanename == "xz")
             {
               if (dim == 1)
               {
                 active = true;
               }
             }
-            else if (*dofsforpbcplanename == "yz")
+            else if (dofsforpbcplanename == "yz")
             {
               if (dim == 0)
               {
@@ -573,10 +573,10 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
             if (active)
             {
               // see whether we have a slave node
-              const std::string* mymasterslavetoggle =
+              const std::string& mymasterslavetoggle =
                   pbc->Get<std::string>("Is slave periodic boundary condition");
 
-              if (*mymasterslavetoggle == "Slave")
+              if (mymasterslavetoggle == "Slave")
               {
                 is_slave = true;
               }
@@ -841,30 +841,30 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
           DRT::Condition* pbc = mypbcs[numcond];
 
           // see whether pbc is active in plane orthogonal to sampling plane
-          const std::string* dofsforpbcplanename =
+          const std::string& dofsforpbcplanename =
               pbc->Get<std::string>("degrees of freedom for the pbc plane");
 
           bool active = false;
 
-          if (*dofsforpbcplanename == "xyz")
+          if (dofsforpbcplanename == "xyz")
           {
             active = true;
           }
-          else if (*dofsforpbcplanename == "xy")
+          else if (dofsforpbcplanename == "xy")
           {
             if (dim == 2)
             {
               active = true;
             }
           }
-          else if (*dofsforpbcplanename == "xz")
+          else if (dofsforpbcplanename == "xz")
           {
             if (dim == 1)
             {
               active = true;
             }
           }
-          else if (*dofsforpbcplanename == "yz")
+          else if (dofsforpbcplanename == "yz")
           {
             if (dim == 0)
             {
@@ -875,10 +875,10 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
           if (active)
           {
             // see whether we have a slave node
-            const std::string* mymasterslavetoggle =
+            const std::string& mymasterslavetoggle =
                 pbc->Get<std::string>("Is slave periodic boundary condition");
 
-            if (*mymasterslavetoggle == "Slave")
+            if (mymasterslavetoggle == "Slave")
             {
               is_slave = true;
             }

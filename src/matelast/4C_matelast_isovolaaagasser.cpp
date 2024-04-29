@@ -35,21 +35,21 @@ MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR:
     // matparams_.push_back(Teuchos::rcp(new
     // Epetra_Vector(*(GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()),true)));
   }
-  matparams_.at(clum)->PutScalar(*matdata->Get<double>("CLUM"));
-  matparams_.at(cmed)->PutScalar(*matdata->Get<double>("CMED"));
-  matparams_.at(cablum)->PutScalar(*matdata->Get<double>("CABLUM"));
-  matparams_.at(nue)->PutScalar(*matdata->Get<double>("NUE"));
-  matparams_.at(beta)->PutScalar(*matdata->Get<double>("BETA"));
+  matparams_.at(clum)->PutScalar(matdata->Get<double>("CLUM"));
+  matparams_.at(cmed)->PutScalar(matdata->Get<double>("CMED"));
+  matparams_.at(cablum)->PutScalar(matdata->Get<double>("CABLUM"));
+  matparams_.at(nue)->PutScalar(matdata->Get<double>("NUE"));
+  matparams_.at(beta)->PutScalar(matdata->Get<double>("BETA"));
   matparams_.at(normdist)->PutScalar(-999.0);
   matparams_.at(cele)->PutScalar(-999.0);
 
   // optional parameters needed for UQ
-  matparams_.at(mu_lum)->PutScalar(*matdata->Get<double>("MULUM"));
-  matparams_.at(mu_med)->PutScalar(*matdata->Get<double>("MUMED"));
-  matparams_.at(mu_ablum)->PutScalar(*matdata->Get<double>("MUABLUM"));
-  matparams_.at(sigma_lum)->PutScalar(*matdata->Get<double>("SIGMALUM"));
-  matparams_.at(sigma_med)->PutScalar(*matdata->Get<double>("SIGMAMED"));
-  matparams_.at(sigma_ablum)->PutScalar(*matdata->Get<double>("SIGMAABLUM"));
+  matparams_.at(mu_lum)->PutScalar(matdata->Get<double>("MULUM"));
+  matparams_.at(mu_med)->PutScalar(matdata->Get<double>("MUMED"));
+  matparams_.at(mu_ablum)->PutScalar(matdata->Get<double>("MUABLUM"));
+  matparams_.at(sigma_lum)->PutScalar(matdata->Get<double>("SIGMALUM"));
+  matparams_.at(sigma_med)->PutScalar(matdata->Get<double>("SIGMAMED"));
+  matparams_.at(sigma_ablum)->PutScalar(matdata->Get<double>("SIGMAABLUM"));
 
   // stochastic parameter that can only be set at runtime during uq analysis
   matparams_.at(xi)->PutScalar(10e12);

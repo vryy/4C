@@ -146,7 +146,7 @@ namespace MAT
 
      protected:
       ///  pressure-coefficients defining the differential pressure
-      const std::vector<int>* diffpresCoeffs_;
+      const std::vector<int> diffpresCoeffs_;
       /// ID of pressure-saturation law
       const int phaselawId_;
       /// implementation of pressure-saturation law

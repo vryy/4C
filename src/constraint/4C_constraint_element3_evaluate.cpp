@@ -72,15 +72,15 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<DRT::Condition> condition =
             params.get<Teuchos::RCP<DRT::Condition>>("condition");
-        const auto* direct = condition->Get<std::vector<double>>("direction");
-        const std::string* value = condition->Get<std::string>("value");
-        if (*value == "disp")
-          elevec3[0] = ComputeWeightedDistance(mydisp, *direct);
-        else if (*value == "x")
+        const auto& direct = condition->Get<std::vector<double>>("direction");
+        const auto& value = condition->Get<std::string>("value");
+        if (value == "disp")
+          elevec3[0] = ComputeWeightedDistance(mydisp, direct);
+        else if (value == "x")
         {
           CORE::LINALG::Matrix<2, 3> xscurr;  // material coord. of element
           SpatialConfiguration(xscurr, mydisp);
-          elevec3[0] = ComputeWeightedDistance(xscurr, *direct);
+          elevec3[0] = ComputeWeightedDistance(xscurr, direct);
         }
         else
           FOUR_C_THROW("MPC cannot compute state!");
@@ -122,20 +122,20 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<DRT::Condition> condition =
             params.get<Teuchos::RCP<DRT::Condition>>("condition");
-        const std::vector<double>* direct = condition->Get<std::vector<double>>("direction");
+        const std::vector<double>& direct = condition->Get<std::vector<double>>("direction");
 
         // Compute weighted difference between masternode and other node and it's derivative
-        ComputeFirstDerivWeightedDistance(elevec1, *direct);
+        ComputeFirstDerivWeightedDistance(elevec1, direct);
         elevec2 = elevec1;
 
-        const std::string* value = condition->Get<std::string>("value");
-        if (*value == "disp")
-          elevec3[0] = ComputeWeightedDistance(mydisp, *direct);
-        else if (*value == "x")
+        const std::string& value = condition->Get<std::string>("value");
+        if (value == "disp")
+          elevec3[0] = ComputeWeightedDistance(mydisp, direct);
+        else if (value == "x")
         {
           CORE::LINALG::Matrix<2, 3> xscurr;  // spatial coord. of element
           SpatialConfiguration(xscurr, mydisp);
-          elevec3[0] = ComputeWeightedDistance(xscurr, *direct);
+          elevec3[0] = ComputeWeightedDistance(xscurr, direct);
         }
         else
           FOUR_C_THROW("MPC cannot compute state!");

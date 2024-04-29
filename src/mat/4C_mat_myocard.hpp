@@ -53,11 +53,11 @@ namespace MAT
       const double dt_deriv;
 
       /// Model type. Possibilities are: "MV", "FHN", "INADA", "TNNP", "SAN"
-      const std::string* model;
+      const std::string model;
 
       /// Tissue type. Possibilities are: "M", "ENDO", "EPI" for "TNNP"
       ///                                 "AN", "N", "NH" for "INADA"
-      const std::string* tissue;
+      const std::string tissue;
 
       /// Time factor to correct for different Model specific time units
       const double time_scale;

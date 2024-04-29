@@ -33,11 +33,11 @@ MAT::PAR::ScatraMat::ScatraMat(Teuchos::RCP<MAT::PAR::Material> matdata) : Param
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(diff)->PutScalar(*matdata->Get<double>("DIFFUSIVITY"));
-  matparams_.at(reac)->PutScalar(*matdata->Get<double>("REACOEFF"));
-  matparams_.at(densific)->PutScalar(*matdata->Get<double>("DENSIFICATION"));
+  matparams_.at(diff)->PutScalar(matdata->Get<double>("DIFFUSIVITY"));
+  matparams_.at(reac)->PutScalar(matdata->Get<double>("REACOEFF"));
+  matparams_.at(densific)->PutScalar(matdata->Get<double>("DENSIFICATION"));
   matparams_.at(reacts_to_external_force)
-      ->PutScalar(*matdata->Get<bool>("REACTS_TO_EXTERNAL_FORCE"));
+      ->PutScalar(matdata->Get<bool>("REACTS_TO_EXTERNAL_FORCE"));
 }
 
 

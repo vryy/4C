@@ -149,7 +149,7 @@ void DRT::ELEMENTS::FluidXWallBoundary::LocationVector(const Discretization& dis
                     dirich->Type() != DRT::Condition::SurfaceDirichlet &&
                     dirich->Type() != DRT::Condition::VolumeDirichlet)
                   FOUR_C_THROW("condition with name Dirichlet is not of type Dirichlet");
-                flag = dirich->Get<std::vector<int>>("onoff");
+                flag = &dirich->Get<std::vector<int>>("onoff");
               }
               for (unsigned j = 0; j < dof.size(); ++j)
               {

@@ -22,20 +22,20 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::MatList::MatList(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      nummat_(*matdata->Get<int>("NUMMAT")),
+      nummat_(matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
-      local_((*matdata->Get<bool>("LOCAL")))
+      local_((matdata->Get<bool>("LOCAL")))
 {
   // check if sizes fit
-  if (nummat_ != (int)matids_->size())
+  if (nummat_ != (int)matids_.size())
     FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
-        matids_->size());
+        matids_.size());
 
   if (not local_)
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
-    for (m = matids_->begin(); m != matids_->end(); ++m)
+    for (m = matids_.begin(); m != matids_.end(); ++m)
     {
       const int matid = *m;
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
@@ -225,7 +225,7 @@ void MAT::MatList::Unpack(const std::vector<char>& data)
 int MAT::MatList::MatID(const unsigned index) const
 {
   if ((int)index < params_->nummat_)
-    return params_->matids_->at(index);
+    return params_->matids_.at(index);
   else
   {
     FOUR_C_THROW("Index too large");

@@ -91,33 +91,33 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
 
   Configuration config = config_none;
 
-  const std::string* type = condition.Get<std::string>("type");
-  if (*type == "neum_live")
+  const std::string& type = condition.Get<std::string>("type");
+  if (type == "neum_live")
   {
     ltype = neum_live;
     config = config_material;
   }
-  else if (*type == "neum_live_FSI")
+  else if (type == "neum_live_FSI")
   {
     ltype = neum_live_FSI;
     config = config_material;
   }
-  else if (*type == "neum_pseudo_orthopressure")
+  else if (type == "neum_pseudo_orthopressure")
   {
     ltype = neum_pseudo_orthopressure;
     config = config_lastconverged;
   }
-  else if (*type == "neum_orthopressure")
+  else if (type == "neum_orthopressure")
   {
     ltype = neum_orthopressure;
     config = config_spatial;
   }
-  else if (*type == "neum_consthydro_z")
+  else if (type == "neum_consthydro_z")
   {
     ltype = neum_consthydro_z;
     config = config_lastconverged;
   }
-  else if (*type == "neum_increhydro_z")
+  else if (type == "neum_increhydro_z")
   {
     ltype = neum_increhydro_z;
     config = config_lastconverged;
@@ -127,8 +127,8 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
     FOUR_C_THROW("Unknown type of SurfaceNeumann condition");
   }
   // get values and switches from the condition
-  const auto& onoff = *condition.Get<std::vector<int>>("onoff");
-  const auto& value = *condition.Get<std::vector<double>>("val");
+  const auto& onoff = condition.Get<std::vector<int>>("onoff");
+  const auto& value = condition.Get<std::vector<double>>("val");
 
   // ensure that at least as many curves/functs as dofs are available
   if (onoff.size() < DETAIL::node_dof)
@@ -146,7 +146,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
     }
   }
   // get ids of functions of space and time
-  const auto* function_ids = condition.Get<std::vector<int>>("funct");
+  const auto* function_ids = &condition.Get<std::vector<int>>("funct");
 
   // integration loops
   std::array<double, 2> xi_gp;

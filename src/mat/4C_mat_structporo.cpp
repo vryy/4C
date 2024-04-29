@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
 
 MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      matid_(*matdata->Get<int>("MATID")),
-      poro_law_ID_(*matdata->Get<int>("POROLAWID")),
-      init_porosity_(*matdata->Get<double>("INITPOROSITY"))
+      matid_(matdata->Get<int>("MATID")),
+      poro_law_ID_(matdata->Get<int>("POROLAWID")),
+      init_porosity_(matdata->Get<double>("INITPOROSITY"))
 {
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();

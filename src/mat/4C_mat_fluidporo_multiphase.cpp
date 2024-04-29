@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(Teuchos::RCP<MAT::PAR::Material> matdata)
     : MatList(matdata),
-      permeability_(*matdata->Get<double>("PERMEABILITY")),
-      numfluidphases_(*matdata->Get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
+      permeability_(matdata->Get<double>("PERMEABILITY")),
+      numfluidphases_(matdata->Get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
       numvolfrac_(-1),
       dof2pres_(Teuchos::null),
       constraintphaseID_(-1),
@@ -56,10 +56,10 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
   dof2pres_->putScalar(0.0);
 
   // get number of volume fractions
-  numvolfrac_ = (int)(((int)matids_->size() - numfluidphases_) / 2);
+  numvolfrac_ = (int)(((int)matids_.size() - numfluidphases_) / 2);
 
   // safety check
-  if ((int)matids_->size() != (int)(numvolfrac_ * 2 + numfluidphases_))
+  if ((int)matids_.size() != (int)(numvolfrac_ * 2 + numfluidphases_))
     FOUR_C_THROW(
         "You have chosen %i materials, %i fluidphases and %f volume fractions, check your input "
         "definition\n"
@@ -70,13 +70,13 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
         "MAT_FluidPoroSinglePhase \n"
         "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac \n"
         "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure ",
-        (int)matids_->size(), numfluidphases_,
-        (double)(((double)matids_->size() - (double)numfluidphases_) / 2.0));
+        (int)matids_.size(), numfluidphases_,
+        (double)(((double)matids_.size() - (double)numfluidphases_) / 2.0));
 
-  for (int iphase = 0; iphase < (int)matids_->size(); iphase++)
+  for (int iphase = 0; iphase < (int)matids_.size(); iphase++)
   {
     // get the single phase material by its ID
-    const int matid = (*matids_)[iphase];
+    const int matid = matids_[iphase];
     Teuchos::RCP<MAT::Material> singlemat = MaterialById(matid);
 
     // fluidphases at [0...numfluidphases-1]
@@ -127,7 +127,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
             "MAT_FluidPoroSinglePhase \n"
             "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac \n"
             "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure ",
-            numfluidphases_, (int)matids_->size() - numfluidphases_, iphase + 1);
+            numfluidphases_, (int)matids_.size() - numfluidphases_, iphase + 1);
     }
     // volume fraction pressures at [numfluidphases-1+numvolfrac...numfluidphases-1+2*numvolfrac]
     else if (iphase < numfluidphases_ + 2 * numvolfrac_)
@@ -145,7 +145,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
             "MAT_FluidPoroSinglePhase \n"
             "      2 volume fractions: materials have to be MAT_FluidPoroSingleVolFrac \n"
             "      2 volume fraction pressures: materials have to be MAT_FluidPoroVolFracPressure ",
-            numfluidphases_, (int)matids_->size() - numfluidphases_, iphase + 1);
+            numfluidphases_, (int)matids_.size() - numfluidphases_, iphase + 1);
     }
     else
       FOUR_C_THROW("something went wrong here, why is iphase = %i", iphase);

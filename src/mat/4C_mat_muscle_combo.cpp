@@ -34,13 +34,13 @@ namespace
   {
     if (activation_type == INPAR::MAT::ActivationType::function_of_space_time)
     {
-      auto actFunctId = *matdata->Get<int>("FUNCTID");
+      auto actFunctId = matdata->Get<int>("FUNCTID");
       if (actFunctId <= 0) FOUR_C_THROW("Function id must be positive");
       return actFunctId;
     }
     else if (activation_type == INPAR::MAT::ActivationType::map)
     {
-      return *matdata->Get<const ActivationMapType>("MAPFILE");
+      return matdata->Get<const ActivationMapType>("MAPFILE");
     }
     else
       return std::monostate{};
@@ -98,17 +98,17 @@ namespace
 
 MAT::PAR::MuscleCombo::MuscleCombo(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      alpha_(*matdata->Get<double>("ALPHA")),
-      beta_(*matdata->Get<double>("BETA")),
-      gamma_(*matdata->Get<double>("GAMMA")),
-      kappa_(*matdata->Get<double>("KAPPA")),
-      omega0_(*matdata->Get<double>("OMEGA0")),
-      Popt_(*matdata->Get<double>("POPT")),
-      lambdaMin_(*matdata->Get<double>("LAMBDAMIN")),
-      lambdaOpt_(*matdata->Get<double>("LAMBDAOPT")),
-      activationType_(static_cast<INPAR::MAT::ActivationType>(*matdata->Get<int>("ACTEVALTYPE"))),
+      alpha_(matdata->Get<double>("ALPHA")),
+      beta_(matdata->Get<double>("BETA")),
+      gamma_(matdata->Get<double>("GAMMA")),
+      kappa_(matdata->Get<double>("KAPPA")),
+      omega0_(matdata->Get<double>("OMEGA0")),
+      Popt_(matdata->Get<double>("POPT")),
+      lambdaMin_(matdata->Get<double>("LAMBDAMIN")),
+      lambdaOpt_(matdata->Get<double>("LAMBDAOPT")),
+      activationType_(static_cast<INPAR::MAT::ActivationType>(matdata->Get<int>("ACTEVALTYPE"))),
       activationParams_(GetActivationParams(matdata, activationType_)),
-      density_(*matdata->Get<double>("DENS"))
+      density_(matdata->Get<double>("DENS"))
 {
   // error handling for parameter ranges
   // passive material parameters

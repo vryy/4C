@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 MAT::PAR::ScatraMultiScale::ScatraMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata)
     : ScatraMat(matdata),
       ScatraMicroMacroCoupling(matdata),
-      porosity_(*matdata->Get<double>("POROSITY")),
-      tortuosity_(*matdata->Get<double>("TORTUOSITY"))
+      porosity_(matdata->Get<double>("POROSITY")),
+      tortuosity_(matdata->Get<double>("TORTUOSITY"))
 {
   return;
 }

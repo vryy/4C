@@ -50,17 +50,17 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::ThermoPlasticLinElast::ThermoPlasticLinElast(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_(*matdata->Get<double>("YOUNG")),
-      poissonratio_(*matdata->Get<double>("NUE")),
-      density_(*matdata->Get<double>("DENS")),
-      thermexpans_(*matdata->Get<double>("THEXPANS")),
-      thetainit_(*matdata->Get<double>("INITTEMP")),
-      yield_(*matdata->Get<double>("YIELD")),
-      isohard_(*matdata->Get<double>("ISOHARD")),
-      kinhard_(*matdata->Get<double>("KINHARD")),
-      sigma_y_(*(matdata->Get<std::vector<double>>("SIGMA_Y"))),
-      strainbar_p_ref_(*(matdata->Get<std::vector<double>>("EPSBAR_P"))),
-      abstol_(*matdata->Get<double>("TOL"))
+      youngs_(matdata->Get<double>("YOUNG")),
+      poissonratio_(matdata->Get<double>("NUE")),
+      density_(matdata->Get<double>("DENS")),
+      thermexpans_(matdata->Get<double>("THEXPANS")),
+      thetainit_(matdata->Get<double>("INITTEMP")),
+      yield_(matdata->Get<double>("YIELD")),
+      isohard_(matdata->Get<double>("ISOHARD")),
+      kinhard_(matdata->Get<double>("KINHARD")),
+      sigma_y_((matdata->Get<std::vector<double>>("SIGMA_Y"))),
+      strainbar_p_ref_((matdata->Get<std::vector<double>>("EPSBAR_P"))),
+      abstol_(matdata->Get<double>("TOL"))
 {
 }
 

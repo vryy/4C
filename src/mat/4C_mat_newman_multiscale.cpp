@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 MAT::PAR::NewmanMultiScale::NewmanMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Newman(matdata),
       ScatraMicroMacroCoupling(matdata),
-      electronic_cond_(*matdata->Get<double>("ELECTRONIC_COND")),
-      conc_dep_scale_func_num_(*matdata->Get<int>("ELECTRONIC_COND_CONC_SCALE_FUNC_NUM"))
+      electronic_cond_(matdata->Get<double>("ELECTRONIC_COND")),
+      conc_dep_scale_func_num_(matdata->Get<int>("ELECTRONIC_COND_CONC_SCALE_FUNC_NUM"))
 {
 }
 

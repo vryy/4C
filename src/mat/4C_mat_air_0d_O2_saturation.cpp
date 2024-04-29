@@ -25,8 +25,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Air0dO2Saturation::Air0dO2Saturation(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      atmospheric_p_(*matdata->Get<double>("AtmosphericPressure")),
-      nO2_per_VO2_(*matdata->Get<double>("NumberOfO2PerVO2"))
+      atmospheric_p_(matdata->Get<double>("AtmosphericPressure")),
+      nO2_per_VO2_(matdata->Get<double>("NumberOfO2PerVO2"))
 {
 }
 

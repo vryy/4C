@@ -80,11 +80,9 @@ void STR::MonitorDbc::GetTaggedCondition(std::vector<const DRT::Condition*>& tag
 
   for (auto& cond_ptr : cond_vec)
   {
-    const std::string* cptr = cond_ptr->Get<std::string>("tag");
+    const std::string& cptr = cond_ptr->Get<std::string>("tag");
 
-    if (not cptr) continue;
-
-    if (*cptr == tag_name) tagged_conds.push_back(cond_ptr.get());
+    if (cptr == tag_name) tagged_conds.push_back(cond_ptr.get());
   }
 }
 
@@ -116,7 +114,7 @@ void STR::MonitorDbc::CreateReactionForceCondition(
   Teuchos::RCP<DRT::Condition> rcond_ptr = Teuchos::rcp(
       new DRT::Condition(new_id, DRT::Condition::ElementTag, true, tagged_cond.GType()));
 
-  rcond_ptr->Add("onoff", *(tagged_cond.Get<std::vector<int>>("onoff")));
+  rcond_ptr->Add("onoff", (tagged_cond.Get<std::vector<int>>("onoff")));
   rcond_ptr->SetNodes(*tagged_cond.GetNodes());
 
   dynamic_cast<DRT::Discretization&>(discret).SetCondition("ReactionForce", rcond_ptr);
@@ -187,7 +185,7 @@ void STR::MonitorDbc::Setup()
 void STR::MonitorDbc::CreateReactionMaps(const DRT::Discretization& discret,
     const DRT::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const
 {
-  const auto* onoff = rcond.Get<std::vector<int>>("onoff");
+  const auto* onoff = &rcond.Get<std::vector<int>>("onoff");
   const auto* nids = rcond.GetNodes();
   std::vector<int> my_dofs[DIM];
   int ndof = 0;
@@ -537,7 +535,7 @@ double STR::MonitorDbc::GetReactionMoment(CORE::LINALG::Matrix<DIM, 1>& rmoment_
   CORE::LINALG::Matrix<DIM, 1> node_reaction_moment(true);
   std::vector<int> node_gid(3);
 
-  const auto* onoff = rcond->Get<std::vector<int>>("onoff");
+  const auto* onoff = &rcond->Get<std::vector<int>>("onoff");
   const std::vector<int>* nids = rcond->GetNodes();
   std::vector<int> my_dofs[DIM];
   int ndof = 0;

@@ -1055,7 +1055,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
       double TermIO = 0.0;
       // Get the in/out terminal condition
       std::string TerminalType =
-          *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
+          (ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1256,7 +1256,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
       double TermIO = 0.0;
       // Get the in/out terminal condition
       std::string TerminalType =
-          *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
+          (ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1481,9 +1481,8 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
       const DRT::Condition* condition = ele->Nodes()[i]->GetCondition("ArtPrescribedScatraCond");
 
       const auto* curve = condition->GetIf<int>("curve");
-      const auto* vals = condition->Get<double>("val");
 
-      double curvefac = *vals;
+      double curvefac = condition->Get<double>("val");
       int curvenum = -1;
       if (curve) curvenum = *curve;
       if (curvenum > 0)
@@ -1495,7 +1494,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
 
 
       std::string TerminalType =
-          *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
+          (ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
       int dof = 0;
       if (TerminalType == "inlet")
       {

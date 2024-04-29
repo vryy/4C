@@ -82,7 +82,7 @@ namespace MAT
       //! number of degrees of freedom
       const int numdof_;
       //! coefficients defining the pressures involved int the pressure-saturation law
-      const std::vector<int>* presids_;
+      const std::vector<int> presids_;
       //! 'relative tension' parameter (proportionality coefficient)
       const double reltensions_;
       //! saturation value at zero pressure
@@ -90,7 +90,7 @@ namespace MAT
       //@}
 
       /// pressure ids involved in phase law
-      const std::vector<int>* PresIds() override { return presids_; };
+      const std::vector<int>* PresIds() override { return &presids_; };
 
       //! evaluate saturation of phase
       double EvaluateSaturation(const std::vector<double>& pressure) override;
@@ -127,7 +127,7 @@ namespace MAT
       //! number of degrees of freedom
       const int numdof_;
       //! coefficients defining the pressures involved int the pressure-saturation law
-      const std::vector<int>* presids_;
+      const std::vector<int> presids_;
       //! relative tension coefficient
       const double reltensions_;
       //! exponent within phase law
@@ -137,7 +137,7 @@ namespace MAT
       //@}
 
       /// pressure ids involved in phase law
-      const std::vector<int>* PresIds() override { return presids_; };
+      const std::vector<int>* PresIds() override { return &presids_; };
 
       //! evaluate saturation of phase
       double EvaluateSaturation(const std::vector<double>& pressure) override;
@@ -236,7 +236,7 @@ namespace MAT
       //! number of degrees of freedom
       const int numdof_;
       //! coefficients defining the pressures involved int the pressure-saturation law
-      const std::vector<int>* presids_;
+      const std::vector<int> presids_;
       //! function ID for evaluation of saturation
       const int functionID_saturation_;
       //! function ID for evaluation of pressure
@@ -244,7 +244,7 @@ namespace MAT
       //@}
 
       /// pressure ids involved in phase law
-      const std::vector<int>* PresIds() override { return presids_; };
+      const std::vector<int>* PresIds() override { return &presids_; };
 
       //! evaluate saturation of phase
       double EvaluateSaturation(const std::vector<double>& pressure) override;

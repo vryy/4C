@@ -310,7 +310,7 @@ namespace MAT
         const int nummat_;
 
         /// the list of material IDs
-        const std::vector<int>* matids_;
+        const std::vector<int> matids_;
 
         /// @name material parameters
         //@{
@@ -322,7 +322,7 @@ namespace MAT
         const double k_growth_;
 
         /// initial mass fraction of each fiber family in constraint mixture
-        const std::vector<double>* init_w_col_;
+        const std::vector<double> init_w_col_;
 
         /// deposition stretch of collagen fibers
         const double G_;

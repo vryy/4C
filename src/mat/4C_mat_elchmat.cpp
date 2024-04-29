@@ -21,11 +21,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElchMat::ElchMat(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      numdof_((*matdata->Get<int>("NUMDOF"))),
-      numscal_((*matdata->Get<int>("NUMSCAL"))),
-      numphase_(*matdata->Get<int>("NUMPHASE")),
-      phaseids_(*matdata->Get<std::vector<int>>("PHASEIDS")),
-      local_(*matdata->Get<bool>("LOCAL"))
+      numdof_((matdata->Get<int>("NUMDOF"))),
+      numscal_((matdata->Get<int>("NUMSCAL"))),
+      numphase_(matdata->Get<int>("NUMPHASE")),
+      phaseids_(matdata->Get<std::vector<int>>("PHASEIDS")),
+      local_(matdata->Get<bool>("LOCAL"))
 {
   if (numphase_ != (int)phaseids_.size())
     FOUR_C_THROW(

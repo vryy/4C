@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata)
 {
-  double c1 = *matdata->Get<double>("YOUNG");
-  double c2 = *matdata->Get<double>("NUE");
+  double c1 = matdata->Get<double>("YOUNG");
+  double c2 = matdata->Get<double>("NUE");
 
   if (c2 <= 0.5 and c2 > -1.0)
   {

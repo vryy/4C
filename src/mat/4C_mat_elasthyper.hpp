@@ -72,7 +72,7 @@ namespace MAT
       const int nummat_;
 
       /// the list of material IDs
-      const std::vector<int>* matids_;
+      const std::vector<int> matids_;
 
       /// material mass density
       const double density_;

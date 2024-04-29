@@ -505,18 +505,17 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   std::vector<double> globalmaxs(0);
   for (size_t i = 0; i < surfacepbcs.size(); ++i)
   {
-    const auto ismaster = *surfacepbcs[i]->Get<std::string>("Is slave periodic boundary condition");
+    const auto ismaster = surfacepbcs[i]->Get<std::string>("Is slave periodic boundary condition");
     if (ismaster == "Master")
     {
-      const int masterid = *surfacepbcs[i]->Get<int>("Id of periodic boundary condition");
+      const int masterid = surfacepbcs[i]->Get<int>("Id of periodic boundary condition");
       std::vector<int> nodeids(*(surfacepbcs[i]->GetNodes()));
       for (auto& surfacepbc : surfacepbcs)
       {
-        const int slaveid = *surfacepbc->Get<int>("Id of periodic boundary condition");
+        const int slaveid = surfacepbc->Get<int>("Id of periodic boundary condition");
         if (masterid == slaveid)
         {
-          const auto isslave =
-              *surfacepbc->Get<std::string>("Is slave periodic boundary condition");
+          const auto isslave = surfacepbc->Get<std::string>("Is slave periodic boundary condition");
           if (isslave == "Slave")
           {
             const std::vector<int>* slavenodeids = surfacepbc->GetNodes();
@@ -528,7 +527,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
 
       // Get normal direction of pbc plane
       const auto pbcplane =
-          *surfacepbcs[i]->Get<std::string>("degrees of freedom for the pbc plane");
+          surfacepbcs[i]->Get<std::string>("degrees of freedom for the pbc plane");
       if (pbcplane == "yz")
         planenormal.push_back(0);
       else if (pbcplane == "xz")

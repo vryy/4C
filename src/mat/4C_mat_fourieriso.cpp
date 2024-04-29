@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 MAT::PAR::FourierIso::FourierIso(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
       // be careful: capa_ := rho * C_V, e.g contains the density
-      capa_(*matdata->Get<double>("CAPA")),
-      conduct_(*matdata->Get<double>("CONDUCT"))
+      capa_(matdata->Get<double>("CAPA")),
+      conduct_(matdata->Get<double>("CONDUCT"))
 {
 }
 

@@ -512,14 +512,14 @@ void CORE::ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
       unsigned ntimesmaster = 0;
       for (auto& cond : thiscond)
       {
-        const auto* mymasterslavetoggle =
+        const auto& mymasterslavetoggle =
             cond->Get<std::string>("Is slave periodic boundary condition");
 
-        if (*mymasterslavetoggle == "Master")
+        if (mymasterslavetoggle == "Master")
         {
           ++ntimesmaster;
-        }  // end is slave?
-      }    // end loop this conditions
+        }
+      }
 
       if (ntimesmaster < thiscond.size())
       {

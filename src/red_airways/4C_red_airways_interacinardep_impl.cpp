@@ -163,7 +163,6 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
 
   // Get the number of nodes
   const int numnode = lm.size();
-  std::vector<int>::iterator it_vcr;
 
   // Get state for pressure
   Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
@@ -198,12 +197,12 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
         {
           DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
-          Bc = *(condition->Get<std::string>("boundarycond"));
+          Bc = (condition->Get<std::string>("boundarycond"));
 
-          const auto* curve = condition->Get<std::vector<int>>("curve");
+          const auto* curve = &condition->Get<std::vector<int>>("curve");
           double curvefac = 1.0;
-          const auto* vals = condition->Get<std::vector<double>>("val");
-          const auto* functions = condition->Get<std::vector<int>>("funct");
+          const auto* vals = &condition->Get<std::vector<double>>("val");
+          const auto* functions = &condition->Get<std::vector<int>>("funct");
 
           // Read in the value of the applied BC
           // Get factor of first CURVE
@@ -270,9 +269,9 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
             double Pp_np = 0.0;
             if (pplCond)
             {
-              const auto* curve = pplCond->Get<std::vector<int>>("curve");
+              const auto* curve = &pplCond->Get<std::vector<int>>("curve");
               double curvefac = 1.0;
-              const auto* vals = pplCond->Get<std::vector<double>>("val");
+              const auto* vals = &pplCond->Get<std::vector<double>>("val");
 
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
@@ -283,13 +282,13 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
               }
 
               // Get parameters for VolumeDependentPleuralPressure condition
-              std::string ppl_Type = *(pplCond->Get<std::string>("TYPE"));
-              auto ap = *pplCond->Get<double>("P_PLEURAL_0");
-              auto bp = *pplCond->Get<double>("P_PLEURAL_LIN");
-              auto cp = *pplCond->Get<double>("P_PLEURAL_NONLIN");
-              auto dp = *pplCond->Get<double>("TAU");
-              auto RV = *pplCond->Get<double>("RV");
-              auto TLC = *pplCond->Get<double>("TLC");
+              std::string ppl_Type = (pplCond->Get<std::string>("TYPE"));
+              auto ap = pplCond->Get<double>("P_PLEURAL_0");
+              auto bp = pplCond->Get<double>("P_PLEURAL_LIN");
+              auto cp = pplCond->Get<double>("P_PLEURAL_NONLIN");
+              auto dp = pplCond->Get<double>("TAU");
+              auto RV = pplCond->Get<double>("RV");
+              auto TLC = pplCond->Get<double>("TLC");
 
               // Safety check: in case of polynomial TLC is not used
               if (((ppl_Type == "Linear_Polynomial") or (ppl_Type == "Nonlinear_Polynomial")) and

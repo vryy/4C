@@ -21,17 +21,17 @@ FOUR_C_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      nummat_(*matdata->Get<int>("NUMMAT")),
+      nummat_(matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
-      t_decay_(*matdata->Get<double>("TDECAY")),
-      k_growth_(*matdata->Get<double>("GROWTHFAC")),
+      t_decay_(matdata->Get<double>("TDECAY")),
+      k_growth_(matdata->Get<double>("GROWTHFAC")),
       init_w_col_(matdata->Get<std::vector<double>>("COLMASSFRAC")),
-      G_(*matdata->Get<double>("DEPOSITIONSTRETCH"))
+      G_(matdata->Get<double>("DEPOSITIONSTRETCH"))
 {
   // check if sizes fit
-  if (nummat_ != (int)matids_->size())
+  if (nummat_ != (int)matids_.size())
     FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
-        matids_->size());
+        matids_.size());
 
   // check decay time validity
   if (t_decay_ <= 0.) FOUR_C_THROW("decay time must be positive");
@@ -42,7 +42,7 @@ MAT::ELASTIC::RemodelFiber::RemodelFiber(MAT::ELASTIC::PAR::RemodelFiber* params
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
-  for (m = params_->matids_->begin(); m != params_->matids_->end(); ++m)
+  for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
@@ -149,7 +149,7 @@ void MAT::ELASTIC::RemodelFiber::Setup(int numgp, double rho_tot, INPUT::LineDef
   init_rho_col_.resize(potsumfiber_.size());
   for (unsigned k = 0; k < potsumfiber_.size(); ++k)
   {
-    init_rho_col_[k] = rho_tot * params_->init_w_col_->at(k);
+    init_rho_col_[k] = rho_tot * params_->init_w_col_.at(k);
     potsumfiber_[k]->FrnM.resize(numgp);
     potsumfiber_[k]->cur_lambr.resize(numgp, 1.0);
     potsumfiber_[k]->cur_rho.resize(numgp, init_rho_col_[k]);

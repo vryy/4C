@@ -122,7 +122,7 @@ MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> 
     : Parameter(matdata)
 {
   // get MAT ID for definiton of structural tensor
-  int mat_id_structural_tensor = *matdata->Get<int>("STR_TENS_ID");
+  int mat_id_structural_tensor = matdata->Get<int>("STR_TENS_ID");
   // get pointer to material
   Teuchos::RCP<MAT::PAR::Material> mat_str_tens =
       GLOBAL::Problem::Instance()->Materials()->ById(mat_id_structural_tensor);
@@ -132,7 +132,7 @@ MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> 
   auto* params =
       static_cast<MAT::ELASTIC::PAR::StructuralTensorParameter*>(mat_str_tens->Parameter());
   // get type of strategy
-  std::string strategy = *mat_str_tens->Get<std::string>("STRATEGY");
+  std::string strategy = mat_str_tens->Get<std::string>("STRATEGY");
 
   // construct strategy
   if (strategy == "Standard")

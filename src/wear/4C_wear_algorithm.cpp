@@ -144,8 +144,8 @@ void WEAR::Algorithm::CreateMaterialInterface()
     FOUR_C_THROW("Not enough contact conditions in discretization");
   if ((int)contactconditions.size() == 1)
   {
-    const std::string* side = contactconditions[0]->Get<std::string>("Side");
-    if (*side != "Selfcontact") FOUR_C_THROW("Not enough contact conditions in discretization");
+    const std::string& side = contactconditions[0]->Get<std::string>("Side");
+    if (side != "Selfcontact") FOUR_C_THROW("Not enough contact conditions in discretization");
   }
 
   // find all pairs of matching contact conditions
@@ -180,18 +180,18 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
     // try to build contact group around this condition
     currentgroup.push_back(contactconditions[i]);
-    int groupid1 = *currentgroup[0]->Get<int>("Interface ID");
+    int groupid1 = currentgroup[0]->Get<int>("Interface ID");
     bool foundit = false;
 
     // only one surface per group is ok for self contact
-    const std::string* side = contactconditions[i]->Get<std::string>("Side");
-    if (*side == "Selfcontact") foundit = true;
+    const std::string& side = contactconditions[i]->Get<std::string>("Side");
+    if (side == "Selfcontact") foundit = true;
 
     for (int j = 0; j < (int)contactconditions.size(); ++j)
     {
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
-      int groupid2 = *currentgroup[0]->Get<int>("Interface ID");
+      int groupid2 = currentgroup[0]->Get<int>("Interface ID");
       if (groupid1 != groupid2) continue;  // not in the group
       foundit = true;                      // found a group entry
       currentgroup.push_back(tempcond);    // store it in currentgroup
@@ -247,7 +247,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
       // read interface COFs
       std::vector<double> frcoeff((int)currentgroup.size());
       for (int j = 0; j < (int)currentgroup.size(); ++j)
-        frcoeff[j] = *currentgroup[j]->Get<double>("FrCoeffOrBound");
+        frcoeff[j] = currentgroup[j]->Get<double>("FrCoeffOrBound");
 
       // check consistency of interface COFs
       for (int j = 1; j < (int)currentgroup.size(); ++j)
@@ -278,7 +278,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
       // read interface COFs
       std::vector<double> ad_bound((int)currentgroup.size());
       for (int j = 0; j < (int)currentgroup.size(); ++j)
-        ad_bound[j] = *currentgroup[j]->Get<double>("AdhesionBound");
+        ad_bound[j] = currentgroup[j]->Get<double>("AdhesionBound");
 
       // check consistency of interface COFs
       for (int j = 1; j < (int)currentgroup.size(); ++j)
@@ -380,10 +380,10 @@ void WEAR::Algorithm::CreateMaterialInterface()
           for (unsigned j = 0; j < contactSymconditions.size(); j++)
             if (contactSymconditions.at(j)->ContainsNode(node->Id()))
             {
-              const std::vector<int>* onoff =
+              const std::vector<int>& onoff =
                   contactSymconditions.at(j)->Get<std::vector<int>>("onoff");
-              for (unsigned k = 0; k < onoff->size(); k++)
-                if (onoff->at(k) == 1) cnode->DbcDofs()[k] = true;
+              for (unsigned k = 0; k < onoff.size(); k++)
+                if (onoff.at(k) == 1) cnode->DbcDofs()[k] = true;
               if (stype == INPAR::CONTACT::solution_lagmult &&
                   constr_direction != INPAR::CONTACT::constr_xyz)
                 FOUR_C_THROW(
@@ -420,10 +420,10 @@ void WEAR::Algorithm::CreateMaterialInterface()
           for (unsigned j = 0; j < contactSymconditions.size(); j++)
             if (contactSymconditions.at(j)->ContainsNode(node->Id()))
             {
-              const std::vector<int>* onoff =
+              const std::vector<int>& onoff =
                   contactSymconditions.at(j)->Get<std::vector<int>>("onoff");
-              for (unsigned k = 0; k < onoff->size(); k++)
-                if (onoff->at(k) == 1) cnode->DbcDofs()[k] = true;
+              for (unsigned k = 0; k < onoff.size(); k++)
+                if (onoff.at(k) == 1) cnode->DbcDofs()[k] = true;
             }
 
           // note that we do not have to worry about double entries

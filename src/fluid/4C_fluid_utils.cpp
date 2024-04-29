@@ -625,7 +625,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
     for (unsigned i = 0; i < ldconds.size(); ++i)  // loop L&D conditions (i.e. lines in .dat file)
     {
       // get label of present LiftDrag condition
-      const int label = *ldconds[i]->Get<int>("label");
+      const int label = ldconds[i]->Get<int>("label");
 
       ((*liftdragvals))
           .insert(std::pair<int, std::vector<double>>(label, std::vector<double>(6, 0.0)));
@@ -653,19 +653,19 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
     for (unsigned i = 0; i < ldconds.size(); ++i)  // loop L&D conditions (i.e. lines in .dat file)
     {
       // get label of present LiftDrag condition
-      const int label = *ldconds[i]->Get<int>("label");
+      const int label = ldconds[i]->Get<int>("label");
 
       /* get new nodeset for new label OR:
          return pointer to nodeset for known label ... */
       std::set<DRT::Node*>& nodes = ldnodemap[label];
 
       // center coordinates to present label
-      ldcoordmap[label] = ldconds[i]->Get<std::vector<double>>("centerCoord");
+      ldcoordmap[label] = &ldconds[i]->Get<std::vector<double>>("centerCoord");
 
       // axis of rotation for present label (only needed for 3D)
       if (ldconds[i]->Type() == DRT::Condition::SurfLIFTDRAG)
       {
-        ldaxismap[label] = ldconds[i]->Get<std::vector<double>>("axis");
+        ldaxismap[label] = &ldconds[i]->Get<std::vector<double>>("axis");
         // get pointer to axis vector (if available)
         const std::vector<double>* axisvecptr = ldaxismap[label];
         if (axisvecptr->size() != 3) FOUR_C_THROW("axis vector has not length 3");
@@ -891,7 +891,7 @@ std::map<int, double> FLD::UTILS::ComputeFlowRates(DRT::Discretization& dis,
        conditer != conds.end(); ++conditer)
   {
     const DRT::Condition* cond = *conditer;
-    const int condID = *cond->Get<int>("ConditionID");
+    const int condID = cond->Get<int>("ConditionID");
 
     // get a vector layout from the discretization to construct matching
     // vectors and matrices local <-> global dof numbering
@@ -981,7 +981,7 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FLD::UTILS::ComputeSurfaceImpulsRates(
   {
     const DRT::Condition* cond = *conditer;
 
-    const int condID = *cond->Get<int>("ConditionID");
+    const int condID = cond->Get<int>("ConditionID");
 
     // create vector (+ initialization with zeros)
     const Epetra_BlockMap mappy = velnp->Map();

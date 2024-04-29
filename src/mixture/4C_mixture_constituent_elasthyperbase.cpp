@@ -26,17 +26,17 @@ FOUR_C_NAMESPACE_OPEN
 MIXTURE::PAR::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureConstituent(matdata),
-      matid_prestress_strategy_(*matdata->Get<int>("PRESTRESS_STRATEGY")),
-      nummat_(*matdata->Get<int>("NUMMAT")),
+      matid_prestress_strategy_(matdata->Get<int>("PRESTRESS_STRATEGY")),
+      nummat_(matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS"))
 {
   // check, if size of summands fits to the number of summands
-  if (nummat_ != (int)matids_->size())
+  if (nummat_ != (int)matids_.size())
   {
     FOUR_C_THROW(
         "number of summands %d does not fit to the size of the summands vector"
         " %d",
-        nummat_, matids_->size());
+        nummat_, matids_.size());
   }
 }
 
@@ -50,7 +50,7 @@ MIXTURE::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
       cosy_anisotropy_extension_()
 {
   // Create summands
-  for (const auto& matid : *params_->matids_)
+  for (const auto& matid : params_->matids_)
   {
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to read elastic summand.");
@@ -141,7 +141,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
 
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
-    for (m = params_->matids_->begin(); m != params_->matids_->end(); ++m)
+    for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
     {
       const int summatid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(summatid);

@@ -85,10 +85,9 @@ MAT::PAR::FluidPoroPhaseDofDiffPressure::FluidPoroPhaseDofDiffPressure(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : FluidPoroPhaseDof(matdata),
       diffpresCoeffs_(matdata->Get<std::vector<int>>("PRESCOEFF")),
-      phaselawId_(*matdata->Get<int>("PHASELAWID"))
+      phaselawId_(matdata->Get<int>("PHASELAWID"))
 {
   phaselaw_ = MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -115,16 +114,16 @@ void MAT::PAR::FluidPoroPhaseDofDiffPressure::FillDoFMatrix(
     CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const
 {
   // safety check
-  if ((int)diffpresCoeffs_->size() != dofmat.numCols())
+  if ((int)diffpresCoeffs_.size() != dofmat.numCols())
     FOUR_C_THROW(
         "Number of phases given by the poro singlephase material %i "
         "does not match number of DOFs (%i phases and %i DOFs)!",
-        phaselaw_->Id(), diffpresCoeffs_->size(), dofmat.numCols());
+        phaselaw_->Id(), diffpresCoeffs_.size(), dofmat.numCols());
 
   // fill pressure coefficients into matrix
-  for (size_t i = 0; i < diffpresCoeffs_->size(); i++)
+  for (size_t i = 0; i < diffpresCoeffs_.size(); i++)
   {
-    const int val = (*diffpresCoeffs_)[i];
+    const int val = diffpresCoeffs_[i];
     if (val != 0) dofmat(numphase, i) = val;
   }
 }
@@ -180,7 +179,7 @@ double MAT::PAR::FluidPoroPhaseDofDiffPressure::EvaluateDerivOfDofWrtPressure(
     int phasenum, int doftoderive, const std::vector<double>& state) const
 {
   // derivative is the corresponding coefficient
-  return (*diffpresCoeffs_)[doftoderive];
+  return diffpresCoeffs_[doftoderive];
 }
 
 /************************************************************************/
@@ -190,7 +189,7 @@ double MAT::PAR::FluidPoroPhaseDofDiffPressure::EvaluateDerivOfDofWrtPressure(
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroPhaseDofPressure::FluidPoroPhaseDofPressure(
     Teuchos::RCP<MAT::PAR::Material> matdata)
-    : FluidPoroPhaseDof(matdata), phaselawId_(*matdata->Get<int>("PHASELAWID"))
+    : FluidPoroPhaseDof(matdata), phaselawId_(matdata->Get<int>("PHASELAWID"))
 {
   phaselaw_ = MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
   return;
@@ -287,7 +286,7 @@ double MAT::PAR::FluidPoroPhaseDofPressure::EvaluateDerivOfDofWrtPressure(
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroPhaseDofSaturation::FluidPoroPhaseDofSaturation(
     Teuchos::RCP<MAT::PAR::Material> matdata)
-    : FluidPoroPhaseDof(matdata), phaselawId_(*matdata->Get<int>("PHASELAWID"))
+    : FluidPoroPhaseDof(matdata), phaselawId_(matdata->Get<int>("PHASELAWID"))
 {
   phaselaw_ = MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(phaselawId_);
   return;

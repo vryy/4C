@@ -25,34 +25,34 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      viscosity_(*matdata->Get<double>("VISCOSITY")),
-      density_(*matdata->Get<double>("DENS")),
-      young_(*matdata->Get<double>("YOUNG")),
-      nue_(*matdata->Get<double>("NUE")),
-      th_(*matdata->Get<double>("TH")),
-      pext1_(*matdata->Get<double>("PEXT1")),
-      pext2_(*matdata->Get<double>("PEXT2")),
+      viscosity_(matdata->Get<double>("VISCOSITY")),
+      density_(matdata->Get<double>("DENS")),
+      young_(matdata->Get<double>("YOUNG")),
+      nue_(matdata->Get<double>("NUE")),
+      th_(matdata->Get<double>("TH")),
+      pext1_(matdata->Get<double>("PEXT1")),
+      pext2_(matdata->Get<double>("PEXT2")),
       viscositylaw_(viscositylaw_undefined),
       diameterlaw_(diameterlaw_undefined),
-      blood_visc_scale_diam_to_microns_(*matdata->Get<double>("BLOOD_VISC_SCALE_DIAM_TO_MICRONS")),
-      diameter_law_funct_(*matdata->Get<int>("VARYING_DIAMETER_FUNCTION")),
-      collapse_threshold_(*matdata->Get<double>("COLLAPSE_THRESHOLD"))
+      blood_visc_scale_diam_to_microns_(matdata->Get<double>("BLOOD_VISC_SCALE_DIAM_TO_MICRONS")),
+      diameter_law_funct_(matdata->Get<int>("VARYING_DIAMETER_FUNCTION")),
+      collapse_threshold_(matdata->Get<double>("COLLAPSE_THRESHOLD"))
 {
-  const std::string* typestring_visc = matdata->Get<std::string>("VISCOSITYLAW");
+  const std::string& typestring_visc = matdata->Get<std::string>("VISCOSITYLAW");
 
-  if (*typestring_visc == "CONSTANT")
+  if (typestring_visc == "CONSTANT")
     viscositylaw_ = viscositylaw_constant;
-  else if (*typestring_visc == "BLOOD")
+  else if (typestring_visc == "BLOOD")
     viscositylaw_ = viscositylaw_blood;
   else
     FOUR_C_THROW(
         "wrong type of viscosity law for artery material, only CONSTANT and BLOOD are valid");
 
-  const std::string* typestring_diam = matdata->Get<std::string>("VARYING_DIAMETERLAW");
+  const std::string& typestring_diam = matdata->Get<std::string>("VARYING_DIAMETERLAW");
 
-  if (*typestring_diam == "CONSTANT")
+  if (typestring_diam == "CONSTANT")
     diameterlaw_ = diameterlaw_constant;
-  else if (*typestring_diam == "BY_FUNCTION")
+  else if (typestring_diam == "BY_FUNCTION")
     diameterlaw_ = diameterlaw_by_function;
   else
     FOUR_C_THROW(

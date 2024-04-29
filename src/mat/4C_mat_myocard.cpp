@@ -33,13 +33,13 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::Myocard::Myocard(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      diff1(*matdata->Get<double>("DIFF1")),
-      diff2(*matdata->Get<double>("DIFF2")),
+      diff1(matdata->Get<double>("DIFF1")),
+      diff2(matdata->Get<double>("DIFF2")),
       diff3(0.0),
-      dt_deriv(*matdata->Get<double>("PERTUBATION_DERIV")),
+      dt_deriv(matdata->Get<double>("PERTUBATION_DERIV")),
       model(matdata->Get<std::string>("MODEL")),
       tissue(matdata->Get<std::string>("TISSUE")),
-      time_scale(*matdata->Get<double>("TIME_SCALE")),
+      time_scale(matdata->Get<double>("TIME_SCALE")),
       num_gp(0)
 {
 }
@@ -546,18 +546,18 @@ double MAT::Myocard::GetIonicCurrents(const int k) const
  *----------------------------------------------------------------------*/
 void MAT::Myocard::Initialize()
 {
-  if (*(params_->model) == "MV")
+  if ((params_->model) == "MV")
     myocard_mat_ =
-        Teuchos::rcp(new MyocardMinimal(params_->dt_deriv, *(params_->tissue), params_->num_gp));
-  else if (*(params_->model) == "FHN")
+        Teuchos::rcp(new MyocardMinimal(params_->dt_deriv, (params_->tissue), params_->num_gp));
+  else if ((params_->model) == "FHN")
     myocard_mat_ = Teuchos::rcp(
-        new MyocardFitzhughNagumo(params_->dt_deriv, *(params_->tissue), params_->num_gp));
-  else if (*(params_->model) == "INADA")
-    myocard_mat_ = Teuchos::rcp(new MyocardInada(params_->dt_deriv, *(params_->tissue)));
-  else if (*(params_->model) == "TNNP")
-    myocard_mat_ = Teuchos::rcp(new MyocardTenTusscher(params_->dt_deriv, *(params_->tissue)));
-  else if (*(params_->model) == "SAN")
-    myocard_mat_ = Teuchos::rcp(new MyocardSanGarny(params_->dt_deriv, *(params_->tissue)));
+        new MyocardFitzhughNagumo(params_->dt_deriv, (params_->tissue), params_->num_gp));
+  else if ((params_->model) == "INADA")
+    myocard_mat_ = Teuchos::rcp(new MyocardInada(params_->dt_deriv, (params_->tissue)));
+  else if ((params_->model) == "TNNP")
+    myocard_mat_ = Teuchos::rcp(new MyocardTenTusscher(params_->dt_deriv, (params_->tissue)));
+  else if ((params_->model) == "SAN")
+    myocard_mat_ = Teuchos::rcp(new MyocardSanGarny(params_->dt_deriv, (params_->tissue)));
   else
     FOUR_C_THROW(
         "Myocard Material type is not supported! (for the moment only MV,FHN,INADA,TNNP and SAN)");

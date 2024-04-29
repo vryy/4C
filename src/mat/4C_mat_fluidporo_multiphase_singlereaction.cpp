@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      numscal_(*matdata->Get<int>("NUMSCAL")),
-      numvolfrac_(*matdata->Get<int>("NUMVOLFRAC")),
-      totalnummultiphasedof_(*matdata->Get<int>("TOTALNUMDOF")),
+      numscal_(matdata->Get<int>("NUMSCAL")),
+      numvolfrac_(matdata->Get<int>("NUMVOLFRAC")),
+      totalnummultiphasedof_(matdata->Get<int>("TOTALNUMDOF")),
       numfluidphases_(totalnummultiphasedof_ - 2 * numvolfrac_),
       scale_(matdata->Get<std::vector<int>>("SCALE")),
       coupling_(SetCouplingType(matdata)),
-      functID_(*matdata->Get<int>("FUNCTID")),
+      functID_(matdata->Get<int>("FUNCTID")),
       isinit_(false),
       scalarnames_(numscal_),
       pressurenames_(numfluidphases_),
@@ -207,7 +207,7 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunctionInternal(std::vector<dou
   // fill the output vector
   for (int k = 0; k < totalnummultiphasedof_; k++)
   {
-    const int scale = (*scale_)[k];
+    const int scale = scale_[k];
     if (scale != 0)
     {
       // add the values from the reaction terms
@@ -341,11 +341,11 @@ Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroSingleReaction::CreateMaterial()
 MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling
 MAT::PAR::FluidPoroSingleReaction::SetCouplingType(Teuchos::RCP<MAT::PAR::Material> matdata)
 {
-  if (*(matdata->Get<std::string>("COUPLING")) == "scalar_by_function")
+  if ((matdata->Get<std::string>("COUPLING")) == "scalar_by_function")
   {
     return porofluid_reac_coup_scalarsbyfunction;
   }
-  else if (*(matdata->Get<std::string>("COUPLING")) == "no_coupling")
+  else if ((matdata->Get<std::string>("COUPLING")) == "no_coupling")
   {
     return porofluid_reac_coup_none;
   }

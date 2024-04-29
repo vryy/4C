@@ -197,7 +197,7 @@ namespace INPUT
 
   void StringComponent::Print(std::ostream& stream, const INPAR::InputParameterContainer& container)
   {
-    stream << *container.Get<std::string>(Name());
+    stream << container.Get<std::string>(Name());
   }
 
   void StringComponent::Describe(std::ostream& stream) {}
@@ -289,7 +289,7 @@ namespace INPUT
   void SelectionComponent::Print(
       std::ostream& stream, const INPAR::InputParameterContainer& container)
   {
-    stream << *container.Get<std::string>(Name());
+    stream << container.Get<std::string>(Name());
   }
 
   Teuchos::RCP<std::stringstream> SelectionComponent::Read(const std::string& section_name,
@@ -347,7 +347,7 @@ namespace INPUT
 
   void IntComponent::Print(std::ostream& stream, const INPAR::InputParameterContainer& container)
   {
-    int n = *container.Get<int>(Name());
+    int n = container.Get<int>(Name());
     if (data_.none_allowed and n == -1)
       stream << "none ";
     else
@@ -464,8 +464,8 @@ namespace INPUT
   void IntVectorComponent::Print(
       std::ostream& stream, const INPAR::InputParameterContainer& container)
   {
-    const auto* v = container.Get<std::vector<int>>(Name());
-    for (int i : *v)
+    const auto& v = container.Get<std::vector<int>>(Name());
+    for (int i : v)
     {
       if (data_.none_allowed and i == -1)
         stream << "none ";
@@ -558,7 +558,7 @@ namespace INPUT
 
   void RealComponent::Print(std::ostream& stream, const INPAR::InputParameterContainer& container)
   {
-    stream << *container.Get<double>(Name());
+    stream << container.Get<double>(Name());
   }
 
   void RealComponent::Describe(std::ostream& stream) {}
@@ -625,8 +625,8 @@ namespace INPUT
   void RealVectorComponent::Print(
       std::ostream& stream, const INPAR::InputParameterContainer& container)
   {
-    const auto* v = container.Get<std::vector<double>>(Name());
-    for (double i : *v) stream << i << " ";
+    const auto& v = container.Get<std::vector<double>>(Name());
+    for (double i : v) stream << i << " ";
   }
 
   void RealVectorComponent::Describe(std::ostream& stream) {}
@@ -693,7 +693,7 @@ namespace INPUT
 
   void BoolComponent::Print(std::ostream& stream, const INPAR::InputParameterContainer& container)
   {
-    const bool value = (bool)*container.Get<int>(Name());
+    const bool value = (bool)container.Get<int>(Name());
     PrintYesNo(stream, value);
   }
 
@@ -821,7 +821,7 @@ namespace INPUT
     stream << " ";
 
     const KeyType selected_key =
-        static_cast<KeyType>(*container.Get<int>(component_for_key_->Name()));
+        static_cast<KeyType>(container.Get<int>(component_for_key_->Name()));
 
     FOUR_C_ASSERT(choices_.count(selected_key) == 1, "Internal error.");
     for (const auto& component : choices_[selected_key].second)
@@ -835,7 +835,7 @@ namespace INPUT
       Teuchos::RCP<std::stringstream> condline, INPAR::InputParameterContainer& container)
   {
     component_for_key_->Read(section_name, condline, container);
-    const KeyType key = static_cast<KeyType>(*container.Get<int>(component_for_key_->Name()));
+    const KeyType key = static_cast<KeyType>(container.Get<int>(component_for_key_->Name()));
 
     FOUR_C_ASSERT(choices_.count(key) == 1, "Internal error.");
 

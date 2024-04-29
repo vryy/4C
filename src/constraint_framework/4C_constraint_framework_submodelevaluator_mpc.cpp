@@ -64,16 +64,16 @@ CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointCon
       // Read the reference points
       for (const auto& entry : point_periodic_rve_ref_conditions_)
       {
-        auto* str_id = entry->Get<std::string>("referenceNode");
+        const auto& str_id = entry->Get<std::string>("referenceNode");
         const auto* nodeInSet = entry->GetNodes();
 
         if (nodeInSet->size() > 1)
         {
           FOUR_C_THROW("There can only be a single node defined as a reference node");
         }
-        rve_ref_node_map_[str_id->c_str()] = discret_ptr_->gNode(nodeInSet->data()[0]);
+        rve_ref_node_map_[str_id.c_str()] = discret_ptr_->gNode(nodeInSet->data()[0]);
 
-        IO::cout(IO::verbose) << "Map " << str_id->c_str() << " to node id " << (*nodeInSet)[0]
+        IO::cout(IO::verbose) << "Map " << str_id.c_str() << " to node id " << (*nodeInSet)[0]
                               << IO::endl;
       }
 
@@ -546,7 +546,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildLinearM
   int nEq = 0;
   for (const auto& ceTerm : point_linear_coupled_equation_conditions_)
   {
-    nEq = std::max(nEq, *(ceTerm->Get<int>("EQUATION_ID")) - 1);
+    nEq = std::max(nEq, (ceTerm->Get<int>("EQUATION_ID")) - 1);
   }
   IO::cout(IO::verbose) << "There are " << nEq + 1 << " linear MPC Equations defined" << IO::endl;
 
@@ -559,18 +559,18 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildLinearM
 
   for (const auto& ceTerm : point_linear_coupled_equation_conditions_)
   {
-    auto eq_id = *(ceTerm->Get<int>("EQUATION_ID")) - 1;
+    auto eq_id = (ceTerm->Get<int>("EQUATION_ID")) - 1;
     const auto* node_id = ceTerm->GetNodes();
-    const auto* dofStr = ceTerm->INPAR::InputParameterContainer::Get<std::string>("DOF");
-    auto coef = *ceTerm->Get<double>("COEFFICIENT");
+    const auto& dofStr = ceTerm->INPAR::InputParameterContainer::Get<std::string>("DOF");
+    auto coef = ceTerm->Get<double>("COEFFICIENT");
     auto* node = discret_ptr_->gNode(node_id->data()[0]);
 
 
-    if (*dofStr == "dispx")
+    if (dofStr == "dispx")
     {
       dofPos = 0;
     }
-    else if (*dofStr == "dispy")
+    else if (dofStr == "dispy")
     {
       dofPos = 1;
     }
@@ -586,7 +586,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildLinearM
     IO::cout(IO::debug) << "Condition Number " << cond_num++ << ": " << IO::endl;
     IO::cout(IO::debug) << "Eq.Id: " << eq_id << IO::endl;
     IO::cout(IO::debug) << "Node Id: " << node_id->data()[0] << IO::endl;
-    IO::cout(IO::debug) << "Disp String: " << dofStr->c_str() << IO::endl;
+    IO::cout(IO::debug) << "Disp String: " << dofStr.c_str() << IO::endl;
     IO::cout(IO::debug) << "DOF ID: " << dofID << IO::endl;
     IO::cout(IO::debug) << "COEF: " << coef << IO::endl << IO::endl;
 
@@ -766,11 +766,11 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
           << "+--------------------------------------------------------------------+" << IO::endl;
       for (const auto& conditionLine : line_periodic_rve_conditions_)
       {
-        auto* boundary =
+        const auto& boundary =
             conditionLine->INPAR::InputParameterContainer::Get<std::string>("EdgeLineId");
 
         // Print the Edge Condition
-        IO::cout(IO::verbose) << "EDGE: " << boundary->c_str() << " Node IDs: ";
+        IO::cout(IO::verbose) << "EDGE: " << boundary.c_str() << " Node IDs: ";
         for (auto nodeId : *conditionLine->GetNodes())
         {
           IO::cout(IO::verbose) << nodeId << " ";
@@ -778,7 +778,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
         IO::cout(IO::verbose) << IO::endl;
 
         // Create EdgeNodeMap
-        rveBoundaryNodeIdMap[boundary->c_str()] = conditionLine->GetNodes();
+        rveBoundaryNodeIdMap[boundary.c_str()] = conditionLine->GetNodes();
       }
     }
     break;
@@ -793,15 +793,16 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
           << "+--------------------------------------------------------------------+" << IO::endl;
       for (const auto& conditionLine : surface_periodic_rve_conditions_)
       {
-        auto* boundary = conditionLine->INPAR::InputParameterContainer::Get<std::string>("SurfId");
+        const auto& boundary =
+            conditionLine->INPAR::InputParameterContainer::Get<std::string>("SurfId");
 
-        IO::cout(IO::verbose) << "SURF: " << boundary->c_str() << " Node IDs: ";
+        IO::cout(IO::verbose) << "SURF: " << boundary.c_str() << " Node IDs: ";
         for (auto nodeId : *conditionLine->GetNodes())
         {
           IO::cout(IO::verbose) << nodeId << " ";
         }
         IO::cout(IO::verbose) << IO::endl;
-        rveBoundaryNodeIdMap[boundary->c_str()] = conditionLine->GetNodes();
+        rveBoundaryNodeIdMap[boundary.c_str()] = conditionLine->GetNodes();
       }
       break;
     }

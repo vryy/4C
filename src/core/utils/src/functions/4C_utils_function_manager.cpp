@@ -113,7 +113,7 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
               {
                 try
                 {
-                  int length = *already_read_line.Get<int>("NUMPOINTS");
+                  int length = already_read_line.Get<int>("NUMPOINTS");
                   return length - 1;
                 }
                 catch (const CORE::Exception& e)

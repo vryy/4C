@@ -14,7 +14,7 @@ Elasthyper-Toolbox.
 FOUR_C_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::IsoTestMaterial::IsoTestMaterial(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata), c1_(*matdata->Get<double>("C1")), c2_(*matdata->Get<double>("C2"))
+    : Parameter(matdata), c1_(matdata->Get<double>("C1")), c2_(matdata->Get<double>("C2"))
 {
 }
 

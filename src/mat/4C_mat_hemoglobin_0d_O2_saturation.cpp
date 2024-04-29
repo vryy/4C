@@ -25,11 +25,11 @@ FOUR_C_NAMESPACE_OPEN
 MAT::PAR::Hemoglobin0dO2Saturation::Hemoglobin0dO2Saturation(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      per_volume_blood_(*matdata->Get<double>("PerVolumeBlood")),
-      o2_sat_per_vol_blood_(*matdata->Get<double>("O2SaturationPerVolBlood")),
-      p_half_(*matdata->Get<double>("PressureHalf")),
-      power_(*matdata->Get<double>("Power")),
-      nO2_per_VO2_(*matdata->Get<double>("NumberOfO2PerVO2"))
+      per_volume_blood_(matdata->Get<double>("PerVolumeBlood")),
+      o2_sat_per_vol_blood_(matdata->Get<double>("O2SaturationPerVolBlood")),
+      p_half_(matdata->Get<double>("PressureHalf")),
+      power_(matdata->Get<double>("Power")),
+      nO2_per_VO2_(matdata->Get<double>("NumberOfO2PerVO2"))
 {
 }
 

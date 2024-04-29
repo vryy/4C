@@ -40,7 +40,7 @@ namespace MAT
 
         /// material parameters
         int numbranch_;
-        const std::vector<int>* matids_;
+        const std::vector<int> matids_;
         std::string solve_;
         //@}
 
@@ -69,7 +69,7 @@ namespace MAT
         /// material parameters
 
         double nummat_;
-        const std::vector<int>* matids_;
+        const std::vector<int> matids_;
 
 
         //@}

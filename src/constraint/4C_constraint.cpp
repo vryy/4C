@@ -36,7 +36,7 @@ CONSTRAINTS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
     constrtype_ = GetConstrType(conditionname);
     for (auto& i : constrcond_)
     {
-      int condID = (*i->Get<int>("ConditionID"));
+      int condID = (i->Get<int>("ConditionID"));
       if (condID > maxID)
       {
         maxID = condID;
@@ -80,7 +80,7 @@ CONSTRAINTS::Constraint::Constraint(
 
     for (auto& i : constrcond_)
     {
-      int condID = *i->Get<int>("ConditionID");
+      int condID = i->Get<int>("ConditionID");
       auto* const myinittime = i->GetIf<double>("activTime");
       if (myinittime)
       {
@@ -158,7 +158,7 @@ void CONSTRAINTS::Constraint::Initialize(const double& time)
   for (auto* cond : constrcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = *cond->Get<int>("ConditionID");
+    int condID = cond->Get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second <= time) && (activecons_.find(condID)->second == false))
@@ -235,7 +235,7 @@ void CONSTRAINTS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
     double scConMat = params.get("scaleConstrMat", 1.0);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = *cond->Get<int>("ConditionID");
+    int condID = cond->Get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // is conditions supposed to be active?
@@ -369,7 +369,7 @@ void CONSTRAINTS::Constraint::InitializeConstraint(
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
 
-    int condID = *cond->Get<int>("ConditionID");
+    int condID = cond->Get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // if current time is larger than initialization time of the condition, start computing

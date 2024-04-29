@@ -59,13 +59,13 @@ namespace MAT
       const int nummat_elastinmem_;
 
       /// the list of remodelfiber material IDs
-      const std::vector<int>* matids_remodelfiber_;
+      const std::vector<int> matids_remodelfiber_;
 
       /// the list of 3d elastin matrix material IDs
-      const std::vector<int>* matids_elastiniso_;
+      const std::vector<int> matids_elastiniso_;
 
       /// the list of membrane elastin matrix material IDs
-      const std::vector<int>* matids_elastinmem_;
+      const std::vector<int> matids_elastinmem_;
 
       /// material ID of growth penalty material
       const int matid_penalty_;

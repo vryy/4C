@@ -1318,9 +1318,9 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const auto* onoff = condition->Get<std::vector<int>>("onoff");
-  const auto* val = condition->Get<std::vector<double>>("val");
-  const auto* func = condition->Get<std::vector<int>>("funct");
+  const auto* onoff = &condition->Get<std::vector<int>>("onoff");
+  const auto* val = &condition->Get<std::vector<double>>("val");
+  const auto* func = &condition->Get<std::vector<int>>("funct");
 
 
   CORE::FE::ShapeValuesFaceParams svfparams(

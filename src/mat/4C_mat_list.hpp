@@ -41,7 +41,7 @@ namespace MAT
       //@{
 
       /// provide ids of the individual materials
-      const std::vector<int>* MatIds() const { return matids_; }
+      const std::vector<int>* MatIds() const { return &matids_; }
 
       /// provide access to material by its ID
       Teuchos::RCP<MAT::Material> MaterialById(const int id) const;
@@ -52,7 +52,7 @@ namespace MAT
       const int nummat_;
 
       /// the list of material IDs
-      const std::vector<int>* matids_;
+      const std::vector<int> matids_;
 
       /// flag for individual materials or only one at global scope
       bool local_;

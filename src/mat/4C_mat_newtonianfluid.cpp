@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::NewtonianFluid::NewtonianFluid(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      viscosity_(*matdata->Get<double>("DYNVISCOSITY")),
-      density_(*matdata->Get<double>("DENSITY")),
-      gamma_(*matdata->Get<double>("GAMMA"))
+      viscosity_(matdata->Get<double>("DYNVISCOSITY")),
+      density_(matdata->Get<double>("DENSITY")),
+      gamma_(matdata->Get<double>("GAMMA"))
 {
 }
 

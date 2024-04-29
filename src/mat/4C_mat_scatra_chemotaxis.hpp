@@ -37,7 +37,7 @@ namespace MAT
       const int numscal_;
 
       /// the list of material IDs
-      const std::vector<int>* pair_;
+      const std::vector<int> pair_;
 
       /// reaction coefficient
       const double chemocoeff_;
@@ -130,7 +130,7 @@ namespace MAT
     double ChemoCoeff() const { return params_->chemocoeff_; }
 
     /// return pairing
-    std::vector<int>* Pair() const { return (std::vector<int>*)params_->pair_; }
+    const std::vector<int>* Pair() const { return &params_->pair_; }
 
     /// Return quick accessible material parameter data
     MAT::PAR::Parameter* Parameter() const override { return params_; }

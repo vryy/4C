@@ -18,17 +18,17 @@ FOUR_C_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::CoupAnisoExpoActive::CoupAnisoExpoActive(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
-      k1_(*matdata->Get<double>("K1")),
-      k2_(*matdata->Get<double>("K2")),
-      gamma_(*matdata->Get<double>("GAMMA")),
-      k1comp_(*matdata->Get<double>("K1COMP")),
-      k2comp_(*matdata->Get<double>("K2COMP")),
-      init_(*matdata->Get<int>("INIT")),
-      adapt_angle_(*matdata->Get<bool>("ADAPT_ANGLE")),
-      s_(*matdata->Get<double>("S")),
-      lambdamax_(*matdata->Get<double>("LAMBDAMAX")),
-      lambda0_(*matdata->Get<double>("LAMBDA0")),
-      dens_(*matdata->Get<double>("DENS"))
+      k1_(matdata->Get<double>("K1")),
+      k2_(matdata->Get<double>("K2")),
+      gamma_(matdata->Get<double>("GAMMA")),
+      k1comp_(matdata->Get<double>("K1COMP")),
+      k2comp_(matdata->Get<double>("K2COMP")),
+      init_(matdata->Get<int>("INIT")),
+      adapt_angle_(matdata->Get<bool>("ADAPT_ANGLE")),
+      s_(matdata->Get<double>("S")),
+      lambdamax_(matdata->Get<double>("LAMBDAMAX")),
+      lambda0_(matdata->Get<double>("LAMBDA0")),
+      dens_(matdata->Get<double>("DENS"))
 {
 }
 

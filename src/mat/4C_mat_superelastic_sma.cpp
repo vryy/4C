@@ -52,24 +52,24 @@ using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
  *----------------------------------------------------------------------*/
 MAT::PAR::SuperElasticSMA::SuperElasticSMA(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      density_(*matdata->Get<double>("DENS")),
-      youngs_(*matdata->Get<double>("YOUNG")),
-      poissonratio_(*matdata->Get<double>("NUE")),
-      epsilon_L_(*matdata->Get<double>("EPSILON_L")),
-      T_AS_s_(*matdata->Get<double>("T_AS_s")),
-      T_AS_f_(*matdata->Get<double>("T_AS_f")),
-      T_SA_s_(*matdata->Get<double>("T_SA_s")),
-      T_SA_f_(*matdata->Get<double>("T_SA_f")),
-      C_AS_(*matdata->Get<double>("C_AS")),
-      C_SA_(*matdata->Get<double>("C_SA")),
-      sigma_AS_s_(*matdata->Get<double>("SIGMA_AS_s")),
-      sigma_AS_f_(*matdata->Get<double>("SIGMA_AS_f")),
-      sigma_SA_s_(*matdata->Get<double>("SIGMA_SA_s")),
-      sigma_SA_f_(*matdata->Get<double>("SIGMA_SA_f")),
-      alpha_(*matdata->Get<double>("ALPHA")),
-      model_(*matdata->Get<int>("MODEL")),
-      beta_AS_(*matdata->Get<double>("BETA_AS")),
-      beta_SA_(*matdata->Get<double>("BETA_SA"))
+      density_(matdata->Get<double>("DENS")),
+      youngs_(matdata->Get<double>("YOUNG")),
+      poissonratio_(matdata->Get<double>("NUE")),
+      epsilon_L_(matdata->Get<double>("EPSILON_L")),
+      T_AS_s_(matdata->Get<double>("T_AS_s")),
+      T_AS_f_(matdata->Get<double>("T_AS_f")),
+      T_SA_s_(matdata->Get<double>("T_SA_s")),
+      T_SA_f_(matdata->Get<double>("T_SA_f")),
+      C_AS_(matdata->Get<double>("C_AS")),
+      C_SA_(matdata->Get<double>("C_SA")),
+      sigma_AS_s_(matdata->Get<double>("SIGMA_AS_s")),
+      sigma_AS_f_(matdata->Get<double>("SIGMA_AS_f")),
+      sigma_SA_s_(matdata->Get<double>("SIGMA_SA_s")),
+      sigma_SA_f_(matdata->Get<double>("SIGMA_SA_f")),
+      alpha_(matdata->Get<double>("ALPHA")),
+      model_(matdata->Get<int>("MODEL")),
+      beta_AS_(matdata->Get<double>("BETA_AS")),
+      beta_SA_(matdata->Get<double>("BETA_SA"))
 {
 }
 

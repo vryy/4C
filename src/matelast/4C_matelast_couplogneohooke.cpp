@@ -17,9 +17,9 @@ FOUR_C_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata)
 {
-  std::string parmode = *(matdata->Get<std::string>("MODE"));
-  double c1 = *matdata->Get<double>("C1");
-  double c2 = *matdata->Get<double>("C2");
+  std::string parmode = (matdata->Get<std::string>("MODE"));
+  double c1 = matdata->Get<double>("C1");
+  double c2 = matdata->Get<double>("C2");
 
   if (parmode == "YN")
   {

@@ -206,16 +206,16 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
 
     // access parameters of the condition
-    const std::string* tempstate = cond->Get<std::string>("temperature state");
-    double coeff = *cond->Get<double>("coeff");
-    const int curvenum = *cond->Get<int>("funct");
+    const std::string* tempstate = &cond->Get<std::string>("temperature state");
+    double coeff = cond->Get<double>("coeff");
+    const int curvenum = cond->Get<int>("funct");
     const double time = params.get<double>("total time");
 
     // get surrounding temperature T_infty from input file
-    double surtemp = *cond->Get<double>("surtemp");
+    double surtemp = cond->Get<double>("surtemp");
     // increase the surrounding temperature T_infty step by step
     // can be scaled with a time curve, get time curve number from input file
-    const int surtempcurvenum = *cond->Get<int>("surtempfunct");
+    const int surtempcurvenum = cond->Get<int>("surtempfunct");
 
     // find out whether we shall use a time curve for q^_c and get the factor
     double curvefac = 1.0;
@@ -421,16 +421,16 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
 
         // access parameters of the condition
-        const std::string* tempstate = cond->Get<std::string>("temperature state");
-        double coeff = *cond->Get<double>("coeff");
-        const int curvenum = *cond->Get<int>("funct");
+        const std::string* tempstate = &cond->Get<std::string>("temperature state");
+        double coeff = cond->Get<double>("coeff");
+        const int curvenum = cond->Get<int>("funct");
         const double time = params.get<double>("total time");
 
         // get surrounding temperature T_infty from input file
-        double surtemp = *cond->Get<double>("surtemp");
+        double surtemp = cond->Get<double>("surtemp");
         // increase the surrounding temperature T_infty step by step
         // can be scaled with a time curve, get time curve number from input file
-        const int surtempcurvenum = *cond->Get<int>("surtempfunct");
+        const int surtempcurvenum = cond->Get<int>("surtempfunct");
 
         // find out whether we shall use a time curve for q^_c and get the factor
         double curvefac = 1.0;
@@ -603,9 +603,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const auto* onoff = condition.Get<std::vector<int>>("onoff");
-  const auto* val = condition.Get<std::vector<double>>("val");
-  const auto* func = condition.Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.Get<std::vector<int>>("onoff");
+  const auto* val = &condition.Get<std::vector<double>>("val");
+  const auto* func = &condition.Get<std::vector<int>>("funct");
 
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)

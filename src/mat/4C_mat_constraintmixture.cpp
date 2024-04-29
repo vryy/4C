@@ -46,38 +46,38 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 MAT::PAR::ConstraintMixture::ConstraintMixture(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      density_(*matdata->Get<double>("DENS")),
-      mue_(*matdata->Get<double>("MUE")),
-      nue_(*matdata->Get<double>("NUE")),
-      phielastin_(*matdata->Get<double>("PHIE")),
-      prestretchelastin_(*matdata->Get<double>("PREELA")),
-      k1_(*matdata->Get<double>("K1")),
-      k2_(*matdata->Get<double>("K2")),
-      numhom_(*matdata->Get<int>("NUMHOM")),
-      prestretchcollagen_(*(matdata->Get<std::vector<double>>("PRECOLL"))),
-      damagestretch_(*matdata->Get<double>("DAMAGE")),
-      k1muscle_(*matdata->Get<double>("K1M")),
-      k2muscle_(*matdata->Get<double>("K2M")),
-      phimuscle_(*matdata->Get<double>("PHIM")),
-      prestretchmuscle_(*matdata->Get<double>("PREMUS")),
-      Smax_(*matdata->Get<double>("SMAX")),
-      kappa_(*matdata->Get<double>("KAPPA")),
-      lifetime_(*matdata->Get<double>("LIFETIME")),
-      // growthfactor_(*matdata->Get<double>("GROWTHFAC")),
-      homstress_(*(matdata->Get<std::vector<double>>("HOMSTR"))),
-      sheargrowthfactor_(*matdata->Get<double>("SHEARGROWTHFAC")),
-      homradius_(*matdata->Get<double>("HOMRAD")),
-      starttime_(*matdata->Get<double>("STARTTIME")),
+      density_(matdata->Get<double>("DENS")),
+      mue_(matdata->Get<double>("MUE")),
+      nue_(matdata->Get<double>("NUE")),
+      phielastin_(matdata->Get<double>("PHIE")),
+      prestretchelastin_(matdata->Get<double>("PREELA")),
+      k1_(matdata->Get<double>("K1")),
+      k2_(matdata->Get<double>("K2")),
+      numhom_(matdata->Get<int>("NUMHOM")),
+      prestretchcollagen_((matdata->Get<std::vector<double>>("PRECOLL"))),
+      damagestretch_(matdata->Get<double>("DAMAGE")),
+      k1muscle_(matdata->Get<double>("K1M")),
+      k2muscle_(matdata->Get<double>("K2M")),
+      phimuscle_(matdata->Get<double>("PHIM")),
+      prestretchmuscle_(matdata->Get<double>("PREMUS")),
+      Smax_(matdata->Get<double>("SMAX")),
+      kappa_(matdata->Get<double>("KAPPA")),
+      lifetime_(matdata->Get<double>("LIFETIME")),
+      // growthfactor_(matdata->Get<double>("GROWTHFAC")),
+      homstress_((matdata->Get<std::vector<double>>("HOMSTR"))),
+      sheargrowthfactor_(matdata->Get<double>("SHEARGROWTHFAC")),
+      homradius_(matdata->Get<double>("HOMRAD")),
+      starttime_(matdata->Get<double>("STARTTIME")),
       integration_(matdata->Get<std::string>("INTEGRATION")),
-      abstol_(*matdata->Get<double>("TOL")),
+      abstol_(matdata->Get<double>("TOL")),
       growthforce_(matdata->Get<std::string>("GROWTHFORCE")),
       elastindegrad_(matdata->Get<std::string>("ELASTINDEGRAD")),
       massprodfunc_(matdata->Get<std::string>("MASSPROD")),
       initstretch_(matdata->Get<std::string>("INITSTRETCH")),
-      timecurve_(*matdata->Get<int>("CURVE")),
-      degoption_(*(matdata->Get<std::string>("DEGOPTION"))),
-      maxmassprodfac_(*matdata->Get<double>("MAXMASSPRODFAC")),
-      storehistory_(*matdata->Get<bool>("STOREHISTORY")),
+      timecurve_(matdata->Get<int>("CURVE")),
+      degoption_((matdata->Get<std::string>("DEGOPTION"))),
+      maxmassprodfac_(matdata->Get<double>("MAXMASSPRODFAC")),
+      storehistory_(matdata->Get<bool>("STOREHISTORY")),
       degtol_(1.0e-6)
 {
   Epetra_Map dummy_map(1, 1, 0, *(GLOBAL::Problem::Instance()->GetCommunicators()->LocalComm()));
@@ -85,8 +85,8 @@ MAT::PAR::ConstraintMixture::ConstraintMixture(Teuchos::RCP<MAT::PAR::Material> 
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
   }
-  matparams_.at(growthfactor)->PutScalar(*matdata->Get<double>("GROWTHFAC"));
-  matparams_.at(elastin_survival)->PutScalar(*matdata->Get<double>("ELASTINFAC"));
+  matparams_.at(growthfactor)->PutScalar(matdata->Get<double>("GROWTHFAC"));
+  matparams_.at(elastin_survival)->PutScalar(matdata->Get<double>("ELASTINFAC"));
 }
 
 
@@ -336,17 +336,17 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::ConstraintMixture::Setup(int numgp, INPUT::LineDefinition* linedef)
 {
-  if (*params_->integration_ != "Implicit" && *params_->integration_ != "Explicit")
+  if (params_->integration_ != "Implicit" && params_->integration_ != "Explicit")
     FOUR_C_THROW("unknown option for integration");
-  if (*params_->growthforce_ != "Single" && *params_->growthforce_ != "All" &&
-      *params_->growthforce_ != "ElaCol")
+  if (params_->growthforce_ != "Single" && params_->growthforce_ != "All" &&
+      params_->growthforce_ != "ElaCol")
     FOUR_C_THROW("unknown driving force for growth");
-  if (*params_->elastindegrad_ != "None" && *params_->elastindegrad_ != "Rectangle" &&
-      *params_->elastindegrad_ != "Time" && *params_->elastindegrad_ != "RectanglePlate" &&
-      *params_->elastindegrad_ != "Wedge" && *params_->elastindegrad_ != "Circles" &&
-      *params_->elastindegrad_ != "InvEla")
+  if (params_->elastindegrad_ != "None" && params_->elastindegrad_ != "Rectangle" &&
+      params_->elastindegrad_ != "Time" && params_->elastindegrad_ != "RectanglePlate" &&
+      params_->elastindegrad_ != "Wedge" && params_->elastindegrad_ != "Circles" &&
+      params_->elastindegrad_ != "InvEla")
     FOUR_C_THROW("unknown option for elastin degradation");
-  if (*params_->massprodfunc_ != "Lin" && *params_->massprodfunc_ != "CosCos")
+  if (params_->massprodfunc_ != "Lin" && params_->massprodfunc_ != "CosCos")
     FOUR_C_THROW("unknown option for mass production function");
 
   // visualization
@@ -468,7 +468,7 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
   const Teuchos::ParameterList& timeintegr = GLOBAL::Problem::Instance()->StructuralDynamicParams();
   double dt = timeintegr.get<double>("TIMESTEP");
   int firstiter = 0;
-  if (*params_->integration_ == "Explicit") firstiter = 1;
+  if (params_->integration_ == "Explicit") firstiter = 1;
   int numpast = 0;
   if (abs(round(params_->lifetime_ / dt) - params_->lifetime_ / dt) < 1.0e-8)
   {
@@ -587,7 +587,7 @@ void MAT::ConstraintMixture::Update()
   else  // time < starttime, adapt deposition time, set history if wanted
   {
     // SetHistory
-    if (*params_->initstretch_ == "SetConstantHistory")
+    if (params_->initstretch_ == "SetConstantHistory")
     {
       for (int igp = 0; igp < numgp; igp++)
       {
@@ -637,7 +637,7 @@ void MAT::ConstraintMixture::Update()
       }
     }
 
-    if (*params_->initstretch_ == "SetLinearHistory")
+    if (params_->initstretch_ == "SetLinearHistory")
     {
       for (int igp = 0; igp < numgp; igp++)
       {
@@ -707,7 +707,7 @@ void MAT::ConstraintMixture::Update()
       }
       history_->back().SetTime(0.0, 0.0);
     }
-    else if (deptime == depdt || (deptime == 2 * depdt && *params_->integration_ == "Implicit"))
+    else if (deptime == depdt || (deptime == 2 * depdt && params_->integration_ == "Implicit"))
     {
       // special case of first time step
       ConstraintMixtureHistory newhis;
@@ -761,24 +761,24 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   double elastin_survival = 1.0;
   if (time > params_->starttime_ + eps)
   {
-    if (*params_->elastindegrad_ == "Rectangle" || *params_->elastindegrad_ == "RectanglePlate" ||
-        *params_->elastindegrad_ == "Wedge" || *params_->elastindegrad_ == "Circles")
+    if (params_->elastindegrad_ == "Rectangle" || params_->elastindegrad_ == "RectanglePlate" ||
+        params_->elastindegrad_ == "Wedge" || params_->elastindegrad_ == "Circles")
     {
       const auto& ele_center_reference_coordinates =
           params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
 
       ElastinDegradation(ele_center_reference_coordinates, elastin_survival);
     }
-    else if (*params_->elastindegrad_ == "Time")
+    else if (params_->elastindegrad_ == "Time")
     {
       elastin_survival = exp(-(time - params_->starttime_) * log(2.0) / 14600.0);
     }
   }
-  else if (*params_->initstretch_ == "SetHomeo" || *params_->initstretch_ == "SetLinearHistory" ||
-           *params_->initstretch_ == "SetConstantHistory")
+  else if (params_->initstretch_ == "SetHomeo" || params_->initstretch_ == "SetLinearHistory" ||
+           params_->initstretch_ == "SetConstantHistory")
   {
-    if (*params_->elastindegrad_ == "Rectangle" || *params_->elastindegrad_ == "RectanglePlate" ||
-        *params_->elastindegrad_ == "Wedge" || *params_->elastindegrad_ == "Circles")
+    if (params_->elastindegrad_ == "Rectangle" || params_->elastindegrad_ == "RectanglePlate" ||
+        params_->elastindegrad_ == "Wedge" || params_->elastindegrad_ == "Circles")
     {
       const auto& gp_reference_coordinates =
           params.get<CORE::LINALG::Matrix<3, 1>>("gp_coords_ref");
@@ -786,7 +786,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       ElastinDegradation(gp_reference_coordinates, elastin_survival);
     }
   }
-  if (*params_->elastindegrad_ == "InvEla")
+  if (params_->elastindegrad_ == "InvEla")
     elastin_survival = params_->GetParameter(params_->elastin_survival, eleGID);
 
   // stuff for collagen damage
@@ -794,7 +794,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // differentiate between explicit and implicit description
   int firstiter = 0;
-  if (*params_->integration_ == "Explicit") firstiter = 1;
+  if (params_->integration_ == "Explicit") firstiter = 1;
 
   // determine minimal index
   if (params_->storehistory_)
@@ -860,7 +860,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         // update degradation values (not possible in Update, as dt not known there)
         if (params_->degoption_ == "ExpVar")
         {
-          if (*params_->integration_ == "Implicit")
+          if (params_->integration_ == "Implicit")
             FOUR_C_THROW("ExpVar not implemented for implicit time integration");
           int sizehistory = history_->size();
           // stretch of previous time step
@@ -950,12 +950,12 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     {
       history_->back().SetStretches(gp, actstretch);
     }
-    else if (*params_->initstretch_ == "Homeo")
+    else if (params_->initstretch_ == "Homeo")
     {  // this is not working for all material parameters
       int numsteps = history_->size();
       for (int i = 0; i < numsteps; i++) history_->at(i).SetStretches(gp, actstretch);
     }
-    else if (*params_->initstretch_ == "SetConstantHistory" &&
+    else if (params_->initstretch_ == "SetConstantHistory" &&
              time > (0.9 * params_->starttime_ - dt + 1.0e-12) &&
              time <= (0.9 * params_->starttime_ + 1.0e-12))
     {
@@ -966,7 +966,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       }
       history_->back().SetStretches(gp, tempstretch);
     }
-    else if (*params_->initstretch_ == "SetLinearHistory" &&
+    else if (params_->initstretch_ == "SetLinearHistory" &&
              time <= (0.9 * params_->starttime_ + 1.0e-12) &&
              time > (0.9 * params_->starttime_ - dt + 1.0e-12))
     {
@@ -1004,7 +1004,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         localprestretch_->at(gp)(3) = prestretch;
       }
     }
-    else if (abs(time - params_->starttime_) < eps && *params_->initstretch_ == "UpdatePrestretch")
+    else if (abs(time - params_->starttime_) < eps && params_->initstretch_ == "UpdatePrestretch")
     {
       // use current stretch as prestretch
       if (params_->numhom_ == 1)
@@ -1036,11 +1036,11 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     // either for future use or just for visualization
     CORE::LINALG::Matrix<4, 1> massstress(true);
     CORE::LINALG::Matrix<4, 1> massprodcomp(true);
-    if (*params_->growthforce_ == "All")
+    if (params_->growthforce_ == "All")
     {
       MassProduction(gp, *defgrd, *stress, &massstress, inner_radius, &massprodcomp, growthfactor);
     }
-    else if (*params_->growthforce_ == "ElaCol")
+    else if (params_->growthforce_ == "ElaCol")
     {
       double masstemp = 0.0;
       CORE::LINALG::Matrix<NUM_STRESS_3D, 1> stresstemp(true);
@@ -1105,7 +1105,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     }
 
     // set new homstress
-    if (abs(time - params_->starttime_) < eps && *params_->initstretch_ == "UpdatePrestretch")
+    if (abs(time - params_->starttime_) < eps && params_->initstretch_ == "UpdatePrestretch")
     {
       localhomstress_->at(gp).Update(massstress);
       // perhaps add time < params_->starttime_? correction factor actstretch needed?
@@ -1116,7 +1116,7 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     {
       // start values for local Newton iteration are computed
       // distinguish between explicit and implicit integration
-      if (*params_->integration_ == "Explicit")
+      if (params_->integration_ == "Explicit")
       {
         history_->back().SetMass(gp, massprodcomp);
         vismassstress_->at(gp)(0) = massstress(0);
@@ -1125,22 +1125,22 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       }
       else
       {
-        if (*params_->massprodfunc_ != "Lin" || *params_->initstretch_ == "SetConstantHistory" ||
-            *params_->initstretch_ == "SetLinearHistory")
+        if (params_->massprodfunc_ != "Lin" || params_->initstretch_ == "SetConstantHistory" ||
+            params_->initstretch_ == "SetLinearHistory")
           FOUR_C_THROW(
               "Your desired option of elastin degradation, mass production function or "
               "initstretch\n is not implemented in implicit time integration");
-        if (*params_->growthforce_ == "All")
+        if (params_->growthforce_ == "All")
         {
           EvaluateImplicitAll(*defgrd, glstrain, gp, cmat, stress, dt, time, massprodcomp,
               massstress, elastin_survival, growthfactor);
         }
-        else if (*params_->growthforce_ == "Single")
+        else if (params_->growthforce_ == "Single")
         {
           EvaluateImplicitSingle(
               *defgrd, glstrain, gp, cmat, stress, dt, time, elastin_survival, growthfactor);
         }
-        else if (*params_->growthforce_ == "ElaCol")
+        else if (params_->growthforce_ == "ElaCol")
         {
           FOUR_C_THROW("GROWTHFORCE ElaCol not implemented for implicit integration");
         }
@@ -1152,8 +1152,8 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       vismassstress_->at(gp)(0) = massstress(0);
       vismassstress_->at(gp)(1) = massstress(1);
       vismassstress_->at(gp)(2) = massstress(2);
-      if ((*params_->initstretch_ == "SetConstantHistory" ||
-              *params_->initstretch_ == "SetLinearHistory") &&
+      if ((params_->initstretch_ == "SetConstantHistory" ||
+              params_->initstretch_ == "SetLinearHistory") &&
           time > (0.6 * params_->starttime_ + 1.0e-12) &&
           time <= (0.9 * params_->starttime_ - dt + 1.0e-12))
         history_->back().SetMass(gp, massprodcomp);
@@ -1314,13 +1314,13 @@ void MAT::ConstraintMixture::EvaluateFiberFamily(const CORE::LINALG::Matrix<NUM_
     history_->at(idpast).GetStretches(gp, &collstretch);
     double stretch = prestretchcollagen / collstretch(idfiber);
     // prestretch of collagen fibers is not applied, might be reasonable combined with prestress
-    if (*params_->initstretch_ == "experimental" && deptime <= params_->starttime_ + eps)
+    if (params_->initstretch_ == "experimental" && deptime <= params_->starttime_ + eps)
       stretch = 1.0 / collstretch(idfiber);
 
     double I4_loc = I4;
 
     // linear distribution of stretch
-    if (*params_->initstretch_ == "SetLinearHistory" &&
+    if (params_->initstretch_ == "SetLinearHistory" &&
         time <= (0.9 * params_->starttime_ + 1.0e-12))
     {
       I4_loc = ((sqrt(I4) - 1.0) * (1.0 - idpast / (sizehistory - 1.0)) + 1.0) *
@@ -1345,7 +1345,7 @@ void MAT::ConstraintMixture::EvaluateFiberFamily(const CORE::LINALG::Matrix<NUM_
     double fac_stress_loc = 0.0;
     EvaluateSingleFiberScalars(I4_loc, fac_cmat_loc, fac_stress_loc);
 
-    if (*params_->initstretch_ == "SetLinearHistory" &&
+    if (params_->initstretch_ == "SetLinearHistory" &&
         time <= (0.9 * params_->starttime_ + 1.0e-12))
       fac_cmat_loc = fac_cmat_loc *
                      ((sqrt(I4) - 1.0) * (1.0 - idpast / (sizehistory - 1.0)) + 1.0) *
@@ -1364,7 +1364,7 @@ void MAT::ConstraintMixture::EvaluateFiberFamily(const CORE::LINALG::Matrix<NUM_
     fac_stress +=
         fac_stress_loc * stretch * stretch * qdegrad * collmass(idfiber) / density * depdt;
 
-    if (*params_->initstretch_ == "Homeo" ||
+    if (params_->initstretch_ == "Homeo" ||
         (idpast == sizehistory - 1 && time > params_->starttime_ + 1.0e-11))
     {
       CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Saniso_loc(A);
@@ -1719,7 +1719,7 @@ void MAT::ConstraintMixture::MassProduction(const int gp, CORE::LINALG::Matrix<3
   temp_vector.Multiply(temp2, a1_->at(gp));
   temp_scalar.MultiplyTN(a1_->at(gp), temp_vector);
   double massstress1 = sqrt(temp_scalar(0)) / currentstretch;
-  if (*params_->massprodfunc_ == "Lin")
+  if (params_->massprodfunc_ == "Lin")
   {
     if (localhomstress_->at(gp)(0) != 0.0)
       (*massprodcomp)(0) =
@@ -1731,7 +1731,7 @@ void MAT::ConstraintMixture::MassProduction(const int gp, CORE::LINALG::Matrix<3
     if ((*massprodcomp)(0) > (maxmassprodfac * massprodbasal_))
       (*massprodcomp)(0) = maxmassprodfac * massprodbasal_;
   }
-  else if (*params_->massprodfunc_ == "CosCos")
+  else if (params_->massprodfunc_ == "CosCos")
   {
     if (localhomstress_->at(gp)(0) != 0.0)
     {
@@ -1765,7 +1765,7 @@ void MAT::ConstraintMixture::MassProduction(const int gp, CORE::LINALG::Matrix<3
   temp_vector.Multiply(temp2, a2_->at(gp));
   temp_scalar.MultiplyTN(a2_->at(gp), temp_vector);
   double massstress2 = sqrt(temp_scalar(0)) / currentstretch;
-  if (*params_->massprodfunc_ == "Lin")
+  if (params_->massprodfunc_ == "Lin")
   {
     if (localhomstress_->at(gp)(1) != 0.0)
       (*massprodcomp)(1) =
@@ -1777,7 +1777,7 @@ void MAT::ConstraintMixture::MassProduction(const int gp, CORE::LINALG::Matrix<3
     if ((*massprodcomp)(1) > (maxmassprodfac * massprodbasal_))
       (*massprodcomp)(1) = maxmassprodfac * massprodbasal_;
   }
-  else if (*params_->massprodfunc_ == "CosCos")
+  else if (params_->massprodfunc_ == "CosCos")
   {
     if (localhomstress_->at(gp)(1) != 0.0)
     {
@@ -1811,7 +1811,7 @@ void MAT::ConstraintMixture::MassProduction(const int gp, CORE::LINALG::Matrix<3
   temp_vector.Multiply(temp2, a3_->at(gp));
   temp_scalar.MultiplyTN(a3_->at(gp), temp_vector);
   double massstress3 = sqrt(temp_scalar(0)) / currentstretch;
-  if (*params_->massprodfunc_ == "Lin")
+  if (params_->massprodfunc_ == "Lin")
   {
     if (localhomstress_->at(gp)(2) != 0.0)
       (*massprodcomp)(2) =
@@ -1823,7 +1823,7 @@ void MAT::ConstraintMixture::MassProduction(const int gp, CORE::LINALG::Matrix<3
     if ((*massprodcomp)(2) > (maxmassprodfac * massprodbasal_))
       (*massprodcomp)(2) = maxmassprodfac * massprodbasal_;
   }
-  else if (*params_->massprodfunc_ == "CosCos")
+  else if (params_->massprodfunc_ == "CosCos")
   {
     if (localhomstress_->at(gp)(2) != 0.0)
     {
@@ -1858,7 +1858,7 @@ void MAT::ConstraintMixture::MassProduction(const int gp, CORE::LINALG::Matrix<3
   temp_vector.Multiply(temp2, a4_->at(gp));
   temp_scalar.MultiplyTN(a4_->at(gp), temp_vector);
   double massstress4 = sqrt(temp_scalar(0)) / currentstretch;
-  if (*params_->massprodfunc_ == "Lin")
+  if (params_->massprodfunc_ == "Lin")
   {
     if (localhomstress_->at(gp)(3) != 0.0)
       (*massprodcomp)(3) =
@@ -1870,7 +1870,7 @@ void MAT::ConstraintMixture::MassProduction(const int gp, CORE::LINALG::Matrix<3
     if ((*massprodcomp)(3) > (maxmassprodfac * massprodbasal_))
       (*massprodcomp)(3) = maxmassprodfac * massprodbasal_;
   }
-  else if (*params_->massprodfunc_ == "CosCos")
+  else if (params_->massprodfunc_ == "CosCos")
   {
     if (localhomstress_->at(gp)(3) != 0.0)
     {
@@ -1958,7 +1958,7 @@ void MAT::ConstraintMixture::MassProductionSingleFiber(const int gp,
   double homstress = localhomstress_->at(gp)(idfiber);
   //  if (idfiber == 2 || idfiber == 3)
   //    homstress = 4. * homstress;
-  if (*params_->massprodfunc_ == "Lin")
+  if (params_->massprodfunc_ == "Lin")
   {
     if (homstress != 0.0)
       (*massprodcomp) = massprodbasal_ * (1.0 + growthfactor * ((*massstress) / homstress - 1.0) +
@@ -1969,7 +1969,7 @@ void MAT::ConstraintMixture::MassProductionSingleFiber(const int gp,
     if (*massprodcomp > (maxmassprodfac * massprodbasal_))
       *massprodcomp = maxmassprodfac * massprodbasal_;
   }
-  else if (*params_->massprodfunc_ == "CosCos")
+  else if (params_->massprodfunc_ == "CosCos")
   {
     if (homstress != 0.0)
     {
@@ -2069,7 +2069,7 @@ void MAT::ConstraintMixture::Degradation(double t, double& degr)
 void MAT::ConstraintMixture::ElastinDegradation(
     CORE::LINALG::Matrix<3, 1> coord, double& elastin_survival)
 {
-  if (*params_->elastindegrad_ == "Rectangle")
+  if (params_->elastindegrad_ == "Rectangle")
   {
     double funcz = 0.0;
     double z1 = -16.0;
@@ -2110,7 +2110,7 @@ void MAT::ConstraintMixture::ElastinDegradation(
 
     elastin_survival = 1.0 - funcz * funcphi;
   }
-  else if (*params_->elastindegrad_ == "RectanglePlate")
+  else if (params_->elastindegrad_ == "RectanglePlate")
   {
     double funcz = 0.0;
     double z1 = -0.5;
@@ -2150,7 +2150,7 @@ void MAT::ConstraintMixture::ElastinDegradation(
 
     elastin_survival = 1.0 - funcz * funcx;
   }
-  else if (*params_->elastindegrad_ == "Wedge")
+  else if (params_->elastindegrad_ == "Wedge")
   {
     double funcz = 0.0;
     double z1 = -16.0;  //-22.0; //-16.0;
@@ -2177,7 +2177,7 @@ void MAT::ConstraintMixture::ElastinDegradation(
 
     elastin_survival = 1.0 - funcz;
   }
-  else if (*params_->elastindegrad_ == "Circles")
+  else if (params_->elastindegrad_ == "Circles")
   {
     double radmin = 10.0;
     double radmax = 15.0;
@@ -3060,11 +3060,11 @@ bool MAT::ConstraintMixture::VisData(
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
     // int eleLID = GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
-    if (*params_->elastindegrad_ == "InvEla")
+    if (params_->elastindegrad_ == "InvEla")
       data[0] = params_->GetParameter(params_->elastin_survival, eleID);
-    else if (*params_->elastindegrad_ == "Rectangle" ||
-             *params_->elastindegrad_ == "RectanglePlate" || *params_->elastindegrad_ == "Wedge" ||
-             *params_->elastindegrad_ == "Circles")
+    else if (params_->elastindegrad_ == "Rectangle" ||
+             params_->elastindegrad_ == "RectanglePlate" || params_->elastindegrad_ == "Wedge" ||
+             params_->elastindegrad_ == "Circles")
     {
       DRT::Element* myele = GLOBAL::Problem::Instance()->GetDis("structure")->gElement(eleID);
       DRT::Node** mynodes = myele->Nodes();

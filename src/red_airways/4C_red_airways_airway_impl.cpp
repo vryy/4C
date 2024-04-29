@@ -86,12 +86,12 @@ namespace
     {
       DRT::Condition* condition = node->GetCondition(condName);
       // Get the type of prescribed bc
-      std::string Bc = *(condition->Get<std::string>(optionName));
+      std::string Bc = (condition->Get<std::string>(optionName));
       if (Bc == condType)
       {
         const auto* curve = condition->GetIf<std::vector<int>>("curve");
         double curvefac = 1.0;
-        const auto* vals = condition->Get<std::vector<double>>("val");
+        const auto* vals = &condition->Get<std::vector<double>>("val");
 
         // -----------------------------------------------------------------
         // Read in the value of the applied BC
@@ -588,8 +588,6 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
 {
   const int elemVecdim = elevec1_epetra.length();
 
-  std::vector<int>::iterator it_vcr;
-
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
   const auto airway_params = ele->GetAirwayParams();
 
@@ -762,9 +760,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
         // -----------------------------------------------------
         if (ele->Nodes()[sci]->GetCondition("RedAirwayScatraHemoglobinCond"))
         {
-          double intSat = *ele->Nodes()[sci]
-                               ->GetCondition("RedAirwayScatraHemoglobinCond")
-                               ->Get<double>("INITIAL_CONCENTRATION");
+          double intSat = ele->Nodes()[sci]
+                              ->GetCondition("RedAirwayScatraHemoglobinCond")
+                              ->Get<double>("INITIAL_CONCENTRATION");
 
           int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
               INPAR::MAT::m_0d_o2_hemoglobin_saturation);
@@ -798,9 +796,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
         }
         else if (ele->Nodes()[sci]->GetCondition("RedAirwayScatraAirCond"))
         {
-          double intSat = *ele->Nodes()[sci]
-                               ->GetCondition("RedAirwayScatraAirCond")
-                               ->Get<double>("INITIAL_CONCENTRATION");
+          double intSat = ele->Nodes()[sci]
+                              ->GetCondition("RedAirwayScatraAirCond")
+                              ->Get<double>("INITIAL_CONCENTRATION");
           int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
               INPAR::MAT::m_0d_o2_air_saturation);
           // check if O2 properties material exists
@@ -972,7 +970,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
 
   // the number of nodes
   const int numnode = lm.size();
-  std::vector<int>::iterator it_vcr;
 
   Teuchos::RCP<const Epetra_Vector> pn = discretization.GetState("pn");
 
@@ -1012,7 +1009,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
         {
           DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
-          Bc = *(condition->Get<std::string>("boundarycond"));
+          Bc = (condition->Get<std::string>("boundarycond"));
 
           if (Bc == "switchFlowPressure")
           {
@@ -1020,9 +1017,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             DRT::Condition* switchCondition =
                 ele->Nodes()[i]->GetCondition("RedAirwaySwitchFlowPressureCond");
 
-            const int funct_id_flow = *switchCondition->Get<int>("FUNCT_ID_FLOW");
-            const int funct_id_pressure = *switchCondition->Get<int>("FUNCT_ID_PRESSURE");
-            const int funct_id_switch = *switchCondition->Get<int>("FUNCT_ID_PRESSURE_ACTIVE");
+            const int funct_id_flow = switchCondition->Get<int>("FUNCT_ID_FLOW");
+            const int funct_id_pressure = switchCondition->Get<int>("FUNCT_ID_PRESSURE");
+            const int funct_id_switch = switchCondition->Get<int>("FUNCT_ID_PRESSURE_ACTIVE");
 
             const double pressure_active =
                 GLOBAL::Problem::Instance()
@@ -1062,7 +1059,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
             //  Val = curve1*val1 + curve2*func
             // -----------------------------------------------------------------
             const auto* curve = condition->GetIf<std::vector<int>>("curve");
-            const auto* vals = condition->Get<std::vector<double>>("val");
+            const auto* vals = &condition->Get<std::vector<double>>("val");
 
             // get factor of curve1 or curve2
             const auto curvefac = [&](unsigned id)
@@ -1132,7 +1129,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           // -----------------------------------------------------------------
           // Read in Condition type
           // -----------------------------------------------------------------
-          //        Type = *(condition->Get<std::string>("CouplingType"));
+          //        Type = (condition->Get<std::string>("CouplingType"));
           // -----------------------------------------------------------------
           // Read in coupling variable rescribed by the 3D simulation
           //
@@ -1153,7 +1150,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           //     +-----------------------------------------------------------+
           // -----------------------------------------------------------------
 
-          int ID = *condition->Get<int>("ConditionID");
+          int ID = condition->Get<int>("ConditionID");
           Teuchos::RCP<std::map<std::string, double>> map3D;
           map3D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
               "3D map of values");
@@ -1179,29 +1176,29 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
         {
           DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond");
           // Get the type of prescribed bc
-          Bc = *(condition->Get<std::string>("phase1"));
+          Bc = (condition->Get<std::string>("phase1"));
 
           // get the smoothness flag of the two different phases
-          std::string phase1Smooth = *(condition->Get<std::string>("Phase1Smoothness"));
-          std::string phase2Smooth = *(condition->Get<std::string>("Phase2Smoothness"));
+          std::string phase1Smooth = (condition->Get<std::string>("Phase1Smoothness"));
+          std::string phase2Smooth = (condition->Get<std::string>("Phase2Smoothness"));
 
-          double period = *condition->Get<double>("period");
-          double period1 = *condition->Get<double>("phase1_period");
+          double period = condition->Get<double>("period");
+          double period1 = condition->Get<double>("phase1_period");
 
-          double smoothnessT1 = *condition->Get<double>("smoothness_period1");
-          double smoothnessT2 = *condition->Get<double>("smoothness_period2");
+          double smoothnessT1 = condition->Get<double>("smoothness_period1");
+          double smoothnessT2 = condition->Get<double>("smoothness_period2");
 
           unsigned int phase_number = 0;
 
           if (fmod(time, period) >= period1)
           {
             phase_number = 1;
-            Bc = *(condition->Get<std::string>("phase2"));
+            Bc = (condition->Get<std::string>("phase2"));
           }
 
           const auto* curve = condition->GetIf<std::vector<int>>("curve");
           double curvefac = 1.0;
-          const auto* vals = condition->Get<std::vector<double>>("val");
+          const auto* vals = &condition->Get<std::vector<double>>("val");
 
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
@@ -1561,7 +1558,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
 
   // the number of nodes
   const int numnode = lm.size();
-  std::vector<int>::iterator it_vcr;
 
   Teuchos::RCP<const Epetra_Vector> pnp = discretization.GetState("pnp");
 
@@ -1626,12 +1622,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
         //     +-----------------------------------------------------------+
         // -----------------------------------------------------------------
 
-        int ID = *condition->Get<int>("ConditionID");
+        int ID = condition->Get<int>("ConditionID");
         Teuchos::RCP<std::map<std::string, double>> map1D;
         map1D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
             "reducedD map of values");
 
-        std::string returnedBC = *(condition->Get<std::string>("ReturnedVariable"));
+        std::string returnedBC = (condition->Get<std::string>("ReturnedVariable"));
 
         double BC3d = 0.0;
         if (returnedBC == "flow")
@@ -1644,7 +1640,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
         }
         else
         {
-          std::string str = (*condition->Get<std::string>("ReturnedVariable"));
+          std::string str = (condition->Get<std::string>("ReturnedVariable"));
           FOUR_C_THROW("%s, is an unimplimented type of coupling", str.c_str());
           exit(1);
         }
@@ -1818,7 +1814,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
 
       const auto* curve = condition->GetIf<std::vector<int>>("curve");
       double curvefac = 1.0;
-      const auto* vals = condition->Get<std::vector<double>>("val");
+      const auto* vals = &condition->Get<std::vector<double>>("val");
 
       // -----------------------------------------------------------------
       // Read in the value of the applied BC

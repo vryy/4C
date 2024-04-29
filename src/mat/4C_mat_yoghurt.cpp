@@ -22,14 +22,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::Yoghurt::Yoghurt(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      shc_(*matdata->Get<double>("SHC")),
-      density_(*matdata->Get<double>("DENSITY")),
-      thermcond_(*matdata->Get<double>("THERMCOND")),
-      strrateexp_(*matdata->Get<double>("STRAINRATEEXP")),
-      preexcon_(*matdata->Get<double>("PREEXCON")),
-      actenergy_(*matdata->Get<double>("ACTENERGY")),
-      gasconst_(*matdata->Get<double>("GASCON")),
-      delta_(*matdata->Get<double>("DELTA"))
+      shc_(matdata->Get<double>("SHC")),
+      density_(matdata->Get<double>("DENSITY")),
+      thermcond_(matdata->Get<double>("THERMCOND")),
+      strrateexp_(matdata->Get<double>("STRAINRATEEXP")),
+      preexcon_(matdata->Get<double>("PREEXCON")),
+      actenergy_(matdata->Get<double>("ACTENERGY")),
+      gasconst_(matdata->Get<double>("GASCON")),
+      delta_(matdata->Get<double>("DELTA"))
 {
 }
 

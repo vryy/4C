@@ -165,16 +165,16 @@ namespace
  *----------------------------------------------------------------------*/
 MAT::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      youngs_(*matdata->Get<double>("YOUNG")),
-      poissonratio_(*matdata->Get<double>("NUE")),
-      density_(*matdata->Get<double>("DENS")),
-      yield_(*matdata->Get<double>("YIELD")),
-      isohard_(*matdata->Get<double>("ISOHARD")),
-      infyield_(*matdata->Get<double>("SATHARDENING")),
-      hardexp_(*matdata->Get<double>("HARDEXPO")),
-      visc_(*matdata->Get<double>("VISC")),
-      rate_dependency_(*matdata->Get<double>("RATE_DEPENDENCY")),
-      functionID_hardening_(*matdata->Get<int>("HARDENING_FUNC")),
+      youngs_(matdata->Get<double>("YOUNG")),
+      poissonratio_(matdata->Get<double>("NUE")),
+      density_(matdata->Get<double>("DENS")),
+      yield_(matdata->Get<double>("YIELD")),
+      isohard_(matdata->Get<double>("ISOHARD")),
+      infyield_(matdata->Get<double>("SATHARDENING")),
+      hardexp_(matdata->Get<double>("HARDEXPO")),
+      visc_(matdata->Get<double>("VISC")),
+      rate_dependency_(matdata->Get<double>("RATE_DEPENDENCY")),
+      functionID_hardening_(matdata->Get<int>("HARDENING_FUNC")),
       max_iterations_(10),
       tolerance_nr_(1.e-12)
 {

@@ -21,10 +21,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::MixFrac::MixFrac(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      kinvisc_(*matdata->Get<double>("KINVISC")),
-      kindiff_(*matdata->Get<double>("KINDIFF")),
-      eosfaca_(*matdata->Get<double>("EOSFACA")),
-      eosfacb_(*matdata->Get<double>("EOSFACB"))
+      kinvisc_(matdata->Get<double>("KINVISC")),
+      kindiff_(matdata->Get<double>("KINDIFF")),
+      eosfaca_(matdata->Get<double>("EOSFACA")),
+      eosfacb_(matdata->Get<double>("EOSFACB"))
 {
 }
 

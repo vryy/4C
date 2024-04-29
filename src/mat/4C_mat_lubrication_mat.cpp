@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      density_(*matdata->Get<double>("DENSITY")),
-      lubricationlawID_(*matdata->Get<int>("LUBRICATIONLAWID")),
+      density_(matdata->Get<double>("DENSITY")),
+      lubricationlawID_(matdata->Get<int>("LUBRICATIONLAWID")),
       lubricationlaw_(nullptr)
 {
   // retrieve problem instance to read from

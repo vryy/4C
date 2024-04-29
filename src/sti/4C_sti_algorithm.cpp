@@ -120,10 +120,10 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
         for (auto& condition : conditions)
         {
           // consider conditions for slave side only
-          if (*condition->Get<int>("interface side") == INPAR::S2I::side_slave)
+          if (condition->Get<int>("interface side") == INPAR::S2I::side_slave)
           {
             // extract ID of current condition
-            const int condid = *condition->Get<int>("ConditionID");
+            const int condid = condition->Get<int>("ConditionID");
             if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
             // extract mortar discretizations associated with current condition
@@ -326,10 +326,10 @@ void STI::Algorithm::TransferScatraToThermo(const Teuchos::RCP<const Epetra_Vect
         for (auto& condition : conditions)
         {
           // consider conditions for slave side only
-          if (*condition->Get<int>("interface side") == INPAR::S2I::side_slave)
+          if (condition->Get<int>("interface side") == INPAR::S2I::side_slave)
           {
             // extract ID of current condition
-            const int condid = *condition->Get<int>("ConditionID");
+            const int condid = condition->Get<int>("ConditionID");
             if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
             // extract mortar discretization associated with current condition
@@ -373,10 +373,10 @@ void STI::Algorithm::TransferThermoToScatra(const Teuchos::RCP<const Epetra_Vect
     for (auto& condition : conditions)
     {
       // consider conditions for slave side only
-      if (*condition->Get<int>("interface side") == INPAR::S2I::side_slave)
+      if (condition->Get<int>("interface side") == INPAR::S2I::side_slave)
       {
         // extract ID of current condition
-        const int condid = *condition->Get<int>("ConditionID");
+        const int condid = condition->Get<int>("ConditionID");
         if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
         // extract mortar discretization associated with current condition

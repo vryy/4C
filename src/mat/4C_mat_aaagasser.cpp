@@ -33,13 +33,13 @@ FOUR_C_NAMESPACE_OPEN
 MAT::PAR::AAAgasser::AAAgasser(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
 
-      density_(*matdata->Get<double>("DENS")),
+      density_(matdata->Get<double>("DENS")),
       vol_(matdata->Get<std::string>("VOL")),
-      nue_(*matdata->Get<double>("NUE")),
-      beta_(*matdata->Get<double>("BETA")),
-      Clum_(*matdata->Get<double>("CLUM")),
-      Cmed_(*matdata->Get<double>("CMED")),
-      Cablum_(*matdata->Get<double>("CABLUM"))
+      nue_(matdata->Get<double>("NUE")),
+      beta_(matdata->Get<double>("BETA")),
+      Clum_(matdata->Get<double>("CLUM")),
+      Cmed_(matdata->Get<double>("CMED")),
+      Cablum_(matdata->Get<double>("CABLUM"))
 {
 }
 
@@ -144,7 +144,7 @@ void MAT::AAAgasser::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   // double Cele        = 1./3.*(params_->Clum_ + params_->Cmed_ + params_->) * normdist/normdist;
 
   // material parameters for volumetric part:
-  const std::string vol = *params_->vol_;
+  const std::string vol = params_->vol_;
   // kappa = youngs / (3-6*nue); youngs = 24*Cele (see GASSER p.184);
   const double kappa = 24 * Cele / (3 - 6 * params_->nue_);  // dilatational modulus
   const double beta = params_->beta_;                        // parameter from Holzapfel

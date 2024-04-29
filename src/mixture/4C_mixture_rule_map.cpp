@@ -63,10 +63,10 @@ namespace
 
 MIXTURE::PAR::MapMixtureRule::MapMixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),
-      initial_reference_density_(*matdata->Get<double>("DENS")),
-      num_constituents_(*matdata->Get<int>("NUMCONST")),
+      initial_reference_density_(matdata->Get<double>("DENS")),
+      num_constituents_(matdata->Get<int>("NUMCONST")),
       mass_fractions_map_(
-          *matdata->Get<std::unordered_map<int, std::vector<double>>>("MASSFRACMAPFILE")){};
+          matdata->Get<std::unordered_map<int, std::vector<double>>>("MASSFRACMAPFILE")){};
 
 std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::MapMixtureRule::CreateRule()
 {

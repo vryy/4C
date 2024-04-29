@@ -49,8 +49,8 @@ MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetStructuralTensor_stress(int g
 MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MAT::PAR::ParameterAniso(matdata),
       MAT::ELASTIC::PAR::CoupAnisoExpoBase(matdata),
-      adapt_angle_(*matdata->Get<bool>("ADAPT_ANGLE")),
-      fiber_id_(*matdata->Get<int>("FIBER_ID"))
+      adapt_angle_(matdata->Get<bool>("ADAPT_ANGLE")),
+      fiber_id_(matdata->Get<int>("FIBER_ID"))
 {
 }
 

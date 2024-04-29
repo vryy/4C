@@ -27,24 +27,24 @@ FOUR_C_NAMESPACE_OPEN
 MAT::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      nummat_elast_(*matdata->Get<int>("NUMMATEL")),
+      nummat_elast_(matdata->Get<int>("NUMMATEL")),
       matids_elast_(matdata->Get<std::vector<int>>("MATIDSEL")),
-      numfac_inel_(*matdata->Get<int>("NUMFACINEL")),
+      numfac_inel_(matdata->Get<int>("NUMFACINEL")),
       inel_defgradfacids_(matdata->Get<std::vector<int>>("INELDEFGRADFACIDS")),
-      density_(*matdata->Get<double>("DENS"))
+      density_(matdata->Get<double>("DENS"))
 {
   // check if sizes fit
-  if (nummat_elast_ != static_cast<int>(matids_elast_->size()))
+  if (nummat_elast_ != static_cast<int>(matids_elast_.size()))
     FOUR_C_THROW(
         "number of elastic materials %d does not fit to size of elastic material ID vector %d",
-        nummat_elast_, matids_elast_->size());
+        nummat_elast_, matids_elast_.size());
 
-  if (numfac_inel_ != static_cast<int>(inel_defgradfacids_->size()))
+  if (numfac_inel_ != static_cast<int>(inel_defgradfacids_.size()))
   {
     FOUR_C_THROW(
         "number of inelastic deformation gradient factors %d does not fit to size of inelastic "
         "deformation gradient ID vector %d",
-        numfac_inel_, inel_defgradfacids_->size());
+        numfac_inel_, inel_defgradfacids_.size());
   }
 }
 
@@ -85,7 +85,7 @@ MAT::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
       potsumel_(0)
 {
   // elastic materials
-  for (int matid_elastic : *(params_->matids_elast_))
+  for (int matid_elastic : params_->matids_elast_)
   {
     auto elastic_summand = MAT::ELASTIC::Summand::Factory(matid_elastic);
     if (elastic_summand == Teuchos::null) FOUR_C_THROW("Failed to allocate");
@@ -154,7 +154,7 @@ void MAT::MultiplicativeSplitDefgradElastHyper::Unpack(const std::vector<char>& 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // elastic materials
-    for (const auto& matid_elastic : *(params_->matids_elast_))
+    for (const auto& matid_elastic : params_->matids_elast_)
     {
       auto elastic_summand = MAT::ELASTIC::Summand::Factory(matid_elastic);
       if (elastic_summand == Teuchos::null) FOUR_C_THROW("Failed to allocate");
@@ -845,7 +845,7 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgradEla
   i_finj_.clear();
 
   // get inelastic deformation gradient factors and assign them to their source
-  for (int inelastic_matnum : *(params->inel_defgradfacids_))
+  for (int inelastic_matnum : params->inel_defgradfacids_)
   {
     auto inelastic_factor = MAT::InelasticDefgradFactors::Factory(inelastic_matnum);
     if (inelastic_factor == Teuchos::null) FOUR_C_THROW("Failed to allocate!");

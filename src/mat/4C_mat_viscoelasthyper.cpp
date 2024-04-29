@@ -231,7 +231,7 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
-    for (m = params_->matids_->begin(); m != params_->matids_->end(); ++m)
+    for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
     {
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);

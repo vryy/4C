@@ -1407,7 +1407,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
   {
     // Get the user defined functions
     auto* cond = params.getPtr<Teuchos::RCP<DRT::Condition>>("condition");
-    const auto* funct = (*cond)->Get<std::vector<int>>("funct");
+    const auto& funct = (*cond)->Get<std::vector<int>>("funct");
     const double time = params.get<double>("time");
 
     CORE::LINALG::SerialDenseVector tempVec1(shapesface_->nfdofs_ * nsd_);
@@ -1437,8 +1437,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
         // magnetic field. If there is only one component all the components will
         // be initialized to the same value.
         CORE::LINALG::SerialDenseVector intVal(2 * nsd_);
-        FOUR_C_ASSERT(funct != nullptr, "funct not set for initial value");
-        EvaluateAll((*funct)[0], time, xyz, intVal);
+        EvaluateAll(funct[0], time, xyz, intVal);
         // now fill the components in the one-sided mass matrix and the right hand side
         for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
         {

@@ -20,18 +20,18 @@ FOUR_C_NAMESPACE_OPEN
 MAT::ELASTIC::PAR::AnisoActiveStressEvolution::AnisoActiveStressEvolution(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
-      sigma_(*matdata->Get<double>("SIGMA")),
-      tauc0_(*matdata->Get<double>("TAUC0")),
-      maxactiv_(*matdata->Get<double>("MAX_ACTIVATION")),
-      minactiv_(*matdata->Get<double>("MIN_ACTIVATION")),
-      activationthreshold_(*matdata->Get<double>("ACTIVATION_THRES")),
-      sourceactiv_(*matdata->Get<int>("SOURCE_ACTIVATION")),
-      strain_dep_(*matdata->Get<bool>("STRAIN_DEPENDENCY")),
-      lambda_lower_(*matdata->Get<double>("LAMBDA_LOWER")),
-      lambda_upper_(*matdata->Get<double>("LAMBDA_UPPER")),
-      gamma_(*matdata->Get<double>("GAMMA")),
-      init_(*matdata->Get<int>("INIT")),
-      adapt_angle_(*matdata->Get<bool>("ADAPT_ANGLE"))
+      sigma_(matdata->Get<double>("SIGMA")),
+      tauc0_(matdata->Get<double>("TAUC0")),
+      maxactiv_(matdata->Get<double>("MAX_ACTIVATION")),
+      minactiv_(matdata->Get<double>("MIN_ACTIVATION")),
+      activationthreshold_(matdata->Get<double>("ACTIVATION_THRES")),
+      sourceactiv_(matdata->Get<int>("SOURCE_ACTIVATION")),
+      strain_dep_(matdata->Get<bool>("STRAIN_DEPENDENCY")),
+      lambda_lower_(matdata->Get<double>("LAMBDA_LOWER")),
+      lambda_upper_(matdata->Get<double>("LAMBDA_UPPER")),
+      gamma_(matdata->Get<double>("GAMMA")),
+      init_(matdata->Get<int>("INIT")),
+      adapt_angle_(matdata->Get<bool>("ADAPT_ANGLE"))
 {
 }
 

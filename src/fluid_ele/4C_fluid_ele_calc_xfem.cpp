@@ -4009,9 +4009,9 @@ namespace DRT
       {
         case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
         {
-          const std::string* evaltype = cond->Get<std::string>("evaltype");
+          const std::string& evaltype = cond->Get<std::string>("evaltype");
 
-          if (*evaltype == "funct_gausspoint")
+          if (evaltype == "funct_gausspoint")
           {
             // evaluate function at Gaussian point at current time
             coupling->EvaluateCouplingConditions(
@@ -4035,7 +4035,7 @@ namespace DRT
         case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
         {
           // evaluate condition function at Gaussian point
-          if (*cond->Get<int>("numdof") == 6)
+          if (cond->Get<int>("numdof") == 6)
           {
             CORE::LINALG::Matrix<6, 1> fulltraction(
                 true);  // sigma_xx, sigma_yy, sigma_zz, sigma_xy, sigma_yz, sigma_zx
@@ -4082,7 +4082,7 @@ namespace DRT
         }
         case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
         {
-          bool eval_dirich_at_gp = (*(cond->Get<std::string>("evaltype")) == "funct_gausspoint");
+          bool eval_dirich_at_gp = ((cond->Get<std::string>("evaltype")) == "funct_gausspoint");
 
           // The velocity is evaluated twice in this framework...
           Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlip>(coupling)
@@ -4098,7 +4098,7 @@ namespace DRT
         }
         case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
         {
-          bool eval_dirich_at_gp = (*(cond->Get<std::string>("evaltype")) == "funct_gausspoint");
+          bool eval_dirich_at_gp = ((cond->Get<std::string>("evaltype")) == "funct_gausspoint");
 
           Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlipTwoPhase>(coupling)
               ->EvaluateCouplingConditions<distype>(ivelint_jump, itraction_jump, x, cond,
@@ -4184,9 +4184,9 @@ namespace DRT
       {
         case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
         {
-          const std::string* evaltype = cond->Get<std::string>("evaltype");
+          const std::string& evaltype = cond->Get<std::string>("evaltype");
 
-          if (*evaltype == "funct_gausspoint")
+          if (evaltype == "funct_gausspoint")
           {
             // evaluate function at Gaussian point at current time
             coupling->EvaluateCouplingConditionsOldState(ivelintn_jump, itractionn_jump, x, cond);

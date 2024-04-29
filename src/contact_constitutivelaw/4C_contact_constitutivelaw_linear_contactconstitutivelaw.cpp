@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams::LinearConstitutiveLawParams(
     const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
-      a_(*container->Get<double>("A")),
-      b_(*container->Get<double>("B"))
+      a_(container->Get<double>("A")),
+      b_(container->Get<double>("B"))
 {
 }
 /*----------------------------------------------------------------------*/

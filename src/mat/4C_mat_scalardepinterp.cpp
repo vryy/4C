@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ScalarDepInterp::ScalarDepInterp(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),
-      id_lambda_zero_(*matdata->Get<int>("IDMATZEROSC")),
-      id_lambda_unit_(*matdata->Get<int>("IDMATUNITSC")){
+      id_lambda_zero_(matdata->Get<int>("IDMATZEROSC")),
+      id_lambda_unit_(matdata->Get<int>("IDMATUNITSC")){
 
       };
 

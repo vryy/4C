@@ -28,16 +28,16 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 MAT::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      nummat_(*matdata->Get<int>("NUMMAT")),
+      nummat_(matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
-      density_(*matdata->Get<double>("DENS")),
-      polyconvex_(*matdata->Get<int>("POLYCONVEX"))
+      density_(matdata->Get<double>("DENS")),
+      polyconvex_(matdata->Get<int>("POLYCONVEX"))
 
 {
   // check if sizes fit
-  if (nummat_ != (int)matids_->size())
+  if (nummat_ != (int)matids_.size())
     FOUR_C_THROW("number of materials %d does not fit to size of material vector %d", nummat_,
-        matids_->size());
+        matids_.size());
 
   // output, that polyconvexity is checked
   if (polyconvex_ != 0) std::cout << "Polyconvexity of your simulation is checked." << std::endl;
@@ -82,7 +82,7 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
-  for (m = params_->matids_->begin(); m != params_->matids_->end(); ++m)
+  for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
@@ -161,7 +161,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
-    for (m = params_->matids_->begin(); m != params_->matids_->end(); ++m)
+    for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
     {
       const int summand_matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(summand_matid);
@@ -194,7 +194,7 @@ int MAT::ElastHyper::MatID(const unsigned index) const
     FOUR_C_THROW("Index too large");
   }
 
-  return params_->matids_->at(index);
+  return params_->matids_.at(index);
 }
 
 /*----------------------------------------------------------------------*/

@@ -97,16 +97,16 @@ MIXTURE::ElastinMembraneAnisotropyExtension::GetOrthogonalStructuralTensor(int g
 MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane::
     MixtureConstituentElastHyperElastinMembrane(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureConstituentElastHyperBase(matdata),
-      damage_function_id_(*matdata->Get<int>("DAMAGE_FUNCT")),
-      nummat_membrane_(*matdata->Get<int>("MEMBRANENUMMAT")),
+      damage_function_id_(matdata->Get<int>("DAMAGE_FUNCT")),
+      nummat_membrane_(matdata->Get<int>("MEMBRANENUMMAT")),
       matids_membrane_(matdata->Get<std::vector<int>>("MEMBRANEMATIDS"))
 {
-  if (nummat_membrane_ != (int)matids_membrane_->size())
+  if (nummat_membrane_ != (int)matids_membrane_.size())
   {
     FOUR_C_THROW(
         "number of membrane summands %d does not fit to the size of the membrane summands vector"
         " %d",
-        nummat_membrane_, matids_membrane_->size());
+        nummat_membrane_, matids_membrane_.size());
   }
 }
 
@@ -127,7 +127,7 @@ MIXTURE::MixtureConstituentElastHyperElastinMembrane::MixtureConstituentElastHyp
           new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)))
 {
   // Create summands
-  for (const auto& matid : *params_->matids_membrane_)
+  for (const auto& matid : params_->matids_membrane_)
   {
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to read elastic summand.");

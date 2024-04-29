@@ -15,9 +15,9 @@ FOUR_C_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::Coup13aPow::Coup13aPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
-      c_(*matdata->Get<double>("C")),
-      d_(*matdata->Get<int>("D")),
-      a_(*matdata->Get<double>("A"))
+      c_(matdata->Get<double>("C")),
+      d_(matdata->Get<int>("D")),
+      a_(matdata->Get<double>("A"))
 {
 }
 

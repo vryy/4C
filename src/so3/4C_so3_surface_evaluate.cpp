@@ -76,23 +76,23 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   Configuration config = config_none;
 
   // get type of condition
-  const auto* type = condition.Get<std::string>("type");
-  if (*type == "neum_live")
+  const auto& type = condition.Get<std::string>("type");
+  if (type == "neum_live")
   {
     ltype = neum_live;
     config = config_material;
   }
-  else if (*type == "neum_pseudo_orthopressure")
+  else if (type == "neum_pseudo_orthopressure")
   {
     ltype = neum_pseudo_orthopressure;
     config = config_lastconverged;
   }
-  else if (*type == "neum_orthopressure")
+  else if (type == "neum_orthopressure")
   {
     ltype = neum_orthopressure;
     config = config_spatial;
   }
-  else if (*type == "neum_torque")
+  else if (type == "neum_torque")
   {
     ltype = neum_torque;
     config = config_spatial;
@@ -103,8 +103,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   }
 
   // get values and switches from the condition
-  const auto* onoff = condition.Get<std::vector<int>>("onoff");
-  const auto* val = condition.Get<std::vector<double>>("val");
+  const auto* onoff = &condition.Get<std::vector<int>>("onoff");
+  const auto* val = &condition.Get<std::vector<double>>("val");
   const auto* spa_func = condition.GetIf<std::vector<int>>("funct");
 
   /*

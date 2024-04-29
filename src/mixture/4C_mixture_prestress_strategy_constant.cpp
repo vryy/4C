@@ -28,7 +28,7 @@ MIXTURE::PAR::ConstantPrestressStrategy::ConstantPrestressStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : PrestressStrategy(matdata), prestretch_()
 {
-  std::copy_n(matdata->Get<std::vector<double>>("PRESTRETCH")->begin(), 9, prestretch_.begin());
+  std::copy_n(matdata->Get<std::vector<double>>("PRESTRETCH").begin(), 9, prestretch_.begin());
 }
 
 std::unique_ptr<MIXTURE::PrestressStrategy>

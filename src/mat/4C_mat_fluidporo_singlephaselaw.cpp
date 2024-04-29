@@ -90,15 +90,15 @@ MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int pha
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(Teuchos::RCP<MAT::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(*matdata->Get<int>("NUMDOF")),
+      numdof_(matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
-      reltensions_(*matdata->Get<double>("RELTENSION")),
-      sat0_(*matdata->Get<double>("SATURATION_0"))
+      reltensions_(matdata->Get<double>("RELTENSION")),
+      sat0_(matdata->Get<double>("SATURATION_0"))
 {
   // check if sizes fit
-  if (numdof_ != (int)presids_->size())
+  if (numdof_ != (int)presids_.size())
     FOUR_C_THROW(
-        "number of dofs %d does not fit to size of dof vector %d", numdof_, presids_->size());
+        "number of dofs %d does not fit to size of dof vector %d", numdof_, presids_.size());
 
   return;
 }
@@ -108,11 +108,11 @@ MAT::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(Teuchos::RCP<MAT::PAR
 double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateSaturation(const std::vector<double>& pressure)
 {
   // check if sizes fit
-  if (pressure.size() != presids_->size())
+  if (pressure.size() != presids_.size())
     FOUR_C_THROW("number of dofs %d does not fit to size of dof vector %d", pressure.size(),
-        presids_->size());
+        presids_.size());
 
-  double presval = std::inner_product(presids_->begin(), presids_->end(), pressure.begin(), 0.0);
+  double presval = std::inner_product(presids_.begin(), presids_.end(), pressure.begin(), 0.0);
 
   double saturation = sat0_ + reltensions_ * presval;
 
@@ -125,15 +125,15 @@ double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateDerivOfSaturationWrtPressure(
     int doftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
-  if (pressure.size() != presids_->size())
+  if (pressure.size() != presids_.size())
     FOUR_C_THROW("number of dofs %d does not fit to size of dof vector %d", pressure.size(),
-        presids_->size());
+        presids_.size());
 
-  if ((*presids_)[doftoderive] == 0) return 0.0;
+  if (presids_[doftoderive] == 0) return 0.0;
 
   double deriv = reltensions_;
 
-  return deriv * (*presids_)[doftoderive];
+  return deriv * presids_[doftoderive];
 }
 
 /*----------------------------------------------------------------------*
@@ -142,9 +142,9 @@ double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateSecondDerivOfSaturationWrtPres
     int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
-  if (pressure.size() != presids_->size())
+  if (pressure.size() != presids_.size())
     FOUR_C_THROW("number of dofs %d does not fit to size of dof vector %d", pressure.size(),
-        presids_->size());
+        presids_.size());
 
   // second derivative is zero
   return 0.0;
@@ -155,11 +155,11 @@ double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateSecondDerivOfSaturationWrtPres
 double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateDerivOfPressureWrtSaturation(
     int doftoderive, double saturation)
 {
-  if ((*presids_)[doftoderive] == 0) return 0.0;
+  if (presids_[doftoderive] == 0) return 0.0;
 
   double deriv = 1.0 / reltensions_;
 
-  return deriv * (*presids_)[doftoderive];
+  return deriv * presids_[doftoderive];
 }
 
 /*----------------------------------------------------------------------*
@@ -179,16 +179,16 @@ double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateGenPressure(double saturation)
 MAT::PAR::FluidPoroPhaseLawTangent::FluidPoroPhaseLawTangent(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(*matdata->Get<int>("NUMDOF")),
+      numdof_(matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
-      reltensions_(*matdata->Get<double>("RELTENSION")),
-      exp_(*matdata->Get<double>("EXP")),
-      sat0_(*matdata->Get<double>("SATURATION_0"))
+      reltensions_(matdata->Get<double>("RELTENSION")),
+      exp_(matdata->Get<double>("EXP")),
+      sat0_(matdata->Get<double>("SATURATION_0"))
 {
   // check if sizes fit
-  if (numdof_ != (int)presids_->size())
+  if (numdof_ != (int)presids_.size())
     FOUR_C_THROW(
-        "number of dofs %d does not fit to size of dof vector %d", numdof_, presids_->size());
+        "number of dofs %d does not fit to size of dof vector %d", numdof_, presids_.size());
   return;
 }
 
@@ -198,11 +198,11 @@ MAT::PAR::FluidPoroPhaseLawTangent::FluidPoroPhaseLawTangent(
 double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateSaturation(const std::vector<double>& pressure)
 {
   // check if sizes fit
-  if (pressure.size() != presids_->size())
+  if (pressure.size() != presids_.size())
     FOUR_C_THROW("number of dofs %d does not fit to size of dof vector %d", pressure.size(),
-        presids_->size());
+        presids_.size());
 
-  double presval = std::inner_product(presids_->begin(), presids_->end(), pressure.begin(), 0.0);
+  double presval = std::inner_product(presids_.begin(), presids_.end(), pressure.begin(), 0.0);
 
   double saturation = sat0_ - std::pow(2 / M_PI * std::atan(reltensions_ * presval), exp_);
 
@@ -215,19 +215,19 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateDerivOfSaturationWrtPressure(
     int doftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
-  if (pressure.size() != presids_->size())
+  if (pressure.size() != presids_.size())
     FOUR_C_THROW("number of dofs %d does not fit to size of dof vector %d", pressure.size(),
-        presids_->size());
+        presids_.size());
 
-  if ((*presids_)[doftoderive] == 0) return 0.0;
+  if (presids_[doftoderive] == 0) return 0.0;
 
-  double presval = std::inner_product(presids_->begin(), presids_->end(), pressure.begin(), 0.0);
+  double presval = std::inner_product(presids_.begin(), presids_.end(), pressure.begin(), 0.0);
 
   double deriv = -exp_ * std::pow(2 / M_PI * std::atan(reltensions_ * presval), exp_ - 1.0) * 2.0 *
                  reltensions_ /
                  (M_PI * (1.0 + (reltensions_ * presval) * (reltensions_ * presval)));
 
-  return deriv * (*presids_)[doftoderive];
+  return deriv * presids_[doftoderive];
 }
 
 /*----------------------------------------------------------------------*
@@ -236,13 +236,13 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateSecondDerivOfSaturationWrtPre
     int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
-  if (pressure.size() != presids_->size())
+  if (pressure.size() != presids_.size())
     FOUR_C_THROW("number of dofs %d does not fit to size of dof vector %d", pressure.size(),
-        presids_->size());
+        presids_.size());
 
-  if ((*presids_)[firstdoftoderive] == 0 || (*presids_)[seconddoftoderive] == 0) return 0.0;
+  if (presids_[firstdoftoderive] == 0 || presids_[seconddoftoderive] == 0) return 0.0;
 
-  double presval = std::inner_product(presids_->begin(), presids_->end(), pressure.begin(), 0.0);
+  double presval = std::inner_product(presids_.begin(), presids_.end(), pressure.begin(), 0.0);
 
   double secondderiv = 0.0;
   // avoid division by zero in case of small presval --> second deriv goes to zero for presval --> 0
@@ -257,7 +257,7 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateSecondDerivOfSaturationWrtPre
   }
 
   // second derivative
-  return secondderiv * (*presids_)[firstdoftoderive] * (*presids_)[seconddoftoderive];
+  return secondderiv * presids_[firstdoftoderive] * presids_[seconddoftoderive];
 }
 
 /*----------------------------------------------------------------------*
@@ -265,13 +265,13 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateSecondDerivOfSaturationWrtPre
 double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateDerivOfPressureWrtSaturation(
     int doftoderive, double saturation)
 {
-  if ((*presids_)[doftoderive] == 0) return 0.0;
+  if (presids_[doftoderive] == 0) return 0.0;
 
   double deriv =
       -0.5 * M_PI / (reltensions_ * exp_) * std::pow(sat0_ - saturation, 1.0 / exp_ - 1.0) *
       (1.0 + std::pow(std::tan(0.5 * M_PI * std::pow(sat0_ - saturation, 1.0 / exp_)), 2));
 
-  return deriv * (*presids_)[doftoderive];
+  return deriv * presids_[doftoderive];
 }
 
 /*----------------------------------------------------------------------*
@@ -292,15 +292,15 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateGenPressure(double saturation
 MAT::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
     Teuchos::RCP<MAT::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
-      numdof_(*matdata->Get<int>("NUMDOF")),
+      numdof_(matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
-      functionID_saturation_(*matdata->Get<int>("FUNCTSAT")),
-      functionID_pressure_(*matdata->Get<int>("FUNCTPRES"))
+      functionID_saturation_(matdata->Get<int>("FUNCTSAT")),
+      functionID_pressure_(matdata->Get<int>("FUNCTPRES"))
 {
   // check if sizes fit
-  if (numdof_ != (int)presids_->size())
+  if (numdof_ != (int)presids_.size())
     FOUR_C_THROW(
-        "number of dofs %d does not fit to size of dof vector %d", numdof_, presids_->size());
+        "number of dofs %d does not fit to size of dof vector %d", numdof_, presids_.size());
 }
 
 /*----------------------------------------------------------------------*
@@ -371,11 +371,11 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturationInternal(
     const std::vector<double>& pressure)
 {
   // check if sizes fit
-  if (pressure.size() != presids_->size())
+  if (pressure.size() != presids_.size())
     FOUR_C_THROW("number of dofs %d does not fit to size of dof vector %d", pressure.size(),
-        presids_->size());
+        presids_.size());
 
-  double presval = std::inner_product(presids_->begin(), presids_->end(), pressure.begin(), 0.0);
+  double presval = std::inner_product(presids_.begin(), presids_.end(), pressure.begin(), 0.0);
 
   // directly write into entry without checking the name for performance reasons
   dp_[0].second = presval;
@@ -411,13 +411,13 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressu
     int doftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
-  if (pressure.size() != presids_->size())
+  if (pressure.size() != presids_.size())
     FOUR_C_THROW("number of dofs %d does not fit to size of dof vector %d", pressure.size(),
-        presids_->size());
+        presids_.size());
 
-  if ((*presids_)[doftoderive] == 0) return 0.0;
+  if (presids_[doftoderive] == 0) return 0.0;
 
-  double presval = std::inner_product(presids_->begin(), presids_->end(), pressure.begin(), 0.0);
+  double presval = std::inner_product(presids_.begin(), presids_.end(), pressure.begin(), 0.0);
   // directly write into entry without checking the name for performance reasons
   dp_[0].second = presval;
 
@@ -426,7 +426,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfSaturationWrtPressu
           ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
           .EvaluateDerivative(dp_, {}, 0);
 
-  return deriv[0] * (*presids_)[doftoderive];
+  return deriv[0] * presids_[doftoderive];
 }
 
 /*----------------------------------------------------------------------*
@@ -435,9 +435,9 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSecondDerivOfSaturationWrt
     int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
-  if (pressure.size() != presids_->size())
+  if (pressure.size() != presids_.size())
     FOUR_C_THROW("number of dofs %d does not fit to size of dof vector %d", pressure.size(),
-        presids_->size());
+        presids_.size());
 
   // TODO: implementation for phaselaw by function --> really necessary???
   return 0.0;
@@ -469,7 +469,7 @@ template <int dim>
 double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturationInternal(
     int doftoderive, double saturation)
 {
-  if ((*presids_)[doftoderive] == 0) return 0.0;
+  if (presids_[doftoderive] == 0) return 0.0;
 
   // directly write into entry without checking the name for performance reasons
   s_[0].second = saturation;
@@ -479,7 +479,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateDerivOfPressureWrtSaturati
           ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
           .EvaluateDerivative(s_, {}, 0);
 
-  return deriv[0] * (*presids_)[doftoderive];
+  return deriv[0] * presids_[doftoderive];
 }
 
 /*----------------------------------------------------------------------*

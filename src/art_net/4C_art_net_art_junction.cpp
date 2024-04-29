@@ -115,7 +115,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
 
         // find whether the nodes is at the inlet or at the outlet of the element
         std::string terminalType =
-            *(nd->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
+            nd->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype");
         if (terminalType == "inlet")
           IOart[i] = -1;
         else if (terminalType == "outlet")
@@ -139,8 +139,8 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
         for (int j = 1; j < i; j++)
         {
           // if Id(j-1) > Id(j) then swap the two values
-          if (*myConditions[j - 1]->Get<int>("ConditionID") >
-              *myConditions[j]->Get<int>("ConditionID"))
+          if (myConditions[j - 1]->Get<int>("ConditionID") >
+              myConditions[j]->Get<int>("ConditionID"))
           {
             cond_i = myConditions[j];
             IO_i = IOart[j];
@@ -168,7 +168,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
 
           if (i == myConditions.size()) break;
         } while (
-            *myConditions[i]->Get<int>("ConditionID") == *grouped_cond[0]->Get<int>("ConditionID"));
+            myConditions[i]->Get<int>("ConditionID") == grouped_cond[0]->Get<int>("ConditionID"));
 
         SortedConds.push_back(grouped_cond);
         grouped_cond.erase(grouped_cond.begin(), grouped_cond.end());
@@ -190,7 +190,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
         // -------------------------------------------------------------------
         // allocate the junction bc class members for every case
         // -------------------------------------------------------------------
-        condid = *SortedConds[i][0]->Get<int>("ConditionID");
+        condid = SortedConds[i][0]->Get<int>("ConditionID");
 
         // -------------------------------------------------------------------
         // sort junction BCs in map
@@ -284,10 +284,10 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdi
   {
     if (IOartFlag == 1)
       FOUR_C_THROW("Junction (%d) has all of its nodes defined as outlets",
-          *conds[0]->Get<int>("ConditionID"));
+          conds[0]->Get<int>("ConditionID"));
     else
       FOUR_C_THROW("Junction (%d) has all of its nodes defined as inlets",
-          *conds[0]->Get<int>("ConditionID"));
+          conds[0]->Get<int>("ConditionID"));
   }
 
   //----------------------------------------------------------------------
