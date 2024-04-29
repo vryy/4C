@@ -120,8 +120,8 @@ if(${FOUR_C_BUILD_TYPE_UPPER} MATCHES DEBUG)
       "ON"
       CACHE BOOL "Forced ON due to build type DEBUG" FORCE
       )
-  target_compile_options(baci_private_compile_interface INTERFACE "-Og")
-  target_link_options(baci_private_compile_interface INTERFACE "-Og")
+  target_compile_options(baci_private_compile_interface INTERFACE "-O0")
+  target_link_options(baci_private_compile_interface INTERFACE "-O0")
 
   target_compile_options(baci_private_compile_interface INTERFACE "-g")
 endif()
