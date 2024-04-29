@@ -103,7 +103,7 @@ namespace CORE::COMM
                   "\n\nNumber of procs (%d) and number of groups (%d) does not match given group "
                   "layout! \n",
                   size, ngroup);
-              printf("Example mpirun -np 4 baci-release -ngroup=2 -glayout=1,3 \n");
+              printf("Example mpirun -np 4 ./4C -ngroup=2 -glayout=1,3 \n");
               printf("Try again!\n");
             }
             MPI_Finalize();
@@ -213,7 +213,7 @@ namespace CORE::COMM
             "\n\n You have specified an argument ( %s ) for 4C starting with a \"-\" that is not "
             "valid!\n",
             argument.c_str());
-        printf("Please refer to ./baci-release --help and try again!\n");
+        printf("Please refer to ./4C --help and try again!\n");
         MPI_Finalize();
         exit(1);
       }

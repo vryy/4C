@@ -1,4 +1,4 @@
-# Build system for baci and support tools.
+# Build system for 4C and support tools.
 
 #
 ### General Setup
@@ -16,7 +16,7 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
     )
 endif()
 
-project(baci CXX C)
+project(4C CXX C)
 
 # Print CMake version to screen
 message(STATUS "Using CMake ${CMAKE_VERSION}")
@@ -27,8 +27,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 
 # The version number.
-set(baci_VERSION_MAJOR 1)
-set(baci_VERSION_MINOR 0)
+set(FOUR_C_VERSION_MAJOR 1)
+set(FOUR_C_VERSION_MINOR 0)
 
 # Assert a valid build configuration
 set(_allowed_build_types "DEBUG" "RELEASE" "RELWITHDEBINFO")
@@ -75,18 +75,18 @@ include(cmake/setup_global_options.cmake)
 ###------------------------------------------------------------------ External Libraries
 
 # Collect all external dependencies in a helper target
-add_library(baci_all_enabled_external_dependencies INTERFACE)
+add_library(four_c_all_enabled_external_dependencies INTERFACE)
 
-baci_configure_dependency(HDF5 DEFAULT ON)
-baci_configure_dependency(MPI DEFAULT ON)
-baci_configure_dependency(Qhull DEFAULT ON)
-baci_configure_dependency(Trilinos DEFAULT ON)
-baci_configure_dependency(Boost DEFAULT ON)
-baci_configure_dependency(ArborX DEFAULT OFF)
-baci_configure_dependency(FFTW DEFAULT ON)
-baci_configure_dependency(CLN DEFAULT ON)
-baci_configure_dependency(MIRCO DEFAULT OFF)
-baci_configure_dependency(Backtrace DEFAULT OFF)
+four_c_configure_dependency(HDF5 DEFAULT ON)
+four_c_configure_dependency(MPI DEFAULT ON)
+four_c_configure_dependency(Qhull DEFAULT ON)
+four_c_configure_dependency(Trilinos DEFAULT ON)
+four_c_configure_dependency(Boost DEFAULT ON)
+four_c_configure_dependency(ArborX DEFAULT OFF)
+four_c_configure_dependency(FFTW DEFAULT ON)
+four_c_configure_dependency(CLN DEFAULT ON)
+four_c_configure_dependency(MIRCO DEFAULT OFF)
+four_c_configure_dependency(Backtrace DEFAULT OFF)
 
 # Generate the macro definition for all dependencies automatically
 get_property(FOUR_C_FLAGS_EXTERNAL_DEPENDENCIES GLOBAL PROPERTY FOUR_C_FLAGS_EXTERNAL_DEPENDENCIES)
@@ -115,9 +115,7 @@ if(FOUR_C_WITH_ADDRESS_SANITIZER)
   set(FOUR_C_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
 endif()
 
-string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
-set(baciname baci-${BUILD_TYPE})
-
+set(FOUR_C_EXECUTABLE_NAME 4C)
 set(FULL_TARGETS
     post_processor
     post_monitor
@@ -127,14 +125,16 @@ set(FULL_TARGETS
     cut_test
     )
 
-add_custom_target(full DEPENDS ${baciname} ${FULL_TARGETS})
+add_custom_target(full DEPENDS ${FOUR_C_EXECUTABLE_NAME} ${FULL_TARGETS})
 
 include(cmake/setup_tests.cmake)
 
 # Create one large library: every module adds itself to this target
-set(FOUR_C_LIBRARY_NAME baci_lib)
+set(FOUR_C_LIBRARY_NAME lib4C)
 add_library(${FOUR_C_LIBRARY_NAME})
-target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE baci_private_compile_interface)
+# Remove the CMake generated prefix "lib" because we already added it manually, to have a distinct target name.
+set_target_properties(${FOUR_C_LIBRARY_NAME} PROPERTIES PREFIX "")
+target_link_libraries(${FOUR_C_LIBRARY_NAME} PRIVATE four_c_private_compile_interface)
 
 # Read in the source directory which defines all modules
 add_subdirectory(src)

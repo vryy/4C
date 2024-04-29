@@ -295,8 +295,8 @@ void IO::OutputControl::WriteHeader(
 
     controlfile_ << "# 4C output control file\n"
                  << "# created by " << user_entry->pw_name << " on " << hostname.data() << " at "
-                 << ctime(&time_value) << "# using code version (git SHA1) " << BaciGitHash
-                 << " \n\n"
+                 << ctime(&time_value) << "# using code version (git SHA1) "
+                 << VersionControl::git_hash << " \n\n"
                  << "input_file = \"" << inputfile_ << "\"\n"
                  << "problem_type = \"" << problemtype_ << "\"\n"
                  << "spatial_approximation = \""

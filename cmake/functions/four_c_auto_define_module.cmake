@@ -1,7 +1,7 @@
 # Automatically create a library for the sources and headers in the current directory. The target
 # will be named based on the folder name and any parent modules. This name is returned in the variable
 # AUTO_DEFINED_MODULE_NAME which is set at the call site.
-function(baci_auto_define_module)
+function(four_c_auto_define_module)
   # Get a name based on the current folder
   get_filename_component(_target ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
@@ -10,7 +10,7 @@ function(baci_auto_define_module)
     set(_target "${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE}_${_target}")
   endif()
 
-  message(VERBOSE "Defining BACI module target: ${_target}")
+  message(VERBOSE "Defining module target: ${_target}")
 
   list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
@@ -33,7 +33,7 @@ function(baci_auto_define_module)
     "_fwd\.h(pp)?|\.inst\.[hH]"
     )
 
-  baci_add_library(
+  four_c_add_library(
     ${_target}
     SOURCES
     ${_sources}
@@ -43,7 +43,7 @@ function(baci_auto_define_module)
 
   # Check if we are currently defining a part of a parent module and add ourselves as a dependency.
   if(NOT "${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE}" STREQUAL "")
-    baci_add_dependency(${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE} ${_target})
+    four_c_add_dependency(${FOUR_C_CURRENTLY_DEFINED_PARENT_MODULE} ${_target})
   endif()
 
   # Now check if there are more directories that contain CMakeLists.txt. If yes, we also add those.

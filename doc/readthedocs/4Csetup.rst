@@ -621,14 +621,14 @@ Make sure you have enabled a debug profile in your cmake settings.
 
         - serial debugging:
 
-            - Select baci-debug from the dropdown menu for both Target and Executable
+            - Select 4C from the dropdown menu for both Target and Executable
 
         - parallel debugging:
 
-            - Select baci-debug from the dropdown menu for Target
+            - Select 4C from the dropdown menu for Target
             - Enter ``<PathToMpirun>/mpirun`` to Executable (find with ``which mpirun`` in console)
             - Add the arguments for mpirun:
-              ``-np <NumberOfProcesses> <PathTo4C-debug>/baci-debug <PathToTest/TestName.dat> <OutputPreFix>``
+              ``-np <NumberOfProcesses> <PathTo4C-debug>/4C <PathToTest/TestName.dat> <OutputPreFix>``
 
     - Add any other parameters you need for the program to run (for example, the input file name and the output basename) to the arguments.
     - Enter the path you want to run the program in (maybe the one where your input file is located) to Working directory
@@ -720,7 +720,7 @@ They have to be placed in .vscode/launch.json in the configurations-list.
         "name": "Debug input file",
         "type": "cppdbg",
         "request": "launch",
-        "program": "<4C-debug-execdir>/baci-debug",
+        "program": "<4C-debug-execdir>/4C",
         "args": ["/path/to/inputfile.dat", "<4C-problemdir>/xxx"],
         "cwd": "<4C-problemdir>",
         "setupCommands": [
@@ -737,7 +737,7 @@ They have to be placed in .vscode/launch.json in the configurations-list.
         "name": "Debug input file from restart",
         "type": "cppdbg",
         "request": "launch",
-        "program": "<4C-debug-execdir>/build_debug/baci-debug",
+        "program": "<4C-debug-execdir>/build_debug/4C",
         "args": [
             "/path/to/inputfile.dat",
             "<4C-problemdir>/xxxx"
@@ -781,7 +781,7 @@ This mode is the "normal" mode. On a breakpoint, all processes make a pause.
         "args": [
             "-np",
             "3", // specify number of mpi ranks here
-            "<4C-debug-execdir>/baci-debug",
+            "<4C-debug-execdir>/4C",
             "/path/to/inputfile.dat",
             "<4C-problemdir>/xxx",
         ],
@@ -807,7 +807,7 @@ Start |FOURC| with the following command in an extra terminal:
 
 ::
 
-    ~/build_debug$ mpirun -np 2 ./baci-debug input.dat out --interactive
+    ~/build_debug$ mpirun -np 2 ./4C input.dat out --interactive
     Global rank 0 with PID 17235 on helmholtz.lnm.mw.tum.de is ready for attach
     Global rank 1 with PID 17236 on helmholtz.lnm.mw.tum.de is ready for attach
 
@@ -822,13 +822,13 @@ Now you can attach gdb to each process with the following configuration:
         "name": "Attach gdb",
         "type": "cppdbg",
         "request": "attach",
-        "program": "<4C-debug-execdir>/baci-debug",
+        "program": "<4C-debug-execdir>/4C",
         "processId": "${command:pickProcess}",
         "MIMode": "gdb"
     }
 
 Start it two times and choose in the prompt the respective process id.
-Wait until both instances are connected and then start the computation by pressing any key in the baci-debug terminal.
+Wait until both instances are connected and then start the computation by pressing any key in the 4C terminal.
 
 .. _build4Cwithcustomtargets:
 

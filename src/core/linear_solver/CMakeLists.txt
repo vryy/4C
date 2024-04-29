@@ -1,1 +1,1 @@
-baci_auto_define_module()
+four_c_auto_define_module()

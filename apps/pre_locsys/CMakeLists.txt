@@ -5,4 +5,4 @@ set(OBJS_PRE_LOCSYS
 
 add_executable(pre_locsys EXCLUDE_FROM_ALL ${OBJS_PRE_LOCSYS})
 set_target_properties(pre_locsys PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-baci_set_up_executable(pre_locsys)
+four_c_set_up_executable(pre_locsys)

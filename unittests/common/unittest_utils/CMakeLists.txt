@@ -1,3 +1,3 @@
 add_library(unittests_common INTERFACE)
 target_include_directories(unittests_common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-baci_add_dependency(unittests_common core)
+four_c_add_dependency(unittests_common core)

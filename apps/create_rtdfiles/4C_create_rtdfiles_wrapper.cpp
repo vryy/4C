@@ -40,7 +40,7 @@ namespace RTD
     if (!elementinformationfile)
       FOUR_C_THROW("failed to open file: %s", elementinformationfilename.c_str());
     elementinformationfile << "# yaml file created using 4C version (git SHA1):\n";
-    elementinformationfile << "# " << BaciGitHash.c_str() << "\n#\n";
+    elementinformationfile << "# " << VersionControl::git_hash << "\n#\n";
 
     WriteYamlCellTypeInformation(elementinformationfile);
   }
@@ -55,7 +55,7 @@ namespace RTD
     if (!headerdocumentationfile)
       FOUR_C_THROW("failed to open file: %s", headerdocumentationfilename.c_str());
     headerdocumentationfile << "..\n   Created using 4C version (git SHA1):\n";
-    headerdocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
+    headerdocumentationfile << "   " << VersionControl::git_hash << "\n\n";
     headerdocumentationfile << ".. _headerparameters:\n\n";
     headerdocumentationfile << "Header parameters\n";
     headerdocumentationfile << "=================\n\n";
@@ -71,7 +71,7 @@ namespace RTD
     if (!celltypeocumentationfile)
       FOUR_C_THROW("failed to open file: %s", celltypedocumentationfilename.c_str());
     celltypeocumentationfile << "..\n   Created using 4C version (git SHA1):\n";
-    celltypeocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
+    celltypeocumentationfile << "   " << VersionControl::git_hash << "\n\n";
 
     WriteCelltypeReference(celltypeocumentationfile);
   }
@@ -86,7 +86,7 @@ namespace RTD
     if (!materialdocumentationfile)
       FOUR_C_THROW("failed to open file: %s", materialdocumentationfilename.c_str());
     materialdocumentationfile << "..\n   Created using 4C version (git SHA1):\n";
-    materialdocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
+    materialdocumentationfile << "   " << VersionControl::git_hash << "\n\n";
     WriteMaterialReference(materialdocumentationfile, *INPUT::ValidMaterials());
   }
 
@@ -100,7 +100,7 @@ namespace RTD
     if (!conditiondocumentationfile)
       FOUR_C_THROW("failed to open file: %s", conditiondocumentationfilename.c_str());
     conditiondocumentationfile << "..\n   Created using 4C version (git SHA1):\n";
-    conditiondocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
+    conditiondocumentationfile << "   " << VersionControl::git_hash << "\n\n";
     WriteConditionsReference(conditiondocumentationfile, *INPUT::ValidConditions());
 
     WriteContactLawReference(conditiondocumentationfile, *INPUT::ValidContactConstitutiveLaws());
@@ -116,7 +116,7 @@ namespace RTD
     if (!variousdocumentationfile)
       FOUR_C_THROW("failed to open file: %s", variousdocumentationfilename.c_str());
     variousdocumentationfile << "..\n   Created using 4C version (git SHA1):\n";
-    variousdocumentationfile << "   " << BaciGitHash.c_str() << "\n\n";
+    variousdocumentationfile << "   " << VersionControl::git_hash << "\n\n";
     WriteVariousReference(variousdocumentationfile);
   }
 

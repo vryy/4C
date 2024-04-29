@@ -29,4 +29,6 @@ if(Trilinos_FOUND AND NOT TARGET Trilinos::all_selected_libs)
     )
 endif()
 
-target_link_libraries(baci_all_enabled_external_dependencies INTERFACE Trilinos::all_selected_libs)
+target_link_libraries(
+  four_c_all_enabled_external_dependencies INTERFACE Trilinos::all_selected_libs
+  )

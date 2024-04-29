@@ -83,4 +83,4 @@ if(IGNORE_UNSTABLE_CUTTEST)
 endif(IGNORE_UNSTABLE_CUTTEST)
 set_target_properties(cut_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
-baci_set_up_executable(cut_test)
+four_c_set_up_executable(cut_test)

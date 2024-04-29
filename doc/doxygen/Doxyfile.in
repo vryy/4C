@@ -17,8 +17,8 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 
-PROJECT_NAME           = "BACI"
-PROJECT_NUMBER         = "Git Hash: @BaciGitHash@"
+PROJECT_NAME           = "4C"
+PROJECT_NUMBER         = "Git Hash: @FOUR_C_GIT_HASH@"
 PROJECT_BRIEF          =
 PROJECT_LOGO           =
 OUTPUT_DIRECTORY       = @DOXYGEN_OUT_DIRECTORY@

@@ -67,7 +67,7 @@ In the following sections, we'll learn how to create the these two files.
 
 After creating the header and bc file, we may start the solver use the call
 
-``./baci-release <inputdirectory>/your_example.dat <outputdirectory>/outputprefix``
+``./4C <inputdirectory>/your_example.dat <outputdirectory>/outputprefix``
 
 (in the |FOURC|-directory). The results are then written to the result directory with the prefix you chose.
 Note that a number of files are created with this prefix depending on the output you requested.

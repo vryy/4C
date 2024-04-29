@@ -221,11 +221,11 @@ execution.
 
 ### Prepare and Run Simulations
 
-After sucessfully building 4C, the executable `baci-release` is located in your build directory `<buildDir>/`.
+After sucessfully building 4C, the executable `4C` is located in your build directory `<buildDir>/`.
 It needs to be invoked together with an input (`.dat`) file via
 
 ```bash
-<buildDir>/baci-release <jobName>.dat <outputName>
+<buildDir>/4C <jobName>.dat <outputName>
 ```
 
 where `<jobName>` is the name of the simulation file and `<outputName>` denotes the name of the corresponding output

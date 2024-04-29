@@ -1,10 +1,10 @@
 #! Add a unit test executable
 #
 # This executable may be run in serial or with NP*THREADS processors given as arguments
-# Usage: baci_add_google_test_executable(<name> [NP <number of MPI-processes>] [THREADS <number of OpenMP threads>] SOURCE source1 [source2 ...])
+# Usage: four_c_add_google_test_executable(<name> [NP <number of MPI-processes>] [THREADS <number of OpenMP threads>] SOURCE source1 [source2 ...])
 #
 # Note: This function will do nothing if unit tests are not configured.
-function(baci_add_google_test_executable TESTNAME)
+function(four_c_add_google_test_executable TESTNAME)
   if(NOT FOUR_C_WITH_GOOGLETEST)
     return()
   endif()
@@ -53,7 +53,7 @@ function(baci_add_google_test_executable TESTNAME)
   # Do not try to build tests as unity files.
   set_target_properties(${TESTNAME} PROPERTIES UNITY_BUILD OFF)
 
-  baci_set_up_executable(${TESTNAME})
+  four_c_set_up_executable(${TESTNAME})
 
   # All libraries are linked as PRIVATE since a unit test executable cannot be used as a dependency itself.
   target_link_libraries(${TESTNAME} PRIVATE gtest gmock)

@@ -1,4 +1,4 @@
-baci_auto_define_module()
+four_c_auto_define_module()
 
 set(_dependencies
     # cmake-format: sortable
@@ -19,4 +19,4 @@ set(_dependencies
     w1
     )
 
-baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
+four_c_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

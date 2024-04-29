@@ -9,8 +9,8 @@
 #define FOUR_C_CONFIG_HPP
 
 // General definitions that are used throughout the project.
-#define FOUR_C_VERSION_MAJOR @baci_VERSION_MAJOR@
-#define FOUR_C_VERSION_MINOR @baci_VERSION_MINOR@
+#define FOUR_C_VERSION_MAJOR @FOUR_C_VERSION_MAJOR@
+#define FOUR_C_VERSION_MINOR @FOUR_C_VERSION_MINOR@
 
 // This flag guards assertions and special checks that are often expensive and should only run when debugging.
 #cmakedefine FOUR_C_ENABLE_ASSERTIONS

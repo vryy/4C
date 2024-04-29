@@ -94,7 +94,7 @@ To start the solver use the call
 
 .. container:: center
 
-   ``./baci-release [inputdirectory]/your_example.dat [outputdirectory]/outputprefix``
+   ``./4C [inputdirectory]/your_example.dat [outputdirectory]/outputprefix``
 
 (in the |FOURC|-directory; of course, you may choose a different directory as well, if you take care for the path names).
 The results are then written to the result directory with the prefix you chose.

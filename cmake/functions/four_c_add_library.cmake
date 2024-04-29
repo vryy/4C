@@ -1,13 +1,13 @@
 #
-# This function adds a library target with the given sources and headers and sets all BACI-wide defaults on it.
+# This function adds a library target with the given sources and headers and sets all project-wide defaults on it.
 # The type of target is determined automatically depending on whether any sources or headers are given,
 #
 # Usage:
-#   baci_add_library(<target_name>
+#   four_c_add_library(<target_name>
 #     [SOURCES <list of source files>]
 #     [HEADERS <list of header files>])
 #
-function(baci_add_library _target)
+function(four_c_add_library _target)
   # Parse arguments
   set(options "")
   set(oneValueArgs "")
@@ -41,7 +41,7 @@ function(baci_add_library _target)
 
     # Add all global compile settings as PRIVATE. We only want to use them to compile our own files and not force
     # them on other users of the library.
-    target_link_libraries(${_target}_objs PRIVATE baci_private_compile_interface)
+    target_link_libraries(${_target}_objs PRIVATE four_c_private_compile_interface)
   endif()
 
   # Check that every header includes 4C_config.hpp
@@ -60,5 +60,5 @@ function(baci_add_library _target)
   target_sources(${_target}_deps INTERFACE FILE_SET HEADERS FILES ${_parsed_HEADERS})
 
   # Link against all default external libraries
-  baci_link_default_external_libraries(${_target}_deps INTERFACE)
+  four_c_link_default_external_libraries(${_target}_deps INTERFACE)
 endfunction()

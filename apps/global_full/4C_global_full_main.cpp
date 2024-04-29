@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
 #endif
         "*                                            *\n"
         "**********************************************\n\n",
-        BaciGitHash.c_str());
+        VersionControl::git_hash);
     printf("Trilinos Version %s (git SHA1 %s)\n", TrilinosVersion.c_str(), TrilinosGitHash.c_str());
     printf("Total number of processors: %d\n", gcomm->NumProc());
   }

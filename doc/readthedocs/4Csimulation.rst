@@ -3,13 +3,11 @@
 |FOURC| Simulation
 ====================
 
-Depending on the compilation (with or without debug information), the resulting executable for |FOURC| will be
-either ``baci-release`` or ``baci-debug``. In the following, the name will always be denoted as ``<4C-command>``.
-The basic command is thus (started in the build directory)
+The basic command to execute 4C is (relative to the build directory)
 
 .. code-block:: bash
 
-    ./<4C_command> <input_file> <output_basename>
+    ./4C <input_file> <output_basename>
 
 The input file is commonly a file with the suffix ``.dat``, and it is commonly created by a preprocessing step,
 which is explained in detail in :ref:`preprocessing`.
@@ -23,7 +21,7 @@ These results in the output files are by default stored in a proprietary format.
 However, output data can also be stored in a format that is readable by other programs.
 For further information, see :ref:`Postprocessing`.
 
-All available options when starting |FOURC| from the command line are shown by an output of ``<4C-command> --help``:
+All available options when starting |FOURC| from the command line are shown by an output of ``./4C --help``:
 
 .. literalinclude:: 4C-help.txt
 
@@ -35,14 +33,14 @@ In ``tests/input_files`` a huge number of test examples are available. For examp
 
 .. code-block:: bash
 
-   ./<4C-command> tests/input_files/f2_drivencavity20x20_drt.dat xxx
+   ./4C tests/input_files/f2_drivencavity20x20_drt.dat xxx
 
 runs the 2d fluid driven cavity example and writes the output to files beginning with ``xxx``.
 You can also run the code in parallel with the ``mpirun`` command like this:
 
 .. code-block:: bash
 
-   mpirun -np 1 ./<4C-command> tests/input_files/f2_drivencavity20x20_drt.dat xxx
+   mpirun -np 1 ./4C tests/input_files/f2_drivencavity20x20_drt.dat xxx
 
 
 Restarting an analysis
@@ -57,7 +55,7 @@ given on the command line:
 
 ::
 
-   ./<4C-command> <restart_input_file> <output_basename> [restartfrom=<restart_filename>] restart=<step>
+   ./4C <restart_input_file> <output_basename> [restartfrom=<restart_filename>] restart=<step>
 
 Here, one has to provide the step, at which the restart is started from the previous simulation.
 If the parameter ``restartfrom`` is given, the initial configuration is read from this file, 

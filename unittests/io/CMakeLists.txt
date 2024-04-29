@@ -11,7 +11,7 @@ set(SOURCE_LIST
     4C_utils_reader_test.cpp
     )
 
-baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
+four_c_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
 
 set(TESTNAME unittests_io_np_3)
 
@@ -21,7 +21,7 @@ set(SOURCE_LIST
     4C_gridgenerator_np_3_test.cpp
     )
 
-baci_add_google_test_executable(
+four_c_add_google_test_executable(
   ${TESTNAME}
   NP
   3

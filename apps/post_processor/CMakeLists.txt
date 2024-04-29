@@ -8,7 +8,7 @@ set(OBJS_POST_PROCESSOR_MAIN
 
 add_executable(post_processor EXCLUDE_FROM_ALL ${OBJS_POST_PROCESSOR_MAIN})
 set_target_properties(post_processor PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-baci_set_up_executable(post_processor)
+four_c_set_up_executable(post_processor)
 
 # various post-processing tools
-include(scripts/baci_create_post_scripts.cmake)
+include(scripts/create_post_scripts.cmake)

@@ -1,5 +1,5 @@
 # A function to search for and configure an external dependency
-function(baci_configure_dependency _package_name)
+function(four_c_configure_dependency _package_name)
   set(options "")
   set(oneValueArgs DEFAULT)
   set(multiValueArgs "")
@@ -18,7 +18,7 @@ function(baci_configure_dependency _package_name)
   string(TOUPPER ${_package_name} _package_name_UPPER)
 
   # Add a cache entry to turn the option ON or OFF.
-  baci_process_global_option(
+  four_c_process_global_option(
     FOUR_C_WITH_${_package_name_UPPER} "Build 4C with ${_package_name}" ${_parsed_DEFAULT}
     )
 

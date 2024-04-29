@@ -1,6 +1,6 @@
 #
 # Build routine/test for readthedocs documentation
-baci_process_global_option(FOUR_C_BUILD_READTHEDOCS "Build readthedocs documentation" OFF)
+four_c_process_global_option(FOUR_C_BUILD_READTHEDOCS "Build readthedocs documentation" OFF)
 if(FOUR_C_BUILD_READTHEDOCS)
 
   # add doc-specific cmake modules
@@ -34,7 +34,7 @@ if(FOUR_C_BUILD_READTHEDOCS)
   add_custom_target(
     readthedocs ALL
     COMMAND create_rtd
-    COMMAND ${baciname} -h > ${READTHEDOCS_OUT_DIR}/reference_docs/4C-help.txt
+    COMMAND ${FOUR_C_EXECUTABLE_NAME} -h > ${READTHEDOCS_OUT_DIR}/reference_docs/4C-help.txt
     COMMAND
       cmake ${PROJECT_SOURCE_DIR} --list-presets >
       ${READTHEDOCS_OUT_DIR}/reference_docs/4C-cmake-presets.txt
@@ -43,7 +43,7 @@ if(FOUR_C_BUILD_READTHEDOCS)
       -i "${CMAKE_CURRENT_SOURCE_DIR}" -i "${READTHEDOCS_OUT_DIR}/reference_docs" -i
       "${PROJECT_SOURCE_DIR}/tests/framework-test" -i "${READTHEDOCS_TPLDEPEND_DIR}" -o
       "${READTHEDOCS_HTML_DIR}" -c "${READTHEDOCS_OUT_DIR}" -s "${PROJECT_BINARY_DIR}/doc/tmp"
-    DEPENDS create_rtd ${baciname}
+    DEPENDS create_rtd ${FOUR_C_EXECUTABLE_NAME}
     COMMENT "Build readthedocs documentation with Sphinx"
     )
 

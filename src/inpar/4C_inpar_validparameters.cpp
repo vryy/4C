@@ -96,18 +96,13 @@ void PrintValidParameters()
 /*----------------------------------------------------------------------*/
 void PrintHelpMessage()
 {
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-  char baci_build[] = "baci-debug";
-#else
-  char baci_build[] = "baci-release";
-#endif
-
   std::cout << "NAME\n"
-            << "\t" << baci_build << " - simulate just about anything\n"
+            << "\t"
+            << "4C - simulate just about anything\n"
             << "\n"
             << "SYNOPSIS\n"
-            << "\t" << baci_build
-            << " [-h | --help] [-p | --parameters] [-d | --datfile] [-ngroup=<x>] \\ \n"
+            << "\t"
+            << "4C [-h | --help] [-p | --parameters] [-d | --datfile] [-ngroup=<x>] \\ \n"
                "\t\t[-glayout=a,b,c,...] [-nptype=<parallelism_type>] \\ \n"
             << "\t\t<dat_name> <output_name> [restart=<y>] [restartfrom=restart_file_name] \\ \n"
                "\t\t[ <dat_name0> <output_name0> [restart=<y>] [restartfrom=restart_file_name] ... "
