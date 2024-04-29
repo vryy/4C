@@ -22,6 +22,7 @@ which govern the actual doings
 #include "4C_mat_list_chemotaxis.hpp"
 #include "4C_mat_list_reactions.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_parameter.hpp"
 
 FOUR_C_NAMESPACE_OPEN

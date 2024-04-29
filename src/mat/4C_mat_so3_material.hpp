@@ -15,6 +15,7 @@
 #include "4C_inpar_structure.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 
 #include <unordered_map>
 

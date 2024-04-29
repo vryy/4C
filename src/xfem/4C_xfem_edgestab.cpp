@@ -25,6 +25,7 @@ continuous interior penalty) scheme
 #include "4C_lib_discret_faces.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_xfem_utils.hpp"
 

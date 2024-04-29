@@ -10,6 +10,7 @@
 
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_material.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"

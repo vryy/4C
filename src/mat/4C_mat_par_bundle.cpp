@@ -15,6 +15,7 @@
 #include "4C_mat_par_bundle.hpp"
 
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_matelast_summand.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -49,7 +50,7 @@ void MAT::PAR::Bundle::MakeParameters()
     // 1st try
     {
       // indirectly add quick access parameter members
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
+      Teuchos::RCP<MAT::Material> mat = MAT::Factory(matid);
       // check if allocation was successful
       Teuchos::RCP<MAT::PAR::Material> matpar = m->second;
       if (matpar->Parameter() != nullptr) continue;

@@ -7,7 +7,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 
 #include "4C_global_data.hpp"
 #include "4C_mat_aaa_mixedeffects.hpp"
@@ -124,7 +124,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
+Teuchos::RCP<MAT::Material> MAT::Factory(int matnum)
 {
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();

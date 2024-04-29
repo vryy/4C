@@ -10,8 +10,6 @@
 #ifndef FOUR_C_MAT_MATERIAL_HPP
 #define FOUR_C_MAT_MATERIAL_HPP
 
-
-
 #include "4C_config.hpp"
 
 #include "4C_comm_parobject.hpp"
@@ -30,8 +28,6 @@ namespace MAT
   {
     class Parameter;
   }
-
-  const int NUM_STRESS_3D = 6;  ///< 6 stresses for 3D
 
   /*!
    * @brief Interface class for materials in elements
@@ -65,10 +61,6 @@ namespace MAT
 
     /// return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const = 0;
-
-    /// create element material object given the number of a material definition
-    static Teuchos::RCP<Material> Factory(int matnum  ///< material ID
-    );
 
     /// return material density at gauss point (if provided by the specific material)
     virtual double Density(int gp) const { return Density(); }

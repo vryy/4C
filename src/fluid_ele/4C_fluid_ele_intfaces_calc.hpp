@@ -18,6 +18,7 @@
 #include "4C_inpar_xfem.hpp"
 #include "4C_lib_element.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 FOUR_C_NAMESPACE_OPEN

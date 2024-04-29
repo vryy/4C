@@ -12,6 +12,7 @@
 #include "4C_global_data.hpp"
 #include "4C_linalg_FADmatrix_utils.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_par_material.hpp"
 #include "4C_mat_plasticdruckerprager.hpp"

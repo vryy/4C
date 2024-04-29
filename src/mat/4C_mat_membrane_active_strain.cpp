@@ -216,8 +216,8 @@ void MAT::MembraneActiveStrain::Setup(int numgp, INPUT::LineDefinition* linedef)
   SetupFiberVectors(numgp, linedef);
 
   // setup of passive material
-  matpassive_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(
-      MAT::Material::Factory(params_->matid_passive_), true);
+  matpassive_ =
+      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->matid_passive_), true);
   matpassive_->Setup(numgp, linedef);
 
   // setup internal variables

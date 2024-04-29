@@ -11,6 +11,7 @@ within isothermal electrodes
 #include "4C_scatra_ele_calc_elch_electrode.hpp"
 
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
 #include "4C_scatra_ele_utils_elch_electrode.hpp"

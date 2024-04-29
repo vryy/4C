@@ -53,7 +53,7 @@ namespace MAT::PAR
 
     /// Set pointer to readily allocated 'quick access' material parameters
     ///
-    /// This function is called by the material factory MAT::Material::Factory.
+    /// This function is called by the material factory MAT::Factory.
     /// To circumvent more than this single major switch of material type to
     /// object, #params_ are allocated externally.
     inline void SetParameter(MAT::PAR::Parameter* matparam) { params_ = Teuchos::rcp(matparam); }

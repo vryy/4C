@@ -12,6 +12,7 @@
 #include "4C_lib_discret.hpp"
 #include "4C_lib_element.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_w1_scatra.hpp"
 

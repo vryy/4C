@@ -16,6 +16,7 @@
 
 #include "4C_io_line_parser.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 
 #include <iostream>
 #include <string>

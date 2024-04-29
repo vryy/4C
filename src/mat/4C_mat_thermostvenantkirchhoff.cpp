@@ -87,7 +87,7 @@ void MAT::ThermoStVenantKirchhoff::CreateThermoMaterialIfSet()
   const int thermoMatId = this->params_->thermomat_;
   if (thermoMatId != -1)
   {
-    auto mat = MAT::Material::Factory(thermoMatId);
+    auto mat = MAT::Factory(thermoMatId);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
     thermo_ = Teuchos::rcp_dynamic_cast<MAT::TRAIT::Thermo>(mat);
   }

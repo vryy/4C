@@ -17,6 +17,7 @@ John Wiley & Sons, Ltd, 2008
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_par_parameter.hpp"
 #include "4C_mat_stvenantkirchhoff.hpp"

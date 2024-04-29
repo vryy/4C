@@ -13,6 +13,7 @@
 #include "4C_mat_arrhenius_temp.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_sutherland.hpp"
 #include "4C_mat_tempdepwater.hpp"
 #include "4C_scatra_ele.hpp"

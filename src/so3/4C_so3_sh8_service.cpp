@@ -10,6 +10,7 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_viscoanisotropic.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_sh8.hpp"

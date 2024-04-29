@@ -1451,7 +1451,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
 
       if (my_multimat_IDs.find(matid) != my_multimat_IDs.end())
       {
-        Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
+        Teuchos::RCP<MAT::Material> mat = MAT::Factory(matid);
 
         // initialize variables storing micro-scale information
         int microdisnum(-1);
@@ -1590,7 +1590,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
         problem.SetRestartStep(restart_step);
 
         // set the problem number from which to call materials again to zero
-        // (i.e. macro problem), cf. MAT::Material::Factory!
+        // (i.e. macro problem), cf. MAT::Factory!
         problem.Materials()->ResetReadFromProblem();
       }
     }
@@ -1706,7 +1706,7 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
     problem.SetRestartStep(restart_step);
 
     // set the problem number from which to call materials again to zero
-    // (i.e. macro problem), cf. MAT::Material::Factory!
+    // (i.e. macro problem), cf. MAT::Factory!
     problem.Materials()->ResetReadFromProblem();
   }
 }

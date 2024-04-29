@@ -20,6 +20,7 @@
 #include "4C_lib_element_append_visualization.hpp"
 #include "4C_lib_node.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Shards_BasicTopologies.hpp>
@@ -226,7 +227,7 @@ void DRT::Element::SetNodeIds(const std::string& distype, INPUT::LineDefinition*
  *----------------------------------------------------------------------*/
 void DRT::Element::SetMaterial(int matnum)
 {
-  Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matnum);
+  Teuchos::RCP<MAT::Material> mat = MAT::Factory(matnum);
   if (mat == Teuchos::null)
     FOUR_C_THROW(
         "Invalid material given to the element. \n"

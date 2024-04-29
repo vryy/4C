@@ -16,6 +16,7 @@
 #include "4C_linalg_fixedsizematrix_tensor_transformation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_membrane_elasthyper.hpp"
 #include "4C_mat_membrane_material_interfaces.hpp"
 #include "4C_membrane.hpp"

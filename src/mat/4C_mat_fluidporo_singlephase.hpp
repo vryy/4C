@@ -20,6 +20,7 @@
 #include "4C_mat_fluidporo_relpermeability_law.hpp"
 #include "4C_mat_fluidporo_viscosity_law.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_parameter.hpp"
 #include "4C_mat_poro_density_law.hpp"
 

@@ -41,7 +41,7 @@ MAT::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
     for (m = reacids_.begin(); m != reacids_.end(); ++m)
     {
       const int reacid = *m;
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
+      Teuchos::RCP<MAT::Material> mat = MAT::Factory(reacid);
 
       // safety check and cast
       if (mat->MaterialType() != CORE::Materials::m_fluidporo_singlereaction)
@@ -110,7 +110,7 @@ void MAT::FluidPoroMultiPhaseReactions::SetupMatMap()
   for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); ++m)
   {
     const int reacid = *m;
-    Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
+    Teuchos::RCP<MAT::Material> mat = MAT::Factory(reacid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
     MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<MAT::Material>>(reacid, mat));
   }

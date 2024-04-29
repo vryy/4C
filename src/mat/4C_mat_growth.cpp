@@ -300,8 +300,7 @@ void MAT::Growth::Setup(int numgp, INPUT::LineDefinition* linedef)
   }
 
   // Setup of elastic material
-  matelastic_ =
-      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->idmatelastic_));
+  matelastic_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->idmatelastic_));
   matelastic_->Setup(numgp, linedef);
 
   isinit_ = true;

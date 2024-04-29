@@ -85,12 +85,12 @@ void MAT::ScalarDepInterp::Setup(int numgp, INPUT::LineDefinition* linedef)
 
   // Setup of elastic material for zero concentration
   lambda_zero_mat_ =
-      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->id_lambda_zero_));
+      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->id_lambda_zero_));
   lambda_zero_mat_->Setup(numgp, linedef);
 
   // Setup of elastic material for zero concentration
   lambda_unit_mat_ =
-      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->id_lambda_unit_));
+      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->id_lambda_unit_));
   lambda_unit_mat_->Setup(numgp, linedef);
 
   // Some safety check

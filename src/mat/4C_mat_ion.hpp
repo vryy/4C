@@ -16,6 +16,7 @@ Bauer
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_parameter.hpp"
 
 FOUR_C_NAMESPACE_OPEN

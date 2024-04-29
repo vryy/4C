@@ -14,6 +14,7 @@
 #include "4C_lib_discret.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_porofluidmultiphase_ele_evaluator.hpp"
 #include "4C_porofluidmultiphase_ele_parameter.hpp"
 #include "4C_porofluidmultiphase_ele_phasemanager.hpp"

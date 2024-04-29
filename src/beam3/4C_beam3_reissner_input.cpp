@@ -13,6 +13,7 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_beam_material_generic.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_parameter.hpp"
 
 FOUR_C_NAMESPACE_OPEN

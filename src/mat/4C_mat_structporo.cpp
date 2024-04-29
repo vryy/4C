@@ -116,7 +116,7 @@ MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params)
       surf_porosity_(Teuchos::null),
       is_initialized_(false)
 {
-  mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->matid_));
+  mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->matid_));
   if (mat_ == Teuchos::null)
     FOUR_C_THROW("MAT::StructPoro: underlying material should be of type MAT::So3Material");
 }

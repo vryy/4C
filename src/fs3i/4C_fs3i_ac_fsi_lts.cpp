@@ -33,6 +33,7 @@
 #include "4C_mat_growth.hpp"
 #include "4C_mat_growth_law.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_scatra_algorithm.hpp"

@@ -19,6 +19,7 @@ function)
 #include "4C_mat_beam_elasthyper.hpp"
 #include "4C_mat_beam_elasthyper_parameter.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 
 #include <Teuchos_RCP.hpp>
 

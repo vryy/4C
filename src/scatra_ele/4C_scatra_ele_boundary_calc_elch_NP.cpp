@@ -12,6 +12,7 @@
 #include "4C_mat_ion.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_parameter_elch.hpp"
 #include "4C_utils_singleton_owner.hpp"

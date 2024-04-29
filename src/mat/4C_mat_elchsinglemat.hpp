@@ -13,6 +13,7 @@ electric potential as degrees of freedom
 #include "4C_config.hpp"
 
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_parameter.hpp"
 
 FOUR_C_NAMESPACE_OPEN

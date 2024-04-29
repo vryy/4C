@@ -9,6 +9,7 @@
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_shell7p_ele_calc_interface.hpp"
 #include "4C_shell7p_ele_factory.hpp"
 #include "4C_shell7p_ele_neumann_evaluator.hpp"

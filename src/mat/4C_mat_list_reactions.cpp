@@ -45,7 +45,7 @@ MAT::PAR::MatListReactions::MatListReactions(Teuchos::RCP<MAT::PAR::Material> ma
     for (m = reacids_.begin(); m != reacids_.end(); ++m)
     {
       const int reacid = *m;
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
+      Teuchos::RCP<MAT::Material> mat = MAT::Factory(reacid);
       MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<MAT::Material>>(reacid, mat));
     }
   }
@@ -120,7 +120,7 @@ void MAT::MatListReactions::SetupMatMap()
   for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); ++m)
   {
     const int reacid = *m;
-    Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
+    Teuchos::RCP<MAT::Material> mat = MAT::Factory(reacid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
     MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<MAT::Material>>(reacid, mat));
   }
@@ -215,7 +215,7 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
     for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); m++)
     {
       const int actmatid = *m;
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(actmatid);
+      Teuchos::RCP<MAT::Material> mat = MAT::Factory(actmatid);
       if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
       MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<MAT::Material>>(actmatid, mat));
     }

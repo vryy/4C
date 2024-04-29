@@ -17,6 +17,7 @@
 #include "4C_mat_ferech_pv.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_mixfrac.hpp"
 #include "4C_mat_sutherland.hpp"
 #include "4C_mat_tempdepwater.hpp"

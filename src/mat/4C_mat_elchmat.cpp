@@ -39,7 +39,7 @@ MAT::PAR::ElchMat::ElchMat(Teuchos::RCP<MAT::PAR::Material> matdata)
     for (n = phaseids_.begin(); n != phaseids_.end(); ++n)
     {
       const int phaseid = *n;
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(phaseid);
+      Teuchos::RCP<MAT::Material> mat = MAT::Factory(phaseid);
       mat_.insert(std::pair<int, Teuchos::RCP<MAT::Material>>(phaseid, mat));
     }
   }
@@ -95,7 +95,7 @@ void MAT::ElchMat::SetupMatMap()
   for (n = params_->PhaseIds().begin(); n != params_->PhaseIds().end(); ++n)
   {
     const int phaseid = *n;
-    Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(phaseid);
+    Teuchos::RCP<MAT::Material> mat = MAT::Factory(phaseid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
     mat_.insert(std::pair<int, Teuchos::RCP<MAT::Material>>(phaseid, mat));
   }
@@ -174,7 +174,7 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
     for (n = params_->PhaseIds().begin(); n != params_->PhaseIds().end(); n++)
     {
       const int actphaseid = *n;
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(actphaseid);
+      Teuchos::RCP<MAT::Material> mat = MAT::Factory(actphaseid);
       if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
       mat_.insert(std::pair<int, Teuchos::RCP<MAT::Material>>(actphaseid, mat));
     }

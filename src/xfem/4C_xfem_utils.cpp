@@ -17,6 +17,7 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_rebalance_binning_based.hpp"
 

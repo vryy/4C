@@ -11,6 +11,7 @@
 #include "4C_global_data.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_material.hpp"
 #include "4C_utils_function.hpp"
 

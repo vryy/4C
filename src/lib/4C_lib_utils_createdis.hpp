@@ -22,6 +22,7 @@
 #include "4C_lib_condition_utils.hpp"
 #include "4C_lib_immersed_node.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_parameter.hpp"
 #include "4C_nurbs_discret.hpp"
 

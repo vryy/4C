@@ -16,6 +16,7 @@
 #include "4C_inpar_material.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>

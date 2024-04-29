@@ -209,7 +209,7 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
 void CROSSLINKING::CrosslinkerNode::SetMaterial(int const matnum)
 {
   Teuchos::RCP<MAT::CrosslinkerMat> mat =
-      Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(MAT::Material::Factory(matnum));
+      Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(MAT::Factory(matnum));
   if (mat == Teuchos::null) FOUR_C_THROW("Invalid material given to crosslinker node. \n");
   mat_ = mat;
 }

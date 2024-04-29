@@ -20,6 +20,7 @@ spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_parameter.hpp"
 #include "4C_red_airways_elem_params.hpp"
 

@@ -69,8 +69,7 @@ void STRUMULTI::np_support_drt()
 
     // every element needs one micromaterial
     if (dummymaterials[eleID] == Teuchos::null)
-      dummymaterials[eleID] =
-          Teuchos::rcp_static_cast<MAT::MicroMaterial>(MAT::Material::Factory(1));
+      dummymaterials[eleID] = Teuchos::rcp_static_cast<MAT::MicroMaterial>(MAT::Factory(1));
 
     // check what is the next task of the supporting procs
     switch (whattodo)
@@ -153,8 +152,7 @@ void STRUMULTI::np_support_drt()
 
         // new dummy material is created if necessary
         if (dummymaterials[eleID] == Teuchos::null)
-          dummymaterials[eleID] =
-              Teuchos::rcp_static_cast<MAT::MicroMaterial>(MAT::Material::Factory(1));
+          dummymaterials[eleID] = Teuchos::rcp_static_cast<MAT::MicroMaterial>(MAT::Factory(1));
 
         // dummy material is used to restart the micro material
         dummymaterials[eleID]->ReadRestart(gp, eleID, eleowner, microdisnum, V0);

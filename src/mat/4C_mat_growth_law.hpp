@@ -20,6 +20,7 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 #include "4C_inpar_material.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_material.hpp"
 
 #include <Teuchos_ParameterList.hpp>
