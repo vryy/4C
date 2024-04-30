@@ -77,11 +77,13 @@ namespace CORE
     }
 
     template <class T>
-    T GetAsEnum(Teuchos::ParameterList& params, const std::string& name, T default_value)
+    T GetAsEnum(const Teuchos::ParameterList& params, const std::string& name, T default_value)
     {
       static_assert(std::is_enum_v<T>, "This function may only be used for enum constants.");
-      int value = params.get<int>(name, default_value);
-      return static_cast<T>(value);
+      if (params.isParameter(name))
+        return static_cast<T>(params.get<int>(name));
+      else
+        return default_value;
     }
   }  // namespace UTILS
 }  // namespace CORE
