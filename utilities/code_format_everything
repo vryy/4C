@@ -44,7 +44,7 @@ if [ $# -ne 0 ]; then
 fi
 
 # Load the python virtual environment, which provides clang-format.
-PYTHON_VENV="`dirname "$0"`/baci-python-venv"
+PYTHON_VENV="`dirname "$0"`/python-venv"
 source "${PYTHON_VENV}"/bin/activate
 
 # set the field separator to new line

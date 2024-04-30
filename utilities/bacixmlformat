@@ -16,7 +16,7 @@
 ############################################################
 
 # load the python virtual environment, which provides xmlformat.
-PYTHON_VENV="`dirname "$0"`/baci-python-venv"
+PYTHON_VENV="`dirname "$0"`/python-venv"
 source "${PYTHON_VENV}"/bin/activate
 
 # call xmlformat with --nooverride as possible option

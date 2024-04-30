@@ -27,11 +27,11 @@
 ############################################################
 
 # Load the python virtual environment, which provides clang-format.
-PYTHON_VENV_ACTIVATION_SCRIPT="utilities/baci-python-venv/bin/activate"
+PYTHON_VENV_ACTIVATION_SCRIPT="utilities/python-venv/bin/activate"
 if [ ! -f $PYTHON_VENV_ACTIVATION_SCRIPT ]; then
     echo "You have not created the python virtual environment, which is necessary to run all checks. You can use the following command in your source directory:"
     echo ""
-    echo "./create-baci-python-venv"
+    echo "./create-python-venv"
     exit 1
 fi
 source $PYTHON_VENV_ACTIVATION_SCRIPT

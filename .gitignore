@@ -73,7 +73,7 @@ modules/contact_module/src/
 
 # Python
 *.pyc
-utilities/baci-python-venv/*
+utilities/python-venv/*
 doc/readthedocs-config/baci-python-rtd-venv
 
 # VS Code

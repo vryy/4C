@@ -24,7 +24,7 @@
 [ -e wrong_codeowners.txt ] && rm wrong_codeowners.txt
 
 # Load the python virtual environment, which provides the formatters.
-source ./utilities/baci-python-venv/bin/activate
+source ./utilities/python-venv/bin/activate
 
 ### Header check ################################################
 echo "Start test for correct file headers ..."

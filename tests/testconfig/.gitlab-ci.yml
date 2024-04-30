@@ -87,7 +87,7 @@ before_script:
 - |
   if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then PRESET=${CTEST_BUILD_PRESETS_DEBUG_GITLAB}; else PRESET=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}; fi
   cd ${CI_PROJECT_DIR}
-  ./create-baci-python-venv
+  ./create-python-venv
   cd ${CI_PROJECT_DIR}/../baci-build
   # We override the launcher arguments here to ensure that ccache is not used during testing
   ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${PRESET} -DCMAKE_C_COMPILER_LAUNCHER="" -DCMAKE_CXX_COMPILER_LAUNCHER=""
@@ -107,7 +107,7 @@ before_script:
 .post-process-log-files: &post-process-log-files
   # sort output of pipeline
 - cd ${CI_PROJECT_DIR}/../baci-build
-- ${CI_PROJECT_DIR}/utilities/baci-python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
+- ${CI_PROJECT_DIR}/utilities/python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
   ${CI_PROJECT_DIR}/test.log ${CI_PROJECT_DIR}/test.log
   # Write selection of the output into the terminal and therefore to GITLAB
   # Output 200 lines for any failing test
@@ -297,7 +297,7 @@ before_script:
   - echo Create ReadTheDocs documentation
     # loading python virtual environment
   - cd ${CI_PROJECT_DIR}
-  - ./create-baci-python-venv
+  - ./create-python-venv
     # Delete old build files.
   - rm -rf ../baci-build/
   - mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
@@ -345,7 +345,7 @@ checkcode:
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   script:
   - echo code check
-  - ./create-baci-python-venv
+  - ./create-python-venv
   - bash utilities/code_checks/check_format_and_header
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
@@ -608,7 +608,7 @@ build-verify-headers:
     # configure
   - |
     cd ${CI_PROJECT_DIR}
-    ./create-baci-python-venv
+    ./create-python-venv
     cd ${CI_PROJECT_DIR}/../baci-build
     # Configure verification of header sets.
     ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"

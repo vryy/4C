@@ -17,7 +17,7 @@
 ############################################################
 
 # load the python virtual environment, which provides yamlfmt.
-PYTHON_VENV="`dirname "$0"`/baci-python-venv"
+PYTHON_VENV="`dirname "$0"`/python-venv"
 source "${PYTHON_VENV}"/bin/activate
 
 # call yamlfmt with --nooverwrite as possible option

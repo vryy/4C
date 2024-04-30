@@ -354,7 +354,7 @@ First, you should create the python virtual environment for |FOURC| development.
 You'll need that for testing and active development, you need to create a python virtual environment once.
 In the source directory, execute::
 
-    ./create-baci-python-venv
+    ./create-python-venv
 
 .. note::
 
@@ -486,7 +486,7 @@ To do so, follow these steps:
 #. On "CppStyle",
 
    - select "Enable project specific settings"
-   - click on "Configure Workspace Settings" and set the "Clang-format path" to <4C-sourcedir>/utilities/baci-python-venv/bin/clang-format.
+   - click on "Configure Workspace Settings" and set the "Clang-format path" to <4C-sourcedir>/utilities/python-venv/bin/clang-format.
    - select "Run clang-format on file save"
 
 #. Click "Apply and Close"
@@ -605,7 +605,7 @@ but also you can select a block of code and have it reformatted with |ctrl| + |s
 - In the Tool Settings:
 
    - Programs: here you need to enter the path to our |FOURC| custom clang-format i.e.
-     ``<4C-sourcedir>/utilities/baci-python-venv/bin/clang-format``
+     ``<4C-sourcedir>/utilities/python-venv/bin/clang-format``
    - Arguments: here you enter this: ``-i --style=file $FileName$``
    - Working Directory: Enter the macro variable ``$FileDir$``
 
