@@ -18,6 +18,7 @@ Pack, Unpack, NumDofPerNode etc.
 #include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_solid_3D_ele_calc_eas.hpp"
+#include "4C_solid_3D_ele_calc_lib_nitsche.hpp"
 #include "4C_solid_3D_ele_factory.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 
@@ -162,13 +163,14 @@ namespace DRT::ELEMENTS
      * @param xi (in) : Position of the point in the parameter space of the element
      * @param n (in) : Normal vector
      * @param dir (in) : Direction of the Cauchy stress
-     * @return CauchyNDirAndLinearization<dim> (out) : A struct containing the Cauchy stress
-     * component and its linearizations
+     * @param linearizations (in/out) : A struct containing the needed linearizations (which might
+     * are null)
+     * @return double (out) : The scalar Cauchy stress value
      */
     template <int dim>
-    CauchyNDirAndLinearization<dim> GetCauchyNDirAndDerivativesAtXi(const std::vector<double>& disp,
+    double GetCauchyNDirAtXi(const std::vector<double>& disp,
         const CORE::LINALG::Matrix<dim, 1>& xi, const CORE::LINALG::Matrix<dim, 1>& n,
-        const CORE::LINALG::Matrix<dim, 1>& dir);
+        const CORE::LINALG::Matrix<dim, 1>& dir, CauchyNDirLinearizations<dim>& linearizations);
 
    private:
     //! cell type

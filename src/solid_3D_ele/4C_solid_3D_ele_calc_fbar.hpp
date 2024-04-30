@@ -107,8 +107,9 @@ namespace DRT::ELEMENTS
           spatial_material_mapping_bar.deformation_gradient_, gl_strain_bar, linearization);
     }
 
-    static inline SolidFormulationLinearization<celltype> EvaluateFullLinearization(
-        const DRT::Element& ele, const ElementNodes<celltype>& nodal_coordinates,
+    static inline CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+    EvaluateDDeformationGradientDDisplacements(const DRT::Element& ele,
+        const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
@@ -117,8 +118,36 @@ namespace DRT::ELEMENTS
         const FBarPreparationData<celltype>& preparation_data)
     {
       FOUR_C_THROW(
-          "The full linearization is not yet implemented for the displacement based formulation "
-          "with fbar.");
+          "This derivative of the deformation gradient w.r.t. the displacements is not "
+          "implemented");
+    }
+
+    static inline CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>> EvaluateDDeformationGradientDXi(
+        const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+            deformation_gradient,
+        const FBarPreparationData<celltype>& preparation_data)
+    {
+      FOUR_C_THROW("This derivative of the deformation gradient w.r.t. xi is not implemented");
+    }
+
+    static inline CORE::LINALG::Matrix<9,
+        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
+    EvaluateDDeformationGradientDDisplacementsDXi(const DRT::Element& ele,
+        const ElementNodes<celltype>& element_nodes,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+            deformation_gradient,
+        const FBarPreparationData<celltype>& preparation_data)
+    {
+      FOUR_C_THROW(
+          "This second derivative of the deformation gradient w.r.t. the displacements and xi is "
+          "not implemented");
     }
 
     static CORE::LINALG::Matrix<DETAILS::num_str<celltype>,

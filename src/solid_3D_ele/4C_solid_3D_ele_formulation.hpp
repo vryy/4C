@@ -364,10 +364,11 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief Evaluate the full linearization of the solid formulation
+   * @brief Evaluate the derivative of the deformation gradient w.r.t. the displacements
    */
   template <typename SolidFormulation, CORE::FE::CellType celltype>
-  inline SolidFormulationLinearization<celltype> EvaluateFullLinearization(const DRT::Element& ele,
+  inline CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+  EvaluateDDeformationGradientDDisplacements(const DRT::Element& ele,
       const ElementNodes<celltype>& element_nodes,
       const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
       const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -384,8 +385,76 @@ namespace DRT::ELEMENTS
     else
     {
       return std::apply(
-          [](auto&&... args) {
-            return SolidFormulation::EvaluateFullLinearization(
+          [](auto&&... args)
+          {
+            return SolidFormulation::EvaluateDDeformationGradientDDisplacements(
+                std::forward<decltype(args)>(args)...);
+          },
+          std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,
+                             jacobian_mapping, deformation_gradient),
+              DETAILS::GetAdditionalTuple(preparation_data, history_data)));
+    }
+  }
+
+  /*!
+   * @brief Evaluate the derivative of the deformation gradient w.r.t. the xi
+   */
+  template <typename SolidFormulation, CORE::FE::CellType celltype>
+  inline CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>> EvaluateDDeformationGradientDXi(
+      const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
+      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+      const JacobianMapping<celltype>& jacobian_mapping,
+      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+          deformation_gradient,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data)
+  {
+    if constexpr (has_gauss_point_history<SolidFormulation>)
+    {
+      FOUR_C_THROW("The Solid element formulation can only be evaluated at the Gauss points.");
+    }
+    else
+    {
+      return std::apply(
+          [](auto&&... args)
+          {
+            return SolidFormulation::EvaluateDDeformationGradientDXi(
+                std::forward<decltype(args)>(args)...);
+          },
+          std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,
+                             jacobian_mapping, deformation_gradient),
+              DETAILS::GetAdditionalTuple(preparation_data, history_data)));
+    }
+  }
+
+  /*!
+   * @brief Evaluate the second derivative of the deformation gradient w.r.t. the xi and the
+   * displacements
+   */
+  template <typename SolidFormulation, CORE::FE::CellType celltype>
+  inline CORE::LINALG::Matrix<9,
+      CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
+  EvaluateDDeformationGradientDDisplacementsDXi(const DRT::Element& ele,
+      const ElementNodes<celltype>& element_nodes,
+      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+      const JacobianMapping<celltype>& jacobian_mapping,
+      const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+          deformation_gradient,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data)
+  {
+    if constexpr (has_gauss_point_history<SolidFormulation>)
+    {
+      FOUR_C_THROW("The Solid element formulation can only be evaluated at the Gauss points.");
+    }
+    else
+    {
+      return std::apply(
+          [](auto&&... args)
+          {
+            return SolidFormulation::EvaluateDDeformationGradientDDisplacementsDXi(
                 std::forward<decltype(args)>(args)...);
           },
           std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,

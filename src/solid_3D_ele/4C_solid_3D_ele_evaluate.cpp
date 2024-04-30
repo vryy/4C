@@ -275,22 +275,19 @@ int DRT::ELEMENTS::Solid::EvaluateNeumann(Teuchos::ParameterList& params,
 }
 
 template <int dim>
-DRT::ELEMENTS::CauchyNDirAndLinearization<dim>
-DRT::ELEMENTS::Solid::GetCauchyNDirAndDerivativesAtXi(const std::vector<double>& disp,
+double DRT::ELEMENTS::Solid::GetCauchyNDirAtXi(const std::vector<double>& disp,
     const CORE::LINALG::Matrix<dim, 1>& xi, const CORE::LINALG::Matrix<dim, 1>& n,
-    const CORE::LINALG::Matrix<dim, 1>& dir)
+    const CORE::LINALG::Matrix<dim, 1>& dir, CauchyNDirLinearizations<dim>& linearizations)
 {
-  return DRT::ELEMENTS::GetCauchyNDirAndDerivativesAtXi<dim>(
-      solid_calc_variant_, *this, *SolidMaterial(), disp, xi, n, dir);
+  return DRT::ELEMENTS::GetCauchyNDirAtXi<dim>(
+      solid_calc_variant_, *this, *SolidMaterial(), disp, xi, n, dir, linearizations);
 }
 
-template DRT::ELEMENTS::CauchyNDirAndLinearization<3>
-DRT::ELEMENTS::Solid::GetCauchyNDirAndDerivativesAtXi<3>(const std::vector<double>& disp,
-    const CORE::LINALG::Matrix<3, 1>& xi, const CORE::LINALG::Matrix<3, 1>& n,
-    const CORE::LINALG::Matrix<3, 1>& dir);
-template DRT::ELEMENTS::CauchyNDirAndLinearization<2>
-DRT::ELEMENTS::Solid::GetCauchyNDirAndDerivativesAtXi<2>(const std::vector<double>& disp,
-    const CORE::LINALG::Matrix<2, 1>& xi, const CORE::LINALG::Matrix<2, 1>& n,
-    const CORE::LINALG::Matrix<2, 1>& dir);
+template double DRT::ELEMENTS::Solid::GetCauchyNDirAtXi<3>(const std::vector<double>&,
+    const CORE::LINALG::Matrix<3, 1>&, const CORE::LINALG::Matrix<3, 1>&,
+    const CORE::LINALG::Matrix<3, 1>&, CauchyNDirLinearizations<3>&);
+template double DRT::ELEMENTS::Solid::GetCauchyNDirAtXi<2>(const std::vector<double>&,
+    const CORE::LINALG::Matrix<2, 1>&, const CORE::LINALG::Matrix<2, 1>&,
+    const CORE::LINALG::Matrix<2, 1>&, CauchyNDirLinearizations<2>&);
 
 FOUR_C_NAMESPACE_CLOSE

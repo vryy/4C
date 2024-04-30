@@ -22,6 +22,8 @@
 
 #include <Epetra_FEVector.h>
 
+#include <memory>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
@@ -454,21 +456,41 @@ void CONTACT::IntegratorNitsche::SoEleCauchy(MORTAR::Element& moEle, double* bou
   CORE::LINALG::Matrix<dim, dim> derivtravo_slave;
   CONTACT::UTILS::MapGPtoParent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
 
+  // define which linearizations we need
+  CORE::LINALG::SerialDenseMatrix d_cauchyndir_dd{};
+  CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd2{};
+  CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd_dn{};
+  CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd_ddir{};
+  CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd_dxi{};
+  CORE::LINALG::Matrix<dim, 1> d_cauchyndir_dn{};
+  CORE::LINALG::Matrix<dim, 1> d_cauchyndir_ddir{};
+  CORE::LINALG::Matrix<dim, 1> d_cauchyndir_dxi{};
+
+  DRT::ELEMENTS::CauchyNDirLinearizations<dim> linearizations{};
+  linearizations.d_cauchyndir_dd = &d_cauchyndir_dd;
+  linearizations.d2_cauchyndir_dd2 = &d2_cauchyndir_dd2;
+  linearizations.d2_cauchyndir_dd_dn = &d2_cauchyndir_dd_dn;
+  linearizations.d2_cauchyndir_dd_ddir = &d2_cauchyndir_dd_ddir;
+  linearizations.d2_cauchyndir_dd_dxi = &d2_cauchyndir_dd_dxi;
+  linearizations.d_cauchyndir_dn = &d_cauchyndir_dn;
+  linearizations.d_cauchyndir_ddir = &d_cauchyndir_ddir;
+  linearizations.d_cauchyndir_dxi = &d_cauchyndir_dxi;
+
   // check for old or new solid element
-  const DRT::ELEMENTS::CauchyNDirAndLinearization<dim> cauchy_n_dir = std::invoke(
+  const double cauchy_n_dir = std::invoke(
       [&]()
       {
         if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(moEle.ParentElement());
             solid_ele != nullptr)
         {
           // old solid element
-          DRT::ELEMENTS::CauchyNDirAndLinearization<dim> cauchy_n_dir;
+          double cauchy_n_dir = 0;
           solid_ele->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(), normal,
-              direction, cauchy_n_dir.cauchy_n_dir, &cauchy_n_dir.d_cauchyndir_dd,
-              &cauchy_n_dir.d2_cauchyndir_dd2, &cauchy_n_dir.d2_cauchyndir_dd_dn,
-              &cauchy_n_dir.d2_cauchyndir_dd_ddir, &cauchy_n_dir.d2_cauchyndir_dd_dxi,
-              &cauchy_n_dir.d_cauchyndir_dn, &cauchy_n_dir.d_cauchyndir_ddir,
-              &cauchy_n_dir.d_cauchyndir_dxi, nullptr, nullptr, nullptr, nullptr, nullptr);
+              direction, cauchy_n_dir, linearizations.d_cauchyndir_dd,
+              linearizations.d2_cauchyndir_dd2, linearizations.d2_cauchyndir_dd_dn,
+              linearizations.d2_cauchyndir_dd_ddir, linearizations.d2_cauchyndir_dd_dxi,
+              linearizations.d_cauchyndir_dn, linearizations.d_cauchyndir_ddir,
+              linearizations.d_cauchyndir_dxi, nullptr, nullptr, nullptr, nullptr, nullptr);
 
           return cauchy_n_dir;
         }
@@ -476,8 +498,8 @@ void CONTACT::IntegratorNitsche::SoEleCauchy(MORTAR::Element& moEle, double* bou
                  solid_ele != nullptr)
         {
           // new solid element
-          return solid_ele->GetCauchyNDirAndDerivativesAtXi<dim>(
-              moEle.MoData().ParentDisp(), pxsi, normal, direction);
+          return solid_ele->GetCauchyNDirAtXi<dim>(
+              moEle.MoData().ParentDisp(), pxsi, normal, direction, linearizations);
         }
         else
         {
@@ -486,34 +508,32 @@ void CONTACT::IntegratorNitsche::SoEleCauchy(MORTAR::Element& moEle, double* bou
       });
 
 
-  cauchy_nt += w * cauchy_n_dir.cauchy_n_dir;
+  cauchy_nt += w * cauchy_n_dir;
 
   for (int i = 0; i < moEle.ParentElement()->NumNode() * dim; ++i)
-    deriv_sigma_nt[moEle.MoData().ParentDof().at(i)] += w * cauchy_n_dir.d_cauchyndir_dd(i, 0);
+    deriv_sigma_nt[moEle.MoData().ParentDof().at(i)] += w * d_cauchyndir_dd(i, 0);
 
   for (int i = 0; i < dim - 1; ++i)
   {
     for (const auto& p : boundary_gpcoord_lin[i])
       for (int k = 0; k < dim; ++k)
-        deriv_sigma_nt[p.first] +=
-            cauchy_n_dir.d_cauchyndir_dxi(k) * derivtravo_slave(k, i) * p.second * w;
+        deriv_sigma_nt[p.first] += d_cauchyndir_dxi(k) * derivtravo_slave(k, i) * p.second * w;
   }
 
 
   for (int d = 0; d < dim; ++d)
     for (const auto& p : normal_deriv[d])
-      deriv_sigma_nt[p.first] += cauchy_n_dir.d_cauchyndir_dn(d) * p.second * w;
+      deriv_sigma_nt[p.first] += d_cauchyndir_dn(d) * p.second * w;
 
   for (int d = 0; d < dim; ++d)
     for (const auto& p : direction_deriv[d])
-      deriv_sigma_nt[p.first] += cauchy_n_dir.d_cauchyndir_ddir(d) * p.second * w;
+      deriv_sigma_nt[p.first] += d_cauchyndir_ddir(d) * p.second * w;
 
   if (abs(theta_) > 1.e-12)
   {
-    BuildAdjointTest<dim>(moEle, w, cauchy_n_dir.d_cauchyndir_dd, cauchy_n_dir.d2_cauchyndir_dd2,
-        cauchy_n_dir.d2_cauchyndir_dd_dn, cauchy_n_dir.d2_cauchyndir_dd_ddir,
-        cauchy_n_dir.d2_cauchyndir_dd_dxi, boundary_gpcoord_lin, derivtravo_slave, normal_deriv,
-        direction_deriv, adjoint_test, deriv_adjoint_test);
+    BuildAdjointTest<dim>(moEle, w, d_cauchyndir_dd, d2_cauchyndir_dd2, d2_cauchyndir_dd_dn,
+        d2_cauchyndir_dd_ddir, d2_cauchyndir_dd_dxi, boundary_gpcoord_lin, derivtravo_slave,
+        normal_deriv, direction_deriv, adjoint_test, deriv_adjoint_test);
   }
 }
 

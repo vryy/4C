@@ -107,17 +107,44 @@ namespace DRT::ELEMENTS
           CORE::LINALG::IdentityMatrix<CORE::FE::dim<celltype>>(), gl_strain, linearization);
     }
 
-    static inline SolidFormulationLinearization<celltype> EvaluateFullLinearization(
-        const DRT::Element& ele, const ElementNodes<celltype>& nodal_coordinates,
+    static inline CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+    EvaluateDDeformationGradientDDisplacements(const DRT::Element& ele,
+        const ElementNodes<celltype>& element_nodes,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
         const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
             deformation_gradient)
     {
-      FOUR_C_THROW(
-          "The full linearization is not yet implemented for the displacement based formulation "
-          "with linear kinematics.");
+      // linearization is zero for small displacements
+      return CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>(true);
+    }
+
+    static inline CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>> EvaluateDDeformationGradientDXi(
+        const DRT::Element& ele, const ElementNodes<celltype>& element_nodes,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+            deformation_gradient)
+    {
+      // linearization is zero for small displacements
+      return CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>(true);
+    }
+
+    static inline CORE::LINALG::Matrix<9,
+        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
+    EvaluateDDeformationGradientDDisplacementsDXi(const DRT::Element& ele,
+        const ElementNodes<celltype>& element_nodes,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+            deformation_gradient)
+    {
+      // linearization is zero for small displacements
+      return CORE::LINALG::Matrix<9,
+          CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>(true);
     }
 
     static void AddInternalForceVector(
