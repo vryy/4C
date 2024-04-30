@@ -1,7 +1,7 @@
 .. _SetupGuideto4C:
 
-Setup Guide to |FOURC|
-========================
+Setup Guide
+=============
 
 Here you'll find some useful notes on setting up and running |FOURC|,
 the multi purpose multi physics multi-modelling code developed at
@@ -24,7 +24,7 @@ files located in the |FOURC| root directory.
 
 Besides the basic setup of the software, the following topics are of particular interest for **all** developers:
 
-- Read the :ref:`|FOURC| development guidelines <coding-guidelines>`.
+- Read the :ref:`development guidelines <coding-guidelines>`.
 - Documentation using Doxygen is mandatory. See our :ref:`Doxygen guidelines <doxygen>`.
 - Speed up recompilation of the code after switching branches using :ref:`ccache <ccache>`.
 - :ref:`Testing <4Ctesting>`
@@ -323,14 +323,14 @@ To confirm the correct setup of Git, you may check your configuration settings w
 
 .. _4Cinstallation:
 
-Download and install |FOURC|
-------------------------------
+Download and install
+--------------------
 
 Here comes the main part.
 After you have installed all the TPLs, you should download and install |FOURC| itself.
 
-Clone the |FOURC| repository
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Clone the repository
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -373,13 +373,17 @@ The command to run is
 Thus, a preset name needs to be passed to cmake via the command line argument ``--preset``.
 Use
 
-..
+::
 
     cmake <4C_home> --list-presets
 
 to get a list of all available presets.
 In general, it is highly recommended to create your own preset, which is stored in ``<4C_home>/CMakeUserPresets.txt``.
-In a preset within this file, you should also define the build directory.
+In a preset within this file, you should define a few options that are important to your specific build:
+
+- the build type. This is given by the variable ``CMAKE_BUILD_TYPE`` and can be ``DEBUG`` or ``RELEASE``.
+- the build directory. It is good practice to indicate the value for ``CMAKE_BUILD_TYPE`` in the folder name, e.g. by
+  ``"binaryDir": "<4C-basedir>/builds/release-build"`` (the folder name is completely up to you).
 
 More information about the cmake presets can be found :ref:`here <cmakepresets>`.
 
@@ -835,13 +839,15 @@ Wait until both instances are connected and then start the computation by pressi
 Build |FOURC| with custom targets
 -----------------------------------
 
-Build |FOURC| using the following command (refer to README):
+Above it was shown how to build all executables that come with |FOURC|.
+However, one can also build just a subset or even specific libraries.
+The command to build |FOURC| these specific targets is:
 
 ::
 
     ninja -j <numProcs> <customTarget>
 
-where ``<numProcs>`` denotes the number of processors and ``<customTarget>`` the custom target.
+where ``<numProcs>`` denotes the number of processors and ``<customTarget>`` the target you want to build (see below).
 
 Custom target specifiers
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -851,23 +857,23 @@ Here's a list of all valid custom target specifiers with a brief explanation:
 
 Executables:
 
-- ``baci:`` generate the main |FOURC| executable only
-- ``framework:`` generate pre- and post-processing executables pre_exodus and post_*
-- ``post:`` build the post-filters only
-- ``post_ensight:`` build the post_ensight filter only
-- ``post_vtk:`` build the post_vtk filter only
-- ``full:`` generate all executable targets of |FOURC|
+- ``4C`` generate the main |FOURC| executable only
+- ``post_processor`` build the post-filters only
+- ``pre_exodus`` build the pre processor (exodus to 4C converter) only
+- ``post_monitor`` build a nodal data extraction application
+- ``rtd`` build the reference documentation generator ``create_rtd``
+- ``full`` generate all executable targets of |FOURC|
 
 Documentation:
 
-- ``doxygen:`` create the Doxygen documentation only
-- ``readthedocs:`` create the user documentation (readthedocs style) only
+- ``doxygen`` create the Doxygen documentation only
+- ``readthedocs`` create the user documentation (readthedocs style) only
 
 Refer to ``CMakeLists.txt`` for a definition of all other target specifiers.
 
 .. note::
 
-    When omitting the custom target specifier in the build command, the default specifier |FOURC| is used.
+    When omitting the custom target specifier in the build command, the default specifier 4C is used.
 
 .. |ctrl| image:: figures/WikiMooc_Key_CTRL.png
           :height: 20

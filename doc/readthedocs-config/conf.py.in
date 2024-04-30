@@ -63,7 +63,7 @@ rst_prolog = """
 
 .. |SOURCEDIR| replace:: @PROJECT_SOURCE_DIR@
 
-.. |FOURC| replace:: BACI
+.. |FOURC| replace:: 4C
 
 .. role:: red
 .. role:: green

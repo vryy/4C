@@ -49,10 +49,10 @@ Export now the created geometry and mesh to an exodus-file of your choice,
 let say, ``<yourmesh>.e`` via *File* :math:`\to` *Export...*. 
 During export, set the dimension explicitly to 3d.
 
-.. _workingWithPreExodusAnd4C:
+.. _workingWithPreExodus:
 
-Working with *pre_exodus* and |FOURC|
--------------------------------------
+Working with *pre_exodus*
+-------------------------
 
 *pre_exodus* is a C++ code embedded into the |FOURC| environment. It is
 meant to transfer a given mesh into a |FOURC|-readable input file.
@@ -206,7 +206,7 @@ result in the specified dat-file which is already validated to be
 accepted by |FOURC|. However, if the file is meaningful cannot be assured.
 
 Run the simulation by providing this dat-file and an output file to |FOURC|
-and postprocess the results (refer to :ref:`Working with PreExodus and |FOURC|<workingWithPreExodusAnd4C>` for the simulation,
+and postprocess the results (refer to :ref:`Working with PreExodus<workingWithPreExodus>` for the simulation,
 and to :ref:`Post Processing<fsi3dtutorialpostprocessing>` for the post processing).
 
 The Fluid Part

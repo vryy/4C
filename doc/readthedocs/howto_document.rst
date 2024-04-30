@@ -58,8 +58,8 @@ I also like `this doc <https://books.dehlia.in/writing-with-ratatouille/toc/>`_.
    #. A list within a list must be indented by three blanks.
    #. Also, before and after the inserted list, blank lines are needed.
 
-- **Links to other headers** (internal links) can easily be included in restructuredText by ``:ref:`Descriptive link name <sectionname>```,
-  e.g., :ref:`The |FOURC| Workflow <4Cworkflow>`.
+- **Links to other headers** (internal links) can easily be included in restructuredText by
+  ``:ref:`Descriptive link name <sectionname>``, e.g., :ref:`Workflow <4Cworkflow>`.
   The link target can be a section name, but also an explicit link target. 
   The latter is preferred, since there may be duplicate section names in the documentation. 
   A link target must be entered by ``.. _targetname:``, i.e., first two dots, then a blank followed by an underline,
