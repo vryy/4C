@@ -19,7 +19,7 @@
     {
       "name": "lnm_bruteforce",
       "displayName": "Release build for bruteforce at LNM",
-      "description": "Build release version of BACI on bruteforce at LNM",
+      "description": "Build release version of 4C on bruteforce at LNM",
       "inherits": [
         ".lnm_cluster"
       ],
@@ -32,7 +32,7 @@
     {
       "name": "lnm_thought",
       "displayName": "Release build for thought at LNM",
-      "description": "Build release version of BACI on thought at LNM",
+      "description": "Build release version of 4C on thought at LNM",
       "inherits": [
         ".lnm_cluster"
       ],
@@ -44,7 +44,7 @@
     {
       "name": "lnm_schmarrn",
       "displayName": "Release build for schmarrn at LNM",
-      "description": "Build release version of BACI on schmarrn at LNM",
+      "description": "Build release version of 4C on schmarrn at LNM",
       "inherits": [
         ".lnm_cluster"
       ],

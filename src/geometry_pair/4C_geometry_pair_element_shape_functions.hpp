@@ -1,12 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Specify how to evaluate the shape functions for the elements defined in
-baci_geometry_pair_element.H
+\brief Specify how to evaluate the shape functions for the geometry pair elements
 
 \level 1
 */
-// End doxygen header.
 
 
 #ifndef FOUR_C_GEOMETRY_PAIR_ELEMENT_SHAPE_FUNCTIONS_HPP
