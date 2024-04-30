@@ -1,7 +1,7 @@
 .. _4Cworkflow:
 
-The |FOURC| Workflow
-=====================
+Workflow
+=========
 
 .. toctree::
    :maxdepth: 2

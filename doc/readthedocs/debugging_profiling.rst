@@ -20,8 +20,8 @@ In the following various debugging and profiling tools are desribed that may be 
 Useful options for Debugging with gdb (or your ide)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Build debug version of |FOURC|
-""""""""""""""""""""""""""""""
+Build debug version
+"""""""""""""""""""
 
 Create a directory, where you want to build your debug version and build a |FOURC| with debug flag using the correct preset.
 This should contain::
@@ -142,10 +142,10 @@ By default, the collected data consists of the number of instructions executed, 
 the caller/callee relationship between functions, and the numbers of such calls."
 (from `callgrind <http://valgrind.org/docs/manual/cl-manual.html>`_)
 
-Configure and build |FOURC| with profiling flag
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Configure and build with profiling flag
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Note:** For general information about configuring and building of |FOURC| refer to :ref:`Configure and Build |FOURC| <4Cinstallation>` and the ``README.md``.
+**Note:** For general information about configuring and building of |FOURC| refer to :ref:`Configure and Build <4Cinstallation>` and the ``README.md``.
 
 Configure |FOURC| with the optional profiling flag
 
