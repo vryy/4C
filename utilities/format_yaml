@@ -7,9 +7,9 @@
 # Options applied to yamlfmt:
 #   overwrite the existing file by -w
 #
-# Usage of baciyamlformat: 
-#   baciyamlformat <inputfile>
-#   baciyamlformat --nooverwrite <inputfile>: disables -w option for yamlfmt, instead redirectes output.
+# Usage of format_yaml:
+#   format_yaml <inputfile>
+#   format_yaml --nooverwrite <inputfile>: disables -w option for yamlfmt, instead redirectes output.
 #                                             This is achieved by creating a temporary and calling yamlfmt
 #                                             on it with -w option enabled. Reason is that the redirection
 #                                             of yamlfmt's output without -w does not work.

@@ -4,7 +4,7 @@ import re
 from codeowners import CodeOwners
 
 
-def baci_code_owners(file):
+def patched_code_owners(file):
     owner = CodeOwners(file)
 
     for i, (pattern, path, owners, line_number, section_name) in enumerate(owner.paths):
