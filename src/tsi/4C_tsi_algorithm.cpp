@@ -174,7 +174,6 @@ void TSI::Algorithm::Update()
   ThermoField()->Update();
   if (contact_strategy_lagrange_ != Teuchos::null)
     contact_strategy_lagrange_->Update((StructureField()->Dispnp()));
-
   return;
 }
 
@@ -401,6 +400,15 @@ void TSI::Algorithm::ApplyThermoCouplingState(
       StructureField()->Discretization()->SetState(
           1, "temperature", volcoupl_->ApplyVectorMapping12(temp));
   }
+
+  // set new temperatures to contact
+  {
+    if (contact_strategy_lagrange_ != Teuchos::null)
+      contact_strategy_lagrange_->SetState(
+          MORTAR::state_temperature, *coupST_()->SlaveToMaster(ThermoField()->Tempnp()));
+    if (contact_strategy_nitsche_ != Teuchos::null)
+      contact_strategy_nitsche_->SetState(MORTAR::state_temperature, *ThermoField()->Tempnp());
+  }
 }  // ApplyThermoCouplingState()
 
 
@@ -428,7 +436,7 @@ void TSI::Algorithm::ApplyStructCouplingState(
 
 
 /*----------------------------------------------------------------------*/
-void TSI::Algorithm::GetContactStrategy()
+void TSI::Algorithm::PrepareContactStrategy()
 {
   INPAR::CONTACT::SolvingStrategy stype =
       CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(

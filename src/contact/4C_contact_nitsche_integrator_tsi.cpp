@@ -531,7 +531,7 @@ void CONTACT::IntegratorNitscheTsi::GPTSForces(MORTAR::Element& sele, MORTAR::El
         IntegrateThermalTest<dim>(
             -1., mele, mval, mderiv, dmxi, jac, jacintcellmap, wgt, q1, d_q1_d, d_q1_T);
 
-        if (frtype_)
+        if (frtype_)  // account for frictional contact
         {
           IntegrateThermalTest<dim>(-delta_c, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
               diss, d_diss_d, d_diss_T);

@@ -738,10 +738,14 @@ void THR::TimInt::ApplyForceTangInternal(
     if (fint->Update(
             1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.))
       FOUR_C_THROW("update failed");
-    tang->UnComplete();
-    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
-        false, p.get<double>("timefac"), 1.);
-    tang->Complete();
+    if (contact_params_interface_->GetCouplingScheme() ==
+        INPAR::CONTACT::CouplingScheme::monolithic)
+    {
+      tang->UnComplete();
+      tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
+          false, p.get<double>("timefac"), 1.);
+      tang->Complete();
+    }
   }
 
   discret_->ClearState();
@@ -797,10 +801,14 @@ void THR::TimInt::ApplyForceTangInternal(
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
     fint->Update(1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.);
-    tang->UnComplete();
-    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
-        false, p.get<double>("timefac"), 1.);
-    tang->Complete();
+    if (contact_params_interface_->GetCouplingScheme() ==
+        INPAR::CONTACT::CouplingScheme::monolithic)
+    {
+      tang->UnComplete();
+      tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
+          false, p.get<double>("timefac"), 1.);
+      tang->Complete();
+    }
   }
 
   discret_->ClearState();

@@ -35,7 +35,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace CONTACT
 {
   class NitscheStrategyTsi;
-}
+  class ParamsInterface;
+}  // namespace CONTACT
 
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |
@@ -125,6 +126,13 @@ namespace THR
     void SetNitscheContactStrategy(Teuchos::RCP<CONTACT::NitscheStrategyTsi> strategy) override
     {
       contact_strategy_nitsche_ = strategy;
+    }
+
+    //! prepare thermal contact parameters
+    void SetNitscheContactParameters(
+        Teuchos::RCP<CONTACT::ParamsInterface> params_interface) override
+    {
+      contact_params_interface_ = params_interface;
     }
 
     //! prepare time step
@@ -608,6 +616,9 @@ namespace THR
     // thermo contact manager
     Teuchos::RCP<CONTACT::NitscheStrategyTsi> contact_strategy_nitsche_;
 
+    // thermo contact parameters
+    Teuchos::RCP<CONTACT::ParamsInterface> contact_params_interface_;
+
     //@}
 
   };  // TimInt
@@ -615,6 +626,7 @@ namespace THR
 }  // namespace THR
 
 /*----------------------------------------------------------------------*/
+
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

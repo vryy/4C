@@ -160,8 +160,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 #endif
 
   // structural and thermal contact
-  GetContactStrategy();
-
+  PrepareContactStrategy();
 }  // Monolithic()
 
 
@@ -175,7 +174,7 @@ void TSI::Monolithic::ReadRestart(int step)
 
   // StructureField()->ReadRestart destroyed the old object and created
   // a new one, so we update the pointers
-  GetContactStrategy();
+  PrepareContactStrategy();
 
   // pass the current coupling variables to the respective field
   // second ReadRestart needed due to the coupling variables
@@ -189,7 +188,7 @@ void TSI::Monolithic::ReadRestart(int step)
 
   // StructureField()->ReadRestart destroyed the old object and created
   // a new one, so we update the pointers
-  GetContactStrategy();
+  PrepareContactStrategy();
 
   SetTimeStep(ThermoField()->TimeOld(), step);
 
@@ -2782,6 +2781,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
 }  // CalculateNeckingTSIResults()
 
 /*----------------------------------------------------------------------*
+ |                                                                      |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::PrepareOutput()
 {
@@ -2794,27 +2794,23 @@ void TSI::Monolithic::PrepareOutput()
   // reset states
   StructureField()->Discretization()->ClearState(true);
 }
-/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::ApplyThermoCouplingState(
-    Teuchos::RCP<const Epetra_Vector> temp, Teuchos::RCP<const Epetra_Vector> temp_res)
+void TSI::Monolithic::PrepareContactStrategy()
 {
-  TSI::Algorithm::ApplyThermoCouplingState(temp, temp_res);
+  TSI::Algorithm::PrepareContactStrategy();
 
-  // set new temperatures to contact
-  if (contact_strategy_lagrange_ != Teuchos::null || contact_strategy_nitsche_ != Teuchos::null)
+  if (contact_strategy_nitsche_ != Teuchos::null)
   {
-    if (contact_strategy_lagrange_ != Teuchos::null)
-      contact_strategy_lagrange_->SetState(
-          MORTAR::state_temperature, *coupST_()->SlaveToMaster(ThermoField()->Tempnp()));
-    if (contact_strategy_nitsche_ != Teuchos::null)
-      contact_strategy_nitsche_->SetState(MORTAR::state_temperature, *ThermoField()->Tempnp());
+    const auto& model_eval = StructureField()->ModelEvaluator(INPAR::STR::model_structure);
+    const auto cparams = model_eval.EvalData().ContactPtr();
+    auto cparams_new = cparams;
+    cparams_new->SetCouplingScheme(INPAR::CONTACT::CouplingScheme::monolithic);
+    ThermoField()->SetNitscheContactParameters(cparams_new);
   }
-}  // ApplyThermoCouplingState()
-
+}
 
 /*----------------------------------------------------------------------*
  |                                                                      |

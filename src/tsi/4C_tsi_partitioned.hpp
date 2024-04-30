@@ -86,7 +86,12 @@ namespace TSI
 
     //! calculate stresses, strains, energies
     void PrepareOutput() override;
+
+    //! take current results for converged and save for next time step
+    void Update() override;
     //@}
+
+    void PrepareContactStrategy() override;
 
     //! @name Solve
 

@@ -222,6 +222,8 @@ namespace TSI
     void PrepareOutput() override;
     //@}
 
+    void PrepareContactStrategy() override;
+
     //! convergence check for Newton solver
     bool ConvergenceCheck(int itnum, int itmax, double ittol);
 
@@ -291,11 +293,6 @@ namespace TSI
 
     //! enum for STR time integartion
     enum INPAR::STR::DynamicType strmethodname_;
-
-
-    //! apply temperature state on structure discretization
-    void ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp,
-        Teuchos::RCP<const Epetra_Vector> temp_res = Teuchos::null) override;
 
     //! apply structural displacements and velocities on thermo discretization
     void ApplyStructCouplingState(

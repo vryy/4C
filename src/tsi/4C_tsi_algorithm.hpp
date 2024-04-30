@@ -135,9 +135,9 @@ namespace TSI
     virtual void ApplyStructCouplingState(
         Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel);
 
-    //! Get a ptr to the contact strategy from the structural field,
+    //! Prepare a ptr to the contact strategy from the structural field,
     //! store it in tsi and hand it to the thermal field
-    void GetContactStrategy();
+    virtual void PrepareContactStrategy();
 
     //! Access to the dof coupling for matching grid TSI
     CORE::ADAPTER::Coupling& StructureThermoCoupling() { return *coupST_; }

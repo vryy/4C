@@ -209,6 +209,14 @@ namespace INPAR
       }
     }
 
+    /// Contact coupling mode for multiphysics solver
+    enum class CouplingScheme : int
+    {
+      unknown,      ///< unspecified
+      monolithic,   ///< monolithic approach
+      partitioning  ///< partitioning approach
+    };
+
     enum class FDCheck : char
     {
       off,         ///< switch off

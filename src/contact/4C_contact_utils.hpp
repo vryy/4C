@@ -69,6 +69,8 @@ namespace CONTACT
     elch         ///< electrochemistry block (elch block)
   };
 
+  std::string VecBlockTypeToStr(const VecBlockType bt);
+
   namespace UTILS
   {
     /// Get the solid to solid contact conditions

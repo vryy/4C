@@ -16,13 +16,17 @@
 #include "4C_adapter_str_structure.hpp"
 #include "4C_adapter_thermo.hpp"
 #include "4C_contact_abstract_strategy.hpp"
+#include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_contact_meshtying_contact_bridge.hpp"
+#include "4C_contact_nitsche_strategy_tsi.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_inpar_tsi.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_mortar_manager_base.hpp"
+#include "4C_structure_new_model_evaluator_data.hpp"
+#include "4C_structure_new_model_evaluator_generic.hpp"
 #include "4C_tsi_defines.hpp"
 #include "4C_tsi_utils.hpp"
 
@@ -81,6 +85,9 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // set internal variables to pointer of current velocities
   vel_ = StructureField()->WriteAccessVelnp();
 
+  // structural and thermal contact
+  PrepareContactStrategy();
+
 #ifdef TSIPARTITIONEDASOUTPUT
   // now check if the two dofmaps are available and then bye bye
   std::cout << "structure dofmap" << std::endl;
@@ -112,7 +119,8 @@ void TSI::Partitioned::ReadRestart(int step)
   TSI::UTILS::SetMaterialPointersMatchingGrid(
       StructureField()->Discretization(), ThermoField()->Discretization());
 
-  return;
+  // structural and thermal contact
+  PrepareContactStrategy();
 }  // ReadRestart()
 
 
@@ -218,6 +226,13 @@ void TSI::Partitioned::TimeLoopOneWay()
 {
   if (displacementcoupling_)  // (temperature change due to deformation)
   {
+    if (contact_strategy_nitsche_ != Teuchos::null)
+    {
+      // update the structure field with temperature from the thermal field.
+      // It is important for TSI contact in the first step
+      ApplyThermoCouplingState(ThermoField()->Tempnp());
+    }
+
     // -------------------------------------------------- structure field
 
     // predict the structure field without influence of temperatures
@@ -1284,9 +1299,6 @@ bool TSI::Partitioned::ConvergenceCheck(int itnum, const int itmax, const double
  *----------------------------------------------------------------------*/
 void TSI::Partitioned::PrepareOutput()
 {
-  if ((coupling_ != INPAR::TSI::OneWay) or not displacementcoupling_)
-    // set temperatures on structure field for evaluating stresses
-    ApplyThermoCouplingState(ThermoField()->Tempnp());
   // prepare output (i.e. calculate stresses, strains, energies)
   constexpr bool force_prepare = false;
   StructureField()->PrepareOutput(force_prepare);
@@ -1296,6 +1308,35 @@ void TSI::Partitioned::PrepareOutput()
 
 }  // PrepareOutput()
 
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void TSI::Partitioned::PrepareContactStrategy()
+{
+  TSI::Algorithm::PrepareContactStrategy();
+
+  if (contact_strategy_nitsche_ != Teuchos::null)
+  {
+    const auto& model_eval = StructureField()->ModelEvaluator(INPAR::STR::model_structure);
+    const auto cparams = model_eval.EvalData().ContactPtr();
+    auto cparams_new = cparams;
+    cparams_new->SetCouplingScheme(INPAR::CONTACT::CouplingScheme::partitioning);
+    ThermoField()->SetNitscheContactParameters(cparams_new);
+  }
+}  // PrepareContactStrategy()
+
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void TSI::Partitioned::Update()
+{
+  StructureField()->Update();
+  ThermoField()->Update();
+  if (contact_strategy_lagrange_ != Teuchos::null)
+    contact_strategy_lagrange_->Update((StructureField()->Dispnp()));
+}
 
 /*----------------------------------------------------------------------*/
 
