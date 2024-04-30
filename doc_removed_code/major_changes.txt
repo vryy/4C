@@ -1,5 +1,10 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+GEMM ("Generalized energy momentum method")
+- removed in commit c010a388759acd3496601ed847b55168939b56d6 on 30/04/2024
+- reasons: needs special implementations on the element and material level, not actively used
+- removed by Janina Datz
+
 Shell8 and post_s8convert
 - removed in commits 85aa45c0e2061e8a086e8b95fa4a8e8112dda2ce and
   186f7c4db1997b1939f90e6ec67db7247cdd157b on 26/09/2023
