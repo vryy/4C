@@ -1,9 +1,9 @@
 # Contributing to 4C
 
 Thank you for your willingness to contribute to 4C.
-The steps outlined in [Setup and Initial Configuration](#setup-and-initial-configuration) have to be performed only once, while the  [4C Development Workflow](#the-fourc-development-workflow) has to be cycled for every bit of code development in 4C.
+The steps outlined in [Setup and Initial Configuration](#setup-and-initial-configuration) have to be performed only once, while the  [4C Development Workflow](#the-4c-development-workflow) has to be cycled for every bit of code development in 4C.
 
-> **Note:**  By contributing to 4C, you implicitly agree to our [contributor license agreement](https://gitlab.lrz.de/baci/baci/blob/master/ContributorLicenseAgreement.md).
+[//]: # (> **Note:**  By contributing to 4C, you implicitly agree to our [contributor license agreement]&#40;https://gitlab.lrz.de/baci/baci/blob/master/ContributorLicenseAgreement.md&#41;.)
 
 4C development is strongly based on the [GitHub Flow](https://guides.github.com/introduction/flow/index.html) which is a branch-based workflow involving only two types of branches: the `master` branch and `feature` branches.
 The most important rules are:
@@ -15,7 +15,7 @@ To incorporate a `feature` branch into the `master` branch, 4C employs GitLab's 
 
 ### Contents
 1. [Setup and Initial Configuration](#setup-and-initial-configuration)
-1. [The 4C Development Workflow](#the-fourc-development-workflow)
+1. [The 4C Development Workflow](#the-4c-development-workflow)
    1. [Create a GitLab Issue](#create-a-gitlab-issue)
    1. [Work an Issue](#work-an-issue)
       1. [Create a Feature Branch](#create-a-feature-branch)
@@ -25,7 +25,8 @@ To incorporate a `feature` branch into the `master` branch, 4C employs GitLab's 
    1. [Merging Changes into `master`](#merging-changes-into-master)
       1. [Push your branch to GitLab](#push-your-branch-to-gitlab)
       1. [Create a Merge Request](#create-a-merge-request)
-      1. [Feedback](#feedback)
+      2. [Work-in-Progress Merge Requests](#work-in-progress-merge-requests)
+      1. [Feedback, Review, and Approval](#feedback-review-and-approval)
       1. [Merging a Merge Request](#merging-a-merge-request)
    1. [Final Clean-Up](#final-clean-up)
    1. [Actively watch the nightly pipeline](#actively-watch-the-nightly-pipeline)
@@ -36,12 +37,12 @@ To incorporate a `feature` branch into the `master` branch, 4C employs GitLab's 
 ### Read the [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md)
 
 Do ensure you are familiar with all the information in our [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md) file, as that is necessary for understanding what follows.
-Double-check that your local Git repository is configured as described in [README.md](https://gitlab.lrz.de/baci/baci/blob/master/README.md#set-up-git).
+Double-check that your local Git repository is configured as described in the [user documentation](https://baci.pages.gitlab.lrz.de/baci/readthedocs/4Csetup.html#set-up-your-gitlab-account).
 
 ### Setup your Integrated Development Environment
 
 We recommend to use an Integrated Develoment Environment (IDE) for code development because it provides many convenient features and also eases to comply with our mandatory code style.
-Set-up instructions for various IDEs can be found on the respective [Wiki page](https://gitlab.lrz.de/baci/baci/wikis/set-up-your-integrated-development-environment).
+Set-up instructions for various IDEs can be found in the [user documentation](https://baci.pages.gitlab.lrz.de/baci/readthedocs/4Csetup.html#set-up-your-ide).
 
 ## The 4C Development Workflow
 
@@ -133,8 +134,8 @@ limited to 72 characters wide.
 
 ##### Doxygen
 
-4C uses [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) to generate documentation from annotated source code.
-Please see [this wiki page](https://gitlab.lrz.de/baci/baci/wikis/Doxygen) for our Doxygen guidelines.
+4C uses [Doxygen](https://www.doxygen.nl/) to generate documentation from annotated source code.
+Please see the [user documentation](https://baci.pages.gitlab.lrz.de/baci/readthedocs/doxygen.html#documenting-the-code-with-doxygen) for our Doxygen guidelines.
 
 [↑ Contents](#contents)
 
@@ -238,7 +239,7 @@ Some remarks on code review:
 
 - Code review is intended to be a constructive discussion about the **Why?** and **How?** of the proposed changes.
 - Recognizing the fact, that there might be more than one good solution to a given problem, code review is intended to increase overall code quality and hopefully detect some critical points before merging.
-- We have a few mandatory [coding guidelines](https://gitlab.lrz.de/baci/baci/-/wikis/Baci-development-guidelines#coding-guidelines) in place, that need to be enforced during code review.
+- We have a few mandatory [coding guidelines](https://baci.pages.gitlab.lrz.de/baci/readthedocs/codingguidelines.html#) in place, that need to be enforced during code review.
 
 [↑ Contents](#contents)
 
