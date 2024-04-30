@@ -7,21 +7,17 @@
 - `job`: A series of shell commands that will be executed on a testing machine.
 - `pipeline`: A collection of jobs that will be tested. The green check mark next to a commit means, that the pipeline passed. Some pipelines only contain one job.
 - `gitlab-runner`: A daemon on a testing machine that collects jobs from GitLab and runs them. Each runner has tags that are used to filter out the jobs sent to that runner. A detailed documentation can be found [here](https://docs.gitlab.com/runner/configuration/advanced-configuration.html).
-- `.gitlab-ci.yml`: The configuration file for GitLab testing. In BACI it is located at `tests/testconfig/.gitlab-ci.yml`. A general introduction to the GitLab testing configuration is given in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/).
+- `.gitlab-ci.yml`: The configuration file for GitLab testing. In this project it is located at `tests/testconfig/.gitlab-ci.yml`. A general introduction to the GitLab testing configuration is given in the [GitLab documentation](https://docs.gitlab.com/ee/ci/yaml/).
 
 ## How and when are pipelines started?
 
 Every time something changes in the repository (commit, merge, etc.), GitLab checks for a `.gitlab-ci.yml` file in the repository (at the new state). This file will start ONE pipeline and the jobs in that pipeline (if no jobs are to be run, no pipeline is created). In addition to that pipelines can be triggered over the GitLab web interface and by GitLab schedulers.
 
-## Testing in BACI
+## Testing in 4C
 
 ### Daily tests
 
 Each night a full release and a full debug test are started by a GitLab Scheduler on all configurations. If the release test passes, `doxygen` is build and copied to a folder with constant path (if the documentation is automatically loaded to a server it is better if it is always in the same location, the path is given with a variable and can be different for the different configurations).
-
-### Minimal tests
-
-Every time something changes in the `master` branch, a pipeline is created that performs the code checks and a minimal test. Only if the code checks are successful, BACI is build and the minimal tests are run. The code check can be performed by any gitlab-runner that picks it up, the build and minimal tests are performed on all configurations.
 
 ### MR testing
 
