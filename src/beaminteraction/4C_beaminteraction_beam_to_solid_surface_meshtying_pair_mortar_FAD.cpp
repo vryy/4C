@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Get the positional Lagrange multipliers for this pair.
-  const auto& [lambda_gid_pos, dummy] = mortar_manager->LocationVector(*this);
+  const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*this);
   std::vector<double> local_lambda_pos;
   CORE::FE::ExtractMyValues(global_lambda, local_lambda_pos, lambda_gid_pos);
   auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::Initialize(nullptr);
@@ -211,7 +211,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   const std::vector<int>& patch_gid = this->face_element_->GetPatchGID();
 
   // Get the Lagrange multiplier GIDs.
-  const auto& [lambda_gid_pos, dummy] = mortar_manager->LocationVector(*this);
+  const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*this);
 
   // Assemble into the matrices related to beam DOFs.
   for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
@@ -495,7 +495,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
                 this->face_element_->GetFaceElementData().element_position_(i_surface)));
 
   // Get the rotational Lagrange multipliers for this pair.
-  const auto& [dummy, lambda_gid_rot] = mortar_manager->LocationVector(*this);
+  const auto& [_, lambda_gid_rot] = mortar_manager->LocationVector(*this);
   std::vector<double> lambda_rot_double;
   CORE::FE::ExtractMyValues(global_lambda, lambda_rot_double, lambda_gid_rot);
   CORE::LINALG::Matrix<mortar::n_dof_, 1, double> lambda_rot;
@@ -937,7 +937,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   GetPairRotationalGIDs(discret, gid_surface, gid_rot);
 
   // Get the Lagrange multiplier GIDs.
-  const auto& [dummy, lambda_gid_rot] = mortar_manager->LocationVector(*this);
+  const auto& [_, lambda_gid_rot] = mortar_manager->LocationVector(*this);
 
   // Assemble into the global vectors
   global_constraint.SumIntoGlobalValues(lambda_gid_rot.size(), lambda_gid_rot.data(), local_g.A());

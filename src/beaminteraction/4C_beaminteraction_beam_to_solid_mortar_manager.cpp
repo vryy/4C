@@ -64,15 +64,13 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       contact_pairs_(Teuchos::null)
 {
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
-  unsigned int n_lambda_node_temp = 0;
-  unsigned int n_lambda_element_temp = 0;
-
-  MortarShapeFunctionsToNumberOfLagrangeValues(beam_to_solid_params_->GetMortarShapeFunctionType(),
-      3, n_lambda_node_temp, n_lambda_element_temp);
-  n_lambda_node_ = n_lambda_node_temp;
-  n_lambda_node_translational_ = n_lambda_node_temp;
-  n_lambda_element_ = n_lambda_element_temp;
-  n_lambda_element_translational_ = n_lambda_element_temp;
+  const auto& [n_lambda_node_pos, n_lambda_element_pos] =
+      MortarShapeFunctionsToNumberOfLagrangeValues(
+          beam_to_solid_params_->GetMortarShapeFunctionType(), 3);
+  n_lambda_node_ = n_lambda_node_pos;
+  n_lambda_node_translational_ = n_lambda_node_pos;
+  n_lambda_element_ = n_lambda_element_pos;
+  n_lambda_element_translational_ = n_lambda_element_pos;
 
   if (beam_to_solid_params_->IsRotationalCoupling())
   {
@@ -100,12 +98,12 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
 
     // Get the number of Lagrange multiplier DOF for rotational coupling on a beam node and on a
     // beam element.
-    MortarShapeFunctionsToNumberOfLagrangeValues(
-        mortar_shape_function_rotation, 3, n_lambda_node_temp, n_lambda_element_temp);
-    n_lambda_node_ += n_lambda_node_temp;
-    n_lambda_node_rotational_ = n_lambda_node_temp;
-    n_lambda_element_ += n_lambda_element_temp;
-    n_lambda_element_rotational_ = n_lambda_element_temp;
+    const auto& [n_lambda_node_rot, n_lambda_element_rot] =
+        MortarShapeFunctionsToNumberOfLagrangeValues(mortar_shape_function_rotation, 3);
+    n_lambda_node_ += n_lambda_node_rot;
+    n_lambda_node_rotational_ = n_lambda_node_rot;
+    n_lambda_element_ += n_lambda_element_rot;
+    n_lambda_element_rotational_ = n_lambda_element_rot;
   }
 }
 

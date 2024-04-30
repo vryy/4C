@@ -135,8 +135,10 @@ namespace BEAMINTERACTION
         const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
 
     /**
-     * \brief Get the global IDs of all Lagrange multipliers for the contact pair for translational
-     * and rotational coupling.
+     * \brief Get vectors with GIDs of the positional and rotational Lagrange multipliers for the
+     * contact pair.
+     *
+     * First entry in the pair are the translational GIDs and second entry are the rotational GIDs.
      */
     [[nodiscard]] std::pair<std::vector<int>, std::vector<int>> LocationVector(
         const BEAMINTERACTION::BeamContactPair& contact_pair) const;

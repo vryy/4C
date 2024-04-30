@@ -85,12 +85,12 @@ namespace BEAMINTERACTION
    * element.
    * @param shape_function (in) Mortar shape function.
    * @param n_dim (in) Spatial dimension of Lagrange multiplicator field.
-   * @param n_lambda_node (out) Number of Lagrange multiplicators per node.
-   * @param n_lambda_element_ (out) Number of Lagrange multiplicators per element.
+   * @return {n_lambda_node, n_lambda_element} Number of Lagrange multiplicators per node and per
+   * element.
    */
-  void MortarShapeFunctionsToNumberOfLagrangeValues(
+  [[nodiscard]] std::pair<unsigned int, unsigned int> MortarShapeFunctionsToNumberOfLagrangeValues(
       const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions shape_function,
-      const unsigned int n_dim, unsigned int& n_lambda_node, unsigned int& n_lambda_element);
+      const unsigned int n_dim);
 
   /**
    * \brief Setup the triad interpolation scheme for the current triad and reference triad of the
