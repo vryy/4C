@@ -56,7 +56,6 @@ For implicit analyses, a number of time stepping methods exist, the most common 
 - ``GenAlpha``: generalized alpha method with up to four parameters, :math:`\beta, \alpha_M, \alpha_F, \rho_\infty`, see the reference section :ref:`--Structural dynamic/GenAlpha<SECstructuraldynamic_genalpha>`
 - ``OneStepTheta``: one-step theta method (a special version of generalized alpha with :math:`\alpha_M=\alpha_F=1`, 
   see section :ref:`--Structural dynamic/OneStepTheta<SECstructuraldynamic_onesteptheta>`
-- ``GEMM``: generalized energy momentum method (five parameters: :math:`\beta, \alpha_M, \alpha_F, \gamma, \xi`, see section :ref:`--Structural dynamic/GEMM<SECstructuraldynamic_gemm>`
 
 More in-depth information about some time stepping details are given in the :ref:`theory section<structdynamics_theory>` below. 
 

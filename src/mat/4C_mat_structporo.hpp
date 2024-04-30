@@ -293,18 +293,6 @@ namespace MAT
       mat_->StrainEnergy(glstrain, psi, gp, EleID);
     }
 
-    void EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
-        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
-        const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
-        const int gp, const int eleGID) override
-    {
-      mat_->EvaluateGEMM(
-          stress, cmat, glstrain_m, glstrain_new, glstrain_old, rcg_new, rcg_old, gp, eleGID);
-    }
-
     void EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
         const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
         double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,

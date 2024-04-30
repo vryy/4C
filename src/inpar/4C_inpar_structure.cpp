@@ -127,12 +127,11 @@ namespace INPAR
 
       setStringToIntegralParameter<int>("DYNAMICTYP", "GenAlpha",
           "type of the specific dynamic time integration scheme",
-          tuple<std::string>("Statics", "GenAlpha", "GenAlphaLieGroup", "OneStepTheta", "GEMM",
+          tuple<std::string>("Statics", "GenAlpha", "GenAlphaLieGroup", "OneStepTheta",
               "ExplicitEuler", "CentrDiff", "AdamsBashforth2", "AdamsBashforth4", "EulerMaruyama",
               "EulerImpStoch"),
           tuple<int>(dyna_statics, dyna_genalpha, dyna_genalpha_liegroup, dyna_onesteptheta,
-              dyna_gemm, dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4, dyna_euma,
-              dyna_euimsto),
+              dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4, dyna_euma, dyna_euimsto),
           &sdyn);
 
       setStringToIntegralParameter<INPAR::STR::PreStress>("PRESTRESS", "none",
@@ -370,17 +369,6 @@ namespace INPAR
       Teuchos::ParameterList& onesteptheta = sdyn.sublist("ONESTEPTHETA", false, "");
 
       CORE::UTILS::DoubleParameter("THETA", 0.5, "One-step-theta factor in (0,1]", &onesteptheta);
-
-
-      /*----------------------------------------------------------------------*/
-      /* parameters for generalised-energy-momentum structural integrator */
-      Teuchos::ParameterList& gemm = sdyn.sublist("GEMM", false, "");
-
-      CORE::UTILS::DoubleParameter("BETA", 0.25, "Generalised-alpha factor in (0,0.5]", &gemm);
-      CORE::UTILS::DoubleParameter("GAMMA", 0.5, "Generalised-alpha factor in (0,1]", &gemm);
-      CORE::UTILS::DoubleParameter("ALPHA_M", 0.5, "Generalised-alpha factor in [0,1)", &gemm);
-      CORE::UTILS::DoubleParameter("ALPHA_F", 0.5, "Generalised-alpha factor in [0,1)", &gemm);
-      CORE::UTILS::DoubleParameter("XI", 0.0, "generalisation factor in [0,1)", &gemm);
     }
 
 

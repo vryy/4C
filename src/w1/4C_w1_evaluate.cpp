@@ -72,8 +72,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::struct_calc_nlnstiffmass;
     else if (action == "calc_struct_nlnstifflmass")
       act = ELEMENTS::struct_calc_nlnstifflmass;
-    else if (action == "calc_struct_nlnstiff_gemm")
-      act = ELEMENTS::struct_calc_nlnstiff_gemm;
     else if (action == "calc_struct_stress")
       act = ELEMENTS::struct_calc_stress;
     else if (action == "calc_struct_eleload")
@@ -261,25 +259,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &myemat, nullptr, &elevec1, nullptr,
             nullptr, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }
-      break;
-    }
-    //==================================================================================
-    case ELEMENTS::struct_calc_nlnstiff_gemm:
-    {
-      // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> dispo = discretization.GetState("old displacement");
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
-      if (dispo == Teuchos::null or disp == Teuchos::null or res == Teuchos::null)
-        FOUR_C_THROW("Cannot get state vectors");
-      std::vector<double> mydispo(lm.size());
-      CORE::FE::ExtractMyValues(*dispo, mydispo, lm);
-      std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
-      FintStiffMassGEMM(params, lm, mydispo, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr,
-          nullptr, actmat, INPAR::STR::stress_none, INPAR::STR::strain_none);
       break;
     }
     //==================================================================================

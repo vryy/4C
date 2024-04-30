@@ -1344,7 +1344,6 @@ DIVERCONT                       stop
 //                              Statics
 //                              GenAlpha
 //                              OneStepTheta
-//                              GEMM
 //                              ExplicitEuler
 //                              CentrDiff
 //                              AdamsBashforth2

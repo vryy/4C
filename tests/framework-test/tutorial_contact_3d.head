@@ -56,7 +56,7 @@ FILESTEPS                       1000
 --------------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 //
-// type of time integration control, e.g. Statics, GenAlpha, OneStepTheta, GEMM, ExplicitEuler, CentrDiff, etc. 
+// type of time integration control, e.g. Statics, GenAlpha, OneStepTheta, ExplicitEuler, CentrDiff, etc.
 DYNAMICTYP                      GenAlpha
 //
 // save displacements and contact forces every RESULTSEVRY steps

@@ -106,7 +106,6 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
     case INPAR::STR::dyna_genalpha:
     case INPAR::STR::dyna_genalpha_liegroup:
     case INPAR::STR::dyna_onesteptheta:
-    case INPAR::STR::dyna_gemm:
     case INPAR::STR::dyna_expleuler:
     case INPAR::STR::dyna_centrdiff:
     case INPAR::STR::dyna_ab2:

@@ -84,33 +84,6 @@ namespace MAT
     }
 
     /*!
-     * @brief Evaluate the material law for GEMM
-     *
-     * @param[in, out] stress  2nd Piola-Kirchhoff stresses
-     * @param[in, out] cmat    Constitutive matrix
-     * @param[in] density      Mass density
-     * @param[in] defgrad      Deformation gradient
-     * @param[in] glstrain_m   Green-Lagrange strain at t_{n+1/2}
-     * @param[in] glstrain_new Green-Lagrange strain at t_{n+1}
-     * @param[in] glstrain_old Green-Lagrange strain at t_{n}
-     * @param[in] rcg_new      Right Cauchy-Green tensor at t_{n+1}
-     * @param[in] rcg_old      Right Cauchy-Green tensor at t_{n}
-     * @param[in] gp           Current Gauss point
-     * @param[in] eleGID       Global element ID
-     */
-    virtual void EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
-        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
-        const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
-        const int gp, const int eleGID)
-    {
-      FOUR_C_THROW(
-          "Material of type %d does not support evaluation for GEMM", this->MaterialType());
-    }
-
-    /*!
      * @brief Evaluate the Cauchy stress contracted with normal and direction vector and
      * its linearizations with given deformation gradient.
      *

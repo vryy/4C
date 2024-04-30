@@ -75,7 +75,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
                                 "PRESTRESS") != INPAR::STR::PreStress::none;
   if (is_prestress or dyntype == INPAR::STR::dyna_statics or  // dynamic type
       dyntype == INPAR::STR::dyna_genalpha or dyntype == INPAR::STR::dyna_genalpha_liegroup or
-      dyntype == INPAR::STR::dyna_onesteptheta or dyntype == INPAR::STR::dyna_gemm)
+      dyntype == INPAR::STR::dyna_onesteptheta)
     ti_strategy = Teuchos::rcp(new STR::TIMINT::Implicit());
 
   return ti_strategy;

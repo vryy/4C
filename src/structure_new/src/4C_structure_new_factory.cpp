@@ -17,7 +17,6 @@
 #include "4C_structure_new_expl_abx.hpp"
 #include "4C_structure_new_expl_centrdiff.hpp"
 #include "4C_structure_new_expl_forwardeuler.hpp"
-#include "4C_structure_new_impl_gemm.hpp"
 #include "4C_structure_new_impl_genalpha.hpp"
 #include "4C_structure_new_impl_genalpha_liegroup.hpp"
 #include "4C_structure_new_impl_ost.hpp"        // derived from ost
@@ -94,13 +93,6 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildImplicitIntegrator(
     case INPAR::STR::dyna_onesteptheta:
     {
       impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::OneStepTheta());
-      break;
-    }
-
-    // Generalised energy-momentum method (GEMM)
-    case INPAR::STR::dyna_gemm:
-    {
-      impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::Gemm());
       break;
     }
 
