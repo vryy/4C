@@ -51,7 +51,7 @@ or for an application in association with physical products in particular.
 1. Add your public SSH key found in `~/.ssh/id_rsa.pub` to your user profile.
 
 Our user documentation
-provides [detailed setup instructions for your GitLab account](https://baci.pages.gitlab.lrz.de/baci/readthedocs/bacisetup.html).
+provides [detailed setup instructions for your GitLab account](https://baci.pages.gitlab.lrz.de/baci/readthedocs/4Csetup.html).
 
 [↑ Contents](#contents)
 
@@ -111,7 +111,7 @@ Consult the official [Git documentation](www.git-scm.org) to obtain a more recen
    and [clone the repository](#clone-the-repository).
 
 Our user documentation provides
-a [detailed setup guide for your local git configuration](https://baci.pages.gitlab.lrz.de/baci/readthedocs/bacisetup.html#set-up-your-gitlab-account).
+a [detailed setup guide for your local git configuration](https://baci.pages.gitlab.lrz.de/baci/readthedocs/4Csetup.html#set-up-your-gitlab-account).
 
 [↑ Contents](#contents)
 
@@ -139,7 +139,7 @@ Look into the CMake presets in `presets/` or ask your colleagues for further inf
 Some helper scripts to install these TPLs can be found in `dependencies/`.
 
 Additional information can be found in
-the [user documentation](https://baci.pages.gitlab.lrz.de/baci/readthedocs/bacisetup.html#external-dependencies).
+the [user documentation](https://baci.pages.gitlab.lrz.de/baci/readthedocs/4Csetup.html#external-dependencies).
 
 [↑ Contents](#contents)
 
@@ -182,7 +182,7 @@ A preset name needs to be passed to cmake via the command line argument `--prese
 Use `cmake ../<sourceDir> --list-presets` to get a list of all available presets.
 
 More information about the cmake presets can be found in the
-[user documentation](https://baci.pages.gitlab.lrz.de/baci/readthedocs/bacisetup.html#cmakepresets).
+[user documentation](https://baci.pages.gitlab.lrz.de/baci/readthedocs/4Csetup.html#cmakepresets).
 
 **Note:** Make sure to use at least CMake 3.25. Install it in your path or use the ones provided on your institute's
 server.
