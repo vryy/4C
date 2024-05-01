@@ -207,24 +207,6 @@ namespace DRT
       };
 
       /*!
-      \brief related to output of IsImmersed information
-      */
-      virtual void VisIsImmersed(std::map<std::string, int>& names)
-      {
-        FOUR_C_THROW("not implemented in base class");
-        return;
-      }
-
-      /*!
-      \brief related to output of IsBoundaryImmersed information
-      */
-      virtual void VisIsBoundaryImmersed(std::map<std::string, int>& names)
-      {
-        FOUR_C_THROW("not implemented in base class");
-        return;
-      }
-
-      /*!
       \brief construct rcp to vector for divergence projection handling
       */
       virtual void ConstructElementRCP(int size)

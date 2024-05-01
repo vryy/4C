@@ -206,23 +206,12 @@ namespace DRT
           FOUR_C_THROW("stored_projected_intpoint_divergence_ not cleared properly");
       };
 
-      /*!
-      \brief related to output of IsImmersed information
-      */
-      void VisIsImmersed(std::map<std::string, int>& names) override
+      void VisNames(std::map<std::string, int>& names) override
       {
-        names.insert(std::pair<std::string, int>("IsImmersed", 1));
-        return;
+        names["IsBoundaryImmersed"] = 1;
+        names["IsImmersed"] = 1;
       }
 
-      /*!
-      \brief related to output of IsBoundaryImmersed information
-      */
-      void VisIsBoundaryImmersed(std::map<std::string, int>& names) override
-      {
-        names.insert(std::pair<std::string, int>("IsBoundaryImmersed", 1));
-        return;
-      }
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
