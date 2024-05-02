@@ -36,10 +36,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      Maxwell0dAcinusOgden(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Maxwell0dAcinusOgden(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// enum for mapping between material parameter and entry in the matparams_ vector
       enum Matparamnames
@@ -128,7 +128,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new Maxwell0dAcinus(*this));
     }

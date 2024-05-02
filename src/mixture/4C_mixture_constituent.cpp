@@ -14,8 +14,8 @@
 
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_mat_service.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_mixture_constituent_elasthyper.hpp"
 #include "4C_mixture_constituent_elasthyper_damage.hpp"
 #include "4C_mixture_constituent_elasthyper_elastin_membrane.hpp"
@@ -28,13 +28,13 @@ FOUR_C_NAMESPACE_OPEN
 
 // Constructor of the mixture constituent parameters
 MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : MAT::PAR::Parameter(matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    : CORE::MAT::PAR::Parameter(matdata)
 {
 }
 
 // Create an instance of the constituent from the parameters
-Teuchos::RCP<MAT::Material> MIXTURE::PAR::MixtureConstituent::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MIXTURE::PAR::MixtureConstituent::CreateMaterial()
 {
   FOUR_C_THROW(
       "Cannot create mixture constituent from this method. Use CreateConstituent() instead.");
@@ -59,7 +59,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int 
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat =
+  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(matnum);
 
   switch (curmat->Type())

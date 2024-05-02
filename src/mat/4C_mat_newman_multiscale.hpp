@@ -25,11 +25,11 @@ namespace MAT
     {
      public:
       //! constructor
-      NewmanMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
+      NewmanMultiScale(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
 
       //! create instance of Newman multi-scale material
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! electronic conductivity
       double electronic_cond() const { return electronic_cond_; }
@@ -123,7 +123,7 @@ namespace MAT
     };
 
     //! clone Newman multi-scale material
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new NewmanMultiScale(*this));
     };

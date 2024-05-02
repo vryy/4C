@@ -12,9 +12,10 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_scatra_reaction.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

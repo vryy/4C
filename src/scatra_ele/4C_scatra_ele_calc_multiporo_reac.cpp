@@ -73,7 +73,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
   pororeac::SetupCalc(ele, discretization);
 
   // get the material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   // set the fluid material in the element
   VarManager()->SetFluidPoromultiphaseMaterial(ele);
@@ -88,7 +88,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
     for (int k = 0; k < my::numdofpernode_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       switch (singlemat->MaterialType())
       {
@@ -105,7 +105,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
                 poromat->PhaseID(), k);
 
           const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
-          Teuchos::RCP<MAT::Material> singlemat =
+          Teuchos::RCP<CORE::MAT::Material> singlemat =
               VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
           if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlephase)
@@ -140,7 +140,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
                 poromat->PhaseID(), k);
 
           const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
-          Teuchos::RCP<MAT::Material> singlemat =
+          Teuchos::RCP<CORE::MAT::Material> singlemat =
               VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
           if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlevolfrac)
@@ -237,7 +237,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
               poromat->PhaseID(), 0);
 
         const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
-        Teuchos::RCP<MAT::Material> singlemat =
+        Teuchos::RCP<CORE::MAT::Material> singlemat =
             VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
         if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlephase)
@@ -271,7 +271,7 @@ int DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::SetupCalc(
               poromat->PhaseID(), 0);
 
         const int singlephasematid = VarManager()->MultiphaseMat()->MatID(poromat->PhaseID());
-        Teuchos::RCP<MAT::Material> singlemat =
+        Teuchos::RCP<CORE::MAT::Material> singlemat =
             VarManager()->MultiphaseMat()->MaterialById(singlephasematid);
 
         if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlevolfrac)
@@ -526,13 +526,13 @@ double DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ComputePorePressure()
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Materials(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    const int iquad                                    //!< id of current gauss point
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
+    double& densn,                                           //!< density at t_(n)
+    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,  //!< density at t_(n+alpha_M)
+    double& visc,    //!< fluid viscosity
+    const int iquad  //!< id of current gauss point
 
 )
 {
@@ -577,13 +577,13 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Materials(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroFluid(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    const int iquad                                    //!< id of current gauss point
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
+    double& densn,                                           //!< density at t_(n)
+    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,  //!< density at t_(n+alpha_M)
+    double& visc,    //!< fluid viscosity
+    const int iquad  //!< id of current gauss point
 )
 {
   if (iquad == -1)
@@ -622,13 +622,13 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroFluid(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroVolFrac(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    const int iquad                                    //!< id of current gauss point
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
+    double& densn,                                           //!< density at t_(n)
+    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,  //!< density at t_(n+alpha_M)
+    double& visc,    //!< fluid viscosity
+    const int iquad  //!< id of current gauss point
 )
 {
   if (iquad == -1)
@@ -665,13 +665,13 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroVolFrac(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroSolid(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    const int iquad                                    //!< id of current gauss point
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
+    double& densn,                                           //!< density at t_(n)
+    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,  //!< density at t_(n+alpha_M)
+    double& visc,    //!< fluid viscosity
+    const int iquad  //!< id of current gauss point
 )
 {
   if (iquad == -1)
@@ -712,13 +712,13 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroSolid(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoroTemperature(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    const int iquad                                    //!< id of current gauss point
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
+    double& densn,                                           //!< density at t_(n)
+    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,  //!< density at t_(n+alpha_M)
+    double& visc,    //!< fluid viscosity
+    const int iquad  //!< id of current gauss point
 )
 {
   if (iquad == -1)

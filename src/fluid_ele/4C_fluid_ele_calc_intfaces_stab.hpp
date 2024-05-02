@@ -70,8 +70,8 @@ namespace DRT
 
       */
       virtual int EvaluateEdgeBasedStabilization(
-          DRT::ELEMENTS::FluidIntFace* intface,   ///< internal face element
-          Teuchos::RCP<MAT::Material>& material,  ///< material associated with the faces
+          DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
+          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
           DRT::ELEMENTS::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
           DRT::ELEMENTS::FluidEleParameterIntFace&
               fldintfacepara,                   ///< general parameter for internal face
@@ -169,8 +169,8 @@ namespace DRT
 
       */
       int EvaluateEdgeBasedStabilization(
-          DRT::ELEMENTS::FluidIntFace* intface,   ///< internal face element
-          Teuchos::RCP<MAT::Material>& material,  ///< material associated with the faces
+          DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
+          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
           DRT::ELEMENTS::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
           DRT::ELEMENTS::FluidEleParameterIntFace&
               fldintfacepara,                   ///< general parameter for internal face
@@ -223,19 +223,19 @@ namespace DRT
       );
 
       //! fill element vectors with extracted data
-      void GetElementData(FluidIntFace* surfele,  ///< surface FluidIntFace element
-          Fluid* master_ele,                      ///< master parent element
-          Fluid* slave_ele,                       ///< slave  parent element
-          Teuchos::RCP<MAT::Material>& material,  ///< material associated with the faces
-          std::vector<double>& mypvelaf,          ///< master velaf
-          std::vector<double>& mypvelnp,          ///< master velnp
-          std::vector<double>& mypedispnp,        ///< master dispnp
-          std::vector<double>& mypgridv,          ///< master grid velocity (ALE)
-          std::vector<double>& myedispnp,         ///< surfele dispnp
-          std::vector<double>& mynvelaf,          ///< slave velaf
-          std::vector<double>& mynvelnp,          ///< slave velnp
-          std::vector<double>& mynedispnp,        ///< slave dispnp
-          std::vector<double>& myngridv           ///< slave grid velocity (ALE)
+      void GetElementData(FluidIntFace* surfele,        ///< surface FluidIntFace element
+          Fluid* master_ele,                            ///< master parent element
+          Fluid* slave_ele,                             ///< slave  parent element
+          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+          std::vector<double>& mypvelaf,                ///< master velaf
+          std::vector<double>& mypvelnp,                ///< master velnp
+          std::vector<double>& mypedispnp,              ///< master dispnp
+          std::vector<double>& mypgridv,                ///< master grid velocity (ALE)
+          std::vector<double>& myedispnp,               ///< surfele dispnp
+          std::vector<double>& mynvelaf,                ///< slave velaf
+          std::vector<double>& mynvelnp,                ///< slave velnp
+          std::vector<double>& mynedispnp,              ///< slave dispnp
+          std::vector<double>& myngridv                 ///< slave grid velocity (ALE)
       );
 
       //! evaluate shape functions and derivatives at integr. point

@@ -20,8 +20,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -32,11 +33,11 @@ namespace MAT
 {
   namespace PAR
   {
-    class ParticleMaterialBase : virtual public Parameter
+    class ParticleMaterialBase : virtual public CORE::MAT::PAR::Parameter
     {
      public:
       //! constructor
-      ParticleMaterialBase(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ParticleMaterialBase(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! @name material parameters
       //@{
@@ -50,7 +51,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override = 0;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override = 0;
     };
 
   }  // namespace PAR

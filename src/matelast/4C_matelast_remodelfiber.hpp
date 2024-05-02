@@ -11,10 +11,10 @@
 
 #include "4C_config.hpp"
 
-#include "4C_mat_par_parameter.hpp"
 #include "4C_matelast_coupanisoexpo.hpp"
 #include "4C_matelast_coupanisoexpoactive.hpp"
 #include "4C_matelast_summand.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <utility>
 
@@ -300,11 +300,11 @@ namespace MAT
        *
        * MAT 1 ELAST_RemodelFiber NUMMAT 1 MATIDS 100 TDECAY 1.0 SIGMAPRE 1.0
        */
-      class RemodelFiber : public MAT::PAR::Parameter
+      class RemodelFiber : public CORE::MAT::PAR::Parameter
       {
        public:
         /// standard constructor
-        RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+        RemodelFiber(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
         /// length of material list
         const int nummat_;
@@ -331,7 +331,7 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "

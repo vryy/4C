@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  | rstandard constructor                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : FluidPoroMultiPhase(matdata),
       numreac_((matdata->Get<int>("NUMREAC"))),
       reacids_((matdata->Get<std::vector<int>>("REACIDS")))
@@ -41,7 +41,7 @@ MAT::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
     for (m = reacids_.begin(); m != reacids_.end(); ++m)
     {
       const int reacid = *m;
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
+      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(reacid);
 
       // safety check and cast
       if (mat->MaterialType() != CORE::Materials::m_fluidporo_singlereaction)
@@ -52,12 +52,12 @@ MAT::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
             "TOTALNUMDOF in MAT_FluidPoroSingleReaction does not correspond to NUMMAT in "
             "MAT_FluidPoroMultiPhaseReactions");
 
-      MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<MAT::Material>>(reacid, mat));
+      MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
     }
   }
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroMultiPhaseReactions::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroMultiPhaseReactions::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::FluidPoroMultiPhaseReactions(this));
 }
@@ -110,9 +110,9 @@ void MAT::FluidPoroMultiPhaseReactions::SetupMatMap()
   for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); ++m)
   {
     const int reacid = *m;
-    Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
+    Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(reacid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<MAT::Material>>(reacid, mat));
+    MaterialMapWrite()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(reacid, mat));
   }
   return;
 }
@@ -168,7 +168,7 @@ void MAT::FluidPoroMultiPhaseReactions::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {

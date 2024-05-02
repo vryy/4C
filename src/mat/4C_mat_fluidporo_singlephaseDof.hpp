@@ -14,7 +14,7 @@
 
 #include "4C_inpar_material.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,17 +26,17 @@ namespace MAT
     class FluidPoroPhaseLaw;
 
     //! interface class for generic phase degree of freedom
-    class FluidPoroPhaseDof : public Parameter
+    class FluidPoroPhaseDof : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseDof(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit FluidPoroPhaseDof(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! build the phase dof
       static FluidPoroPhaseDof* CreatePhaseDof(int phasedofId);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       /// initialize
       virtual void Initialize() = 0;
@@ -72,7 +72,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseDofPressure(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit FluidPoroPhaseDofPressure(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// initialize
       void Initialize() override;
@@ -114,7 +114,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseDofDiffPressure(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit FluidPoroPhaseDofDiffPressure(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// initialize
       void Initialize() override;
@@ -158,7 +158,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroPhaseDofSaturation(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit FluidPoroPhaseDofSaturation(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// initialize
       void Initialize() override;

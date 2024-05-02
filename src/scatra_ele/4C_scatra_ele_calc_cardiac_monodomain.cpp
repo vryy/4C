@@ -62,13 +62,13 @@ DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Materials(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    const int iquad                                    //!< id of current gauss point
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
+    double& densn,                                           //!< density at t_(n)
+    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,  //!< density at t_(n+alpha_M)
+    double& visc,    //!< fluid viscosity
+    const int iquad  //!< id of current gauss point
 
 )
 {
@@ -77,8 +77,8 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Materials(
     FOUR_C_THROW("Material type is not supported");
 
   // safety check
-  Teuchos::RCP<MAT::Myocard> actmat =
-      Teuchos::rcp_dynamic_cast<MAT::Myocard>(Teuchos::rcp_const_cast<MAT::Material>(material));
+  Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(
+      Teuchos::rcp_const_cast<CORE::MAT::Material>(material));
   if (actmat->GetNumberOfGP() != 1 and not my::scatrapara_->MatGP())
   {
     actmat->SetGP(1);
@@ -95,13 +95,13 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Materials(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::MatMyocard(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    const int iquad                                    //!< id of current gauss point (default = -1)
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
+    double& densn,                                           //!< density at t_(n)
+    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,  //!< density at t_(n+alpha_M)
+    double& visc,    //!< fluid viscosity
+    const int iquad  //!< id of current gauss point (default = -1)
 )
 {
   const Teuchos::RCP<const MAT::Myocard>& actmat =

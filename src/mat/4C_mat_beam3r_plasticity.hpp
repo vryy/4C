@@ -18,7 +18,8 @@ function)
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_beam_elasthyper.hpp"
 #include "4C_mat_beam_elasthyper_parameter.hpp"
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -43,9 +44,9 @@ namespace MAT
     {
      public:
       //! standard constructor
-      BeamReissnerElastPlasticMaterialParams(Teuchos::RCP<MAT::PAR::Material> matdata);
+      BeamReissnerElastPlasticMaterialParams(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! @name Access to plasticity parameters
       //@{
@@ -201,7 +202,7 @@ namespace MAT
 
     /** \brief return copy of this material object
      */
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new BeamPlasticMaterial(*this));
     }

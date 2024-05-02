@@ -23,8 +23,8 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_elasthyper_service.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -49,7 +49,7 @@ namespace MAT
     /// \author rausch,tk,bborn
     /// \date 05/09
 
-    class ElastHyper : public Parameter
+    class ElastHyper : public CORE::MAT::PAR::Parameter
     {
       friend class MAT::ElastHyper;
 
@@ -58,7 +58,7 @@ namespace MAT
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      explicit ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit ElastHyper(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       /// @name material parameters
       //@{
@@ -81,7 +81,7 @@ namespace MAT
       const int polyconvex_;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //@}
 
@@ -196,7 +196,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new ElastHyper(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new ElastHyper(*this));
+    }
 
     /// number of materials
     virtual int NumMat() const { return params_->nummat_; }
@@ -341,7 +344,7 @@ namespace MAT
         const CORE::Materials::MaterialType& materialtype) const;
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;

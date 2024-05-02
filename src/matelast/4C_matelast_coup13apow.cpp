@@ -9,11 +9,11 @@ and the Jacobi determinant
 
 #include "4C_matelast_coup13apow.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::ELASTIC::PAR::Coup13aPow::Coup13aPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::Coup13aPow::Coup13aPow(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       c_(matdata->Get<double>("C")),
       d_(matdata->Get<int>("D")),

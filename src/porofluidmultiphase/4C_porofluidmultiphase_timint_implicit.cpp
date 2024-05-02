@@ -824,7 +824,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyAdditionalDBCForVolFracPress()
     DRT::ELEMENTS::PoroFluidMultiPhase* myele =
         dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(discret_->gElement(elecolmap->GID(i)));
 
-    const MAT::Material& material = *(myele->Material());
+    const CORE::MAT::Material& material = *(myele->Material());
 
     // check the material
     if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and

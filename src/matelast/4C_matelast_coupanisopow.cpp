@@ -9,12 +9,12 @@
 #include "4C_matelast_coupanisopow.hpp"
 
 #include "4C_io_linedefinition.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       k_(matdata->Get<double>("K")),
       d1_(matdata->Get<double>("D1")),

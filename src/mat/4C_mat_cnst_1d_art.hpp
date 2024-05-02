@@ -16,8 +16,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -41,11 +42,11 @@ namespace MAT
     /// material parameters for constant 1D_Artery
     ///
     // This object exists only once for each read Newton fluid. ???
-    class Cnst1dArt : public Parameter
+    class Cnst1dArt : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      Cnst1dArt(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Cnst1dArt(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -78,7 +79,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class NewtonianFluid
 
@@ -101,7 +102,7 @@ namespace MAT
   /// Wrapper for constant 1D_Artery material
   ///
   /// This object exists (several times) at every element
-  class Cnst1dArt : public Material
+  class Cnst1dArt : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -155,7 +156,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Cnst1dArt(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new Cnst1dArt(*this));
+    }
 
     /// return viscosity
     double Viscosity() const;
@@ -218,7 +222,7 @@ namespace MAT
     }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /*! \brief Calculate blood viscosity based on empirical law for blood fully saturated with

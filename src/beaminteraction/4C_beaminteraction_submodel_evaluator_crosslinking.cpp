@@ -373,7 +373,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::GetAllPossibleBspotLinks(
               // check criteria for feasible bond
               Teuchos::RCP<MAT::CrosslinkerMat> mat =
                   Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(
-                      MAT::Material::Factory(matcrosslinkerpertype[type_i]));
+                      MAT::Factory(matcrosslinkerpertype[type_i]));
 
               // linker type needs to match binding spot type
               if (mat->LinkerType() != iter.first) continue;
@@ -649,7 +649,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetupMyInitialDoubleBonde
     Teuchos::RCP<CROSSLINKING::CrosslinkerNode> newcrosslinker =
         Teuchos::rcp(new CROSSLINKING::CrosslinkerNode(gid, X, GState().GetMyRank()));
     newcrosslinker->SetMaterial(Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(
-        MAT::Material::Factory(newlinkermatid[i])));  // HACK HACK HACK
+        MAT::Factory(newlinkermatid[i])));  // HACK HACK HACK
     BinDiscretPtr()->AddNode(newcrosslinker);
 
     NewDoubleBonds dbondcl;

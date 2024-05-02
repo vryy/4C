@@ -7,25 +7,26 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include "4C_global_data.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
+#include "4C_material_input_base.hpp"
 
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::PAR::Parameter::Parameter(Teuchos::RCP<const MAT::PAR::Material> matdata)
+CORE::MAT::PAR::Parameter::Parameter(Teuchos::RCP<const CORE::MAT::PAR::Material> matdata)
     : id_(matdata->Id()), type_(matdata->Type()), name_(matdata->Name())
 {
 }
 
-void MAT::PAR::Parameter::SetParameter(int parametername, Teuchos::RCP<Epetra_Vector> myparameter)
+void CORE::MAT::PAR::Parameter::SetParameter(
+    int parametername, Teuchos::RCP<Epetra_Vector> myparameter)
 {
   // security check
   int length_old = matparams_.at(parametername)->GlobalLength();
@@ -63,7 +64,7 @@ void MAT::PAR::Parameter::SetParameter(int parametername, Teuchos::RCP<Epetra_Ve
   }
 }
 
-void MAT::PAR::Parameter::SetParameter(int parametername, const double val, const int eleGID)
+void CORE::MAT::PAR::Parameter::SetParameter(int parametername, const double val, const int eleGID)
 {
   // check if we own this element
   Teuchos::RCP<Epetra_Vector> fool = matparams_.at(parametername);
@@ -78,7 +79,7 @@ void MAT::PAR::Parameter::SetParameter(int parametername, const double val, cons
   (*matparams_.at(parametername))[matparams_[parametername]->Map().LID(eleGID)] = val;
 }
 
-void MAT::PAR::Parameter::ExpandParametersToEleColLayout()
+void CORE::MAT::PAR::Parameter::ExpandParametersToEleColLayout()
 {
   for (auto& matparam : matparams_)
   {
@@ -95,7 +96,7 @@ void MAT::PAR::Parameter::ExpandParametersToEleColLayout()
     }
   }
 }
-double MAT::PAR::Parameter::GetParameter(int parametername, const int EleId)
+double CORE::MAT::PAR::Parameter::GetParameter(int parametername, const int EleId)
 {
   // check if we have an element based value via size
   if (matparams_[parametername]->GlobalLength() == 1)
@@ -116,42 +117,6 @@ double MAT::PAR::Parameter::GetParameter(int parametername, const int EleId)
     // calculate LID here, instead of before each call
     return (*matparams_[parametername])[matparams_[parametername]->Map().LID(EleId)];
   }
-}
-
-MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> matdata)
-    : Parameter(matdata)
-{
-  // get MAT ID for definiton of structural tensor
-  int mat_id_structural_tensor = matdata->Get<int>("STR_TENS_ID");
-  // get pointer to material
-  Teuchos::RCP<MAT::PAR::Material> mat_str_tens =
-      GLOBAL::Problem::Instance()->Materials()->ById(mat_id_structural_tensor);
-  // construct parameter class
-  if (mat_str_tens->Parameter() == nullptr)
-    mat_str_tens->SetParameter(new MAT::ELASTIC::PAR::StructuralTensorParameter(mat_str_tens));
-  auto* params =
-      static_cast<MAT::ELASTIC::PAR::StructuralTensorParameter*>(mat_str_tens->Parameter());
-  // get type of strategy
-  std::string strategy = mat_str_tens->Get<std::string>("STRATEGY");
-
-  // construct strategy
-  if (strategy == "Standard")
-  {
-    structural_tensor_strategy_ =
-        Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(params));
-  }
-  else if (strategy == "ByDistributionFunction")
-  {
-    structural_tensor_strategy_ =
-        Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction(params));
-  }
-  else if (strategy == "DispersedTransverselyIsotropic")
-  {
-    structural_tensor_strategy_ = Teuchos::rcp(
-        new MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic(params));
-  }
-  else
-    FOUR_C_THROW("Unknown type of structural tensor strategy for anisotropic material chosen.");
 }
 
 

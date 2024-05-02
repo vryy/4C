@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_mixture_constituent.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -30,7 +30,8 @@ namespace MIXTURE
     class MixtureConstituentSolidMaterial : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituentSolidMaterial(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureConstituentSolidMaterial(
+          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 

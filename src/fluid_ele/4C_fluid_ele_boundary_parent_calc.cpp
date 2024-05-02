@@ -796,7 +796,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
       // evaluate material at integration point
       double rateofstrain = 0.0;
-      Teuchos::RCP<MAT::Material> material = parent->Material();
+      Teuchos::RCP<CORE::MAT::Material> material = parent->Material();
 
       // compute measure for rate of strain at n+alpha_F or n+1 if required
       // for non-Newtonian fluid
@@ -1459,7 +1459,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
 
     // evaluate material at integration point
     double rateofstrain = 0.0;  // Only Newtonian-fluids supported
-    Teuchos::RCP<MAT::Material> material = parent->Material();
+    Teuchos::RCP<CORE::MAT::Material> material = parent->Material();
 
     // get viscosity at integration point
     GetDensityAndViscosity(material, 0.0, 0.0, rateofstrain);
@@ -2233,7 +2233,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
     // evaluate material at integration point
     double rateofstrain = 0.0;
-    Teuchos::RCP<MAT::Material> material = parent->Material();
+    Teuchos::RCP<CORE::MAT::Material> material = parent->Material();
 
     // compute measure for rate of strain at n+alpha_F or n+1 if required
     // for non-Newtonian fluid
@@ -4297,7 +4297,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
   // evaluate material at integration point
   const double rateofstrain = 0.0;
-  Teuchos::RCP<MAT::Material> material = parent->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = parent->Material();
 
   if (material->MaterialType() == CORE::Materials::m_carreauyasuda or
       material->MaterialType() == CORE::Materials::m_modpowerlaw or
@@ -5765,8 +5765,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
-    Teuchos::RCP<const MAT::Material> material, const double pscaaf, const double thermpressaf,
-    const double rateofstrain)
+    Teuchos::RCP<const CORE::MAT::Material> material, const double pscaaf,
+    const double thermpressaf, const double rateofstrain)
 {
   // initially set density to 1.0
   densaf_ = 1.0;

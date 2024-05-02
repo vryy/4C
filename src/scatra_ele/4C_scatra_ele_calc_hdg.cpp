@@ -1382,7 +1382,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterialParams(
       Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>);
 
   // get the material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   if (material->MaterialType() == CORE::Materials::m_matlist)
   {
@@ -1393,7 +1393,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterialParams(
     for (int k = 0; k < numscal_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
         PrepareMaterials(ele, singlemat, k, difftensor);
@@ -1426,7 +1426,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
   CORE::LINALG::SerialDenseMatrix ivecnpderiv(shapes_->ndofs_, shapes_->ndofs_);
 
   // get the material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   if (material->MaterialType() == CORE::Materials::m_matlist)
   {
@@ -1437,7 +1437,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
     for (int k = 0; k < numscal_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       Materials(singlemat, k, difftensor, ivecn, ivecnp, ivecnpderiv);
     }
@@ -1763,9 +1763,9 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterials(
-    DRT::Element* ele,                                 //!< the element we are dealing with
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
+    DRT::Element* ele,                                       //!< the element we are dealing with
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor  //!< diffusion tensor
 )
 {

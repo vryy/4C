@@ -163,8 +163,8 @@ TWINBYTWIN		- (optional) vector containing NUMTWINSETS
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -179,15 +179,15 @@ namespace MAT
      *  \brief This class processes the material/model parameters provided by the user
      */
 
-    class CrystalPlasticity : public Parameter
+    class CrystalPlasticity : public CORE::MAT::PAR::Parameter
     {
      public:
       //! standard constructor
-      CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> matdata);
+      CrystalPlasticity(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
 
       //! create material instance
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //-----------------------------------------------------------------------------
       /*                                                                           */
@@ -346,13 +346,13 @@ namespace MAT
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new CrystalPlasticity(*this));
     }
 
     //! return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;

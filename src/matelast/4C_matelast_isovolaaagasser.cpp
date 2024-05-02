@@ -14,13 +14,14 @@ volumetric contribution.
 #include "4C_io_linedefinition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_mat_service.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata), isinit_(false)
 {
   // new style

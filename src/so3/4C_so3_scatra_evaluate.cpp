@@ -164,8 +164,8 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterL
 
     // If you need a pointer to the scatra material, use these lines:
     // we assume that the second material of the structure is the scatra element material
-    // Teuchos::RCP<MAT::Material> scatramat = so3_ele::Material(1);
-    // params.set< Teuchos::RCP<MAT::Material> >("scatramat",scatramat);
+    // Teuchos::RCP<CORE::MAT::Material> scatramat = so3_ele::Material(1);
+    // params.set< Teuchos::RCP<CORE::MAT::Material> >("scatramat",scatramat);
   }
 
   // TODO: (thon) actually we do not want this here, since it has nothing to do with scatra specific

@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       youngs_(matdata->Get<double>("YOUNG")),
       poissonratio_(matdata->Get<double>("NUE")),
@@ -29,7 +29,7 @@ MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> 
     FOUR_C_THROW("Poisson's ratio must be in [-1;0.5)");
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::StVenantKirchhoff::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StVenantKirchhoff::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::StVenantKirchhoff(this));
 }
@@ -94,7 +94,7 @@ void MAT::StVenantKirchhoff::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::StVenantKirchhoff*>(mat);

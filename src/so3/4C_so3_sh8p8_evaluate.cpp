@@ -458,7 +458,7 @@ int DRT::ELEMENTS::SoSh8p8::Evaluate(Teuchos::ParameterList& params,
     // read restart of microscale
     case multi_readrestart:
     {
-      Teuchos::RCP<MAT::Material> mat = Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
       if (mat->MaterialType() == CORE::Materials::m_struct_multiscale) soh8_read_restart_multi();
     }
@@ -2238,7 +2238,7 @@ double DRT::ELEMENTS::SoSh8p8::ShearMod() const
   // All materials that have a pure CORE::LINALG::Matrix
   // interface go to the material law here.
   // the old interface does not exist anymore...
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
     case CORE::Materials::m_stvenant: /*-------- st.venant-kirchhoff-material */

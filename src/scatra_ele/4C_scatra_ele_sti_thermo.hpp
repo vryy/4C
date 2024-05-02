@@ -111,7 +111,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, nen_>& derxy, const double& scalefac);
 
       //! evaluate Soret material
-      void MatSoret(const Teuchos::RCP<const MAT::Material> material  //!< Soret material
+      void MatSoret(const Teuchos::RCP<const CORE::MAT::Material> material  //!< Soret material
       );
 
       //! compute gradient of test function times gradient of shape function

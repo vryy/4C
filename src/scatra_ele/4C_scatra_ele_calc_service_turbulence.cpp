@@ -44,7 +44,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(dou
   volume = EvalShapeFuncAndDerivsAtEleCenter();
 
   // get material
-  Teuchos::RCP<const MAT::Material> material = ele->Material();
+  Teuchos::RCP<const CORE::MAT::Material> material = ele->Material();
 
   // get phi at integration point
   const double phinp = funct_.Dot(ephinp_[0]);
@@ -178,7 +178,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(dou
  *-----------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetDensity(const DRT::Element* ele,
-    Teuchos::RCP<const MAT::Material> material, Teuchos::ParameterList& params, const double tempnp)
+    Teuchos::RCP<const CORE::MAT::Material> material, Teuchos::ParameterList& params,
+    const double tempnp)
 {
   // initialization
   double density(0.);
@@ -192,7 +193,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetDensity(const DRT::Ele
     DRT::Element* fluidele = fluiddis->gElement(ele->Id());
     if (fluidele == nullptr) FOUR_C_THROW("Fluid element %i not on local processor", ele->Id());
     // get fluid material
-    Teuchos::RCP<MAT::Material> fluidmat = fluidele->Material();
+    Teuchos::RCP<CORE::MAT::Material> fluidmat = fluidele->Material();
     if (fluidmat->MaterialType() != CORE::Materials::m_fluid)
       FOUR_C_THROW("Invalid fluid material for passive scalar transport in turbulent flow!");
 

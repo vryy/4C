@@ -15,9 +15,9 @@
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_anisotropy.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_matelast_summand.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_mixture_constituent.hpp"
 #include "4C_mixture_rule.hpp"
 
@@ -30,7 +30,7 @@ namespace MAT
 
   namespace PAR
   {
-    class Mixture : public Parameter
+    class Mixture : public CORE::MAT::PAR::Parameter
     {
       friend class MAT::Mixture;
 
@@ -39,7 +39,7 @@ namespace MAT
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      explicit Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit Mixture(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
 
       /// @name material parameters
@@ -52,7 +52,7 @@ namespace MAT
 
       /// @}
 
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
     };
   }  // namespace PAR
 
@@ -148,7 +148,10 @@ namespace MAT
 
     /// Create a copy of this material
     /// \return copy of this material
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Mixture(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new Mixture(*this));
+    }
 
 
     /*!
@@ -156,7 +159,7 @@ namespace MAT
      *
      * @return Material parameters
      */
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /*!
      * \brief Setup of the material (Read the input line definition of the element)

@@ -84,7 +84,7 @@ namespace DRT
       */
       int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -110,7 +110,7 @@ namespace DRT
       */
       int EvaluateOD(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -160,7 +160,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
           const CORE::LINALG::Matrix<nsd_, nen_>& egridvn,
           const CORE::LINALG::Matrix<nen_, 1>& escaaf,
-          const CORE::LINALG::Matrix<nen_, 1>* eporositynp, Teuchos::RCP<MAT::Material> mat,
+          const CORE::LINALG::Matrix<nen_, 1>* eporositynp, Teuchos::RCP<CORE::MAT::Material> mat,
           bool isale, const CORE::FE::GaussIntegration& intpoints);
 
       /*!
@@ -202,7 +202,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& ecoupl,
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
-          Teuchos::RCP<const MAT::Material> material, bool isale,
+          Teuchos::RCP<const CORE::MAT::Material> material, bool isale,
           const CORE::FE::GaussIntegration& intpoints);
 
       /*!
@@ -250,7 +250,8 @@ namespace DRT
           CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& ecoupl_u,
           CORE::LINALG::Matrix<nen_, nen_ * nsd_>& ecoupl_p,
           CORE::LINALG::Matrix<nen_ * nsd_, nen_>& ecouplp1_u,
-          CORE::LINALG::Matrix<nen_, nen_>& ecouplp1_p, Teuchos::RCP<const MAT::Material> material,
+          CORE::LINALG::Matrix<nen_, nen_>& ecouplp1_p,
+          Teuchos::RCP<const CORE::MAT::Material> material,
           const CORE::FE::GaussIntegration& intpoints);
 
       /*!

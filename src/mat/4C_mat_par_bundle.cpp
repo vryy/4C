@@ -14,8 +14,9 @@
 /* headers */
 #include "4C_mat_par_bundle.hpp"
 
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_matelast_summand.hpp"
+#include "4C_material_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -24,9 +25,9 @@ MAT::PAR::Bundle::Bundle() : materialreadfromproblem_(0) {}
 
 
 /*----------------------------------------------------------------------*/
-void MAT::PAR::Bundle::Insert(int matid, Teuchos::RCP<MAT::PAR::Material> mat)
+void MAT::PAR::Bundle::Insert(int matid, Teuchos::RCP<CORE::MAT::PAR::Material> mat)
 {
-  matmap_.insert(std::pair<int, Teuchos::RCP<MAT::PAR::Material>>(matid, mat));
+  matmap_.insert(std::pair<int, Teuchos::RCP<CORE::MAT::PAR::Material>>(matid, mat));
 }
 
 /*----------------------------------------------------------------------*/
@@ -41,7 +42,7 @@ int MAT::PAR::Bundle::Find(const int id) const
 /*----------------------------------------------------------------------*/
 void MAT::PAR::Bundle::MakeParameters()
 {
-  for (std::map<int, Teuchos::RCP<MAT::PAR::Material>>::iterator m = matmap_.begin();
+  for (std::map<int, Teuchos::RCP<CORE::MAT::PAR::Material>>::iterator m = matmap_.begin();
        m != matmap_.end(); ++m)
   {
     int matid = m->first;
@@ -49,9 +50,9 @@ void MAT::PAR::Bundle::MakeParameters()
     // 1st try
     {
       // indirectly add quick access parameter members
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
+      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(matid);
       // check if allocation was successful
-      Teuchos::RCP<MAT::PAR::Material> matpar = m->second;
+      Teuchos::RCP<CORE::MAT::PAR::Material> matpar = m->second;
       if (matpar->Parameter() != nullptr) continue;
     }
 
@@ -60,7 +61,7 @@ void MAT::PAR::Bundle::MakeParameters()
       // indirectly add quick access parameter members
       Teuchos::RCP<MAT::ELASTIC::Summand> mat = MAT::ELASTIC::Summand::Factory(matid);
       // check if allocation was successful
-      Teuchos::RCP<MAT::PAR::Material> matpar = m->second;
+      Teuchos::RCP<CORE::MAT::PAR::Material> matpar = m->second;
       if (matpar->Parameter() != nullptr) continue;
     }
 
@@ -70,9 +71,9 @@ void MAT::PAR::Bundle::MakeParameters()
 }
 
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::PAR::Material> MAT::PAR::Bundle::ById(const int num) const
+Teuchos::RCP<CORE::MAT::PAR::Material> MAT::PAR::Bundle::ById(const int num) const
 {
-  std::map<int, Teuchos::RCP<MAT::PAR::Material>>::const_iterator m = matmap_.find(num);
+  std::map<int, Teuchos::RCP<CORE::MAT::PAR::Material>>::const_iterator m = matmap_.find(num);
 
   if (matmap_.size() == 0) FOUR_C_THROW("No materials available, num=%d", num);
 
@@ -88,7 +89,7 @@ Teuchos::RCP<MAT::PAR::Material> MAT::PAR::Bundle::ById(const int num) const
 /*----------------------------------------------------------------------*/
 int MAT::PAR::Bundle::FirstIdByType(const CORE::Materials::MaterialType type) const
 {
-  std::map<int, Teuchos::RCP<MAT::PAR::Material>>::const_iterator m;
+  std::map<int, Teuchos::RCP<CORE::MAT::PAR::Material>>::const_iterator m;
 
   int id = -1;
   for (m = matmap_.begin(); m != matmap_.end(); ++m)

@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Maxwell0dAcinus::Maxwell0dAcinus(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::Maxwell0dAcinus::Maxwell0dAcinus(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       stiffness1_(matdata->Get<double>("Stiffness1")),
       stiffness2_(matdata->Get<double>("Stiffness2")),
@@ -41,7 +41,7 @@ MAT::PAR::Maxwell0dAcinus::Maxwell0dAcinus(Teuchos::RCP<MAT::PAR::Material> matd
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell0dAcinus::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Maxwell0dAcinus::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::Maxwell0dAcinus(this));
 }
@@ -102,7 +102,7 @@ void MAT::Maxwell0dAcinus::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Maxwell0dAcinus*>(mat);

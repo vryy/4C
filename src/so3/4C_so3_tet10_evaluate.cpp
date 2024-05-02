@@ -1547,7 +1547,7 @@ void DRT::ELEMENTS::SoTet10::UpdateJacobianMapping(
  |  Update material                                                     |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoTet10::Update_element(std::vector<double>& disp,
-    Teuchos::ParameterList& params, const Teuchos::RCP<MAT::Material>& mat)
+    Teuchos::ParameterList& params, const Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   if (SolidMaterial()->UsesExtendedUpdate())
   {

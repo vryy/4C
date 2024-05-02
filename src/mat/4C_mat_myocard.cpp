@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                          cbert 09/12 |
  *----------------------------------------------------------------------*/
-MAT::PAR::Myocard::Myocard(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::Myocard::Myocard(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       diff1(matdata->Get<double>("DIFF1")),
       diff2(matdata->Get<double>("DIFF2")),
@@ -44,7 +44,7 @@ MAT::PAR::Myocard::Myocard(Teuchos::RCP<MAT::PAR::Material> matdata)
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::Myocard::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Myocard::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::Myocard(this));
 }
@@ -156,7 +156,7 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
@@ -221,7 +221,7 @@ void MAT::Myocard::UnpackMaterial(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {

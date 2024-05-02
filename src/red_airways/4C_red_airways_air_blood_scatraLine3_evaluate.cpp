@@ -84,7 +84,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& para
   /*
   Here must add the steps for evaluating an element
   */
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   switch (act)
   {

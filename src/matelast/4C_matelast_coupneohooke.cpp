@@ -9,14 +9,14 @@
 
 #include "4C_matelast_coupneohooke.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 #include <limits>
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupNeoHooke::CoupNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::CoupNeoHooke::CoupNeoHooke(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata), youngs_(matdata->Get<double>("YOUNG")), nue_(matdata->Get<double>("NUE"))
 {
   // Material Constants c and beta

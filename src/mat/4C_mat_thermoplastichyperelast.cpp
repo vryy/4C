@@ -38,7 +38,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 03/13 |
  *----------------------------------------------------------------------*/
-MAT::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       youngs_(matdata->Get<double>("YOUNG")),
       poissonratio_(matdata->Get<double>("NUE")),
@@ -62,7 +63,7 @@ MAT::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(Teuchos::RCP<MAT::PAR
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 03/13 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ThermoPlasticHyperElast::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ThermoPlasticHyperElast::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ThermoPlasticHyperElast(this));
 }
@@ -169,7 +170,7 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ThermoPlasticHyperElast*>(mat);

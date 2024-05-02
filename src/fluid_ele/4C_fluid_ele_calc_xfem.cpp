@@ -89,7 +89,7 @@ namespace DRT
     template <CORE::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid* ele,
         DRT::Discretization& discretization, const std::vector<int>& lm,
-        Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
+        Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
         CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
         CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
         CORE::LINALG::SerialDenseVector& elevec1_epetra,
@@ -138,7 +138,7 @@ namespace DRT
     /// error computation
     template <CORE::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
-        Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
+        Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
         DRT::Discretization& discretization, std::vector<int>& lm,
         CORE::LINALG::SerialDenseVector& ele_dom_norms)
     {
@@ -151,7 +151,7 @@ namespace DRT
 
     template <CORE::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
-        Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
+        Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
         DRT::Discretization& discretization, std::vector<int>& lm,
         CORE::LINALG::SerialDenseVector& ele_dom_norms,  // squared element domain norms
         const CORE::FE::GaussIntegration& intpoints)
@@ -359,7 +359,7 @@ namespace DRT
         double& p,                                 ///< exact pressure
         CORE::LINALG::Matrix<nsd_, 1>& xyzint,     ///< xyz position of gaussian point
         const double& t,                           ///< time
-        Teuchos::RCP<MAT::Material> mat)
+        Teuchos::RCP<CORE::MAT::Material> mat)
     {
       // Compute analytical solution
       switch (calcerr)
@@ -388,7 +388,7 @@ namespace DRT
           Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> function_grad = Teuchos::null;
 
           // get material
-          MAT::PAR::Parameter* params = mat->Parameter();
+          CORE::MAT::PAR::Parameter* params = mat->Parameter();
           auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
 
           if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
@@ -530,7 +530,7 @@ namespace DRT
           }
 
           // get material
-          MAT::PAR::Parameter* params = mat->Parameter();
+          CORE::MAT::PAR::Parameter* params = mat->Parameter();
           auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
           if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
 
@@ -787,7 +787,7 @@ namespace DRT
         DRT::Discretization& dis,                                  ///< background discretization
         const std::vector<int>& lm,                                ///< element local map
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        Teuchos::RCP<MAT::Material>& mat,                          ///< material
+        Teuchos::RCP<CORE::MAT::Material>& mat,                    ///< material
         CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
         const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
             bcells,  ///< boundary cells
@@ -1288,9 +1288,9 @@ namespace DRT
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
         std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
-            side_coupling,                 ///< side coupling matrices
-        Teuchos::ParameterList& params,    ///< parameter list
-        Teuchos::RCP<MAT::Material>& mat,  ///< material
+            side_coupling,                       ///< side coupling matrices
+        Teuchos::ParameterList& params,          ///< parameter list
+        Teuchos::RCP<CORE::MAT::Material>& mat,  ///< material
         CORE::LINALG::SerialDenseMatrix&
             elemat1_epetra,  ///< local system matrix of intersected element
         CORE::LINALG::SerialDenseVector&
@@ -3194,8 +3194,8 @@ namespace DRT
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
         Teuchos::ParameterList& params,
-        Teuchos::RCP<MAT::Material>& mat_master,  ///< material for the background
-        Teuchos::RCP<MAT::Material>& mat_slave,   ///< material for the coupled side
+        Teuchos::RCP<CORE::MAT::Material>& mat_master,  ///< material for the background
+        Teuchos::RCP<CORE::MAT::Material>& mat_slave,   ///< material for the coupled side
         CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
         CORE::LINALG::SerialDenseVector& elevec1_epetra,
         const CORE::GEO::CUT::plain_volumecell_set& vcSet,
@@ -4568,7 +4568,7 @@ namespace DRT
 
     template <CORE::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::GetMaterialParametersVolumeCell(
-        Teuchos::RCP<const MAT::Material> material,
+        Teuchos::RCP<const CORE::MAT::Material> material,
         double& densaf,  // done
         double& viscaf,  // done
         double& gamma    // done

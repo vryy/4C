@@ -10,8 +10,8 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_matelast_isoneohooke.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
 namespace
@@ -87,7 +87,8 @@ namespace
     CORE::LINALG::Matrix<6, 6> cmat;
 
     // Create parameter of IsoNeoHooke material
-    Teuchos::RCP<MAT::PAR::Material> isoNeoHookeParams = Teuchos::rcp(new MAT::PAR::Material());
+    Teuchos::RCP<CORE::MAT::PAR::Material> isoNeoHookeParams =
+        Teuchos::rcp(new CORE::MAT::PAR::Material());
     isoNeoHookeParams->Add("MUE", 1.3);
     isoNeoHookeParams->SetParameter(new MAT::ELASTIC::PAR::IsoNeoHooke(isoNeoHookeParams));
     auto* isoNeoHookeParams2 =

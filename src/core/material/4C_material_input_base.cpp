@@ -8,33 +8,33 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::PAR::Material::Material(
+CORE::MAT::PAR::Material::Material(
     const int id, const CORE::Materials::MaterialType type, const std::string name)
     : InputParameterContainer(), id_(id), type_(type), name_(name), params_(Teuchos::null)
 {
 }
 
-MAT::PAR::Material::Material(const MAT::PAR::Material& old)
+CORE::MAT::PAR::Material::Material(const CORE::MAT::PAR::Material& old)
     : InputParameterContainer(old), id_(old.id_), type_(old.type_), params_(old.params_)
 {
 }
 
-std::ostream& operator<<(std::ostream& os, const MAT::PAR::Material& cond)
+std::ostream& operator<<(std::ostream& os, const CORE::MAT::PAR::Material& cond)
 {
   cond.Print(os);
   return os;
 }
 
-void MAT::PAR::Material::Print(std::ostream& os) const
+void CORE::MAT::PAR::Material::Print(std::ostream& os) const
 {
   os << "MAT " << Id() << " " << Name() << " :: ";
 
-  INPAR::InputParameterContainer::Print(os);
+  IO::InputParameterContainer::Print(os);
 }
 
 FOUR_C_NAMESPACE_CLOSE

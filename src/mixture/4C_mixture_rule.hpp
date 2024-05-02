@@ -15,7 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ENull.hpp>
@@ -66,16 +66,16 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureRule : public MAT::PAR::Parameter
+    class MixtureRule : public CORE::MAT::PAR::Parameter
     {
       friend class MIXTURE::MixtureRule;
 
      public:
       /// constructor
-      explicit MixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureRule(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       /// Override this method and throw error, as only the CreateRule() should be used.
-      Teuchos::RCP<MAT::Material> CreateMaterial() final
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() final
       {
         FOUR_C_THROW("Cannot create mixture rule from this method. Use CreateRule() instead.");
         return Teuchos::null;

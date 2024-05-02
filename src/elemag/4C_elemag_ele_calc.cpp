@@ -41,7 +41,7 @@ DRT::ELEMENTS::ElemagEleCalc<distype>::ElemagEleCalc()
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -58,7 +58,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
 template <CORE::FE::CellType distype>
 int DRT::ELEMENTS::ElemagEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
+    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
     CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseVector& elevec1,
     CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector&, bool offdiag)
 {
@@ -1226,8 +1226,8 @@ DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::LocalSolver(const DRT::ELEME
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeResidual(
     Teuchos::ParameterList& params, DRT::ELEMENTS::Elemag& ele,
-    const Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec, double dt,
-    bool errormaps, bool updateonly)
+    const Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec,
+    double dt, bool errormaps, bool updateonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "DRT::ELEMENTS::ElemagEleCalc::UpdateInteriorVariablesAndComputeResidual");
@@ -1390,7 +1390,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
     DRT::Discretization& discretization, DRT::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, int face, CORE::LINALG::SerialDenseMatrix& elemat,
+    Teuchos::RCP<CORE::MAT::Material>& mat, int face, CORE::LINALG::SerialDenseMatrix& elemat,
     int indexstart, CORE::LINALG::SerialDenseVector& elevec1)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagEleCalc::ComputeAbsorbingBC");
@@ -2071,7 +2071,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::CondenseLocalPart(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeMatrices(
-    DRT::Discretization& discretization, const Teuchos::RCP<MAT::Material>& mat,
+    DRT::Discretization& discretization, const Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::ELEMENTS::Elemag& ele, double dt, INPAR::ELEMAG::DynamicType dyna, const double tau)
 {
   // The material properties change elementwise or can also be computed pointwise?

@@ -24,8 +24,8 @@ EQSTRMAX 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -35,11 +35,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for aneurysm wall material
-    class AaAraghavanvorpDamage : public Parameter
+    class AaAraghavanvorpDamage : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      AaAraghavanvorpDamage(Teuchos::RCP<MAT::PAR::Material> matdata);
+      AaAraghavanvorpDamage(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -58,7 +58,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class AAAraghavanvorp_damage
 
@@ -160,7 +160,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new AaAraghavanvorpDamage(*this));
     }
@@ -195,7 +195,7 @@ namespace MAT
         int eleGID) override;
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

@@ -50,7 +50,7 @@ namespace MIXTURE
 
      public:
       /// constructor
-      explicit MapMixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MapMixtureRule(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       /// Create mixturerule instance
       std::unique_ptr<MIXTURE::MixtureRule> CreateRule() override;

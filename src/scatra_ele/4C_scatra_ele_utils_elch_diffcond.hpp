@@ -43,9 +43,9 @@ namespace DRT
       );
 
       //! evaluate electrolyte material
-      void MatElchMat(Teuchos::RCP<const MAT::Material> material,  //!< electrolyte material
-          const std::vector<double>& concentrations,               //!< local concentration values
-          double temperature,                                      //!< temperature
+      void MatElchMat(Teuchos::RCP<const CORE::MAT::Material> material,  //!< electrolyte material
+          const std::vector<double>& concentrations,  //!< local concentration values
+          double temperature,                         //!< temperature
           INPAR::ELCH::EquPot equpot,  //!< type of closing equation for electric potential
           double ffrt,                 //!< factor F^2/RT
           Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,  //!< diffusion manager
@@ -53,9 +53,9 @@ namespace DRT
       );
 
       //! evaluate electrolyte phase
-      void MatElchPhase(Teuchos::RCP<const MAT::Material> material,  //!< electrolyte phase
-          const std::vector<double>& concentrations,                 //!< local concentration values
-          double temperature,                                        //!< temperature
+      void MatElchPhase(Teuchos::RCP<const CORE::MAT::Material> material,  //!< electrolyte phase
+          const std::vector<double>& concentrations,  //!< local concentration values
+          double temperature,                         //!< temperature
           const INPAR::ELCH::EquPot& equpot,  //!< type of closing equation for electric potential
           const double& ffrt,                 //!< factor F^2/RT
           Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,  //!< diffusion manager
@@ -63,7 +63,7 @@ namespace DRT
       );
 
       //! evaluate standard Newman material
-      void MatNewman(Teuchos::RCP<const MAT::Material> material,      //!< Newman material
+      void MatNewman(Teuchos::RCP<const CORE::MAT::Material> material,  //!< Newman material
           double concentration,                                       //!< local concentration value
           double temperature,                                         //!< temperature
           Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager  //!< diffusion manager

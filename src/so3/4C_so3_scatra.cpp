@@ -205,7 +205,8 @@ inline DRT::Node** DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Nodes()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <class so3_ele, CORE::FE::CellType distype>
-inline Teuchos::RCP<MAT::Material> DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Material() const
+inline Teuchos::RCP<CORE::MAT::Material> DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Material()
+    const
 {
   return so3_ele::Material();
 }
@@ -231,7 +232,7 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::SetMaterial(int matnum)
   // get the scatra structure control parameter list
   const Teuchos::ParameterList& ssicontrol = GLOBAL::Problem::Instance()->SSIControlParams();
   // get the material
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   if ((Teuchos::getIntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
           INPAR::SSI::SolutionSchemeOverFields::ssi_Monolithic) and

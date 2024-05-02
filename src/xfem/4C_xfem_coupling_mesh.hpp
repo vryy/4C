@@ -67,7 +67,8 @@ namespace XFEM
     virtual void GetCouplingEleLocationVector(const int sid, std::vector<int>& patchlm);
 
     /// set material pointer for coupling slave side
-    void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat) override
+    void GetInterfaceSlaveMaterial(
+        DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat) override
     {
       mat = Teuchos::null;
     }
@@ -759,7 +760,8 @@ namespace XFEM
     );
 
     /// set material pointer for coupling slave side
-    void GetInterfaceSlaveMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat) override;
+    void GetInterfaceSlaveMaterial(
+        DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat) override;
 
     /// set the fluid-fluid interface fix to avoid a cut
     void SetInterfaceFixed()

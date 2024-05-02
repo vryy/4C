@@ -78,7 +78,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
     case SCATRA::BoundaryAction::calc_elch_boundary_kinetics:
     {
       // access material of parent element
-      Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
+      Teuchos::RCP<CORE::MAT::Material> material = ele->ParentElement()->Material();
 
       // extract porosity from material and store in diffusion manager
       if (material->MaterialType() == CORE::Materials::m_elchmat)
@@ -87,7 +87,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
 
         for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
         {
-          Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
+          Teuchos::RCP<const CORE::MAT::Material> phase =
+              elchmat->PhaseById(elchmat->PhaseID(iphase));
 
           if (phase->MaterialType() == CORE::Materials::m_elchphase)
           {
@@ -132,7 +133,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
     CORE::LINALG::SerialDenseVector& elevec1, const double scalar)
 {
   // get material of parent element
-  Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = ele->ParentElement()->Material();
 
   if (mat->MaterialType() == CORE::Materials::m_elchmat)
   {
@@ -141,7 +142,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluate
     for (int iphase = 0; iphase < actmat->NumPhase(); ++iphase)
     {
       const int phaseid = actmat->PhaseID(iphase);
-      Teuchos::RCP<const MAT::Material> singlemat = actmat->PhaseById(phaseid);
+      Teuchos::RCP<const CORE::MAT::Material> singlemat = actmat->PhaseById(phaseid);
 
       if (singlemat->MaterialType() == CORE::Materials::m_elchphase)
       {
@@ -203,7 +204,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
         ephinp,  ///< nodal values of concentration and electric potential
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
     double timefac,                                           ///< time factor
-    Teuchos::RCP<const MAT::Material> material,               ///< material
+    Teuchos::RCP<const CORE::MAT::Material> material,         ///< material
     Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
     const int nume,                     ///< number of transferred electrons
     const std::vector<int> stoich,      ///< stoichiometry of the reaction
@@ -321,8 +322,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Evaluat
  *-------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::GetValence(
-    const Teuchos::RCP<const MAT::Material>& material,  // element material
-    const int k                                         // species number
+    const Teuchos::RCP<const CORE::MAT::Material>& material,  // element material
+    const int k                                               // species number
 ) const
 {
   double valence(0.);
@@ -345,7 +346,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::GetVa
       // loop over species within phase
       for (int imat = 0; imat < phase->NumMat(); ++imat)
       {
-        const Teuchos::RCP<const MAT::Material> species = phase->MatById(phase->MatID(imat));
+        const Teuchos::RCP<const CORE::MAT::Material> species = phase->MatById(phase->MatID(imat));
 
         if (species->MaterialType() == CORE::Materials::m_newman)
         {

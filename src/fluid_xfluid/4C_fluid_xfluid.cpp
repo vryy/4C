@@ -853,7 +853,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
   for (int i = 0; i < numrowele; ++i)
   {
     DRT::Element* actele = discret_->lRowElement(i);
-    // Teuchos::RCP<MAT::Material> mat = actele->Material();
+    // Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
 
     DRT::ELEMENTS::Fluid* ele = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
     if (ele == nullptr)
@@ -888,7 +888,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
         // Pointer to material of current volume cell
         // Assumes the plain_volumecell_set are all on the same side of the interface.
-        Teuchos::RCP<MAT::Material> mat;
+        Teuchos::RCP<CORE::MAT::Material> mat;
         condition_manager_->GetVolumeCellMaterial(actele, mat, *cells.begin());
 
         // we have to assemble all volume cells of this set
@@ -956,8 +956,9 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
         }
 
         // Set material at interface (Master and Slave side)
-        Teuchos::RCP<MAT::Material> matptr_m;
-        Teuchos::RCP<MAT::Material> matptr_s;  // If not instantiated, it is left as null pointer.
+        Teuchos::RCP<CORE::MAT::Material> matptr_m;
+        Teuchos::RCP<CORE::MAT::Material>
+            matptr_s;  // If not instantiated, it is left as null pointer.
 
         // Get material pointer for master side (LevelSet: positive side)
         condition_manager_->GetInterfaceMasterMaterial(actele, matptr_m, *cells.begin());
@@ -1242,7 +1243,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
     }    // end of if(e!=nullptr) // assembly for cut elements
     else
     {
-      Teuchos::RCP<MAT::Material> mat = actele->Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
 
       if (mat->MaterialType() == CORE::Materials::m_matlist)
         FOUR_C_THROW("No matlists allowed here!!");
@@ -1365,7 +1366,7 @@ void FLD::XFluid::IntegrateShapeFunction(Teuchos::ParameterList& eleparams,
   for (int i = 0; i < numrowele; ++i)
   {
     DRT::Element* actele = discret.lRowElement(i);
-    Teuchos::RCP<MAT::Material> mat = actele->Material();
+    Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
 
     DRT::ELEMENTS::Fluid* ele = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
     if (ele == nullptr)
@@ -1422,7 +1423,7 @@ void FLD::XFluid::IntegrateShapeFunction(Teuchos::ParameterList& eleparams,
           CORE::LINALG::SerialDenseVector elevec3;
           Teuchos::ParameterList params;
           params.set<int>("action", FLD::integrate_shape);
-          Teuchos::RCP<MAT::Material> mat = ele->Material();
+          Teuchos::RCP<CORE::MAT::Material> mat = ele->Material();
           int err = impl->EvaluateService(ele, params, mat, discret, la[0].lm_, elemat1, elemat2,
               strategy.Elevector1(), elevec2, elevec3);
 
@@ -1490,7 +1491,7 @@ void FLD::XFluid::IntegrateShapeFunction(Teuchos::ParameterList& eleparams,
       CORE::LINALG::SerialDenseVector elevec3;
       Teuchos::ParameterList params;
       params.set<int>("action", FLD::integrate_shape);
-      Teuchos::RCP<MAT::Material> mat = ele->Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = ele->Material();
       int err = impl->EvaluateService(ele, params, mat, discret, la[0].lm_, elemat1, elemat2,
           strategy.Elevector1(), elevec2, elevec3);
 
@@ -1954,7 +1955,7 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector
     // pointer to current element
     DRT::Element* actele = discret_->lRowElement(i);
 
-    Teuchos::RCP<MAT::Material> mat = actele->Material();
+    Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
 
     DRT::ELEMENTS::Fluid* ele = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
 
@@ -4506,7 +4507,8 @@ void FLD::XFluid::SetInitialFlowField(
       // compute initial pressure
       int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
       if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
-      const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+      const CORE::MAT::PAR::Parameter* mat =
+          GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
       double dens = actmat->density_;
       p = -a * a / 2.0 * dens *
@@ -4571,7 +4573,7 @@ void FLD::XFluid::SetInitialFlowField(
     DRT::Element** elelist = lnode->Elements();
     DRT::Element* ele = elelist[0];  // (arbitrary!) first element
     // get material from first (arbitrary!) element adjacent to this node
-    const Teuchos::RCP<MAT::Material> material = ele->Material();
+    const Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // check if we really got a list of materials
     FOUR_C_ASSERT(material->MaterialType() == CORE::Materials::m_matlist,
@@ -4581,9 +4583,9 @@ void FLD::XFluid::SetInitialFlowField(
     const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
 
     // get burnt material (first material in material list)
-    Teuchos::RCP<const MAT::Material> matptr0 = matlist->MaterialById(matlist->MatID(0));
+    Teuchos::RCP<const CORE::MAT::Material> matptr0 = matlist->MaterialById(matlist->MatID(0));
     // get unburnt material (second material in material list)
-    Teuchos::RCP<const MAT::Material> matptr1 = matlist->MaterialById(matlist->MatID(1));
+    Teuchos::RCP<const CORE::MAT::Material> matptr1 = matlist->MaterialById(matlist->MatID(1));
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     FOUR_C_ASSERT(
         matptr0->MaterialType() == CORE::Materials::m_fluid, "material is not of type m_fluid");

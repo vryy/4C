@@ -22,7 +22,7 @@ approach)
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::PAR::MuscleWeickenmeier::MuscleWeickenmeier(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::MuscleWeickenmeier::MuscleWeickenmeier(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       alpha_(matdata->Get<double>("ALPHA")),
       beta_(matdata->Get<double>("BETA")),
@@ -97,7 +97,7 @@ MAT::PAR::MuscleWeickenmeier::MuscleWeickenmeier(Teuchos::RCP<MAT::PAR::Material
   if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::MuscleWeickenmeier::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MuscleWeickenmeier::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::MuscleWeickenmeier(this));
 }
@@ -179,7 +179,7 @@ void MAT::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::MuscleWeickenmeier*>(mat);

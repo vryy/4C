@@ -19,9 +19,10 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_fluidporo_relpermeability_law.hpp"
 #include "4C_mat_fluidporo_viscosity_law.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_poro_density_law.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -39,14 +40,14 @@ namespace MAT
     /// material parameters for a single phase of porous multiphase fluid
     ///
     /// This object exists only once for each read fluid.
-    class FluidPoroSinglePhase : public Parameter
+    class FluidPoroSinglePhase : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Material> matdata);
+      FluidPoroSinglePhase(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// initialize
       void Initialize();
@@ -76,14 +77,14 @@ namespace MAT
     /// material parameters for a single volfrac of porous multiphase fluid
     ///
     /// This object exists only once for each read fluid.
-    class FluidPoroSingleVolFrac : public Parameter
+    class FluidPoroSingleVolFrac : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      FluidPoroSingleVolFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
+      FluidPoroSingleVolFrac(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// initialize
       void Initialize();
@@ -115,14 +116,14 @@ namespace MAT
     /// material parameters for a single volfrac pressure of porous multiphase fluid
     ///
     /// This object exists only once for each read fluid.
-    class FluidPoroVolFracPressure : public Parameter
+    class FluidPoroVolFracPressure : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      FluidPoroVolFracPressure(Teuchos::RCP<MAT::PAR::Material> matdata);
+      FluidPoroVolFracPressure(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// initialize
       void Initialize();
@@ -202,7 +203,7 @@ namespace MAT
   /// Base class for a single porous fluid phase within multiphase porous flow
   ///
   /// This object exists (several times) at every element
-  class FluidPoroSinglePhaseBase : public Material
+  class FluidPoroSinglePhaseBase : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -276,7 +277,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroSinglePhase(*this));
     }
@@ -349,7 +350,7 @@ namespace MAT
         int phasenum, int doftoderive, const std::vector<double>& state) const;
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
@@ -421,13 +422,13 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroSingleVolFrac(*this));
     }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return density
     double Density() const override { return params_->density_; }
@@ -516,13 +517,13 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroVolFracPressure(*this));
     }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return permeability
     double Permeability() const { return params_->permeability_; }

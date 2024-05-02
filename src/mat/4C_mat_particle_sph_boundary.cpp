@@ -27,7 +27,7 @@ MAT::ParticleMaterialSPHBoundaryType MAT::ParticleMaterialSPHBoundaryType::insta
  | constructor                                                sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
 MAT::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata), ParticleMaterialBase(matdata), ParticleMaterialThermo(matdata)
 {
   // empty constructor
@@ -36,7 +36,7 @@ MAT::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ParticleMaterialSPHBoundary::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ParticleMaterialSPHBoundary::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ParticleMaterialSPHBoundary(this));
 }
@@ -104,7 +104,7 @@ void MAT::ParticleMaterialSPHBoundary::Unpack(const std::vector<char>& data)
     {
       // note: dynamic_cast needed due diamond inheritance structure
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = dynamic_cast<MAT::PAR::ParticleMaterialSPHBoundary*>(mat);

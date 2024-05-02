@@ -16,8 +16,9 @@
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_inpar_beaminteraction.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -29,11 +30,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for de St. Venant--Kirchhoff
-    class CrosslinkerMat : public Parameter
+    class CrosslinkerMat : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      CrosslinkerMat(Teuchos::RCP<MAT::PAR::Material> matdata);
+      CrosslinkerMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// number of material for underlying linker element
       int const link_element_matnum_;
@@ -72,7 +73,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class CrosslinkerMat
 
@@ -93,7 +94,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Crosslinker Material
-  class CrosslinkerMat : public Material
+  class CrosslinkerMat : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -152,7 +153,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new CrosslinkerMat(*this));
     }
@@ -194,7 +195,7 @@ namespace MAT
     };
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //@}
 

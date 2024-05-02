@@ -16,8 +16,9 @@ airway elements framework (transport in elements and between air and blood)
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,11 +29,11 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /// material parameters for Air 0D O2 saturation material
     ///
-    class Air0dO2Saturation : public Parameter
+    class Air0dO2Saturation : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      Air0dO2Saturation(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Air0dO2Saturation(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -43,7 +44,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class Air_0d_O2_saturation
 
@@ -66,7 +67,7 @@ namespace MAT
   /// Wrapper for Air 0D O2 saturation material
   ///
   /// This object exists (several times) at every element
-  class Air0dO2Saturation : public Material
+  class Air0dO2Saturation : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -123,7 +124,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new Air0dO2Saturation(*this));
     }
@@ -135,7 +136,7 @@ namespace MAT
     double NumO2PerVO2() const { return params_->nO2_per_VO2_; }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

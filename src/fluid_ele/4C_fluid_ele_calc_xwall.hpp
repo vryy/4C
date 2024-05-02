@@ -41,7 +41,7 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
+          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2,
@@ -52,14 +52,14 @@ namespace DRT
         Interface function for supporting methods of the element
        */
       virtual int EvaluateServiceXWall(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
+          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
       int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -96,8 +96,8 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
           const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-          Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
-          double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
+          Teuchos::RCP<const CORE::MAT::Material> material, double& Cs_delta_sq,
+          double& Ci_delta_sq, double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
           const CORE::FE::GaussIntegration& intpoints) override;
 
       //! get ALE grid displacements and grid velocity for element
@@ -137,7 +137,7 @@ namespace DRT
       //! get properties of xwall element
       virtual void GetEleProperties(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat);
+          Teuchos::RCP<CORE::MAT::Material>& mat);
 
       //! brief get enrichment function
       virtual double SpaldingsLaw(double dist, double utau);
@@ -168,7 +168,7 @@ namespace DRT
 
       virtual int TauWViaGradient(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2);
 
       //! Get MK
@@ -181,7 +181,7 @@ namespace DRT
 
       virtual int CalcMK(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
           CORE::LINALG::SerialDenseVector& elevec2);
 
       /*! \brief Calculate statilization parameter mk
@@ -196,7 +196,7 @@ namespace DRT
        */
       virtual int XWallProjection(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2);
 
 

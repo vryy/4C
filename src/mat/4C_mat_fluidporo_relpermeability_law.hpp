@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -21,12 +21,12 @@ namespace MAT
   namespace PAR
   {
     //! interface class for generic relative permeability law
-    class FluidPoroRelPermeabilityLaw : public Parameter
+    class FluidPoroRelPermeabilityLaw : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
       explicit FluidPoroRelPermeabilityLaw(
-          Teuchos::RCP<MAT::PAR::Material> matdata, bool constrelpermeability)
+          Teuchos::RCP<CORE::MAT::PAR::Material> matdata, bool constrelpermeability)
           : Parameter(matdata), constrelpermeability_(constrelpermeability){};
 
       // get relative permeability
@@ -50,10 +50,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroRelPermeabilityLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit FluidPoroRelPermeabilityLawConstant(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       // get permeability
       double GetRelPermeability(const double saturation) const override
@@ -83,10 +83,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit FluidPoroRelPermeabilityLawExponent(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit FluidPoroRelPermeabilityLawExponent(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       // get permeability
       double GetRelPermeability(const double saturation) const override

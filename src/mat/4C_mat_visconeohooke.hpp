@@ -17,8 +17,8 @@ MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.0 POISSON 0.499 DENS 0.1 YOUNGS_FAST 100.0
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -32,11 +32,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters
-    class ViscoNeoHooke : public Parameter
+    class ViscoNeoHooke : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      ViscoNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ViscoNeoHooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -49,7 +49,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class ViscoNeoHooke
 
@@ -136,7 +136,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new ViscoNeoHooke(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new ViscoNeoHooke(*this));
+    }
 
     /// Initialize internal stress variables
     void Setup(int numgp, INPUT::LineDefinition* linedef) override;
@@ -163,7 +166,7 @@ namespace MAT
     bool Initialized() const { return isinit_ && (histstresscurr_ != Teuchos::null); }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

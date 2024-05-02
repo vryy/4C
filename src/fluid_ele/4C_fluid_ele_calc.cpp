@@ -212,7 +212,7 @@ DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -226,7 +226,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -565,7 +565,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(Teuchos::ParameterLi
     const CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
     const CORE::LINALG::Matrix<nen_, 1>& eporo,
     const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
-    const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, Teuchos::RCP<MAT::Material> mat,
+    const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, Teuchos::RCP<CORE::MAT::Material> mat,
     bool isale, bool isowned, double CsDeltaSq, double CiDeltaSq, double* saccn, double* sveln,
     double* svelnp, const CORE::FE::GaussIntegration& intpoints, bool offdiag)
 {
@@ -669,7 +669,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Sysmat(
     const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
     const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
+    Teuchos::RCP<const CORE::MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
     double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
     const CORE::FE::GaussIntegration& intpoints)
 {
@@ -1842,12 +1842,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetAdvectiveVelOseen(DRT::EL
 // *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
-    Teuchos::RCP<const MAT::Material> material, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
-    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
-    const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam,
-    const CORE::LINALG::Matrix<nen_, 1>& escabofoaf, const double thermpressaf,
-    const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    const double vol)
+    Teuchos::RCP<const CORE::MAT::Material> material,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
+    const CORE::LINALG::Matrix<nen_, 1>& epream, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
+    const CORE::LINALG::Matrix<nen_, 1>& escaam, const CORE::LINALG::Matrix<nen_, 1>& escabofoaf,
+    const double thermpressaf, const double thermpressam, const double thermpressdtaf,
+    const double thermpressdtam, const double vol)
 {
   GetMaterialParams(material, evelaf, epreaf, epream, escaaf, escaam, escabofoaf, thermpressaf,
       thermpressam, thermpressdtaf, thermpressdtam, vol, densam_, densaf_, densn_, visc_, viscn_,
@@ -1860,13 +1860,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
-    Teuchos::RCP<const MAT::Material> material, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
-    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
-    const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam,
-    const CORE::LINALG::Matrix<nen_, 1>& escabofoaf, const double thermpressaf,
-    const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    const double vol, double& densam, double& densaf, double& densn, double& visc, double& viscn,
-    double& gamma)
+    Teuchos::RCP<const CORE::MAT::Material> material,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
+    const CORE::LINALG::Matrix<nen_, 1>& epream, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
+    const CORE::LINALG::Matrix<nen_, 1>& escaam, const CORE::LINALG::Matrix<nen_, 1>& escabofoaf,
+    const double thermpressaf, const double thermpressam, const double thermpressdtaf,
+    const double thermpressdtam, const double vol, double& densam, double& densaf, double& densn,
+    double& visc, double& viscn, double& gamma)
 {
   // initially set density values and values with respect to continuity rhs
   densam = 1.0;
@@ -2483,7 +2483,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetMaterialParams(
       int matid = -1;
       matid = matlist->MatID(nmaterial);
 
-      Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
+      Teuchos::RCP<const CORE::MAT::Material> matptr = matlist->MaterialById(matid);
       CORE::Materials::MaterialType mattype = matptr->MaterialType();
 
       // choose from different materials
@@ -6088,7 +6088,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ReynoldsStressStab(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateService(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
@@ -6595,7 +6595,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1)
 {
@@ -6612,7 +6612,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, const CORE::FE::GaussIntegration& intpoints)
 {
@@ -6764,7 +6764,7 @@ template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrty
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoint(
     const CORE::LINALG::Matrix<nsd_, 1>& xyzint, const double t,
     const INPAR::FLUID::CalcError calcerr, const int calcerrfunctno,
-    const Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::Matrix<nsd_, 1>& u, double& p,
+    const Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::Matrix<nsd_, 1>& u, double& p,
     CORE::LINALG::Matrix<nsd_, nsd_>& dervel, bool isFullImplPressure, double deltat)
 {
   // Compute analytical solution
@@ -7372,7 +7372,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ExtractValuesFromGlobalVecto
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> mat)
+    Teuchos::RCP<CORE::MAT::Material> mat)
 {
   //----------------------------------------------------------------------
   // get all nodal values
@@ -8579,7 +8579,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FDcheck(
     const CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    const Teuchos::RCP<const MAT::Material> material, const double timefac, const double& Cs,
+    const Teuchos::RCP<const CORE::MAT::Material> material, const double timefac, const double& Cs,
     const double& Cs_delta_sq, const double& l_tau)
 {
   // magnitude of dof perturbation
@@ -8593,7 +8593,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FDcheck(
   //  double copy_Cs_delta_sq=Cs_delta_sq;
   //  double copy_l_tau      =l_tau;
 
-  Teuchos::RCP<const MAT::Material> copy_material = material;
+  Teuchos::RCP<const CORE::MAT::Material> copy_material = material;
 
   // allocate arrays to compute element matrices and vectors at perturbed
   // positions
@@ -8781,7 +8781,7 @@ template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrty
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS::Fluid* ele,
     //    Teuchos::ParameterList&              params,
     DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra)
+    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra)
 {
   // set element id
   eid_ = ele->Id();
@@ -8965,7 +8965,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   CORE::LINALG::Matrix<nsd_, nsd_> cauchystress(true);
 
   // get dynamic viscosity
-  Teuchos::RCP<MAT::Material> currentmaterial;
+  Teuchos::RCP<CORE::MAT::Material> currentmaterial;
   currentmaterial = ele->Material(0);
   double fluiddynamicviscosity = -1234;
   if (discretization.Name() == "fluid")
@@ -9457,7 +9457,7 @@ template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrty
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocities(
     Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization,  // fluid
-    const std::vector<int>& lm, Teuchos::RCP<MAT::Material>& mat,
+    const std::vector<int>& lm, Teuchos::RCP<CORE::MAT::Material>& mat,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,  // vectofill
     CORE::LINALG::SerialDenseVector& elevec2_epetra)
 {
@@ -9785,7 +9785,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolatePressureToPoint(
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material>& mat)
+    Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   // moved here from fluid_ele_evaluate_utils,  f3_calc_means()
 
@@ -10562,7 +10562,7 @@ template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrty
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassFlowPeriodicHill(
     DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    Teuchos::RCP<MAT::Material>& mat)
+    Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   // set element id
   eid_ = ele->Id();
@@ -11811,10 +11811,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleScalar(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
-    Teuchos::RCP<const MAT::Material> material, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
-    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
-    const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam,
-    const double thermpressaf, const double thermpressam, const double sgsca)
+    Teuchos::RCP<const CORE::MAT::Material> material,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
+    const CORE::LINALG::Matrix<nen_, 1>& epream, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
+    const CORE::LINALG::Matrix<nen_, 1>& escaam, const double thermpressaf,
+    const double thermpressam, const double sgsca)
 {
   if (material->MaterialType() == CORE::Materials::m_mixfrac)
   {
@@ -12452,7 +12453,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
     const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
+    Teuchos::RCP<const CORE::MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
     double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
     const CORE::FE::GaussIntegration& intpoints)
 {

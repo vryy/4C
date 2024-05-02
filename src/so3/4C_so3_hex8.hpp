@@ -20,7 +20,8 @@
 #include "4C_lib_element_integration_select.hpp"
 #include "4C_lib_elementtype.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_so3_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -512,9 +513,9 @@ namespace DRT
 
       //! Update history variables at the end of time step (fiber direction, inelastic deformation)
       //! (braeu 07/16)
-      void Update_element(std::vector<double>& disp,  // current displacements
-          Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
-          const Teuchos::RCP<MAT::Material>& mat);    // material
+      void Update_element(std::vector<double>& disp,      // current displacements
+          Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
+          const Teuchos::RCP<CORE::MAT::Material>& mat);  // material
 
       // compute defgrd in all gp for given disp
       virtual void DefGradient(const std::vector<double>& disp,

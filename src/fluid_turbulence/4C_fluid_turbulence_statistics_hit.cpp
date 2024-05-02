@@ -269,7 +269,8 @@ namespace FLD
       FOUR_C_THROW("Could not find Newtonian fluid material");
     else
     {
-      const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+      const CORE::MAT::PAR::Parameter* mat =
+          GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
       // we need the kinematic viscosity here
       double dens = actmat->density_;

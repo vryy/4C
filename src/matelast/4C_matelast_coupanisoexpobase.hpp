@@ -13,8 +13,8 @@
 
 #include "4C_mat_anisotropy_extension_base.hpp"
 #include "4C_mat_anisotropy_extension_provider.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_matelast_summand.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -71,7 +71,7 @@ namespace MAT
       {
        public:
         /// standard constructor
-        explicit CoupAnisoExpoBase(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+        explicit CoupAnisoExpoBase(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
         /// Constructor only used for unit testing
         CoupAnisoExpoBase();

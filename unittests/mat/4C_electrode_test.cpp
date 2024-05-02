@@ -10,7 +10,7 @@
 
 #include "4C_global_data.hpp"
 #include "4C_mat_electrode.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 namespace
 {
@@ -22,7 +22,8 @@ namespace
     void SetUp() override
     {
       // initialize container for material parameters
-      const Teuchos::RCP<MAT::PAR::Material> container = Teuchos::rcp(new MAT::PAR::Material());
+      const Teuchos::RCP<CORE::MAT::PAR::Material> container =
+          Teuchos::rcp(new CORE::MAT::PAR::Material());
 
       // create dummy elch parameter list and add dummy value for gas constant
       auto parameter_list = Teuchos::rcp(new Teuchos::ParameterList());

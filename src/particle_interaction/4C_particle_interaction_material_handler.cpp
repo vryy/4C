@@ -51,7 +51,7 @@ void PARTICLEINTERACTION::MaterialHandler::Init()
     storedtypes_.insert(type_i);
 
     // get material parameters and cast to particle material parameter
-    const MAT::PAR::Parameter* matparameter =
+    const CORE::MAT::PAR::Parameter* matparameter =
         GLOBAL::Problem::Instance()->Materials()->ParameterById(typeIt.second);
     const MAT::PAR::ParticleMaterialBase* particlematparameter =
         dynamic_cast<const MAT::PAR::ParticleMaterialBase*>(matparameter);

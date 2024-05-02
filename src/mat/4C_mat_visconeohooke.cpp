@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::PAR::ViscoNeoHooke::ViscoNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ViscoNeoHooke::ViscoNeoHooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       youngs_slow_(matdata->Get<double>("YOUNGS_SLOW")),
       poisson_(matdata->Get<double>("POISSON")),
@@ -36,7 +36,7 @@ MAT::PAR::ViscoNeoHooke::ViscoNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata)
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::ViscoNeoHooke::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ViscoNeoHooke::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ViscoNeoHooke(this));
 }
@@ -127,7 +127,7 @@ void MAT::ViscoNeoHooke::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ViscoNeoHooke*>(mat);

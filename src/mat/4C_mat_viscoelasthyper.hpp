@@ -24,8 +24,8 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_elasthyper.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -49,7 +49,7 @@ namespace MAT
 
 
     class ViscoElastHyper : public MAT::PAR::ElastHyper
-    //    class ViscoElastHyper : public Parameter
+    //    class ViscoElastHyper : public CORE::MAT::PAR::Parameter
     {
       friend class MAT::ViscoElastHyper;
 
@@ -58,10 +58,10 @@ namespace MAT
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      ViscoElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ViscoElastHyper(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //@}
 
@@ -171,7 +171,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new ViscoElastHyper(*this));
     }

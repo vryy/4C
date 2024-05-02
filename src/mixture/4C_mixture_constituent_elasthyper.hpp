@@ -15,7 +15,7 @@
 #include "4C_config.hpp"
 
 #include "4C_mat_elasthyper_service.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_mixture_constituent_elasthyperbase.hpp"
 #include "4C_mixture_prestress_strategy.hpp"
 
@@ -30,7 +30,7 @@ namespace MIXTURE
     class MixtureConstituentElastHyper : public MIXTURE::PAR::MixtureConstituentElastHyperBase
     {
      public:
-      explicit MixtureConstituentElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureConstituentElastHyper(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 

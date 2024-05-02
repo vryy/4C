@@ -483,12 +483,12 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs);
 
       //! get density at integration point
-      virtual double GetDensity(Teuchos::RCP<const MAT::Material> material,
+      virtual double GetDensity(Teuchos::RCP<const CORE::MAT::Material> material,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k);
 
       //! calculate boundary condition due to convective heat transfer
       void ConvectiveHeatTransfer(const DRT::FaceElement* ele,
-          Teuchos::RCP<const MAT::Material> material,
+          Teuchos::RCP<const CORE::MAT::Material> material,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
           CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
           const double heatranscoeff, const double surtemp);
@@ -505,7 +505,7 @@ namespace DRT
       */
       template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
       void WeakDirichlet(DRT::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Teuchos::RCP<const MAT::Material> material,
+          DRT::Discretization& discretization, Teuchos::RCP<const CORE::MAT::Material> material,
           CORE::LINALG::SerialDenseMatrix& elemat_epetra,
           CORE::LINALG::SerialDenseVector& elevec_epetra);
 
@@ -517,7 +517,7 @@ namespace DRT
       void ReinitCharacteristicGalerkinBoundary(DRT::FaceElement* ele,  //!< transport element
           Teuchos::ParameterList& params,                               //!< parameter list
           DRT::Discretization& discretization,                          //!< discretization
-          Teuchos::RCP<const MAT::Material> material,                   //!< material
+          Teuchos::RCP<const CORE::MAT::Material> material,             //!< material
           CORE::LINALG::SerialDenseMatrix& elemat_epetra,               //!< ele sysmat
           CORE::LINALG::SerialDenseVector& elevec_epetra                //!< ele rhs
       );

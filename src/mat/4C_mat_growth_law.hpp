@@ -19,8 +19,9 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 
 #include "4C_inpar_material.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_input_base.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -55,7 +56,7 @@ namespace MAT
     GrowthLaw();
 
     //! explicit constructor
-    explicit GrowthLaw(MAT::PAR::Parameter* params);
+    explicit GrowthLaw(CORE::MAT::PAR::Parameter* params);
 
     //! destructor
     virtual ~GrowthLaw() = default;
@@ -139,7 +140,7 @@ namespace MAT
     virtual CORE::Materials::MaterialType MaterialType() const = 0;
 
     //! return material parameters
-    MAT::PAR::Parameter* Parameter() { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() { return params_; }
 
     //! Return whether material has a varying material density
     virtual bool VaryingDensity() const = 0;
@@ -148,7 +149,7 @@ namespace MAT
 
    private:
     //! material parameters
-    MAT::PAR::Parameter* params_;
+    CORE::MAT::PAR::Parameter* params_;
   };
 
   namespace PAR
@@ -160,11 +161,11 @@ namespace MAT
         \author kehl
         \date 6/2015
    */
-    class GrowthLawDyn : public Parameter
+    class GrowthLawDyn : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      GrowthLawDyn(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthLawDyn(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -173,7 +174,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class Growth
 
@@ -200,7 +201,7 @@ namespace MAT
    public:
     //! construct empty material object
     GrowthLawDyn();
-    explicit GrowthLawDyn(MAT::PAR::Parameter* params);
+    explicit GrowthLawDyn(CORE::MAT::PAR::Parameter* params);
 
 
     //! @name Evaluation methods
@@ -374,7 +375,7 @@ namespace MAT
    public:
     //! construct empty material object
     GrowthLawStatic();
-    explicit GrowthLawStatic(MAT::PAR::Parameter* params);
+    explicit GrowthLawStatic(CORE::MAT::PAR::Parameter* params);
 
     //! @name Evaluation methods
     //@{
@@ -470,7 +471,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStrain(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthLawAnisoStrain(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -491,7 +492,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// create growth law instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
@@ -614,7 +615,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStress(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthLawAnisoStress(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -635,7 +636,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// create growth law instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
@@ -757,10 +758,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStrainConstTrig(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthLawAnisoStrainConstTrig(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw() override;
@@ -859,10 +860,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStressConstTrig(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthLawAnisoStressConstTrig(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw() override;
@@ -961,7 +962,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawIsoStress(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthLawIsoStress(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -982,7 +983,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
@@ -1105,11 +1106,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters
-    class GrowthLawAC : public Parameter
+    class GrowthLawAC : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      GrowthLawAC(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthLawAC(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -1125,7 +1126,7 @@ namespace MAT
 
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
@@ -1213,7 +1214,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawACRadial(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthLawACRadial(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
@@ -1297,7 +1298,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawACRadialRefConc(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthLawACRadialRefConc(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
@@ -1378,11 +1379,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters
-    class GrowthLawConst : public Parameter
+    class GrowthLawConst : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      GrowthLawConst(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthLawConst(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -1396,7 +1397,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();

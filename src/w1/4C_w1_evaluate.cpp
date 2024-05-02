@@ -90,7 +90,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       FOUR_C_THROW("Unknown type of action %s for Wall1", action.c_str());
   }
   // get the material law
-  Teuchos::RCP<const MAT::Material> actmat = Material();
+  Teuchos::RCP<const CORE::MAT::Material> actmat = Material();
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
@@ -881,7 +881,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     const std::vector<double>& dispmat, std::vector<CORE::LINALG::SerialDenseVector>& myknots,
     CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
     CORE::LINALG::SerialDenseVector* force, CORE::LINALG::SerialDenseMatrix* elestress,
-    CORE::LINALG::SerialDenseMatrix* elestrain, Teuchos::RCP<const MAT::Material> material,
+    CORE::LINALG::SerialDenseMatrix* elestrain, Teuchos::RCP<const CORE::MAT::Material> material,
     Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress, const INPAR::STR::StrainType iostrain)
 {
@@ -1299,7 +1299,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     const std::vector<double>& dispmat, std::vector<CORE::LINALG::SerialDenseVector>& myknots,
     CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
     CORE::LINALG::SerialDenseVector* force, CORE::LINALG::SerialDenseMatrix* elestress,
-    CORE::LINALG::SerialDenseMatrix* elestrain, Teuchos::RCP<const MAT::Material> material,
+    CORE::LINALG::SerialDenseMatrix* elestrain, Teuchos::RCP<const CORE::MAT::Material> material,
     Teuchos::ParameterList& params, const INPAR::STR::StressType iostress,
     const INPAR::STR::StrainType iostrain)
 {
@@ -1692,7 +1692,7 @@ void DRT::ELEMENTS::Wall1::w1_boplin_cure(CORE::LINALG::SerialDenseMatrix& b_cur
 
 
 //{
-//  Teuchos::RCP<MAT::Material> mat = Material();
+//  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 //  CORE::LINALG::SerialDenseMatrix cmat;
 //
 //  switch(material->mattyp)
@@ -1840,7 +1840,7 @@ void DRT::ELEMENTS::Wall1::StressCauchy(const int ip, const double& F11, const d
 *-----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vector<int>& lm,
     const std::vector<double>& dis, CORE::LINALG::SerialDenseVector* energies,
-    Teuchos::RCP<const MAT::Material> material)
+    Teuchos::RCP<const CORE::MAT::Material> material)
 {
   // constants
   // element porperties

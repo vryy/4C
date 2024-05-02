@@ -73,9 +73,9 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> firstmat =
+  Teuchos::RCP<CORE::MAT::PAR::Material> firstmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(GetFirstMatID());
-  Teuchos::RCP<MAT::PAR::Material> secondmat =
+  Teuchos::RCP<CORE::MAT::PAR::Material> secondmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(GetSecondMatID());
 
   const double E1 = firstmat->Get<double>("YOUNG");

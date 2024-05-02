@@ -14,7 +14,8 @@
 
 #include "4C_inpar_structure.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 
 #include <unordered_map>
 
@@ -22,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace MAT
 {
-  class So3Material : public Material
+  class So3Material : public CORE::MAT::Material
   {
    public:
     int UniqueParObjectId() const override = 0;

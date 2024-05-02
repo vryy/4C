@@ -15,9 +15,10 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_transformation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_membrane_elasthyper.hpp"
 #include "4C_mat_membrane_material_interfaces.hpp"
+#include "4C_material_base.hpp"
 #include "4C_membrane.hpp"
 #include "4C_membrane_service.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
@@ -1482,8 +1483,8 @@ DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
  *---------------------------------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Membrane<distype>::Update_element(
-    std::vector<double>& disp, Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material> mat)
+void DRT::ELEMENTS::Membrane<distype>::Update_element(std::vector<double>& disp,
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   // Calculate current deformation gradient
   if (SolidMaterial()->UsesExtendedUpdate())

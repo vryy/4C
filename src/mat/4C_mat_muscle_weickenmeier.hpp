@@ -18,8 +18,8 @@ approach)
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_anisotropy_extension_default.hpp"
 #include "4C_mat_anisotropy_extension_provider.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -30,13 +30,13 @@ namespace MAT
 {
   namespace PAR
   {
-    class MuscleWeickenmeier : public Parameter
+    class MuscleWeickenmeier : public CORE::MAT::PAR::Parameter
     {
      public:
       /// constructor
-      MuscleWeickenmeier(Teuchos::RCP<MAT::PAR::Material> matdata);
+      MuscleWeickenmeier(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// @name material parameters
       //@{
@@ -148,12 +148,12 @@ namespace MAT
     // Constructor for the material given the material parameters
     explicit MuscleWeickenmeier(MAT::PAR::MuscleWeickenmeier* params);
 
-    [[nodiscard]] Teuchos::RCP<Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new MuscleWeickenmeier(*this));
     }
 
-    [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
     {

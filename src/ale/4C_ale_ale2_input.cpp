@@ -31,7 +31,7 @@ bool DRT::ELEMENTS::Ale2::ReadElement(
   const int numgp = intpoints.nquad;
 
   // get material
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(mat, true);
 
   // call material setup

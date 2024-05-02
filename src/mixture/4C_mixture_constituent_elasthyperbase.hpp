@@ -16,7 +16,7 @@
 
 #include "4C_mat_anisotropy_extension_cylinder_cosy.hpp"
 #include "4C_mat_elasthyper_service.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_mixture_constituent.hpp"
 #include "4C_mixture_prestress_strategy.hpp"
 
@@ -36,7 +36,8 @@ namespace MIXTURE
     class MixtureConstituentElastHyperBase : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituentElastHyperBase(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureConstituentElastHyperBase(
+          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
       int GetPrestressingMatId() const { return matid_prestress_strategy_; }
 
       /// @name material parameters

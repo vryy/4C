@@ -62,7 +62,8 @@ void FLD::TimIntLoma::Init()
     FOUR_C_THROW("Could not find sutherland material");
   else
   {
-    const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+    const CORE::MAT::PAR::Parameter* mat =
+        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
     // we need the kinematic viscosity here
     gasconstant_ = actmat->gasconst_;

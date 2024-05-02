@@ -376,7 +376,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(int matnum)
 
   // the special part:
   // now the element knows its material, and we can use it to determine numdofpernode
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
   if (mat->MaterialType() == CORE::Materials::m_fluidporo_multiphase or
       mat->MaterialType() == CORE::Materials::m_fluidporo_multiphase_reactions)
   {

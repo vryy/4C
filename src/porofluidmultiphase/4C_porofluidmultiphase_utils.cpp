@@ -19,7 +19,8 @@
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_mat_cnst_1d_art.hpp"
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_porofluidmultiphase_timint_ost.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"
@@ -106,7 +107,7 @@ void POROFLUIDMULTIPHASE::UTILS::SetupMaterial(
       // get the ID of the secondary material
       const int tar_matid = mat_iter->second;
       // build the material usilng the factory
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(tar_matid);
+      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(tar_matid);
 
       // add secondary material to poro fluid element
       if (ele->AddMaterial(mat) != 2) FOUR_C_THROW("unexpected number of materials!");

@@ -169,8 +169,8 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
           CORE::LINALG::SerialDenseVector::Base& elevec);
 
-      void GetDensityAndViscosity(Teuchos::RCP<const MAT::Material> material, const double pscaaf,
-          const double thermpressaf, const double rateofstrain);
+      void GetDensityAndViscosity(Teuchos::RCP<const CORE::MAT::Material> material,
+          const double pscaaf, const double thermpressaf, const double rateofstrain);
 
 
       //! pointer to parameter list

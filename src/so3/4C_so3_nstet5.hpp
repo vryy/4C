@@ -136,7 +136,7 @@ namespace DRT
           const INPAR::STR::StrainType iostrain);
 
 
-      void SelectMaterial(const Teuchos::RCP<MAT::Material>& mat,
+      void SelectMaterial(const Teuchos::RCP<CORE::MAT::Material>& mat,
           CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat, double& density,
           CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& defgrd, int gp,
           const int eleGID);
@@ -407,7 +407,7 @@ namespace DRT
       int material_;
 
       //! vector of history variables for each Gauss point
-      std::vector<Teuchos::RCP<MAT::Material>> mat_;
+      std::vector<Teuchos::RCP<CORE::MAT::Material>> mat_;
 
       //! volume of element
       double V_;

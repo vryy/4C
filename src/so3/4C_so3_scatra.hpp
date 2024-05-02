@@ -357,7 +357,7 @@ namespace DRT
 
       DRT::Node** Nodes() override;
 
-      Teuchos::RCP<MAT::Material> Material() const;
+      Teuchos::RCP<CORE::MAT::Material> Material() const;
 
       int Id() const;
 

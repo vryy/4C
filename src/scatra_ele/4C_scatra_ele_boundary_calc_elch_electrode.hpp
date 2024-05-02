@@ -263,7 +263,8 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& eslavematrix,
           CORE::LINALG::SerialDenseMatrix& emastermatrix) override;
 
-      double GetValence(const Teuchos::RCP<const MAT::Material>& material, int k) const override;
+      double GetValence(
+          const Teuchos::RCP<const CORE::MAT::Material>& material, int k) const override;
 
       void CalcS2ICouplingFlux(const DRT::FaceElement* ele, const Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::FaceElement::LocationArray& la,

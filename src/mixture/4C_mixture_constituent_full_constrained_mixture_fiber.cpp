@@ -72,7 +72,8 @@ namespace
 }  // namespace
 
 MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber::
-    MixtureConstituentFullConstrainedMixtureFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    MixtureConstituentFullConstrainedMixtureFiber(
+        const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : MixtureConstituent(matdata),
       fiber_id_(matdata->Get<int>("FIBER_ID") - 1),
       init_(matdata->Get<int>("INIT")),

@@ -10,7 +10,7 @@
 #include "4C_mixture_full_constrained_mixture_fiber.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_mixture_constituent_remodelfiber_material_exponential.hpp"
 #include "4C_mixture_growth_evolution_linear_cauchy_poisson_turnover.hpp"
 #include "4C_mixture_remodelfiber-internal.hpp"
@@ -30,7 +30,7 @@ namespace
     template <typename Number>
     const MIXTURE::PAR::RemodelFiberMaterialExponential<Number>* CreateMaterial()
     {
-      const auto container = Teuchos::rcp(new MAT::PAR::Material());
+      const auto container = Teuchos::rcp(new CORE::MAT::PAR::Material());
       container->Add("K1", 1.3);
       container->Add("K2", 1.3);
       container->Add("COMPRESSION", true);

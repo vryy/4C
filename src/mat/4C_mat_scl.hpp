@@ -29,7 +29,7 @@ namespace MAT
     class Scl : public ElchSingleMat
     {
      public:
-      Scl(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Scl(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -72,7 +72,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
     };
 
   }  // namespace PAR
@@ -143,7 +143,10 @@ namespace MAT
     CORE::Materials::MaterialType MaterialType() const override { return CORE::Materials::m_scl; }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Scl(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new Scl(*this));
+    }
 
     /// valence (= charge number)
     double Valence() const { return params_->valence_; }
@@ -187,7 +190,7 @@ namespace MAT
     const std::vector<double>& TransNrParams() const { return params_->transnr_; }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// my material parameters
     MAT::PAR::Scl* params_;

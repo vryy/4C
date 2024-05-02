@@ -15,8 +15,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -27,11 +28,11 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material with Arrhenius-type chemical kinetics (progress
     /// variable)
-    class ArrheniusPV : public Parameter
+    class ArrheniusPV : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      ArrheniusPV(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ArrheniusPV(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -66,7 +67,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class ArrheniusPV
 
@@ -88,7 +89,7 @@ namespace MAT
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material with Arrhenius-type chemical kinetics (progress
   /// variable)
-  class ArrheniusPV : public Material
+  class ArrheniusPV : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -146,7 +147,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new ArrheniusPV(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new ArrheniusPV(*this));
+    }
 
     /// compute temperature
     double ComputeTemperature(const double provar) const;
@@ -202,7 +206,7 @@ namespace MAT
     //@}
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMaterialParams(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : BeamReissnerElastHyperMaterialParams(matdata),
       yield_stress_n_(matdata->Get<double>("YIELDN")),
       yield_stress_m_(matdata->Get<double>("YIELDM")),
@@ -57,12 +57,12 @@ MAT::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMateri
 }
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::BeamReissnerElastPlasticMaterialParams::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::BeamReissnerElastPlasticMaterialParams::CreateMaterial()
 {
   /* all the different parameter sets (Reissner/Kirchhoff/..., 'classic'/'by modes') are used to
    * parameterize the same constitutive relations based on a hyperelastic stored energy function
    * formulated for cross-section resultants which are implemented in BeamElastHyperMaterial */
-  Teuchos::RCP<MAT::Material> matobject;
+  Teuchos::RCP<CORE::MAT::Material> matobject;
 
   if (Uses_FAD())
   {
@@ -214,7 +214,7 @@ void MAT::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
 
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
 
 

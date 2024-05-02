@@ -75,7 +75,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetMaterialParams(
 )
 {
   // get the material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   // We may have some reactive and some non-reactive elements in one discretisation.
   // But since the calculation classes are singleton, we have to reset all reactive stuff in case
@@ -91,7 +91,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetMaterialParams(
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -106,7 +106,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetMaterialParams(
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       // Note: order is important here!!
       Materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
@@ -129,13 +129,13 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetMaterialParams(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::Materials(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    const int iquad                                    //!< id of current gauss point
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
+    double& densn,                                           //!< density at t_(n)
+    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,  //!< density at t_(n+alpha_M)
+    double& visc,    //!< fluid viscosity
+    const int iquad  //!< id of current gauss point
 )
 {
   switch (material->MaterialType())

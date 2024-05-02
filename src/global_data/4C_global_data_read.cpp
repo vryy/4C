@@ -1361,7 +1361,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
   for (int i = 0; i < macro_dis->ElementColMap()->NumMyElements(); ++i)
   {
     DRT::Element* actele = macro_dis->lColElement(i);
-    Teuchos::RCP<MAT::Material> actmat = actele->Material();
+    Teuchos::RCP<CORE::MAT::Material> actmat = actele->Material();
 
     if (id_elch != -1 and actmat->MaterialType() == CORE::Materials::m_elchmat)
     {
@@ -1379,7 +1379,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
         (actmat->MaterialType() == CORE::Materials::m_newman_multiscale and
             macro_dis_name == "scatra"))
     {
-      MAT::PAR::Parameter* actparams = actmat->Parameter();
+      CORE::MAT::PAR::Parameter* actparams = actmat->Parameter();
       my_multimat_IDs.insert(actparams->Id());
     }
   }
@@ -1451,7 +1451,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
 
       if (my_multimat_IDs.find(matid) != my_multimat_IDs.end())
       {
-        Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
+        Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(matid);
 
         // initialize variables storing micro-scale information
         int microdisnum(-1);
@@ -1590,7 +1590,7 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
         problem.SetRestartStep(restart_step);
 
         // set the problem number from which to call materials again to zero
-        // (i.e. macro problem), cf. MAT::Material::Factory!
+        // (i.e. macro problem), cf. MAT::Factory!
         problem.Materials()->ResetReadFromProblem();
       }
     }
@@ -1706,7 +1706,7 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
     problem.SetRestartStep(restart_step);
 
     // set the problem number from which to call materials again to zero
-    // (i.e. macro problem), cf. MAT::Material::Factory!
+    // (i.e. macro problem), cf. MAT::Factory!
     problem.Materials()->ResetReadFromProblem();
   }
 }

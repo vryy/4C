@@ -13,7 +13,7 @@
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
 namespace
@@ -82,7 +82,7 @@ namespace
 
       // set up elastic material to be added to problem instance
       const int matid_elastic(1);
-      const auto mat_elastic_neo_hooke = Teuchos::rcp(new MAT::PAR::Material(
+      const auto mat_elastic_neo_hooke = Teuchos::rcp(new CORE::MAT::PAR::Material(
           matid_elastic, CORE::Materials::mes_coupneohooke, "ELAST_CoupNeoHooke"));
 
       // add actually required parameters to electrode material
@@ -94,7 +94,7 @@ namespace
 
       // set up inelastic material to be added to problem instance
       const int inelastic_defgrad_id(2);
-      const auto mat_inelastic = Teuchos::rcp(new MAT::PAR::Material(inelastic_defgrad_id,
+      const auto mat_inelastic = Teuchos::rcp(new CORE::MAT::PAR::Material(inelastic_defgrad_id,
           CORE::Materials::mfi_lin_scalar_iso, "MAT_InelasticDefgradLinScalarIso"));
 
       mat_inelastic->Add("SCALAR1", 1);
@@ -115,7 +115,7 @@ namespace
 
       // create MultiplicativeSplitDefgrad_ElastHyper object;
       // initialize container for material parameters first
-      auto multiplicativeSplitDefgradData = Teuchos::rcp(new MAT::PAR::Material());
+      auto multiplicativeSplitDefgradData = Teuchos::rcp(new CORE::MAT::PAR::Material());
 
       multiplicativeSplitDefgradData->Add("NUMMATEL", 1);
       std::vector<int> matids_elastic = {matid_elastic};

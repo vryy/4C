@@ -12,14 +12,14 @@ materials
 #include "4C_discretization_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_mat_service.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::StructuralTensorParameter::StructuralTensorParameter(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       c1_(matdata->Get<double>("C1")),
       c2_(matdata->Get<double>("C2")),

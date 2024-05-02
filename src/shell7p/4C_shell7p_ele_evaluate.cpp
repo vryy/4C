@@ -7,7 +7,8 @@
 
 #include "4C_global_data.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_shell7p_ele.hpp"
 #include "4C_shell7p_ele_calc_interface.hpp"
 #include "4C_shell7p_ele_neumann_evaluator.hpp"

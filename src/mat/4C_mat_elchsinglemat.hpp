@@ -12,8 +12,9 @@ electric potential as degrees of freedom
 
 #include "4C_config.hpp"
 
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -22,7 +23,7 @@ namespace MAT
   namespace PAR
   {
     //! parameters for abstract battery material
-    class ElchSingleMat : public Parameter
+    class ElchSingleMat : public CORE::MAT::PAR::Parameter
     {
      public:
       //! @name parameters for abstract battery material
@@ -72,7 +73,7 @@ namespace MAT
 
      protected:
       //! constructor
-      explicit ElchSingleMat(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit ElchSingleMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! check whether number of parameters is consistent with curve number
       void CheckProvidedParams(int functnr, const std::vector<double>& functparams);
@@ -82,7 +83,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   //! wrapper for abstract battery material
-  class ElchSingleMat : public Material
+  class ElchSingleMat : public CORE::MAT::Material
   {
    public:
     //! @name packing and unpacking

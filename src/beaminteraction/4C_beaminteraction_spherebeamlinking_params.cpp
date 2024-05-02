@@ -90,8 +90,8 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
       if (matlinkerpertype_[i] < 0) FOUR_C_THROW(" negative material number does not make sense.");
 
       // store materials
-      mat_.push_back(Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(
-          MAT::Material::Factory(matlinkerpertype_[i])));
+      mat_.push_back(
+          Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(MAT::Factory(matlinkerpertype_[i])));
       if (mat_.back() == Teuchos::null)
         FOUR_C_THROW("Invalid material given for beam sphere link. \n");
     }
@@ -107,9 +107,9 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
   {
     if (not(std::find(linkertypes_.begin(), linkertypes_.end(), matlinkerpertype_[type_i]) !=
             linkertypes_.end()))
-      linkertypes_.push_back(Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(
-          MAT::Material::Factory(matlinkerpertype_[type_i]))
-                                 ->LinkerType());
+      linkertypes_.push_back(
+          Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(MAT::Factory(matlinkerpertype_[type_i]))
+              ->LinkerType());
   }
 
   // store contraction rate, each linker type (not material) can have its own

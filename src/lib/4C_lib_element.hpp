@@ -31,7 +31,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace MAT
+namespace CORE::MAT
 {
   class Material;
 }
@@ -603,7 +603,7 @@ might become invalid after a redistribution of the discretization.
 
     \param nummat (in): number of requested material
     */
-    virtual Teuchos::RCP<MAT::Material> Material(int nummat = 0) const
+    virtual Teuchos::RCP<CORE::MAT::Material> Material(int nummat = 0) const
     {
       FOUR_C_ASSERT(nummat < (int)mat_.size(), "invalid material number");
       return mat_[nummat];
@@ -797,7 +797,7 @@ might become invalid after a redistribution of the discretization.
       @param index index in material list
       @param mat pointer to the Material instance to set
      */
-    virtual void SetMaterial(int index, Teuchos::RCP<MAT::Material> mat);
+    virtual void SetMaterial(int index, Teuchos::RCP<CORE::MAT::Material> mat);
 
     /// Add element material
     /*!
@@ -808,7 +808,7 @@ might become invalid after a redistribution of the discretization.
       \param mat: material to be added
       \param nummat (out):  number of materials the element holds
      */
-    int AddMaterial(const Teuchos::RCP<MAT::Material>& mat);
+    int AddMaterial(const Teuchos::RCP<CORE::MAT::Material>& mat);
 
     /// Number of materials of the element
     /*!
@@ -1180,8 +1180,10 @@ might become invalid after a redistribution of the discretization.
 
     \param p (in): Parameter list coming from the time integrator.
      */
-    virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p)
-  { /* This is a dummy function. Please implement the function in the derived classes, if necessary. */ };
+    virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p){
+        /* This is a dummy function. Please implement the function in the derived classes, if
+           necessary. */
+    };
 
     /*!
     \brief returns true if the interface is defined and initialized, otherwise false
@@ -1280,7 +1282,7 @@ might become invalid after a redistribution of the discretization.
     std::multimap<std::string, Teuchos::RCP<Condition>> condition_;
 
     //! vector of material objects of element
-    std::vector<Teuchos::RCP<MAT::Material>> mat_;
+    std::vector<Teuchos::RCP<CORE::MAT::Material>> mat_;
 
     //! is this a nurbs element?
     bool is_nurbs_;

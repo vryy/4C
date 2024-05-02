@@ -9,12 +9,13 @@ continuum mechanics for finite element analysis", Cambridge, 1997.
 
 #include "4C_matelast_couplogneohooke.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata)
 {
   std::string parmode = (matdata->Get<std::string>("MODE"));

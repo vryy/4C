@@ -64,7 +64,7 @@ namespace DRT
 
       //! Get and save all chemotaxtis related class variable
       virtual void GetChemotaxisCoefficients(
-          const Teuchos::RCP<const MAT::Material> material  //!< pointer to current material
+          const Teuchos::RCP<const CORE::MAT::Material> material  //!< pointer to current material
       );
 
       //! Get ID of attractant (i.e. scalar which gradient the current scalar shall follow)

@@ -31,7 +31,7 @@ struct MAT::PreCalculatedTerms
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       density_(matdata->Get<double>("DENS")),
       nue_(matdata->Get<double>("NUE")),
@@ -51,7 +51,7 @@ MAT::PAR::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ViscoPlasticNoYieldSurface::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ViscoPlasticNoYieldSurface::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ViscoPlasticNoYieldSurface(this));
 }
@@ -125,7 +125,7 @@ void MAT::ViscoPlasticNoYieldSurface::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = dynamic_cast<MAT::PAR::ViscoPlasticNoYieldSurface*>(mat);

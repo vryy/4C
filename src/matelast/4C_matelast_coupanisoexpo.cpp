@@ -8,8 +8,8 @@
 
 #include "4C_matelast_coupanisoexpo.hpp"
 
-#include "4C_mat_par_material.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -46,7 +46,8 @@ MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetStructuralTensor_stress(int g
   return DefaultAnisotropyExtension<1>::GetStructuralTensor_stress(gp, 0);
 }
 
-MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : MAT::PAR::ParameterAniso(matdata),
       MAT::ELASTIC::PAR::CoupAnisoExpoBase(matdata),
       adapt_angle_(matdata->Get<bool>("ADAPT_ANGLE")),

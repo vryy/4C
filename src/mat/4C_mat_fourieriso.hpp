@@ -16,8 +16,8 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_thermo.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -33,11 +33,11 @@ namespace MAT
     ///
     /// <h3>Input line</h3>
     /// MAT 1 THERM_FourierIsoIso CAPA 1.0 COND 1.0
-    class FourierIso : public Parameter
+    class FourierIso : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      FourierIso(Teuchos::RCP<MAT::PAR::Material> matdata);
+      FourierIso(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -50,7 +50,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class FourierIso
 
@@ -140,7 +140,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new FourierIso(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new FourierIso(*this));
+    }
 
     //@}
 
@@ -177,7 +180,7 @@ namespace MAT
     }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

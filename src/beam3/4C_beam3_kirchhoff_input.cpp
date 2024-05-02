@@ -11,8 +11,9 @@
 #include "4C_beam3_kirchhoff.hpp"
 #include "4C_discretization_fem_general_largerotations.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

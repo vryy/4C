@@ -17,8 +17,9 @@ properties of e.g. one species in a scalar transport problem, or one phase in a 
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,14 +29,14 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of materials
-    class MatList : public Parameter
+    class MatList : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      MatList(Teuchos::RCP<MAT::PAR::Material> matdata);
+      MatList(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       /// @name material parameters
       //@{
@@ -44,9 +45,9 @@ namespace MAT
       const std::vector<int>* MatIds() const { return &matids_; }
 
       /// provide access to material by its ID
-      Teuchos::RCP<MAT::Material> MaterialById(const int id) const;
+      Teuchos::RCP<CORE::MAT::Material> MaterialById(const int id) const;
 
-      std::map<int, Teuchos::RCP<MAT::Material>>* MaterialMapWrite() { return &mat_; }
+      std::map<int, Teuchos::RCP<CORE::MAT::Material>>* MaterialMapWrite() { return &mat_; }
 
       /// length of material list
       const int nummat_;
@@ -59,7 +60,7 @@ namespace MAT
 
      private:
       /// map to materials (only used for local_==true)
-      std::map<int, Teuchos::RCP<MAT::Material>> mat_;
+      std::map<int, Teuchos::RCP<CORE::MAT::Material>> mat_;
 
       //@}
 
@@ -82,7 +83,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
-  class MatList : public Material
+  class MatList : public CORE::MAT::Material
   {
    public:
     /// construct empty material object
@@ -136,7 +137,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new MatList(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new MatList(*this));
+    }
 
     /// number of materials
     int NumMat() const { return params_->nummat_; }
@@ -145,17 +149,20 @@ namespace MAT
     int MatID(const unsigned index) const;
 
     /// provide access to material by its ID
-    virtual Teuchos::RCP<MAT::Material> MaterialById(const int id) const;
+    virtual Teuchos::RCP<CORE::MAT::Material> MaterialById(const int id) const;
 
     /// Return quick accessible material parameter data
     MAT::PAR::MatList* Parameter() const override { return params_; }
 
    protected:
     /// return pointer to the materials map, which has read-only access.
-    const std::map<int, Teuchos::RCP<MAT::Material>>* MaterialMapRead() const { return &mat_; }
+    const std::map<int, Teuchos::RCP<CORE::MAT::Material>>* MaterialMapRead() const
+    {
+      return &mat_;
+    }
 
     /// return pointer to the materials map, which has read and write access.
-    std::map<int, Teuchos::RCP<MAT::Material>>* MaterialMapWrite() { return &mat_; }
+    std::map<int, Teuchos::RCP<CORE::MAT::Material>>* MaterialMapWrite() { return &mat_; }
 
    private:
     /// setup of material map
@@ -168,7 +175,7 @@ namespace MAT
     MAT::PAR::MatList* params_;
 
     /// map to materials
-    std::map<int, Teuchos::RCP<MAT::Material>> mat_;
+    std::map<int, Teuchos::RCP<CORE::MAT::Material>> mat_;
   };
 
 }  // namespace MAT

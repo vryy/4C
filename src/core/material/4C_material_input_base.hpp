@@ -7,14 +7,14 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef FOUR_C_MAT_PAR_MATERIAL_HPP
-#define FOUR_C_MAT_PAR_MATERIAL_HPP
+#ifndef FOUR_C_MATERIAL_INPUT_BASE_HPP
+#define FOUR_C_MATERIAL_INPUT_BASE_HPP
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_container.hpp"
 #include "4C_inpar_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_io_input_parameter_container.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT::PAR
+namespace CORE::MAT::PAR
 {
   // forward declaration
   class Parameter;
@@ -30,8 +30,8 @@ namespace MAT::PAR
   /// Container for read-in materials
   ///
   /// This object stores the validated material parameters as
-  /// INPAR::InputParameterContainer.
-  class Material : public INPAR::InputParameterContainer
+  /// IO::InputParameterContainer.
+  class Material : public IO::InputParameterContainer
   {
    public:
     /// @name life span
@@ -49,14 +49,17 @@ namespace MAT::PAR
     /// Copy constructor
     ///
     /// Makes a deep copy of the material parameters
-    Material(const MAT::PAR::Material& old);
+    Material(const CORE::MAT::PAR::Material& old);
 
     /// Set pointer to readily allocated 'quick access' material parameters
     ///
-    /// This function is called by the material factory MAT::Material::Factory.
+    /// This function is called by the material factory MAT::Factory.
     /// To circumvent more than this single major switch of material type to
     /// object, #params_ are allocated externally.
-    inline void SetParameter(MAT::PAR::Parameter* matparam) { params_ = Teuchos::rcp(matparam); }
+    inline void SetParameter(CORE::MAT::PAR::Parameter* matparam)
+    {
+      params_ = Teuchos::rcp(matparam);
+    }
 
     //@}
 
@@ -78,8 +81,8 @@ namespace MAT::PAR
     /// Return quick accessible material parameter data
     ///
     /// These quick access parameters are stored in separate member #params_;
-    /// whereas the originally read ones are stored in INPAR::InputParameterContainer base
-    [[nodiscard]] inline MAT::PAR::Parameter* Parameter() const { return params_.get(); }
+    /// whereas the originally read ones are stored in IO::InputParameterContainer base
+    [[nodiscard]] inline CORE::MAT::PAR::Parameter* Parameter() const { return params_.get(); }
 
     //@}
 
@@ -97,14 +100,14 @@ namespace MAT::PAR
     std::string name_{};
 
     /// Unwrapped material data for 'quick' access
-    Teuchos::RCP<MAT::PAR::Parameter> params_{};
+    Teuchos::RCP<CORE::MAT::PAR::Parameter> params_{};
   };
-}  // namespace MAT::PAR
+}  // namespace CORE::MAT::PAR
 
 
 
 /// out stream operator
-std::ostream& operator<<(std::ostream& os, const MAT::PAR::Material& cond);
+std::ostream& operator<<(std::ostream& os, const CORE::MAT::PAR::Material& cond);
 
 
 FOUR_C_NAMESPACE_CLOSE

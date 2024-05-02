@@ -11,7 +11,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <memory>
@@ -27,11 +27,11 @@ namespace MIXTURE
   namespace PAR
   {
     template <typename T>
-    class RemodelFiberMaterial : public MAT::PAR::Parameter
+    class RemodelFiberMaterial : public CORE::MAT::PAR::Parameter
     {
      public:
-      RemodelFiberMaterial(const Teuchos::RCP<MAT::PAR::Material>& matdata);
-      Teuchos::RCP<MAT::Material> CreateMaterial() override
+      RemodelFiberMaterial(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override
       {
         FOUR_C_THROW("This type of material is not created with CreateMaterial()");
         std::exit(1);

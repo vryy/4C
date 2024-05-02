@@ -379,7 +379,7 @@ namespace DRT
       /// (braeu 07/16)
       void Update_element(std::vector<double>& disp,  // current displacements
           Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
-          Teuchos::RCP<MAT::Material> mat);           // material
+          Teuchos::RCP<CORE::MAT::Material> mat);     // material
 
      public:
       /** \brief set the parameter interface ptr for the solid elements

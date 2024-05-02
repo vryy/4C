@@ -26,10 +26,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      ScatraMatPoroECM(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ScatraMatPoroECM(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       double reacscale_;
     };
@@ -109,13 +109,13 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraMatPoroECM(*this));
     }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return reaction coefficient
     virtual double ReacCoeff() const { return reaccoeff_; }

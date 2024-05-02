@@ -33,7 +33,7 @@ namespace POROFLUIDMULTIPHASE
   {
     //! get the single phase material from the element material
     const MAT::FluidPoroSinglePhase& GetSinglePhaseMatFromMaterial(
-        const MAT::Material& material, int phasenum);
+        const CORE::MAT::Material& material, int phasenum);
 
     //! get the single phase material from the element multiphase material
     const MAT::FluidPoroSinglePhase& GetSinglePhaseMatFromMultiMaterial(
@@ -41,7 +41,7 @@ namespace POROFLUIDMULTIPHASE
 
     //! get the single volume fraction material from the element material
     const MAT::FluidPoroSingleVolFrac& GetSingleVolFracMatFromMaterial(
-        const MAT::Material& material, int volfracnum);
+        const CORE::MAT::Material& material, int volfracnum);
 
     //! get the single volume fraction material from the element multiphase material
     const MAT::FluidPoroSingleVolFrac& GetSingleVolFracMatFromMultiMaterial(
@@ -49,7 +49,7 @@ namespace POROFLUIDMULTIPHASE
 
     //! get the volume fraction pressure material from the element material
     const MAT::FluidPoroVolFracPressure& GetVolFracPressureMatFromMaterial(
-        const MAT::Material& material, int volfracnum);
+        const CORE::MAT::Material& material, int volfracnum);
 
     //! get the volume fraction pressure material from the element multiphase material
     const MAT::FluidPoroVolFracPressure& GetVolFracPressureMatFromMultiMaterial(

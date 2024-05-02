@@ -133,7 +133,7 @@ namespace MAT
     /** \brief return copy of this material object
      *
      */
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new BeamElastHyperMaterial(*this));
     }
@@ -141,7 +141,7 @@ namespace MAT
     /** \brief get quick accessible material parameter data
      *
      */
-    MAT::PAR::Parameter* Parameter() const override;
+    CORE::MAT::PAR::Parameter* Parameter() const override;
 
     //@}
 

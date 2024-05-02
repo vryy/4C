@@ -20,8 +20,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_material.hpp"
-#include "4C_mat_par_parameter.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -32,14 +33,14 @@ namespace MAT
 {
   namespace PAR
   {
-    class ParticleWallMaterialDEM : public Parameter
+    class ParticleWallMaterialDEM : public CORE::MAT::PAR::Parameter
     {
      public:
       //! constructor
-      ParticleWallMaterialDEM(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ParticleWallMaterialDEM(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! create material instance of matching type with parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! @name material parameters
       //@{
@@ -71,7 +72,7 @@ namespace MAT
     static ParticleWallMaterialDEMType instance_;
   };
 
-  class ParticleWallMaterialDEM : public Material
+  class ParticleWallMaterialDEM : public CORE::MAT::Material
   {
    public:
     //! constructor (empty material object)
@@ -134,13 +135,13 @@ namespace MAT
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new ParticleWallMaterialDEM(*this));
     }
 
     //! return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! return tangential contact friction coefficient
     double MuTangential() const { return params_->frictionTang_; }

@@ -32,9 +32,10 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_growth.hpp"
 #include "4C_mat_growth_law.hpp"
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_base.hpp"
 #include "4C_scatra_algorithm.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_structure_aux.hpp"
@@ -457,7 +458,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
   Teuchos::RCP<DRT::Discretization> structuredis = fsi_->StructureField()->Discretization();
   const int GID = structuredis->ElementColMap()->GID(0);  // global element ID
 
-  Teuchos::RCP<MAT::Material> structurematerial = structuredis->gElement(GID)->Material();
+  Teuchos::RCP<CORE::MAT::Material> structurematerial = structuredis->gElement(GID)->Material();
 
   if (structurematerial->MaterialType() != CORE::Materials::m_growth_volumetric)
   {

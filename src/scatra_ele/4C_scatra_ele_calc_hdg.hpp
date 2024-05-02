@@ -134,21 +134,21 @@ namespace DRT
 
       //! evaluate material
       virtual void Materials(
-          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-          const int k,                                       //!< id of current scalar
-          CORE::LINALG::SerialDenseMatrix& difftensor,       //!< diffusion tensor
-          CORE::LINALG::SerialDenseVector& ivecn,            //!< reaction term at time n
-          CORE::LINALG::SerialDenseVector& ivecnp,           //!< reaction term at time n+1
-          CORE::LINALG::SerialDenseMatrix& ivecnpderiv       //!< reaction term derivative
+          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const int k,                                             //!< id of current scalar
+          CORE::LINALG::SerialDenseMatrix& difftensor,             //!< diffusion tensor
+          CORE::LINALG::SerialDenseVector& ivecn,                  //!< reaction term at time n
+          CORE::LINALG::SerialDenseVector& ivecnp,                 //!< reaction term at time n+1
+          CORE::LINALG::SerialDenseMatrix& ivecnpderiv             //!< reaction term derivative
       )
       {
         return;
       };
 
       //! evaluate material before first timestep
-      virtual void PrepareMaterials(DRT::Element* ele,       //!< the element we are dealing with
-          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-          const int k,                                       //!< id of current scalar
+      virtual void PrepareMaterials(DRT::Element* ele,  //!< the element we are dealing with
+          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const int k,                                             //!< id of current scalar
           Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>>
               difftensor  //!< diffusion tensor
       );

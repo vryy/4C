@@ -561,7 +561,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::BuildLinearM
   {
     auto eq_id = (ceTerm->Get<int>("EQUATION_ID")) - 1;
     const auto* node_id = ceTerm->GetNodes();
-    const auto& dofStr = ceTerm->INPAR::InputParameterContainer::Get<std::string>("DOF");
+    const auto& dofStr = ceTerm->IO::InputParameterContainer::Get<std::string>("DOF");
     auto coef = ceTerm->Get<double>("COEFFICIENT");
     auto* node = discret_ptr_->gNode(node_id->data()[0]);
 
@@ -767,7 +767,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
       for (const auto& conditionLine : line_periodic_rve_conditions_)
       {
         const auto& boundary =
-            conditionLine->INPAR::InputParameterContainer::Get<std::string>("EdgeLineId");
+            conditionLine->IO::InputParameterContainer::Get<std::string>("EdgeLineId");
 
         // Print the Edge Condition
         IO::cout(IO::verbose) << "EDGE: " << boundary.c_str() << " Node IDs: ";
@@ -794,7 +794,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::
       for (const auto& conditionLine : surface_periodic_rve_conditions_)
       {
         const auto& boundary =
-            conditionLine->INPAR::InputParameterContainer::Get<std::string>("SurfId");
+            conditionLine->IO::InputParameterContainer::Get<std::string>("SurfId");
 
         IO::cout(IO::verbose) << "SURF: " << boundary.c_str() << " Node IDs: ";
         for (auto nodeId : *conditionLine->GetNodes())

@@ -16,16 +16,17 @@ John Wiley & Sons, Ltd, 2008
 #include "4C_linalg_FADmatrix_utils.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_stvenantkirchhoff.hpp"
+#include "4C_material_base.hpp"
+#include "4C_material_parameter_base.hpp"
 #include "4C_utils_local_newton.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::PAR::PlasticDruckerPrager::PlasticDruckerPrager(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::PlasticDruckerPrager::PlasticDruckerPrager(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       youngs_(matdata->Get<double>("YOUNG")),
       poissonratio_(matdata->Get<double>("NUE")),
@@ -40,7 +41,7 @@ MAT::PAR::PlasticDruckerPrager::PlasticDruckerPrager(Teuchos::RCP<MAT::PAR::Mate
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::PlasticDruckerPrager::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PlasticDruckerPrager::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::PlasticDruckerPrager(this));
 }
@@ -93,7 +94,7 @@ void MAT::PlasticDruckerPrager::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::PlasticDruckerPrager*>(mat);

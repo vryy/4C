@@ -49,7 +49,7 @@ namespace DRT
        */
       virtual int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,

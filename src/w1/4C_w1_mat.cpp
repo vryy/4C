@@ -35,13 +35,13 @@ FOUR_C_NAMESPACE_OPEN
  | Constitutive matrix C and stresses (private)                mgit 05/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
-    const CORE::LINALG::SerialDenseVector& strain,  ///< Green-Lagrange strain vector
-    CORE::LINALG::SerialDenseMatrix& stress,        ///< stress vector
-    CORE::LINALG::SerialDenseMatrix& C,             ///< elasticity matrix
-    const int numeps,                               ///< number of strains
-    Teuchos::RCP<const MAT::Material> material,     ///< the material data
-    Teuchos::ParameterList& params,                 ///< element parameter list
-    const int gp                                    ///< Gauss point
+    const CORE::LINALG::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
+    CORE::LINALG::SerialDenseMatrix& stress,           ///< stress vector
+    CORE::LINALG::SerialDenseMatrix& C,                ///< elasticity matrix
+    const int numeps,                                  ///< number of strains
+    Teuchos::RCP<const CORE::MAT::Material> material,  ///< the material data
+    Teuchos::ParameterList& params,                    ///< element parameter list
+    const int gp                                       ///< Gauss point
 )
 {
   if (material->MaterialType() == CORE::Materials::m_structporo or
@@ -354,7 +354,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress
 /*-----------------------------------------------------------------------------*
 | deliver internal/strain energy                                    bborn 08/08|
 *-----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> material,
+double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const CORE::MAT::Material> material,
     Teuchos::ParameterList& params, const CORE::LINALG::SerialDenseVector& Ev, const int gp)
 {
   // switch material type

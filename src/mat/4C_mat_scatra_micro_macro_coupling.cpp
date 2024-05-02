@@ -9,14 +9,14 @@ problems. This material handles the communication between micro and macro materi
 /*----------------------------------------------------------------------*/
 #include "4C_mat_scatra_micro_macro_coupling.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 MAT::PAR::ScatraMicroMacroCoupling::ScatraMicroMacroCoupling(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : microfile_((matdata->Get<std::string>("MICROFILE"))),
       microdisnum_(matdata->Get<int>("MICRODIS_NUM")),
       A_s_(matdata->Get<double>("A_s"))

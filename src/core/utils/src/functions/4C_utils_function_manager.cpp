@@ -109,7 +109,7 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
           .AddOptionalNamedDoubleVector("VALUES", LengthFromIntNamed("NUMPOINTS"))
           .AddOptionalNamedStringVector("DESCRIPTION",
               // Special case where only NUMPOINTS-1 are taken
-              [](const INPAR::InputParameterContainer& already_read_line)
+              [](const IO::InputParameterContainer& already_read_line)
               {
                 try
                 {

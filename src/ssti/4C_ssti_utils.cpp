@@ -14,7 +14,7 @@
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"

@@ -329,9 +329,9 @@ namespace DRT
 
       //! evaluate material
       virtual void Materials(
-          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-          const int k,                                       //!< id of current scalar
-          double& densn,                                     //!< density at t_(n)
+          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const int k,                                             //!< id of current scalar
+          double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
@@ -340,9 +340,9 @@ namespace DRT
 
       //! material ScaTra
       virtual void MatScaTra(
-          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-          const int k,                                       //!< id of current scalar
-          double& densn,                                     //!< density at t_(n)
+          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const int k,                                             //!< id of current scalar
+          double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
@@ -357,11 +357,12 @@ namespace DRT
        * @param densnp   density at time t_(n+1) or t_(n+alpha_f)
        * @param densam   density at time t_(n+alpha_m)
        */
-      virtual void MatScaTraMultiScale(const Teuchos::RCP<const MAT::Material> material,
+      virtual void MatScaTraMultiScale(const Teuchos::RCP<const CORE::MAT::Material> material,
           double& densn, double& densnp, double& densam) const;
 
       //! evaluate electrode material
-      void MatElectrode(const Teuchos::RCP<const MAT::Material> material  //!< electrode material
+      void MatElectrode(
+          const Teuchos::RCP<const CORE::MAT::Material> material  //!< electrode material
       );
 
       /*========================================================================*/
@@ -548,8 +549,9 @@ namespace DRT
           const DRT::Element* ele, Teuchos::ParameterList& params);
 
       //! get density at integration point
-      virtual double GetDensity(const DRT::Element* ele, Teuchos::RCP<const MAT::Material> material,
-          Teuchos::ParameterList& params, const double tempnp);
+      virtual double GetDensity(const DRT::Element* ele,
+          Teuchos::RCP<const CORE::MAT::Material> material, Teuchos::ParameterList& params,
+          const double tempnp);
 
       //! calculate viscous part of subgrid-scale velocity
       virtual void CalcSubgrVelocityVisc(CORE::LINALG::Matrix<nsd_, 1>& epsilonvel);

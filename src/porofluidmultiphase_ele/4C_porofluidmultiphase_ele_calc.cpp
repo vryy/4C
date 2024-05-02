@@ -13,7 +13,8 @@
 #include "4C_discretization_geometry_position_array.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_porofluidmultiphase_ele_evaluator.hpp"
 #include "4C_porofluidmultiphase_ele_parameter.hpp"
 #include "4C_porofluidmultiphase_ele_phasemanager.hpp"
@@ -492,7 +493,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(DRT::Element* 
   // set element
   ele_ = ele;
 
-  Teuchos::RCP<MAT::Material> mat = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = ele->Material();
   if (mat->MaterialType() != CORE::Materials::m_fluidporo_multiphase and
       mat->MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW(

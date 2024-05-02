@@ -8,13 +8,13 @@
 
 #include "4C_matelast_coupanisoexpobase.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
 MAT::ELASTIC::PAR::CoupAnisoExpoBase::CoupAnisoExpoBase(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : k1_(matdata->Get<double>("K1")),
       k2_(matdata->Get<double>("K2")),
       gamma_(matdata->Get<double>("GAMMA")),

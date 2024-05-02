@@ -679,7 +679,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetMaterialParams(
 )
 {
   // get the material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   Materials(material, densn, densnp, densam, visc, dvisc, iquad);
 
@@ -691,13 +691,13 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetMaterialParams(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Materials(
-    const Teuchos::RCP<MAT::Material> material,  //!< pointer to current material
-    double& densn,                               //!< density at t_(n)
-    double& densnp,                              //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                              //!< density at t_(n+alpha_M)
-    double& visc,                                //!< fluid viscosity
-    double& dvisc,                               //!< derivative of the fluid viscosity
-    const int iquad                              //!< id of current gauss point
+    const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
+    double& densn,                                     //!< density at t_(n)
+    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,                                    //!< density at t_(n+alpha_M)
+    double& visc,                                      //!< fluid viscosity
+    double& dvisc,                                     //!< derivative of the fluid viscosity
+    const int iquad                                    //!< id of current gauss point
 
 )
 {
@@ -718,13 +718,13 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Materials(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatLubrication(
-    const Teuchos::RCP<MAT::Material> material,  //!< pointer to current material
-    double& densn,                               //!< density at t_(n)
-    double& densnp,                              //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                              //!< density at t_(n+alpha_M)
-    double& visc,                                //!< fluid viscosity
-    double& dvisc,                               //!< derivative of the fluid viscosity
-    const int iquad                              //!< id of current gauss point (default = -1)
+    const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
+    double& densn,                                     //!< density at t_(n)
+    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,                                    //!< density at t_(n+alpha_M)
+    double& visc,                                      //!< fluid viscosity
+    double& dvisc,                                     //!< derivative of the fluid viscosity
+    const int iquad                                    //!< id of current gauss point (default = -1)
 )
 {
   const Teuchos::RCP<MAT::LubricationMat>& actmat =

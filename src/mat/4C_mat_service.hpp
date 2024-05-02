@@ -26,12 +26,13 @@ namespace CORE::LINALG
   class FourTensor;
 }
 
+namespace CORE::MAT::PAR
+{
+  class Material;
+}
+
 namespace MAT
 {
-  namespace PAR
-  {
-    class Material;
-  }
 
   /*!
    * @brief Multiply two 2nd order tensors A x B and add the result to a 4th order symmetric
@@ -415,7 +416,7 @@ namespace MAT
   }
 
   template <class T>
-  T* CreateMaterialParameterInstance(Teuchos::RCP<MAT::PAR::Material> curmat);
+  T* CreateMaterialParameterInstance(Teuchos::RCP<CORE::MAT::PAR::Material> curmat);
 
   /// Set every tensor value to zero
   template <int dim>

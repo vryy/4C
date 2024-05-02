@@ -243,7 +243,7 @@ std::vector<double> DRT::ELEMENTS::RedAcinus::ElementCenterRefeCoords()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedAcinus::VisNames(std::map<std::string, int>& names)
 {
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   // cast to specific material, because general material does not have VisNames/VisData
   Teuchos::RCP<MAT::Maxwell0dAcinus> mxwll_0d_acin =

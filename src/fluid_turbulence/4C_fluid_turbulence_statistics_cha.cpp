@@ -171,7 +171,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
       FOUR_C_THROW("Could not find Newtonian fluid material");
     else
     {
-      const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+      const CORE::MAT::PAR::Parameter* mat =
+          GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
       // we need the kinematic viscosity here
       dens_ = actmat->density_;
@@ -187,7 +188,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
       FOUR_C_THROW("Could not find sutherland material");
     else
     {
-      const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+      const CORE::MAT::PAR::Parameter* mat =
+          GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
       // we need the kinematic viscosity here
       shc_ = actmat->shc_;
@@ -5871,7 +5873,8 @@ void FLD::TurbulenceStatisticsCha::StoreScatraDiscretAndParams(
       FOUR_C_THROW("Could not find scatra material");
     else
     {
-      const MAT::PAR::Parameter* mat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+      const CORE::MAT::PAR::Parameter* mat =
+          GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
       const MAT::PAR::ScatraMat* actmat = static_cast<const MAT::PAR::ScatraMat*>(mat);
 
       double diffus =

@@ -122,7 +122,7 @@ namespace DRT
       /// evaluate the XFEM cut element
       int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -138,11 +138,11 @@ namespace DRT
 
       /// error computation
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
+          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& ele_dom_norms) override;
 
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
+          Teuchos::RCP<CORE::MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseVector& ele_dom_norms,
           const CORE::FE::GaussIntegration& intpoints) override;
 
@@ -150,7 +150,7 @@ namespace DRT
           DRT::Discretization& dis,                                  ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          Teuchos::RCP<MAT::Material>& mat,                          ///< material
+          Teuchos::RCP<CORE::MAT::Material>& mat,                    ///< material
           CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
@@ -174,9 +174,9 @@ namespace DRT
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
           std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
-              side_coupling,                 ///< side coupling matrices
-          Teuchos::ParameterList& params,    ///< parameter list
-          Teuchos::RCP<MAT::Material>& mat,  ///< material
+              side_coupling,                       ///< side coupling matrices
+          Teuchos::ParameterList& params,          ///< parameter list
+          Teuchos::RCP<CORE::MAT::Material>& mat,  ///< material
           CORE::LINALG::SerialDenseMatrix&
               elemat1_epetra,  ///< local system matrix of intersected element
           CORE::LINALG::SerialDenseVector&
@@ -196,8 +196,8 @@ namespace DRT
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
           Teuchos::ParameterList& params,                     ///< parameter list
-          Teuchos::RCP<MAT::Material>& mat_master,            ///< material for the coupled side
-          Teuchos::RCP<MAT::Material>& mat_slave,             ///< material for the coupled side
+          Teuchos::RCP<CORE::MAT::Material>& mat_master,      ///< material for the coupled side
+          Teuchos::RCP<CORE::MAT::Material>& mat_slave,       ///< material for the coupled side
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,    ///< element matrix
           CORE::LINALG::SerialDenseVector& elevec1_epetra,    ///< element vector
           const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
@@ -231,7 +231,7 @@ namespace DRT
           double& p,                                 ///< exact pressure
           CORE::LINALG::Matrix<nsd_, 1>& xyzint,     ///< xyz position of gaussian point
           const double& t,                           ///< time
-          Teuchos::RCP<MAT::Material> mat = Teuchos::null);
+          Teuchos::RCP<CORE::MAT::Material> mat = Teuchos::null);
 
       //! get the interface jump vectors for velocity and traction at the Gaussian point
       void GetInterfaceJumpVectors(
@@ -405,7 +405,7 @@ namespace DRT
           const bool is_MHVS);
 
       //! Initiates dummy variables and calls FLuidEleCalc GetMaterialParams routine.
-      void GetMaterialParametersVolumeCell(Teuchos::RCP<const MAT::Material> material,
+      void GetMaterialParametersVolumeCell(Teuchos::RCP<const CORE::MAT::Material> material,
           double& densaf,  // done
           double& viscaf,  // done
           double& gamma    // done

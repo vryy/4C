@@ -283,7 +283,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
   // save current element
   ele_ = ele;
   // get material
-  const MAT::Material& material = *(ele_->Material(matnum));
+  const CORE::MAT::Material& material = *(ele_->Material(matnum));
 
   // check the material
   if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
@@ -358,7 +358,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
 
   // get material
   FOUR_C_ASSERT(ele_->Material(matnum) != Teuchos::null, "Material of element is null pointer!");
-  const MAT::Material& material = *(ele_->Material(matnum));
+  const CORE::MAT::Material& material = *(ele_->Material(matnum));
 
   // access state vector
   const std::vector<double>& phinp = *varmanager.Phinp();
@@ -680,7 +680,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   // get material
   FOUR_C_ASSERT(phasemanager_->Element()->Material(matnum) != Teuchos::null,
       "Material of element is null pointer!");
-  const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
+  const CORE::MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
   // get pressure
   const std::vector<double>& pressure = phasemanager_->Pressure();
@@ -1025,7 +1025,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
   phasemanager_->Setup(ele, matnum);
 
   // get material
-  const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
+  const CORE::MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
   // get total number of dofs
   const int totalnumdof = phasemanager_->TotalNumDof();
@@ -1058,7 +1058,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::Setup(
     for (int k = 0; k < numscal_; ++k)
     {
       int matid = scatramat->MatID(k);
-      Teuchos::RCP<MAT::Material> singlemat = scatramat->MaterialById(matid);
+      Teuchos::RCP<CORE::MAT::Material> singlemat = scatramat->MaterialById(matid);
       if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_fluid)
       {
         const Teuchos::RCP<const MAT::ScatraMatMultiPoroFluid>& poromat =
@@ -1150,7 +1150,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerReaction::EvaluateGPState(
   // get material
   FOUR_C_ASSERT(phasemanager_->Element()->Material(matnum) != Teuchos::null,
       "Material of element is null pointer!");
-  const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
+  const CORE::MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
   if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW(
@@ -1358,7 +1358,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::Setup(
   permeabilitytensorsvolfracpress_.resize(numvolfrac);
   constdynviscosityvolfracpress_.resize(numvolfrac, false);
 
-  const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
+  const CORE::MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
   // check material type
   if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
@@ -1416,7 +1416,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPStat
   // get material
   FOUR_C_ASSERT(phasemanager_->Element()->Material(matnum) != Teuchos::null,
       "Material of element is null pointer!");
-  const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
+  const CORE::MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
   // get number of phases
   const int numfluidphases = phasemanager_->NumFluidPhases();
@@ -1540,7 +1540,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosity
  *----------------------------------------------------------------------*/
 template <int nsd>
 double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosity(
-    const MAT::Material& material, int phasenum, double abspressgrad) const
+    const CORE::MAT::Material& material, int phasenum, double abspressgrad) const
 {
   // get the single phase material
   const MAT::FluidPoroSinglePhase& singlephasemat =
@@ -1566,7 +1566,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosity
  *---------------------------------------------------------------------------*/
 template <int nsd>
 double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityDeriv(
-    const MAT::Material& material, int phasenum, double abspressgrad) const
+    const CORE::MAT::Material& material, int phasenum, double abspressgrad) const
 {
   // get the single phase material
   const MAT::FluidPoroSinglePhase& singlephasemat =
@@ -1604,7 +1604,7 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosity
  *----------------------------------------------------------------------------------- --------*/
 template <int nsd>
 double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityVolFracPressure(
-    const MAT::Material& material, int volfracpressnum, double abspressgrad) const
+    const CORE::MAT::Material& material, int volfracpressnum, double abspressgrad) const
 {
   // get the single phase material
   const MAT::FluidPoroVolFracPressure& volfracpressmat =
@@ -1633,7 +1633,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityDerivVo
 template <int nsd>
 double
 DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityDerivVolFracPressure(
-    const MAT::Material& material, int volfracpressnum, double abspressgrad) const
+    const CORE::MAT::Material& material, int volfracpressnum, double abspressgrad) const
 {
   // get the single phase material
   const MAT::FluidPoroVolFracPressure& volfracpressmat =
@@ -1690,7 +1690,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::Setup(
   hasaddscalardpendentflux_.resize(numvolfrac, false);
 
   // get material
-  const MAT::Material& material = *(ele->Material(matnum));
+  const CORE::MAT::Material& material = *(ele->Material(matnum));
 
   // check the material
   if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
@@ -1746,7 +1746,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::EvaluateGPState(
   // get material
   FOUR_C_ASSERT(phasemanager_->Element()->Material(matnum) != Teuchos::null,
       "Material of element is null pointer!");
-  const MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
+  const CORE::MAT::Material& material = *(phasemanager_->Element()->Material(matnum));
 
   for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
   {

@@ -7,12 +7,12 @@
 
 #include "4C_matelast_coupvarga.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupVarga::CoupVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::CoupVarga::CoupVarga(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata), mue_(matdata->Get<double>("MUE")), beta_(matdata->Get<double>("BETA"))
 {
 }

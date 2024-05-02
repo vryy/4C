@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       viscosity_(matdata->Get<double>("VISCOSITY")),
       density_(matdata->Get<double>("DENS")),
@@ -59,7 +59,7 @@ MAT::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<MAT::PAR::Material> matdata)
         "wrong type of diameter law for artery material, only CONSTANT and BY_FUNCTION are valid");
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::Cnst1dArt::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Cnst1dArt::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::Cnst1dArt(this));
 }
@@ -129,7 +129,7 @@ void MAT::Cnst1dArt::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Cnst1dArt*>(mat);

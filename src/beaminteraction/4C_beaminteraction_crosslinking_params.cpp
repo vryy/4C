@@ -144,7 +144,7 @@ void BEAMINTERACTION::CrosslinkingParams::Init(STR::TIMINT::BaseDataGlobalState 
     if (not(std::find(linkertypes_.begin(), linkertypes_.end(), matcrosslinkerpertype_[type_i]) !=
             linkertypes_.end()))
       linkertypes_.push_back(Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(
-          MAT::Material::Factory(matcrosslinkerpertype_[type_i]))
+          MAT::Factory(matcrosslinkerpertype_[type_i]))
                                  ->LinkerType());
   }
 

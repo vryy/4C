@@ -7,7 +7,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 
 #include "4C_global_data.hpp"
 #include "4C_mat_aaa_mixedeffects.hpp"
@@ -78,7 +78,6 @@
 #include "4C_mat_newman_multiscale.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_particle_dem.hpp"
 #include "4C_mat_particle_sph_boundary.hpp"
 #include "4C_mat_particle_sph_fluid.hpp"
@@ -118,13 +117,14 @@
 #include "4C_mat_visconeohooke.hpp"
 #include "4C_mat_viscoplastic_no_yield_surface.hpp"
 #include "4C_mat_yoghurt.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
+Teuchos::RCP<CORE::MAT::Material> MAT::Factory(int matnum)
 {
   // retrieve problem instance to read from
   const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -137,7 +137,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat =
+  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(matnum);
 
   switch (curmat->Type())

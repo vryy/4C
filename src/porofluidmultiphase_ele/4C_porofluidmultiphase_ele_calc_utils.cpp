@@ -25,7 +25,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetSingleReactionMatFromMultiReactionsMaterial(
 {
   // get the single phase material by its ID
   const int matid = multiphasereacmat.ReacID(phasenum);
-  Teuchos::RCP<MAT::Material> singlemat = multiphasereacmat.MaterialById(matid);
+  Teuchos::RCP<CORE::MAT::Material> singlemat = multiphasereacmat.MaterialById(matid);
 
   // safety check and cast
   if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlereaction)
@@ -42,7 +42,7 @@ const MAT::FluidPoroSinglePhase& POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMa
 {
   // get the single phase material by its ID
   const int matid = multiphasemat.MatID(phasenum);
-  Teuchos::RCP<MAT::Material> singlemat = multiphasemat.MaterialById(matid);
+  Teuchos::RCP<CORE::MAT::Material> singlemat = multiphasemat.MaterialById(matid);
 
   // safety check and cast
   if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlephase)
@@ -56,7 +56,7 @@ const MAT::FluidPoroSinglePhase& POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMa
  *  get the single phase material from the element material   vuong 08/16 |
  *-------------------------------------------------------------------------*/
 const MAT::FluidPoroSinglePhase& POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(
-    const MAT::Material& material, int phasenum)
+    const CORE::MAT::Material& material, int phasenum)
 {
   // safety check
   if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
@@ -79,7 +79,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMultiMaterial(
 {
   // get the single phase material by its ID
   const int matid = multiphasemat.MatID(volfracnum);
-  Teuchos::RCP<MAT::Material> singlemat = multiphasemat.MaterialById(matid);
+  Teuchos::RCP<CORE::MAT::Material> singlemat = multiphasemat.MaterialById(matid);
 
   // safety check and cast
   if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_singlevolfrac)
@@ -93,7 +93,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMultiMaterial(
  *  get the single volfrac material from the element material   kremheller 08/17 |
  *--------------------------------------------------------------------------------*/
 const MAT::FluidPoroSingleVolFrac& POROFLUIDMULTIPHASE::ELEUTILS::GetSingleVolFracMatFromMaterial(
-    const MAT::Material& material, int volfracnum)
+    const CORE::MAT::Material& material, int volfracnum)
 {
   // safety check
   if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
@@ -116,7 +116,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMultiMaterial(
 {
   // get the single phase material by its ID
   const int matid = multiphasemat.MatID(volfracnum);
-  Teuchos::RCP<MAT::Material> singlemat = multiphasemat.MaterialById(matid);
+  Teuchos::RCP<CORE::MAT::Material> singlemat = multiphasemat.MaterialById(matid);
 
   // safety check and cast
   if (singlemat->MaterialType() != CORE::Materials::m_fluidporo_volfracpressure)
@@ -131,7 +131,7 @@ POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMultiMaterial(
  *------------------------------------------------------------------------------------------*/
 const MAT::FluidPoroVolFracPressure&
 POROFLUIDMULTIPHASE::ELEUTILS::GetVolFracPressureMatFromMaterial(
-    const MAT::Material& material, int volfracnum)
+    const CORE::MAT::Material& material, int volfracnum)
 {
   // safety check
   if (material.MaterialType() != CORE::Materials::m_fluidporo_multiphase and

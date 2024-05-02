@@ -9,8 +9,8 @@
 #include "4C_matelast_coupanisoexposhear.hpp"
 
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
-#include "4C_mat_par_material.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -180,8 +180,8 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalGPDataInitiali
 }
 
 MAT::ELASTIC::PAR::CoupAnisoExpoShear::CoupAnisoExpoShear(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : MAT::PAR::Parameter(matdata), MAT::ELASTIC::PAR::CoupAnisoExpoBase(matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    : CORE::MAT::PAR::Parameter(matdata), MAT::ELASTIC::PAR::CoupAnisoExpoBase(matdata)
 {
   std::copy_n(matdata->Get<std::vector<int>>("FIBER_IDS").begin(), 2, fiber_id_.begin());
 

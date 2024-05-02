@@ -878,20 +878,20 @@ bool XFEM::ConditionManager::HasAveragingStrategy(INPAR::XFEM::AveragingStrategy
   return false;
 }
 
-void XFEM::ConditionManager::GetVolumeCellMaterial(
-    DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc)
+void XFEM::ConditionManager::GetVolumeCellMaterial(DRT::Element* actele,
+    Teuchos::RCP<CORE::MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc)
 {
   XFEM::UTILS::GetVolumeCellMaterial(actele, mat, vc->Position());
 }
 
-void XFEM::ConditionManager::GetInterfaceMasterMaterial(
-    DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc)
+void XFEM::ConditionManager::GetInterfaceMasterMaterial(DRT::Element* actele,
+    Teuchos::RCP<CORE::MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc)
 {
   XFEM::UTILS::GetVolumeCellMaterial(actele, mat, vc->Position());
 }
 
 void XFEM::ConditionManager::GetInterfaceSlaveMaterial(
-    DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat, int coup_sid)
+    DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat, int coup_sid)
 {
   if (IsMeshCoupling(coup_sid))
   {

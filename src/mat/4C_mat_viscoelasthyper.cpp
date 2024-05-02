@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ViscoElastHyper::ViscoElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ViscoElastHyper::ViscoElastHyper(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : MAT::PAR::ElastHyper(matdata)
 {
   // polyconvexity check is just implemented for isotropic hyperlastic materials
@@ -42,7 +42,7 @@ MAT::PAR::ViscoElastHyper::ViscoElastHyper(Teuchos::RCP<MAT::PAR::Material> matd
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ViscoElastHyper::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ViscoElastHyper::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ViscoElastHyper(this));
 }
@@ -209,7 +209,7 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const unsigned int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::ViscoElastHyper*>(mat);

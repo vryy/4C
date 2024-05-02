@@ -11,12 +11,13 @@ Mechanics, 2000"
 
 #include "4C_matelast_volsussmanbathe.hpp"
 
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::VolSussmanBathe::VolSussmanBathe(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::VolSussmanBathe::VolSussmanBathe(
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata), kappa_(matdata->Get<double>("KAPPA"))
 {
 }

@@ -35,7 +35,7 @@ MAT::PAR::FluidPoroViscosityLaw* MAT::PAR::FluidPoroViscosityLaw::CreateViscosit
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat =
+  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(matID);
 
   switch (curmat->Type())
@@ -65,7 +65,7 @@ MAT::PAR::FluidPoroViscosityLaw* MAT::PAR::FluidPoroViscosityLaw::CreateViscosit
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroViscosityLawConstant::FluidPoroViscosityLawConstant(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : FluidPoroViscosityLaw(matdata, true), viscosity_(matdata->Get<double>("VALUE"))
 {
   return;
@@ -73,7 +73,7 @@ MAT::PAR::FluidPoroViscosityLawConstant::FluidPoroViscosityLawConstant(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroViscosityLawCellAdherence::FluidPoroViscosityLawCellAdherence(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : FluidPoroViscosityLaw(matdata, false),
       visc0_(matdata->Get<double>("VISC_0")),
       xi_(matdata->Get<double>("XI")),

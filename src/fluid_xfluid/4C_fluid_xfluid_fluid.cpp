@@ -829,7 +829,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::EvaluateErrorComparedToAnaly
     // pointer to current element
     DRT::Element* actele = mc_xff_->GetCondDis()->lRowElement(i);
 
-    Teuchos::RCP<MAT::Material> mat = actele->Material();
+    Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
 
     DRT::ELEMENTS::Fluid* ele = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
 

@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_mat_par_parameter.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -21,11 +21,12 @@ namespace MAT
   namespace PAR
   {
     //! interface class for generic density law
-    class PoroDensityLaw : public Parameter
+    class PoroDensityLaw : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      explicit PoroDensityLaw(Teuchos::RCP<MAT::PAR::Material> matdata) : Parameter(matdata){};
+      explicit PoroDensityLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+          : Parameter(matdata){};
 
       //! compute derivative of density w.r.t. pressure
       virtual double ComputeCurDensityDerivative(
@@ -66,11 +67,11 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit PoroDensityLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata)
+      explicit PoroDensityLawConstant(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
           : PoroDensityLaw(matdata){};
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       //! compute derivative of density w.r.t. pressure
       double ComputeCurDensityDerivative(
@@ -122,10 +123,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit PoroDensityLawExp(Teuchos::RCP<MAT::PAR::Material> matdata);
+      explicit PoroDensityLawExp(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       //! compute derivative of density w.r.t. pressure
       double ComputeCurDensityDerivative(

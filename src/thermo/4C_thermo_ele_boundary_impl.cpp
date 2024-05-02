@@ -145,7 +145,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
   FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Thermo*>(genericparent) != nullptr,
       "Parent element is no fluid element");
   DRT::ELEMENTS::Thermo* parentele = static_cast<DRT::ELEMENTS::Thermo*>(genericparent);
-  Teuchos::RCP<MAT::Material> mat = parentele->Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = parentele->Material();
 
   // Now, check for the action parameter
   const THR::BoundaryAction action = CORE::UTILS::GetAsEnum<THR::BoundaryAction>(params, "action");

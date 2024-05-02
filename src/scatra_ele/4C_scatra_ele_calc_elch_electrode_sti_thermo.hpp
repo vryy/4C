@@ -13,7 +13,8 @@ within thermodynamic electrodes
 
 #include "4C_config.hpp"
 
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_scatra_ele_calc_elch_electrode.hpp"
 #include "4C_scatra_ele_calc_sti_electrode.hpp"
 #include "4C_scatra_ele_sti_thermo.hpp"

@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::ElchSingleMat::ElchSingleMat(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ElchSingleMat::ElchSingleMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       diffusion_coefficient_concentration_dependence_funct_num_(
           matdata->Get<int>("DIFF_COEF_CONC_DEP_FUNCT")),

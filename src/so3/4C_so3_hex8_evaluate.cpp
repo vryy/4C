@@ -2798,7 +2798,7 @@ void DRT::ELEMENTS::SoHex8::UpdateJacobianMapping(
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
  *---------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoHex8::Update_element(std::vector<double>& disp,
-    Teuchos::ParameterList& params, const Teuchos::RCP<MAT::Material>& mat)
+    Teuchos::ParameterList& params, const Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   // Calculate current deformation gradient
   if ((mat->MaterialType() == CORE::Materials::m_constraintmixture) ||

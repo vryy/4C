@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *  constructor (public)                               vuong 08/16      |
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata), density_(matdata->Get<double>("DENSITY")), isinit_(false)
 {
   // retrieve problem instance to read from
@@ -47,7 +47,7 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
       MAT::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(matdata->Get<int>("VISCOSITYLAWID"));
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat =
+  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(matdata->Get<int>("DOFTYPEID"));
 
   switch (curmat->Type())
@@ -82,7 +82,7 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
 /*----------------------------------------------------------------------*
  *  Create Material (public)                             vuong 08/16      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroSinglePhase::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroSinglePhase::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::FluidPoroSinglePhase(this));
 }
@@ -164,7 +164,7 @@ void MAT::FluidPoroSinglePhase::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroSinglePhase*>(mat);
@@ -261,7 +261,8 @@ double MAT::FluidPoroSinglePhase::EvaluateDerivOfDofWrtPressure(
 /*----------------------------------------------------------------------*
  *  constructor (public)                               kremheller 10/17 |
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       density_(matdata->Get<double>("DENSITY")),
       diffusivity_(matdata->Get<double>("DIFFUSIVITY")),
@@ -311,7 +312,7 @@ MAT::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(Teuchos::RCP<MAT::PAR::
 /*----------------------------------------------------------------------*
  *  Create Material (public)                           kremheller 10/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroSingleVolFrac::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroSingleVolFrac::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::FluidPoroSingleVolFrac(this));
 }
@@ -389,7 +390,7 @@ void MAT::FluidPoroSingleVolFrac::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroSingleVolFrac*>(mat);
@@ -415,7 +416,7 @@ void MAT::FluidPoroSingleVolFrac::Initialize()
  *  constructor (public)                               kremheller 02/18 |
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       permeability_(matdata->Get<double>("PERMEABILITY")),
       min_volfrac_(matdata->Get<double>("MIN_VOLFRAC")),
@@ -439,7 +440,7 @@ MAT::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
 /*----------------------------------------------------------------------*
  *  Create Material (public)                           kremheller 02/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroVolFracPressure::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroVolFracPressure::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::FluidPoroVolFracPressure(this));
 }
@@ -517,7 +518,7 @@ void MAT::FluidPoroVolFracPressure::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroVolFracPressure*>(mat);

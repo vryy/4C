@@ -63,13 +63,13 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Materials(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    const int iquad                                    //!< id of current gauss point
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
+    double& densn,                                           //!< density at t_(n)
+    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,  //!< density at t_(n+alpha_M)
+    double& visc,    //!< fluid viscosity
+    const int iquad  //!< id of current gauss point
 )
 {
   switch (material->MaterialType())
@@ -101,7 +101,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetMaterialParams(
   poro::ComputePorosity(ele);
 
   // get the material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   if (material->MaterialType() == CORE::Materials::m_matlist_reactions)
   {
@@ -112,7 +112,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetMaterialParams(
     for (int k = 0; k < actmat->NumReac(); ++k)
     {
       int matid = actmat->ReacID(k);
-      Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       Teuchos::RCP<MAT::ScatraMatPoroECM> scatramat =
           Teuchos::rcp_dynamic_cast<MAT::ScatraMatPoroECM>(singlemat);

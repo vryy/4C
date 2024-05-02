@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : MixtureConstituent(matdata), matid_(matdata->Get<int>("MATID"))
 {
 }
@@ -42,7 +42,7 @@ MIXTURE::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
 {
   // take the matid (i.e. here the id of the solid material), read the type and
   // create the corresponding material
-  auto mat = MAT::Material::Factory(params_->matid_);
+  auto mat = MAT::Factory(params_->matid_);
 
   // cast to an So3Material
   material_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(mat);
@@ -98,7 +98,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const unsigned int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
@@ -115,7 +115,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::UnpackConstituent(
   // unpack the data of the solid material
   if (params_ != nullptr)
   {
-    auto so3mat = MAT::Material::Factory(params_->matid_);
+    auto so3mat = MAT::Factory(params_->matid_);
     material_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(so3mat);
     if (Teuchos::is_null(so3mat)) FOUR_C_THROW("Failed to allocate");
 

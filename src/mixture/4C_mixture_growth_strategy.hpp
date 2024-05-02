@@ -23,16 +23,16 @@ namespace MIXTURE
   class MixtureGrowthStrategy;
   namespace PAR
   {
-    class MixtureGrowthStrategy : public MAT::PAR::Parameter
+    class MixtureGrowthStrategy : public CORE::MAT::PAR::Parameter
     {
       friend class MIXTURE::MixtureGrowthStrategy;
 
      public:
       /// constructor
-      explicit MixtureGrowthStrategy(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+      explicit MixtureGrowthStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
       /// Override this method and throw error, as only the CreateGrowthStrategy() should be used.
-      Teuchos::RCP<MAT::Material> CreateMaterial() final
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() final
       {
         FOUR_C_THROW(
             "Cannot create mixture growth strategy from this method. Use CreateGrowthStrategy() "

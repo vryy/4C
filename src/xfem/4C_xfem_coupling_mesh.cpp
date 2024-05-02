@@ -2454,7 +2454,7 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
  * doesn't matter if you have the same material on both sides ...
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFluidFluid::GetInterfaceSlaveMaterial(
-    DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat)
+    DRT::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat)
 {
   XFEM::UTILS::GetVolumeCellMaterial(actele, mat, CORE::GEO::CUT::Point::outside);
 }
@@ -2562,7 +2562,7 @@ void XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP(
 void XFEM::MeshCouplingFluidFluid::GetViscositySlave(DRT::Element* coup_ele,  ///< xfluid ele
     double& visc_s)  ///< viscosity slavesided
 {
-  Teuchos::RCP<MAT::Material> mat_s;
+  Teuchos::RCP<CORE::MAT::Material> mat_s;
   XFEM::UTILS::GetVolumeCellMaterial(coup_ele, mat_s, CORE::GEO::CUT::Point::outside);
   if (mat_s->MaterialType() == CORE::Materials::m_fluid)
     visc_s = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_s)->Viscosity();

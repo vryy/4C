@@ -25,8 +25,8 @@ template <int nsd, int nen>
 Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>>
 DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>::CreateVariableManager(
     const DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
-    const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<MAT::Material> mat, int numdofpernode,
-    int numfluidphases)
+    const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<CORE::MAT::Material> mat,
+    int numdofpernode, int numfluidphases)
 {
   Teuchos::RCP<VariableManagerInterface<nsd, nen>> varmanager = Teuchos::null;
 

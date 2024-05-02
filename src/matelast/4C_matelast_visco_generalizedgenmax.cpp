@@ -9,12 +9,12 @@
 
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 MAT::ELASTIC::PAR::GeneralizedGenMax::GeneralizedGenMax(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       numbranch_(matdata->Get<int>("NUMBRANCH")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
@@ -67,7 +67,7 @@ void MAT::ELASTIC::GeneralizedGenMax::ReadMaterialParameters(
 }
 
 // Viscobranch
-MAT::ELASTIC::PAR::ViscoBranch::ViscoBranch(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::ViscoBranch::ViscoBranch(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       nummat_(matdata->Get<int>("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS"))
@@ -84,7 +84,7 @@ void MAT::ELASTIC::ViscoBranch::ReadMaterialParameters(
 }
 
 // Viscopart
-MAT::ELASTIC::PAR::ViscoPart::ViscoPart(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+MAT::ELASTIC::PAR::ViscoPart::ViscoPart(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : Parameter(matdata), tau_(matdata->Get<double>("TAU"))
 {
 }

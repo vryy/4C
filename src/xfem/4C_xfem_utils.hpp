@@ -39,7 +39,7 @@ namespace XFEM
 
      */
     void GetVolumeCellMaterial(DRT::Element* actele,  // element for volume cell INPUT
-        Teuchos::RCP<MAT::Material>& mat,             // material of volume cell OUTPUT
+        Teuchos::RCP<CORE::MAT::Material>& mat,       // material of volume cell OUTPUT
         CORE::GEO::CUT::Point::PointPosition position =
             CORE::GEO::CUT::Point::outside  // position of volume cell INPUT to determine
                                             // position
@@ -52,7 +52,8 @@ namespace XFEM
     \brief A Safety check is done for XFEM-type problems. Is utilized in the edgebased framework.
 
      */
-    void SafetyCheckMaterials(Teuchos::RCP<MAT::Material>& pmat, Teuchos::RCP<MAT::Material>& nmat);
+    void SafetyCheckMaterials(
+        Teuchos::RCP<CORE::MAT::Material>& pmat, Teuchos::RCP<CORE::MAT::Material>& nmat);
 
     //! @name Extract quantities on a element
     /*!

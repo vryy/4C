@@ -81,9 +81,9 @@ DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterialsAll(
-    DRT::Element* ele,                                 //!< the element we are dealing with
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
+    DRT::Element* ele,                                       //!< the element we are dealing with
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
 {
   const Teuchos::RCP<MAT::Myocard>& actmat =
@@ -149,9 +149,9 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterials(
-    DRT::Element* ele,                                 //!< the element we are dealing with
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
+    DRT::Element* ele,                                       //!< the element we are dealing with
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
 {
   if (distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
@@ -167,9 +167,9 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::PrepareMaterialsTet(
-    DRT::Element* ele,                                 //!< the element we are dealing with
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
+    DRT::Element* ele,                                       //!< the element we are dealing with
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
 {
   const Teuchos::RCP<MAT::Myocard>& actmat =
@@ -238,8 +238,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Materials(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
     CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
     CORE::LINALG::SerialDenseVector& ivecnp, CORE::LINALG::SerialDenseMatrix& ivecnpderiv)
 {
@@ -257,8 +257,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Materia
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyocard(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
     CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
     CORE::LINALG::SerialDenseVector& ivecnp, CORE::LINALG::SerialDenseMatrix& ivecnpderiv)
 {
@@ -418,7 +418,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpd
   std::vector<Teuchos::RCP<MAT::Myocard>> updatemat;
 
   // access the general material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
   // first, determine the materials which need a time update, i.e. myocard materials
   if (material->MaterialType() == CORE::Materials::m_matlist)
@@ -429,7 +429,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::TimeUpd
     for (int k = 0; k < this->numscal_; ++k)
     {
       const int matid = actmat->MatID(k);
-      Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
       if (singlemat->MaterialType() == CORE::Materials::m_myocard)
       {
@@ -468,7 +468,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::GetMate
   if (ele->Owner() == discretization.Comm().MyPID())
   {
     // access the general material
-    Teuchos::RCP<MAT::Material> material = ele->Material();
+    Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
     Teuchos::RCP<Epetra_MultiVector> material_internal_state =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
 
@@ -509,7 +509,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::SetMate
   if (ele->Owner() == discretization.Comm().MyPID())
   {
     // access the general material
-    Teuchos::RCP<MAT::Material> material = ele->Material();
+    Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
     Teuchos::RCP<Epetra_MultiVector> material_internal_state =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
 

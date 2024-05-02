@@ -478,7 +478,7 @@ template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::Cel
 int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::EvaluateEdgeBasedStabilization(DRT::ELEMENTS::FluidIntFace*
                                                   intface,  ///< internal face element
-    Teuchos::RCP<MAT::Material>& material,                  ///< material associated with the faces
+    Teuchos::RCP<CORE::MAT::Material>& material,            ///< material associated with the faces
     DRT::ELEMENTS::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
     DRT::ELEMENTS::FluidEleParameterIntFace&
         fldintfacepara,                      ///< general parameter for internal face
@@ -1358,19 +1358,19 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Reass
 //-----------------------------------------------------------------
 template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetElementData(
-    FluidIntFace* surfele,                  ///< surface FluidIntFace element
-    Fluid* master_ele,                      ///< master parent element
-    Fluid* slave_ele,                       ///< slave  parent element
-    Teuchos::RCP<MAT::Material>& material,  ///< material associated with the faces
-    std::vector<double>& mypvelaf,          ///< master velaf
-    std::vector<double>& mypvelnp,          ///< master velnp
-    std::vector<double>& mypedispnp,        ///< master dispnp
-    std::vector<double>& mypgridv,          ///< master grid velocity (ALE)
-    std::vector<double>& myedispnp,         ///< surfele dispnp
-    std::vector<double>& mynvelaf,          ///< slave velaf
-    std::vector<double>& mynvelnp,          ///< slave velnp
-    std::vector<double>& mynedispnp,        ///< slave dispnp
-    std::vector<double>& myngridv           ///< slave grid velocity (ALE)
+    FluidIntFace* surfele,                        ///< surface FluidIntFace element
+    Fluid* master_ele,                            ///< master parent element
+    Fluid* slave_ele,                             ///< slave  parent element
+    Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+    std::vector<double>& mypvelaf,                ///< master velaf
+    std::vector<double>& mypvelnp,                ///< master velnp
+    std::vector<double>& mypedispnp,              ///< master dispnp
+    std::vector<double>& mypgridv,                ///< master grid velocity (ALE)
+    std::vector<double>& myedispnp,               ///< surfele dispnp
+    std::vector<double>& mynvelaf,                ///< slave velaf
+    std::vector<double>& mynvelnp,                ///< slave velnp
+    std::vector<double>& mynedispnp,              ///< slave dispnp
+    std::vector<double>& myngridv                 ///< slave grid velocity (ALE)
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: GetElementData");
@@ -1532,7 +1532,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::GetEl
       int matid = -1;
       matid = matlist->MatID(nmaterial);
 
-      Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
+      Teuchos::RCP<const CORE::MAT::Material> matptr = matlist->MaterialById(matid);
       CORE::Materials::MaterialType mattype = matptr->MaterialType();
 
       // choose from different materials

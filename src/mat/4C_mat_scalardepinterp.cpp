@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ScalarDepInterp::ScalarDepInterp(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::ScalarDepInterp::ScalarDepInterp(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       id_lambda_zero_(matdata->Get<int>("IDMATZEROSC")),
       id_lambda_unit_(matdata->Get<int>("IDMATUNITSC")){
@@ -37,7 +37,7 @@ MAT::PAR::ScalarDepInterp::ScalarDepInterp(Teuchos::RCP<MAT::PAR::Material> matd
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ScalarDepInterp::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScalarDepInterp::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ScalarDepInterp(this));
 }
@@ -85,12 +85,12 @@ void MAT::ScalarDepInterp::Setup(int numgp, INPUT::LineDefinition* linedef)
 
   // Setup of elastic material for zero concentration
   lambda_zero_mat_ =
-      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->id_lambda_zero_));
+      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->id_lambda_zero_));
   lambda_zero_mat_->Setup(numgp, linedef);
 
   // Setup of elastic material for zero concentration
   lambda_unit_mat_ =
-      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->id_lambda_unit_));
+      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->id_lambda_unit_));
   lambda_unit_mat_->Setup(numgp, linedef);
 
   // Some safety check
@@ -249,7 +249,7 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = dynamic_cast<MAT::PAR::ScalarDepInterp*>(mat);

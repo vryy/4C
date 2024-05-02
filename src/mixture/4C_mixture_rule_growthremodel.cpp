@@ -12,7 +12,7 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
-#include "4C_mat_par_material.hpp"
+#include "4C_material_input_base.hpp"
 #include "4C_mixture_constituent.hpp"
 #include "4C_mixture_growth_strategy.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -34,7 +34,7 @@ namespace CORE::COMM
 }
 
 MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),
       growth_strategy_matid_(matdata->Get<int>("GROWTH_STRATEGY")),
       initial_reference_density_(matdata->Get<double>("DENS")),

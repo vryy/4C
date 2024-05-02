@@ -46,7 +46,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
       updatemat.reserve(my::numscal_);
 
       // access the general material
-      Teuchos::RCP<MAT::Material> material = ele->Material();
+      Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
 
       // first, determine the materials which need a time update, i.e. myocard materials
       if (material->MaterialType() == CORE::Materials::m_matlist)
@@ -57,7 +57,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
         for (int k = 0; k < my::numscal_; ++k)
         {
           const int matid = actmat->MatID(k);
-          Teuchos::RCP<MAT::Material> singlemat = actmat->MaterialById(matid);
+          Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
 
           if (singlemat->MaterialType() == CORE::Materials::m_myocard)
           {
@@ -106,7 +106,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
       if (ele->Owner() == discretization.Comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<MAT::Material> material = ele->Material();
+        Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
         Teuchos::RCP<Epetra_MultiVector> material_internal_state =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
 
@@ -134,7 +134,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
       if (ele->Owner() == discretization.Comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<MAT::Material> material = ele->Material();
+        Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
         Teuchos::RCP<Epetra_Vector> material_internal_state_component =
             params.get<Teuchos::RCP<Epetra_Vector>>("material_internal_state_component");
 
@@ -156,7 +156,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::EvaluateAct
       if (ele->Owner() == discretization.Comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<MAT::Material> material = ele->Material();
+        Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
         Teuchos::RCP<Epetra_MultiVector> material_ionic_currents =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("material_ionic_currents");
 

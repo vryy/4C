@@ -16,8 +16,8 @@
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_anisotropy_extension_default.hpp"
 #include "4C_mat_anisotropy_extension_provider.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_matelast_summand.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -29,11 +29,11 @@ namespace MAT
   {
     namespace PAR
     {
-      class IsoMuscleBlemker : public MAT::PAR::Parameter
+      class IsoMuscleBlemker : public CORE::MAT::PAR::Parameter
       {
        public:
         /// standard constructor
-        IsoMuscleBlemker(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+        IsoMuscleBlemker(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
         //! @name muscle shear moduli
         //! @{
@@ -58,7 +58,7 @@ namespace MAT
         //! @}
 
         /// Create material instance of matching type with my parameters
-        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
       };  // class IsoMuscleBlemker
     }     // namespace PAR
 

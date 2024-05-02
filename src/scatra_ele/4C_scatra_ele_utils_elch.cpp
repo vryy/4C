@@ -1256,8 +1256,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
-    const Teuchos::RCP<const MAT::Material> material,  //!< ion material
-    const int k,                                       //!< ID of ion material
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< ion material
+    const int k,                                             //!< ID of ion material
     const INPAR::ELCH::EquPot equpot,  //!< type of closing equation for electric potential
     const Teuchos::RCP<ScaTraEleDiffManagerElch>& diffmanager  //!< diffusion manager
 )

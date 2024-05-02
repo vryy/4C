@@ -246,7 +246,7 @@ bool DRT::ELEMENTS::SoHex18::ReadElement(
 
   // set up of materials with GP data (e.g., history variables)
 
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   SolidMaterial()->Setup(NUMGPT_SOH18, linedef);
 

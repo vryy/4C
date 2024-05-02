@@ -13,8 +13,8 @@ Comput. Methods Appl. Mech. Engrg. 260, 2013"
 
 #include "4C_config.hpp"
 
-#include "4C_mat_par_parameter.hpp"
 #include "4C_matelast_summand.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -31,11 +31,11 @@ namespace MAT
        * MAT 1 ELAST_CoupLogMixNeoHooke MODE YN C1 1.0 C2 0.3 (C1 = Young, c2 = nue)
        * MAT 1 ELAST_CoupLogMixNeoHooke MODE Lame C1 1.0 C2 1.0
        */
-      class CoupLogMixNeoHooke : public MAT::PAR::Parameter
+      class CoupLogMixNeoHooke : public CORE::MAT::PAR::Parameter
       {
        public:
         /// standard constructor
-        CoupLogMixNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+        CoupLogMixNeoHooke(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -49,7 +49,7 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "

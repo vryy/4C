@@ -552,7 +552,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(const 
     double& visc, const int iquad)
 {
   // get parameters of primary, thermal material
-  Teuchos::RCP<const MAT::Material> material = ele->Material();
+  Teuchos::RCP<const CORE::MAT::Material> material = ele->Material();
   if (material->MaterialType() == CORE::Materials::m_soret)
     MatSoret(material, densn[0], densnp[0], densam[0]);
   else if (material->MaterialType() == CORE::Materials::m_th_fourier_iso)
@@ -579,10 +579,10 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::GetMaterialParams(const 
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::MatSoret(
-    const Teuchos::RCP<const MAT::Material> material,  //!< Soret material
-    double& densn,                                     //!< density at time t_(n)
-    double& densnp,                                    //!< density at time t_(n+1) or t_(n+alpha_F)
-    double& densam                                     //!< density at time t_(n+alpha_M)
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< Soret material
+    double& densn,                                           //!< density at time t_(n)
+    double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
+    double& densam   //!< density at time t_(n+alpha_M)
 )
 {
   // extract material parameters from Soret material
@@ -597,10 +597,10 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::MatSoret(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::MatFourier(
-    const Teuchos::RCP<const MAT::Material> material,  //!< Fourie material
-    double& densn,                                     //!< density at time t_(n)
-    double& densnp,                                    //!< density at time t_(n+1) or t_(n+alpha_F)
-    double& densam                                     //!< density at time t_(n+alpha_M)
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< Fourie material
+    double& densn,                                           //!< density at time t_(n)
+    double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
+    double& densam   //!< density at time t_(n+alpha_M)
 )
 {
   // extract material parameters from Soret material

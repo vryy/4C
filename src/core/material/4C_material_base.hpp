@@ -7,10 +7,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_MAT_MATERIAL_HPP
-#define FOUR_C_MAT_MATERIAL_HPP
-
-
+#ifndef FOUR_C_MATERIAL_BASE_HPP
+#define FOUR_C_MATERIAL_BASE_HPP
 
 #include "4C_config.hpp"
 
@@ -24,14 +22,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /// MAT: materials
-namespace MAT
+namespace CORE::MAT
 {
   namespace PAR
   {
     class Parameter;
   }
-
-  const int NUM_STRESS_3D = 6;  ///< 6 stresses for 3D
 
   /*!
    * @brief Interface class for materials in elements
@@ -61,14 +57,10 @@ namespace MAT
     virtual CORE::Materials::MaterialType MaterialType() const = 0;
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const = 0;
+    virtual Teuchos::RCP<CORE::MAT::Material> Clone() const = 0;
 
     /// return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const = 0;
-
-    /// create element material object given the number of a material definition
-    static Teuchos::RCP<Material> Factory(int matnum  ///< material ID
-    );
+    virtual CORE::MAT::PAR::Parameter* Parameter() const = 0;
 
     /// return material density at gauss point (if provided by the specific material)
     virtual double Density(int gp) const { return Density(); }
@@ -88,7 +80,7 @@ namespace MAT
     }
   };
 
-}  // namespace MAT
+}  // namespace CORE::MAT
 
 FOUR_C_NAMESPACE_CLOSE
 

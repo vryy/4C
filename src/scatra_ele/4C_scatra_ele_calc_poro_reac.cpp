@@ -83,13 +83,13 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::GetMaterialParams(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Materials(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    const int iquad                                    //!< id of current gauss point
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
+    double& densn,                                           //!< density at t_(n)
+    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,  //!< density at t_(n+alpha_M)
+    double& visc,    //!< fluid viscosity
+    const int iquad  //!< id of current gauss point
 )
 {
   switch (material->MaterialType())
@@ -109,13 +109,13 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Materials(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
-    const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
-    const int k,                                       //!< id of current scalar
-    double& densn,                                     //!< density at t_(n)
-    double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
-    double& densam,                                    //!< density at t_(n+alpha_M)
-    double& visc,                                      //!< fluid viscosity
-    const int iquad                                    //!< id of current gauss point
+    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+    const int k,                                             //!< id of current scalar
+    double& densn,                                           //!< density at t_(n)
+    double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+    double& densam,  //!< density at t_(n+alpha_M)
+    double& visc,    //!< fluid viscosity
+    const int iquad  //!< id of current gauss point
 )
 {
   poro::MatScaTra(material, k, densn, densnp, densam, visc, iquad);

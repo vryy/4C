@@ -16,8 +16,8 @@
 #include "4C_linalg_FADmatrix_utils.hpp"
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_membrane_material_interfaces.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -35,7 +35,7 @@ namespace MAT
 
   namespace PAR
   {
-    class GrowthRemodelElastHyper : public Parameter
+    class GrowthRemodelElastHyper : public CORE::MAT::PAR::Parameter
     {
       friend class MAT::GrowthRemodelElastHyper;
 
@@ -44,7 +44,7 @@ namespace MAT
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      GrowthRemodelElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
+      GrowthRemodelElastHyper(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -114,7 +114,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class GrowthRemodelElastHyper
 
@@ -198,7 +198,7 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new GrowthRemodelElastHyper(*this));
     }
@@ -237,7 +237,7 @@ namespace MAT
         int const eleGID) override;                        ///< Element ID
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// hyperelastic stress response plus elasticity tensor for membrane element (membrane
     /// formulation)

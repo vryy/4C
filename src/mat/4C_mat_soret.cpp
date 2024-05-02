@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               fang 06/15 |
  *----------------------------------------------------------------------*/
-MAT::PAR::Soret::Soret(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::Soret::Soret(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : FourierIso(matdata), soretcoefficient_(matdata->Get<double>("SORET"))
 {
   return;
@@ -26,7 +26,7 @@ MAT::PAR::Soret::Soret(Teuchos::RCP<MAT::PAR::Material> matdata)
 /*------------------------------------------------------------------*
  | create instance of Soret material                     fang 06/15 |
  *------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::Soret::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Soret::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::Soret(this));
 }
@@ -93,7 +93,7 @@ void MAT::Soret::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::Soret*>(mat);

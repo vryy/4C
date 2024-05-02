@@ -46,8 +46,8 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -58,11 +58,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     //! material parameters for plastic lin elastic Material
-    class ThermoPlasticLinElast : public Parameter
+    class ThermoPlasticLinElast : public CORE::MAT::PAR::Parameter
     {
      public:
       //! standard constructor
-      ThermoPlasticLinElast(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ThermoPlasticLinElast(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       //! @name material parameters
       //@{
@@ -93,7 +93,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class ThermoThermoPlasticLinElast
 
@@ -173,7 +173,7 @@ namespace MAT
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
     {
       return Teuchos::rcp(new ThermoPlasticLinElast(*this));
     }
@@ -275,7 +275,7 @@ namespace MAT
     bool Initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
 
     //! return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! @name temperature specific methods
     //@{
@@ -411,7 +411,7 @@ namespace MAT
     //! element ID, in which first plasticity occurs
     int plastic_ele_id_;
 
-  };  // class ThermoThermoPlasticLinElast : public Material
+  };  // class ThermoThermoPlasticLinElast : public CORE::MAT::Material
 }  // namespace MAT
 
 

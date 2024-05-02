@@ -69,7 +69,7 @@ int DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Evaluate(RedAirBloodScatra* e
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   return 0;
 }
@@ -81,7 +81,7 @@ int DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Evaluate(RedAirBloodScatra* e
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Initial(RedAirBloodScatra* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<const MAT::Material> material)
+    Teuchos::RCP<const CORE::MAT::Material> material)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Initial(RedAirBloodScatra* e
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::GetCoupledValues(RedAirBloodScatra* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
 }
 
@@ -159,7 +159,8 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAirBloodScatra* ele,
     CORE::LINALG::SerialDenseVector& dscatra, CORE::LINALG::SerialDenseVector& dvo2,
     CORE::LINALG::SerialDenseVector& scatra_acinus, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<CORE::MAT::Material> material)
 
 {
   // const int   myrank  = discretization.Comm().MyPID();
@@ -228,7 +229,8 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
     FOUR_C_THROW("A material defining O2 properties in air could not be found");
     exit(1);
   }
-  const MAT::PAR::Parameter* amat = GLOBAL::Problem::Instance()->Materials()->ParameterById(aid);
+  const CORE::MAT::PAR::Parameter* amat =
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(aid);
   const MAT::PAR::Air0dO2Saturation* aactmat =
       static_cast<const MAT::PAR::Air0dO2Saturation*>(amat);
 
@@ -249,7 +251,8 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
     FOUR_C_THROW("A material defining O2 properties in blood could not be found");
     exit(1);
   }
-  const MAT::PAR::Parameter* bmat = GLOBAL::Problem::Instance()->Materials()->ParameterById(bid);
+  const CORE::MAT::PAR::Parameter* bmat =
+      GLOBAL::Problem::Instance()->Materials()->ParameterById(bid);
   const MAT::PAR::Hemoglobin0dO2Saturation* bactmat =
       static_cast<const MAT::PAR::Hemoglobin0dO2Saturation*>(bmat);
 

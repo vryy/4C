@@ -30,7 +30,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      Newman(Teuchos::RCP<MAT::PAR::Material> matdata);
+      Newman(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -61,7 +61,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
     };  // class Newman
 
   }  // namespace PAR
@@ -135,7 +135,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Newman(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new Newman(*this));
+    }
 
     /// valence (= charge number)
     double Valence() const { return params_->valence_; }
@@ -163,7 +166,7 @@ namespace MAT
     const std::vector<double>& ThermFacParams() const { return params_->thermfacpara_; }
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// my material parameters
     MAT::PAR::Newman* params_;

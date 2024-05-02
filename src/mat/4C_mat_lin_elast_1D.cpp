@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::LinElast1D::LinElast1D(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::LinElast1D::LinElast1D(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       youngs_(matdata->Get<double>("YOUNG")),
       density_(matdata->Get<double>("DENS"))
@@ -30,7 +30,7 @@ MAT::PAR::LinElast1D::LinElast1D(Teuchos::RCP<MAT::PAR::Material> matdata)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::LinElast1D::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LinElast1D::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::LinElast1D(this));
 }
@@ -84,7 +84,7 @@ void MAT::LinElast1D::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::LinElast1D*>(mat);
@@ -100,7 +100,7 @@ void MAT::LinElast1D::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::LinElast1DGrowth::LinElast1DGrowth(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::LinElast1DGrowth::LinElast1DGrowth(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : LinElast1D(matdata),
       c0_(matdata->Get<double>("C0")),
       poly_num_(matdata->Get<int>("POLY_PARA_NUM")),
@@ -113,7 +113,7 @@ MAT::PAR::LinElast1DGrowth::LinElast1DGrowth(Teuchos::RCP<MAT::PAR::Material> ma
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::LinElast1DGrowth::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LinElast1DGrowth::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::LinElast1DGrowth(this));
 }
@@ -179,7 +179,7 @@ void MAT::LinElast1DGrowth::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         growth_params_ = static_cast<MAT::PAR::LinElast1DGrowth*>(mat);

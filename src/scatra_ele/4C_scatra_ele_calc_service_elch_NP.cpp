@@ -7,7 +7,8 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_calc_elch_NP.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"

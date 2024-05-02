@@ -19,7 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *  constructor (public)                               vuong 08/16      |
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(
+    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       numscal_(matdata->Get<int>("NUMSCAL")),
       numvolfrac_(matdata->Get<int>("NUMVOLFRAC")),
@@ -330,7 +331,7 @@ void MAT::PAR::FluidPoroSingleReaction::CheckSizes(std::vector<double>& reacval,
 /*----------------------------------------------------------------------*
  *  Create Material (public)                             vuong 08/16      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroSingleReaction::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroSingleReaction::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::FluidPoroSingleReaction(this));
 }
@@ -339,7 +340,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroSingleReaction::CreateMaterial()
  *  translate coupling type                             vuong 08/16      |
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling
-MAT::PAR::FluidPoroSingleReaction::SetCouplingType(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::FluidPoroSingleReaction::SetCouplingType(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 {
   if ((matdata->Get<std::string>("COUPLING")) == "scalar_by_function")
   {
@@ -419,7 +420,7 @@ void MAT::FluidPoroSingleReaction::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::FluidPoroSingleReaction*>(mat);

@@ -21,8 +21,8 @@ the input line should read
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
@@ -37,14 +37,14 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for aneurysm wall material
-    class AAAneohooke : public Parameter
+    class AAAneohooke : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      AAAneohooke(Teuchos::RCP<MAT::PAR::Material> matdata);
+      AAAneohooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
       // !brief enum for mapping between material parameter and entry in the matparams_ vector
       enum Matparamnames
@@ -152,7 +152,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new AAAneohooke(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new AAAneohooke(*this));
+    }
 
     // THE material routine
     void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
@@ -165,7 +168,7 @@ namespace MAT
         const int eleGID) override;
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;

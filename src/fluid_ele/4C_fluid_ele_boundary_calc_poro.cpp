@@ -341,9 +341,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   // get material parameters and constants needed to calculate matrix terms
   const Teuchos::ParameterList& fpsidynparams = GLOBAL::Problem::Instance()->FPSIDynamicParams();
 
-  Teuchos::RCP<MAT::Material> fluidmaterial;
-  Teuchos::RCP<MAT::Material> generalmaterial;
-  Teuchos::RCP<MAT::Material> currentmaterial;
+  Teuchos::RCP<CORE::MAT::Material> fluidmaterial;
+  Teuchos::RCP<CORE::MAT::Material> generalmaterial;
+  Teuchos::RCP<CORE::MAT::Material> currentmaterial;
   Teuchos::RCP<MAT::FluidPoro> porofluidmaterial;
   Teuchos::RCP<MAT::NewtonianFluid> newtonianfluidmaterial;
 

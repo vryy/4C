@@ -479,10 +479,10 @@ int DRT::ELEMENTS::SoTet4::Evaluate(Teuchos::ParameterList& params,
     // this is needed by bone topology optimization
     case calc_struct_output_E:
     {
-      Teuchos::RCP<MAT::Material> mat = Material();
+      Teuchos::RCP<CORE::MAT::Material> mat = Material();
       // check length of elevec1
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("The given result vector is too short.");
-      MAT::Material* rawmat = mat.get();
+      CORE::MAT::Material* rawmat = mat.get();
       auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(rawmat);
       if (!stvk) FOUR_C_THROW("dynamic cast to stvenant failed");
       double E = stvk->Youngs();
@@ -1867,8 +1867,8 @@ void DRT::ELEMENTS::SoTet4::UpdateJacobianMapping(
   *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                     // current displacements
-    Teuchos::ParameterList& params,          // algorithmic parameters e.g. time
-    const Teuchos::RCP<MAT::Material>& mat)  // material
+    Teuchos::ParameterList& params,                // algorithmic parameters e.g. time
+    const Teuchos::RCP<CORE::MAT::Material>& mat)  // material
 {
   if ((Material()->MaterialType() == CORE::Materials::m_constraintmixture) ||
       (Material()->MaterialType() == CORE::Materials::m_elasthyper))

@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
     : MixtureConstituent(matdata),
       matid_prestress_strategy_(matdata->Get<int>("PRESTRESS_STRATEGY")),
       nummat_(matdata->Get<int>("NUMMAT")),
@@ -108,7 +108,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::UnpackConstituent(
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const unsigned int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {

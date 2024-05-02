@@ -259,7 +259,7 @@ void FLD::UTILS::DbcHdgFluid::DoDirichletCondition(const DRT::DiscretizationFace
             DRT::ELEMENTS::Fluid* fluidele = dynamic_cast<DRT::ELEMENTS::Fluid*>(ele);
 
             // get material
-            Teuchos::RCP<MAT::Material> mat = ele->Material();
+            Teuchos::RCP<CORE::MAT::Material> mat = ele->Material();
 
             // get discretization type
             const CORE::FE::CellType distype = ele->Shape();

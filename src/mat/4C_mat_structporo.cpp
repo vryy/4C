@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : Parameter(matdata),
       matid_(matdata->Get<int>("MATID")),
       poro_law_ID_(matdata->Get<int>("POROLAWID")),
@@ -35,7 +35,7 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  Teuchos::RCP<MAT::PAR::Material> curmat =
+  Teuchos::RCP<CORE::MAT::PAR::Material> curmat =
       GLOBAL::Problem::Instance(probinst)->Materials()->ById(poro_law_ID_);
 
   switch (curmat->Type())
@@ -87,7 +87,7 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
   }
 }
 
-Teuchos::RCP<MAT::Material> MAT::PAR::StructPoro::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StructPoro::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::StructPoro(this));
 }
@@ -116,7 +116,7 @@ MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params)
       surf_porosity_(Teuchos::null),
       is_initialized_(false)
 {
-  mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->matid_));
+  mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->matid_));
   if (mat_ == Teuchos::null)
     FOUR_C_THROW("MAT::StructPoro: underlying material should be of type MAT::So3Material");
 }
@@ -200,7 +200,7 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
         params_ = static_cast<MAT::PAR::StructPoro*>(mat);

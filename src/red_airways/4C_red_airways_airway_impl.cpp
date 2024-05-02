@@ -157,8 +157,8 @@ namespace
   void Sysmat(DRT::ELEMENTS::RedAirway* ele, CORE::LINALG::SerialDenseVector& epnp,
       CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
       CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
-      Teuchos::RCP<const MAT::Material> material, DRT::REDAIRWAYS::ElemParams& params, double time,
-      double dt, bool compute_awacinter)
+      Teuchos::RCP<const CORE::MAT::Material> material, DRT::REDAIRWAYS::ElemParams& params,
+      double time, double dt, bool compute_awacinter)
   {
     const auto airway_params = ele->GetAirwayParams();
 
@@ -584,7 +584,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   const int elemVecdim = elevec1_epetra.length();
 
@@ -698,7 +698,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& radii_in, CORE::LINALG::SerialDenseVector& radii_out,
-    Teuchos::RCP<const MAT::Material> material)
+    Teuchos::RCP<const CORE::MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -772,7 +772,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
             FOUR_C_THROW("A material defining O2 properties in blood could not be found");
             exit(1);
           }
-          const MAT::PAR::Parameter* smat =
+          const CORE::MAT::PAR::Parameter* smat =
               GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
           const auto* actmat = static_cast<const MAT::PAR::Hemoglobin0dO2Saturation*>(smat);
 
@@ -807,7 +807,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
             FOUR_C_THROW("A material defining O2 properties in air could not be found");
             exit(1);
           }
-          const MAT::PAR::Parameter* smat =
+          const CORE::MAT::PAR::Parameter* smat =
               GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
           const auto* actmat = static_cast<const MAT::PAR::Air0dO2Saturation*>(smat);
 
@@ -956,7 +956,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::ComputePext(RedAirway* ele,
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
+    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<CORE::MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -1370,7 +1370,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   const int elemVecdim = lm.size();
 
@@ -1485,7 +1485,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   // get all essential vector variables
 
@@ -1547,7 +1547,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(RedAirway* ele,
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -1680,7 +1680,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::GetJunctionVolumeMix(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
@@ -1730,7 +1730,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatranp,
     CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
@@ -1890,7 +1890,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
           FOUR_C_THROW("A material defining O2 properties in air could not be found");
           exit(1);
         }
-        const MAT::PAR::Parameter* smat =
+        const CORE::MAT::PAR::Parameter* smat =
             GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
         const MAT::PAR::Air0dO2Saturation* actmat =
             static_cast<const MAT::PAR::Air0dO2Saturation*>(smat);
@@ -1925,7 +1925,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
           FOUR_C_THROW("A material defining O2 properties in blood could not be found");
           exit(1);
         }
-        const MAT::PAR::Parameter* smat =
+        const CORE::MAT::PAR::Parameter* smat =
             GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
         const MAT::PAR::Hemoglobin0dO2Saturation* actmat =
             static_cast<const MAT::PAR::Hemoglobin0dO2Saturation*>(smat);
@@ -1994,7 +1994,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& scatra_np, CORE::LINALG::SerialDenseVector& volumeMix_np,
-    std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
+    std::vector<int>& lm, Teuchos::RCP<CORE::MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -2063,7 +2063,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(RedAirway* ele,
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::CalcCFL(RedAirway* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
@@ -2111,7 +2112,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcCFL(RedAirway* ele, Teuchos::Parame
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::UpdateScatra(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -2177,7 +2178,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateScatra(RedAirway* ele,
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   // ---------------------------------------------------------------------
   // perform this step only for capillaries
@@ -2226,7 +2227,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(RedAirway* ele,
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -2291,7 +2292,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
       FOUR_C_THROW("A material defining O2 properties in air could not be found");
       exit(1);
     }
-    const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+    const CORE::MAT::PAR::Parameter* smat =
+        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::Air0dO2Saturation* actmat =
         static_cast<const MAT::PAR::Air0dO2Saturation*>(smat);
 
@@ -2330,7 +2332,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
       FOUR_C_THROW("A material defining O2 properties in blood could not be found");
       exit(1);
     }
-    const MAT::PAR::Parameter* smat = GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
+    const CORE::MAT::PAR::Parameter* smat =
+        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::Hemoglobin0dO2Saturation* actmat =
         static_cast<const MAT::PAR::Hemoglobin0dO2Saturation*>(smat);
 
@@ -2393,7 +2396,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalNodalEssentialValues(RedAirway* ele
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     CORE::LINALG::SerialDenseVector& nodal_surface, CORE::LINALG::SerialDenseVector& nodal_volume,
     CORE::LINALG::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
+    Teuchos::RCP<CORE::MAT::Material> material)
 {
   // ---------------------------------------------------------------------
   // perform this step only for capillaries

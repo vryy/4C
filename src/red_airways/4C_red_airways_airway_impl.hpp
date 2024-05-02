@@ -47,64 +47,66 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
 
       virtual void Initial(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& radii_in, CORE::LINALG::SerialDenseVector& radii_out,
-          Teuchos::RCP<const MAT::Material> material) = 0;
+          Teuchos::RCP<const CORE::MAT::Material> material) = 0;
 
       virtual void EvaluateTerminalBC(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
 
       virtual void CalcFlowRates(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat) = 0;
+          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
 
       virtual void CalcElemVolume(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat) = 0;
+          Teuchos::RCP<CORE::MAT::Material> mat) = 0;
 
       virtual void GetCoupledValues(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) = 0;
+          Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
       virtual void GetJunctionVolumeMix(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& volumeMix_np,
-          std::vector<int>& lm, Teuchos::RCP<MAT::Material> material) = 0;
+          std::vector<int>& lm, Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
       virtual void SolveScatra(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatra_np,
           CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) = 0;
+          Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
       virtual void SolveScatraBifurcations(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatra_np,
           CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) = 0;
+          Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
       virtual void CalcCFL(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) = 0;
+          Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
       virtual void UpdateScatra(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) = 0;
+          Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
       virtual void UpdateElem12Scatra(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) = 0;
+          Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
       virtual void EvalPO2FromScatra(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) = 0;
+          Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
       virtual void EvalNodalEssentialValues(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& nodal_surface,
           CORE::LINALG::SerialDenseVector& nodal_volume,
           CORE::LINALG::SerialDenseVector& nodal_flow, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) = 0;
+          Teuchos::RCP<CORE::MAT::Material> material) = 0;
 
 
       /// Internal implementation class for airway element
@@ -146,7 +148,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<MAT::Material> mat) override;
+          Teuchos::RCP<CORE::MAT::Material> mat) override;
 
       /*!
         \brief Calculate virtual trajectory xnp and state of airway (open/closed)
@@ -170,7 +172,7 @@ namespace DRT
 
       void EvaluateTerminalBC(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> mat) override;
+          CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<CORE::MAT::Material> mat) override;
 
       /*!
         \brief get the initial values of the degrees of freedome at the node
@@ -189,21 +191,21 @@ namespace DRT
       void Initial(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& radii_in, CORE::LINALG::SerialDenseVector& radii_out,
-          Teuchos::RCP<const MAT::Material> material) override;
+          Teuchos::RCP<const CORE::MAT::Material> material) override;
 
       /*!
        \Essential functions to compute the results of essentail matrices
       */
       void CalcFlowRates(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat) override;
+          Teuchos::RCP<CORE::MAT::Material> mat) override;
 
       /*!
        \Essential functions to compute the volume of elements
       */
       void CalcElemVolume(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat) override;
+          Teuchos::RCP<CORE::MAT::Material> mat) override;
 
       /*!
        \Essential functions to compute the volume mixing and  flowing into a junction
@@ -211,7 +213,7 @@ namespace DRT
       void GetJunctionVolumeMix(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization,
           CORE::LINALG::SerialDenseVector& junctionVolumeMix_np, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) override;
+          Teuchos::RCP<CORE::MAT::Material> material) override;
 
       /*!
        \Essential functions to compute the volume mixing and  flowing into a junction
@@ -219,7 +221,7 @@ namespace DRT
       void SolveScatra(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatranp,
           CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) override;
+          Teuchos::RCP<CORE::MAT::Material> material) override;
 
       /*!
        \Essential functions to compute the volume mixing and  flowing into a junction
@@ -227,35 +229,35 @@ namespace DRT
       void SolveScatraBifurcations(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatra_np,
           CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) override;
+          Teuchos::RCP<CORE::MAT::Material> material) override;
       /*!
        \Essential functions to evaluate the coupled results
       */
       void GetCoupledValues(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) override;
+          Teuchos::RCP<CORE::MAT::Material> material) override;
 
       void CalcCFL(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) override;
+          Teuchos::RCP<CORE::MAT::Material> material) override;
 
       void UpdateScatra(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) override;
+          Teuchos::RCP<CORE::MAT::Material> material) override;
 
       void UpdateElem12Scatra(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) override;
+          Teuchos::RCP<CORE::MAT::Material> material) override;
 
       void EvalPO2FromScatra(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) override;
+          Teuchos::RCP<CORE::MAT::Material> material) override;
 
       void EvalNodalEssentialValues(RedAirway* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& nodal_surface,
           CORE::LINALG::SerialDenseVector& nodal_volume,
           CORE::LINALG::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material) override;
+          Teuchos::RCP<CORE::MAT::Material> material) override;
 
 
      private:

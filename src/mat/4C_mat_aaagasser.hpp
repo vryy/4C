@@ -23,8 +23,8 @@ CABLUM 1.98e-3
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_par_parameter.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,11 +34,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for thrombus material acc. to Gasser [2008]
-    class AAAgasser : public Parameter
+    class AAAgasser : public CORE::MAT::PAR::Parameter
     {
      public:
       /// standard constructor
-      AAAgasser(Teuchos::RCP<MAT::PAR::Material> matdata);
+      AAAgasser(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -62,7 +62,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
+      Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override;
 
     };  // class AAAgasser
 
@@ -227,7 +227,10 @@ namespace MAT
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new AAAgasser(*this)); }
+    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    {
+      return Teuchos::rcp(new AAAgasser(*this));
+    }
 
     /// <h2>Calculation of location dependent stiffness parameter c in GASSER material
     /// formulation:</h2>
@@ -447,7 +450,7 @@ namespace MAT
 
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

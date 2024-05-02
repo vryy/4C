@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor of paramter class                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
     : MatList(matdata),
       permeability_(matdata->Get<double>("PERMEABILITY")),
       numfluidphases_(matdata->Get<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE")),
@@ -38,7 +38,7 @@ MAT::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(Teuchos::RCP<MAT::PAR::Materi
 /*----------------------------------------------------------------------*
  | create a poro multiphase material                        vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroMultiPhase::CreateMaterial()
+Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroMultiPhase::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::FluidPoroMultiPhase(this));
 }
@@ -77,7 +77,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
   {
     // get the single phase material by its ID
     const int matid = matids_[iphase];
-    Teuchos::RCP<MAT::Material> singlemat = MaterialById(matid);
+    Teuchos::RCP<CORE::MAT::Material> singlemat = MaterialById(matid);
 
     // fluidphases at [0...numfluidphases-1]
     if (iphase < numfluidphases_)
@@ -219,7 +219,7 @@ void MAT::FluidPoroMultiPhase::Clear()
  *----------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::Initialize()
 {
-  std::map<int, Teuchos::RCP<MAT::Material>>* materials;
+  std::map<int, Teuchos::RCP<CORE::MAT::Material>>* materials;
 
   if (Parameter() != nullptr)  // params is null pointer in post-process mode
   {
@@ -228,7 +228,7 @@ void MAT::FluidPoroMultiPhase::Initialize()
     else
       materials = Parameter()->MaterialMapWrite();
 
-    std::map<int, Teuchos::RCP<MAT::Material>>::iterator it;
+    std::map<int, Teuchos::RCP<CORE::MAT::Material>>::iterator it;
     for (it = materials->begin(); it != materials->end(); it++)
     {
       Teuchos::RCP<MAT::FluidPoroSinglePhaseBase> actphase =
@@ -283,7 +283,7 @@ void MAT::FluidPoroMultiPhase::Unpack(const std::vector<char>& data)
     if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
+      CORE::MAT::PAR::Parameter* mat =
           GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
@@ -378,7 +378,7 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfDofWrtPressure(
   {
     // get the single phase material by its ID
     const int matid = MatID(iphase);
-    Teuchos::RCP<MAT::Material> singlemat = MaterialById(matid);
+    Teuchos::RCP<CORE::MAT::Material> singlemat = MaterialById(matid);
     const MAT::FluidPoroSinglePhase& singlephase =
         static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
 
@@ -406,7 +406,7 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfSaturationWrtPressure(
 
     // get the single phase material by its ID
     const int matid = MatID(iphase);
-    Teuchos::RCP<MAT::Material> singlemat = MaterialById(matid);
+    Teuchos::RCP<CORE::MAT::Material> singlemat = MaterialById(matid);
     const MAT::FluidPoroSinglePhase& singlephase =
         static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
 
@@ -439,7 +439,7 @@ void MAT::FluidPoroMultiPhase::EvaluateSecondDerivOfSaturationWrtPressure(
 
     // get the single phase material by its ID
     const int matid = MatID(iphase);
-    Teuchos::RCP<MAT::Material> singlemat = MaterialById(matid);
+    Teuchos::RCP<CORE::MAT::Material> singlemat = MaterialById(matid);
     const MAT::FluidPoroSinglePhase& singlephase =
         static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
 

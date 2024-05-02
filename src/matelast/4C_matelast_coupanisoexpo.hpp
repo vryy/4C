@@ -13,6 +13,7 @@
 
 #include "4C_mat_anisotropy_extension_default.hpp"
 #include "4C_mat_anisotropy_extension_provider.hpp"
+#include "4C_mat_par_aniso.hpp"
 #include "4C_matelast_coupanisoexpobase.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -81,9 +82,9 @@ namespace MAT
       {
        public:
         /// standard constructor
-        explicit CoupAnisoExpo(const Teuchos::RCP<MAT::PAR::Material>& matdata);
+        explicit CoupAnisoExpo(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
 
-        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+        Teuchos::RCP<CORE::MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
         /// @name material parameters
         //@{

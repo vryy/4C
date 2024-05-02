@@ -16,8 +16,9 @@
 #include "4C_lib_element.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_list.hpp"
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_newtonianfluid.hpp"
+#include "4C_material_base.hpp"
 #include "4C_rebalance_binning_based.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -49,8 +50,8 @@ void XFEM::UTILS::ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
 // -------------------------------------------------------------------
 // set master and slave parameters (winter 01/2015)
 // -------------------------------------------------------------------
-void XFEM::UTILS::GetVolumeCellMaterial(DRT::Element* actele, Teuchos::RCP<MAT::Material>& mat,
-    CORE::GEO::CUT::Point::PointPosition position)
+void XFEM::UTILS::GetVolumeCellMaterial(DRT::Element* actele,
+    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::GEO::CUT::Point::PointPosition position)
 {
   int position_id = 0;
   if (position == CORE::GEO::CUT::Point::inside)  // minus domain, Omega^i with i<j
@@ -58,7 +59,7 @@ void XFEM::UTILS::GetVolumeCellMaterial(DRT::Element* actele, Teuchos::RCP<MAT::
   else if (position != CORE::GEO::CUT::Point::outside)  // plus domain, \Omega^j with j>i
     FOUR_C_THROW("Volume cell is either undecided or on surface. That can't be good....");
 
-  Teuchos::RCP<MAT::Material> material = actele->Material();
+  Teuchos::RCP<CORE::MAT::Material> material = actele->Material();
 
   if (material->MaterialType() == CORE::Materials::m_matlist)
   {
@@ -90,7 +91,7 @@ void XFEM::UTILS::GetVolumeCellMaterial(DRT::Element* actele, Teuchos::RCP<MAT::
  |                                                         winter 01/15 |
  *----------------------------------------------------------------------*/
 void XFEM::UTILS::SafetyCheckMaterials(
-    Teuchos::RCP<MAT::Material>& pmat, Teuchos::RCP<MAT::Material>& nmat)
+    Teuchos::RCP<CORE::MAT::Material>& pmat, Teuchos::RCP<CORE::MAT::Material>& nmat)
 {
   //------------------------------ see whether materials in patch are equal
 

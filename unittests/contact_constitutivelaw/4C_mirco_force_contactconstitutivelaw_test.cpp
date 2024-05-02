@@ -46,8 +46,8 @@ namespace
 
       // set up material to be added to problem instance
       const int matid(1);
-      Teuchos::RCP<MAT::PAR::Material> material = Teuchos::rcp(
-          new MAT::PAR::Material(matid, CORE::Materials::m_stvenant, "first_material"));
+      Teuchos::RCP<CORE::MAT::PAR::Material> material = Teuchos::rcp(
+          new CORE::MAT::PAR::Material(matid, CORE::Materials::m_stvenant, "first_material"));
       material->Add("YOUNG", 1.0);
       material->Add("NUE", 0.3);
 

@@ -304,7 +304,7 @@ void DRT::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params, std::vec
   deltatheta = acos(s);
 
   // spring constant from material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
+  Teuchos::RCP<const CORE::MAT::Material> currmat = Material();
   double spring = 0.0;
 
   // assignment of material parameters; only spring material is accepted for this element
@@ -436,7 +436,7 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
   }
 
   // spring constant from material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
+  Teuchos::RCP<const CORE::MAT::Material> currmat = Material();
   double spring = 0.0;
 
   // assignment of material parameters; only spring material is accepted for this element

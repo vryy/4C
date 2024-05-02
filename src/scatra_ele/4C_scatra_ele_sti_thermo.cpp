@@ -155,7 +155,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcRHSSoret(
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::MatSoret(
-    const Teuchos::RCP<const MAT::Material> material  //!< Soret material
+    const Teuchos::RCP<const CORE::MAT::Material> material  //!< Soret material
 )
 {
   // extract material parameters from Soret material

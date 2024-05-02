@@ -11,7 +11,8 @@
 #include "4C_discretization_fem_general_extract_values.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_element.hpp"
-#include "4C_mat_material.hpp"
+#include "4C_mat_material_factory.hpp"
+#include "4C_material_base.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_w1_scatra.hpp"
 
@@ -56,9 +57,9 @@ void DRT::ELEMENTS::Wall1Scatra::PreEvaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
     scatradis = GLOBAL::Problem::Instance()->GetDis("scatra");
     DRT::Element* scatraele = scatradis->gElement(Id());
-    Teuchos::RCP<MAT::Material> scatramat =
-        Teuchos::rcp_dynamic_cast<MAT::Material>(scatraele->Material());
-    params.set<Teuchos::RCP<MAT::Material>>("scatramat", scatramat);
+    Teuchos::RCP<CORE::MAT::Material> scatramat =
+        Teuchos::rcp_dynamic_cast<CORE::MAT::Material>(scatraele->Material());
+    params.set<Teuchos::RCP<CORE::MAT::Material>>("scatramat", scatramat);
   }
   CORE::LINALG::Matrix<2, 1> xrefe(true);
   DRT::Node** nodes = Nodes();

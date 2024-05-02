@@ -126,7 +126,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     FOUR_C_THROW("Unknown type of action for Ale3");
 
   // get the material
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   switch (act)
   {
@@ -1572,7 +1572,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discr
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discretization& dis,
     CORE::LINALG::SerialDenseMatrix& sys_mat_epetra, CORE::LINALG::SerialDenseVector& residual,
-    std::vector<double>& my_dispnp, Teuchos::RCP<MAT::Material> material,
+    std::vector<double>& my_dispnp, Teuchos::RCP<CORE::MAT::Material> material,
     const bool spatialconfiguration)
 {
   //  FOUR_C_THROW("We don't know what is really done in the element evaluation"

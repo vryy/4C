@@ -61,7 +61,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
 
 
   // get the material
-  Teuchos::RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   switch (act)
   {
@@ -1049,12 +1049,12 @@ void DRT::ELEMENTS::Ale2::Fint(const CORE::LINALG::SerialDenseMatrix& stress,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
-    const CORE::LINALG::SerialDenseVector& strain,  ///< Green-Lagrange strain vector
-    CORE::LINALG::SerialDenseMatrix& stress,        ///< stress vector
-    CORE::LINALG::SerialDenseMatrix& C,             ///< elasticity matrix
-    const int numeps,                               ///< number of strains
-    Teuchos::RCP<const MAT::Material> material,     ///< the material data
-    Teuchos::ParameterList& params,                 ///< element parameter list
+    const CORE::LINALG::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
+    CORE::LINALG::SerialDenseMatrix& stress,           ///< stress vector
+    CORE::LINALG::SerialDenseMatrix& C,                ///< elasticity matrix
+    const int numeps,                                  ///< number of strains
+    Teuchos::RCP<const CORE::MAT::Material> material,  ///< the material data
+    Teuchos::ParameterList& params,                    ///< element parameter list
     const int gp)
 {
   /*--------------------------- call material law -> get tangent modulus--*/
