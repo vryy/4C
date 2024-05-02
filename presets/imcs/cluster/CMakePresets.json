@@ -17,7 +17,7 @@
     {
       "name": "imcs_charon",
       "displayName": "Release build for charon at IMCS",
-      "description": "Build release version of BACI on charon at IMCS",
+      "description": "Build release version of 4C on charon at IMCS",
       "inherits": [
         ".imcs_cluster"
       ],

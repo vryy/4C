@@ -251,18 +251,12 @@ int main(int argc, char *argv[])
         "\n"
         "**********************************************\n"
         "*                                            *\n"
-        "*                  B A C I                   *\n"
+        "*                     4C                     *\n"
         "*                                            *\n"
         "*                                            *\n"
-        "*             version (git SHA1):            *\n"
+        "*             version (git SHA1)             *\n"
         "*  %s  *\n"
         "*                                            *\n"
-        "*              parallel version              *\n"
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-        "*               debug version                *\n"
-#else
-        "*                fast version                *\n"
-#endif
         "*                                            *\n"
         "**********************************************\n\n",
         VersionControl::git_hash);
