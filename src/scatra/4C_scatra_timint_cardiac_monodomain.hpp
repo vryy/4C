@@ -44,15 +44,12 @@ namespace SCATRA
     void Setup() override;
 
     //! time update of time-dependent materials
-    void ElementMaterialTimeUpdate();
+    virtual void ElementMaterialTimeUpdate();
 
     void OutputState() override;
 
     //! Set ep-specific parameters
     void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const override;
-
-    //! return pointer to old scatra dofrowmap for coupled problems
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMapScatra() { return dofmap_; };
 
     /*========================================================================*/
     //! @name electrophysiology
@@ -84,9 +81,6 @@ namespace SCATRA
 
     //! parameter list
     const Teuchos::RCP<Teuchos::ParameterList> ep_params_;
-
-    //! row map of dofs (one dof for each node)
-    Teuchos::RCP<Epetra_Map> dofmap_;
   };
 
 };  // namespace SCATRA

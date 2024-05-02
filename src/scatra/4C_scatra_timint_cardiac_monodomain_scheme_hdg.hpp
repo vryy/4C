@@ -44,8 +44,7 @@ namespace SCATRA
     void OutputState() override;
 
    protected:
-    //! update gating variables
-    virtual void ElementMaterialTimeUpdate();
+    void ElementMaterialTimeUpdate() override;
 
     //! write problem specific output
     void WriteProblemSpecificOutput(Teuchos::RCP<Epetra_Vector> interpolatedPhi) override;

@@ -17,7 +17,6 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_list.hpp"
-#include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 #include "4C_nurbs_discret.hpp"
 #include "4C_scatra_ele_action.hpp"
@@ -26,7 +25,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- | constructor                                              ehrl  01/14 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntCardiacMonodomain::TimIntCardiacMonodomain(Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
@@ -44,10 +42,10 @@ SCATRA::TimIntCardiacMonodomain::TimIntCardiacMonodomain(Teuchos::RCP<DRT::Discr
       material_ionic_currents_np_component_(Teuchos::null),
       ep_params_(params)
 {
-  return;
 }
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomain::Setup()
 {
   // -------------------------------------------------------------------
@@ -79,22 +77,9 @@ void SCATRA::TimIntCardiacMonodomain::Setup()
     material_ionic_currents_np_component_ =
         CORE::LINALG::CreateVector(*(discret_->ElementRowMap()), true);
   }
-
-  // create dofmap for output writing
-  std::vector<int> globaldof;
-  for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
-    globaldof.push_back(discret_->NodeRowMap()->GID(i));
-  // create dof map (one dof for each node)
-  dofmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, (int)globaldof.size(), globaldof.data(), 0, discret_->Comm()));
-
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |  write current state to BINIO                             gjb   08/08|
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomain::OutputState()
 {
@@ -159,12 +144,9 @@ void SCATRA::TimIntCardiacMonodomain::OutputState()
           material_ionic_currents_np_component_, IO::elementvector);
     }
   }
-  return;
 }  // TimIntCardiacMonodomain::OutputState
 
-
 /*----------------------------------------------------------------------*
- | time update of time-dependent materials                    gjb 07/12 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomain::ElementMaterialTimeUpdate()
 {
@@ -174,7 +156,7 @@ void SCATRA::TimIntCardiacMonodomain::ElementMaterialTimeUpdate()
   CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::time_update_material, p);
   // further required parameter
-  p.set<int>("time-step length", dta_);
+  p.set<double>("time-step length", dta_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -183,28 +165,27 @@ void SCATRA::TimIntCardiacMonodomain::ElementMaterialTimeUpdate()
   // go to elements
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | set ep-specific element parameters                    heormann 06/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomain::SetElementSpecificScaTraParameters(
     Teuchos::ParameterList& eleparams) const
 {
   // safety check
   if (CORE::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
+  {
     if (INPAR::SCATRA::timeint_gen_alpha ==
         CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
+    {
       if (params_->get<double>("ALPHA_M") < 1.0 or params_->get<double>("ALPHA_F") < 1.0)
         FOUR_C_THROW(
             "EP calculation with semiimplicit timestepping scheme only tested for gen-alpha with "
             "alpha_f = alpha_m = 1!");
+    }
+  }
 
   eleparams.set<bool>("semiimplicit", CORE::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"));
-
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -21,7 +21,6 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntCardiacMonodomainHDG::TimIntCardiacMonodomainHDG(
     Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
@@ -32,12 +31,9 @@ SCATRA::TimIntCardiacMonodomainHDG::TimIntCardiacMonodomainHDG(
       TimIntCardiacMonodomain(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntHDG(actdis, solver, sctratimintparams, extraparams, output)
 {
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |  initialize time integration                          hoermann 09/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::Setup()
 {
@@ -48,13 +44,9 @@ void SCATRA::TimIntCardiacMonodomainHDG::Setup()
 
   // Activation time at time n+1
   activation_time_interpol_.reset(new Epetra_Vector(*discret_->NodeRowMap()));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | current solution becomes most recent solution of next timestep       |
- |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::Update()
 {
@@ -63,12 +55,9 @@ void SCATRA::TimIntCardiacMonodomainHDG::Update()
 
   // Standard Update
   TimIntHDG::Update();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | time update of time-dependent materials               hoermann 09/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::ElementMaterialTimeUpdate()
 {
@@ -97,11 +86,9 @@ void SCATRA::TimIntCardiacMonodomainHDG::ElementMaterialTimeUpdate()
   }
 
   discret_->ClearState(true);
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  write current state to BINIO                          hoermann 09/15|
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::OutputState()
 {
@@ -137,20 +124,17 @@ void SCATRA::TimIntCardiacMonodomainHDG::OutputState()
 
 
   // copy values from node to dof vector
-  Teuchos::RCP<Epetra_Vector> dofphi = CORE::LINALG::CreateVector(*dofmap_);
+  Teuchos::RCP<Epetra_Vector> dofphi = CORE::LINALG::CreateVector(*discret_->NodeRowMap());
 
   for (int i = 0; i < dofphi->MyLength(); ++i)
   {
     int dofgid = discret_->NodeRowMap()->GID(i);
-    dofphi->ReplaceMyValue(dofmap_->LID(dofgid), 0, (*interpolatedPhinp_)[i]);
+    dofphi->ReplaceMyValue(discret_->NodeRowMap()->LID(dofgid), 0, (*interpolatedPhinp_)[i]);
   }
   output_->WriteVector("phinp", dofphi);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  write problem specific output                         hoermann 09/15|
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::WriteProblemSpecificOutput(
     Teuchos::RCP<Epetra_Vector> interpolatedPhi)
@@ -169,7 +153,6 @@ void SCATRA::TimIntCardiacMonodomainHDG::WriteProblemSpecificOutput(
 }
 
 /*----------------------------------------------------------------------*
- |  pack material                                         hoermann 12/16|
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::PackMaterial()
 {
@@ -178,8 +161,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::PackMaterial()
   // loop over elements
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
-    DRT::ELEMENTS::ScaTraHDG *hdgele =
-        dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
+    auto *hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
     hdgele->PackMaterial(buffer);
   }
 
@@ -189,18 +171,16 @@ void SCATRA::TimIntCardiacMonodomainHDG::PackMaterial()
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
     DRT::Element *ele = discret_->lColElement(iele);
-    const DRT::ELEMENTS::ScaTraHDG *hdgele = dynamic_cast<const DRT::ELEMENTS::ScaTraHDG *>(ele);
+    const auto *hdgele = dynamic_cast<const DRT::ELEMENTS::ScaTraHDG *>(ele);
     hdgele->PackMaterial(buffer);
   }
 
   Teuchos::RCP<std::vector<char>> block = Teuchos::rcp(new std::vector<char>);
   std::swap(*block, buffer());
   data_ = block;
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  adapt material                                        hoermann 12/16|
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::UnpackMaterial()
 {
@@ -208,8 +188,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::UnpackMaterial()
   // loop over elements
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)
   {
-    DRT::ELEMENTS::ScaTraHDG *hdgele =
-        dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
+    auto *hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
     std::vector<char> data;
     hdgele->ExtractfromPack(index, *data_, data);
     hdgele->UnpackMaterial(data);
@@ -217,7 +196,6 @@ void SCATRA::TimIntCardiacMonodomainHDG::UnpackMaterial()
 }
 
 /*----------------------------------------------------------------------*
- |  project material                                      hoermann 12/16|
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::ProjectMaterial()
 {
@@ -241,8 +219,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::ProjectMaterial()
 }
 
 /*----------------------------------------------------------------------*
- | read restart                                          hoermann 04/17 |
- -----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::ReadRestart(
     const int step, Teuchos::RCP<IO::InputControl> input)
 {
@@ -250,14 +227,6 @@ void SCATRA::TimIntCardiacMonodomainHDG::ReadRestart(
   SCATRA::TimIntHDG::ReadRestart(step, input);
 
   activation_time_interpol_.reset(new Epetra_Vector(*discret_->NodeRowMap()));
-
-  // create dofmap for output writing
-  std::vector<int> globaldof;
-  for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
-    globaldof.push_back(discret_->NodeRowMap()->GID(i));
-  // create dof map (one dof for each node)
-  dofmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, (int)globaldof.size(), globaldof.data(), 0, discret_->Comm()));
 }
 
 FOUR_C_NAMESPACE_CLOSE
