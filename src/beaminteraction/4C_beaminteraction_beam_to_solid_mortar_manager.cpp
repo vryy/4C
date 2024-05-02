@@ -85,7 +85,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
             beam_to_solid_params_);
     if (beam_to_volume_params == beam_to_surface_params)
     {
-      FOUR_C_THROW("The params object should be either ob beam-to-solid volume or surface type");
+      FOUR_C_THROW("The params object should be either of beam-to-solid volume or surface type.");
     }
     else if (beam_to_volume_params != Teuchos::null)
     {
