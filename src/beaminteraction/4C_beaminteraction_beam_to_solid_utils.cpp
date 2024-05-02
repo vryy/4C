@@ -132,38 +132,35 @@ std::pair<unsigned int, unsigned int> BEAMINTERACTION::MortarShapeFunctionsToNum
     const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions shape_function,
     const unsigned int n_dim)
 {
-  unsigned int n_lambda_node = 0;
-  unsigned int n_lambda_element = 0;
   switch (shape_function)
   {
     case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none:
     {
-      n_lambda_node = 0;
-      n_lambda_element = 0;
-      break;
+      const unsigned int n_lambda_node = 0;
+      const unsigned int n_lambda_element = 0;
+      return {n_lambda_node, n_lambda_element};
     }
     case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
     {
-      n_lambda_node = 1 * n_dim;
-      n_lambda_element = 0 * n_dim;
-      break;
+      const unsigned int n_lambda_node = 1 * n_dim;
+      const unsigned int n_lambda_element = 0;
+      return {n_lambda_node, n_lambda_element};
     }
     case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
     {
-      n_lambda_node = 1 * n_dim;
-      n_lambda_element = 1 * n_dim;
-      break;
+      const unsigned int n_lambda_node = 1 * n_dim;
+      const unsigned int n_lambda_element = 1 * n_dim;
+      return {n_lambda_node, n_lambda_element};
     }
     case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
     {
-      n_lambda_node = 1 * n_dim;
-      n_lambda_element = 2 * n_dim;
-      break;
+      const unsigned int n_lambda_node = 1 * n_dim;
+      const unsigned int n_lambda_element = 2 * n_dim;
+      return {n_lambda_node, n_lambda_element};
     }
     default:
       FOUR_C_THROW("Mortar shape function not implemented!");
   }
-  return {n_lambda_node, n_lambda_element};
 }
 
 /**
