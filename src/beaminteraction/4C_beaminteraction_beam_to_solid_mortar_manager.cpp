@@ -83,17 +83,17 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
     const auto beam_to_surface_params =
         Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>(
             beam_to_solid_params_);
-    if (beam_to_volume_params != Teuchos::null)
+    if (beam_to_volume_params == beam_to_surface_params)
+    {
+      FOUR_C_THROW("The params object should be either ob beam-to-solid volume or surface type");
+    }
+    else if (beam_to_volume_params != Teuchos::null)
     {
       mortar_shape_function_rotation = beam_to_volume_params->GetMortarShapeFunctionRotationType();
     }
-    else if (beam_to_surface_params != Teuchos::null)
-    {
-      mortar_shape_function_rotation = beam_to_surface_params->GetMortarShapeFunctionType();
-    }
     else
     {
-      FOUR_C_THROW("The params object should be either ob beam-to-solid volume or solid type");
+      mortar_shape_function_rotation = beam_to_surface_params->GetMortarShapeFunctionType();
     }
 
     // Get the number of Lagrange multiplier DOF for rotational coupling on a beam node and on a
