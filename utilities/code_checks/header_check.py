@@ -1,8 +1,8 @@
 " Baci header check"
 
 import argparse
-import baciheader as bh
-from baci_utils import common_utils as utils
+import file_header as bh
+from four_c_utils import common_utils as utils
 
 
 # CHECK FOR TABS

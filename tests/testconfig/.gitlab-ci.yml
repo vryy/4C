@@ -76,19 +76,19 @@ before_script:
 # Commands to remove old build files (on shell executors)
 .clean-build-folder: &clean-build-folder
   # Delete old build files.
-- rm -rf ${CI_PROJECT_DIR}/../baci-build/
+- rm -rf ${CI_PROJECT_DIR}/../build/
   # Clear eventual ccache cache.
 - if [ -x "$(command -v ccache)" ]; then ccache -C -z; echo "ccache cache cleared";
   fi
 
 .build-only: &build-only
-- mkdir -p ${CI_PROJECT_DIR}/../baci-build
+- mkdir -p ${CI_PROJECT_DIR}/../build
   # configure
 - |
   if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then PRESET=${CTEST_BUILD_PRESETS_DEBUG_GITLAB}; else PRESET=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}; fi
   cd ${CI_PROJECT_DIR}
-  ./create-baci-python-venv
-  cd ${CI_PROJECT_DIR}/../baci-build
+  ./create-python-venv
+  cd ${CI_PROJECT_DIR}/../build
   # We override the launcher arguments here to ensure that ccache is not used during testing
   ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${PRESET} -DCMAKE_C_COMPILER_LAUNCHER="" -DCMAKE_CXX_COMPILER_LAUNCHER=""
 - echo Building the following targets ${BUILD_TARGETS}
@@ -106,10 +106,10 @@ before_script:
 
 .post-process-log-files: &post-process-log-files
   # sort output of pipeline
-- cd ${CI_PROJECT_DIR}/../baci-build
-- ${CI_PROJECT_DIR}/utilities/baci-python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
+- cd ${CI_PROJECT_DIR}/../build
+- ${CI_PROJECT_DIR}/utilities/python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
   ${CI_PROJECT_DIR}/test.log ${CI_PROJECT_DIR}/test.log
-  # Write selection of the output into the terminal and therefore to GITLAB
+    # Write selection of the output into the terminal and therefore to GITLAB
   # Output 200 lines for any failing test
 - grep -B 200 '*Failed\|*Timeout' ${CI_PROJECT_DIR}/test.log || true
 - sed -n '/tests passed,/,//p' ${CI_PROJECT_DIR}/test.log
@@ -164,23 +164,23 @@ before_script:
   script:
   - *clean-build-folder
   - *build-and-test
-    # generate the baci_coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
-  - lcov --capture --initial --no-external --directory ../baci-build/ --base-directory
-    . --output-file baci_coverage_base.info > ${CI_PROJECT_DIR}/baci_coverage_base.log
-    # generate the baci_coverage_tests.info based on tests run above
-  - lcov --capture --no-external --directory ../baci-build/ --base-directory . --output-file
-    baci_coverage_tests.info > ${CI_PROJECT_DIR}/baci_coverage_tests.log
+    # generate the coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
+  - lcov --capture --initial --no-external --directory ../build/ --base-directory
+    . --output-file coverage_base.info > ${CI_PROJECT_DIR}/coverage_base.log
+    # generate the coverage_tests.info based on tests run above
+  - lcov --capture --no-external --directory ../build/ --base-directory . --output-file
+    coverage_tests.info > ${CI_PROJECT_DIR}/coverage_tests.log
     # combine the baseline coverage with the coverage from the tests
-  - lcov --add-tracefile baci_coverage_base.info --add-tracefile baci_coverage_tests.info
-    --output-file baci_coverage.info  > ${CI_PROJECT_DIR}/baci_coverage.log
+  - lcov --add-tracefile coverage_base.info --add-tracefile coverage_tests.info --output-file
+    coverage.info  > ${CI_PROJECT_DIR}/coverage.log
     # remove unwanted files from the coveragre report
-  - lcov --remove baci_coverage.info "*/unittests*/*" "*/tests/*" "*/baci-build/*"
-    -o baci_coverage_filtered.info > ${CI_PROJECT_DIR}/baci_coverage_filtered.log
+  - lcov --remove coverage.info "*/unittests*/*" "*/tests/*" "*/build/*" -o coverage_filtered.info
+    > ${CI_PROJECT_DIR}/coverage_filtered.log
     # generate the html version of the coverage report
-  - genhtml baci_coverage_filtered.info --legend --demangle-cpp --output-directory
-    coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee ${CI_PROJECT_DIR}/genhtml_coverage.log
+  - genhtml coverage_filtered.info --legend --demangle-cpp --output-directory coverage_report/
+    --title "4C commit $CI_COMMIT_SHORT_SHA" | tee ${CI_PROJECT_DIR}/genhtml_coverage.log
     # add repo link to the commit that the report is based on
-  - find coverage_report/ -type f -exec sed -i "s/BACI commit $CI_COMMIT_SHORT_SHA/BACI
+  - find coverage_report/ -type f -exec sed -i "s/4C commit $CI_COMMIT_SHORT_SHA/4C
     commit  \<a 
     href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
     {} \;
@@ -221,7 +221,7 @@ before_script:
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   script:
   - *clean-build-folder
-  - mkdir ../baci-build/ && cd ../baci-build/
+  - mkdir ../build/ && cd ../build/
     # configure to get a compilation database: use a unity build for faster parsing of files
   - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} -DCMAKE_CXX_COMPILER="clang++" -DFOUR_C_BUILD_READTHEDOCS=OFF
     -DCMAKE_UNITY_BUILD=ON --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
@@ -261,8 +261,8 @@ before_script:
   script:
   - echo Doxygen
     # Delete old build files.
-  - rm -rf ../baci-build/
-  - mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
+  - rm -rf ../build/
+  - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
 
     # Configure and build (setting FOUR_C_BUILD_READTHEDOCS=OFF, so that we don't need the python virtual environment
   - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
@@ -277,7 +277,7 @@ before_script:
     LaTeX error during doxygen build."; exit 1; else echo "Doxygen builds without
     LaTeX errors."; fi
     # Move final doxygen into the base folder for the next stage
-  - mv $CI_PROJECT_DIR/../baci-build/doc/doxygen/html $CI_PROJECT_DIR/doxygen
+  - mv $CI_PROJECT_DIR/../build/doc/doxygen/html $CI_PROJECT_DIR/doxygen
   after_script:
     # Write Selection of the output into the terminal and therefore to GITLAB
   - sed -n '/* Extra verbosity turned on/,/Test project /p' ${CI_PROJECT_DIR}/doxygen.log
@@ -297,10 +297,10 @@ before_script:
   - echo Create ReadTheDocs documentation
     # loading python virtual environment
   - cd ${CI_PROJECT_DIR}
-  - ./create-baci-python-venv
+  - ./create-python-venv
     # Delete old build files.
-  - rm -rf ../baci-build/
-  - mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
+  - rm -rf ../build/
+  - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
 
     # Configure and build
   - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
@@ -311,7 +311,7 @@ before_script:
     echo 'Found at least one fatal error during readthedocs generation.'; exit 1;
     else echo 'ReadTheDocs documentation builds without fatal errors.'; fi
     # Move final readthedocs into the base folder for the next stage
-  - mv $CI_PROJECT_DIR/../baci-build/doc/readthedocs/html $CI_PROJECT_DIR/readthedocs
+  - mv $CI_PROJECT_DIR/../build/doc/readthedocs/html $CI_PROJECT_DIR/readthedocs
   after_script:
     # Write Selection of the output into the terminal and therefore to GITLAB
   - sed -n '/* Extra verbosity turned on/,/Test project /p' ${CI_PROJECT_DIR}/readthedocs.log
@@ -345,7 +345,7 @@ checkcode:
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   script:
   - echo code check
-  - ./create-baci-python-venv
+  - ./create-python-venv
   - bash utilities/code_checks/check_format_and_header
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
@@ -525,7 +525,7 @@ build-base-dependencies:
   - *compute-dependencies-hash
   - echo $CI_REGISTRY_IMAGE
   - echo $CI_REGISTRY
-  - echo "Generating BACI dependencies docker image with version-hash $COMPUTED_DOCKER_DEPENDENCIES_HASH"
+  - echo "Generating 4C dependencies docker image with version-hash $COMPUTED_DOCKER_DEPENDENCIES_HASH"
   - FULL_IMAGE_PATH="$CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE:$COMPUTED_DOCKER_DEPENDENCIES_HASH"
   - docker build --no-cache --tag $FULL_IMAGE_PATH --file docker/Dockerfile .
   - docker push $FULL_IMAGE_PATH
@@ -604,12 +604,12 @@ build-verify-headers:
     optional: true
   stage: checkcode
   script:
-  - mkdir -p ${CI_PROJECT_DIR}/../baci-build
+  - mkdir -p ${CI_PROJECT_DIR}/../build
     # configure
   - |
     cd ${CI_PROJECT_DIR}
-    ./create-baci-python-venv
-    cd ${CI_PROJECT_DIR}/../baci-build
+    ./create-python-venv
+    cd ${CI_PROJECT_DIR}/../build
     # Configure verification of header sets.
     ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
     # verify headers
@@ -661,7 +661,7 @@ build-base-dependencies-trilinos-develop:
   before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-  - echo "Generating BACI dependencies docker image with Trilinos version $TRILINOS_PIPELINE_COMMIT_REF"
+  - echo "Generating 4C dependencies docker image with Trilinos version $TRILINOS_PIPELINE_COMMIT_REF"
   - FULL_IMAGE_PATH="$CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_TRILINOS"
   - docker build --no-cache --build-arg NPROCS=`nproc` --build-arg TRILINOS_VERSION="$TRILINOS_PIPELINE_COMMIT_REF"
     --tag $FULL_IMAGE_PATH --file docker/trilinos_develop/Dockerfile .

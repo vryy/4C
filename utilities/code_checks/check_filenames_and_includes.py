@@ -1,7 +1,7 @@
 """Check that files have correct filenames and includes use correct style"""
 
 import argparse
-from baci_utils import common_utils as utils
+from four_c_utils import common_utils as utils
 import os
 import re
 

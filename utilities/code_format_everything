@@ -44,7 +44,7 @@ if [ $# -ne 0 ]; then
 fi
 
 # Load the python virtual environment, which provides clang-format.
-PYTHON_VENV="`dirname "$0"`/baci-python-venv"
+PYTHON_VENV="`dirname "$0"`/python-venv"
 source "${PYTHON_VENV}"/bin/activate
 
 # set the field separator to new line
@@ -87,14 +87,14 @@ fi
 if [[ $line == *.xml ]]
 then
     # format file using xmlformat
-    $(pwd)/utilities/bacixmlformat $(pwd)/${line}
+    $(pwd)/utilities/format_xml $(pwd)/${line}
 fi
 
 # check if the file is a yaml file
 if [[ $line == *.yaml || $line == *.yml ]]
 then
     # format file using yamlfmt
-    $(pwd)/utilities/baciyamlformat $(pwd)/${line}
+    $(pwd)/utilities/format_yaml $(pwd)/${line}
 fi
 
 done

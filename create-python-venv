@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Path to the python virtual environment.
-PYTHON_VENV="`dirname "$0"`/utilities/baci-python-venv"
+PYTHON_VENV="`dirname "$0"`/utilities/python-venv"
 
 # If the virtual environment already exists, delete it.
 if [ -d "$PYTHON_VENV" ]; then rm -Rf $PYTHON_VENV; fi

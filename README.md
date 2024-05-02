@@ -151,7 +151,7 @@ For testing and active development, you need to create a python virtual environm
 execute:
 
 ```
-./create-baci-python-venv
+./create-python-venv
 ```
 
 #### Create the Build Directory

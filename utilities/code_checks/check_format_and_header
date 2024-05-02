@@ -24,7 +24,7 @@
 [ -e wrong_codeowners.txt ] && rm wrong_codeowners.txt
 
 # Load the python virtual environment, which provides the formatters.
-source ./utilities/baci-python-venv/bin/activate
+source ./utilities/python-venv/bin/activate
 
 ### Header check ################################################
 echo "Start test for correct file headers ..."
@@ -104,9 +104,9 @@ fi
 #   1) Check for non-ascii characters
 #   2) Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks) 
 #   3) Execute cmake-format with options declared in "./cmake-format.yaml"
-#   4) Execute xmlformat without overwrite and the options declared in bacixmlformat
+#   4) Execute xmlformat without overwrite and the options declared in format_xml
 #   5) Execute black 
-#   6) Execute yamlfmt without overwrite and the options declared in baciyamlformat
+#   6) Execute yamlfmt without overwrite and the options declared in format_yaml
 
 # set the field separator to new line
 IFS=$'\n'
@@ -152,8 +152,8 @@ fi
 # 4) check if the file is an xml file
 if [[ $line == *.xml ]]
 then
-    # Check if xmlformat would format the file by calling bacixmlformat without override
-    if [[  $(diff -u <($(pwd)/utilities/bacixmlformat --nooverride $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
+    # Check if xmlformat would format the file by calling format_xml without override
+    if [[  $(diff -u <($(pwd)/utilities/format_xml --nooverride $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
 
     then
     uncompliant_files+="$(pwd)/${line}\n"
@@ -173,8 +173,8 @@ fi
 # 6) check if the file is a yaml file
 if [[ $line == *.yaml || $line == *.yml ]]
 then
-    # Check if yamlfmt would format the file by calling baciyamlformat without overwrite
-    if [[ $(diff -u <($(pwd)/utilities/baciyamlformat --nooverwrite $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
+    # Check if yamlfmt would format the file by calling format_yaml without overwrite
+    if [[ $(diff -u <($(pwd)/utilities/format_yaml --nooverwrite $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
     then
     uncompliant_files+="$(pwd)/${line}\n"
     fi

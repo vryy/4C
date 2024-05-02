@@ -226,7 +226,7 @@ macro(four_c_test_and_post_ensight_test name_of_input_file num_proc restart_step
     NAME ${name_of_input_file}-p${num_proc}-post_ensight-ser
     COMMAND
       sh -c
-      " ${RUNPOSTFILTER_SER} && ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${source_file} ${test_directory}/xxx_SER_structure.case"
+      " ${RUNPOSTFILTER_SER} && ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${source_file} ${test_directory}/xxx_SER_structure.case"
     )
 
   require_fixture(
@@ -245,7 +245,7 @@ macro(four_c_test_and_post_ensight_test name_of_input_file num_proc restart_step
     NAME ${name_of_input_file}-p${num_proc}-post_ensight-par
     COMMAND
       sh -c
-      " ${RUNPOSTFILTER_PAR} && ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${source_file} ${test_directory}/xxx_PAR_structure.case"
+      " ${RUNPOSTFILTER_PAR} && ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${source_file} ${test_directory}/xxx_PAR_structure.case"
     )
 
   require_fixture(
@@ -565,7 +565,7 @@ macro(
   add_test(
     NAME ${name_of_test}
     COMMAND
-      ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
+      ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance}
       ${test_directory}/${resultfilename}
       ${PROJECT_SOURCE_DIR}/tests/input_files/${referencefilename} abs_tol 0.0
@@ -612,7 +612,7 @@ macro(
   add_test(
     NAME ${name_of_test}
     COMMAND
-      ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
+      ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance}
       ${test_directory}/${resultfilename}
       ${PROJECT_SOURCE_DIR}/tests/input_files/${referencefilename} rel_tol ${min_val}
@@ -662,7 +662,7 @@ macro(
   add_test(
     NAME "${name_of_test}-p${num_proc_base_run}"
     COMMAND
-      ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
+      ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${test_directory}
       ${PROJECT_SOURCE_DIR}/tests/input_files/${pvd_referencefilename} ${tolerance}
       ${num_extra_args} ${extra_macro_args}

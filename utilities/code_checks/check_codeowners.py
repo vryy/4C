@@ -1,15 +1,15 @@
 "BACI CODEOWNERS check"
 
 import argparse
-from baci_utils import common_utils as utils
-from baci_utils import baci_code_owners
+from four_c_utils import common_utils as utils
+from four_c_utils import patched_code_owners
 
 
 def check_codeowners_rules_are_used(look_cmd, allerrors):
     codeowners_file = ".gitlab/CODEOWNERS"
     with open(codeowners_file, "r") as file:
         codeowners_content = file.read()
-    owner = baci_code_owners.baci_code_owners(codeowners_content)
+    owner = patched_code_owners.patched_code_owners(codeowners_content)
     pathlist = list()
     for i in owner.paths:
         pathlist.append(i[1])
@@ -34,7 +34,7 @@ def check_files_are_owned(look_cmd, allerrors):
     codeowners_file = ".gitlab/CODEOWNERS"
     with open(codeowners_file, "r") as file:
         codeowners_content = file.read()
-    owner = baci_code_owners.baci_code_owners(codeowners_content)
+    owner = patched_code_owners.patched_code_owners(codeowners_content)
     files_not_in_CO = [
         ff
         for ff in utils.files_changed(look_cmd)

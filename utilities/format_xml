@@ -2,21 +2,21 @@
 
 ############################################################
 #
-# Bash script that executes xmlformat with baci-specific options.
+# Bash script that executes xmlformat with project-specific options.
 #
 # Options applied to xmlformat:
 #   two whitespace indents achieved by --indent 2 --indent-char " " 
 #   collapse <element></element> to <element/> by --selfclose
 #   overwrite the existing file by --overwrite
 #
-# Usage of bacixmlformat: 
-#   bacixmlformat <inputfile>
-#   bacixmlformat --nooverride <inputfile>: disables --overwrite option for xmlformat
+# Usage of format_xml:
+#   format_xml <inputfile>
+#   format_xml --nooverride <inputfile>: disables --overwrite option for xmlformat
 #
 ############################################################
 
 # load the python virtual environment, which provides xmlformat.
-PYTHON_VENV="`dirname "$0"`/baci-python-venv"
+PYTHON_VENV="`dirname "$0"`/python-venv"
 source "${PYTHON_VENV}"/bin/activate
 
 # call xmlformat with --nooverride as possible option
