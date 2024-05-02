@@ -81,7 +81,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
 
     // Get the lambda GIDs of this pair.
     auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::Initialize(nullptr);
-    const auto& [lambda_row_pos, dummy] = mortar_manager->LocationVector(*this);
+    const auto& [lambda_row_pos, _] = mortar_manager->LocationVector(*this);
     std::vector<double> lambda_pair;
     CORE::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row_pos);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)

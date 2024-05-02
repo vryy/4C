@@ -756,7 +756,7 @@ void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::Be
     const unsigned int n_mortar_rot)
 {
   // Get the GIDs of the Lagrange multipliers.
-  const auto& [lambda_gid_pos, dummy] = mortar_manager->LocationVector(*pair);
+  const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*pair);
 
   // Get the beam centerline GIDs.
   CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
