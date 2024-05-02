@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(
-    DRT::Element* ele)
+    const DRT::Element* ele)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
@@ -121,9 +121,9 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofpernode
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBoundary* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(const DRT::ELEMENTS::ThermoBoundary* ele,
+    Teuchos::ParameterList& params, const DRT::Discretization& discretization,
+    const DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
     CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
     CORE::LINALG::SerialDenseVector& elevec1_epetra,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
@@ -582,9 +582,10 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
  | i.e. calculate q^ = q . n over surface da                            |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
+int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(const DRT::Element* ele,
+    Teuchos::ParameterList& params, const DRT::Discretization& discretization,
+    const DRT::Condition& condition, const std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   // prepare nurbs
   PrepareNurbsEval(ele, discretization);
@@ -667,7 +668,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
     const DRT::Element* ele, CORE::LINALG::Matrix<nen_, nen_>* econd,
     CORE::LINALG::Matrix<nen_, 1>* efext, const double coeff, const double surtemp,
-    const std::string tempstate)
+    const std::string& tempstate)
 {
   // ------------------------------- integration loop for one element
 
@@ -746,11 +747,12 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
  | evaluate a convective thermo boundary condition          dano 11/12 |
  *----------------------------------------------------------------------*/
 template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(DRT::Element* ele,
-    std::vector<double>& disp,  // current displacements
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
+    const DRT::Element* ele,
+    const std::vector<double>& disp,  // current displacements
     CORE::LINALG::Matrix<nen_, nen_>* econd,
     CORE::LINALG::Matrix<nen_, (nsd_ + 1) * nen_>* etangcoupl, CORE::LINALG::Matrix<nen_, 1>* efext,
-    const double coeff, const double surtemp, const std::string tempstate)
+    const double coeff, const double surtemp, const std::string& tempstate)
 {
   // update element geometry
   // get node coordinates of full dimensions, i.e. nsd_+1
@@ -988,7 +990,7 @@ template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
     CORE::LINALG::Matrix<nsd_ + 1, 1>& normal,
     const CORE::LINALG::Matrix<nsd_ + 1, nen_>& xyze  // node coordinates
-)
+) const
 {
   // determine normal to this element
 
@@ -1151,8 +1153,8 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
 
 template <CORE::FE::CellType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
-    DRT::Element* ele,                   // the element whose matrix is calculated
-    DRT::Discretization& discretization  // current discretisation
+    const DRT::Element* ele,                   // the element whose matrix is calculated
+    const DRT::Discretization& discretization  // current discretisation
 )
 {
   if (ele->Shape() != CORE::FE::CellType::nurbs9)
@@ -1163,20 +1165,19 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
 
   // get nurbs specific infos
   // cast to nurbs discretization
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  const auto* nurbsdis = dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discretization));
   if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   std::vector<CORE::LINALG::SerialDenseVector> parentknots(3);
   myknots_.resize(2);
 
-  DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+  const auto* faceele = dynamic_cast<const DRT::FaceElement*>(ele);
   (*nurbsdis).GetKnotVector()->GetBoundaryEleAndParentKnots(parentknots, myknots_, normalfac_,
       faceele->ParentMasterElement()->Id(), faceele->FaceMasterNumber());
 
   // get weights from cp's
   for (int inode = 0; inode < nen_; inode++)
-    weights_(inode) = dynamic_cast<DRT::NURBS::ControlPoint*>(ele->Nodes()[inode])->W();
+    weights_(inode) = dynamic_cast<const DRT::NURBS::ControlPoint*>(ele->Nodes()[inode])->W();
 }
 /*----------------------------------------------------------------------*/
 
