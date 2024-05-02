@@ -16,6 +16,7 @@
 
 #include "4C_geometry_pair.hpp"
 #include "4C_geometry_pair_element.hpp"
+#include "4C_geometry_pair_element_evaluation_functions.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -103,6 +104,8 @@ namespace GEOMETRYPAIR
      * parameter coordiantes, the third one is in the normal direction). The given values are the
      * start values for the Newton iteration.
      * @param projection_result (out) Flag for the result of the projection.
+     * @param min_one_iteration (in) Flag if at least one NR iteration should be performed, even if
+     * the initial residual satisfies the convergence check.
      */
     void ProjectPointToOther(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
         const ElementData<surface, scalar_type>& element_data_surface,
@@ -134,20 +137,6 @@ namespace GEOMETRYPAIR
 
    protected:
     /**
-     * \brief Evaluate a position on the surface and its derivative w.r.t. xi.
-     * @param element_data_surface (in) Degrees of freedom for the surface.
-     * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
-     * parameter coordiantes, the third one is in the normal direction).
-     * @param r (out) Position on the surface.
-     * @param dr (out) Derivative of the position on the surface, w.r.t xi.
-     */
-    void EvaluateSurfacePositionAndDerivative(
-        const ElementData<surface, scalar_type>& element_data_surface,
-        const CORE::LINALG::Matrix<3, 1, scalar_type>& xi,
-        CORE::LINALG::Matrix<3, 1, scalar_type>& r,
-        CORE::LINALG::Matrix<3, 3, scalar_type>& dr) const;
-
-    /**
      * \brief Get the intersection between the line and an extended boundary of the surface.
      *
      * The extended boundaries are the edges of the surface, extended by the normal vector there.
@@ -162,6 +151,8 @@ namespace GEOMETRYPAIR
      * @param xi (in/out) Parameter coordinates for the surface. The given values are the start
      * values for the Newton iteration.
      * @param projection_result (out) Flag for the result of the intersection.
+     * @param min_one_iteration (in) Flag if at least one NR iteration should be performed, even if
+     * the initial residual satisfies the convergence check.
      */
     void IntersectLineWithSurfaceEdge(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<surface, scalar_type>& element_data_surface,
@@ -170,33 +161,18 @@ namespace GEOMETRYPAIR
         const bool min_one_iteration = false) const;
 
     /**
-     * \brief Check if a projection to a surface lies in a variable range.
-     *
-     * The ValidParameter2D function just checks, if the parameter coordinates are within the
-     * surface. We need to additionally check that the normal distance is not to large in order to
-     * avoid unwanted results. This is done by using a rule of thumb, that the normal distance has
-     * be smaller than the approximated surface size or 3 times the beam radius.
-     *
-     * @param xi
-     * @param surface_size
-     * @param beam_radius
-     * @return True if normal distance is in a reasonable range, false otherwise.
+     * \brief Get an approximate influence direction along the surface normal direction (both
+     * outward and inward).
      */
-    bool ValidParameterSurface(CORE::LINALG::Matrix<3, 1, scalar_type>& xi,
-        const scalar_type& surface_size, const double beam_radius) const;
-
-    /**
-     * \brief Get an approximate size of the line radius.
-     * @return Radius of the line.
-     */
-    double GetLineRadius() const;
+    double GetSurfaceNormalInfluenceDirection(
+        const ElementData<surface, scalar_type>& element_data_surface) const;
 
     /**
      * \brief Get an approximate size of the surface.
      * @param (in) element_data_surface
      * @return Maximum distance between the first 3 nodes.
      */
-    scalar_type GetSurfaceSize(const ElementData<surface, scalar_type>& element_data_surface) const;
+    double GetSurfaceSize(const ElementData<surface, scalar_type>& element_data_surface) const;
 
     /**
      * \brief Get number of faces for this surface and create a vector with the indices of the
@@ -297,6 +273,55 @@ namespace GEOMETRYPAIR
     Teuchos::RCP<GeometryPairLineToSurface<double, line, surface>> geometry_pair_double_;
   };
 
+  /**
+   * \brief Check if a projection to a surface lies in a variable range.
+   *
+   * The ValidParameter2D function just checks, if the parameter coordinates are within the
+   * surface. We need to additionally check that the normal distance is not to large in order to
+   * avoid unwanted results. This is done by comparing the normal distance to a user given
+   * normal_influence_direction.
+   *
+   * @param xi (in) Parameter coordinate
+   * @param normal_influence_direction (in) Threshold value for influence distance in normal
+   * direction. If this is negative no threshold will be applied and the only check performed, is if
+   * the projection lies withing the governing 2D parameter space.
+   * @return True if normal distance is in a reasonable range, false otherwise.
+   */
+  template <typename scalar_type, typename surface>
+  bool ValidParameterSurface(
+      CORE::LINALG::Matrix<3, 1, scalar_type>& xi, const double normal_influence_direction)
+  {
+    // We only need to check the normal distance if the coordinates are within the surface.
+    if (!ValidParameter2D<surface>(xi)) return false;
+
+    if (normal_influence_direction < 0)
+    {
+      // No additional check in this case
+      return true;
+    }
+    else
+    {
+      // Check if the normal direction is in a reasonable user given range
+      return (-normal_influence_direction < xi(2) and xi(2) < normal_influence_direction);
+    }
+  }
+
+  /**
+   * \brief Project a point in space to the surface element.
+   * @param point (in) Point in space.
+   * @param element_data_surface (in) Degrees of freedom for the surface.
+   * @param xi (in/out) Parameter coordinates in the volume. The given values are the start values
+   * for the Newton iteration.
+   * @param projection_result (out) Flag for the result of the projection.
+   * @param normal_influence_direction (in) Threshold of normal influence direction for the surface.
+   * @param min_one_iteration (in) Flag if at least one NR iteration should be performed, even if
+   * the initial residual satisfies the convergence check.
+   */
+  template <typename scalar_type, typename surface>
+  void ProjectPointToSurface(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+      const ElementData<surface, scalar_type>& element_data_surface,
+      CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+      const double normal_influence_direction = -1.0, const bool min_one_iteration = false);
 }  // namespace GEOMETRYPAIR
 
 FOUR_C_NAMESPACE_CLOSE

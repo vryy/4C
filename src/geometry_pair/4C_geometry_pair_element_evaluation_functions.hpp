@@ -271,6 +271,39 @@ namespace GEOMETRYPAIR
   }
 
   /**
+   * \brief Evaluate a position on the surface and its derivative w.r.t. xi.
+   * @param element_data_surface (in) Degrees of freedom for the surface.
+   * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
+   * parameter coordinates, the third one is in the normal direction).
+   * @param r (out) Position on the surface.
+   * @param dr (out) Derivative of the position on the surface, w.r.t xi.
+   */
+  template <typename scalar_type, typename surface>
+  void EvaluateSurfacePositionAndDerivative(
+      const ElementData<surface, scalar_type>& element_data_surface,
+      const CORE::LINALG::Matrix<3, 1, scalar_type>& xi, CORE::LINALG::Matrix<3, 1, scalar_type>& r,
+      CORE::LINALG::Matrix<3, 3, scalar_type>& dr)
+  {
+    // Create a nested FAD type.
+    using FAD_outer = Sacado::ELRFad::SLFad<scalar_type, 3>;
+
+    // Set up the AD variables.
+    CORE::LINALG::Matrix<3, 1, FAD_outer> xi_AD;
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++) xi_AD(i_dim) = FAD_outer(3, i_dim, xi(i_dim));
+    CORE::LINALG::Matrix<3, 1, FAD_outer> r_AD;
+
+    // Evaluate the position.
+    EvaluateSurfacePosition<surface>(xi_AD, element_data_surface, r_AD);
+
+    // Extract the return values from the AD types.
+    for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+    {
+      r(i_dir) = r_AD(i_dir).val();
+      for (unsigned int i_dim = 0; i_dim < 3; i_dim++) dr(i_dir, i_dim) = r_AD(i_dir).dx(i_dim);
+    }
+  }
+
+  /**
    * \brief Check if the parameter coordinate xi is in the valid range for a 1D element
    */
   template <typename T>
