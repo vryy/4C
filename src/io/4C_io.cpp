@@ -11,7 +11,6 @@
 
 #include "4C_io.hpp"
 
-#include "4C_fluid_ele_immersed_base.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_legacy_table.hpp"
 #include "4C_lib_discret.hpp"
@@ -19,6 +18,8 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_nurbs_discret.hpp"
 #include "4C_utils_exceptions.hpp"
+
+#include <algorithm>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -1299,41 +1300,22 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
 {
   if (binio_)
   {
-    std::map<std::string, int>::const_iterator fool;
     std::map<std::string, int> names;  // contains name and dimension of data
 
     // loop all elements and build map of data names and dimensions
-    const Epetra_Map* elerowmap = dis_->ElementRowMap();
     if (writeowner == true)
     {
-      for (int i = 0; i < elerowmap->NumMyElements(); ++i)
+      for (auto* ele : dis_->MyRowElementRange())
       {
         // write owner of every element
-        dis_->lRowElement(i)->VisOwner(names);
+        ele->VisOwner(names);
       }
     }
 
-    // for debugging purposes of immersed method; recognized background
-    // elements and boundary elements become visible in post processing
-    if ((int)elerowmap->NumMyElements() >= 1)
-    {
-      if (dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(0)) != nullptr)
-      {  // if dynamic cast is successful write those data
-        for (int i = 0; i < elerowmap->NumMyElements(); ++i)
-        {
-          // write information fo immersed method
-          dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(i))
-              ->VisIsImmersed(names);
-          dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(i))
-              ->VisIsBoundaryImmersed(names);
-        }
-      }
-    }  // end immersed method specific output
-
-    for (int i = 0; i < elerowmap->NumMyElements(); ++i)
+    for (auto* ele : dis_->MyRowElementRange())
     {
       // get names and dimensions from every element
-      dis_->lRowElement(i)->VisNames(names);
+      ele->VisNames(names);
     }
 
     // By applying GatherAll we get the combined map including all elemental values
@@ -1341,34 +1323,35 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
     const Epetra_Comm& comm = Comm();
     CORE::LINALG::GatherAll(names, comm);
 
-    // make sure there's no name with a dimension of less than 1
-    for (fool = names.begin(); fool != names.end(); ++fool)
-      if (fool->second < 1) FOUR_C_THROW("Dimension of data must be at least 1");
+    FOUR_C_THROW_UNLESS(
+        std::all_of(names.begin(), names.end(), [](const auto& pair) { return pair.second >= 1; }),
+        "Dimension of all data must be at least 1");
 
     // loop all names aquired form the elements and fill data vectors
-    for (fool = names.begin(); fool != names.end(); ++fool)
+    for (const auto& [name, dimension] : names)
     {
-      const int dimension = fool->second;
       std::vector<double> eledata(dimension);
 
       // MultiVector stuff from the elements is put in
-      Epetra_MultiVector sysdata(*elerowmap, dimension, true);
+      Epetra_MultiVector sysdata(*dis_->ElementRowMap(), dimension, true);
 
-      for (int i = 0; i < elerowmap->NumMyElements(); ++i)
+      int ele_counter = 0;
+      for (auto* ele : dis_->MyRowElementRange())
       {
-        // zero is the default value if not all elements write the same element data
-        for (int idim = 0; idim < dimension; ++idim) eledata[idim] = 0.0;
+        std::fill(eledata.begin(), eledata.end(), 0.0);
 
         // get data for a given name from element & put in sysdata
-        dis_->lRowElement(i)->VisData(fool->first, eledata);
-        if ((int)eledata.size() != dimension)
-          FOUR_C_THROW("element manipulated size of visualization data");
-        for (int j = 0; j < dimension; ++j) (*sysdata(j))[i] = eledata[j];
+        ele->VisData(name, eledata);
+
+        FOUR_C_THROW_UNLESS(
+            (int)eledata.size() == dimension, "element manipulated size of visualization data");
+        for (int j = 0; j < dimension; ++j) (*sysdata(j))[ele_counter] = eledata[j];
+
+        ele_counter++;
       }
 
-      WriteVector(fool->first, Teuchos::rcp(&sysdata, false), elementvector);
-
-    }  // for (fool = names.begin(); fool!= names.end(); ++fool)
+      WriteVector(name, Teuchos::rcp(&sysdata, false), elementvector);
+    }
   }
 }
 
