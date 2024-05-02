@@ -13,7 +13,6 @@
 #include "4C_comm_utils.hpp"
 #include "4C_contact_constitutivelaw_bundle.hpp"
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
-#include "4C_global_data.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_validconditions.hpp"
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
@@ -24,7 +23,6 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_materialdefinition.hpp"
 #include "4C_io_meshreader.hpp"
-#include "4C_io_nodereader.hpp"
 #include "4C_lib_conditiondefinition.hpp"
 #include "4C_lib_discret_hdg.hpp"
 #include "4C_lib_discret_xfem.hpp"
@@ -40,7 +38,6 @@
 #include "4C_nurbs_discret.hpp"
 #include "4C_particle_engine_particlereader.hpp"
 #include "4C_rebalance_graph_based.hpp"
-#include "4C_utils_function.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -72,7 +69,10 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
   auto output_control = problem.OutputControlFile();
 
   // the basic mesh reader. now add desired node and element readers to it!
-  IO::MeshReader meshreader(reader, "--NODE COORDS");
+  IO::MeshReader meshreader(reader, "--NODE COORDS",
+      {.mesh_paritioning_parameters = Problem::Instance()->MeshPartitioningParams(),
+          .geometric_search_parameters = Problem::Instance()->GeometricSearchParams(),
+          .io_parameters = Problem::Instance()->IOParams()});
 
   switch (problem.GetProblemType())
   {
@@ -1556,7 +1556,10 @@ void GLOBAL::ReadMicroFields(GLOBAL::Problem& problem, INPUT::DatFileReader& rea
 
         ReadMaterials(*micro_problem, micro_reader);
 
-        IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS");
+        IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS",
+            {.mesh_paritioning_parameters = Problem::Instance()->MeshPartitioningParams(),
+                .geometric_search_parameters = Problem::Instance()->GeometricSearchParams(),
+                .io_parameters = Problem::Instance()->IOParams()});
 
         if (micro_dis_name == "structure")
         {
@@ -1686,7 +1689,10 @@ void GLOBAL::ReadMicrofieldsNPsupport(GLOBAL::Problem& problem)
 
     ReadMaterials(*micro_problem, micro_reader);
 
-    IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS");
+    IO::MeshReader micromeshreader(micro_reader, "--NODE COORDS",
+        {.mesh_paritioning_parameters = Problem::Instance()->MeshPartitioningParams(),
+            .geometric_search_parameters = Problem::Instance()->GeometricSearchParams(),
+            .io_parameters = Problem::Instance()->IOParams()});
     micromeshreader.AddElementReader(
         IO::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS"));
     micromeshreader.ReadAndPartition();
@@ -2139,21 +2145,24 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
   }
 
   //--------------------------------------------- read generic node sets
+  const auto get_discretization_callback = [](const std::string& name) -> decltype(auto)
+  { return *GLOBAL::Problem::Instance()->GetDis(name); };
+
   // read design nodes <-> nodes
   std::vector<std::vector<int>> dnode_fenode;
-  reader.ReadDesign("DNODE", dnode_fenode);
+  reader.ReadDesign("DNODE", dnode_fenode, get_discretization_callback);
 
   // read design lines <-> nodes
   std::vector<std::vector<int>> dline_fenode;
-  reader.ReadDesign("DLINE", dline_fenode);
+  reader.ReadDesign("DLINE", dline_fenode, get_discretization_callback);
 
   // read design surfaces <-> nodes
   std::vector<std::vector<int>> dsurf_fenode;
-  reader.ReadDesign("DSURF", dsurf_fenode);
+  reader.ReadDesign("DSURF", dsurf_fenode, get_discretization_callback);
 
   // read design volumes <-> nodes
   std::vector<std::vector<int>> dvol_fenode;
-  reader.ReadDesign("DVOL", dvol_fenode);
+  reader.ReadDesign("DVOL", dvol_fenode, get_discretization_callback);
 
   // check for meshfree discretisation to add node set topologies
   std::vector<std::vector<std::vector<int>>*> nodeset(4);

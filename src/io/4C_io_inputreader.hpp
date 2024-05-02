@@ -15,6 +15,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_lib_discret.hpp"
+
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -111,8 +113,14 @@ namespace INPUT
     /// return the content of a section
     std::vector<const char*> Section(const std::string& name);
 
-    /// read a node-design topology section
-    void ReadDesign(const std::string& name, std::vector<std::vector<int>>& dobj_fenode);
+    /// Read a node-design topology section
+    ///
+    /// @param name Name of the topology to read
+    /// @param dobj_fenode Resulting collection of all nodes that belong to a design.
+    /// @param get_discretization Callback to return a Discretization by name.
+    void ReadDesign(const std::string& name, std::vector<std::vector<int>>& dobj_fenode,
+        const std::function<const DRT::Discretization&(const std::string& name)>&
+            get_discretization);
 
     /*!
       \brief read the knotvector section (for isogeometric analysis)

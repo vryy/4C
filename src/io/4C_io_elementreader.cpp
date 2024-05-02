@@ -11,7 +11,6 @@
 #include "4C_io_elementreader.hpp"
 
 #include "4C_comm_utils_factory.hpp"
-#include "4C_global_data.hpp"
 #include "4C_lib_elementdefinition.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"

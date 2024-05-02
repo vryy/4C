@@ -35,10 +35,32 @@ namespace IO
   {
    public:
     /**
+     * Additional parameters that governt the reading process.
+     */
+    struct MeshReaderParameters
+    {
+      /**
+       * How to partition then mesh among processes.
+       */
+      Teuchos::ParameterList mesh_paritioning_parameters;
+
+      /**
+       * Geometric search parameters for certain partitiong methods.
+       */
+      Teuchos::ParameterList geometric_search_parameters;
+
+      /**
+       * General verbosity settings and I/O parameters.
+       */
+      Teuchos::ParameterList io_parameters;
+    };
+
+    /**
      * Construct a mesh reader. Read nodes from the given @p reader under section
      * @p node_section_name.
      */
-    MeshReader(INPUT::DatFileReader& reader, std::string node_section_name);
+    MeshReader(INPUT::DatFileReader& reader, std::string node_section_name,
+        MeshReaderParameters parameters = {});
 
     /// add an element reader for each discretization
     /*!
@@ -48,22 +70,6 @@ namespace IO
       \param er (i) a reader of one discretization that uses (a fraction of) our nodes
      */
     void AddElementReader(const ElementReader& er) { element_readers_.emplace_back(er); }
-
-    /*!
-     * \brief Adds the selected reader to this meshreader
-     *
-     * \param dis            [in] This discretization will be passed on
-     * \param reader         [in] This reader will be passed on
-     * \param sectionname    [in] This will be passed on element/domain readers only (not used for
-     *                            file reader)
-     * \param elementtypes   [in] This set of types will be passed on
-     * \param geometrysource [in] selects which reader will be created
-     * \param geofilepath    [in] path to the file for the file reader (not used for the others)
-     */
-    void AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
-        const INPUT::DatFileReader& reader, const std::string& sectionname,
-        const std::set<std::string>& elementtypes, const INPAR::GeometryType geometrysource,
-        const std::string* geofilepath);
 
     /*!
      * \brief Adds the selected reader to this meshreader
@@ -146,6 +152,9 @@ namespace IO
 
     /// The name of the section under which we will read the nodes.
     std::string node_section_name_;
+
+    /// Additional paramters for reading meshes.
+    MeshReaderParameters parameters_;
   };
 }  // namespace IO
 

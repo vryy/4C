@@ -10,7 +10,6 @@
 
 #include "4C_io_meshreader.hpp"
 
-#include "4C_global_data.hpp"
 #include "4C_inpar_rebalance.hpp"
 #include "4C_io_domainreader.hpp"
 #include "4C_io_elementreader.hpp"
@@ -31,19 +30,24 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::MeshReader::MeshReader(INPUT::DatFileReader& reader, std::string node_section_name)
-    : comm_(reader.Comm()), reader_(reader), node_section_name_(std::move(node_section_name))
+IO::MeshReader::MeshReader(
+    INPUT::DatFileReader& reader, std::string node_section_name, MeshReaderParameters parameters)
+    : comm_(reader.Comm()),
+      reader_(reader),
+      node_section_name_(std::move(node_section_name)),
+      parameters_(std::move(parameters))
 {
 }
+
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
     const INPUT::DatFileReader& reader, const std::string& sectionname,
-    const std::set<std::string>& elementtypes, const INPAR::GeometryType geometrysource,
-    const std::string* geofilepath)
+    const INPAR::GeometryType geometrysource, const std::string* geofilepath)
 {
+  std::set<std::string> elementtypes;
   switch (geometrysource)
   {
     case INPAR::geometry_full:
@@ -69,17 +73,6 @@ void IO::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
       FOUR_C_THROW("Unknown geometry source");
       break;
   }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void IO::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
-    const INPUT::DatFileReader& reader, const std::string& sectionname,
-    const INPAR::GeometryType geometrysource, const std::string* geofilepath)
-{
-  std::set<std::string> dummy;
-  AddAdvancedReader(dis, reader, sectionname, dummy, geometrysource, geofilepath);
 }
 
 /*----------------------------------------------------------------------*/
@@ -143,14 +136,14 @@ void IO::MeshReader::Rebalance()
 
     // create partitioning parameters
     const double imbalance_tol =
-        GLOBAL::Problem::Instance()->MeshPartitioningParams().get<double>("IMBALANCE_TOL");
+        parameters_.mesh_paritioning_parameters.get<double>("IMBALANCE_TOL");
 
     Teuchos::RCP<Teuchos::ParameterList> rebalanceParams =
         Teuchos::rcp(new Teuchos::ParameterList());
     rebalanceParams->set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
     const auto rebalanceMethod = Teuchos::getIntegralValue<INPAR::REBALANCE::RebalanceType>(
-        GLOBAL::Problem::Instance()->MeshPartitioningParams(), "METHOD");
+        parameters_.mesh_paritioning_parameters, "METHOD");
 
     Teuchos::RCP<Epetra_Map> rowmap, colmap;
 
@@ -201,10 +194,9 @@ void IO::MeshReader::Rebalance()
           discret->Redistribute(*rowmap, *colmap, true, true, false);
 
           Teuchos::RCP<const Epetra_CrsGraph> enriched_graph =
-              CORE::REBALANCE::BuildMonolithicNodeGraph(
-                  *discret, CORE::GEOMETRICSEARCH::GeometricSearchParams(
-                                GLOBAL::Problem::Instance()->GeometricSearchParams(),
-                                GLOBAL::Problem::Instance()->IOParams()));
+              CORE::REBALANCE::BuildMonolithicNodeGraph(*discret,
+                  CORE::GEOMETRICSEARCH::GeometricSearchParams(
+                      parameters_.geometric_search_parameters, parameters_.io_parameters));
 
           std::tie(rowmap, colmap) =
               CORE::REBALANCE::RebalanceNodeMaps(enriched_graph, *rebalanceParams);
