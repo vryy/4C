@@ -6,27 +6,27 @@ Preprocessing
 |FOURC| reads the mesh, boundary conditions, materials and simulation parameters from an ASCII file in a proprietary format, which usually has the suffix ``.dat``, but this suffix is not necessary, it can be anything.
 
 There are not so many means to create a valid input file. At this point, we know of the following
-different ways to create input file. In general, you'll have two options:
+different ways to create an input file. In general, you'll have two options:
 
 #. Either you create the input file in |FOURC|'s native format directly,
-#. or you create an input file in a general binary format for finite element information, called ``Exodus II``, develeloped at `Sandia national lab 
+#. or you create an input file in a general binary format for finite element information, called ``Exodus II``, develeloped by `Sandia National Laboratories
    <https://www.sandia.gov/files/cubit/15.8/help_manual/WebHelp/finite_element_model/exodus/exodus2_file_specification.htm>`_.
    This can be converted into |FOURC| s native format by an internal converter, :ref:`pre_exodus <pre_exodus>`.
 
-Since the conversion from the Exodus II format is the most versatile way to generate a |FOURC| input file, this method is explained first.
+Since the conversion from the ``Exodus II`` format is the most versatile way to generate a |FOURC| input file, this method is explained first.
 
 .. _pre_exodus:
 
 Exodus II to |FOURC| file conversion
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The main procedure to generate a valid |FOURC| input file is from a binary mesh file in Exodus II format, which includes nodes, elements, node sets, element sets, and side sets, as can be created by Cubit.
+The main procedure to generate a valid |FOURC| input file is from a binary mesh file in ``Exodus II`` format, which includes nodes, elements, node sets, element sets, and side sets, as can be created by Cubit.
 , together with two additional files:
 
-#. for the global system parameters (solver, material, step information, etc.), called the *headerfile*, and 
+#. for the global system parameters (solver, material, step information, etc.), called the *headerfile*, and
 
 #. a file for the correlation between element sets and type declatations, as well as boundary conditions definitions.
-   This is the so-called the *bcfile*. 
+   This is the so-called the *bcfile*.
 
 These three files are merged into an input file for |FOURC| by the program ``pre_exodus``.
 The created |FOURC| input file is then *automatically* validated using all available |FOURC| validation and is therefore likely to run.
@@ -47,14 +47,14 @@ In general one might not have already a proper *header-file* and matching *bc-fi
 
 ``./pre_exodus --exo=<yourmesh>.e``
 
-two preliminary files ’default.head’ and ’default.bc’ are created. 
-The first contains the currently valid header parameters with default values and commented options 
+two preliminary files ``default.head`` and ``default.bc`` are created.
+The first contains the currently valid header parameters with default values and commented options
 which you can edit to adapt it to your means.
-Similarly, ’default.bc’ consists of all your mesh entities and a list of all currently valid conditions. 
+Similarly, ``default.bc`` consists of all your mesh entities and a list of all currently valid conditions.
 See next section for details how to work with it and how to get valid input files.
 
-.. note:: 
-   When you have an already existing input file, you can always validate it by simply executing ./pre_exodus --dat=inputfile.dat, 
+.. note::
+   When you have an already existing input file, you can always validate it by simply executing ``./pre_exodus --dat=inputfile.dat``,
    before(!) you start a parallel |FOURC| computation on a cluster, for example.
 
 *Optional parameters*
@@ -115,10 +115,10 @@ If the inp has many steps defined by STEP/END STEP keywords, the list of paramet
 Alternatively, one may run a python script called ``CAEabq2baci.py`` to convert an ABAQUS input file to a |FOURC| input file (available on request). This script uses ABAQUS/CAE commands, that is, an abaqus license is necessary to run this script.
 
 
-Generating Exodus II files
+Generating ``Exodus II`` files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Even though the generation of Exodus II files might be out of scope of a |FOURC| manual,
+Even though the generation of ``Exodus II`` files might be out of scope of a |FOURC| manual,
 users are informed on how to generate these files conveniently, so options are given in the following:
 
 .. _cubit:
@@ -127,10 +127,10 @@ users are informed on how to generate these files conveniently, so options are g
 
 
 CUBIT `<http://cubit.sandia.gov/>`_ is a powerful pre- postprocessing
-tool. (The commercial version of the software was called *Trelis*, 
+tool. (The commercial version of the software was called *Trelis*,
 but has been renamed into CUBIT now as well, so we may stick to the name CUBIT).
 
-CUBIT can create EXODUS-II files which can be converted into a
+CUBIT can create ``Exodus II`` files which can be converted into a
 valid |FOURC| inpufile using the pre_exodus filter, so the preprocessing is a two step process:
 
 #. Cubit
@@ -186,11 +186,11 @@ So the steps are
 
 #. Create finite element model and sets in your favorite preprocessor
 
-#. Export to some format, like Exodus II or the Gmesh format ``.msh`` file.
+#. Export to some format, like ``Exodus II`` or the Gmesh format ``.msh`` file.
 
 #. **Optional:** Read in the model to Cubit for further editing
 
-#. **Optional:** If you are not able to write in Exodus II format, 
+#. **Optional:** If you are not able to write in ``Exodus II`` format,
    use the python module meshio (packed in pip) to convert the mesh to an exodus (.e) file
    (<https://pypi.org/project/meshio/>)
 
@@ -201,7 +201,7 @@ Modify |FOURC| input files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |FOURC| input files are text files so you can modify them using your
-favorite text editor. You can see all possible parameters and keywords in the 
+favorite text editor. You can see all possible parameters and keywords in the
 :ref:`reference part <inputparameterreference>`.
 
 .. However, sometimes you might want some more
