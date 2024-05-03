@@ -31,17 +31,10 @@ variables:
   # Clone repository by default, file have changed attribute.
   GIT_STRATEGY: clone
 
-  # If not called by a scheduler this variable has to be 0.
-  # 1: daily full (release, debug)
-  # 3: coverage
-  # 4: weekly testing of 4C with a current Trilinos develop version
-  GITLAB_SCHEDULER_TYPE: '0'
-
-  # Build type for pipelines started via the GitLab GUI
-  # Options:
-  # - "release" (default)
-  # - "debug"
-  CTEST_BUILD_TYPE_GITLAB: release
+  GITLAB_PIPELINE_TYPE:
+    value: default
+    description: Type of pipeline
+    options: [default, nightly, coverage, trilinos develop]
 
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
@@ -55,25 +48,21 @@ variables:
   TRILINOS_PIPELINE_COMMIT_REF: develop
   FOUR_C_DOCKER_DEPENDENCIES_IMAGE_TRILINOS: 4c-dependencies-trilinos:$TRILINOS_PIPELINE_COMMIT_REF
 
-.compute-dependencies-hash: &compute-dependencies-hash
+.compute_dependencies_hash: &compute_dependencies_hash
   # compute short hash from contents of folder dependencies and docker (exclude trilinos_config and README.md files)
 - COMPUTED_DOCKER_DEPENDENCIES_HASH=`find dependencies docker -not -wholename '*/trilinos_develop/*'
   -not -name 'README.md' -type f -exec sha1sum {} \; | sort | sha1sum | cut -c -8`
 
 before_script:
 - git config --global --add safe.directory ${CI_PROJECT_DIR}
-- *compute-dependencies-hash
+- *compute_dependencies_hash
 - if [ "${COMPUTED_DOCKER_DEPENDENCIES_HASH}" != "$FOUR_C_DOCKER_DEPENDENCIES_HASH"
   ]; then echo "Docker image version hash does not match the hash of the dependencies.
   You likely need to change the hash to ${COMPUTED_DOCKER_DEPENDENCIES_HASH} and rebuild
   the dependencies." && exit 1; else echo "Running on the correct docker image version
   with hash $FOUR_C_DOCKER_DEPENDENCIES_HASH."; fi
 
-#-------------------------------------------------------------------------------
-# Define the base jobs for testing
-#-------------------------------------------------------------------------------
 
-# Commands to remove old build files (on shell executors)
 .clean-build-folder: &clean-build-folder
   # Delete old build files.
 - rm -rf ${CI_PROJECT_DIR}/../build/
@@ -85,26 +74,24 @@ before_script:
 - mkdir -p ${CI_PROJECT_DIR}/../build
   # configure
 - |
-  if [ $CTEST_BUILD_TYPE_GITLAB == "debug" ]; then PRESET=${CTEST_BUILD_PRESETS_DEBUG_GITLAB}; else PRESET=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}; fi
   cd ${CI_PROJECT_DIR}
   ./create-python-venv
   cd ${CI_PROJECT_DIR}/../build
   # We override the launcher arguments here to ensure that ccache is not used during testing
-  ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${PRESET} -DCMAKE_C_COMPILER_LAUNCHER="" -DCMAKE_CXX_COMPILER_LAUNCHER=""
+  cmake ${CI_PROJECT_DIR} --preset=${CMAKE_PRESET} -DCMAKE_C_COMPILER_LAUNCHER="" -DCMAKE_CXX_COMPILER_LAUNCHER=""
 - echo Building the following targets ${BUILD_TARGETS}
   # build
-- time ${CMAKE_COMMAND} --build . --target ${BUILD_TARGETS} -- -j `nproc` 2>&1 | tee
-  ${CI_PROJECT_DIR}/build.log
+- time cmake --build . --target ${BUILD_TARGETS} -- -j `nproc` 2>&1 | tee ${CI_PROJECT_DIR}/build.log
 
 .build-and-test: &build-and-test
 - *build-only
   # test
-- time ${CTEST_COMMAND} -VV -j `nproc` --output-junit ${CI_PROJECT_DIR}/junit_test_summary.xml
+- time ctest -VV -j `nproc` --output-junit ${CI_PROJECT_DIR}/junit_test_summary.xml
   | tee ${CI_PROJECT_DIR}/test.log | grep -e "\*\*\*Failed" -e "\.\.\.   Passed" -e
   " tests passed\,"
 - cd ${CI_PROJECT_DIR}
 
-.post-process-log-files: &post-process-log-files
+.post_process_log_files: &post_process_log_files
   # sort output of pipeline
 - cd ${CI_PROJECT_DIR}/../build
 - ${CI_PROJECT_DIR}/utilities/python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
@@ -113,8 +100,6 @@ before_script:
   # Output 200 lines for any failing test
 - grep -B 200 '*Failed\|*Timeout' ${CI_PROJECT_DIR}/test.log || true
 - sed -n '/tests passed,/,//p' ${CI_PROJECT_DIR}/test.log
-  # Specify which configuration was tested by this pipeline
-- 'echo 4C build type: $CTEST_BUILD_TYPE_GITLAB'
   # Move the log files to the source folder, so it can be found by artifacts.
 - cd ${CI_PROJECT_DIR}
 
@@ -130,7 +115,7 @@ before_script:
   - *clean-build-folder
   - *build-and-test
   after_script:
-  - *post-process-log-files
+  - *post_process_log_files
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
@@ -141,184 +126,6 @@ before_script:
     when: always
     expire_in: 1 day
 
-
-# This kind of job is started when a user triggers a job in the gitlab UI or
-# inside a MR. Full tests are performed.
-.buildtest_full:
-  extends: .buildtest_base
-  rules:
-  - if: $GITLAB_SCHEDULER_TYPE != "0"
-    when: never
-  - if: $CI_PIPELINE_SOURCE == "web"
-  - if: $CI_MERGE_REQUEST_IID
-
-
-# This kind of job is started by a scheduler, with the variable
-# $GITLAB_SCHEDULER_TYPE = "3"
-# Full tests with coverage are performed
-# A coverage report is created
-.buildtest_coverage:
-  stage: buildtest
-  variables:
-    BUILD_TARGETS: full
-  script:
-  - *clean-build-folder
-  - *build-and-test
-    # generate the coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
-  - lcov --capture --initial --no-external --directory ../build/ --base-directory
-    . --output-file coverage_base.info > ${CI_PROJECT_DIR}/coverage_base.log
-    # generate the coverage_tests.info based on tests run above
-  - lcov --capture --no-external --directory ../build/ --base-directory . --output-file
-    coverage_tests.info > ${CI_PROJECT_DIR}/coverage_tests.log
-    # combine the baseline coverage with the coverage from the tests
-  - lcov --add-tracefile coverage_base.info --add-tracefile coverage_tests.info --output-file
-    coverage.info  > ${CI_PROJECT_DIR}/coverage.log
-    # remove unwanted files from the coveragre report
-  - lcov --remove coverage.info "*/unittests*/*" "*/tests/*" "*/build/*" -o coverage_filtered.info
-    > ${CI_PROJECT_DIR}/coverage_filtered.log
-    # generate the html version of the coverage report
-  - genhtml coverage_filtered.info --legend --demangle-cpp --output-directory coverage_report/
-    --title "4C commit $CI_COMMIT_SHORT_SHA" | tee ${CI_PROJECT_DIR}/genhtml_coverage.log
-    # add repo link to the commit that the report is based on
-  - find coverage_report/ -type f -exec sed -i "s/4C commit $CI_COMMIT_SHORT_SHA/4C
-    commit  \<a 
-    href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
-    {} \;
-  after_script:
-  - *post-process-log-files
-  artifacts:
-    name: $CI_JOB_NAME-$CI_JOB_ID
-    paths:
-    - '*.log'
-    - coverage_report/
-    when: always
-    expire_in: 30 days
-  rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "3"
-
-# This kind of job is started by a daily scheduler, with the variable
-# $GITLAB_SCHEDULER_TYPE = "1"
-# Full tests are performed.
-.buildtest_daily:
-  extends: .buildtest_base
-  rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "1"
-
-
-# This kind of job is started by a daily scheduler, with the variable
-# $GITLAB_SCHEDULER_TYPE = "1"
-# Debug tests are performed.
-.buildtest_daily_debug:
-  extends: .buildtest_base
-  variables:
-    CTEST_BUILD_TYPE_GITLAB: debug
-  rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "1"
-
-# codeclimate job
-.codeclimate:
-  stage: checkcode
-  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
-  script:
-  - *clean-build-folder
-  - mkdir ../build/ && cd ../build/
-    # configure to get a compilation database: use a unity build for faster parsing of files
-  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} -DCMAKE_CXX_COMPILER="clang++" -DFOUR_C_BUILD_READTHEDOCS=OFF
-    -DCMAKE_UNITY_BUILD=ON --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
-    # create  and activate virtual environment
-  - python3 -m venv venv
-  - . venv/bin/activate
-  - pip install wheel
-  - pip install -r ${CI_PROJECT_DIR}/utilities/code_climate/requirements.txt
-    # create temporary directory for the yaml files from clang-tidy
-  - mkdir clang-tidy-issues
-  - ESCAPED_PROJECT_DIR=$(echo "${CI_PROJECT_DIR}" | sed 's/\//\\\//g')
-    # run clang tidy and export report
-  - run-clang-tidy -j `nproc` -config-file ${CI_PROJECT_DIR}/.clang-tidy -use-color
-    -p . -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*"
-    2>&1 | python ${CI_PROJECT_DIR}/utilities/code_climate/filter_clang_tidy_output.py
-    # export clang tidy issues
-  - python ${CI_PROJECT_DIR}/utilities/code_climate/export_clang_tidy_issues.py -j
-    `nproc` --code-climate-file ${CI_PROJECT_DIR}/codeclimate.json --source-folder
-    ${CI_PROJECT_DIR} ./clang-tidy-issues/*.yaml
-  - cd ${CI_PROJECT_DIR}
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_codeclimate
-    CMAKE_COMMAND: cmake
-  artifacts:
-    paths: [codeclimate.json]
-    reports:
-      codequality: codeclimate.json
-  tags:
-  - codeclimate
-  needs:
-  - job: build-base-dependencies
-    optional: true
-
-# Doxygen job
-.doxygen:
-  stage: documentation
-  script:
-  - echo Doxygen
-    # Delete old build files.
-  - rm -rf ../build/
-  - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
-
-    # Configure and build (setting FOUR_C_BUILD_READTHEDOCS=OFF, so that we don't need the python virtual environment
-  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
-    -DFOUR_C_BUILD_READTHEDOCS=OFF
-  - ${CMAKE_COMMAND} --build . --target doxygen > ${CI_PROJECT_DIR}/doxygen.log
-
-    # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
-  - if grep -qE '^[eE]rror:' ${CI_PROJECT_DIR}/doxygen.log; then echo 'Found at least
-    one fatal error during doxygen generation.'; exit 1; else echo 'Doxygen builds
-    without fatal errors.'; fi
-  - if grep -qE '^! ' ${CI_PROJECT_DIR}/doxygen.log; then echo "Found at least one
-    LaTeX error during doxygen build."; exit 1; else echo "Doxygen builds without
-    LaTeX errors."; fi
-    # Move final doxygen into the base folder for the next stage
-  - mv $CI_PROJECT_DIR/../build/doc/doxygen/html $CI_PROJECT_DIR/doxygen
-  after_script:
-    # Write Selection of the output into the terminal and therefore to GITLAB
-  - sed -n '/* Extra verbosity turned on/,/Test project /p' ${CI_PROJECT_DIR}/doxygen.log
-    # Write information about possible Latex errors to terminal
-  - if grep -qE '^! ' ${CI_PROJECT_DIR}/doxygen.log; then echo "Found at least one
-    LaTeX error during doxygen build."; else echo "Doxygen builds without LaTeX errors.";
-    fi
-    # Move the log file to the source folder, so it can be found by artifacts.
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: cmake
-
-# ReadTheDocs job
-.readthedocs:
-  stage: documentation
-  script:
-  - echo Create ReadTheDocs documentation
-    # loading python virtual environment
-  - cd ${CI_PROJECT_DIR}
-  - ./create-python-venv
-    # Delete old build files.
-  - rm -rf ../build/
-  - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
-
-    # Configure and build
-  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
-  - ${CMAKE_COMMAND} --build . --target readthedocs | tee ${CI_PROJECT_DIR}/readthedocs.log
-
-    # Throw error if there are errors (or Warnings treated as errors) in readthedocs comments.
-  - if grep -qE 'ERROR|treated as error:' ${CI_PROJECT_DIR}/readthedocs.log; then
-    echo 'Found at least one fatal error during readthedocs generation.'; exit 1;
-    else echo 'ReadTheDocs documentation builds without fatal errors.'; fi
-    # Move final readthedocs into the base folder for the next stage
-  - mv $CI_PROJECT_DIR/../build/doc/readthedocs/html $CI_PROJECT_DIR/readthedocs
-  after_script:
-    # Write Selection of the output into the terminal and therefore to GITLAB
-  - sed -n '/* Extra verbosity turned on/,/Test project /p' ${CI_PROJECT_DIR}/readthedocs.log
-    # Move the log file to the source folder, so it can be found by artifacts.
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: cmake
 
 #-------------------------------------------------------------------------------
 # Stages during testing.
@@ -334,12 +141,7 @@ stages:
 - documentation
 - pages
 
-#-------------------------------------------------------------------------------
-# Actual jobs for testing.
-#-------------------------------------------------------------------------------
-
-# ALL---------------------------------------------------------------------------
-
+# Check for code style
 checkcode:
   stage: checkcode
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
@@ -354,16 +156,14 @@ checkcode:
     when: on_failure
     expire_in: 1 day
   rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "3" || $GITLAB_SCHEDULER_TYPE == "4"
-    when: never
+  - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
   - if: $CI_PIPELINE_SOURCE == "web"
-  - if: $CI_MERGE_REQUEST_IID
-  - if: $CI_PIPELINE_SOURCE == "schedule"
+  - if: $GITLAB_PIPELINE_TYPE == "nightly"
   tags:
   - checkcode
   interruptible: true
   needs:
-  - job: build-base-dependencies
+  - job: build_base_dependencies
     optional: true
 
 # Include a pre-configured danger bot job at a fixed version. Verbatim copy of:
@@ -372,9 +172,7 @@ checkcode:
 # This job supports the following variables:
 # - DANGER_GITLAB_API_TOKEN: (Optional) A project access token with `api` scope.
 # - GITLAB_DANGERFILES_VERSION: (Optional) Version requirement for `gitlab-dangerfiles`. Latest version if empty.
-danger-review:
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+danger_review:
   image: ruby:3.0
   stage: checkcode
   tags:
@@ -400,35 +198,97 @@ danger-review:
   - |
     danger_id=$(echo -n ${DANGER_GITLAB_API_TOKEN} | md5sum | awk '{print $1}' | cut -c5-10);
     BUNDLE_GEMFILE=./utilities/danger/Gemfile bundle exec danger --fail-on-errors=true --verbose --danger_id="${danger_id}" --dangerfile="./utilities/danger/Dangerfile";
+  rules:
+  - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
 
 # Docker---------------------------------------------------------------------------
 
 codeclimate:
-  extends: .codeclimate
-  rules:
-  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  - if: $CI_PIPELINE_SOURCE == "schedule"
-
-codeclimate-mr:
-  extends: .codeclimate
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "web"
-  - if: $CI_MERGE_REQUEST_IID
+  stage: checkcode
+  image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
+  script:
+  - *clean-build-folder
+  - mkdir ../build/ && cd ../build/
+    # configure to get a compilation database: use a unity build for faster parsing of files
+  - cmake ${CI_PROJECT_DIR} -DCMAKE_CXX_COMPILER="clang++" -DFOUR_C_BUILD_READTHEDOCS=OFF
+    -DCMAKE_UNITY_BUILD=ON --preset=docker_codeclimate
+    # create and activate virtual environment
+  - python3 -m venv venv
+  - . venv/bin/activate
+  - pip install wheel
+  - pip install -r ${CI_PROJECT_DIR}/utilities/code_climate/requirements.txt
+    # create temporary directory for the yaml files from clang-tidy
+  - mkdir clang-tidy-issues
+  - ESCAPED_PROJECT_DIR=$(echo "${CI_PROJECT_DIR}" | sed 's/\//\\\//g')
+    # run clang tidy and export report
+  - run-clang-tidy -j `nproc` -config-file ${CI_PROJECT_DIR}/.clang-tidy -use-color
+    -p . -export-fixes ./clang-tidy-issues/ -header-filter "${ESCAPED_PROJECT_DIR}\/.*"
+    2>&1 | python ${CI_PROJECT_DIR}/utilities/code_climate/filter_clang_tidy_output.py
+    # export clang tidy issues
+  - python ${CI_PROJECT_DIR}/utilities/code_climate/export_clang_tidy_issues.py -j
+    `nproc` --code-climate-file ${CI_PROJECT_DIR}/codeclimate.json --source-folder
+    ${CI_PROJECT_DIR} ./clang-tidy-issues/*.yaml
+  - cd ${CI_PROJECT_DIR}
+  artifacts:
+    paths: [codeclimate.json]
+    reports:
+      codequality: codeclimate.json
+  tags:
+  - codeclimate
+  needs:
+  - job: build_base_dependencies
+    optional: true
   interruptible: true
+  # Always run this job, no rules needed.
 
+
+# Full tests with coverage are performed and a coverage report is created
 buildtest_coverage:
-  extends: .buildtest_coverage
+  stage: buildtest
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
+    BUILD_TARGETS: full
     # increase the global test timeout
     GLOBAL_TEST_TIMEOUT_SCALE: '50'
     # increase the unit test timeout
     UNITTEST_TIMEOUT: '100'
     # enable coverage option of ctest
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_coverage
-    CMAKE_COMMAND: cmake
-    CTEST_COMMAND: ctest
+    CMAKE_PRESET: docker_coverage
+  script:
+  - *clean-build-folder
+  - *build-and-test
+    # generate the coverage_base.info: the "baseline" coverage data file that contains zero coverage for every instrumented line.
+  - lcov --capture --initial --no-external --directory ../build/ --base-directory
+    . --output-file coverage_base.info > ${CI_PROJECT_DIR}/coverage_base.log
+    # generate the coverage_tests.info based on tests run above
+  - lcov --capture --no-external --directory ../build/ --base-directory . --output-file
+    coverage_tests.info > ${CI_PROJECT_DIR}/coverage_tests.log
+    # combine the baseline coverage with the coverage from the tests
+  - lcov --add-tracefile coverage_base.info --add-tracefile coverage_tests.info --output-file
+    coverage.info  > ${CI_PROJECT_DIR}/coverage.log
+    # remove unwanted files from the coveragre report
+  - lcov --remove coverage.info "*/unittests*/*" "*/tests/*" "*/build/*" -o coverage_filtered.info
+    > ${CI_PROJECT_DIR}/coverage_filtered.log
+    # generate the html version of the coverage report
+  - genhtml coverage_filtered.info --legend --demangle-cpp --output-directory coverage_report/
+    --title "4C commit $CI_COMMIT_SHORT_SHA" | tee ${CI_PROJECT_DIR}/genhtml_coverage.log
+    # add repo link to the commit that the report is based on
+  - find coverage_report/ -type f -exec sed -i "s/4C commit $CI_COMMIT_SHORT_SHA/4C
+    commit  \<a 
+    href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
+    {} \;
+  after_script:
+  - *post_process_log_files
+  artifacts:
+    name: $CI_JOB_NAME-$CI_JOB_ID
+    paths:
+    - '*.log'
+    - coverage_report/
+    when: always
+    expire_in: 30 days
+  rules:
+  - if: $GITLAB_PIPELINE_TYPE == "coverage"
   tags:
   - coverage
   needs: []
@@ -438,7 +298,7 @@ pages: # job name needs to be pages
   image: alpine:3.18
   # Download Doxygen and ReadTheDocs from previous documentation stage
   needs:
-  - job: build-base-dependencies
+  - job: build_base_dependencies
     optional: true
   - job: doxygen
     artifacts: true
@@ -487,11 +347,33 @@ pages: # job name needs to be pages
   - pages
 
 doxygen:
-  extends: .doxygen
+  stage: documentation
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: cmake
+  script:
+  - echo Doxygen
+  - *clean-build-folder
+  - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
+
+    # Configure and build (setting FOUR_C_BUILD_READTHEDOCS=OFF, so that we don't need the python virtual environment
+  - cmake ${CI_PROJECT_DIR} --preset=docker -DFOUR_C_BUILD_READTHEDOCS=OFF
+  - cmake --build . --target doxygen > ${CI_PROJECT_DIR}/doxygen.log
+
+    # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
+  - if grep -qE '^[eE]rror:' ${CI_PROJECT_DIR}/doxygen.log; then echo 'Found at least
+    one fatal error during doxygen generation.'; exit 1; else echo 'Doxygen builds
+    without fatal errors.'; fi
+  - if grep -qE '^! ' ${CI_PROJECT_DIR}/doxygen.log; then echo "Found at least one
+    LaTeX error during doxygen build."; exit 1; else echo "Doxygen builds without
+    LaTeX errors."; fi
+    # Move final doxygen into the base folder for the next stage
+  - mv $CI_PROJECT_DIR/../build/doc/doxygen/html $CI_PROJECT_DIR/doxygen
+  after_script:
+    # Write Selection of the output into the terminal and therefore to GITLAB
+  - sed -n '/* Extra verbosity turned on/,/Test project /p' ${CI_PROJECT_DIR}/doxygen.log
+    # Write information about possible Latex errors to terminal
+  - if grep -qE '^! ' ${CI_PROJECT_DIR}/doxygen.log; then echo "Found at least one
+    LaTeX error during doxygen build."; else echo "Doxygen builds without LaTeX errors.";
+    fi
   tags:
   - doxygen
   artifacts:
@@ -502,17 +384,13 @@ doxygen:
     when: always
     expire_in: 1 day
   interruptible: true
-  rules:
-  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  - if: $CI_PIPELINE_SOURCE == "schedule"
-  - if: $CI_PIPELINE_SOURCE == "web"
-  - if: $CI_MERGE_REQUEST_IID
   needs:
-  - job: build-base-dependencies
+  - job: build_base_dependencies
     optional: true
+  # Always run this job, no rules needed.
 
 # Build the docker image with all dependencies for 4C
-build-base-dependencies:
+build_base_dependencies:
   stage: build-docker-images
   tags:
   - build-docker-image
@@ -522,7 +400,7 @@ build-base-dependencies:
   before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-  - *compute-dependencies-hash
+  - *compute_dependencies_hash
   - echo $CI_REGISTRY_IMAGE
   - echo $CI_REGISTRY
   - echo "Generating 4C dependencies docker image with version-hash $COMPUTED_DOCKER_DEPENDENCIES_HASH"
@@ -533,77 +411,72 @@ build-base-dependencies:
   - if: $FOUR_C_DOCKER_BUILD_IMAGES == "True"
     when: manual
 
-buildtest_full_release:
-  extends: .buildtest_full
+
+
+buildtest_release:
+  extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
-    CMAKE_COMMAND: cmake
-    CTEST_COMMAND: ctest
+    CMAKE_PRESET: docker
   tags:
   - buildtest
   needs:
-  - job: build-base-dependencies
+  - job: build_base_dependencies
     optional: true
-  # Make use of evaluation order to run test in nightly pipeline as well
   rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "1"
-  - !reference [.buildtest_full, rules]
+  - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $GITLAB_PIPELINE_TYPE == "nightly"
   interruptible: true
 
-buildtest_full_release_asan:
-  extends: .buildtest_full
+buildtest_release_asan:
+  extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     GLOBAL_TEST_TIMEOUT_SCALE: '10'
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_asan
-    CMAKE_COMMAND: cmake
-    CTEST_COMMAND: ctest
+    CMAKE_PRESET: docker_asan
   after_script:
-  - *post-process-log-files
+  - *post_process_log_files
   - ${CI_PROJECT_DIR}/utilities/grep_asan_failures.sh ${CI_PROJECT_DIR}/test.log >
     ${CI_PROJECT_DIR}/asan_summary.log
   tags:
   - buildtest
   needs:
-  - job: build-base-dependencies
+  - job: build_base_dependencies
     optional: true
-  # This job only runs in nightly builds
   rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "1"
+  - if: $GITLAB_PIPELINE_TYPE == "nightly"
   interruptible: true
 
 
-buildtest_full_debug:
-  extends: .buildtest_daily_debug
+buildtest_release_with_assertions:
+  extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
-    CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
-    CMAKE_COMMAND: cmake
-    CTEST_COMMAND: ctest
+    CMAKE_PRESET: docker_release_assertions
   tags:
-  - buildtest-debug
+  - buildtest
   needs:
-  - job: build-base-dependencies
+  - job: build_base_dependencies
     optional: true
   rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "1"
-  - !reference [.buildtest_full, rules]
+  - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $GITLAB_PIPELINE_TYPE == "nightly"
   interruptible: true
 
-build-verify-headers:
+build_verify_headers:
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     NUMBER_OF_BUILD_THREADS: '10'
-    CMAKE_COMMAND: cmake
   tags:
   - verify-headers
   needs:
-  - job: build-base-dependencies
+  - job: build_base_dependencies
     optional: true
   stage: checkcode
   script:
+  - *clean-build-folder
   - mkdir -p ${CI_PROJECT_DIR}/../build
     # configure
   - |
@@ -611,10 +484,10 @@ build-verify-headers:
     ./create-python-venv
     cd ${CI_PROJECT_DIR}/../build
     # Configure verification of header sets.
-    ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
+    cmake ${CI_PROJECT_DIR} --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
     # verify headers
-  - time ${CMAKE_COMMAND} --build . --target all_verify_interface_header_sets -- -j
-    `nproc` 2>&1 | tee ${CI_PROJECT_DIR}/verify_headers.log
+  - time cmake --build . --target all_verify_interface_header_sets -- -j `nproc` 2>&1
+    | tee ${CI_PROJECT_DIR}/verify_headers.log
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
@@ -622,15 +495,36 @@ build-verify-headers:
     when: on_failure
     expire_in: 1 day
   rules:
-  - !reference [checkcode, rules]
+  - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $GITLAB_PIPELINE_TYPE == "nightly"
   interruptible: true
 
 readthedocs:
-  extends: .readthedocs
+  stage: documentation
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: cmake
+  script:
+  - echo Create ReadTheDocs documentation
+    # loading python virtual environment
+  - cd ${CI_PROJECT_DIR}
+  - ./create-python-venv
+    # Delete old build files.
+  - *clean-build-folder
+  - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
+
+    # Configure and build
+  - cmake ${CI_PROJECT_DIR} --preset=docker
+  - cmake --build . --target readthedocs | tee ${CI_PROJECT_DIR}/readthedocs.log
+
+    # Throw error if there are errors (or Warnings treated as errors) in readthedocs comments.
+  - if grep -qE 'ERROR|treated as error:' ${CI_PROJECT_DIR}/readthedocs.log; then
+    echo 'Found at least one fatal error during readthedocs generation.'; exit 1;
+    else echo 'ReadTheDocs documentation builds without fatal errors.'; fi
+    # Move final readthedocs into the base folder for the next stage
+  - mv $CI_PROJECT_DIR/../build/doc/readthedocs/html $CI_PROJECT_DIR/readthedocs
+  after_script:
+    # Write Selection of the output into the terminal and therefore to GITLAB
+  - sed -n '/* Extra verbosity turned on/,/Test project /p' ${CI_PROJECT_DIR}/readthedocs.log
   tags:
   - readthedocs
   artifacts:
@@ -641,17 +535,13 @@ readthedocs:
     when: always
     expire_in: 1 day
   interruptible: true
-  rules:
-  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  - if: $CI_PIPELINE_SOURCE == "schedule"
-  - if: $CI_PIPELINE_SOURCE == "web"
-  - if: $CI_MERGE_REQUEST_IID
   needs:
-  - job: build-base-dependencies
+  - job: build_base_dependencies
     optional: true
+  # Always run this job, no rules needed.
 
 # The Trilinos pipeline with a specific commit ref runs via a schedule or when manually triggered
-build-base-dependencies-trilinos-develop:
+build_base_dependencies_trilinos_develop:
   stage: build-docker-images
   tags:
   - build-docker-image
@@ -667,38 +557,33 @@ build-base-dependencies-trilinos-develop:
     --tag $FULL_IMAGE_PATH --file docker/trilinos_develop/Dockerfile .
   - docker push $FULL_IMAGE_PATH
   rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "4"
+  - if: $GITLAB_PIPELINE_TYPE == "trilinos develop"
   interruptible: true
 
-buildtest_full_release_trilinos_develop:
-  extends: .buildtest_full
+buildtest_release_trilinos_develop:
+  extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
   variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
-    CMAKE_COMMAND: cmake
-    CTEST_COMMAND: ctest
+    CMAKE_PRESET: docker
   tags:
   - buildtest
   needs:
-  - job: build-base-dependencies-trilinos-develop
+  - job: build_base_dependencies_trilinos_develop
     optional: true
   rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "4"
+  - if: $GITLAB_PIPELINE_TYPE == "trilinos develop"
   interruptible: true
 
-buildtest_full_debug_trilinos_develop:
-  extends: .buildtest_daily_debug
+buildtest_release_with_assertions_trilinos_develop:
+  extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_TRILINOS
   variables:
-    CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
-    CMAKE_COMMAND: cmake
-    CTEST_COMMAND: ctest
+    CMAKE_PRESET: docker_release_assertions
   tags:
-  - buildtest-debug
+  - buildtest
   needs:
-  - job: build-base-dependencies-trilinos-develop
+  - job: build_base_dependencies_trilinos_develop
     optional: true
   rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "4"
+  - if: $GITLAB_PIPELINE_TYPE == "trilinos develop"
   interruptible: true

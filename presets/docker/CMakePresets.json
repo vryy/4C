@@ -36,7 +36,7 @@
       ]
     },
     {
-      "name": "docker_debug",
+      "name": "docker_release_assertions",
       "displayName": "Optimized build with assertions for Docker image",
       "description": "Build release version including debug assertions on a Docker image",
       "inherits": [
