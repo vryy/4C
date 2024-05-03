@@ -12,10 +12,6 @@
 
 #include "4C_io_inputreader.hpp"
 
-#include "4C_comm_utils.hpp"
-#include "4C_global_data.hpp"
-#include "4C_io_control.hpp"
-#include "4C_io_linedefinition.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_io_utils_reader.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
@@ -173,8 +169,9 @@ namespace INPUT
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void DatFileReader::ReadDesign(
-      const std::string& name, std::vector<std::vector<int>>& dobj_fenode)
+  void DatFileReader::ReadDesign(const std::string& name,
+      std::vector<std::vector<int>>& dobj_fenode,
+      const std::function<const DRT::Discretization&(const std::string& name)>& get_discretization)
   {
     std::map<int, std::set<int>> topology;
 
@@ -258,7 +255,7 @@ namespace INPUT
             FOUR_C_THROW("Illegal line in section '%s': '%s'", marker.c_str(), l);
           }
 
-          Teuchos::RCP<DRT::Discretization> actdis = GLOBAL::Problem::Instance()->GetDis(disname);
+          const DRT::Discretization& actdis = get_discretization(disname);
 
           std::vector<double> box_specifications;
           if (cached_box_specifications_.find(disname) != cached_box_specifications_.end())
@@ -353,9 +350,8 @@ namespace INPUT
 
           // collect all nodes which are outside the adapted bounding box
           std::set<int> dnodes;
-          for (int lid = 0; lid < actdis->NumMyRowNodes(); ++lid)
+          for (const auto* node : actdis.MyRowNodeRange())
           {
-            const DRT::Node* node = actdis->lRowNode(lid);
             const auto& coord = node->X();
             std::array<double, 3> coords;
             coords[0] = coord[0];
