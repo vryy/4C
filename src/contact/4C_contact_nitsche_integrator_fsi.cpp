@@ -15,6 +15,8 @@
 #include "4C_discretization_fem_general_utils_boundary_integration.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_poro.hpp"
+#include "4C_solid_3D_ele.hpp"
+#include "4C_solid_3D_ele_calc_lib_nitsche.hpp"
 #include "4C_xfem_xfluid_contact_communicator.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -273,11 +275,25 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
   double sigma_nt;
 
   if (!cele->MoData().ParentPFPres().size())
-  {
-    dynamic_cast<DRT::ELEMENTS::SoBase*>(cele->ParentElement())
-        ->GetCauchyNDirAndDerivativesAtXi(pxsi, cele->MoData().ParentDisp(), n, dir, sigma_nt,
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-            nullptr, nullptr, nullptr, nullptr);
+  {  // The element can be either an old so3 element or a new solid element
+    if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(cele->ParentElement());
+        solid_ele != nullptr)
+    {
+      solid_ele->GetCauchyNDirAndDerivativesAtXi(pxsi, cele->MoData().ParentDisp(), n, dir,
+          sigma_nt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+          nullptr, nullptr, nullptr, nullptr);
+    }
+    else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(cele->ParentElement());
+             solid_ele != nullptr)
+    {
+      DRT::ELEMENTS::CauchyNDirLinearizations<3> cauchy_linearizations{};
+      sigma_nt = solid_ele->GetCauchyNDirAtXi<3>(
+          cele->MoData().ParentDisp(), pxsi, n, dir, cauchy_linearizations);
+    }
+    else
+    {
+      FOUR_C_THROW("Unsupported solid element type");
+    }
   }
   else
   {
