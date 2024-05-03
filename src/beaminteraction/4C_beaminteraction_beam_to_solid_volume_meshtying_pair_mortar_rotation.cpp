@@ -112,8 +112,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot(i) = lm_beam[rot_dof_indices[i]];
 
   // Get the Lagrange multiplier GIDs.
-  std::vector<int> lambda_gid_rot;
-  GetMortarGID(mortar_manager, this, mortar::n_dof_, mortar_rot::n_dof_, nullptr, &lambda_gid_rot);
+  const auto& [_, lambda_gid_rot] = mortar_manager->LocationVector(*this);
 
   // Assemble into the global vectors
   global_constraint.SumIntoGlobalValues(lambda_gid_rot.size(), lambda_gid_rot.data(), local_g.A());
@@ -360,8 +359,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
             3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_.element_position_(i_solid)));
 
   // Get the rotational Lagrange multipliers for this pair.
-  std::vector<int> lambda_gid_rot;
-  GetMortarGID(mortar_manager, this, mortar::n_dof_, mortar_rot::n_dof_, nullptr, &lambda_gid_rot);
+  const auto& [_, lambda_gid_rot] = mortar_manager->LocationVector(*this);
+
   std::vector<double> lambda_rot_double;
   CORE::FE::ExtractMyValues(global_lambda, lambda_rot_double, lambda_gid_rot);
   CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double> lambda_rot;

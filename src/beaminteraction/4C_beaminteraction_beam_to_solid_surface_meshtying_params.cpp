@@ -23,7 +23,6 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::BeamToSolidSurfaceMeshtyingP
     : BeamToSolidParamsBase(),
       coupling_type_(INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::none),
       output_params_ptr_(Teuchos::null),
-      rotational_coupling_(false),
       rotational_coupling_penalty_parameter_(-1.0),
       rotational_coupling_triad_construction_(
           INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling::none)

@@ -60,7 +60,7 @@ namespace BEAMINTERACTION
      */
     inline INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling GetRotationalCouplingType() const
     {
-      return rotation_coupling_;
+      return rotational_coupling_triad_construction_;
     }
 
     /**
@@ -99,7 +99,7 @@ namespace BEAMINTERACTION
     unsigned int integration_points_circumference_;
 
     //! Type of rotational coupling.
-    INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling rotation_coupling_;
+    INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling rotational_coupling_triad_construction_;
 
     //! Shape function for the mortar Lagrange-multiplicators
     INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function_rotation_;
