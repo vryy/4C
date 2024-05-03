@@ -249,10 +249,6 @@ buildtest_coverage:
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     BUILD_TARGETS: full
-    # increase the global test timeout
-    GLOBAL_TEST_TIMEOUT_SCALE: '50'
-    # increase the unit test timeout
-    UNITTEST_TIMEOUT: '100'
     # enable coverage option of ctest
     CMAKE_PRESET: docker_coverage
   script:
@@ -433,7 +429,6 @@ buildtest_release_asan:
   extends: .buildtest_base
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
-    GLOBAL_TEST_TIMEOUT_SCALE: '10'
     CMAKE_PRESET: docker_asan
   after_script:
   - *post_process_log_files
