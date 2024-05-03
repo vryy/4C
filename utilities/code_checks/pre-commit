@@ -6,12 +6,12 @@
 #
 # Stage 1: Style format check
 # In the version at hand, clang-format, xmlformat and yamlfmt will only write out non-compliant files to the shell output and will not perfom any formatting automatically
-# In the case that the script detects files that are not compliant with the current clang-format/xmlformat/yamlfmt BACI style, the commit will be rejected (script exits 1)
+# In the case that the script detects files that are not compliant with the current clang-format/xmlformat/yamlfmt 4C style, the commit will be rejected (script exits 1)
 # Additionally a check for non-ascii characters is performed. Non-compliant files are also written to the shell output.
 #
 # Stage 2: Header check
-# A set of Python scripts checks the staged files for compliance with the BACI header requirements
-# If a header is missing or does not follow the BACI standards, the Python scripts will generate error messages in the shell output
+# A set of Python scripts checks the staged files for compliance with the 4C header requirements
+# If a header is missing or does not follow the 4C standards, the Python scripts will generate error messages in the shell output
 # The commit will be rejected if errors appear (script exits 1). The user has to change the headers manually until all requirements are fulfilled
 #
 # Stage 3: Framework check
@@ -127,7 +127,7 @@ fi
 if [ ! -z "$uncompliant_files" ]
 then
 printf "\n"
-printf "The following file(s) are not compliant with BACI's coding style:\n"
+printf "The following file(s) are not compliant with 4C's coding style:\n"
 printf "\n"
 echo "########################################################################"
 printf "$uncompliant_files"
@@ -135,7 +135,7 @@ echo "########################################################################"
 printf "\n"
 echo "--> You can use the following script to format all changed source files:"
 echo "./utilities/code_format_everything"
-echo "(Run this from BACI's top-level directory)"
+echo "(Run this from 4C's top-level directory)"
 printf "\n"
 echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
 printf "\n"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# A commit-msg git hook for Baci based on this project:
+# A commit-msg git hook for 4C based on this project:
 #
 #
 # git-good-commit(1) - Git hook to help you write good commit messages.
@@ -11,9 +11,9 @@
 # https://github.com/tommarshall/git-good-commit
 #
 
-# Baci-specific changes:
+# 4C-specific changes:
 # The original script allows to overwrite the commit-msg rules, though
-# we disable that for Baci to guarantee a consistent style.
+# we disable that for 4C to guarantee a consistent style.
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG_LINES=

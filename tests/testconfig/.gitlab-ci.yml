@@ -34,7 +34,7 @@ variables:
   # If not called by a scheduler this variable has to be 0.
   # 1: daily full (release, debug)
   # 3: coverage
-  # 4: weekly testing of Baci with a current Trilinos develop version
+  # 4: weekly testing of 4C with a current Trilinos develop version
   GITLAB_SCHEDULER_TYPE: '0'
 
   # Build type for pipelines started via the GitLab GUI
@@ -511,7 +511,7 @@ doxygen:
   - job: build-base-dependencies
     optional: true
 
-# Build the docker image with all dependencies for Baci
+# Build the docker image with all dependencies for 4C
 build-base-dependencies:
   stage: build-docker-images
   tags:

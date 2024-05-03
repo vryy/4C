@@ -91,7 +91,7 @@ Then, you can connect with a gdb debugger:
 
 ::
 
-    gdb ./baci_debug
+    gdb ./4C
     (gdb) target remote | bgdb --pid=<insert pid here>
 
 Or visually using VS Code:
@@ -147,20 +147,7 @@ Configure and build with profiling flag
 
 **Note:** For general information about configuring and building of |FOURC| refer to :ref:`Configure and Build <4Cinstallation>` and the ``README.md``.
 
-Configure |FOURC| with the optional profiling flag
-
-::
-
-    cd <someBaseDir>/<buildDir>
-    <someBaseDir>/<sourceDir>/do-configure --config=<path/to/build-configuration-file.config> --profiling
-
-and finally build |FOURC|
-
-::
-
-    ninja -j <numProcs> full
-
-
+You probably want to configure with `CMAKE_BUILD_TYPE` set to `RELWITHDEBINFO`. 
 This results in a release version of the |FOURC| build with additional per-line annotations. That way, when examining the results one can see the exact lines of code where computation time is spent.
 
 .. note::
@@ -175,7 +162,7 @@ Run simulation with `valgrind`
 
 Run a |FOURC| simulation with ``valgrind`` in parallel using the command::
 
-    mpirun -np <numProcs> valgrind --tool=callgrind <someBaseDir>/<4C-execdir>/baci-relwithdebinfo <inputfile> <output>
+    mpirun -np <numProcs> valgrind --tool=callgrind <someBaseDir>/<4C-execdir>/4C <inputfile> <output>
 
 
 In addition to the usual |FOURC| output, ``valgrind`` writes output for each mpi rank in the files ``callgrind.out.<processId>``.
@@ -184,7 +171,7 @@ In addition to the usual |FOURC| output, ``valgrind`` writes output for each mpi
 
     - For profiling a simulation in serial execute::
 
-        valgrind --tool=callgrind <someBaseDir>/<4C-execdir>/baci-relwithdebinfo <inputfile> <output>
+        valgrind --tool=callgrind <someBaseDir>/<4C-execdir>/4C <inputfile> <output>
 
     - It is also possible to examine the post processing of result files, simply wrap the corresponding command::
 
@@ -195,8 +182,8 @@ In addition to the usual |FOURC| output, ``valgrind`` writes output for each mpi
       Depending on the problem type it might be reasonable to do this after a restart in order to examine characteristic parts.
       Follow the steps as described below::
 
-        mpirun -np <numProcs> <someBaseDir>/<4C-execdir>/baci-relwithdebinfo <inputfile> <output>
-        mpirun -np <numProcs> valgrind --tool=callgrind <someBaseDir>/<4C-execdir>/baci-relwithdebinfo <inputfile> <output> restart=<restartStep>
+        mpirun -np <numProcs> <someBaseDir>/<4C-execdir>/4C <inputfile> <output>
+        mpirun -np <numProcs> valgrind --tool=callgrind <someBaseDir>/<4C-execdir>/4C <inputfile> <output> restart=<restartStep>
 
 Examine results with ``kcachegrind``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

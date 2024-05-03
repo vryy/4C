@@ -30,5 +30,5 @@ Writing a new unit test roughly works like this:
 ### Testing code that runs in parallel
 
 You may execute a unit test executable in parallel by
-using `baci_add_google_test_executable(<name> NP <number of processes> SOURCE source1 [source2 ..
+using `four_c_add_google_test_executable(<name> NP <number of processes> SOURCE source1 [source2 ..
 .])`. The resulting test executable will then be called with the correct mpi flags by `ctest`.

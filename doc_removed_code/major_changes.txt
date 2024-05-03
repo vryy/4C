@@ -1,4 +1,4 @@
-List of major features that were removed from BACI, including date and revision where code was removed
+List of major features that were removed from 4C, including date and revision where code was removed
 
 GEMM ("Generalized energy momentum method")
 - removed in commit c010a388759acd3496601ed847b55168939b56d6 on 30/04/2024

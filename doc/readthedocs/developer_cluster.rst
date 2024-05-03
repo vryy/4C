@@ -23,7 +23,7 @@ Clone the |FOURC| repository from your workstation to a cluster using ssh::
 
     ssh <coworker>@<cluster>
     cd <clusterworkspace>
-    git clone ssh://<coworker>@<host>/<coworkerworkspace>/baci baci
+    git clone ssh://<coworker>@<host>/<coworkerworkspace>/4C 4C
     exit
 
 **Note:** This requires that firewall settings allow access from the cluster to your workstation.
@@ -44,7 +44,7 @@ where ``<port>`` is in the range from 1024 through 49151.
 This opens a new shell on the cluster that allows access to your workstation via the ssh tunnel::
 
     cd <clusterworkspace>
-    git clone ssh://<coworker>@localhost:<port>/<coworkerworkspace>/baci baci
+    git clone ssh://<coworker>@localhost:<port>/<coworkerworkspace>/4C 4C
     exit
 
 

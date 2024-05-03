@@ -1,4 +1,4 @@
-" Baci header check"
+"4C header check"
 
 import argparse
 import file_header as bh

@@ -205,7 +205,7 @@ def main():
     errors_include_style = check_include_style(look_cmd, module_roots)
 
     utils.pretty_print_error_report(
-        "A valid filename looks like this: baci_<module_name>_<detailed_name>[_test].(.hpp|cpp). "
+        "A valid filename looks like this: 4C_<module_name>_<detailed_name>[_test].(.hpp|cpp). "
         + "The following files have incorrect filenames:",
         errors_filename,
         errfile,

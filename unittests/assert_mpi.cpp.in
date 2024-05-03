@@ -13,7 +13,7 @@
 
 // This test is automatically included inside every test executable created from the cmake function
 // FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE.
-TEST(BACIGoogleTest, RunningWithIntendedNumberOfProcesses)
+TEST(FourCGoogleTest, RunningWithIntendedNumberOfProcesses)
 {
   // clang-format off
   const int intended_n_processes = @FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_NP@;

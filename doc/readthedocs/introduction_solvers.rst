@@ -20,7 +20,7 @@ while physics plays a role in iterative methods, and particular, their multigrid
 so it is important for the latter to comprehend the parameters to be used.
 Anyway, the decision on which solver to use is illustrated in the following flow chart:
 
-.. figure:: figures/LinearSolversInBaci_flowchart.png
+.. figure:: figures/LinearSolvers_flowchart.png
    :width: 400px
    :align: center
 
@@ -264,7 +264,7 @@ Future prospects
 Further reading
 ^^^^^^^^^^^^^^^
 
-.. figure:: figures/TGM_LinearSolversInBaci.pdf
+.. figure:: figures/TGM_LinearSolvers.pdf
    :width: 400px
    :align: center
 

@@ -1,4 +1,4 @@
-"BACI CODEOWNERS check"
+"4C CODEOWNERS check"
 
 import argparse
 from four_c_utils import common_utils as utils
