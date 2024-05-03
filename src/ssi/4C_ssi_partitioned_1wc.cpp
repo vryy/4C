@@ -105,9 +105,9 @@ void SSI::SSIPart1WC::DoScatraStep()
       }
       else
       {
-        // create vector with dofrowmap from previously performed scatra calculation
+        // create vector with noderowmap from previously performed scatra calculation
         Teuchos::RCP<Epetra_Vector> phinptemp =
-            CORE::LINALG::CreateVector(*cardmono->DofRowMapScatra());
+            CORE::LINALG::CreateVector(*cardmono->Discretization()->NodeRowMap());
 
         // read phinp from restart file
         reader->ReadVector(phinptemp, "phinp");
