@@ -18,6 +18,7 @@
 #include "4C_geometry_pair_utility_classes.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_fad.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -54,69 +55,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
     CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
     const bool min_one_iteration) const
 {
-  // Initialize data structures
-
-  // Approximated size of surface and beam diameter for valid projection check.
-  const scalar_type surface_size = GetSurfaceSize(element_data_surface);
-  const double beam_radius = GetLineRadius();
-
-  // Vectors in 3D.
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
-  CORE::LINALG::Matrix<3, 1, scalar_type> delta_xi;
-  // Initialize the increment with a value that will not pass the first convergence check.
-  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
-  CORE::LINALG::Matrix<3, 1, scalar_type> residuum;
-
-  // Jacobian / inverse.
-  CORE::LINALG::Matrix<3, 3, scalar_type> J_J_inv;
-
-  // Reset the projection result flag.
-  projection_result = ProjectionResult::projection_not_found;
-
-  // Local Newton iteration.
-  {
-    unsigned int counter = 0;
-    while (counter < CONSTANTS::local_newton_iter_max)
-    {
-      // Evaluate the position and its derivative on the surface.
-      EvaluateSurfacePositionAndDerivative(element_data_surface, xi, r_surface, J_J_inv);
-
-      // Evaluate the residuum $r_{solid} - r_{point} = R_{pos}$.
-      residuum = r_surface;
-      residuum -= point;
-
-      if (counter == 0 and min_one_iteration)
-      {
-        // if the min_one_iteration flag is set we run at least one iteration, so the dependency on
-        // FAD variables is calculated correctly.
-      }
-      else if (CORE::FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
-               CORE::FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
-      {
-        if (ValidParameterSurface(xi, surface_size, beam_radius))
-          projection_result = ProjectionResult::projection_found_valid;
-        else
-          projection_result = ProjectionResult::projection_found_not_valid;
-        break;
-      }
-
-      // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (CORE::FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
-
-      // Solve the linearized system.
-      if (CORE::LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
-              J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
-      {
-        // Set the new parameter coordinates.
-        xi -= delta_xi;
-
-        // Advance Newton iteration counter.
-        counter++;
-      }
-      else
-        break;
-    }
-  }
+  ProjectPointToSurface(point, element_data_surface, xi, projection_result,
+      GetSurfaceNormalInfluenceDirection(element_data_surface), min_one_iteration);
 }
 
 
@@ -169,35 +109,6 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
-    surface>::EvaluateSurfacePositionAndDerivative(const ElementData<surface, scalar_type>&
-                                                       element_data_surface,
-    const CORE::LINALG::Matrix<3, 1, scalar_type>& xi, CORE::LINALG::Matrix<3, 1, scalar_type>& r,
-    CORE::LINALG::Matrix<3, 3, scalar_type>& dr) const
-{
-  // Create a nested FAD type.
-  using FAD_outer = Sacado::ELRFad::SLFad<scalar_type, 3>;
-
-  // Setup the AD variables.
-  CORE::LINALG::Matrix<3, 1, FAD_outer> xi_AD;
-  for (unsigned int i_dim = 0; i_dim < 3; i_dim++) xi_AD(i_dim) = FAD_outer(3, i_dim, xi(i_dim));
-  CORE::LINALG::Matrix<3, 1, FAD_outer> r_AD;
-
-  // Evaluate the position.
-  EvaluateSurfacePosition<surface>(xi_AD, element_data_surface, r_AD);
-
-  // Extract the return values from the AD types.
-  for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-  {
-    r(i_dir) = r_AD(i_dir).val();
-    for (unsigned int i_dim = 0; i_dim < 3; i_dim++) dr(i_dir, i_dim) = r_AD(i_dir).dx(i_dim);
-  }
-}
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
     surface>::IntersectLineWithSurfaceEdge(const ElementData<line, scalar_type>& element_data_line,
     const ElementData<surface, scalar_type>& element_data_surface,
     const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
@@ -216,9 +127,9 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       FOUR_C_THROW("fixed_parameter in IntersectLineWithSurfaceEdge can be 2 at maximum.");
   }
 
-  // Approximated size of surface and beam diameter for valid projection check.
-  const scalar_type surface_size = GetSurfaceSize(element_data_surface);
-  const double beam_radius = GetLineRadius();
+  // Approximated influence size of the surface.
+  const double normal_influence_direction =
+      GetSurfaceNormalInfluenceDirection(element_data_surface);
 
   // Initialize data structures.
   // Point on line.
@@ -283,7 +194,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
                CORE::FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
       {
         // System is solved, now check if the parameter coordinates are valid.
-        if (ValidParameter1D(eta) && ValidParameterSurface(xi, surface_size, beam_radius))
+        if (ValidParameter1D(eta) &&
+            ValidParameterSurface<scalar_type, surface>(xi, normal_influence_direction))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -324,56 +236,46 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
  *
  */
 template <typename scalar_type, typename line, typename surface>
-bool GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ValidParameterSurface(
-    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, const scalar_type& surface_size,
-    const double beam_radius) const
-{
-  // We only need to check the normal distance if the coordinates are within the surface.
-  if (!ValidParameter2D<surface>(xi)) return false;
-
-  if ((-surface_size < xi(2) and xi(2) < surface_size) or
-      (-3.0 * beam_radius < xi(2) and xi(2) < 3 * beam_radius))
-    return true;
-  else
-    return false;
-}
-
-/**
- *
- */
-template <typename scalar_type, typename line, typename surface>
-double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetLineRadius() const
+double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
+    surface>::GetSurfaceNormalInfluenceDirection(const ElementData<surface, scalar_type>&
+        element_data_surface) const
 {
   if (is_unit_test_)
-    return 1e10;
+    return -1.0;
   else
-    return (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1()))
-        ->GetCircularCrossSectionRadiusForInteractions();
+  {
+    double surface_size = GetSurfaceSize(element_data_surface);
+    double line_tube_size_radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1()))
+                                       ->GetCircularCrossSectionRadiusForInteractions();
+    return std::max(surface_size, 3.0 * line_tube_size_radius);
+  }
 }
 
 /**
  *
  */
 template <typename scalar_type, typename line, typename surface>
-scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetSurfaceSize(
+double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetSurfaceSize(
     const ElementData<surface, scalar_type>& element_data_surface) const
 {
   // Get the position of the first 3 nodes of the surface.
   CORE::LINALG::Matrix<2, 1, double> xi_corner_node;
-  CORE::LINALG::Matrix<3, 1, CORE::LINALG::Matrix<3, 1, scalar_type>> corner_nodes;
+  CORE::LINALG::Matrix<3, 1, CORE::LINALG::Matrix<3, 1, double>> corner_nodes;
   CORE::LINALG::SerialDenseMatrix nodal_coordinates =
       CORE::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+  const auto element_data_surface_double =
+      ElementDataToDouble<surface>::ToDouble(element_data_surface);
   for (unsigned int i_node = 0; i_node < 3; i_node++)
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
       xi_corner_node(i_dim) = nodal_coordinates(i_dim, i_node);
-    EvaluatePosition<surface>(xi_corner_node, element_data_surface, corner_nodes(i_node));
+    EvaluatePosition<surface>(xi_corner_node, element_data_surface_double, corner_nodes(i_node));
   }
 
   // Calculate the maximum distance between the three points.
-  scalar_type max_distance = 0.0;
-  scalar_type distance = 0.0;
-  CORE::LINALG::Matrix<3, 1, scalar_type> diff;
+  double max_distance = 0.0;
+  double distance = 0.0;
+  CORE::LINALG::Matrix<3, 1, double> diff;
   for (unsigned int i_node = 0; i_node < 3; i_node++)
   {
     for (unsigned int j_node = 0; j_node < 3; j_node++)
@@ -521,6 +423,74 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
       // Calculate the projection.
       this->ProjectPointToOther(
           point_in_space, element_data_surface, projection_point.GetXi(), projection_result, true);
+    }
+  }
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename surface>
+void GEOMETRYPAIR::ProjectPointToSurface(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+    const ElementData<surface, scalar_type>& element_data_surface,
+    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+    const double normal_influence_direction, const bool min_one_iteration)
+{
+  // Vectors in 3D.
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
+  CORE::LINALG::Matrix<3, 1, scalar_type> delta_xi;
+  // Initialize the increment with a value that will not pass the first convergence check.
+  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
+  CORE::LINALG::Matrix<3, 1, scalar_type> residuum;
+
+  // Jacobian / inverse.
+  CORE::LINALG::Matrix<3, 3, scalar_type> J_J_inv;
+
+  // Reset the projection result flag.
+  projection_result = ProjectionResult::projection_not_found;
+
+  // Local Newton iteration.
+  {
+    unsigned int counter = 0;
+    while (counter < CONSTANTS::local_newton_iter_max)
+    {
+      // Evaluate the position and its derivative on the surface.
+      EvaluateSurfacePositionAndDerivative(element_data_surface, xi, r_surface, J_J_inv);
+
+      // Evaluate the residuum $r_{solid} - r_{point} = R_{pos}$.
+      residuum = r_surface;
+      residuum -= point;
+
+      if (counter == 0 and min_one_iteration)
+      {
+        // if the min_one_iteration flag is set we run at least one iteration, so the dependency on
+        // FAD variables is calculated correctly.
+      }
+      else if (CORE::FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
+               CORE::FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
+      {
+        if (ValidParameterSurface<scalar_type, surface>(xi, normal_influence_direction))
+          projection_result = ProjectionResult::projection_found_valid;
+        else
+          projection_result = ProjectionResult::projection_found_not_valid;
+        break;
+      }
+
+      // Check if residuum is in a sensible range where we still expect to find a solution.
+      if (CORE::FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
+
+      // Solve the linearized system.
+      if (CORE::LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+              J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
+      {
+        // Set the new parameter coordinates.
+        xi -= delta_xi;
+
+        // Advance Newton iteration counter.
+        counter++;
+      }
+      else
+        break;
     }
   }
 }
