@@ -12,9 +12,7 @@ to disk
 /* headers */
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 
-#include "4C_beam3_base.hpp"
 #include "4C_io.hpp"
-#include "4C_io_control.hpp"
 #include "4C_io_visualization_manager.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_element.hpp"
@@ -34,10 +32,12 @@ namespace IO
    *-----------------------------------------------------------------------------------------------*/
   DiscretizationVisualizationWriterMesh::DiscretizationVisualizationWriterMesh(
       const Teuchos::RCP<const DRT::Discretization>& discretization,
-      VisualizationParameters parameters)
+      VisualizationParameters parameters,
+      std::function<bool(const DRT::Element* element)> element_filter)
       : discretization_(discretization),
         visualization_manager_(Teuchos::rcp(new VisualizationManager(
-            std::move(parameters), discretization->Comm(), discretization->Name())))
+            std::move(parameters), discretization->Comm(), discretization->Name()))),
+        element_filter_(std::move(element_filter))
   {
     SetGeometryFromDiscretization();
   }
@@ -81,24 +81,14 @@ namespace IO
 
     for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      // Currently this method only works for elements which represent the same differential
-      // equation. In structure problems, 1D beam and 3D solid elements are contained in the same
-      // simulation but require fundamentally different output structures. Therefore, as long as 1D
-      // beam and 3D solids are not split, beam output is done with the
-      // BeamDiscretizationRuntimeOutputWriter class.
-      const auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-
-      if (beamele != nullptr)
-      {
-        ++num_skipped_eles;
-        continue;
-      }
-      else
+      if (element_filter_(ele))
       {
         pointcounter +=
             ele->AppendVisualizationGeometry(*discretization_, cell_types, point_coordinates);
         cell_offsets.push_back(pointcounter);
       }
+      else
+        ++num_skipped_eles;
     }
 
 
@@ -175,14 +165,7 @@ namespace IO
 
     for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      // check for beam element that potentially needs special treatment due to Hermite
-      // interpolation
-      const auto* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-
-      // simply skip beam elements here (handled by BeamDiscretizationRuntimeOutputWriter)
-      if (beamele != nullptr)
-        continue;
-      else
+      if (element_filter_(ele))
       {
         pointcounter +=
             ele->AppendVisualizationDofBasedResultDataVector(*discretization_, result_data_dofbased,
@@ -239,12 +222,7 @@ namespace IO
 
     for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      // check for beam element that potentially needs special treatment due to Hermite
-      // interpolation
-      const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-
-      // simply skip beam elements here (handled by BeamDiscretizationRuntimeOutputWriter)
-      if (beamele != nullptr) continue;
+      if (!element_filter_(ele)) continue;
 
       const std::vector<int>& numbering =
           DRT::ELEMENTS::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
@@ -316,12 +294,7 @@ namespace IO
     {
       const DRT::Element* ele = discretization_->lRowElement(iele);
 
-      // check for beam element that potentially needs special treatment due to Hermite
-      // interpolation
-      const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-
-      // simply skip beam elements here (handled by BeamDiscretizationRuntimeOutputWriter)
-      if (beamele != nullptr) continue;
+      if (!element_filter_(ele)) continue;
 
       for (unsigned int icpe = 0; icpe < result_num_components_per_element; ++icpe)
       {
@@ -355,11 +328,7 @@ namespace IO
     const int my_pid = discretization_->Comm().MyPID();
     for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      // Since we do not output beam elements we filter them here.
-      const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-      if (beamele != nullptr) continue;
-
-      owner_of_row_elements.push_back(my_pid);
+      if (element_filter_(ele)) owner_of_row_elements.push_back(my_pid);
     }
 
     // Pass data to the output writer.
@@ -377,11 +346,7 @@ namespace IO
 
     for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      // Since we do not output beam elements we filter them here.
-      auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-      if (beamele != nullptr) continue;
-
-      gid_of_row_elements.push_back(ele->Id());
+      if (element_filter_(ele)) gid_of_row_elements.push_back(ele->Id());
     }
 
     // Pass data to the output writer.
@@ -394,7 +359,8 @@ namespace IO
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::AppendElementGhostingInformation()
   {
-    IO::AppendElementGhostingInformation(*discretization_, *visualization_manager_);
+    IO::AppendElementGhostingInformation(
+        *discretization_, *visualization_manager_, element_filter_);
   }
 
   /*-----------------------------------------------------------------------------------------------*
@@ -415,9 +381,7 @@ namespace IO
     // Loop over each element and add the node GIDs.
     for (const DRT::Element* ele : discretization_->MyRowElementRange())
     {
-      // simply skip beam elements here (handled by BeamDiscretizationRuntimeOutputWriter)
-      auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-      if (beamele != nullptr) continue;
+      if (!element_filter_(ele)) continue;
 
       // Add the node GIDs.
       const std::vector<int>& numbering =
@@ -442,7 +406,8 @@ namespace IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void AppendElementGhostingInformation(const DRT::Discretization& discretization,
-      VisualizationManager& visualization_manager, bool is_beam)
+      VisualizationManager& visualization_manager,
+      const std::function<bool(const DRT::Element* ele)>& element_predicate)
   {
     // Set up a multivector which will be populated with all ghosting informations.
     const Epetra_Comm& comm = discretization.ElementColMap()->Comm();
@@ -458,9 +423,7 @@ namespace IO
     int count = 0;
     for (const DRT::Element* ele : discretization.MyColElementRange())
     {
-      const auto* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-      const bool is_beam_element = beamele != nullptr;
-      if ((is_beam_element and is_beam) or ((not is_beam_element) and (not is_beam)))
+      if (element_predicate(ele))
       {
         count++;
         if (ele->Owner() != my_proc) my_ghost_elements.push_back(ele->Id());
@@ -480,9 +443,7 @@ namespace IO
     ghosted_elements.reserve(count * n_proc);
     for (const DRT::Element* ele : discretization.MyRowElementRange())
     {
-      const auto* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-      const bool is_beam_element = beamele != nullptr;
-      if ((is_beam_element and is_beam) or ((not is_beam_element) and (not is_beam)))
+      if (element_predicate(ele))
       {
         const int local_row = ghosting_information.Map().LID(ele->Id());
         if (local_row == -1) FOUR_C_THROW("The element has to exist in the row map.");

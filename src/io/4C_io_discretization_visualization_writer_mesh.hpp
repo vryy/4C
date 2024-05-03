@@ -13,8 +13,6 @@ to disk
 
 #include "4C_config.hpp"
 
-#include "4C_io_control.hpp"
-
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
@@ -23,7 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace DRT
 {
   class Discretization;
-}
+  class Element;
+}  // namespace DRT
 namespace IO
 {
   class VisualizationManager;
@@ -44,10 +43,15 @@ namespace IO
      *
      * @param discretization (in)  Pointer to the discretization
      * @param parameters (in)      Visualization parameters
+     * @param element_filter (in)  An optional function that returns true for all elements that
+     *   should be included in the visualization. By default, all elements in the discretization are
+     *   included.
      */
     DiscretizationVisualizationWriterMesh(
         const Teuchos::RCP<const DRT::Discretization>& discretization,
-        VisualizationParameters parameters);
+        VisualizationParameters parameters,
+        std::function<bool(const DRT::Element* element)> element_filter = [](const DRT::Element*)
+        { return true; });
 
     /**
      * @brief Destructor
@@ -166,6 +170,9 @@ namespace IO
     //! The actual visualization writer object that additionally stores the geometry and result data
     Teuchos::RCP<VisualizationManager> visualization_manager_;
 
+    //! A filter function that returns true for all elements that should be visualized.
+    std::function<bool(const DRT::Element* element)> element_filter_;
+
     //! Node row and col maps the geometry of visualization writer is based on
     Teuchos::RCP<Epetra_Map> noderowmap_last_geometry_set_;
     Teuchos::RCP<Epetra_Map> nodecolmap_last_geometry_set_;
@@ -176,10 +183,12 @@ namespace IO
    * ranks that ghost the element.
    * @param discretization (in) Discretization
    * @param visualization_manager (in/out) Visualization writer object
-   * @param is_beam (in) If beam or non-beam elements should be output
+   * @param element_predicate (in) A predicate function which returns whether a given element
+   * should be included in the output.
    */
   void AppendElementGhostingInformation(const DRT::Discretization& discretization,
-      VisualizationManager& visualization_manager, bool is_beam = false);
+      VisualizationManager& visualization_manager,
+      const std::function<bool(const DRT::Element* ele)>& element_predicate);
 
 }  // namespace IO
 FOUR_C_NAMESPACE_CLOSE
