@@ -1,7 +1,7 @@
-# Style configuration for Baci to be used with clang-format
+# Style configuration for 4C to be used with clang-format
 #
-# Baci's code style is based on the Google code style. However, we aggreed to deviate
-# from it slightly to account enhance readability and to address Baci specifics.
+# 4C's code style is based on the Google code style. However, we aggreed to deviate
+# from it slightly to account enhance readability and to address 4C specifics.
 
 ## Define the base style. We use Google's style here.
 BasedOnStyle: Google                # Use Google style as baseline configuration and specify deviations explicitly as given below
@@ -26,17 +26,17 @@ IncludeCategories:
   - Regex: "gmock/gmock.h"
     Priority: -2
 
-  # make sure to include config headers before other BACI headers:
+  # make sure to include config headers before other 4C headers:
   - Regex: "4C_config.*.hpp"
     Priority: -1
 
   # the header associated with a cpp file has priority zero and would come here
 
-  # try to group BACI headers:
+  # try to group 4C headers:
   - Regex: "4C_.*\\.(h|H|hpp)"
     Priority: 10
 
-  # try to catch all third party headers and put them after BACI but before
+  # try to catch all third party headers and put them after 4C but before
   # standard headers:
   - Regex: "<.*\\.(h|hpp|hxx)>"
     Priority: 1000
