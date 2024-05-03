@@ -22,7 +22,7 @@ import plot
 
 project = "4C"
 copyright = "2024, The 4C developers"
-author = "The BACI developers"
+author = "The 4C developers"
 
 # -- General configuration ---------------------------------------------------
 

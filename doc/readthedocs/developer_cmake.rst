@@ -52,7 +52,7 @@ Such a local preset could look like this::
         {
           "name": "myworkstation",
           "displayName": "Release build for my workstation",
-          "binaryDir": "<4C-execdir>/baci_release",
+          "binaryDir": "<4C-execdir>/4C",
           "generator": "Ninja",
           "inherits": [
             "lnm_workstation"
@@ -112,7 +112,7 @@ Conventions
 - The top-most install directory of a dependency is supplied by the `FOUR_C_<PACKAGE>_ROOT` variable.
   When possible we try to use CMake files exported by dependencies. For older
   libraries we write our own `Find<package>.cmake` modules.
-- Every function that is supplied by this project starts with `baci_`.
+- Every function that is supplied by this project starts with `FOUR_C_`.
 - CMake files are automatically formatted according to the style defined in
   `./utilities/code_checks/.cmake-format.yaml`.
 
@@ -148,7 +148,7 @@ When defining a module `module_name`:
 - Define a CMake `INTERFACE` target conventionally called `module_name_deps` which contains all the headers and usage requirements of
   the module.
 - If another module `module_other` is required for building `module_name`, this module is added as
-  `baci_add_dependency(module_name module_other)`. This step encodes internal dependencies.
+  `four_c_add_dependency(module_name module_other)`. This step encodes internal dependencies.
 - Define a CMake `OBJECT` target conventionally called `module_name_objs` which contains the source files. If a module is
   header-only, this target is not defined.
 - Add the `OBJECT` target to a central library which contains all compiled sources.
