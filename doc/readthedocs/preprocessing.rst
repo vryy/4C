@@ -115,13 +115,6 @@ If the inp has many steps defined by STEP/END STEP keywords, the list of paramet
 Alternatively, one may run a python script called ``CAEabq2baci.py`` to convert an ABAQUS input file to a |FOURC| input file (available on request). This script uses ABAQUS/CAE commands, that is, an abaqus license is necessary to run this script.
 
 
-
-.. _gid:
-
-**GiD**
-
-A |FOURC| input file can be generated using the GiD problemtype baci.gid.
-
 Generating Exodus II files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
