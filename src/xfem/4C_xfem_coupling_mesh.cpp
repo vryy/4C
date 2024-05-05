@@ -2317,40 +2317,41 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
       "hex8 elements");
 
 
-  auto evaluate_cauchy_n_dir_and_derivatives =
+  auto evaluate_cauchy_n_dir_and_derivatives = std::invoke(
       [&]() -> std::function<void(const CORE::LINALG::Matrix<NUMDIM_SOH8, 1>&, double&,
                 CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&)>
-  {
-    if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(coupl_ele); solid_ele != nullptr)
-    {
-      return [&](const CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& dir, double& cauchy_n_dir,
-                 CORE::LINALG::SerialDenseMatrix& d_cauchy_d_d,
-                 CORE::LINALG::SerialDenseMatrix& d2_cauchy_d_d2)
       {
-        solid_ele->GetCauchyNDirAndDerivativesAtXi(rst_slave, eledisp, normal, dir, cauchy_n_dir,
-            &d_cauchy_d_d, &d2_cauchy_d_d2, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-            nullptr, nullptr, nullptr, nullptr, nullptr);
-      };
-    }
-    else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(coupl_ele); solid_ele != nullptr)
-    {
-      return [&](const CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& dir, double& cauchy_n_dir,
-                 CORE::LINALG::SerialDenseMatrix& d_cauchy_d_d,
-                 CORE::LINALG::SerialDenseMatrix& d2_cauchy_d_d2)
-      {
-        DRT::ELEMENTS::CauchyNDirLinearizations<3> linearizations{};
-        linearizations.d_cauchyndir_dd = &d_cauchy_d_d;
-        linearizations.d2_cauchyndir_dd2 = &d2_cauchy_d_d2;
+        if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(coupl_ele); solid_ele != nullptr)
+        {
+          return [&, solid_ele](const CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& dir,
+                     double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix& d_cauchy_d_d,
+                     CORE::LINALG::SerialDenseMatrix& d2_cauchy_d_d2)
+          {
+            solid_ele->GetCauchyNDirAndDerivativesAtXi(rst_slave, eledisp, normal, dir,
+                cauchy_n_dir, &d_cauchy_d_d, &d2_cauchy_d_d2, nullptr, nullptr, nullptr, nullptr,
+                nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+          };
+        }
+        else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(coupl_ele);
+                 solid_ele != nullptr)
+        {
+          return [&, solid_ele](const CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& dir,
+                     double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix& d_cauchy_d_d,
+                     CORE::LINALG::SerialDenseMatrix& d2_cauchy_d_d2)
+          {
+            DRT::ELEMENTS::CauchyNDirLinearizations<3> linearizations{};
+            linearizations.d_cauchyndir_dd = &d_cauchy_d_d;
+            linearizations.d2_cauchyndir_dd2 = &d2_cauchy_d_d2;
 
-        cauchy_n_dir =
-            solid_ele->GetCauchyNDirAtXi<3>(eledisp, rst_slave, normal, dir, linearizations);
-      };
-    }
-    else
-    {
-      FOUR_C_THROW("Unknown solid element type");
-    }
-  }();
+            cauchy_n_dir =
+                solid_ele->GetCauchyNDirAtXi<3>(eledisp, rst_slave, normal, dir, linearizations);
+          };
+        }
+        else
+        {
+          FOUR_C_THROW("Unknown solid element type");
+        }
+      });
 
   solid_stress.resize(5);  // traction,dtdd,d2dddx,d2dddy,d2dddz
   solid_stress[0].reshape(NUMDIM_SOH8, 1);
