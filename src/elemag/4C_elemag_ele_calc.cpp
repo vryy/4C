@@ -1407,7 +1407,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
   {
     // Get the user defined functions
     auto* cond = params.getPtr<Teuchos::RCP<DRT::Condition>>("condition");
-    const auto& funct = (*cond)->Get<std::vector<int>>("funct");
+    const auto& funct = (*cond)->parameters().Get<std::vector<int>>("funct");
     const double time = params.get<double>("time");
 
     CORE::LINALG::SerialDenseVector tempVec1(shapesface_->nfdofs_ * nsd_);

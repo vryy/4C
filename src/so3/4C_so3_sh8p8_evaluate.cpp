@@ -2329,7 +2329,7 @@ void DRT::ELEMENTS::SoSh8p8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_
 
     for (auto& conu : cond0)
     {
-      int tmp = conu->Get<int>("ConditionID");
+      int tmp = conu->parameters().Get<int>("ConditionID");
       if (tmp < condnum0) condnum0 = tmp;
     }
     if (condnum0 == stc_layer) current0 = true;
@@ -2337,7 +2337,7 @@ void DRT::ELEMENTS::SoSh8p8::CalcSTCMatrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_
 
     for (auto& conu : cond1)
     {
-      int tmp = conu->Get<int>("ConditionID");
+      int tmp = conu->parameters().Get<int>("ConditionID");
       if (tmp < condnum1) condnum1 = tmp;
     }
     if (condnum1 == stc_layer) current1 = true;

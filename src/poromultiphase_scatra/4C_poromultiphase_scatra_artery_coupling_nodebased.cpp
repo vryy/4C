@@ -58,7 +58,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
 
   for (auto& iter : artCoupcond)
   {
-    int myID = iter->Get<int>("coupling id");
+    int myID = iter->parameters().Get<int>("coupling id");
     condIDs[0].push_back(myID);
   }
 
@@ -68,7 +68,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
 
   for (auto& iter : contfieldCoupcond)
   {
-    int myID = iter->Get<int>("coupling id");
+    int myID = iter->parameters().Get<int>("coupling id");
     condIDs[1].push_back(myID);
   }
 

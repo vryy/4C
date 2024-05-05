@@ -629,8 +629,8 @@ int DRT::ELEMENTS::SoHex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
 {
   SetParamsInterfacePtr(params);
   // get values and switches from the condition
-  const auto* onoff = &condition.Get<std::vector<int>>("onoff");
-  const auto* val = &condition.Get<std::vector<double>>("val");
+  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -654,7 +654,7 @@ int DRT::ELEMENTS::SoHex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const auto* funct = &condition.Get<std::vector<int>>("funct");
+  const auto* funct = &condition.parameters().Get<std::vector<int>>("funct");
   CORE::LINALG::Matrix<NUMDIM_SOH8, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)

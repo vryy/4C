@@ -72,8 +72,8 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<DRT::Condition> condition =
             params.get<Teuchos::RCP<DRT::Condition>>("condition");
-        const auto& direct = condition->Get<std::vector<double>>("direction");
-        const auto& value = condition->Get<std::string>("value");
+        const auto& direct = condition->parameters().Get<std::vector<double>>("direction");
+        const auto& value = condition->parameters().Get<std::string>("value");
         if (value == "disp")
           elevec3[0] = ComputeWeightedDistance(mydisp, direct);
         else if (value == "x")
@@ -122,13 +122,14 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<DRT::Condition> condition =
             params.get<Teuchos::RCP<DRT::Condition>>("condition");
-        const std::vector<double>& direct = condition->Get<std::vector<double>>("direction");
+        const std::vector<double>& direct =
+            condition->parameters().Get<std::vector<double>>("direction");
 
         // Compute weighted difference between masternode and other node and it's derivative
         ComputeFirstDerivWeightedDistance(elevec1, direct);
         elevec2 = elevec1;
 
-        const std::string& value = condition->Get<std::string>("value");
+        const std::string& value = condition->parameters().Get<std::string>("value");
         if (value == "disp")
           elevec3[0] = ComputeWeightedDistance(mydisp, direct);
         else if (value == "x")

@@ -281,7 +281,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
         {
           // see whether pbc is active in plane orthogonal to sampling plane
           const auto dofsforpbcplanename =
-              pbc->Get<std::string>("degrees of freedom for the pbc plane");
+              pbc->parameters().Get<std::string>("degrees of freedom for the pbc plane");
 
           bool active = false;
 
@@ -315,7 +315,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
           {
             // see whether we have a slave node
             const auto mymasterslavetoggle =
-                pbc->Get<std::string>("Is slave periodic boundary condition");
+                pbc->parameters().Get<std::string>("Is slave periodic boundary condition");
 
             if (mymasterslavetoggle == "Slave")
             {
@@ -540,7 +540,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
             // see whether pbc is active in plane orthogonal to sampling plane
             const std::string& dofsforpbcplanename =
-                pbc->Get<std::string>("degrees of freedom for the pbc plane");
+                pbc->parameters().Get<std::string>("degrees of freedom for the pbc plane");
 
             bool active = false;
 
@@ -574,7 +574,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
             {
               // see whether we have a slave node
               const std::string& mymasterslavetoggle =
-                  pbc->Get<std::string>("Is slave periodic boundary condition");
+                  pbc->parameters().Get<std::string>("Is slave periodic boundary condition");
 
               if (mymasterslavetoggle == "Slave")
               {
@@ -842,7 +842,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
           // see whether pbc is active in plane orthogonal to sampling plane
           const std::string& dofsforpbcplanename =
-              pbc->Get<std::string>("degrees of freedom for the pbc plane");
+              pbc->parameters().Get<std::string>("degrees of freedom for the pbc plane");
 
           bool active = false;
 
@@ -876,7 +876,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
           {
             // see whether we have a slave node
             const std::string& mymasterslavetoggle =
-                pbc->Get<std::string>("Is slave periodic boundary condition");
+                pbc->parameters().Get<std::string>("Is slave periodic boundary condition");
 
             if (mymasterslavetoggle == "Slave")
             {

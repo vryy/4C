@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 DRT::Condition::Condition(const int id, const CORE::Conditions::ConditionType type,
     const bool buildgeometry, const CORE::Conditions::GeometryType gtype)
-    : InputParameterContainer(), id_(id), buildgeometry_(buildgeometry), type_(type), gtype_(gtype)
+    : id_(id), buildgeometry_(buildgeometry), type_(type), gtype_(gtype)
 {
 }
 
@@ -597,7 +597,7 @@ std::string DRT::Condition::Name() const
 void DRT::Condition::Print(std::ostream& os) const
 {
   os << DRT::Condition::Name();
-  InputParameterContainer::Print(os);
+  container_.Print(os);
   os << std::endl;
   if (nodes_.size() != 0)
   {

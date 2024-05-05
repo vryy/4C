@@ -32,21 +32,21 @@ namespace DRT
   class Discretization;
 
   /*!
-   * A condition is mainly used to realize boundary conditions. Paramters for the condition
+   * A condition is mainly used to realize boundary conditions. Parameters for the condition
    * are stored in a InputParameterContainer.
    * The condition can additionally store a discretization of the condition which is
    * driven by the Discretization class that is evaluating this condition.
    * The Discretization class is therefore a friend of the Condition and has access to
    * the protected methods dealing with the discretization of this condition.
    */
-  class Condition : public IO::InputParameterContainer
+  class Condition
   {
    public:
     //! @name Enums and Friends
 
     /*!
     \brief Discretization is a friend of the condition to have access
-           to the protected methods that would otherwise have to be public.
+           to the private methods that would otherwise have to be public.
 
     */
     friend class DRT::Discretization;
@@ -88,7 +88,7 @@ namespace DRT
     /*!
     \brief Return condition id
     */
-    [[nodiscard]] inline virtual int Id() const { return id_; }
+    [[nodiscard]] inline int Id() const { return id_; }
 
     /*!
     \brief Return vector of my global node ids
@@ -123,7 +123,7 @@ namespace DRT
     condition the returned flag is true, otherwise its false;
 
     */
-    [[nodiscard]] inline virtual bool GeometryDescription() const { return buildgeometry_; }
+    [[nodiscard]] inline bool GeometryDescription() const { return buildgeometry_; }
 
     /*!
     \brief Return type of geometry this condition lives on
@@ -132,12 +132,12 @@ namespace DRT
     geometry description is build for this condition iff GeometryDescription()==true
 
     */
-    [[nodiscard]] inline virtual CORE::Conditions::GeometryType GType() const { return gtype_; }
+    [[nodiscard]] inline CORE::Conditions::GeometryType GType() const { return gtype_; }
 
     /*!
-    \brief Print this Condition (ostream << is also implemented for DRT::Condition)
+    \brief Print this Condition
     */
-    void Print(std::ostream& os) const override;
+    void Print(std::ostream& os) const;
 
     /*!
     Return the id and the name of the condition
@@ -147,17 +147,24 @@ namespace DRT
     /*!
     \brief Return type of condition
     */
-    [[nodiscard]] inline virtual CORE::Conditions::ConditionType Type() const { return type_; }
+    [[nodiscard]] inline CORE::Conditions::ConditionType Type() const { return type_; }
 
     /*!
     \brief Get a reference to the geometry description of the condition
 
     */
-    virtual std::map<int, Teuchos::RCP<DRT::Element>>& Geometry() { return *geometry_; }
-    [[nodiscard]] virtual const std::map<int, Teuchos::RCP<DRT::Element>>& Geometry() const
+    std::map<int, Teuchos::RCP<DRT::Element>>& Geometry() { return *geometry_; }
+
+    [[nodiscard]] const std::map<int, Teuchos::RCP<DRT::Element>>& Geometry() const
     {
       return *geometry_;
     }
+
+    //! Access the container that stores the input parameters.
+    [[nodiscard]] const IO::InputParameterContainer& parameters() const { return container_; }
+
+    //! Access the container that stores the input parameters.
+    IO::InputParameterContainer& parameters() { return container_; }
 
     /*!
     \brief Adjust IDs of associated elements in order to obtain global
@@ -175,7 +182,7 @@ namespace DRT
 
     //@}
 
-   protected:
+   private:
     //! @name Construction methods
     /*!
     \brief Add a geometry description to the condition
@@ -200,21 +207,18 @@ namespace DRT
                       Do not mess with their Teuchos::RCP!
 
     */
-    virtual void AddGeometry(Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geom)
+    void AddGeometry(Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geom)
     {
       geometry_ = geom;
     }
 
     /*!
     \brief Delete a geometry description of the condition
-
-    This method is used by the Discretization only
     */
-    virtual void ClearGeometry() { geometry_ = Teuchos::null; }
+    void ClearGeometry() { geometry_ = Teuchos::null; }
 
     //@}
 
-   protected:
     Condition(const DRT::Condition& old) = default;
 
     Condition& operator=(const Condition& old) = default;
@@ -236,6 +240,8 @@ namespace DRT
 
     //! Geometry description of this condition
     Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geometry_{};
+
+    IO::InputParameterContainer container_;
   };  // class Condition
 
   inline bool operator<(const DRT::Condition& lhs, const DRT::Condition& rhs)

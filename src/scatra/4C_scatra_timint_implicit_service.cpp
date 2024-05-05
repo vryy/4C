@@ -320,7 +320,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   for (int condid = 0; condid < (int)cond.size(); condid++)
   {
     // is there already a ConditionID?
-    const auto* CondID = cond[condid]->GetIf<int>("ConditionID");
+    const auto* CondID = cond[condid]->parameters().GetIf<int>("ConditionID");
     if (CondID)
     {
       if ((*CondID) != condid)
@@ -329,7 +329,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     else
     {
       // let's add a ConditionID
-      cond[condid]->Add("ConditionID", condid);
+      cond[condid]->parameters().Add("ConditionID", condid);
     }
   }
 
@@ -2214,14 +2214,14 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
       for (unsigned icond = 0; icond < ncond; ++icond)
       {
         // extract condition ID
-        const int condid = relerrorconditions[icond]->Get<int>("ConditionID");
+        const int condid = relerrorconditions[icond]->parameters().Get<int>("ConditionID");
 
         // create element parameter list for error calculation
         Teuchos::ParameterList eleparams;
         CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
             "action", SCATRA::Action::calc_error, eleparams);
         eleparams.set<int>("calcerrorflag", INPAR::SCATRA::calcerror_byfunction);
-        const int errorfunctnumber = relerrorconditions[icond]->Get<int>("FunctionID");
+        const int errorfunctnumber = relerrorconditions[icond]->parameters().Get<int>("FunctionID");
         if (errorfunctnumber < 1) FOUR_C_THROW("Invalid function number for error calculation!");
         eleparams.set<int>("error function number", errorfunctnumber);
 
@@ -2281,7 +2281,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
             for (unsigned icond = 0; icond < ncond; ++icond)
             {
               // extract condition ID
-              const int condid = relerrorconditions[icond]->Get<int>("ConditionID");
+              const int condid = relerrorconditions[icond]->parameters().Get<int>("ConditionID");
 
               // extend headline
               f << " rel. L2-error in domain " << condid << " | rel. H1-error in domain " << condid
@@ -2303,7 +2303,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
           for (unsigned icond = 0; icond < ncond; ++icond)
           {
             // extract condition ID
-            const int condid = relerrorconditions[icond]->Get<int>("ConditionID");
+            const int condid = relerrorconditions[icond]->parameters().Get<int>("ConditionID");
 
             // extend error line
             f << " " << (*relerrors_)[condid * NumDofPerNode() * 2 + k * 2] << " "
@@ -2664,7 +2664,7 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->Get<int>("ConditionID");
+    const int condid = condition->parameters().Get<int>("ConditionID");
 
     // determine the number of dofs on the current condition
     const int numdofpernode =
@@ -2747,7 +2747,7 @@ void SCATRA::OutputScalarsStrategyCondition::PrintToScreen()
     for (auto* condition : conditions_)
     {
       // extract condition ID
-      const int condid = condition->Get<int>("ConditionID");
+      const int condid = condition->parameters().Get<int>("ConditionID");
 
       // determine the number of dofs on the current condition
       const int numdofpernode = numdofpernodepercondition_[condid];
@@ -2784,7 +2784,7 @@ SCATRA::OutputScalarsStrategyCondition::PrepareCSVOutput()
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->Get<int>("ConditionID");
+    const int condid = condition->parameters().Get<int>("ConditionID");
 
     FOUR_C_ASSERT(
         runtime_csvwriter_.has_value(), "internal error: runtime csv writer not created.");
@@ -2924,7 +2924,7 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
   for (auto* condition : conditions_)
   {
     // extract condition ID
-    const int condid = condition->Get<int>("ConditionID");
+    const int condid = condition->parameters().Get<int>("ConditionID");
 
     // determine the number of dofs on the current condition
     const int numdofpernode = numdofpernodepercondition_[condid];

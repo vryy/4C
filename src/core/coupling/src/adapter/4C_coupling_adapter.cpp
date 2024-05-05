@@ -513,7 +513,7 @@ void CORE::ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
       for (auto& cond : thiscond)
       {
         const auto& mymasterslavetoggle =
-            cond->Get<std::string>("Is slave periodic boundary condition");
+            cond->parameters().Get<std::string>("Is slave periodic boundary condition");
 
         if (mymasterslavetoggle == "Master")
         {

@@ -90,27 +90,27 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
   for (auto* cond : cardiovascular0dcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->Get<int>("id");
+    int condID = cond->parameters().Get<int>("id");
     params.set("id", condID);
 
-    double R_arvalve_max = cardiovascular0dcond_[condID]->Get<double>("R_arvalve_max");
-    double R_arvalve_min = cardiovascular0dcond_[condID]->Get<double>("R_arvalve_min");
-    double R_atvalve_max = cardiovascular0dcond_[condID]->Get<double>("R_atvalve_max");
-    double R_atvalve_min = cardiovascular0dcond_[condID]->Get<double>("R_atvalve_min");
-    double k_p = cardiovascular0dcond_[condID]->Get<double>("k_p");
+    double R_arvalve_max = cardiovascular0dcond_[condID]->parameters().Get<double>("R_arvalve_max");
+    double R_arvalve_min = cardiovascular0dcond_[condID]->parameters().Get<double>("R_arvalve_min");
+    double R_atvalve_max = cardiovascular0dcond_[condID]->parameters().Get<double>("R_atvalve_max");
+    double R_atvalve_min = cardiovascular0dcond_[condID]->parameters().Get<double>("R_atvalve_min");
+    double k_p = cardiovascular0dcond_[condID]->parameters().Get<double>("k_p");
 
-    double L_arp = cardiovascular0dcond_[condID]->Get<double>("L_arp");
-    double C_arp = cardiovascular0dcond_[condID]->Get<double>("C_arp");
-    double R_arp = cardiovascular0dcond_[condID]->Get<double>("R_arp");
-    double C_ard = cardiovascular0dcond_[condID]->Get<double>("C_ard");
-    double R_ard = cardiovascular0dcond_[condID]->Get<double>("R_ard");
+    double L_arp = cardiovascular0dcond_[condID]->parameters().Get<double>("L_arp");
+    double C_arp = cardiovascular0dcond_[condID]->parameters().Get<double>("C_arp");
+    double R_arp = cardiovascular0dcond_[condID]->parameters().Get<double>("R_arp");
+    double C_ard = cardiovascular0dcond_[condID]->parameters().Get<double>("C_ard");
+    double R_ard = cardiovascular0dcond_[condID]->parameters().Get<double>("R_ard");
 
-    double p_ref = cardiovascular0dcond_[condID]->Get<double>("p_ref");
+    double p_ref = cardiovascular0dcond_[condID]->parameters().Get<double>("p_ref");
 
-    double p_at_fac = cardiovascular0dcond_[condID]->Get<double>("fac");
+    double p_at_fac = cardiovascular0dcond_[condID]->parameters().Get<double>("fac");
 
     // find out whether we will use a time curve and get the factor
-    const int curvenum = cardiovascular0dcond_[condID]->Get<int>("curve");
+    const int curvenum = cardiovascular0dcond_[condID]->parameters().Get<int>("curve");
     double curvefac_np = 1.0;
 
     if (curvenum >= 0 && usetime)
@@ -356,7 +356,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
   for (auto* cond : cardiovascular0dcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->Get<int>("id");
+    int condID = cond->parameters().Get<int>("id");
     params.set("id", condID);
 
     // global and local ID of this bc in the redundant vectors
@@ -365,10 +365,10 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
     gindex[0] = numdof_per_cond * condID + offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0] + j;
 
-    double p_v_0 = cardiovascular0dcond_[condID]->Get<double>("p_v_0");
-    double p_arp_0 = cardiovascular0dcond_[condID]->Get<double>("p_arp_0");
-    double q_arp_0 = cardiovascular0dcond_[condID]->Get<double>("y_arp_0");
-    double p_ard_0 = cardiovascular0dcond_[condID]->Get<double>("p_ard_0");
+    double p_v_0 = cardiovascular0dcond_[condID]->parameters().Get<double>("p_v_0");
+    double p_arp_0 = cardiovascular0dcond_[condID]->parameters().Get<double>("p_arp_0");
+    double q_arp_0 = cardiovascular0dcond_[condID]->parameters().Get<double>("y_arp_0");
+    double p_ard_0 = cardiovascular0dcond_[condID]->parameters().Get<double>("p_ard_0");
 
     int err1 = sysvec2->SumIntoGlobalValues(1, &p_v_0, &gindex[0]);
     int err2 = sysvec2->SumIntoGlobalValues(1, &p_arp_0, &gindex[1]);

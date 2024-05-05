@@ -86,9 +86,9 @@ void ADAPTER::CouplingEhlMortar::Setup(Teuchos::RCP<DRT::Discretization> masterd
   double fr_coeff = -1.;
   for (int i = 0; i < (int)ehl_conditions.size(); ++i)
   {
-    [[maybe_unused]] const int group1id = ehl_conditions[i]->Get<int>("Interface ID");
-    const auto fr = ehl_conditions[i]->Get<double>("FrCoeffOrBound");
-    if (fr != ehl_conditions[0]->Get<double>("FrCoeffOrBound"))
+    [[maybe_unused]] const int group1id = ehl_conditions[i]->parameters().Get<int>("Interface ID");
+    const auto fr = ehl_conditions[i]->parameters().Get<double>("FrCoeffOrBound");
+    if (fr != ehl_conditions[0]->parameters().Get<double>("FrCoeffOrBound"))
       FOUR_C_THROW("inconsistency in friction coefficients");
     fr_coeff = fr;
   }

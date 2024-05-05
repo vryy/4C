@@ -960,12 +960,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
 
   if (myfluidneumcond.size() == 1)
   {
-    const std::string* condtype = &myfluidneumcond[0]->Get<std::string>("type");
+    const std::string* condtype = &myfluidneumcond[0]->parameters().Get<std::string>("type");
 
     // get values and switches from the condition
-    const std::vector<int>* onoff = &myfluidneumcond[0]->Get<std::vector<int>>("onoff");
-    const std::vector<double>* val = &myfluidneumcond[0]->Get<std::vector<double>>("val");
-    const std::vector<int>* funct = &myfluidneumcond[0]->Get<std::vector<int>>("funct");
+    const std::vector<int>* onoff =
+        &myfluidneumcond[0]->parameters().Get<std::vector<int>>("onoff");
+    const std::vector<double>* val =
+        &myfluidneumcond[0]->parameters().Get<std::vector<double>>("val");
+    const std::vector<int>* funct =
+        &myfluidneumcond[0]->parameters().Get<std::vector<int>>("funct");
 
     // factor given by spatial function
     double functfac = 1.0;

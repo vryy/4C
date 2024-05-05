@@ -123,7 +123,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
       // get projection method
       Teuchos::RCP<DRT::Condition> condition =
           params.get<Teuchos::RCP<DRT::Condition>>("condition");
-      const std::string* projtype = condition->GetIf<std::string>("projection");
+      const std::string* projtype = condition->parameters().GetIf<std::string>("projection");
 
       if (projtype != nullptr)
       {

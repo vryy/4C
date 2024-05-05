@@ -314,7 +314,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
         const int num_conditions = static_cast<int>(scatra_manifold_dis->GetAllConditions().size());
         auto cond = Teuchos::rcp(new DRT::Condition(num_conditions + 1,
             CORE::Conditions::ScatraPartitioning, true, CORE::Conditions::geometry_type_surface));
-        cond->Add("ConditionID", 0);
+        cond->parameters().Add("ConditionID", 0);
         cond->SetNodes(glob_node_ids);
 
         scatra_manifold_dis->SetCondition("ScatraPartitioning", cond);
@@ -831,16 +831,17 @@ bool SSI::SSIBase::CheckS2IKineticsConditionForPseudoContact(
   structdis->GetCondition("SSIInterfaceContact", ssi_contact_conditions);
   for (auto* s2ikinetics_cond : s2ikinetics_conditons)
   {
-    if ((s2ikinetics_cond->Get<int>("interface side") == INPAR::S2I::side_slave) and
-        (s2ikinetics_cond->Get<int>("kinetic model") != INPAR::S2I::kinetics_nointerfaceflux) and
-        (s2ikinetics_cond->Get<int>("is_pseudo_contact") == 1))
+    if ((s2ikinetics_cond->parameters().Get<int>("interface side") == INPAR::S2I::side_slave) and
+        (s2ikinetics_cond->parameters().Get<int>("kinetic model") !=
+            INPAR::S2I::kinetics_nointerfaceflux) and
+        (s2ikinetics_cond->parameters().Get<int>("is_pseudo_contact") == 1))
     {
       is_s2i_kinetic_with_pseudo_contact = true;
-      const int s2i_kinetics_condition_id = s2ikinetics_cond->Get<int>("ConditionID");
+      const int s2i_kinetics_condition_id = s2ikinetics_cond->parameters().Get<int>("ConditionID");
 
       for (auto* contact_condition : ssi_contact_conditions)
       {
-        if (contact_condition->Get<int>("ConditionID") == s2i_kinetics_condition_id)
+        if (contact_condition->parameters().Get<int>("ConditionID") == s2i_kinetics_condition_id)
         {
           FOUR_C_THROW(
               "Pseudo contact formulation of s2i kinetics conditions does not make sense in "

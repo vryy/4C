@@ -597,13 +597,13 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // onoff is related to the first numdf flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
-  const auto* onoff = &condition.Get<std::vector<int>>("onoff");
+  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
   // val is related to the numdf "val" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-  const auto* val = &condition.Get<std::vector<double>>("val");
+  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
   // funct is related to the numdf "funct" fields after the val field of the Neumann condition
   // in the input file; funct gives the number of the function defined in the section FUNCT
-  const auto* functions = &condition.Get<std::vector<int>>("funct");
+  const auto* functions = &condition.parameters().Get<std::vector<int>>("funct");
 
   // integration points in parameter space and weights
   double xi = 0.0;

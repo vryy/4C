@@ -52,7 +52,7 @@ void ADAPTER::FluidLung::Init()
   for (unsigned i = 0; i < temp.size(); ++i)
   {
     DRT::Condition& cond = *(temp[i]);
-    if ((cond.Get<std::string>("field")) == "fluid") constrcond_.push_back(temp[i]);
+    if ((cond.parameters().Get<std::string>("field")) == "fluid") constrcond_.push_back(temp[i]);
   }
   if (constrcond_.size() == 0)
     FOUR_C_THROW("No structure-fluid volume constraints found for lung fsi");
@@ -120,7 +120,7 @@ void ADAPTER::FluidLung::ListLungVolCons(std::set<int>& LungVolConIDs, int& MinL
   for (unsigned int i = 0; i < constrcond_.size(); ++i)
   {
     DRT::Condition& cond = *(constrcond_[i]);
-    int condID = cond.Get<int>("coupling id");
+    int condID = cond.parameters().Get<int>("coupling id");
     if (LungVolConIDs.find(condID) == LungVolConIDs.end())
     {
       if (condID < MinLungVolConID) MinLungVolConID = condID;
@@ -152,7 +152,7 @@ void ADAPTER::FluidLung::InitializeVolCon(
 
     // Get ConditionID of current condition if defined and write value in parameterlist
 
-    int condID = cond.Get<int>("coupling id");
+    int condID = cond.parameters().Get<int>("coupling id");
 
     Teuchos::ParameterList params;
     params.set("ConditionID", condID);
@@ -232,7 +232,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(
     DRT::Condition& cond = *(constrcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond.Get<int>("coupling id");
+    int condID = cond.parameters().Get<int>("coupling id");
     Teuchos::ParameterList params;
     params.set("ConditionID", condID);
     const double dt = Dt();

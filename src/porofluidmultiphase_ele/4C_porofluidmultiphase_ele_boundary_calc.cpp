@@ -186,10 +186,10 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const int numdof = condition.Get<int>("numdof");
-  const auto* onoff = &condition.Get<std::vector<int>>("onoff");
-  const auto* val = &condition.Get<std::vector<double>>("val");
-  const auto* func = &condition.Get<std::vector<int>>("funct");
+  const int numdof = condition.parameters().Get<int>("numdof");
+  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* func = &condition.parameters().Get<std::vector<int>>("funct");
 
   if (numdofpernode_ != numdof)
     FOUR_C_THROW(

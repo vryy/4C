@@ -30,9 +30,9 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
   {
     for (auto* i : constrcond_)
     {
-      const double* mypenalty = i->GetIf<double>("penalty");
-      const double* myrho = i->GetIf<double>("rho");
-      int condID = i->Get<int>("ConditionID");
+      const double* mypenalty = i->parameters().GetIf<double>("penalty");
+      const double* myrho = i->parameters().GetIf<double>("rho");
+      int condID = i->parameters().Get<int>("ConditionID");
       if (mypenalty and myrho)
       {
         penalties_.insert(std::pair<int, double>(condID, *mypenalty));
@@ -105,7 +105,7 @@ void CONSTRAINTS::ConstraintPenalty::Initialize(const double& time)
   for (auto* cond : constrcond_)
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->Get<int>("ConditionID");
+    int condID = cond->parameters().Get<int>("ConditionID");
 
     // if current time (at) is larger than activation time of the condition, activate it
     if ((inittimes_.find(condID)->second <= time) && (activecons_.find(condID)->second == false))
@@ -195,7 +195,7 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
     double scStiff = params.get("scaleStiffEntries", 1.0);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID = cond->Get<int>("ConditionID");
+    int condID = cond->parameters().Get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // is conditions supposed to be active?
@@ -211,7 +211,7 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& 
       }
 
       // Evaluate loadcurve if defined. Put current load factor in parameterlist
-      const auto* curve = cond->GetIf<int>("curve");
+      const auto* curve = cond->parameters().GetIf<int>("curve");
       int curvenum = -1;
       if (curve) curvenum = *curve;
       double curvefac = 1.0;
@@ -317,7 +317,7 @@ void CONSTRAINTS::ConstraintPenalty::EvaluateError(
   {
     // Get ConditionID of current condition if defined and write value in parameterlist
 
-    int condID = cond->Get<int>("ConditionID");
+    int condID = cond->parameters().Get<int>("ConditionID");
     params.set("ConditionID", condID);
 
     // if current time is larger than initialization time of the condition, start computing

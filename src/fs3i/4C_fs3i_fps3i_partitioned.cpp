@@ -336,7 +336,7 @@ void FS3I::PartFPS3I::Setup()
   Teuchos::RCP<DRT::Discretization> dis = scatravec_[0]->ScaTraField()->Discretization();
   std::vector<DRT::Condition*> coupcond;
   dis->GetCondition("ScaTraCoupling", coupcond);
-  double myconduct = coupcond[0]->Get<double>(
+  double myconduct = coupcond[0]->parameters().Get<double>(
       "hydraulic conductivity");  // here we assume the conductivity to be the same in every BC
 
   // conductivity is not only needed in scatracoupling but also in FPSI coupling!

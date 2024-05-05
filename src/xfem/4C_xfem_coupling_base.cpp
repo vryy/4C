@@ -340,7 +340,7 @@ void XFEM::CouplingBase::GetConditionByCouplingId(const std::vector<DRT::Conditi
   // select the conditions with specified "couplingID"
   for (auto* cond : mycond)
   {
-    const int id = cond->Get<int>("label");
+    const int id = cond->parameters().Get<int>("label");
 
     if (id == coupling_id) mynewcond.push_back(cond);
   }
@@ -378,7 +378,7 @@ void XFEM::CouplingBase::SetAveragingStrategy()
     {
       // ask the first cutter element
       const int lid = 0;
-      const int val = cutterele_conds_[lid].second->Get<int>("COUPSTRATEGY");
+      const int val = cutterele_conds_[lid].second->parameters().Get<int>("COUPSTRATEGY");
       averaging_strategy_ = static_cast<INPAR::XFEM::AveragingStrategy>(val);
       // check unhandled cased
       if (averaging_strategy_ == INPAR::XFEM::Mean || averaging_strategy_ == INPAR::XFEM::Harmonic)
@@ -396,7 +396,7 @@ void XFEM::CouplingBase::SetAveragingStrategy()
     {
       // ask the first cutter element
       const int lid = 0;
-      const int val = cutterele_conds_[lid].second->Get<int>("COUPSTRATEGY");
+      const int val = cutterele_conds_[lid].second->parameters().Get<int>("COUPSTRATEGY");
       averaging_strategy_ = static_cast<INPAR::XFEM::AveragingStrategy>(val);
       break;
     }
@@ -501,7 +501,7 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<3, 1>& itr
   std::vector<double> final_values(3, 0.0);
 
   //---------------------------------------
-  const auto condtype = cond->Get<std::string>("type");
+  const auto condtype = cond->parameters().Get<std::string>("type");
 
   // get usual body force
   if (!(condtype == "neum_dead" or condtype == "neum_live"))
@@ -521,7 +521,7 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itr
   std::vector<double> final_values(6, 0.0);
 
   //---------------------------------------
-  const auto condtype = cond->Get<std::string>("type");
+  const auto condtype = cond->parameters().Get<std::string>("type");
 
   // get usual body force
   if (!(condtype == "neum_dead" or condtype == "neum_live"))
@@ -538,7 +538,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
 {
   if (cond == nullptr) FOUR_C_THROW("invalid condition");
 
-  const int numdof = cond->Get<int>("numdof");
+  const int numdof = cond->parameters().Get<int>("numdof");
 
   if (numdof != (int)final_values.size())
     FOUR_C_THROW("you specified NUMDOF %i in the input file, however, only %i dofs allowed!",
@@ -546,14 +546,14 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
 
   //---------------------------------------
   // get values and switches from the condition
-  const auto* onoff = &cond->Get<std::vector<int>>("onoff");
-  const auto* val = &cond->Get<std::vector<double>>("val");
-  const auto* functions = cond->GetIf<std::vector<int>>("funct");
+  const auto* onoff = &cond->parameters().Get<std::vector<int>>("onoff");
+  const auto* val = &cond->parameters().Get<std::vector<double>>("val");
+  const auto* functions = cond->parameters().GetIf<std::vector<int>>("funct");
 
   // uniformly distributed random noise
 
   auto& secondary = const_cast<DRT::Condition&>(*cond);
-  const auto* percentage = secondary.GetIf<double>("randnoise");
+  const auto* percentage = secondary.parameters().GetIf<double>("randnoise");
 
   if (time < -1e-14) FOUR_C_THROW("Negative time in curve/function evaluation: time = %f", time);
 
@@ -606,11 +606,11 @@ void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const doub
 
   //---------------------------------------
   // get values and switches from the condition
-  const auto* function = cond->GetIf<int>("funct");
+  const auto* function = cond->parameters().GetIf<int>("funct");
 
   // uniformly distributed random noise
   auto& secondary = const_cast<DRT::Condition&>(*cond);
-  const auto* percentage = secondary.GetIf<double>("randnoise");
+  const auto* percentage = secondary.parameters().GetIf<double>("randnoise");
 
   if (time < -1e-14) FOUR_C_THROW("Negative time in curve/function evaluation: time = %f", time);
 
