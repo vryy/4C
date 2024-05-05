@@ -10,8 +10,6 @@
 
 #include "4C_inpar_validparameters.hpp"
 
-#include "4C_global_data_enums.hpp"
-#include "4C_inpar.hpp"
 #include "4C_inpar_ale.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_inpar_beaminteraction.hpp"

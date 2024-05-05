@@ -15,29 +15,13 @@
 /* headers */
 #include "4C_config.hpp"
 
-#include "4C_inpar_material.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
-#include "4C_linalg_serialdensevector.hpp"
 #include "4C_material_input_base.hpp"
 
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
-/*----------------------------------------------------------------------*/
-/* forward declarations */
-namespace MAT
-{
-  class Material;
 
-  namespace PAR
-  {
-    class Material;
-  }
-}  // namespace MAT
-
-/*----------------------------------------------------------------------*/
-/* declarations */
 namespace MAT
 {
   namespace PAR

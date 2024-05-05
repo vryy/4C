@@ -17,7 +17,6 @@
 #include "4C_io_domainreader.hpp"
 #include "4C_io_elementreader.hpp"
 #include "4C_io_inputreader.hpp"
-#include "4C_io_nodereader.hpp"
 
 #include <Epetra_CrsGraph.h>
 
