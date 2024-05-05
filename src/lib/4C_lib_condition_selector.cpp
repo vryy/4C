@@ -27,7 +27,7 @@ DRT::UTILS::ConditionSelector::ConditionSelector(
     : dis_(dis)
 {
   dis.GetCondition(condname, conds_);
-  std::sort(conds_.begin(), conds_.end(), DRT::ConditionLess());
+  std::sort(conds_.begin(), conds_.end());
 }
 
 
@@ -40,7 +40,7 @@ DRT::UTILS::ConditionSelector::ConditionSelector(
     )
     : dis_(dis), conds_(conds)
 {
-  std::sort(conds_.begin(), conds_.end(), DRT::ConditionLess());
+  std::sort(conds_.begin(), conds_.end());
 }
 
 

@@ -2261,7 +2261,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
         if (found)
         {
           // Insert a copy since we might insert the same condition in many discretizations.
-          dis->SetCondition(condition->Name(), Teuchos::rcp(new DRT::Condition(*curr->second)));
+          dis->SetCondition(condition->Name(), curr->second->copy_without_geometry());
         }
       }
     }

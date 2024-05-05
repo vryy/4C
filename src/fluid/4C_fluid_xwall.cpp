@@ -613,8 +613,7 @@ void FLD::XWall::SetupXWallDis()
       for (unsigned numactcond = 0; numactcond < actcond.size(); ++numactcond)
       {
         // finally set condition
-        xwdiscret_->SetCondition(
-            allcond[numcond], Teuchos::rcp(new DRT::Condition(*actcond[numactcond])));
+        xwdiscret_->SetCondition(allcond[numcond], actcond[numactcond]->copy_without_geometry());
       }
     }
   }

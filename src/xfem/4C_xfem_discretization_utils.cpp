@@ -549,7 +549,7 @@ Teuchos::RCP<DRT::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::SplitCondit
   if (gcount == 0) return Teuchos::null;
 
   // copy and keep this src condition
-  return Teuchos::rcp(new DRT::Condition(*src_cond));
+  return src_cond->copy_without_geometry();
 }
 
 FOUR_C_NAMESPACE_CLOSE

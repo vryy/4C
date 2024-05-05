@@ -117,7 +117,7 @@ void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(const DRT::Discretiza
       // We use the same nodal ids and therefore we can just copy the conditions.
       // The string-map gives the new condition names
       // (e.g. renaming from TransportDirichlet to Dirichlet)
-      targetdis.SetCondition(condition_pair.second, Teuchos::rcp(new DRT::Condition(*cond)));
+      targetdis.SetCondition(condition_pair.second, cond->copy_without_geometry());
     }
     conds.clear();
   }
@@ -165,8 +165,7 @@ DRT::UTILS::DiscretizationCreatorBase::CreateMatchingDiscretization(
 
     // loop all condition of the current type
     for (unsigned numactcond = 0; numactcond < actcond.size(); ++numactcond)
-      targetdis->SetCondition(
-          allcond[numcond], Teuchos::rcp(new DRT::Condition(*actcond[numactcond])));
+      targetdis->SetCondition(allcond[numcond], actcond[numactcond]->copy_without_geometry());
   }
 
   // make auxiliary discretization have the same dofs as the coupling discretization

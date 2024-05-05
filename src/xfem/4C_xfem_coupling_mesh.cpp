@@ -511,7 +511,7 @@ void XFEM::MeshVolCoupling::CreateAuxiliaryDiscretization()
 
   for (size_t cond = 0; cond < xfemcnd.size(); ++cond)
   {
-    aux_coup_dis_->SetCondition(cond_name_, Teuchos::rcp(new DRT::Condition(*xfemcnd[cond])));
+    aux_coup_dis_->SetCondition(cond_name_, xfemcnd[cond]->copy_without_geometry());
     const std::vector<int>* nodeids_cnd = xfemcnd[cond]->GetNodes();
     for (std::vector<int>::const_iterator c = nodeids_cnd->begin(); c != nodeids_cnd->end(); ++c)
       xfemnodeset.insert(*c);

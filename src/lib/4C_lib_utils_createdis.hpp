@@ -223,7 +223,7 @@ namespace DRT
           for (const auto& cond : conds)
           {
             // We use the same nodal ids and therefore we can just copy the conditions.
-            targetdis->SetCondition(cond_name, Teuchos::rcp(new DRT::Condition(*cond)));
+            targetdis->SetCondition(cond_name, cond->copy_without_geometry());
           }
         }
 

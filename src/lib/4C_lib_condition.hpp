@@ -21,6 +21,8 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
+#include <tuple>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace DRT
@@ -30,19 +32,13 @@ namespace DRT
   class Discretization;
 
   /*!
-  \brief A condition of any kind
-
-  A condition is mainly used to realize boundary conditions. As the Condition
-  class implements IO::InputParameterContainer it is capable of storing almost any data
-  and can be communicated in parallel as it also implements ParObject.
-  the container base class of the Condition holds all specific condition data.
-  The condition can additionally store a discretization of the condition which is
-  driven by the Discretization class that is evaluating this condition.
-  The Discretization class is therefore a friend of the Condition and has access to
-  the protected methods dealing with the discretization of this condition.
-  (I guess this whole comment is not very helpful)
-
-  */
+   * A condition is mainly used to realize boundary conditions. Paramters for the condition
+   * are stored in a InputParameterContainer.
+   * The condition can additionally store a discretization of the condition which is
+   * driven by the Discretization class that is evaluating this condition.
+   * The Discretization class is therefore a friend of the Condition and has access to
+   * the protected methods dealing with the discretization of this condition.
+   */
   class Condition : public IO::InputParameterContainer
   {
    public:
@@ -80,14 +76,10 @@ namespace DRT
         const CORE::Conditions::GeometryType gtype);
 
     /*!
-    \brief Empty Constructor with type condition_none
+    \brief Default constructor with type condition_none
     */
-    Condition();
+    Condition() = default;
 
-    /*!
-    \brief Copy Constructor
-    */
-    Condition(const DRT::Condition& old);
 
     //@}
 
@@ -173,6 +165,14 @@ namespace DRT
     */
     void AdjustId(const int shift);
 
+    /**
+     * Create a copy of this object but do not copy the geometry.
+     */
+    [[nodiscard]] Teuchos::RCP<Condition> copy_without_geometry() const;
+
+    //! Comparison operator.
+    friend bool operator<(const Condition& lhs, const Condition& rhs);
+
     //@}
 
    protected:
@@ -215,11 +215,12 @@ namespace DRT
     //@}
 
    protected:
-    // don't want = operator
-    Condition operator=(const Condition& old);
+    Condition(const DRT::Condition& old) = default;
+
+    Condition& operator=(const Condition& old) = default;
 
     //! Unique id of this condition, no second condition of the same type with same id may exist
-    int id_{};
+    int id_{-1};
 
     //! global node ids
     std::vector<int> nodes_{};
@@ -237,29 +238,10 @@ namespace DRT
     Teuchos::RCP<std::map<int, Teuchos::RCP<DRT::Element>>> geometry_{};
   };  // class Condition
 
-
-  /// Predicate used to sort a list of conditions
-  class ConditionLess
+  inline bool operator<(const DRT::Condition& lhs, const DRT::Condition& rhs)
   {
-   public:
-    /// compare two conditions by type and id
-    bool operator()(const Condition& lhs, const Condition& rhs) const
-    {
-      CORE::Conditions::ConditionType lhs_type = lhs.Type();
-      CORE::Conditions::ConditionType rhs_type = rhs.Type();
-      if (lhs_type == rhs_type)
-      {
-        return lhs.Id() < rhs.Id();
-      }
-      return lhs_type < rhs_type;
-    }
-
-    /// compare two conditions by type and id
-    bool operator()(const Condition* lhs, const Condition* rhs) const
-    {
-      return operator()(*lhs, *rhs);
-    }
-  };
+    return std::tie(lhs.type_, lhs.id_) < std::tie(rhs.type_, rhs.id_);
+  }
 
 }  // namespace DRT
 

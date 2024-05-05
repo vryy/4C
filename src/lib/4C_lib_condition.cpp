@@ -18,35 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 DRT::Condition::Condition(const int id, const CORE::Conditions::ConditionType type,
     const bool buildgeometry, const CORE::Conditions::GeometryType gtype)
-    : InputParameterContainer(),
-      id_(id),
-      nodes_(),
-      buildgeometry_(buildgeometry),
-      type_(type),
-      gtype_(gtype),
-      geometry_(Teuchos::null)
-{
-}
-
-DRT::Condition::Condition()
-    : InputParameterContainer(),
-      id_(-1),
-      nodes_(),
-      buildgeometry_(false),
-      type_(CORE::Conditions::none),
-      gtype_(CORE::Conditions::geometry_type_no_geom),
-      geometry_(Teuchos::null)
-{
-}
-
-DRT::Condition::Condition(const DRT::Condition& old)
-    : InputParameterContainer(old),
-      id_(old.id_),
-      nodes_(old.nodes_),
-      buildgeometry_(old.buildgeometry_),
-      type_(old.type_),
-      gtype_(old.gtype_),
-      geometry_(Teuchos::null)  // since it wasn't even initialized before change to Teuchos::RCP
+    : InputParameterContainer(), id_(id), buildgeometry_(buildgeometry), type_(type), gtype_(gtype)
 {
 }
 
@@ -654,5 +626,13 @@ void DRT::Condition::AdjustId(const int shift)
 
   swap(*geometry_, geometry);
 }
+
+Teuchos::RCP<DRT::Condition> DRT::Condition::copy_without_geometry() const
+{
+  Teuchos::RCP<Condition> copy(new Condition(*this));
+  copy->ClearGeometry();
+  return copy;
+}
+
 
 FOUR_C_NAMESPACE_CLOSE
