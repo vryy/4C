@@ -23,8 +23,7 @@ namespace EXODUS
   //! write datfile
   int WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
       const std::string& headfile, const std::vector<EXODUS::ElemDef>& eledefs,
-      const std::vector<EXODUS::CondDef>& condefs,
-      const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo);
+      const std::vector<EXODUS::CondDef>& condefs);
 
   //! datfile Intro
   void WriteDatIntro(const std::string& headfile, const EXODUS::Mesh& mymesh, std::ostream& dat);
@@ -53,15 +52,12 @@ namespace EXODUS
   void WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat);
 
   //! Elements into datfile
-  void WriteDatEles(const std::vector<EXODUS::ElemDef>& eledefs, const EXODUS::Mesh& mymesh,
-      std::ostream& dat,
-      const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo);
+  void WriteDatEles(
+      const std::vector<EXODUS::ElemDef>& eledefs, const EXODUS::Mesh& mymesh, std::ostream& dat);
 
   //! Elements from eblock
   void DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::ElemDef& acte,
-      int& startele, std::ostream& dat,
-      const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo,
-      const int eb_id);
+      int& startele, std::ostream& dat, const int eb_id);
 
   inline std::string CondGeomTypeToString(const EXODUS::CondDef& def)
   {

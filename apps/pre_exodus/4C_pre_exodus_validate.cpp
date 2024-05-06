@@ -18,10 +18,9 @@ Validate a given 4C input file (after all preprocessing steps)
 #include "4C_global_data.hpp"
 #include "4C_global_data_read.hpp"
 #include "4C_global_legacy_module.hpp"
-#include "4C_io_control.hpp"  //for writing to the error file
 #include "4C_io_inputreader.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
-#include "4C_pre_exodus_soshextrusion.hpp"  //just temporarly for gmsh-plot
+#include "4C_pre_exodus_reader.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -13,7 +13,6 @@ is handed to a c++ object mesh.
 #include "4C_pre_exodus_reader.hpp"
 
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
-#include "4C_pre_exodus_soshextrusion.hpp"  //for gmsh plot
 
 #include <Epetra_SerialComm.h>
 #include <exodusII.h>
@@ -542,7 +541,6 @@ std::map<int, std::vector<int>> EXODUS::Mesh::GetSideSetConn(const SideSet sides
   tm6 = Teuchos::null;
 
   // fill SideSet Connectivity
-  // int perc = 1;
   int tetc = 0, hexc = 0, pyrc = 0, wedgc = 0;
   for (i_side = mysides.begin(); i_side != mysides.end(); ++i_side)
   {
