@@ -15,8 +15,7 @@
 #include "4C_io_materialdefinition.hpp"
 
 #include "4C_io_line_parser.hpp"
-#include "4C_mat_material_factory.hpp"
-#include "4C_material_base.hpp"
+#include "4C_mat_par_bundle.hpp"
 
 #include <iostream>
 #include <string>

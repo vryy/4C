@@ -309,15 +309,17 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
           for (unsigned numcond = 0; numcond < mysurfpbcs_.size(); ++numcond)
           {
-            const int myid = mysurfpbcs_[numcond]->Get<int>("Id of periodic boundary condition");
+            const int myid =
+                mysurfpbcs_[numcond]->parameters().Get<int>("Id of periodic boundary condition");
             const int mylayer =
-                mysurfpbcs_[numcond]->Get<int>("Layer of periodic boundary condition");
+                mysurfpbcs_[numcond]->parameters().Get<int>("Layer of periodic boundary condition");
             // yes, I am the condition with id pbcid and in the desired layer
 
             if (myid == pbcid && (mylayer + 1) == nlayer)
             {
               const std::string& mymasterslavetoggle =
-                  mysurfpbcs_[numcond]->Get<std::string>("Is slave periodic boundary condition");
+                  mysurfpbcs_[numcond]->parameters().Get<std::string>(
+                      "Is slave periodic boundary condition");
 
               if (mymasterslavetoggle == "Master")
               {
@@ -327,8 +329,8 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                 // check whether this periodic boundary condition belongs
                 // to thisplane
 
-                const std::string& dofsforpbcplanename =
-                    mastercond->Get<std::string>("degrees of freedom for the pbc plane");
+                const std::string& dofsforpbcplanename = mastercond->parameters().Get<std::string>(
+                    "degrees of freedom for the pbc plane");
 
                 if (dofsforpbcplanename == *thisplane)
                 {
@@ -350,7 +352,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                   }
 
                   // check for angle of rotation (has to be zero for master plane)
-                  const double angle = mastercond->Get<double>("Angle of rotation");
+                  const double angle = mastercond->parameters().Get<double>("Angle of rotation");
                   if (abs(angle) > 1e-13)
                     FOUR_C_THROW("Angle is not zero for master plane: %f", angle);
                 }
@@ -362,8 +364,8 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                 //--------------------------------------------------
                 // check whether this periodic boundary condition belongs
                 // to thisplane
-                const std::string& dofsforpbcplanename =
-                    slavecond->Get<std::string>("degrees of freedom for the pbc plane");
+                const std::string& dofsforpbcplanename = slavecond->parameters().Get<std::string>(
+                    "degrees of freedom for the pbc plane");
 
                 if (dofsforpbcplanename == *thisplane)
                 {
@@ -385,7 +387,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                   }
 
                   // check for angle of rotation of slave plane and store it
-                  const double angle = slavecond->Get<double>("Angle of rotation");
+                  const double angle = slavecond->parameters().Get<double>("Angle of rotation");
                   if (abs(angle) > 1e-13)
                   {
                     if ((*thisplane != "xz") && (*thisplane != "yz"))
@@ -409,8 +411,8 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
 
               // set tolerance for octree
-              const double tol =
-                  mysurfpbcs_[numcond]->Get<double>("Tolerance for nodematching in octree");
+              const double tol = mysurfpbcs_[numcond]->parameters().Get<double>(
+                  "Tolerance for nodematching in octree");
 
               if (!tol_set)
               {
@@ -765,7 +767,8 @@ void PeriodicBoundaryConditions::AddConnectivity(
           for (unsigned numcond = 0; numcond < thiscond.size(); ++numcond)
           {
             const std::string& mymasterslavetoggle =
-                thiscond[numcond]->Get<std::string>("Is slave periodic boundary condition");
+                thiscond[numcond]->parameters().Get<std::string>(
+                    "Is slave periodic boundary condition");
 
             if (mymasterslavetoggle == "Master")
             {
@@ -994,7 +997,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
     for (unsigned numcond = 0; numcond < thiscond.size(); ++numcond)
     {
       const std::string& mymasterslavetoggle =
-          thiscond[numcond]->Get<std::string>("Is slave periodic boundary condition");
+          thiscond[numcond]->parameters().Get<std::string>("Is slave periodic boundary condition");
 
       if (mymasterslavetoggle == "Slave")
       {

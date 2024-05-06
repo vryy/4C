@@ -882,7 +882,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovProjection()
   // check if for scatra Krylov projection is required
   for (std::size_t icond = 0; icond < numcond; icond++)
   {
-    const auto& name = KSPCond[icond]->Get<std::string>("discretization");
+    const auto& name = KSPCond[icond]->parameters().Get<std::string>("discretization");
     if (name == "scatra")
     {
       numscatra++;
@@ -2212,7 +2212,7 @@ void SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcon
   // revision 17615.
 
   // confirm that mode flags are number of nodal dofs/scalars
-  const int nummodes = kspcond->Get<int>("NUMMODES");
+  const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
   if (nummodes != NumDofPerNode())
   {
     FOUR_C_THROW(
@@ -2221,7 +2221,7 @@ void SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcon
   }
 
   // get vector of mode flags as given in dat-file
-  const auto* modeflags = &kspcond->Get<std::vector<int>>("ONOFF");
+  const auto* modeflags = &kspcond->parameters().Get<std::vector<int>>("ONOFF");
 
   // count actual active modes selected in dat-file
   std::vector<int> activemodeids;
@@ -2234,7 +2234,7 @@ void SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcon
   }
 
   // get from dat-file definition how weights are to be computed
-  const auto* weighttype = &kspcond->Get<std::string>("weight vector definition");
+  const auto* weighttype = &kspcond->parameters().Get<std::string>("weight vector definition");
 
   // set flag for projection update true only if ALE and integral weights
   if (isale_ and (*weighttype == "integration")) updateprojection_ = true;
@@ -3274,7 +3274,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
 
           // compute matrix and vector contributions according to kinetic model for current
           // macro-micro coupling condition
-          const int kinetic_model = condition->Get<int>("kinetic model");
+          const int kinetic_model = condition->parameters().Get<int>("kinetic model");
 
           switch (kinetic_model)
           {
@@ -3282,7 +3282,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
             {
               // access real vector of constant permeabilities
               const std::vector<double>* permeabilities =
-                  condition->GetIf<std::vector<double>>("permeabilities");
+                  condition->parameters().GetIf<std::vector<double>>("permeabilities");
               if (permeabilities == nullptr)
                 FOUR_C_THROW("Cannot access vector of permeabilities for macro-micro coupling!");
               if (permeabilities->size() != (unsigned)NumScal())
@@ -3320,7 +3320,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
                 FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 
               // access input parameters associated with current condition
-              const int nume = condition->Get<int>("e-");
+              const int nume = condition->parameters().Get<int>("e-");
               if (nume != 1)
               {
                 FOUR_C_THROW(
@@ -3328,7 +3328,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
                     "electrode-electrolyte interface!");
               }
               const std::vector<int>* stoichiometries =
-                  condition->GetIf<std::vector<int>>("stoichiometries");
+                  condition->parameters().GetIf<std::vector<int>>("stoichiometries");
               if (stoichiometries == nullptr)
               {
                 FOUR_C_THROW(
@@ -3348,11 +3348,11 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
                   (gasconstant * (GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>(
                                      "TEMPERATURE")));
               const double alphaa =
-                  condition->Get<double>("alpha_a");  // anodic transfer coefficient
+                  condition->parameters().Get<double>("alpha_a");  // anodic transfer coefficient
               const double alphac =
-                  condition->Get<double>("alpha_c");  // cathodic transfer coefficient
-              const double kr =
-                  condition->Get<double>("k_r");  // rate constant of charge transfer reaction
+                  condition->parameters().Get<double>("alpha_c");  // cathodic transfer coefficient
+              const double kr = condition->parameters().Get<double>(
+                  "k_r");  // rate constant of charge transfer reaction
               if (kr < 0.) FOUR_C_THROW("Charge transfer constant k_r is negative!");
 
               // extract saturation value of intercalated lithium concentration from electrode
@@ -3391,11 +3391,12 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               const double eta = phinp_macro_[2] - phinp_macro_[1] - epd;
 
               // Butler-Volmer exchange mass flux density
-              const double j0 =
-                  condition->Get<int>("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
-                      ? kr
-                      : kr * std::pow(conc_el, alphaa) * std::pow(cmax - conc_ed, alphaa) *
-                            std::pow(conc_ed, alphac);
+              const double j0 = condition->parameters().Get<int>("kinetic model") ==
+                                        INPAR::S2I::kinetics_butlervolmerreduced
+                                    ? kr
+                                    : kr * std::pow(conc_el, alphaa) *
+                                          std::pow(cmax - conc_ed, alphaa) *
+                                          std::pow(conc_ed, alphac);
 
               // exponential Butler-Volmer terms
               const double expterm1 = std::exp(alphaa * frt * eta);

@@ -10,8 +10,6 @@
 
 #include "4C_inpar_IO_runtime_output_fluid.hpp"
 
-#include "4C_inpar.hpp"
-#include "4C_inpar_fluid.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -28,7 +26,6 @@ namespace INPAR
        *----------------------------------------------------------------------*/
       void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       {
-        using namespace INPUT;
         using Teuchos::setStringToIntegralParameter;
         using Teuchos::tuple;
 

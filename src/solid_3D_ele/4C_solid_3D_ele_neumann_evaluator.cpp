@@ -80,8 +80,8 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
       CreateGaussIntegration<celltype>(DRT::ELEMENTS::GetGaussRuleStiffnessMatrix<celltype>());
 
   // get values and switches from the condition
-  const auto& onoff = condition.Get<std::vector<int>>("onoff");
-  const auto& value = condition.Get<std::vector<double>>("val");
+  const auto& onoff = condition.parameters().Get<std::vector<int>>("onoff");
+  const auto& value = condition.parameters().Get<std::vector<double>>("val");
 
   // ensure that at least as many curves/functs as dofs are available
   if (onoff.size() < numdim)
@@ -99,7 +99,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
   }
 
   // get ids of functions of space and time
-  const auto& function_ids = condition.Get<std::vector<int>>("funct");
+  const auto& function_ids = condition.parameters().Get<std::vector<int>>("funct");
 
   const ElementNodes<celltype> nodal_coordinates =
       EvaluateElementNodes<celltype>(element, discretization, dof_index_array);

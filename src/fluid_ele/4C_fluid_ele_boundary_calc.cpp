@@ -252,10 +252,10 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const auto* onoff = &condition.Get<std::vector<int>>("onoff");
-  const auto* val = &condition.Get<std::vector<double>>("val");
-  const auto* func = &condition.Get<std::vector<int>>("funct");
-  const std::string* type = &condition.Get<std::string>("type");
+  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* func = &condition.parameters().Get<std::vector<int>>("funct");
+  const std::string* type = &condition.parameters().Get<std::string>("type");
 
   // get time factor for Neumann term
   const double timefac = fldparatimint_->TimeFacRhs();

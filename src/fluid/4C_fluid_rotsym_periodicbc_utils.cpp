@@ -62,7 +62,8 @@ bool FLD::IsSlaveNodeOfRotSymPBC(const DRT::Node* node, double& rotangle)
   bool isrotsymslave(false);
   for (unsigned int j = 0; j < pbc.size(); ++j)
   {
-    const std::string& isslave = pbc[j]->Get<std::string>("Is slave periodic boundary condition");
+    const std::string& isslave =
+        pbc[j]->parameters().Get<std::string>("Is slave periodic boundary condition");
     if (isslave == "Slave")
     {
       rotangle = GetRotAngleFromCondition(pbc[j]);
@@ -81,7 +82,7 @@ bool FLD::IsSlaveNodeOfRotSymPBC(const DRT::Node* node, double& rotangle)
 /*----------------------------------------------------------------------*/
 double FLD::GetRotAngleFromCondition(const DRT::Condition* cond)
 {
-  const double rotangle_deg = cond->Get<double>("Angle of rotation");
+  const double rotangle_deg = cond->parameters().Get<double>("Angle of rotation");
 
   return rotangle_deg * M_PI / 180.0;  // angle of rotation (RAD);
 }
@@ -103,7 +104,7 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
   for (unsigned numcond = 0; numcond < mypbccond.size(); ++numcond)
   {
     const std::string& mymasterslavetoggle =
-        mypbccond[numcond]->Get<std::string>("Is slave periodic boundary condition");
+        mypbccond[numcond]->parameters().Get<std::string>("Is slave periodic boundary condition");
     const double rotangle = FLD::GetRotAngleFromCondition(mypbccond[numcond]);
 
     // only slave nodes with non-zero angle of rotation require rotation

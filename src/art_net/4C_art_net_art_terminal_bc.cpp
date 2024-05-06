@@ -61,15 +61,15 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
     // Read in Condition type and name
     // -----------------------------------------------------------------
-    Type = (condition->Get<std::string>("type"));
-    BC = (condition->Get<std::string>("boundarycond"));
+    Type = (condition->parameters().Get<std::string>("type"));
+    BC = (condition->parameters().Get<std::string>("boundarycond"));
 
     // -----------------------------------------------------------------
     // Read in the bc curve information
     // -----------------------------------------------------------------
-    const auto& curve = condition->Get<std::vector<int>>("curve");
+    const auto& curve = condition->parameters().Get<std::vector<int>>("curve");
     double curvefac = 1.0;
-    const auto& vals = condition->Get<std::vector<double>>("val");
+    const auto& vals = condition->parameters().Get<std::vector<double>>("val");
 
     // -----------------------------------------------------------------
     // Check whether the BC is absorbing or forced
@@ -143,7 +143,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
     // Read in Condition type
     // -----------------------------------------------------------------
-    Type = (condition->Get<std::string>("CouplingType"));
+    Type = (condition->parameters().Get<std::string>("CouplingType"));
 
     // -----------------------------------------------------------------
     // Read in coupling variable rescribed by the 3D simulation
@@ -165,7 +165,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     //     +-----------------------------------------------------------+
     // -----------------------------------------------------------------
 
-    int ID = condition->Get<int>("ConditionID");
+    int ID = condition->parameters().Get<int>("ConditionID");
     Teuchos::RCP<std::map<std::string, double>> map3D;
     map3D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>("3D map of values");
 
@@ -465,12 +465,12 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     //     +-----------------------------------------------------------+
     // -----------------------------------------------------------------
 
-    int ID = condition->Get<int>("ConditionID");
+    int ID = condition->parameters().Get<int>("ConditionID");
     Teuchos::RCP<std::map<std::string, double>> map1D;
     map1D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
         "reducedD map of values");
 
-    std::string returnedBC = (condition->Get<std::string>("ReturnedVariable"));
+    std::string returnedBC = (condition->parameters().Get<std::string>("ReturnedVariable"));
 
     double BC3d = 0.0;
     if (returnedBC == "flow")
@@ -488,7 +488,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     }
     else
     {
-      std::string str = (condition->Get<std::string>("ReturnedVariable"));
+      std::string str = (condition->parameters().Get<std::string>("ReturnedVariable"));
       FOUR_C_THROW("%s, is an unimplimented type of coupling", str.c_str());
       exit(1);
     }
@@ -546,9 +546,9 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
   // -------------------------------------------------------------------
   // Read in the bc curve information
   // -------------------------------------------------------------------
-  const auto& curve = condition->Get<std::vector<int>>("curve");
+  const auto& curve = condition->parameters().Get<std::vector<int>>("curve");
   double curvefac = 1.0;
-  const auto& vals = condition->Get<std::vector<double>>("val");
+  const auto& vals = condition->parameters().Get<std::vector<double>>("val");
 
   // if the curve exist => Rf = val*curve(time)
   if (curve[0] >= 0)
@@ -618,16 +618,16 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
     const DRT::Condition* condition, Teuchos::ParameterList& params)
 {
   // define BC windkessel inigration type std::string (e.g: BC   = "flow")
-  std::string int_type = (condition->Get<std::string>("intigrationType"));
+  std::string int_type = (condition->parameters().Get<std::string>("intigrationType"));
   // define windkessel BC type std::string (e.g: Type = "forced")
-  std::string wk_type = (condition->Get<std::string>("windkesselType"));
+  std::string wk_type = (condition->parameters().Get<std::string>("windkesselType"));
 
   // -------------------------------------------------------------------
   // Read in the bc curve information
   // -------------------------------------------------------------------
-  const auto& curve = condition->Get<std::vector<int>>("curve");
+  const auto& curve = condition->parameters().Get<std::vector<int>>("curve");
   double curvefac = 1.0;
-  const auto& vals = condition->Get<std::vector<double>>("val");
+  const auto& vals = condition->parameters().Get<std::vector<double>>("val");
 
   double Wb;
   if (int_type == "ExplicitWindkessel")

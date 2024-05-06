@@ -1054,8 +1054,10 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
     {
       double TermIO = 0.0;
       // Get the in/out terminal condition
-      std::string TerminalType =
-          (ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
+      std::string TerminalType = (ele->Nodes()[i]
+                                      ->GetCondition("ArtInOutCond")
+                                      ->parameters()
+                                      .Get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1255,8 +1257,10 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
     {
       double TermIO = 0.0;
       // Get the in/out terminal condition
-      std::string TerminalType =
-          (ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
+      std::string TerminalType = (ele->Nodes()[i]
+                                      ->GetCondition("ArtInOutCond")
+                                      ->parameters()
+                                      .Get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1480,9 +1484,9 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
       // calculating Q at node i
       const DRT::Condition* condition = ele->Nodes()[i]->GetCondition("ArtPrescribedScatraCond");
 
-      const auto* curve = condition->GetIf<int>("curve");
+      const auto* curve = condition->parameters().GetIf<int>("curve");
 
-      double curvefac = condition->Get<double>("val");
+      double curvefac = condition->parameters().Get<double>("val");
       int curvenum = -1;
       if (curve) curvenum = *curve;
       if (curvenum > 0)
@@ -1493,8 +1497,10 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateScatraBC(Artery* ele,
       }
 
 
-      std::string TerminalType =
-          (ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
+      std::string TerminalType = (ele->Nodes()[i]
+                                      ->GetCondition("ArtInOutCond")
+                                      ->parameters()
+                                      .Get<std::string>("terminaltype"));
       int dof = 0;
       if (TerminalType == "inlet")
       {

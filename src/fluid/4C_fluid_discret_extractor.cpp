@@ -320,7 +320,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
           // finally set condition
           childdiscret_->SetCondition(
-              allcond[numcond], Teuchos::rcp(new DRT::Condition(*actcond[numactcond])));
+              allcond[numcond], actcond[numactcond]->copy_without_geometry());
         }
 
         // redistribute master and slave nodes

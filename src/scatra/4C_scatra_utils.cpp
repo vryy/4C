@@ -81,10 +81,10 @@ void SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
   {
     if (conditionToBeTested->GType() != CORE::Conditions::geometry_type_surface) continue;
     bool isslave(true);
-    const int s2ikinetics_id = conditionToBeTested->Get<int>("S2IKineticsID");
+    const int s2ikinetics_id = conditionToBeTested->parameters().Get<int>("S2IKineticsID");
 
     // check the interface side
-    switch (conditionToBeTested->Get<int>("interface side"))
+    switch (conditionToBeTested->parameters().Get<int>("interface side"))
     {
       case INPAR::S2I::side_slave:
       {
@@ -107,12 +107,12 @@ void SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
     // loop over all s2i conditions to find the one that is matching the current ssi condition
     for (const auto& s2ikinetics_cond : s2ikinetics_conditions)
     {
-      const int s2ikinetics_cond_id = s2ikinetics_cond->Get<int>("ConditionID");
+      const int s2ikinetics_cond_id = s2ikinetics_cond->parameters().Get<int>("ConditionID");
       // only do further checks if Ids match
       if (s2ikinetics_id != s2ikinetics_cond_id) continue;
 
       // check the interface side
-      switch (s2ikinetics_cond->Get<int>("interface side"))
+      switch (s2ikinetics_cond->parameters().Get<int>("interface side"))
       {
         case INPAR::S2I::side_slave:
         {

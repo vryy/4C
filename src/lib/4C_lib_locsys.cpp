@@ -55,14 +55,14 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret)
     id_[i] = locsysconds_[i]->Id();
 
     // Check for already existing ConditionID and add it, if not already existing
-    const int* locsysId = locsysconds_[i]->GetIf<int>("ConditionID");
+    const int* locsysId = locsysconds_[i]->parameters().GetIf<int>("ConditionID");
     if (locsysId)
     {
       if ((*locsysId) != i) FOUR_C_THROW("Locsys condition has non-matching ID");
     }
     else
     {
-      locsysconds_[i]->Add("ConditionID", i);
+      locsysconds_[i]->parameters().Add("ConditionID", i);
     }
   }
 
@@ -135,14 +135,14 @@ void DRT::UTILS::LocsysManager::Update(
       {
         typelocsys_[i] = currlocsys->Type();
 
-        const auto* rotangle = &currlocsys->Get<std::vector<double>>("rotangle");
-        const auto* funct = &currlocsys->Get<std::vector<int>>("funct");
-        const auto* useUpdatedNodePos = &currlocsys->Get<int>("useupdatednodepos");
+        const auto* rotangle = &currlocsys->parameters().Get<std::vector<double>>("rotangle");
+        const auto* funct = &currlocsys->parameters().Get<std::vector<int>>("funct");
+        const auto* useUpdatedNodePos = &currlocsys->parameters().Get<int>("useupdatednodepos");
 
         const auto* useConsistentNodeNormal =
             (currlocsys->Type() == CORE::Conditions::SurfaceLocsys or
                 currlocsys->Type() == CORE::Conditions::LineLocsys)
-                ? currlocsys->GetIf<int>("useconsistentnodenormal")
+                ? currlocsys->parameters().GetIf<int>("useconsistentnodenormal")
                 : nullptr;
 
         const std::vector<int>* nodes = currlocsys->GetNodes();

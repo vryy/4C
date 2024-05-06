@@ -2423,7 +2423,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetAirwayFluxFromTissue(Teuchos::RCP<Epet
     DRT::Condition* cond = coupcond_[condID];
     std::vector<double> newval(1, 0.0);
     newval[0] = (*coupflux)[i];
-    cond->Add("val", newval);
+    cond->parameters().Add("val", newval);
   }
 }
 
@@ -2444,7 +2444,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SetupForCoupling()
     DRT::Condition* actcond = nodecond[i];
     if (actcond->Type() == CORE::Conditions::RedAirwayNodeTissue)
     {
-      auto condID = actcond->Get<int>("coupling id");
+      auto condID = actcond->parameters().Get<int>("coupling id");
       coupcond_[condID] = actcond;
       tmp.push_back(condID);
       pres_[condID] = 0.0;

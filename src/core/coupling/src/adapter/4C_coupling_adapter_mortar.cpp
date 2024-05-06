@@ -81,7 +81,7 @@ void CORE::ADAPTER::CouplingMortar::Setup(
 
     for (unsigned i = 0; i < conds.size(); i++)
     {
-      const std::string& side = conds[i]->Get<std::string>("Side");
+      const std::string& side = conds[i]->parameters().Get<std::string>("Side");
 
       if (side == "Master")
         conds_master.push_back(conds[i]);

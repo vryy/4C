@@ -329,13 +329,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateCoup
           // get coupling type (ARTERY or AIRWAY ?)
           std::vector<DRT::Condition*> coupcond;
           arterydis_->GetCondition(condname_, coupcond);
-          std::string coupling_element_type_ = (coupcond[j])->Get<std::string>("coupling_type");
+          std::string coupling_element_type_ =
+              (coupcond[j])->parameters().Get<std::string>("coupling_type");
 
           // recompute coupling dofs
           RecomputeCoupledDOFsForNTP(coupcond, j);
 
           // get penalty parameter
-          const auto penalty = coupcond[j]->Get<double>("PENALTY");
+          const auto penalty = coupcond[j]->parameters().Get<double>("PENALTY");
 
           // get eta (parameter coordinate of corresponding node)
           const int eta_ntp = (i == 0) ? -1 : 1;

@@ -91,7 +91,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
 
   Configuration config = config_none;
 
-  const std::string& type = condition.Get<std::string>("type");
+  const std::string& type = condition.parameters().Get<std::string>("type");
   if (type == "neum_live")
   {
     ltype = neum_live;
@@ -127,8 +127,8 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
     FOUR_C_THROW("Unknown type of SurfaceNeumann condition");
   }
   // get values and switches from the condition
-  const auto& onoff = condition.Get<std::vector<int>>("onoff");
-  const auto& value = condition.Get<std::vector<double>>("val");
+  const auto& onoff = condition.parameters().Get<std::vector<int>>("onoff");
+  const auto& value = condition.parameters().Get<std::vector<double>>("val");
 
   // ensure that at least as many curves/functs as dofs are available
   if (onoff.size() < DETAIL::node_dof)
@@ -146,7 +146,7 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumann(DRT::Element& ele,
     }
   }
   // get ids of functions of space and time
-  const auto* function_ids = &condition.Get<std::vector<int>>("funct");
+  const auto* function_ids = &condition.parameters().Get<std::vector<int>>("funct");
 
   // integration loops
   std::array<double, 2> xi_gp;

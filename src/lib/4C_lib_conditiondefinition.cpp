@@ -119,7 +119,7 @@ void INPUT::ConditionDefinition::Read(const GLOBAL::Problem& problem, DatFileRea
 
     for (auto& j : inputline_)
     {
-      condline = j->Read(SectionName(), condline, *condition);
+      condline = j->Read(SectionName(), condline, condition->parameters());
     }
 
     //------------------------------- put condition in map of conditions
@@ -199,7 +199,7 @@ std::ostream& INPUT::ConditionDefinition::Print(
         stream << "E " << cond->Id() << " - ";
         for (auto& i : inputline_)
         {
-          i->Print(stream, *cond);
+          i->Print(stream, cond->parameters());
           stream << " ";
         }
         stream << "\n";

@@ -584,7 +584,7 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
   // vector, at the respective coupling_id
   for (unsigned int i = 0; i < numcoupcond; ++i)
   {
-    int id_strcoupcond = cardvasc0dstructcoupcond[i]->Get<int>("coupling_id");
+    int id_strcoupcond = cardvasc0dstructcoupcond[i]->parameters().Get<int>("coupling_id");
 
     DRT::Condition* coupcond = cardvasc0dstructcoupcond[i];
     std::vector<double> newval(6, 0.0);
@@ -599,13 +599,14 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
            j < cardvasc0d_syspulcirculation_->GetCardiovascular0DCondition().size(); ++j)
       {
         DRT::Condition& cond = *(cardvasc0d_syspulcirculation_->GetCardiovascular0DCondition()[j]);
-        int id_cardvasc0d = cond.Get<int>("id");
+        int id_cardvasc0d = cond.parameters().Get<int>("id");
 
         if (id_strcoupcond == id_cardvasc0d)
         {
           const std::string& conditiontype =
-              cardvasc0d_syspulcirculation_->GetCardiovascular0DCondition()[j]->Get<std::string>(
-                  "type");
+              cardvasc0d_syspulcirculation_->GetCardiovascular0DCondition()[j]
+                  ->parameters()
+                  .Get<std::string>("type");
           if (conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
           if (conditiontype == "ventricle_right") newval[0] = -(*actpres)[11];
           if (conditiontype == "atrium_left") newval[0] = -(*actpres)[0];
@@ -623,13 +624,14 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
       {
         DRT::Condition& cond =
             *(cardvascrespir0d_syspulperiphcirculation_->GetCardiovascular0DCondition()[j]);
-        int id_cardvasc0d = cond.Get<int>("id");
+        int id_cardvasc0d = cond.parameters().Get<int>("id");
 
         if (id_strcoupcond == id_cardvasc0d)
         {
           const std::string conditiontype =
               cardvascrespir0d_syspulperiphcirculation_->GetCardiovascular0DCondition()[j]
-                  ->Get<std::string>("type");
+                  ->parameters()
+                  .Get<std::string>("type");
           if (conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
           if (conditiontype == "ventricle_right") newval[0] = -(*actpres)[27];
           if (conditiontype == "atrium_left") newval[0] = -(*actpres)[0];
@@ -638,7 +640,7 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
         }
       }
     }
-    if (assvec) coupcond->Add("val", newval);
+    if (assvec) coupcond->parameters().Add("val", newval);
 
 
     Teuchos::RCP<const Epetra_Vector> disp =

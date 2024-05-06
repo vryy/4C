@@ -58,7 +58,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     std::vector<int> curcoupID;
     for (auto& i : cardiovascular0dcond_)
     {
-      curID.push_back(i->Get<int>("id"));
+      curID.push_back(i->parameters().Get<int>("id"));
     }
 
     Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
@@ -73,7 +73,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     std::vector<int> wkID(cardiovascular0dcond_.size());
     for (unsigned int i = 0; i < cardiovascular0dcond_.size(); i++)
     {
-      wkID[i] = cardiovascular0dcond_[i]->Get<int>("id");
+      wkID[i] = cardiovascular0dcond_[i]->parameters().Get<int>("id");
     }
 
     // safety checks for closed-loop vascular model
@@ -83,7 +83,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
       std::vector<const std::string*> condtype(cardiovascular0dcond_.size());
       for (unsigned int i = 0; i < cardiovascular0dcond_.size(); i++)
       {
-        condtype[i] = &cardiovascular0dcond_[i]->Get<std::string>("type");
+        condtype[i] = &cardiovascular0dcond_[i]->parameters().Get<std::string>("type");
 
         if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_elastance_0d or
             atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_prescribed)
@@ -164,15 +164,15 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     // set Neumann line to condition
     for (unsigned int i = 0; i < cardiovascular0dstructcoupcond_.size(); i++)
     {
-      coupcondID[i] = cardiovascular0dstructcoupcond_[i]->Get<int>("coupling_id");
+      coupcondID[i] = cardiovascular0dstructcoupcond_[i]->parameters().Get<int>("coupling_id");
 
       std::string type = "neum_orthopressure";
-      cardiovascular0dstructcoupcond_[i]->Add("type", type);
+      cardiovascular0dstructcoupcond_[i]->parameters().Add("type", type);
       std::vector<int> onoff(6, 0);
       onoff[0] = 1;
-      cardiovascular0dstructcoupcond_[i]->Add("onoff", onoff);
+      cardiovascular0dstructcoupcond_[i]->parameters().Add("onoff", onoff);
       std::vector<double> val(6, 0.0);
-      cardiovascular0dstructcoupcond_[i]->Add("val", val);
+      cardiovascular0dstructcoupcond_[i]->parameters().Add("val", val);
     }
 
     if (cardiovascular0dcond_.size() != cardiovascular0dstructcoupcond_.size())
@@ -297,7 +297,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
   pressure*/
   for (auto* coupcond : cardiovascular0dstructcoupcond_)
   {
-    int coupcondID = coupcond->Get<int>("coupling_id");
+    int coupcondID = coupcond->parameters().Get<int>("coupling_id");
     params.set("coupling_id", coupcondID);
 
     Teuchos::RCP<const Epetra_Vector> disp =
@@ -436,12 +436,12 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
           for (unsigned int j = 0; j < cardiovascular0dcond_.size(); ++j)
           {
             DRT::Condition& cond = *(cardiovascular0dcond_[j]);
-            int id_cardvasc0d = cond.Get<int>("id");
+            int id_cardvasc0d = cond.parameters().Get<int>("id");
             if (coupcondID == id_cardvasc0d)
             {
               // get the type of the corresponding cardiovascular0D condition
               const std::string* conditiontype =
-                  &cardiovascular0dcond_[j]->Get<std::string>("type");
+                  &cardiovascular0dcond_[j]->parameters().Get<std::string>("type");
               if (*conditiontype == "ventricle_left") colvec[0] = gindex_syspulcirculation[3];
               if (*conditiontype == "ventricle_right") colvec[0] = gindex_syspulcirculation[11];
               if (*conditiontype == "atrium_left") colvec[0] = gindex_syspulcirculation[0];
@@ -456,12 +456,12 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
           for (unsigned int j = 0; j < cardiovascular0dcond_.size(); ++j)
           {
             DRT::Condition& cond = *(cardiovascular0dcond_[j]);
-            int id_cardvasc0d = cond.Get<int>("id");
+            int id_cardvasc0d = cond.parameters().Get<int>("id");
             if (coupcondID == id_cardvasc0d)
             {
               // get the type of the corresponding cardiovascular0D condition
               const std::string* conditiontype =
-                  &cardiovascular0dcond_[j]->Get<std::string>("type");
+                  &cardiovascular0dcond_[j]->parameters().Get<std::string>("type");
               if (*conditiontype == "ventricle_left") colvec[0] = gindex_syspulperiphcirculation[3];
               if (*conditiontype == "ventricle_right")
                 colvec[0] = gindex_syspulperiphcirculation[27];

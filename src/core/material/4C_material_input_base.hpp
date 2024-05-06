@@ -12,7 +12,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_material.hpp"
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_material_parameter_base.hpp"
 

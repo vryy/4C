@@ -1382,7 +1382,8 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     for (int fdpcondid = 0; fdpcondid < (int)fdpcond.size(); fdpcondid++)
     {
       // check for already existing ID and add ID
-      const auto* fdpcondid_from_container = fdpcond[fdpcondid]->GetIf<int>("ConditionID");
+      const auto* fdpcondid_from_container =
+          fdpcond[fdpcondid]->parameters().GetIf<int>("ConditionID");
       if (fdpcondid_from_container)
       {
         if ((*fdpcondid_from_container) != fdpcondid)
@@ -1390,7 +1391,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
               "Flow-dependent pressure condition %s has non-matching ID", fdpcondname.c_str());
       }
       else
-        fdpcond[fdpcondid]->Add("ConditionID", fdpcondid);
+        fdpcond[fdpcondid]->parameters().Add("ConditionID", fdpcondid);
     }
 
     // create or append to output file
@@ -1606,7 +1607,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
 
       // set values for elements
-      const int fdp_cond_id = fdpcond[fdpcondid]->Get<int>("ConditionID");
+      const int fdp_cond_id = fdpcond[fdpcondid]->parameters().Get<int>("ConditionID");
       flowdeppressureparams.set<double>("flow rate", flowraterel[fdp_cond_id]);
       flowdeppressureparams.set<double>("flow volume", flowvolumerel[fdp_cond_id]);
 
@@ -1737,7 +1738,8 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     for (int sscbcondid = 0; sscbcondid < (int)sscbcond.size(); sscbcondid++)
     {
       // check for already existing ID and add ID
-      const int sscbcondid_from_container = sscbcond[sscbcondid]->Get<int>("ConditionID");
+      const int sscbcondid_from_container =
+          sscbcond[sscbcondid]->parameters().Get<int>("ConditionID");
       if (sscbcondid_from_container)
       {
         if (sscbcondid_from_container != sscbcondid)
@@ -1745,7 +1747,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
               sscbcondname.c_str());
       }
       else
-        sscbcond[sscbcondid]->Add("ConditionID", sscbcondid);
+        sscbcond[sscbcondid]->parameters().Add("ConditionID", sscbcondid);
     }
 
     //----------------------------------------------------------------------
@@ -1824,14 +1826,14 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     for (int nscondid = 0; nscondid < (int)nscond.size(); nscondid++)
     {
       // check for already existing ID and add ID
-      const int nscondid_from_container = nscond[nscondid]->Get<int>("ConditionID");
+      const int nscondid_from_container = nscond[nscondid]->parameters().Get<int>("ConditionID");
       if (nscondid_from_container)
       {
         if (nscondid_from_container != nscondid)
           FOUR_C_THROW("Navier slip boundary condition %s has non-matching ID", nscondname.c_str());
       }
       else
-        nscond[nscondid]->Add("ConditionID", nscondid);
+        nscond[nscondid]->parameters().Add("ConditionID", nscondid);
     }
 
     //----------------------------------------------------------------------
@@ -1852,7 +1854,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
 
       // set slip coefficient
       DRT::Condition* currnavierslip = nscond[nscondid];
-      const double beta = currnavierslip->Get<double>("slipcoefficient");
+      const double beta = currnavierslip->parameters().Get<double>("slipcoefficient");
       navierslipparams.set<double>("beta", beta);
 
       // evaluate navier slip boundary condition
@@ -2091,7 +2093,7 @@ void FLD::FluidImplicitTimeInt::InitKrylovSpaceProjection()
   // check if for fluid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
-    const auto& name = KSPcond[icond]->Get<std::string>("discretization");
+    const auto& name = KSPcond[icond]->parameters().Get<std::string>("discretization");
     if (name == "fluid")
     {
       numfluid++;
@@ -2120,12 +2122,12 @@ void FLD::FluidImplicitTimeInt::InitKrylovSpaceProjection()
 void FLD::FluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
 {
   // confirm that mode flags are number of nodal dofs
-  const int nummodes = kspcond->Get<int>("NUMMODES");
+  const int nummodes = kspcond->parameters().Get<int>("NUMMODES");
   if (nummodes != (numdim_ + 1))
     FOUR_C_THROW("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
 
   // get vector of mode flags as given in dat-file
-  const auto& modeflags = kspcond->Get<std::vector<int>>("ONOFF");
+  const auto& modeflags = kspcond->parameters().Get<std::vector<int>>("ONOFF");
 
   // confirm that only the pressure mode is selected for Krylov projection in dat-file
   for (int rr = 0; rr < numdim_; ++rr)
@@ -2146,7 +2148,7 @@ void FLD::FluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition* kspco
   kspsplitter_->Setup(*discret_);
 
   // get from dat-file definition how weights are to be computed
-  const auto* weighttype = &kspcond->Get<std::string>("weight vector definition");
+  const auto* weighttype = &kspcond->parameters().Get<std::string>("weight vector definition");
 
   // set flag for projection update true only if ALE and integral weights
   if (alefluid_ and (*weighttype == "integration")) updateprojection_ = true;
@@ -2536,13 +2538,13 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
     }
 
     // Get coupling type
-    std::string coupling = (selectedCond[0]->Get<std::string>("coupling"));
+    std::string coupling = (selectedCond[0]->parameters().Get<std::string>("coupling"));
 
     // Get scaling value
-    const double scalingValue = selectedCond[0]->Get<double>("val");
+    const double scalingValue = selectedCond[0]->parameters().Get<double>("val");
 
     // Get function for node normal calculation
-    const int nodeNormalFunct = selectedCond[0]->Get<int>("nodenormalfunct");
+    const int nodeNormalFunct = selectedCond[0]->parameters().Get<int>("nodenormalfunct");
 
     // Get a vector layout from the discretization to construct matching
     // vectors and matrices

@@ -10,7 +10,6 @@
 
 #include "4C_inpar_IO_runtime_output.hpp"
 
-#include "4C_inpar.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>

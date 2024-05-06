@@ -14,6 +14,7 @@
 #include "4C_contact_constitutivelaw_bundle.hpp"
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
 #include "4C_global_legacy_module.hpp"
+#include "4C_inpar.hpp"
 #include "4C_inpar_validconditions.hpp"
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
 #include "4C_inpar_validmaterials.hpp"
@@ -2260,7 +2261,7 @@ void GLOBAL::ReadConditions(GLOBAL::Problem& problem, INPUT::DatFileReader& read
         if (found)
         {
           // Insert a copy since we might insert the same condition in many discretizations.
-          dis->SetCondition(condition->Name(), Teuchos::rcp(new DRT::Condition(*curr->second)));
+          dis->SetCondition(condition->Name(), curr->second->copy_without_geometry());
         }
       }
     }

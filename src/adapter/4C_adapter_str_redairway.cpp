@@ -38,7 +38,7 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
     DRT::Condition* actcond = surfneumcond[i];
     if (actcond->Type() == CORE::Conditions::RedAirwayTissue)
     {
-      int condID = actcond->Get<int>("coupling id");
+      int condID = actcond->parameters().Get<int>("coupling id");
       coupcond_[condID] = actcond;
       tmp.push_back(condID);
       vn_[condID] = 0.0;
@@ -63,7 +63,7 @@ void ADAPTER::StructureRedAirway::SetPressure(Teuchos::RCP<Epetra_Vector> couppr
     DRT::Condition* cond = coupcond_[condID];
     std::vector<double> newval(6, 0.0);
     newval[0] = (*couppres)[i];
-    cond->Add("val", newval);
+    cond->parameters().Add("val", newval);
   }
 }
 

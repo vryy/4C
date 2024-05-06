@@ -93,9 +93,9 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
-  const auto& onoff = condition.Get<std::vector<int>>("onoff");
-  const auto& val = condition.Get<std::vector<double>>("val");
-  const auto& functions = condition.Get<std::vector<int>>("funct");
+  const auto& onoff = condition.parameters().Get<std::vector<int>>("onoff");
+  const auto& val = condition.parameters().Get<std::vector<double>>("val");
+  const auto& functions = condition.parameters().Get<std::vector<int>>("funct");
 
   // set number of nodes
   const size_t iel = this->NumNode();

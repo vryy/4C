@@ -76,7 +76,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   Configuration config = config_none;
 
   // get type of condition
-  const auto& type = condition.Get<std::string>("type");
+  const auto& type = condition.parameters().Get<std::string>("type");
   if (type == "neum_live")
   {
     ltype = neum_live;
@@ -103,9 +103,9 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   }
 
   // get values and switches from the condition
-  const auto* onoff = &condition.Get<std::vector<int>>("onoff");
-  const auto* val = &condition.Get<std::vector<double>>("val");
-  const auto* spa_func = condition.GetIf<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* spa_func = condition.parameters().GetIf<std::vector<int>>("funct");
 
   /*
   **    TIME CURVE BUSINESS
@@ -965,7 +965,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       // get projection method
       Teuchos::RCP<DRT::Condition> condition =
           params.get<Teuchos::RCP<DRT::Condition>>("condition");
-      const auto* projtype = condition->GetIf<std::string>("projection");
+      const auto* projtype = condition->parameters().GetIf<std::string>("projection");
 
       if (projtype != nullptr)
       {
@@ -1103,7 +1103,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
         Teuchos::RCP<DRT::Condition> condition =
             params.get<Teuchos::RCP<DRT::Condition>>("condition");
-        const auto* projtype = condition->GetIf<std::string>("projection");
+        const auto* projtype = condition->parameters().GetIf<std::string>("projection");
 
         // To compute monitored area consider required projection method
         // and set according coordinates to zero

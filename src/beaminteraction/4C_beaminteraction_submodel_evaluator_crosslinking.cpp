@@ -257,7 +257,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentTypes()
 
     // get filament type
     INPAR::BEAMINTERACTION::FilamentType filtype =
-        INPAR::BEAMINTERACTION::String2FilamentType((cond->Get<std::string>("Type")));
+        INPAR::BEAMINTERACTION::String2FilamentType((cond->parameters().Get<std::string>("Type")));
 
     for (int i = 0; i < currnode->NumElement(); ++i)
     {

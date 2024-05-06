@@ -31,9 +31,9 @@ int DRT::ELEMENTS::Shell7pLine::EvaluateNeumann(Teuchos::ParameterList& params,
   CORE::FE::ExtractMyValues(*disp, displacements, dof_index_array);
 
   // get values and switches from the condition
-  const auto* onoff = &condition.Get<std::vector<int>>("onoff");
-  const auto* val = &condition.Get<std::vector<double>>("val");
-  const auto* spa_func = &condition.Get<std::vector<int>>("funct");
+  const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
+  const auto* val = &condition.parameters().Get<std::vector<double>>("val");
+  const auto* spa_func = &condition.parameters().Get<std::vector<int>>("funct");
 
   // time curve buisiness
   // find out whether we will use a time curve

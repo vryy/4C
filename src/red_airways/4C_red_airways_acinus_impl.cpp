@@ -290,7 +290,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
       {
         double intSat = ele->Nodes()[sci]
                             ->GetCondition("RedAirwayScatraAirCond")
-                            ->Get<double>("INITIAL_CONCENTRATION");
+                            ->parameters()
+                            .Get<double>("INITIAL_CONCENTRATION");
         int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
             CORE::Materials::m_0d_o2_air_saturation);
         // check if O2 properties material exists
@@ -385,11 +386,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
         {
           DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
-          Bc = (condition->Get<std::string>("boundarycond"));
+          Bc = (condition->parameters().Get<std::string>("boundarycond"));
 
-          const auto* vals = &condition->Get<std::vector<double>>("val");
-          const auto* curve = &condition->Get<std::vector<int>>("curve");
-          const auto* functions = &condition->Get<std::vector<int>>("funct");
+          const auto* vals = &condition->parameters().Get<std::vector<double>>("val");
+          const auto* curve = &condition->parameters().Get<std::vector<int>>("curve");
+          const auto* functions = &condition->parameters().Get<std::vector<int>>("funct");
 
           // Read in the value of the applied BC
           // Get factor of first CURVE
@@ -467,7 +468,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           // -----------------------------------------------------------------
           // Read in Condition type
           // -----------------------------------------------------------------
-          //        Type = (condition->Get<std::string>("CouplingType"));
+          //        Type = (condition->parameters().Get<std::string>("CouplingType"));
           // -----------------------------------------------------------------
           // Read in coupling variable rescribed by the 3D simulation
           //
@@ -488,7 +489,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           //     +-----------------------------------------------------------+
           // -----------------------------------------------------------------
 
-          int ID = condition->Get<int>("ConditionID");
+          int ID = condition->parameters().Get<int>("ConditionID");
           Teuchos::RCP<std::map<std::string, double>> map3D;
           map3D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
               "3D map of values");
@@ -517,22 +518,22 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
         {
           DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond");
           // Get the type of prescribed bc
-          Bc = (condition->Get<std::string>("phase1"));
+          Bc = (condition->parameters().Get<std::string>("phase1"));
 
-          double period = condition->Get<double>("period");
-          double period1 = condition->Get<double>("phase1_period");
+          double period = condition->parameters().Get<double>("period");
+          double period1 = condition->parameters().Get<double>("phase1_period");
 
           unsigned int phase_number = 0;
 
           if (fmod(time, period) > period1)
           {
             phase_number = 1;
-            Bc = (condition->Get<std::string>("phase2"));
+            Bc = (condition->parameters().Get<std::string>("phase2"));
           }
 
-          const auto* curve = &condition->Get<std::vector<int>>("curve");
+          const auto* curve = &condition->parameters().Get<std::vector<int>>("curve");
           double curvefac = 1.0;
-          const auto* vals = &condition->Get<std::vector<double>>("val");
+          const auto* vals = &condition->parameters().Get<std::vector<double>>("val");
 
           // Read in the value of the applied BC
           if ((*curve)[phase_number] >= 0)
@@ -573,9 +574,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
             double Pp_np = 0.0;
             if (pplCond)
             {
-              const auto* curve = &pplCond->Get<std::vector<int>>("curve");
+              const auto* curve = &pplCond->parameters().Get<std::vector<int>>("curve");
               double curvefac = 1.0;
-              const auto* vals = &pplCond->Get<std::vector<double>>("val");
+              const auto* vals = &pplCond->parameters().Get<std::vector<double>>("val");
 
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
@@ -586,13 +587,13 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
               }
 
               // Get parameters for VolumeDependentPleuralPressure condition
-              std::string ppl_Type = (pplCond->Get<std::string>("TYPE"));
-              double ap = pplCond->Get<double>("P_PLEURAL_0");
-              double bp = pplCond->Get<double>("P_PLEURAL_LIN");
-              double cp = pplCond->Get<double>("P_PLEURAL_NONLIN");
-              double dp = pplCond->Get<double>("TAU");
-              double RV = pplCond->Get<double>("RV");
-              double TLC = pplCond->Get<double>("TLC");
+              std::string ppl_Type = (pplCond->parameters().Get<std::string>("TYPE"));
+              double ap = pplCond->parameters().Get<double>("P_PLEURAL_0");
+              double bp = pplCond->parameters().Get<double>("P_PLEURAL_LIN");
+              double cp = pplCond->parameters().Get<double>("P_PLEURAL_NONLIN");
+              double dp = pplCond->parameters().Get<double>("TAU");
+              double RV = pplCond->parameters().Get<double>("RV");
+              double TLC = pplCond->parameters().Get<double>("TLC");
 
               DRT::REDAIRWAYS::EvaluationData& evaluation_data =
                   DRT::REDAIRWAYS::EvaluationData::get();
@@ -945,12 +946,12 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
         //     +-----------------------------------------------------------+
         // -----------------------------------------------------------------
 
-        int ID = condition->Get<int>("ConditionID");
+        int ID = condition->parameters().Get<int>("ConditionID");
         Teuchos::RCP<std::map<std::string, double>> map1D;
         map1D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
             "reducedD map of values");
 
-        std::string returnedBC = (condition->Get<std::string>("ReturnedVariable"));
+        std::string returnedBC = (condition->parameters().Get<std::string>("ReturnedVariable"));
 
         double BC3d = 0.0;
         if (returnedBC == "flow")
@@ -963,7 +964,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
         }
         else
         {
-          std::string str = (condition->Get<std::string>("ReturnedVariable"));
+          std::string str = (condition->parameters().Get<std::string>("ReturnedVariable"));
           FOUR_C_THROW("%s, is an unimplimented type of coupling", str.c_str());
           exit(1);
         }
@@ -1123,9 +1124,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
       DRT::Condition* condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedScatraCond");
       // Get the type of prescribed bc
 
-      const auto* curve = &condition->Get<std::vector<int>>("curve");
+      const auto* curve = &condition->parameters().Get<std::vector<int>>("curve");
       double curvefac = 1.0;
-      const auto* vals = &condition->Get<std::vector<double>>("val");
+      const auto* vals = &condition->parameters().Get<std::vector<double>>("val");
 
       // -----------------------------------------------------------------
       // Read in the value of the applied BC
@@ -1139,7 +1140,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
 
       scnp = (*vals)[0] * curvefac;
 
-      const auto* functions = &condition->Get<std::vector<int>>("funct");
+      const auto* functions = &condition->parameters().Get<std::vector<int>>("funct");
       int functnum = -1;
       if (functions)
         functnum = (*functions)[0];

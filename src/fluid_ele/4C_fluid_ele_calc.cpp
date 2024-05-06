@@ -1419,12 +1419,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
 
   if (myneumcond.size() == 1)
   {
-    const auto condtype = myneumcond[0]->Get<std::string>("type");
+    const auto condtype = myneumcond[0]->parameters().Get<std::string>("type");
 
     // get values and switches from the condition
-    const auto* onoff = &myneumcond[0]->Get<std::vector<int>>("onoff");
-    const auto* val = &myneumcond[0]->Get<std::vector<double>>("val");
-    const auto* functions = &myneumcond[0]->Get<std::vector<int>>("funct");
+    const auto* onoff = &myneumcond[0]->parameters().Get<std::vector<int>>("onoff");
+    const auto* val = &myneumcond[0]->parameters().Get<std::vector<double>>("val");
+    const auto* functions = &myneumcond[0]->parameters().Get<std::vector<int>>("funct");
 
     // factor given by spatial function
     double functionfac = 1.0;
@@ -1523,7 +1523,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
     if (myscatraneumcond.size() == 1)
     {
       // check for potential time curve
-      const auto* funct = &myscatraneumcond[0]->Get<std::vector<int>>("funct");
+      const auto* funct = &myscatraneumcond[0]->parameters().Get<std::vector<int>>("funct");
       int functnum = -1;
       if (funct) functnum = (*funct)[0];
 
@@ -1545,8 +1545,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
         functfac = 1.0;
 
       // get values and switches from the condition
-      const auto* onoff = &myscatraneumcond[0]->Get<std::vector<int>>("onoff");
-      const auto* val = &myscatraneumcond[0]->Get<std::vector<double>>("val");
+      const auto* onoff = &myscatraneumcond[0]->parameters().Get<std::vector<int>>("onoff");
+      const auto* val = &myscatraneumcond[0]->parameters().Get<std::vector<double>>("val");
 
       // set this condition to the bodyforce array
       for (int jnode = 0; jnode < nen_; jnode++)
