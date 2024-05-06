@@ -119,7 +119,7 @@ namespace DRT
         \note reimplementation of this method, due to initialising
               numdofpernode_, since the material is known now.
        */
-      void SetMaterial(int matnum) override;
+      void SetMaterial(const int index, Teuchos::RCP<CORE::MAT::Material> mat) override;
 
       /*!
       \brief Get shape type of element

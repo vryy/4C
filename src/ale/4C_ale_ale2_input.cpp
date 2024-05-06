@@ -23,7 +23,7 @@ bool DRT::ELEMENTS::Ale2::ReadElement(
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   // get gauss rule
   const CORE::FE::GaussRule2D gaussrule = getOptimalGaussrule(Shape());

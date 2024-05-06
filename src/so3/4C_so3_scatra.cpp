@@ -224,15 +224,14 @@ inline int DRT::ELEMENTS::So3Scatra<so3_ele, distype>::Id() const
  | set the material  (public)                                 schmidt 10/17 |
  *                                                                          */
 template <class so3_ele, CORE::FE::CellType distype>
-void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::SetMaterial(int matnum)
+void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::SetMaterial(
+    int matnum, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   // call base class
-  so3_ele::SetMaterial(matnum);
+  so3_ele::SetMaterial(0, mat);
 
   // get the scatra structure control parameter list
   const Teuchos::ParameterList& ssicontrol = GLOBAL::Problem::Instance()->SSIControlParams();
-  // get the material
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
 
   if ((Teuchos::getIntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
           INPAR::SSI::SolutionSchemeOverFields::ssi_Monolithic) and
@@ -241,6 +240,9 @@ void DRT::ELEMENTS::So3Scatra<so3_ele, distype>::SetMaterial(int matnum)
         "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section,"
         " you need to use the material 'MAT_MultiplicativeSplitDefgradElastHyper'! If you want to "
         "use another material feel free to implement it! ;-)");
+
+  // call base class
+  so3_ele::SetMaterial(0, mat);
 
   return;
 }

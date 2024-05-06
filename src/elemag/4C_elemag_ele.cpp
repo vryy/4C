@@ -18,6 +18,7 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_lib_discret.hpp"
 #include "4C_lib_discret_faces.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_so3_nullspace.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -233,7 +234,7 @@ bool DRT::ELEMENTS::Elemag::ReadElement(
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
   int degree;
   linedef->ExtractInt("DEG", degree);
   degree_ = degree;

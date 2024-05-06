@@ -355,7 +355,7 @@ bool DRT::ELEMENTS::Shell7p::ReadElement(
   linedef->ExtractDouble("SDC", shell_data.sdc);
 
   // read and set number of material model
-  SetMaterial(STR::UTILS::SHELL::READELEMENT::ReadAndSetElementMaterial(linedef));
+  SetMaterial(0, MAT::Factory(STR::UTILS::SHELL::READELEMENT::ReadAndSetElementMaterial(linedef)));
 
   // setup shell calculation interface
   shell_interface_->Setup(*this, *SolidMaterial(), linedef, locking_types, shell_data);

@@ -16,6 +16,7 @@ elements
 #include "4C_comm_utils_factory.hpp"
 #include "4C_discretization_fem_general_largerotations.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -96,7 +97,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Setup(int matnum)
   linkele_ = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(-1, 0));
 
   // set material
-  linkele_->SetMaterial(matnum);
+  linkele_->SetMaterial(0, MAT::Factory(matnum));
 
   // Todo @grill: safety check for proper material type (done on element anyway, but do it here as
   // well)?!

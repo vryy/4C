@@ -33,7 +33,7 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(
   // Read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   // Read the element type, the element specific variables and store them to airwayParams_
   linedef->ExtractString("TYPE", elem_type_);
@@ -117,7 +117,7 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(
   // Read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   // Read the element type, the element specific variables and store them to acinusParams_
   linedef->ExtractString("TYPE", elem_type_);
@@ -173,7 +173,7 @@ bool DRT::ELEMENTS::RedInterAcinarDep::ReadElement(
   // Read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
 
   return true;

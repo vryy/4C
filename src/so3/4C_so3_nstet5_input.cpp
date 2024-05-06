@@ -23,7 +23,7 @@ bool DRT::ELEMENTS::NStet5::ReadElement(
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   if (Material()->MaterialType() == CORE::Materials::m_elasthyper)
   {

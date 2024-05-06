@@ -11,6 +11,7 @@
 
 #include "4C_fluid_ele.hpp"
 #include "4C_io_linedefinition.hpp"
+#include "4C_mat_material_factory.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -24,7 +25,7 @@ bool DRT::ELEMENTS::Fluid::ReadElement(
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)

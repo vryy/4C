@@ -20,7 +20,7 @@ bool DRT::ELEMENTS::SoHex27::ReadElement(
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   Teuchos::RCP<CORE::MAT::Material> mat = Material();
 

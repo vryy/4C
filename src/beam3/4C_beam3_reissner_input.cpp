@@ -35,7 +35,7 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
   // read number of material model and cross-section specs
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   if (Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper" and
       Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper_ByModes" and

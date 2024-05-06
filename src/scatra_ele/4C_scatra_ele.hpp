@@ -120,7 +120,7 @@ namespace DRT
         \note reimplementation of this method, due to initialising
               numdofpernode_, since the material is known now.
        */
-      void SetMaterial(int matnum) override;
+      void SetMaterial(int index, Teuchos::RCP<CORE::MAT::Material> mat) override;
 
       virtual void SetMaterial(int matnum, DRT::Element* oldele);
 

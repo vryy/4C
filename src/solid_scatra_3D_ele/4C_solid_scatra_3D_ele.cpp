@@ -140,7 +140,7 @@ bool DRT::ELEMENTS::SolidScatra::ReadElement(
   celltype_ = CORE::FE::StringToCellType(celltype);
 
   // read number of material model
-  SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
+  SetMaterial(0, MAT::Factory(STR::UTILS::READELEMENT::ReadElementMaterial(linedef)));
 
   // read scalar transport implementation type
   properties_.impltype = ReadScatraImplType(*linedef);

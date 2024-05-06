@@ -152,7 +152,7 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
   celltype_ = CORE::FE::StringToCellType(elecelltype);
 
   // read number of material model
-  SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
+  SetMaterial(0, MAT::Factory(STR::UTILS::READELEMENT::ReadElementMaterial(linedef)));
 
   // kinematic type
   solid_ele_property_.kintype = STR::UTILS::READELEMENT::ReadElementKinematicType(linedef);

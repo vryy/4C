@@ -22,7 +22,7 @@ bool DRT::ELEMENTS::Artery::ReadElement(
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   int ngp;
   linedef->ExtractInt("GP", ngp);

@@ -9,6 +9,7 @@
  *----------------------------------------------------------------------*/
 #include "4C_discretization_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_io_linedefinition.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_thermo_element.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -23,7 +24,7 @@ bool DRT::ELEMENTS::Thermo::ReadElement(
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   SetDisType(CORE::FE::StringToCellType(distype));
 

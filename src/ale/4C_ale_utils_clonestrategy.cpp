@@ -17,8 +17,10 @@
 #include "4C_ale_ale3_nurbs.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_global_data.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_input_base.hpp"
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -58,14 +60,14 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
     DRT::ELEMENTS::Ale2* ale2 = dynamic_cast<DRT::ELEMENTS::Ale2*>(newele.get());
     if (ale2 != nullptr)
     {
-      ale2->SetMaterial(matid);
+      ale2->SetMaterial(0, MAT::Factory(matid));
     }
     else
     {
       DRT::ELEMENTS::Ale3* ale3 = dynamic_cast<DRT::ELEMENTS::Ale3*>(newele.get());
       if (ale3 != nullptr)
       {
-        ale3->SetMaterial(matid);
+        ale3->SetMaterial(0, MAT::Factory(matid));
       }
       else
       {
@@ -79,7 +81,7 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
         dynamic_cast<DRT::ELEMENTS::NURBS::Ale2Nurbs*>(newele.get());
     if (ale2 != nullptr)
     {
-      ale2->SetMaterial(matid);
+      ale2->SetMaterial(0, MAT::Factory(matid));
     }
     else
     {
@@ -88,7 +90,7 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
 
       if (ale3 != nullptr)
       {
-        ale3->SetMaterial(matid);
+        ale3->SetMaterial(0, MAT::Factory(matid));
       }
       else
       {

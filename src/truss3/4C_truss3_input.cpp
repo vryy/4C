@@ -9,6 +9,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "4C_io_linedefinition.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_truss3.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -22,7 +23,7 @@ bool DRT::ELEMENTS::Truss3::ReadElement(
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   linedef->ExtractDouble("CROSS", crosssec_);
 
