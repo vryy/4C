@@ -49,7 +49,7 @@ endfunction(set_run_serial)
 # set timeout to this test (name_of_test). Optional, set timeout value
 function(set_timeout name_of_test)
   if("${ARGN}" STREQUAL "")
-    set_tests_properties(${name_of_test} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED})
+    set_tests_properties(${name_of_test} PROPERTIES TIMEOUT ${FOUR_C_TEST_TIMEOUT})
   else()
     set_tests_properties(${name_of_test} PROPERTIES TIMEOUT ${ARGN})
   endif()
@@ -117,7 +117,7 @@ macro(
   set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat)
 
   # scale testtimeout with the global test timeout scale
-  math(EXPR actualtesttimeout "${GLOBAL_TEST_TIMEOUT_SCALE} * ${testtimeout}")
+  math(EXPR actualtesttimeout "${FOUR_C_TEST_TIMEOUT_SCALE} * ${testtimeout}")
 
   add_test(
     NAME ${name_of_test}
