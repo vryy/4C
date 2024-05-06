@@ -30,7 +30,6 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_discretization_runtime_output_params.hpp"
-#include "4C_structure_new_gauss_point_data_output_manager.hpp"
 #include "4C_structure_new_integrator.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_predict_generic.hpp"
@@ -596,7 +595,13 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeStructure()
   const auto discretization = Teuchos::rcp_dynamic_cast<const DRT::Discretization>(
       const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true);
   vtu_writer_ptr_ = Teuchos::rcp(
-      new IO::DiscretizationVisualizationWriterMesh(discretization, visualization_params_));
+      new IO::DiscretizationVisualizationWriterMesh(discretization, visualization_params_,
+          [](const DRT::Element* element)
+          {
+            // Skip beam elements which live in the same discretization but use a different output
+            // mechanism
+            return !dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
+          }));
 
   if (GInOutput().GetRuntimeOutputParams()->GetStructureParams()->GaussPointDataOutput() !=
       INPAR::STR::GaussPointDataOutputType::none)

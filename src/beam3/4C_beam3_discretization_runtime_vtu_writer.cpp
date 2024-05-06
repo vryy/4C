@@ -505,8 +505,10 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementGID()
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::AppendElementGhostingInformation()
 {
-  constexpr bool is_beam = true;
-  IO::AppendElementGhostingInformation(*discretization_, *visualization_manager_, is_beam);
+  const auto only_select_beam_elements = [](const DRT::Element* ele)
+  { return dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele); };
+  IO::AppendElementGhostingInformation(
+      *discretization_, *visualization_manager_, only_select_beam_elements);
 }
 
 /*-----------------------------------------------------------------------------------------------*
