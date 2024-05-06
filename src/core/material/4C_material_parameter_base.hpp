@@ -16,7 +16,6 @@
 /* headers */
 #include "4C_config.hpp"
 
-#include "4C_inpar_material.hpp"
 #include "4C_legacy_enum_definitions_materials.hpp"
 
 #include <Epetra_Vector.h>
@@ -79,9 +78,6 @@ namespace CORE::MAT::PAR
     //! \brief set element specific or global material parameter using enum parametername which is
     //! defined in respective MAT::PAR classes
     void SetParameter(int parametername, const double val, const int eleGID);
-
-    //! brief extend all RCP<Epetra_Vectors> which have length one to element colmap layout
-    void ExpandParametersToEleColLayout();
 
     //! \brief return element specific or global material parameter using enum parametername which
     //! is defined in respective MAT::PAR classes
