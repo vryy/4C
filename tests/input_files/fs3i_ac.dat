@@ -274,7 +274,6 @@ TOL_VEL_INC_L2                  1e-06
 TOL_VEL_INC_INF                 1e-06
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-//SOLVER                          UMFPACK
 SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         GMRES
@@ -304,7 +303,6 @@ ML_DAMPMED                      0.79
 ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-//SOLVER                          UMFPACK
 SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         GMRES
@@ -335,7 +333,6 @@ ML_DAMPMED                      0.79
 ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 3
 NAME                            Ale_Solver
-//SOLVER                          UMFPACK
 SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         CG
@@ -365,7 +362,6 @@ ML_DAMPMED                      0.79
 ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 4
 NAME                            COUPLED_FS3I_SOLVER
-//SOLVER                          UMFPACK
 SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         GMRES
@@ -395,7 +391,6 @@ ML_DAMPMED                      0.79
 ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 5
 NAME                            SCAT_FLUID
-//SOLVER                          UMFPACK
 SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         GMRES
@@ -425,7 +420,6 @@ ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
 --------------------------------------------------------------------SOLVER 6
 NAME                            SCAT_STRUCT
-//SOLVER                          UMFPACK
 SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         GMRES

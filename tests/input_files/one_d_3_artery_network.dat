@@ -15,7 +15,7 @@ DYNAMICTYP                      ExpTaylorGalerkin
 NUMSTEP                         10000
 TIMESTEP                        1.0e-4
 RESTARTEVRY                     1
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 SOLVESCATRA                     no
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
@@ -24,7 +24,7 @@ TIMEINTEGR                      Af_Gen_Alpha
 NONLINITER                      Newton
 ITEMAX                          12
 CONVCHECK                       L_2_norm
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 NUMSTEP                         3270
 NUMSTASTEPS                     1
@@ -37,10 +37,10 @@ ALPHA_M                         1.50
 GAMMA                           1.00
 LIFTDRAG                        no
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
-TOL_VEL_RES	  1.0E-6
-TOL_VEL_INC	  1.0E-6
-TOL_PRES_RES	  1.0E-6
-TOL_PRES_INC	  1.0E-6
+TOL_VEL_RES	                    1.0E-6
+TOL_VEL_INC	                    1.0E-6
+TOL_PRES_RES	                1.0E-6
+TOL_PRES_INC	                1.0E-6
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         41

@@ -1060,7 +1060,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
       }
       default:
       {
-        FOUR_C_THROW("You have to choose an iterative solver for micro structures!");
+        FOUR_C_THROW("You have to choose either belos or superlu for micro structures!");
         break;
       }
     }
