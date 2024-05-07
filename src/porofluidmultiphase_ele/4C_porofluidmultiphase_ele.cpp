@@ -358,7 +358,7 @@ bool DRT::ELEMENTS::PoroFluidMultiPhase::ReadElement(
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   // set discretization type
   SetDisType(CORE::FE::StringToCellType(distype));
@@ -369,14 +369,14 @@ bool DRT::ELEMENTS::PoroFluidMultiPhase::ReadElement(
 /*----------------------------------------------------------------------*
  |  create material class (public)                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(int matnum)
+void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(
+    const int index, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   // the standard part:
-  DRT::Element::SetMaterial(matnum);
+  DRT::Element::SetMaterial(index, mat);
 
   // the special part:
   // now the element knows its material, and we can use it to determine numdofpernode
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
   if (mat->MaterialType() == CORE::Materials::m_fluidporo_multiphase or
       mat->MaterialType() == CORE::Materials::m_fluidporo_multiphase_reactions)
   {

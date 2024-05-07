@@ -19,7 +19,6 @@
 #include "4C_lib_discret.hpp"
 #include "4C_lib_element_append_visualization.hpp"
 #include "4C_lib_node.hpp"
-#include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -221,24 +220,16 @@ void DRT::Element::SetNodeIds(const std::string& distype, INPUT::LineDefinition*
   node_.resize(0);
 }
 
-
-/*----------------------------------------------------------------------*
- |  create material class (public)                                 05/07|
- *----------------------------------------------------------------------*/
-void DRT::Element::SetMaterial(int matnum)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Element::SetMaterial(const int index, Teuchos::RCP<CORE::MAT::Material> mat)
 {
-  Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(matnum);
-  if (mat == Teuchos::null)
-    FOUR_C_THROW(
-        "Invalid material given to the element. \n"
-        "Invalid are Summands of the Elasthyper-Toolbox and single Growth-Materials. \n"
-        "If you like to use a Summand of the Elasthyper-Material define it via MAT_ElastHyper. \n"
-        "If you like to use a Growth-Material define it via the according base material.");
-  mat_[0] = mat;
-}
+  FOUR_C_THROW_UNLESS(mat != Teuchos::null,
+      "Invalid material given to the element. \n"
+      "Invalid are Summands of the Elasthyper-Toolbox and single Growth-Materials. \n"
+      "If you like to use a Summand of the Elasthyper-Material define it via MAT_ElastHyper. \n"
+      "If you like to use a Growth-Material define it via the according base material.");
 
-void DRT::Element::SetMaterial(int index, Teuchos::RCP<CORE::MAT::Material> mat)
-{
   if (NumMaterial() > index)
     mat_[index] = mat;
   else if (NumMaterial() == index)
@@ -251,9 +242,8 @@ void DRT::Element::SetMaterial(int index, Teuchos::RCP<CORE::MAT::Material> mat)
 }
 
 /*----------------------------------------------------------------------*
- |  add material to element (public)                          vuong 02/14|
  *----------------------------------------------------------------------*/
-int DRT::Element::AddMaterial(const Teuchos::RCP<CORE::MAT::Material>& mat)
+int DRT::Element::AddMaterial(Teuchos::RCP<CORE::MAT::Material> mat)
 {
   mat_.push_back(mat);
 

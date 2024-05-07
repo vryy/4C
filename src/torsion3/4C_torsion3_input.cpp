@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "4C_io_linedefinition.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_torsion3.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -22,7 +23,7 @@ bool DRT::ELEMENTS::Torsion3::ReadElement(
   // read type of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   // read type of bending potential
   std::string buffer;

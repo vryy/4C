@@ -15,6 +15,7 @@
 #include "4C_comm_utils_factory.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_truss3.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -102,7 +103,7 @@ void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
   linkele_ = Teuchos::rcp(new DRT::ELEMENTS::Truss3(-1, 0));
 
   // set material
-  linkele_->SetMaterial(matnum);
+  linkele_->SetMaterial(0, MAT::Factory(matnum));
 
   // set cross-section area Fixme hard-coded dummy value for now
   linkele_->SetCrossSec(1.0);

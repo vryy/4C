@@ -263,7 +263,7 @@ namespace DRT
 
         \param matnum : material number from input file
        */
-      void SetMaterial(int matnum) override;
+      void SetMaterial(int matnum, Teuchos::RCP<CORE::MAT::Material> mat) override;
 
       /*!
        * @brief Evaluate Cauchy stress at given point in parameter space and calculate

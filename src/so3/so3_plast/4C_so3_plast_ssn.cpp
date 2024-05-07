@@ -608,7 +608,7 @@ bool DRT::ELEMENTS::So3Plast<distype>::ReadElement(
   int material = 0;
   linedef->ExtractInt("MAT", material);
 
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   Teuchos::RCP<MAT::So3Material> so3mat = SolidMaterial();
   so3mat->Setup(numgpt_, linedef);

@@ -57,7 +57,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
       Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidPoro>(newele);
   if (fluid != Teuchos::null)
   {
-    fluid->SetMaterial(matid);
+    fluid->SetMaterial(0, MAT::Factory(matid));
     // Copy Initial Porosity from StructPoro Material to FluidPoro Material
     static_cast<MAT::PAR::FluidPoro*>(fluid->Material()->Parameter())
         ->SetInitialPorosity(

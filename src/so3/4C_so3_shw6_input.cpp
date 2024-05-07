@@ -22,7 +22,7 @@ bool DRT::ELEMENTS::SoShw6::ReadElement(
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   SolidMaterial()->Setup(NUMGPT_WEG6, linedef);
 

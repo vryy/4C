@@ -90,7 +90,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
     if (so_base->Material()->Parameter()->Id() == matid)
       therm->SetMaterial(0, so_base->Material());
     else
-      therm->SetMaterial(matid);
+      therm->SetMaterial(0, MAT::Factory(matid));
     therm->SetDisType(oldele->Shape());  // set distype as well!
     therm->SetKinematicType(kintype);    // set kintype in cloned thermal element
   }

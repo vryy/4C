@@ -14,6 +14,7 @@
 #include "4C_elemag_ele.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_data_enums.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_input_base.hpp"
 #include "4C_scatra_ele.hpp"
@@ -52,7 +53,7 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::SetElementData(
   if (Transport != nullptr)
   {
     Transport->SetDisType(oldele->Shape());
-    Transport->SetMaterial(matid);
+    Transport->SetMaterial(0, MAT::Factory(matid));
     if (sft == CORE::FE::ShapeFunctionType::hdg)
     {
       auto scatraele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(Transport);

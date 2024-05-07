@@ -308,14 +308,11 @@ DRT::Element* DRT::ELEMENTS::Transport::Clone() const
 /*----------------------------------------------------------------------*
  |  create material class (public)                            gjb 07/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
+void DRT::ELEMENTS::Transport::SetMaterial(const int index, Teuchos::RCP<CORE::MAT::Material> mat)
 {
   // the standard part:
-  DRT::Element::SetMaterial(matnum);
+  DRT::Element::SetMaterial(index, mat);
 
-  // the special part:
-  // now the element knows its material, and we can use it to determine numdofpernode
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
   if (mat->MaterialType() == CORE::Materials::m_scatra or
       mat->MaterialType() == CORE::Materials::m_scatra_aniso or
       mat->MaterialType() == CORE::Materials::m_scatra_multiscale or
@@ -557,7 +554,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Transport::SetMaterial(int matnum, DRT::Element* oldele)
 {
-  SetMaterial(matnum);
+  SetMaterial(0, MAT::Factory(matnum));
 
   Teuchos::RCP<CORE::MAT::Material> mat = Material();
 

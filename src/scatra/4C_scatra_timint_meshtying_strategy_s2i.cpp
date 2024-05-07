@@ -2242,12 +2242,13 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             const int elegid = interface.SlaveColElements()->GID(iele);
 
             // add material
-            idiscret.gElement(elegid)->SetMaterial(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(
-                kinetics_slave_cond.second->Geometry()[elegid])
-                                                       ->ParentElement()
-                                                       ->Material()
-                                                       ->Parameter()
-                                                       ->Id());
+            idiscret.gElement(elegid)->SetMaterial(
+                0, MAT::Factory(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(
+                       kinetics_slave_cond.second->Geometry()[elegid])
+                                    ->ParentElement()
+                                    ->Material()
+                                    ->Parameter()
+                                    ->Id()));
           }
 
           // assign physical implementation type to each slave-side mortar element by copying the

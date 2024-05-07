@@ -26,7 +26,7 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(
   // read number of material model and cross-sections specs
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(0, MAT::Factory(material));
 
   if (Material()->Parameter()->Name() != "MAT_BeamKirchhoffElastHyper" and
       Material()->Parameter()->Name() != "MAT_BeamKirchhoffElastHyper_ByModes")

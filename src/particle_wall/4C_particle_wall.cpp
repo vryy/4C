@@ -24,6 +24,7 @@
 #include "4C_lib_dofset_transparent.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_particle_engine_container.hpp"
 #include "4C_particle_engine_enums.hpp"
 #include "4C_particle_engine_interface.hpp"
@@ -590,7 +591,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::InitWallDiscretization()
       wallele->SetNodeIds(currele->NumNode(), currele->NodeIds());
 
       // create material for current wall element
-      if (not(mat < 0)) wallele->SetMaterial(mat);
+      if (not(mat < 0)) wallele->SetMaterial(0, MAT::Factory(mat));
 
       // add wall element to discretization
       walldiscretization_->AddElement(wallele);
@@ -716,7 +717,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
         wallele->SetNodeIds(4, nodeidsofelements[dim * 2 + sign].data());
 
         // create material for current wall element
-        if (not(mat < 0)) wallele->SetMaterial(mat);
+        if (not(mat < 0)) wallele->SetMaterial(0, MAT::Factory(mat));
 
         // add wall element to discretization
         walldiscretization_->AddElement(wallele);

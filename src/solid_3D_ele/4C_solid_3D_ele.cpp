@@ -226,7 +226,7 @@ bool DRT::ELEMENTS::Solid::ReadElement(
   celltype_ = CORE::FE::StringToCellType(celltype);
 
   // read number of material model
-  SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
+  SetMaterial(0, MAT::Factory(STR::UTILS::READELEMENT::ReadElementMaterial(linedef)));
 
   // kinematic type
   SetKinematicType(STR::UTILS::READELEMENT::ReadElementKinematicType(linedef));

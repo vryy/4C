@@ -11,6 +11,7 @@
 
 #include "4C_global_data.hpp"
 #include "4C_lib_element.hpp"
+#include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_input_base.hpp"
 #include "4C_porofluidmultiphase_ele.hpp"
@@ -62,7 +63,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::SetElementData(
       dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(newele.get());
   if (porofluidele != nullptr)
   {
-    porofluidele->SetMaterial(matid);
+    porofluidele->SetMaterial(0, MAT::Factory(matid));
     porofluidele->SetDisType(oldele->Shape());  // set distype as well!
   }
   else

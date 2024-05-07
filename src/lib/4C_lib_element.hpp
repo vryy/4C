@@ -776,18 +776,6 @@ might become invalid after a redistribution of the discretization.
     */
     void SetFace(const int faceindex, Teuchos::RCP<DRT::FaceElement> faceelement);
 
-    /// Set element material
-    /*!
-      Material numbers are read from the input file. The element stores
-      a corresponding material object. These material objects can be
-      anything from very simple (just a little calculation) to highly
-      sophisticated with history data. The material is packed and
-      unpacked along with its element.
-
-      \param matnum : material number from input file
-     */
-    virtual void SetMaterial(int matnum);
-
     /// @brief Set specific element material
     /*!
       Store Material object in element's list of materials at given index.
@@ -797,7 +785,7 @@ might become invalid after a redistribution of the discretization.
       @param index index in material list
       @param mat pointer to the Material instance to set
      */
-    virtual void SetMaterial(int index, Teuchos::RCP<CORE::MAT::Material> mat);
+    virtual void SetMaterial(const int index, Teuchos::RCP<CORE::MAT::Material> mat);
 
     /// Add element material
     /*!
@@ -808,7 +796,7 @@ might become invalid after a redistribution of the discretization.
       \param mat: material to be added
       \param nummat (out):  number of materials the element holds
      */
-    int AddMaterial(const Teuchos::RCP<CORE::MAT::Material>& mat);
+    int AddMaterial(Teuchos::RCP<CORE::MAT::Material> mat);
 
     /// Number of materials of the element
     /*!
