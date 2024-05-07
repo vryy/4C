@@ -10,6 +10,7 @@
 
 #include "4C_inpar_IO_runtime_output.hpp"
 
+#include "4C_io_visualization_parameters.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -45,11 +46,9 @@ namespace INPAR
 
 
       // data format for written numeric data
-      setStringToIntegralParameter<INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat>("OUTPUT_DATA_FORMAT",
-          "binary", "data format for written numeric data", tuple<std::string>("binary", "ascii"),
-          tuple<INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat>(
-              INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat::binary,
-              INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat::ascii),
+      setStringToIntegralParameter<IO::OutputDataFormat>("OUTPUT_DATA_FORMAT", "binary",
+          "data format for written numeric data", tuple<std::string>("binary", "ascii"),
+          tuple<IO::OutputDataFormat>(IO::OutputDataFormat::binary, IO::OutputDataFormat::ascii),
           &sublist_IO_VTK_structure);
 
       // specify the maximum digits in the number of time steps that shall be written
@@ -74,10 +73,10 @@ namespace INPAR
           &sublist_IO_VTK_structure);
 
       // specify the actual visualization writer
-      setStringToIntegralParameter<OutputWriter>("OUTPUT_WRITER", "vtu_per_rank",
+      setStringToIntegralParameter<IO::OutputWriter>("OUTPUT_WRITER", "vtu_per_rank",
           "Specify which output writer shall be used to write the visualization data to disk",
-          tuple<std::string>("vtu_per_rank"), tuple<OutputWriter>(OutputWriter::vtu_per_rank),
-          &sublist_IO_VTK_structure);
+          tuple<std::string>("vtu_per_rank"),
+          tuple<IO::OutputWriter>(IO::OutputWriter::vtu_per_rank), &sublist_IO_VTK_structure);
     }
 
 

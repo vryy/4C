@@ -11,7 +11,6 @@
 
 #include "4C_io_visualization_parameters.hpp"
 
-#include "4C_inpar_IO_runtime_output.hpp"
 #include "4C_io_control.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.hpp"
@@ -31,7 +30,7 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
   IO::VisualizationParameters parameters;
 
   // Data format
-  parameters.data_format_ = Teuchos::getIntegralValue<INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat>(
+  parameters.data_format_ = Teuchos::getIntegralValue<OutputDataFormat>(
       visualization_ouput_parameter_list, "OUTPUT_DATA_FORMAT");
 
   // Number of digits to reserve for time step count
@@ -57,9 +56,9 @@ IO::VisualizationParameters IO::VisualizationParametersFactory(
   parameters.restart_from_name_ = output_control.RestartName();
 
   // Type of output writer
-  const auto output_writer = Teuchos::getIntegralValue<INPAR::IO_RUNTIME_OUTPUT::OutputWriter>(
-      visualization_ouput_parameter_list, "OUTPUT_WRITER");
-  if (output_writer == INPAR::IO_RUNTIME_OUTPUT::OutputWriter::none)
+  const auto output_writer =
+      Teuchos::getIntegralValue<OutputWriter>(visualization_ouput_parameter_list, "OUTPUT_WRITER");
+  if (output_writer == OutputWriter::none)
   {
     FOUR_C_THROW(
         "The visualization writer has to be set in the input file under IO/RUNTIME VTK "
