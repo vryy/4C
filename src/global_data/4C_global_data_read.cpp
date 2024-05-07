@@ -14,12 +14,12 @@
 #include "4C_contact_constitutivelaw_bundle.hpp"
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
 #include "4C_global_legacy_module.hpp"
-#include "4C_inpar.hpp"
 #include "4C_inpar_validconditions.hpp"
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_io.hpp"
 #include "4C_io_elementreader.hpp"
+#include "4C_io_geometry_type.hpp"
 #include "4C_io_inputreader.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_materialdefinition.hpp"
@@ -253,7 +253,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
           Teuchos::rcp(new IO::DiscretizationWriter(structdis, output_control, distype)));
       problem.AddDis("structure", structdis);
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          CORE::UTILS::IntegralValue<INPAR::GeometryType>(
+          CORE::UTILS::IntegralValue<IO::GeometryType>(
               problem.StructuralDynamicParams(), "GEOMETRY"),
           nullptr);
 
@@ -281,8 +281,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
         problem.AddDis("fluid", fluiddis);
 
         meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-            CORE::UTILS::IntegralValue<INPAR::GeometryType>(
-                problem.FluidDynamicParams(), "GEOMETRY"),
+            CORE::UTILS::IntegralValue<IO::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
             nullptr);
       }
 
@@ -318,7 +317,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          CORE::UTILS::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<IO::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
 
       meshreader.AddElementReader(IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
@@ -393,7 +392,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("fluid", fluiddis);
 
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          CORE::UTILS::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<IO::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
 
       break;
@@ -566,12 +565,11 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("thermo", thermdis);
 
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          CORE::UTILS::IntegralValue<INPAR::GeometryType>(
+          CORE::UTILS::IntegralValue<IO::GeometryType>(
               problem.StructuralDynamicParams(), "GEOMETRY"),
           nullptr);
       meshreader.AddAdvancedReader(thermdis, reader, "THERMO",
-          CORE::UTILS::IntegralValue<INPAR::GeometryType>(
-              problem.ThermalDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<IO::GeometryType>(problem.ThermalDynamicParams(), "GEOMETRY"),
           nullptr);
 
       break;
@@ -626,7 +624,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
       problem.AddDis("structure", structdis);
 
       meshreader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          CORE::UTILS::IntegralValue<INPAR::GeometryType>(
+          CORE::UTILS::IntegralValue<IO::GeometryType>(
               problem.StructuralDynamicParams(), "GEOMETRY"),
           nullptr);
 
@@ -700,7 +698,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          CORE::UTILS::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<IO::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
       // meshreader.AddElementReader(Teuchos::rcp(new IO::ElementReader(fluiddis, reader,
       // "--FLUID ELEMENTS")));
@@ -1009,7 +1007,7 @@ void GLOBAL::ReadFields(GLOBAL::Problem& problem, INPUT::DatFileReader& reader, 
 
       meshreader.AddElementReader(IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          CORE::UTILS::IntegralValue<INPAR::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
+          CORE::UTILS::IntegralValue<IO::GeometryType>(problem.FluidDynamicParams(), "GEOMETRY"),
           nullptr);
 
       break;

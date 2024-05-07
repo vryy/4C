@@ -1,21 +1,18 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-
-\brief General input parameters
-
-
+\brief Parameters for geometry input
 \level 1
 */
 /*----------------------------------------------------------------------*/
-#ifndef FOUR_C_INPAR_HPP
-#define FOUR_C_INPAR_HPP
+#ifndef FOUR_C_IO_GEOMETRY_TYPE_HPP
+#define FOUR_C_IO_GEOMETRY_TYPE_HPP
 
 #include "4C_config.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace IO
 {
   //! Geometry reading specification
   enum GeometryType
@@ -25,7 +22,7 @@ namespace INPAR
     geometry_file
   };
 
-}  // namespace INPAR
+}  // namespace IO
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

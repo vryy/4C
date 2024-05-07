@@ -12,8 +12,8 @@
 
 #include "4C_inpar_fluid.hpp"
 
-#include "4C_inpar.hpp"
 #include "4C_inpar_turbulence.hpp"
+#include "4C_io_geometry_type.hpp"
 #include "4C_lib_conditiondefinition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -80,7 +80,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<int>("GEOMETRY", "full", "How the geometry is specified",
       tuple<std::string>("full", "box", "file"),
-      tuple<int>(INPAR::geometry_full, INPAR::geometry_box, INPAR::geometry_file), &fdyn);
+      tuple<int>(IO::geometry_full, IO::geometry_box, IO::geometry_file), &fdyn);
 
   setStringToIntegralParameter<int>("NONLINITER", "fixed_point_like", "Nonlinear iteration scheme",
       tuple<std::string>("fixed_point_like", "Newton"), tuple<int>(fixed_point_like, Newton),

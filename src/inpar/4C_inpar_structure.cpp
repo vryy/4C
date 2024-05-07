@@ -11,7 +11,7 @@
 
 #include "4C_inpar_structure.hpp"
 
-#include "4C_inpar.hpp"
+#include "4C_io_geometry_type.hpp"
 #include "4C_lib_conditiondefinition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -328,7 +328,7 @@ namespace INPAR
       // where the geometry comes from
       setStringToIntegralParameter<int>("GEOMETRY", "full", "How the geometry is specified",
           tuple<std::string>("full", "box", "file"),
-          tuple<int>(INPAR::geometry_full, INPAR::geometry_box, INPAR::geometry_file), &sdyn);
+          tuple<int>(IO::geometry_full, IO::geometry_box, IO::geometry_file), &sdyn);
 
       setStringToIntegralParameter<int>("MIDTIME_ENERGY_TYPE", "vague",
           "Specify the mid-averaging type for the structural energy contributions",

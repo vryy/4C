@@ -45,26 +45,26 @@ IO::MeshReader::MeshReader(
 /*----------------------------------------------------------------------*/
 void IO::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
     const INPUT::DatFileReader& reader, const std::string& sectionname,
-    const INPAR::GeometryType geometrysource, const std::string* geofilepath)
+    const IO::GeometryType geometrysource, const std::string* geofilepath)
 {
   std::set<std::string> elementtypes;
   switch (geometrysource)
   {
-    case INPAR::geometry_full:
+    case IO::geometry_full:
     {
       std::string fullsectionname("--" + sectionname + " ELEMENTS");
       ElementReader er = ElementReader(dis, reader, fullsectionname, elementtypes);
       element_readers_.emplace_back(er);
       break;
     }
-    case INPAR::geometry_box:
+    case IO::geometry_box:
     {
       std::string fullsectionname("--" + sectionname + " DOMAIN");
       DomainReader dr = DomainReader(dis, reader, fullsectionname);
       domain_readers_.emplace_back(dr);
       break;
     }
-    case INPAR::geometry_file:
+    case IO::geometry_file:
     {
       FOUR_C_THROW("Unfortunately not yet implemented, but feel free ...");
       break;
