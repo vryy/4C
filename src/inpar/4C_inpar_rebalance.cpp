@@ -10,6 +10,7 @@
 
 #include "4C_inpar_rebalance.hpp"
 
+#include "4C_rebalance.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -21,12 +22,14 @@ void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
 
   Teuchos::ParameterList& meshpartitioning = list->sublist("MESH PARTITIONING", false, "");
 
-  setStringToIntegralParameter<RebalanceType>("METHOD", "hypergraph",
+  setStringToIntegralParameter<CORE::REBALANCE::RebalanceType>("METHOD", "hypergraph",
       "Type of rebalance/partition algorithm to be used for decomposing the entire mesh into "
       "subdomains for parallel computing.",
       tuple<std::string>("none", "hypergraph", "recursive_coordinate_bisection", "monolithic"),
-      tuple<RebalanceType>(RebalanceType::none, RebalanceType::hypergraph,
-          RebalanceType::recursive_coordinate_bisection, RebalanceType::monolithic),
+      tuple<CORE::REBALANCE::RebalanceType>(CORE::REBALANCE::RebalanceType::none,
+          CORE::REBALANCE::RebalanceType::hypergraph,
+          CORE::REBALANCE::RebalanceType::recursive_coordinate_bisection,
+          CORE::REBALANCE::RebalanceType::monolithic),
       &meshpartitioning);
 
   CORE::UTILS::DoubleParameter("IMBALANCE_TOL", 1.1,
