@@ -9,10 +9,6 @@
 
 #include "4C_material_parameter_base.hpp"
 
-#include "4C_global_data.hpp"
-#include "4C_lib_discret.hpp"
-#include "4C_mat_par_bundle.hpp"
-#include "4C_matelast_aniso_structuraltensor_strategy.hpp"
 #include "4C_material_input_base.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -79,23 +75,6 @@ void CORE::MAT::PAR::Parameter::SetParameter(int parametername, const double val
   (*matparams_.at(parametername))[matparams_[parametername]->Map().LID(eleGID)] = val;
 }
 
-void CORE::MAT::PAR::Parameter::ExpandParametersToEleColLayout()
-{
-  for (auto& matparam : matparams_)
-  {
-    // only do this for vectors with one entry
-    if (matparam->GlobalLength() == 1)
-    {
-      // get value of element
-      double temp = (*matparam)[0];
-      // put new RCP<Epetra_Vector> in matparams struct
-      Teuchos::RCP<Epetra_Vector> temp2 = Teuchos::rcp(new Epetra_Vector(
-          *(GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()), true));
-      temp2->PutScalar(temp);
-      matparam = temp2;
-    }
-  }
-}
 double CORE::MAT::PAR::Parameter::GetParameter(int parametername, const int EleId)
 {
   // check if we have an element based value via size

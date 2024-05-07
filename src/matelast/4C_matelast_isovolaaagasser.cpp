@@ -64,7 +64,20 @@ MAT::ELASTIC::IsoVolAAAGasser::IsoVolAAAGasser(MAT::ELASTIC::PAR::IsoVolAAAGasse
 void MAT::ELASTIC::IsoVolAAAGasser::CalcCele(const int eleGID)
 {
   // extend parameters to elecolmap_layout
-  params_->ExpandParametersToEleColLayout();
+  for (auto& matparam : params_->ReturnMatparams())
+  {
+    // only do this for vectors with one entry
+    if (matparam->GlobalLength() == 1)
+    {
+      // get value of element
+      double temp = (*matparam)[0];
+      // put new RCP<Epetra_Vector> in matparams struct
+      Teuchos::RCP<Epetra_Vector> temp2 = Teuchos::rcp(new Epetra_Vector(
+          *(GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()), true));
+      temp2->PutScalar(temp);
+      matparam = temp2;
+    }
+  }
   // new style
   double normdist_myele = params_->GetParameter(params_->normdist, eleGID);
   double cele_myele = -999.0;
