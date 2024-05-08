@@ -194,37 +194,19 @@ int main(int argc, char** argv)
     std::string datfile;
     std::string cline;
 
-    // related to solid shell extrusion
-    double soshthickness = 0.0;
-    int soshnumlayer = 1;
-    int soshseedid = 0;
-    int soshgmsh = -1;
-    int concat2loose = 0;
-    int diveblocks = 0;
-
     bool twodim = false;
 
     // related to quad->tri conversion
     bool quadtri = false;
 
     Teuchos::CommandLineProcessor My_CLP;
-    My_CLP.setDocString("Preprocessor Exodus2FourC \n");
+    My_CLP.setDocString(
+        "This preprocessor converts Exodus2 files to the proprietary FourC format\n");
     My_CLP.throwExceptions(false);
     My_CLP.setOption("exo", &exofile, "exodus file to open");
     My_CLP.setOption("bc", &bcfile, "bc's and ele's file to open");
     My_CLP.setOption("head", &headfile, "4C header file to open");
     My_CLP.setOption("dat", &datfile, "output .dat file name [defaults to exodus file name]");
-    // here options related to solid shell extrusion are defined
-    My_CLP.setOption("gensosh", &soshthickness, "generate solid-shell body with given thickness");
-    My_CLP.setOption("numlayer", &soshnumlayer, "number of layers of generated solid-shell body");
-    My_CLP.setOption("diveblocks", &diveblocks,
-        "if larger 0 the xxx inner elements of generated layers are put into first eblock, the "
-        "rest into second");
-    My_CLP.setOption("seedid", &soshseedid, "id where to start extrusion, default is first");
-    My_CLP.setOption("gmsh", &soshgmsh, "gmsh output of xxx elements, default off, 0 all eles");
-    My_CLP.setOption("concf", &concat2loose,
-        "concatenate extruded volume with base, however loose every xxx'th node, default "
-        "0=off=fsi");
 
     // switch for genarating a 2d .dat - file
     My_CLP.setOption("d2", "d3", &twodim, "space dimensions in .dat-file: d2: 2D, d3: 3D");
