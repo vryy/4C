@@ -10,8 +10,6 @@
 
 #include "4C_io_visualization_writer_vtu_per_rank.hpp"
 
-#include "4C_inpar_IO_runtime_output.hpp"
-#include "4C_io_control.hpp"
 #include "4C_io_visualization_data.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -28,7 +26,7 @@ IO::VisualizationWriterVtuPerRank::VisualizationWriterVtuPerRank(
           std::pow(10, IO::GetTotalDigitsToReserveInTimeStep(parameters)),
           parameters.directory_name_, (parameters.file_name_prefix_ + "-vtk-files"),
           visualization_data_name_, parameters.restart_from_name_, parameters.restart_time_,
-          parameters.data_format_ == INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat::binary)
+          parameters.data_format_ == OutputDataFormat::binary)
 {
 }
 

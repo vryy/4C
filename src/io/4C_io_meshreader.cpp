@@ -10,17 +10,17 @@
 
 #include "4C_io_meshreader.hpp"
 
-#include "4C_inpar_rebalance.hpp"
 #include "4C_io_domainreader.hpp"
 #include "4C_io_elementreader.hpp"
 #include "4C_io_inputreader.hpp"
 #include "4C_io_nodereader.hpp"
-#include "4C_io_pstream.hpp"
 #include "4C_lib_discret.hpp"
+#include "4C_rebalance.hpp"
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_rebalance_print.hpp"
 
 #include <Teuchos_RCPDecl.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <string>
@@ -45,26 +45,26 @@ IO::MeshReader::MeshReader(
 /*----------------------------------------------------------------------*/
 void IO::MeshReader::AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
     const INPUT::DatFileReader& reader, const std::string& sectionname,
-    const INPAR::GeometryType geometrysource, const std::string* geofilepath)
+    const IO::GeometryType geometrysource, const std::string* geofilepath)
 {
   std::set<std::string> elementtypes;
   switch (geometrysource)
   {
-    case INPAR::geometry_full:
+    case IO::geometry_full:
     {
       std::string fullsectionname("--" + sectionname + " ELEMENTS");
       ElementReader er = ElementReader(dis, reader, fullsectionname, elementtypes);
       element_readers_.emplace_back(er);
       break;
     }
-    case INPAR::geometry_box:
+    case IO::geometry_box:
     {
       std::string fullsectionname("--" + sectionname + " DOMAIN");
       DomainReader dr = DomainReader(dis, reader, fullsectionname);
       domain_readers_.emplace_back(dr);
       break;
     }
-    case INPAR::geometry_file:
+    case IO::geometry_file:
     {
       FOUR_C_THROW("Unfortunately not yet implemented, but feel free ...");
       break;
@@ -142,7 +142,7 @@ void IO::MeshReader::Rebalance()
         Teuchos::rcp(new Teuchos::ParameterList());
     rebalanceParams->set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
-    const auto rebalanceMethod = Teuchos::getIntegralValue<INPAR::REBALANCE::RebalanceType>(
+    const auto rebalanceMethod = Teuchos::getIntegralValue<CORE::REBALANCE::RebalanceType>(
         parameters_.mesh_paritioning_parameters, "METHOD");
 
     Teuchos::RCP<Epetra_Map> rowmap, colmap;
@@ -151,7 +151,7 @@ void IO::MeshReader::Rebalance()
     {
       switch (rebalanceMethod)
       {
-        case INPAR::REBALANCE::RebalanceType::hypergraph:
+        case CORE::REBALANCE::RebalanceType::hypergraph:
         {
           rebalanceParams->set("partitioning method", "HYPERGRAPH");
 
@@ -161,7 +161,7 @@ void IO::MeshReader::Rebalance()
 
           break;
         }
-        case INPAR::REBALANCE::RebalanceType::recursive_coordinate_bisection:
+        case CORE::REBALANCE::RebalanceType::recursive_coordinate_bisection:
         {
           rebalanceParams->set("partitioning method", "RCB");
 
@@ -182,7 +182,7 @@ void IO::MeshReader::Rebalance()
 
           break;
         }
-        case INPAR::REBALANCE::RebalanceType::monolithic:
+        case CORE::REBALANCE::RebalanceType::monolithic:
         {
           rebalanceParams->set("partitioning method", "HYPERGRAPH");
 

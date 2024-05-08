@@ -9,7 +9,7 @@
 
 #include "4C_inpar_IO_monitor_structure_dbc.hpp"
 
-#include "4C_inpar.hpp"
+#include "4C_io_geometry_type.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>

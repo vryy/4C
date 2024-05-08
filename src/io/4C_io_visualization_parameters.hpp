@@ -14,9 +14,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_IO_runtime_output.hpp"
-#include "4C_utils_exceptions.hpp"
-
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -25,13 +22,28 @@ namespace IO
 {
   class OutputControl;
 
+  /// data format for written numeric data
+  enum class OutputDataFormat
+  {
+    binary,
+    ascii,
+    vague
+  };
+
+  // Specify the output writer that shall be used
+  enum class OutputWriter
+  {
+    none,
+    vtu_per_rank  // Write one file per time step per rank in the vtu format
+  };
+
   /**
    * @brief This struct holds parameters for visualization output
    */
   struct VisualizationParameters
   {
     //! Enum containing the type of output data format, i.e., binary or ascii.
-    INPAR::IO_RUNTIME_OUTPUT::OutputDataFormat data_format_;
+    OutputDataFormat data_format_;
 
     //! Base output directory
     std::string directory_name_;
@@ -58,7 +70,7 @@ namespace IO
     std::string restart_from_name_;
 
     //! Enum containing the output writer that shall be used
-    INPAR::IO_RUNTIME_OUTPUT::OutputWriter writer_;
+    OutputWriter writer_;
   };
 
   /**

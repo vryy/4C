@@ -13,9 +13,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar.hpp"
 #include "4C_io_domainreader.hpp"
 #include "4C_io_elementreader.hpp"
+#include "4C_io_geometry_type.hpp"
 #include "4C_io_inputreader.hpp"
 
 #include <Epetra_CrsGraph.h>
@@ -85,7 +85,7 @@ namespace IO
      */
     void AddAdvancedReader(Teuchos::RCP<DRT::Discretization> dis,
         const INPUT::DatFileReader& reader, const std::string& sectionname,
-        const INPAR::GeometryType geometrysource, const std::string* geofilepath);
+        const IO::GeometryType geometrysource, const std::string* geofilepath);
 
     /// do the actual reading
     /*!
