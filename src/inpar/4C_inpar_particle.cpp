@@ -121,23 +121,40 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   // initial temperature field of particle phase given by function
   CORE::UTILS::StringParameter("INITIAL_TEMP_FIELD", "none",
-      "initial temperature field of particle phase given by function", &particledynconditions);
+      "Refer to the function ID describing the initial temperature field of particle phase",
+      &particledynconditions);
 
   // initial velocity field of particle phase given by function
   CORE::UTILS::StringParameter("INITIAL_VELOCITY_FIELD", "none",
-      "initial velocity field of particle phase given by function", &particledynconditions);
+      "Refer to the function ID describing the initial velocity field of particle phase",
+      &particledynconditions);
+
+  // initial angular velocity field of particle phase given by function
+  CORE::UTILS::StringParameter("INITIAL_ANGULAR_VELOCITY_FIELD", "none",
+      "Refer to the function ID describing the initial angular velocity field of rigid body "
+      "phase/DEM particle",
+      &particledynconditions);
 
   // initial acceleration field of particle phase given by function
   CORE::UTILS::StringParameter("INITIAL_ACCELERATION_FIELD", "none",
-      "initial acceleration field of particle phase given by function", &particledynconditions);
+      "Refer to the function ID describing the initial acceleration field of particle phase",
+      &particledynconditions);
+
+  // initial angular acceleration field of particle phase given by function
+  CORE::UTILS::StringParameter("INITIAL_ANGULAR_ACCELERATION_FIELD", "none",
+      "Refer to the function ID describing the initial angular acceleration field of rigid body "
+      "phase/DEM particle",
+      &particledynconditions);
 
   // dirichlet boundary condition of particle phase given by function
   CORE::UTILS::StringParameter("DIRICHLET_BOUNDARY_CONDITION", "none",
-      "dirichlet boundary condition of particle phase given by function", &particledynconditions);
+      "Refer to the function ID describing the dirichlet boundary condition of particle phase",
+      &particledynconditions);
 
   // temperature boundary condition of particle phase given by function
   CORE::UTILS::StringParameter("TEMPERATURE_BOUNDARY_CONDITION", "none",
-      "temperature boundary condition of particle phase given by function", &particledynconditions);
+      "Refer to the function ID describing the temperature boundary condition of particle phase",
+      &particledynconditions);
 
   /*-------------------------------------------------------------------------*
    | smoothed particle hydrodynamics (SPH) specific control parameters       |

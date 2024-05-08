@@ -914,6 +914,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetInitialConditions()
 
   // set initial fields
   initialfield->SetInitialFields();
+
+  // set rigid body initial conditions
+  if (particlerigidbody_) particlerigidbody_->SetInitialConditions();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::SetCurrentTime()
