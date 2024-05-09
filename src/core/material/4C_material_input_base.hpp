@@ -37,9 +37,8 @@ namespace CORE::MAT::PAR
     //@{
 
     /// Standard constructor
-    Material(const int id,                         ///< unique material ID
-        const CORE::Materials::MaterialType type,  ///< type of material
-        const std::string name                     ///< name of material
+    Material(const int id,                        ///< unique material ID
+        const CORE::Materials::MaterialType type  ///< type of material
     );
 
     /// Default constructor without information from the input lines.
@@ -63,9 +62,6 @@ namespace CORE::MAT::PAR
     /// Return material id
     [[nodiscard]] inline virtual int Id() const { return id_; }
 
-    /// Return material name
-    [[nodiscard]] inline virtual std::string Name() const { return name_; }
-
     /// Return type of condition
     [[nodiscard]] inline virtual CORE::Materials::MaterialType Type() const { return type_; }
 
@@ -87,9 +83,6 @@ namespace CORE::MAT::PAR
 
     /// Type of this material
     CORE::Materials::MaterialType type_{};
-
-    /// Name
-    std::string name_{};
 
     /// Unwrapped material data for 'quick' access
     Teuchos::RCP<CORE::MAT::PAR::Parameter> params_{};

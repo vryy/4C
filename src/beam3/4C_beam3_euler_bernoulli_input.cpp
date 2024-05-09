@@ -10,6 +10,7 @@
 
 #include "4C_beam3_euler_bernoulli.hpp"
 #include "4C_io_linedefinition.hpp"
+#include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
@@ -26,16 +27,14 @@ bool DRT::ELEMENTS::Beam3eb::ReadElement(
   linedef->ExtractInt("MAT", material);
   SetMaterial(0, MAT::Factory(material));
 
-  if (Material()->Parameter()->Name() != "MAT_BeamKirchhoffTorsionFreeElastHyper" and
-      Material()->Parameter()->Name() != "MAT_BeamKirchhoffTorsionFreeElastHyper_ByModes")
-  {
-    FOUR_C_THROW(
-        "The material parameter definition '%s' is not supported by "
-        "Beam3eb element! "
-        "Choose MAT_BeamKirchhoffTorsionFreeElastHyper or "
-        "MAT_BeamKirchhoffTorsionFreeElastHyper_ByModes!",
-        Material()->Parameter()->Name().c_str());
-  }
+  const auto mat_type = Material()->Parameter()->Type();
+  FOUR_C_THROW_UNLESS(
+      mat_type == CORE::Materials::m_beam_kirchhoff_torsionfree_elast_hyper ||
+          mat_type == CORE::Materials::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes,
+      "The material parameter definition '%s' is not supported by Beam3eb element! "
+      "Choose MAT_BeamKirchhoffTorsionFreeElastHyper or "
+      "MAT_BeamKirchhoffTorsionFreeElastHyper_ByModes!",
+      to_string(mat_type).data());
 
   return true;
 }

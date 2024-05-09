@@ -11,6 +11,7 @@
 #include "4C_beam3_reissner.hpp"
 #include "4C_discretization_fem_general_largerotations.hpp"
 #include "4C_io_linedefinition.hpp"
+#include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_mat_beam_material_generic.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
@@ -37,16 +38,15 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
   linedef->ExtractInt("MAT", material);
   SetMaterial(0, MAT::Factory(material));
 
-  if (Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper" and
-      Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper_ByModes" and
-      Material()->Parameter()->Name() != "MAT_BeamReissnerElastPlastic")
-  {
-    FOUR_C_THROW(
-        "The material parameter definition '%s' is not supported by Beam3r element! "
-        "Choose MAT_BeamReissnerElastHyper, MAT_BeamReissnerElastHyper_ByModes or "
-        "MAT_BeamReissnerElastPlastic!",
-        Material()->Parameter()->Name().c_str());
-  }
+  const auto mat_type = Material()->Parameter()->Type();
+  FOUR_C_THROW_UNLESS(mat_type == CORE::Materials::m_beam_reissner_elast_hyper ||
+                          mat_type == CORE::Materials::m_beam_reissner_elast_plastic ||
+                          mat_type == CORE::Materials::m_beam_reissner_elast_hyper_bymodes,
+      "The material parameter definition '%s' is not supported by Beam3r element! "
+      "Choose MAT_BeamReissnerElastHyper, MAT_BeamReissnerElastHyper_ByModes or "
+      "MAT_BeamReissnerElastPlastic!",
+      to_string(mat_type).data());
+
 
   if (linedef->HaveNamed("HERM2LINE2") or linedef->HaveNamed("HERM2LINE3") or
       linedef->HaveNamed("HERM2LINE4") or linedef->HaveNamed("HERM2LINE5"))

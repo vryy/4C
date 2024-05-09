@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 CORE::MAT::PAR::Parameter::Parameter(Teuchos::RCP<const CORE::MAT::PAR::Material> matdata)
-    : id_(matdata->Id()), type_(matdata->Type()), name_(matdata->Name())
+    : id_(matdata->Id()), type_(matdata->Type())
 {
 }
 
