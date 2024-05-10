@@ -73,7 +73,7 @@ void PARTICLERIGIDBODY::SetInitialFields(const Teuchos::ParameterList& params,
       // evaluate function to set initial field
       for (int dim = 0; dim < statedim; ++dim)
       {
-        state[rigidbody_k][dim] = function.Evaluate(&(pos_k[dim]), 0.0, dim);
+        state[rigidbody_k][dim] = function.Evaluate(pos_k, 0.0, dim);
       }
     }
   }
