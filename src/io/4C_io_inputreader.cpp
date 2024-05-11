@@ -22,7 +22,7 @@
 #include <sstream>
 #include <utility>
 
-#ifdef FOUR_C_TRAP_FE
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
 #include <cfenv>
 #endif
 
@@ -872,7 +872,7 @@ namespace INPUT
       }
     }
 
-#ifdef FOUR_C_TRAP_FE
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
     // somehow the following test whether we have a double or not
     // creates always an internal floating point exception (FE_INVALID). An alternative
     // implementation using boost::lexical_cast<double> does not solve this problem!
@@ -890,7 +890,7 @@ namespace INPUT
       ssd << value;
       ssd >> dv;
 
-#ifdef FOUR_C_TRAP_FE
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
       feclearexcept(FE_INVALID);
       /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
       feenableexcept(FE_INVALID | FE_DIVBYZERO);

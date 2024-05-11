@@ -17,7 +17,7 @@
 
 #cmakedefine FOUR_C_DSERROR_DUMP
 
-#cmakedefine FOUR_C_TRAP_FE
+#cmakedefine FOUR_C_ENABLE_FE_TRAPPING
 
 // The project namespace is added via the following two macros. This design allows
 // to treat the namespace as invisible within the project.

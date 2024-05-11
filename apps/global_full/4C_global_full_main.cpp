@@ -33,7 +33,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#ifdef FOUR_C_TRAP_FE
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
 #include <cfenv>
 #endif
 
@@ -158,7 +158,7 @@ namespace
 #endif
   }
 
-#ifdef FOUR_C_TRAP_FE
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
   /*!
    * \brief FPE signal handle
    *
@@ -304,7 +304,7 @@ int main(int argc, char *argv[])
     /* Here we turn the NaN and INF numbers off. No need to calculate
      * those. If those appear, the calculation needs much (!) more
      * time. Better stop immediately if some illegal operation occurs. */
-#ifdef FOUR_C_TRAP_FE
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
 
     /* This is a GNU extension thus it's only available on linux. But
      * it's exactly what we want: SIGFPE just for the given
