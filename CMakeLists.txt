@@ -109,10 +109,10 @@ set(MPIEXEC_EXTRA_OPTS_FOR_TESTING
     "--bind-to none --mca orte_tmpdir_base ${PROJECT_BINARY_DIR}/tmp"
     )
 
-if(FOUR_C_WITH_ADDRESS_SANITIZER)
+if(FOUR_C_ENABLE_ADDRESS_SANITIZER)
   # Do not detect leaks, we only care about UB inducing memory issues
   string(APPEND MPIEXEC_EXTRA_OPTS_FOR_TESTING " -x LSAN_OPTIONS=detect_leaks=0")
-  set(FOUR_C_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
+  set(FOUR_C_ENABLE_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
 endif()
 
 set(FOUR_C_EXECUTABLE_NAME 4C)

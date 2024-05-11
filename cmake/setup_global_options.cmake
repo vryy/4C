@@ -54,8 +54,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 # If enabled, build all targets with address sanitizer
-option(FOUR_C_WITH_ADDRESS_SANITIZER "Compile with address sanitizer" OFF)
-if(FOUR_C_WITH_ADDRESS_SANITIZER)
+option(FOUR_C_ENABLE_ADDRESS_SANITIZER "Compile with address sanitizer" OFF)
+if(FOUR_C_ENABLE_ADDRESS_SANITIZER)
   # We get better stack traces in ASAN with this flag.
   enable_compiler_flag_if_supported("-fno-omit-frame-pointer")
   enable_linker_flag_if_supported("-fno-omit-frame-pointer")
@@ -72,7 +72,7 @@ if(FOUR_C_WITH_ADDRESS_SANITIZER)
   if(NOT FOUR_C_COMPILER_LINKER_SUPPORT_ASAN)
     message(
       FATAL_ERROR
-        "Option FOUR_C_WITH_ADDRESS_SANITIZER is ON but the compiler does not support this feature."
+        "Option FOUR_C_ENABLE_ADDRESS_SANITIZER is ON but the compiler does not support this feature."
       )
   endif()
 endif()

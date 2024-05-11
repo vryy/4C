@@ -55,7 +55,7 @@
         ".docker_base"
       ],
       "cacheVariables": {
-        "FOUR_C_WITH_ADDRESS_SANITIZER": "ON",
+        "FOUR_C_ENABLE_ADDRESS_SANITIZER": "ON",
         "FOUR_C_TEST_TIMEOUT_SCALE": "10"
       }
     },
