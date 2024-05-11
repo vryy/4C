@@ -99,7 +99,7 @@ if(FOUR_C_ENABLE_COVERAGE)
   endif()
 endif()
 
-four_c_process_global_option(FOUR_C_DSERROR_DUMP "Uncaught exceptions create a core file" OFF)
+four_c_process_global_option(FOUR_C_ENABLE_CORE_DUMP "Uncaught exceptions create a core file" OFF)
 four_c_process_global_option(
   FOUR_C_ENABLE_FE_TRAPPING "Crash the program if a nan or inf occurs" ON
   )

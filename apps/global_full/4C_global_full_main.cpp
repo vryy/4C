@@ -326,7 +326,7 @@ int main(int argc, char *argv[])
 #endif
 
 /*----------------------------------------------- everything is in here */
-#ifdef FOUR_C_DSERROR_DUMP
+#ifdef FOUR_C_ENABLE_CORE_DUMP
     ntam(argc, argv);
 #else
     try
