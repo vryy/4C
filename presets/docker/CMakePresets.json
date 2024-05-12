@@ -9,7 +9,8 @@
         "CMAKE_BUILD_TYPE": "RELEASE",
         "CMAKE_CXX_COMPILER": "/usr/bin/mpic++",
         "CMAKE_C_COMPILER": "/usr/bin/mpicc",
-        "FOUR_C_CXX_FLAGS": "-msse3 -Werror",
+        "FOUR_C_CXX_FLAGS": "-msse3",
+        "FOUR_C_ENABLE_WARNINGS_AS_ERRORS": "ON",
         "FOUR_C_TRILINOS_ROOT": "/opt/4C-dependencies",
         "FOUR_C_QHULL_ROOT": "/opt/4C-dependencies",
         "FOUR_C_CLN_ROOT": "/opt/4C-dependencies",
@@ -67,7 +68,7 @@
         ".docker_base"
       ],
       "cacheVariables": {
-        "FOUR_C_CXX_FLAGS": "-msse3"
+        "FOUR_C_ENABLE_WARNINGS_AS_ERRORS": "OFF"
       }
     },
     {

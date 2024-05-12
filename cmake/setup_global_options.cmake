@@ -53,8 +53,20 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   enable_compiler_flag_if_supported("-Wno-error=potentially-evaluated-expression")
 endif()
 
+four_c_process_global_option(
+  FOUR_C_ENABLE_WARNINGS_AS_ERRORS "Treat warnings as errors when compiling" OFF
+  )
+if(FOUR_C_ENABLE_WARNINGS_AS_ERRORS)
+  enable_compiler_flag_if_supported("-Werror")
+endif()
+
+four_c_process_global_option(FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS "Optimze for current hardware" OFF)
+if(FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS)
+  enable_compiler_flag_if_supported("-march=native")
+endif()
+
 # If enabled, build all targets with address sanitizer
-option(FOUR_C_ENABLE_ADDRESS_SANITIZER "Compile with address sanitizer" OFF)
+four_c_process_global_option(FOUR_C_ENABLE_ADDRESS_SANITIZER "Compile with address sanitizer" OFF)
 if(FOUR_C_ENABLE_ADDRESS_SANITIZER)
   # We get better stack traces in ASAN with this flag.
   enable_compiler_flag_if_supported("-fno-omit-frame-pointer")

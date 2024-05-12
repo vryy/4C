@@ -6,8 +6,7 @@
       "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
-        "CMAKE_CXX_FLAGS": "-march=native",
-        "CMAKE_C_FLAGS": "-march=native",
+        "FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS": "ON",
         "CMAKE_EXE_LINKER_FLAGS": "-L$env{HDF5_ROOT}/lib -L$env{BOOST_ROOT}/lib",
         "FOUR_C_WITH_ARBORX": "ON",
         "FOUR_C_WITH_GOOGLETEST": "OFF",
