@@ -7,7 +7,6 @@
       "generator": "Ninja",
       "cacheVariables": {
         "FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS": "ON",
-        "CMAKE_EXE_LINKER_FLAGS": "-L$env{HDF5_ROOT}/lib -L$env{BOOST_ROOT}/lib",
         "FOUR_C_WITH_ARBORX": "ON",
         "FOUR_C_WITH_GOOGLETEST": "OFF",
         "FOUR_C_BUILD_DOXYGEN": "OFF"
@@ -27,7 +26,7 @@
         "FOUR_C_TRILINOS_ROOT": "$env{TRILINOS_ROOT}",
         "FOUR_C_QHULL_ROOT": "$env{QHULL_ROOT}",
         "FOUR_C_BOOST_ROOT": "$env{BOOST_ROOT}",
-        "BOOST_EXCLUDE_SYSTEM_PATHS": "ON",
+        "FOUR_C_HDF5_ROOT": "$env{HDF5_ROOT}",
         "FOUR_C_CLN_ROOT": "$env{CLN_ROOT}",
         "FOUR_C_WITH_FFTW": "OFF"
       }

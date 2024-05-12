@@ -1,9 +1,3 @@
-# This is needed on kaiser to enforce the usage of the non-system boost libraries
-option(BOOST_EXCLUDE_SYSTEM_PATHS "Avoid boost libraries in system paths" OFF)
-if(BOOST_EXCLUDE_SYSTEM_PATHS)
-  set(Boost_NO_SYSTEM_PATHS ON)
-endif(BOOST_EXCLUDE_SYSTEM_PATHS)
-
 find_package(
   Boost
   COMPONENTS graph system
