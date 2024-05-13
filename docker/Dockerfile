@@ -16,7 +16,6 @@ ENV LC_ALL en_US.UTF-8
 
 RUN apt-get update && apt-get install -y \
       build-essential \
-      ccache \
       ffmpeg \
       git \
       libglu1-mesa \ 

@@ -39,7 +39,7 @@ variables:
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   FOUR_C_DOCKER_BUILD_IMAGES: 'False'
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: 9a72bec9
+  FOUR_C_DOCKER_DEPENDENCIES_HASH: d75e24ff
   FOUR_C_DOCKER_DEPENDENCIES_IMAGE: 4c-dependencies
   FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $FOUR_C_DOCKER_DEPENDENCIES_IMAGE:$FOUR_C_DOCKER_DEPENDENCIES_HASH
 
@@ -75,8 +75,7 @@ before_script:
   cd ${CI_PROJECT_DIR}
   ./create-python-venv
   cd ${CI_PROJECT_DIR}/../build
-  # We override the launcher arguments here to ensure that ccache is not used during testing
-  cmake ${CI_PROJECT_DIR} --fresh --preset=${CMAKE_PRESET} -DCMAKE_C_COMPILER_LAUNCHER="" -DCMAKE_CXX_COMPILER_LAUNCHER=""
+  cmake ${CI_PROJECT_DIR} --fresh --preset=${CMAKE_PRESET}
 - echo Building the following targets ${BUILD_TARGETS}
   # build
 - time cmake --build . --target ${BUILD_TARGETS} -- -j `nproc` 2>&1 | tee ${CI_PROJECT_DIR}/build.log
