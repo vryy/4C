@@ -25,8 +25,8 @@ namespace
 
   void CreateMaterialInGlobalProblem()
   {
-    const auto mat_stvenant = Teuchos::rcp(new CORE::MAT::PAR::Material(
-        1, CORE::Materials::MaterialType::m_stvenant, "MAT_Struct_StVenantKirchhoff"));
+    const auto mat_stvenant =
+        Teuchos::rcp(new CORE::MAT::PAR::Material(1, CORE::Materials::MaterialType::m_stvenant));
 
     mat_stvenant->Add("YOUNG", 1.0);
     mat_stvenant->Add("NUE", 0.1);

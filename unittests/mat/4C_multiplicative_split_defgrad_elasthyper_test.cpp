@@ -82,8 +82,8 @@ namespace
 
       // set up elastic material to be added to problem instance
       const int matid_elastic(1);
-      const auto mat_elastic_neo_hooke = Teuchos::rcp(new CORE::MAT::PAR::Material(
-          matid_elastic, CORE::Materials::mes_coupneohooke, "ELAST_CoupNeoHooke"));
+      const auto mat_elastic_neo_hooke = Teuchos::rcp(
+          new CORE::MAT::PAR::Material(matid_elastic, CORE::Materials::mes_coupneohooke));
 
       // add actually required parameters to electrode material
       mat_elastic_neo_hooke->Add("YOUNG", 1.5e2);
@@ -94,8 +94,8 @@ namespace
 
       // set up inelastic material to be added to problem instance
       const int inelastic_defgrad_id(2);
-      const auto mat_inelastic = Teuchos::rcp(new CORE::MAT::PAR::Material(inelastic_defgrad_id,
-          CORE::Materials::mfi_lin_scalar_iso, "MAT_InelasticDefgradLinScalarIso"));
+      const auto mat_inelastic = Teuchos::rcp(
+          new CORE::MAT::PAR::Material(inelastic_defgrad_id, CORE::Materials::mfi_lin_scalar_iso));
 
       mat_inelastic->Add("SCALAR1", 1);
       mat_inelastic->Add("SCALAR1_MolarGrowthFac", 1.1);

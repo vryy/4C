@@ -65,9 +65,6 @@ namespace CORE::MAT::PAR
     /// material type
     [[nodiscard]] CORE::Materials::MaterialType Type() const { return type_; }
 
-    /// material name
-    [[nodiscard]] std::string Name() const { return name_; }
-
     /// create material instance of matching type with my parameters
     virtual Teuchos::RCP<CORE::MAT::Material> CreateMaterial() = 0;
 
@@ -101,9 +98,6 @@ namespace CORE::MAT::PAR
 
     /// material type
     CORE::Materials::MaterialType type_;
-
-    /// material name
-    std::string name_;
 
   };  // class Parameter
 

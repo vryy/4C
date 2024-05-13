@@ -37,18 +37,12 @@ namespace CORE::MAT::PAR
     //@{
 
     /// Standard constructor
-    Material(const int id,                         ///< unique material ID
-        const CORE::Materials::MaterialType type,  ///< type of material
-        const std::string name                     ///< name of material
+    Material(const int id,                        ///< unique material ID
+        const CORE::Materials::MaterialType type  ///< type of material
     );
 
-    /// default constructor
+    /// Default constructor without information from the input lines.
     Material() = default;
-
-    /// Copy constructor
-    ///
-    /// Makes a deep copy of the material parameters
-    Material(const CORE::MAT::PAR::Material& old);
 
     /// Set pointer to readily allocated 'quick access' material parameters
     ///
@@ -68,12 +62,6 @@ namespace CORE::MAT::PAR
     /// Return material id
     [[nodiscard]] inline virtual int Id() const { return id_; }
 
-    /// Return material name
-    [[nodiscard]] inline virtual std::string Name() const { return name_; }
-
-    /// Print this Condition (std::ostream << is also implemented for DRT::Condition)
-    void Print(std::ostream& os) const override;
-
     /// Return type of condition
     [[nodiscard]] inline virtual CORE::Materials::MaterialType Type() const { return type_; }
 
@@ -85,29 +73,21 @@ namespace CORE::MAT::PAR
 
     //@}
 
-   protected:
     /// don't want = operator
-    Material operator=(const Material& old);
+    Material operator=(const Material& old) = delete;
+    Material(const CORE::MAT::PAR::Material& old) = delete;
 
+   protected:
     /// Unique ID of this material, no second material of same ID may exist
     int id_{};
 
     /// Type of this material
     CORE::Materials::MaterialType type_{};
 
-    /// Name
-    std::string name_{};
-
     /// Unwrapped material data for 'quick' access
     Teuchos::RCP<CORE::MAT::PAR::Parameter> params_{};
   };
 }  // namespace CORE::MAT::PAR
-
-
-
-/// out stream operator
-std::ostream& operator<<(std::ostream& os, const CORE::MAT::PAR::Material& cond);
-
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -83,7 +83,7 @@ void INPUT::MaterialDefinition::Read(
 
         // the read-in material line
         Teuchos::RCP<CORE::MAT::PAR::Material> material =
-            Teuchos::rcp(new CORE::MAT::PAR::Material(matid, mattype_, materialname_));
+            Teuchos::rcp(new CORE::MAT::PAR::Material(matid, mattype_));
         // fill the latter
 
         for (auto& j : inputline_) condline = j->Read(Name(), condline, *material);

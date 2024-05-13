@@ -142,8 +142,8 @@ namespace
       problem.Materials()->SetReadFromProblem(problemid);
       // set up material to be added to problem instance
       const int matid(1);
-      const Teuchos::RCP<CORE::MAT::PAR::Material> electrode_mat = Teuchos::rcp(
-          new CORE::MAT::PAR::Material(matid, CORE::Materials::m_electrode, "MAT_electrode"));
+      const Teuchos::RCP<CORE::MAT::PAR::Material> electrode_mat =
+          Teuchos::rcp(new CORE::MAT::PAR::Material(matid, CORE::Materials::m_electrode));
 
       // add dummy parameters to electrode material
       electrode_mat->Add("DIFFCOEF", 0);
