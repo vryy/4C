@@ -295,7 +295,14 @@ int main(int argc, char *argv[])
       PrintContactConstitutiveLawDatHeader();
       DRT::UTILS::PrintCloningMaterialMapDatHeader();
       PrintElementDatHeader();
-      PrintResultDescrDatHeader();
+
+      INPUT::Lines result_lines("RESULT DESCRIPTION",
+          "The result of the simulation with respect to specific quantities at concrete points "
+          "can be tested against particular values with a given tolerance.");
+
+      GlobalLegacyModuleCallbacks().AttachResultLines(result_lines);
+      result_lines.Print(std::cout);
+
       printf("\n\n");
     }
   }

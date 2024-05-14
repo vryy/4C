@@ -2129,7 +2129,13 @@ void GLOBAL::ReadCloningMaterialMap(GLOBAL::Problem& problem, INPUT::DatFileRead
 /*----------------------------------------------------------------------*/
 void GLOBAL::ReadResult(GLOBAL::Problem& problem, INPUT::DatFileReader& reader)
 {
-  problem.GetResultTestManager().ReadInput(reader);
+  INPUT::Lines lines("RESULT DESCRIPTION",
+      "The result of the simulation with respect to specific quantities at concrete points "
+      "can be tested against particular values with a given tolerance.");
+
+  GlobalLegacyModuleCallbacks().AttachResultLines(lines);
+
+  problem.GetResultTestManager().SetParsedLines(lines.Read(reader));
 }
 
 /*----------------------------------------------------------------------*/

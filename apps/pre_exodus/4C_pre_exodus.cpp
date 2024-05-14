@@ -374,7 +374,10 @@ int main(int argc, char** argv)
       // default result-test lines
       {
         DRT::ResultTestManager resulttestmanager;
-        INPUT::Lines lines = resulttestmanager.ValidResultLines();
+        INPUT::Lines lines("RESULT DESCRIPTION",
+            "The result of the simulation with respect to specific quantities at concrete points "
+            "can be tested against particular values with a given tolerance.");
+        GlobalLegacyModuleCallbacks().AttachResultLines(lines);
         lines.Print(defaulthead);
       }
 

@@ -116,11 +116,8 @@ namespace DRT
     /// do all tests of all fields including appropiate output
     void TestAll(const Epetra_Comm& comm);
 
-    /// Definition of valid input section
-    INPUT::Lines ValidResultLines();
-
-    /// read the 4C input file and set up all curves
-    void ReadInput(INPUT::DatFileReader& reader);
+    /// Store the parsed @p results.
+    void SetParsedLines(std::vector<INPUT::LineDefinition> results);
 
    private:
     /// set of field specific result test objects
@@ -131,8 +128,6 @@ namespace DRT
   };
 
 }  // namespace DRT
-
-void PrintResultDescrDatHeader();
 
 FOUR_C_NAMESPACE_CLOSE
 
