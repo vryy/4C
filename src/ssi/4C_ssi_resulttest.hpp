@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -40,7 +40,7 @@ namespace SSI
     \author fang
     \date 11/2017
   */
-  class SSIResultTest : public DRT::ResultTest
+  class SSIResultTest : public CORE::UTILS::ResultTest
   {
    public:
     /*!

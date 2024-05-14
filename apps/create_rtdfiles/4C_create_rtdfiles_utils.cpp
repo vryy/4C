@@ -690,7 +690,7 @@ namespace RTD
     {
       WriteLinktarget(stream, "restultdescriptionreference");
       WriteHeader(stream, 0, "Result description reference");
-      DRT::ResultTestManager resulttestmanager;
+      CORE::UTILS::ResultTestManager resulttestmanager;
       INPUT::Lines lines("RESULT DESCRIPTION",
           "The result of the simulation with respect to specific quantities at concrete points "
           "can be tested against particular values with a given tolerance.");

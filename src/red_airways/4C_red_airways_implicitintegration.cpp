@@ -2241,7 +2241,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
 /*----------------------------------------------------------------------*
  | Create the field test for redairway field                 roth 10/13 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> AIRWAY::RedAirwayImplicitTimeInt::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> AIRWAY::RedAirwayImplicitTimeInt::CreateFieldTest()
 {
   return Teuchos::rcp(new RedAirwayResultTest(*this));
 }

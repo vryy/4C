@@ -16,8 +16,8 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
 #include "4C_particle_engine_typedefs.hpp"
+#include "4C_utils_result_test.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -44,7 +44,7 @@ namespace PARTICLEWALL
    *
    * \author Sebastian Fuchs \date 03/2019
    */
-  class WallResultTest final : public DRT::ResultTest
+  class WallResultTest final : public CORE::UTILS::ResultTest
   {
    public:
     //! constructor

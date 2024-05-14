@@ -13,8 +13,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Vector.h>
 
@@ -30,7 +30,7 @@ namespace ELEMAG
 {
   class ElemagTimeInt;
 
-  class ElemagResultTest : public DRT::ResultTest
+  class ElemagResultTest : public CORE::UTILS::ResultTest
   {
    public:
     /*!

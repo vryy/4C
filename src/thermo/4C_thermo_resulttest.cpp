@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           dano 08/09 |
  *----------------------------------------------------------------------*/
-THR::ResultTest::ResultTest(TimInt& tintegrator) : DRT::ResultTest("THERMAL")
+THR::ResultTest::ResultTest(TimInt& tintegrator) : CORE::UTILS::ResultTest("THERMAL")
 {
   temp_ = tintegrator.Temp();
   rate_ = tintegrator.Rate();

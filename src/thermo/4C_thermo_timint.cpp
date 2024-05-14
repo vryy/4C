@@ -621,7 +621,7 @@ void THR::TimInt::OutputEnergy()
 /*----------------------------------------------------------------------*
  | thermal result test                                       dano 01/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> THR::TimInt::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> THR::TimInt::CreateFieldTest()
 {
   return Teuchos::rcp(new THR::ResultTest(*this));
 

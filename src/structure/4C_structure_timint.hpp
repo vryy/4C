@@ -392,7 +392,7 @@ namespace STR
     void DetermineOptionalQuantity();
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     //@}
 

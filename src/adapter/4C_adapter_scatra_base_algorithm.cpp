@@ -584,7 +584,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
 {
   return scatra_->CreateScaTraFieldTest();
 }

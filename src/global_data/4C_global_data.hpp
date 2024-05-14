@@ -17,10 +17,10 @@
 
 #include "4C_discretization_fem_general_shape_function_type.hpp"
 #include "4C_global_data_enums.hpp"
-#include "4C_lib_resulttest.hpp"
 #include "4C_lib_utils_restart_manager.hpp"
 #include "4C_utils_function_manager.hpp"
 #include "4C_utils_random.hpp"
+#include "4C_utils_result_test.hpp"
 #include "4C_utils_std_cxx20_ranges.hpp"
 
 #include <Epetra_Comm.h>
@@ -549,9 +549,12 @@ namespace GLOBAL
     void TestAll(const Epetra_Comm& comm) { resulttest_.TestAll(comm); }
 
     /// add field specific result test object
-    void AddFieldTest(Teuchos::RCP<DRT::ResultTest> test) { resulttest_.AddFieldTest(test); }
+    void AddFieldTest(Teuchos::RCP<CORE::UTILS::ResultTest> test)
+    {
+      resulttest_.AddFieldTest(test);
+    }
 
-    DRT::ResultTestManager& GetResultTestManager() { return resulttest_; }
+    CORE::UTILS::ResultTestManager& GetResultTestManager() { return resulttest_; }
 
     //@}
 
@@ -601,7 +604,7 @@ namespace GLOBAL
     CORE::UTILS::FunctionManager functionmanager_;
 
     /// all test values we might have
-    DRT::ResultTestManager resulttest_;
+    CORE::UTILS::ResultTestManager resulttest_;
 
     /// map of coupled fields and corresponding material IDs (needed for cloning
     /// of discretizations)

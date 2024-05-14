@@ -1436,7 +1436,7 @@ void SCATRA::TimIntHDG::AssembleRHS()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> SCATRA::TimIntHDG::CreateScaTraFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> SCATRA::TimIntHDG::CreateScaTraFieldTest()
 {
   return Teuchos::rcp(new SCATRA::HDGResultTest(Teuchos::rcp(this, false)));
 }

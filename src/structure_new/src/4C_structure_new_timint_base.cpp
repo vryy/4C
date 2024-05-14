@@ -385,7 +385,7 @@ void STR::TIMINT::Base::InitializeEnergyFileStreamAndWriteHeaders()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> STR::TIMINT::Base::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> STR::TIMINT::Base::CreateFieldTest()
 {
   CheckInitSetup();
   Teuchos::RCP<STR::ResultTest> resulttest = Teuchos::rcp(new STR::ResultTest());

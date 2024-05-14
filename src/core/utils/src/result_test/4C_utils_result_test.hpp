@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_RESULTTEST_HPP
-#define FOUR_C_LIB_RESULTTEST_HPP
+#ifndef FOUR_C_UTILS_RESULT_TEST_HPP
+#define FOUR_C_UTILS_RESULT_TEST_HPP
 
 
 #include "4C_config.hpp"
@@ -29,7 +29,7 @@ namespace INPUT
   class Lines;
 }  // namespace INPUT
 
-namespace DRT
+namespace CORE::UTILS
 {
   /*!
     \brief Base class of all field test classes
@@ -127,7 +127,7 @@ namespace DRT
     std::vector<INPUT::LineDefinition> results_;
   };
 
-}  // namespace DRT
+}  // namespace CORE::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

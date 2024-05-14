@@ -454,7 +454,7 @@ namespace ADAPTER
     Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override = 0;
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override = 0;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
     void Reset() override = 0;

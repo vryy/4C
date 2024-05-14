@@ -15,7 +15,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
@@ -40,7 +40,7 @@ namespace LUBRICATION
     \author wirtz
     \date 11/15
   */
-  class ResultTest : public DRT::ResultTest
+  class ResultTest : public CORE::UTILS::ResultTest
   {
    public:
     /*!

@@ -12,6 +12,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_utils_result_test.hpp"
+
 #include <Teuchos_RCP.hpp>
 
 namespace Teuchos
@@ -67,7 +69,7 @@ namespace ADAPTER
     Teuchos::RCP<LUBRICATION::TimIntImpl> LubricationField() { return lubrication_; }
 
     /// create result test for Lubrication field
-    Teuchos::RCP<DRT::ResultTest> CreateLubricationFieldTest();
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateLubricationFieldTest();
 
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter();
 

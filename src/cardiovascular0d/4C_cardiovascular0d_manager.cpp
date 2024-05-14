@@ -321,7 +321,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(Teuchos::RCP<DRT::Discre
 
 
     // Create resulttest
-    Teuchos::RCP<DRT::ResultTest> resulttest =
+    Teuchos::RCP<CORE::UTILS::ResultTest> resulttest =
         Teuchos::rcp(new Cardiovascular0DResultTest(*this, actdisc_));
 
     // Resulttest for 0D problem

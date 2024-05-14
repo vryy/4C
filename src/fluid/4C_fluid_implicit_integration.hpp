@@ -931,7 +931,7 @@ namespace FLD
     void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) override;
 
     /// create field test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     Teuchos::RCP<const Epetra_Vector> ConvectiveVel() override;
 

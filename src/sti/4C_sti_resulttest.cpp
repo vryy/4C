@@ -22,7 +22,7 @@ STI::STIResultTest::STIResultTest(const Teuchos::RCP<STI::Algorithm>&
         sti_algorithm  //!< time integrator for scatra-thermo interaction
     )
     // call base class constructor
-    : DRT::ResultTest("STI"),
+    : CORE::UTILS::ResultTest("STI"),
 
       // store pointer to time integrator for scatra-thermo interaction
       sti_algorithm_(sti_algorithm)

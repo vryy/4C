@@ -20,10 +20,10 @@
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_lib_elementdefinition.hpp"
-#include "4C_lib_resulttest.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Kokkos_Core.hpp>

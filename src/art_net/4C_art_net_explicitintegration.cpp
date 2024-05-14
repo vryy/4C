@@ -848,7 +848,7 @@ void ART::ArtNetExplicitTimeInt::CalcScatraFromScatraFW(
 
 void ART::ArtNetExplicitTimeInt::TestResults()
 {
-  Teuchos::RCP<DRT::ResultTest> resulttest = CreateFieldTest();
+  Teuchos::RCP<CORE::UTILS::ResultTest> resulttest = CreateFieldTest();
   GLOBAL::Problem::Instance()->AddFieldTest(resulttest);
   GLOBAL::Problem::Instance()->TestAll(discret_->Comm());
 }
@@ -856,7 +856,7 @@ void ART::ArtNetExplicitTimeInt::TestResults()
 /*----------------------------------------------------------------------*
  | create result test for this field                   kremheller 03/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ART::ArtNetExplicitTimeInt::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> ART::ArtNetExplicitTimeInt::CreateFieldTest()
 {
   return Teuchos::rcp(new ART::ArteryResultTest(*(this)));
 }

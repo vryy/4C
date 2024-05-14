@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
@@ -38,7 +38,7 @@ namespace ART
     \author Mahmoud Ismail
     \date 11/11
   */
-  class ArteryResultTest : public DRT::ResultTest
+  class ArteryResultTest : public CORE::UTILS::ResultTest
   {
    public:
     /*!

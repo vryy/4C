@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                     berardocco 10/18 |
  *----------------------------------------------------------------------*/
 ELEMAG::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
-    : DRT::ResultTest("ELECTROMAGNETIC")
+    : CORE::UTILS::ResultTest("ELECTROMAGNETIC")
 {
   dis_ = elemagalgo.Discretization();
   // mysol_ = CORE::LINALG::CreateVector(*(dis_->NodeRowMap()), true);

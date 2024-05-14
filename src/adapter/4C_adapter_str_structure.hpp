@@ -18,6 +18,7 @@
 #include "4C_adapter_field.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_lib_elements_paramsinterface.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Operator.h>
 #include <Teuchos_ParameterList.hpp>
@@ -248,16 +249,18 @@ namespace ADAPTER
     virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     /// expand dirichlet bc map
-    virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
-    {/* This is only needed for the old structural time integration.
-        For the new structural time integration this is already
-        implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */};
+    virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd){
+        /* This is only needed for the old structural time integration.
+           For the new structural time integration this is already
+           implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */
+    };
 
     /// contract dirichlet bc map
-    virtual void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove)
-    {/* This is only needed for the old structural time integration.
-        For the new structural time integration this is already
-        implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */};
+    virtual void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove){
+        /* This is only needed for the old structural time integration.
+           For the new structural time integration this is already
+           implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */
+    };
 
     /// set evaluation action
     virtual void SetActionType(const DRT::ELEMENTS::ActionType& action) = 0;
@@ -504,7 +507,7 @@ namespace ADAPTER
     //@}
 
     /// create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
     virtual void Reset() = 0;

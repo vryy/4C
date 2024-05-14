@@ -66,7 +66,7 @@ namespace ART
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // create field test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
 
     /*!

@@ -20,6 +20,7 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
@@ -292,7 +293,7 @@ namespace ELEMAG
     /*!
     \brief create result test
     */
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest();
 
    protected:
     /// discretization, solver, parameter list and output

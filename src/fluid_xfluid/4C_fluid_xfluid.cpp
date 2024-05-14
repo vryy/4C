@@ -5162,7 +5162,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluid::RHS_s_Vec(const std::string& cond_name)
 /*------------------------------------------------------------------------------------------------*
  | create field test
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> FLD::XFluid::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> FLD::XFluid::CreateFieldTest()
 {
   return Teuchos::rcp(new FLD::XFluidResultTest(*this));
 }

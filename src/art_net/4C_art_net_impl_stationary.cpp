@@ -581,7 +581,7 @@ void ART::ArtNetImplStationary::OutputFlow()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetImplStationary::TestResults()
 {
-  Teuchos::RCP<DRT::ResultTest> resulttest = CreateFieldTest();
+  Teuchos::RCP<CORE::UTILS::ResultTest> resulttest = CreateFieldTest();
   GLOBAL::Problem::Instance()->AddFieldTest(resulttest);
   if (solvescatra_)
   {
@@ -593,7 +593,7 @@ void ART::ArtNetImplStationary::TestResults()
 /*----------------------------------------------------------------------*
  | create result test for this field                   kremheller 03/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ART::ArtNetImplStationary::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> ART::ArtNetImplStationary::CreateFieldTest()
 {
   return Teuchos::rcp(new ART::ArteryResultTest(*(this)));
 }

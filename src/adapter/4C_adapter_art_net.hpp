@@ -12,6 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
@@ -57,7 +58,7 @@ namespace ADAPTER
     virtual void TestResults() = 0;
 
     // create field test
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
 
     //! get discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;

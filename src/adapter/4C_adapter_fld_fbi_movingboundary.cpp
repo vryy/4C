@@ -129,7 +129,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::IntegrateInterfaceShape()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::FBIFluidMB::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::FBIFluidMB::CreateFieldTest()
 {
   return FluidField()->CreateFieldTest();
 }

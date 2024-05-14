@@ -44,7 +44,7 @@ struct ModuleCallbacks
    * A callback to attach valid result description lines to.
    * Modules should use the Add() function on the Lines object to add their own valid lines.
    */
-  
+
   std::function<void(INPUT::Lines&)> AttachResultLines;
 };
 

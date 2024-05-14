@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatratimint)
-    : DRT::ResultTest("SCATRA"), scatratimint_(scatratimint)
+    : CORE::UTILS::ResultTest("SCATRA"), scatratimint_(scatratimint)
 {
   return;
 }

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEWALL::WallResultTest::WallResultTest() : DRT::ResultTest("PARTICLEWALL")
+PARTICLEWALL::WallResultTest::WallResultTest() : CORE::UTILS::ResultTest("PARTICLEWALL")
 {
   // empty constructor
 }

@@ -127,7 +127,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
 
 

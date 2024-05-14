@@ -110,7 +110,7 @@ namespace POROFLUIDMULTIPHASE
     void ReadRestart(int step) override;
 
     /// create result test for porous fluid field
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     //! finite difference check for system matrix
     void FDCheck();

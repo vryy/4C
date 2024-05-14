@@ -101,7 +101,8 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::LubricationBaseAlgorithm::CreateLubricationFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest>
+ADAPTER::LubricationBaseAlgorithm::CreateLubricationFieldTest()
 {
   return Teuchos::rcp(new LUBRICATION::ResultTest(lubrication_));
 }

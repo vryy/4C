@@ -570,7 +570,7 @@ namespace FLD
       return Teuchos::null;
     }
 
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;

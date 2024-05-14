@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,7 +29,7 @@ namespace SSTI
     by field-specific result testing classes. Feel free to extend this class if necessary.
 
   */
-  class SSTIResultTest : public DRT::ResultTest
+  class SSTIResultTest : public CORE::UTILS::ResultTest
   {
    public:
     //! constructor

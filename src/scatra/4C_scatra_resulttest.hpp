@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
@@ -38,7 +38,7 @@ namespace SCATRA
     \author gjb
     \date 07/08
   */
-  class ScaTraResultTest : public DRT::ResultTest
+  class ScaTraResultTest : public CORE::UTILS::ResultTest
   {
    public:
     /*!

@@ -16,8 +16,8 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
 #include "4C_particle_engine_typedefs.hpp"
+#include "4C_utils_result_test.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -39,7 +39,7 @@ namespace PARTICLEALGORITHM
    *
    * \author Sebastian Fuchs \date 07/2018
    */
-  class ParticleResultTest final : public DRT::ResultTest
+  class ParticleResultTest final : public CORE::UTILS::ResultTest
   {
    public:
     //! constructor

@@ -250,7 +250,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CalculateNorms(std::vector<do
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::CreateFieldTest()
 {
-  Teuchos::RCP<DRT::ResultTest> arteryresulttest = artnettimint_->CreateFieldTest();
+  Teuchos::RCP<CORE::UTILS::ResultTest> arteryresulttest = artnettimint_->CreateFieldTest();
   GLOBAL::Problem::Instance()->AddFieldTest(arteryresulttest);
   return;
 }

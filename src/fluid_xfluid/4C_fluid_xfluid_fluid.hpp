@@ -194,7 +194,7 @@ namespace FLD
     void InterpolateEmbeddedStateVectors();
 
     /// create a result test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     /// write output for both fluid discretizations
     void Output() override;

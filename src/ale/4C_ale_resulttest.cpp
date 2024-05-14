@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
-    : DRT::ResultTest("ALE"), aledis_(ale.Discretization()), dispnp_(ale.Dispnp())
+    : CORE::UTILS::ResultTest("ALE"), aledis_(ale.Discretization()), dispnp_(ale.Dispnp())
 {
 }
 

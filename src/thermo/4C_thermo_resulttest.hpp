@@ -22,8 +22,8 @@
 
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_lib_resulttest.hpp"
 #include "4C_thermo_timint.hpp"
+#include "4C_utils_result_test.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -37,7 +37,7 @@ namespace THR
   //! \brief Thermo specific result test class
   //!
   //! \author cd
-  class ResultTest : public DRT::ResultTest
+  class ResultTest : public CORE::UTILS::ResultTest
   {
    public:
     //! Constructor for time integrators of general kind
@@ -63,7 +63,7 @@ namespace THR
     //! NOTE: these have to be present explicitly
     //! as they are not part of the problem instance like in fluid3
 
-  };  // DRT::ResultTest
+  };  // CORE::UTILS::ResultTest
 
 }  // namespace THR
 

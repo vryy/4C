@@ -16,7 +16,7 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <memory>
 
@@ -40,7 +40,7 @@ namespace PARTICLERIGIDBODY
    *
    * \author Sebastian Fuchs \date 09/2020
    */
-  class RigidBodyResultTest final : public DRT::ResultTest
+  class RigidBodyResultTest final : public CORE::UTILS::ResultTest
   {
    public:
     //! constructor

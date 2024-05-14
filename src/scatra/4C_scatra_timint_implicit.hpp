@@ -31,6 +31,7 @@
 #include "4C_inpar_scatra.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_MultiVector.h>
 
@@ -350,7 +351,7 @@ namespace SCATRA
     }
 
     //! create result test for scalar transport field
-    virtual Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest();
+    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateScaTraFieldTest();
 
     //! Add tests to global problem and start tests
     virtual void TestResults();

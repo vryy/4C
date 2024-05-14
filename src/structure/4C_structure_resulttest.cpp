@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 StruResultTest::StruResultTest(STR::TimInt& tintegrator)
-    : DRT::ResultTest("STRUCTURE"), timeintegrator_(Teuchos::rcpFromRef(tintegrator))
+    : CORE::UTILS::ResultTest("STRUCTURE"), timeintegrator_(Teuchos::rcpFromRef(tintegrator))
 {
   dis_ = tintegrator.Dis();
   vel_ = tintegrator.Vel();

@@ -9,7 +9,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_pstream.hpp"
@@ -20,24 +20,24 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
+CORE::UTILS::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
 
-void DRT::ResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void CORE::UTILS::ResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no element test available");
 }
 
-void DRT::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void CORE::UTILS::ResultTest::TestNode(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no node test available");
 }
 
-void DRT::ResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void CORE::UTILS::ResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no special case test available");
 }
 
-void DRT::ResultTest::TestSpecial(
+void CORE::UTILS::ResultTest::TestSpecial(
     INPUT::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count)
 {
   TestSpecial(res, nerr, test_count);
@@ -59,7 +59,8 @@ void DRT::ResultTest::TestSpecial(
  \date 06/04
  */
 /*----------------------------------------------------------------------*/
-int DRT::ResultTest::CompareValues(double actresult, std::string type, INPUT::LineDefinition& res)
+int CORE::UTILS::ResultTest::CompareValues(
+    double actresult, std::string type, INPUT::LineDefinition& res)
 {
   int gid;
 
@@ -119,9 +120,9 @@ int DRT::ResultTest::CompareValues(double actresult, std::string type, INPUT::Li
   else
   {
     // Result is correct
-    std::cout << msghead.str() << "\t is CORRECT" << ", abs(diff)=" << std::setw(24)
-              << std::setprecision(17) << std::scientific << std::abs(actresult - givenresult)
-              << " <" << std::setw(24) << tolerance << "\n";
+    std::cout << msghead.str() << "\t is CORRECT"
+              << ", abs(diff)=" << std::setw(24) << std::setprecision(17) << std::scientific
+              << std::abs(actresult - givenresult) << " <" << std::setw(24) << tolerance << "\n";
   }
 
   return ret;
@@ -129,12 +130,12 @@ int DRT::ResultTest::CompareValues(double actresult, std::string type, INPUT::Li
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ResultTest::Match(INPUT::LineDefinition& res) { return res.HaveNamed(myname_); }
+bool CORE::UTILS::ResultTest::Match(INPUT::LineDefinition& res) { return res.HaveNamed(myname_); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
+void CORE::UTILS::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
 {
   fieldtest_.push_back(test);
 }
@@ -142,7 +143,7 @@ void DRT::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
+void CORE::UTILS::ResultTestManager::TestAll(const Epetra_Comm& comm)
 {
   int nerr = 0;                      // number of tests with errors
   int test_count = 0;                // number of tests performed
@@ -205,7 +206,7 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ResultTestManager::SetParsedLines(std::vector<INPUT::LineDefinition> results)
+void CORE::UTILS::ResultTestManager::SetParsedLines(std::vector<INPUT::LineDefinition> results)
 {
   results_ = std::move(results);
 }

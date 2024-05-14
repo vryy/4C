@@ -15,6 +15,7 @@
 #include "4C_inpar_poroelast.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
@@ -559,7 +560,7 @@ namespace ADAPTER
     virtual void UseBlockMatrix(bool splitmatrix) = 0;
 
     /// create result test for encapulated fluid algorithm
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
 
     /// calculate error in comparison to analytical solution
     virtual void CalculateError() = 0;

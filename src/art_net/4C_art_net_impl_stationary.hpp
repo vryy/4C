@@ -48,7 +48,7 @@ namespace ART
     void TestResults() override;
 
     // create field test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     /// setup the variables to do a new time step
     void TimeUpdate() override;

@@ -296,7 +296,7 @@ namespace ALE
         ) override;
 
     /// create result test for encapsulated algorithm
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =

@@ -16,6 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_lib_discret.hpp"
+#include "4C_utils_result_test.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -133,7 +134,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() = 0;
 
     /// create result test for encapulated fluid algorithm
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
   };
 
 
