@@ -52,54 +52,11 @@ function(set_timeout name_of_test)
 endfunction(set_timeout)
 
 # add test with options
-function(
-  add_test_with_options
-  name_of_test
-  command
-  additional_fixture
-  np
-  timeout
-  label
-  )
-
-  add_test(NAME ${name_of_test} COMMAND bash -c "${command}")
-
-  require_fixture(${name_of_test} "${additional_fixture};test_cleanup")
-  set_processors(${name_of_test} ${np})
-  define_setup_fixture(${name_of_test} ${name_of_test})
-  set_timeout(${name_of_test} ${timeout})
-
-  if(NOT ${label} STREQUAL "")
-    set_label(${name_of_test} ${label})
-  endif()
-
-endfunction(add_test_with_options)
-
-# 4C Test - run simulation with .dat file
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_test(<input_file> optional: NP <> RESTART_STEP <> TIMEOUT <> OMP_THREADS <> POST_ENSIGHT <> LABEL <>)"
-
-# <input_file>:   must equal the name of a .dat file in directory tests/input_files; without ".dat"
-
-# optional:
-# NP:           Number of processors the test should use; 1 if not specified
-# RESTART_STEP: Number of restart step; 0 or not defined indicates no restart
-# TIMEOUT:      Manually defined duration for test timeout; default global timeout if not specified
-# OMP_THREADS:  Number of OpenMP threads per proccessor the test should use; default deactivated
-# POST_ENSIGHT: Test post_ensight options in serial and parallel
-# LABEL:        Add a label to the test
-
-function(four_c_test input_file)
+function(_add_test_with_options)
 
   set(options "")
-  set(oneValueArgs
-      NP
-      RESTART_STEP
-      TIMEOUT
-      OMP_THREADS
-      POST_ENSIGHT
-      LABEL
-      )
-  set(multiValueArgs)
+  set(oneValueArgs NAME_OF_TEST ADDITIONAL_FIXTURE NP TIMEOUT)
+  set(multiValueArgs TEST_COMMAND LABELS)
   cmake_parse_arguments(
     _parsed
     "${options}"
@@ -109,7 +66,80 @@ function(four_c_test input_file)
     )
 
   if(DEFINED _parsed_UNPARSED_ARGUMENTS)
-    message(SEND_ERROR "There are unparsed arguments: ${_parsed_UNPARSED_ARGUMENTS}!")
+    message(FATAL_ERROR "There are unparsed arguments: ${_parsed_UNPARSED_ARGUMENTS}!")
+  endif()
+
+  if(NOT DEFINED _parsed_NAME_OF_TEST)
+    message(FATAL_ERROR "Name of test is a necessary input argument!")
+  endif()
+
+  if(NOT DEFINED _parsed_TEST_COMMAND)
+    message(FATAL_ERROR "Test command is a necessary input argument!")
+  endif()
+
+  if(NOT DEFINED _parsed_ADDITIONAL_FIXTURE)
+    set(_parsed_ADDITIONAL_FIXTURE "")
+  endif()
+
+  if(NOT DEFINED _parsed_NP)
+    set(_parsed_NP 1)
+  endif()
+
+  if(NOT DEFINED _parsed_TIMEOUT)
+    set(_parsed_TIMEOUT "")
+  endif()
+
+  if(NOT DEFINED _parsed_LABELS)
+    set(_parsed_LABELS "")
+  endif()
+
+  add_test(NAME ${_parsed_NAME_OF_TEST} COMMAND bash -c "${_parsed_TEST_COMMAND}")
+
+  require_fixture(${_parsed_NAME_OF_TEST} "${_parsed_ADDITIONAL_FIXTURE};test_cleanup")
+  set_processors(${_parsed_NAME_OF_TEST} ${_parsed_NP})
+  define_setup_fixture(${_parsed_NAME_OF_TEST} ${_parsed_NAME_OF_TEST})
+  set_timeout(${_parsed_NAME_OF_TEST} ${_parsed_TIMEOUT})
+
+  if(NOT ${_parsed_LABELS} STREQUAL "")
+    set_label(${_parsed_NAME_OF_TEST} ${_parsed_LABELS})
+  endif()
+
+endfunction()
+
+# 4C Test - run simulation with .dat file
+# Usage in TestingFrameworkListOfTests.cmake: "four_c_test(<input_file> optional: NP <> RESTART_STEP <> TIMEOUT <> OMP_THREADS <> POST_ENSIGHT_STRUCTURE <> LABEL <>)"
+
+# <input_file>:   must equal the name of a .dat file in directory tests/input_files; without ".dat"
+
+# optional:
+# NP:                     Number of processors the test should use; 1 if not specified
+# RESTART_STEP:           Number of restart step; 0 or not defined indicates no restart
+# TIMEOUT:                Manually defined duration for test timeout; default global timeout if not specified
+# OMP_THREADS:            Number of OpenMP threads per proccessor the test should use; default deactivated
+# POST_ENSIGHT_STRUCTURE: Test post_ensight options in serial and parallel (for structure simulation only!)
+# LABELS:                 Add labels to the test
+
+function(four_c_test input_file)
+
+  set(options "")
+  set(oneValueArgs
+      NP
+      RESTART_STEP
+      TIMEOUT
+      OMP_THREADS
+      POST_ENSIGHT_STRUCTURE
+      )
+  set(multiValueArgs LABELS)
+  cmake_parse_arguments(
+    _parsed
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+    )
+
+  if(DEFINED _parsed_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "There are unparsed arguments: ${_parsed_UNPARSED_ARGUMENTS}!")
   endif()
 
   if(NOT DEFINED _parsed_NP)
@@ -128,22 +158,26 @@ function(four_c_test input_file)
     set(_parsed_OMP_THREADS 0)
   endif()
 
-  if(NOT DEFINED _parsed_POST_ENSIGHT)
-    set(_parsed_POST_ENSIGHT OFF)
+  if(NOT DEFINED _parsed_POST_ENSIGHT_STRUCTURE)
+    set(_parsed_POST_ENSIGHT_STRUCTURE OFF)
   endif()
 
-  if(NOT DEFINED _parsed_LABEL)
-    set(_parsed_LABEL "")
+  if(NOT DEFINED _parsed_LABELS)
+    set(_parsed_LABELS "")
   endif()
 
   set(name_of_test ${input_file}-p${_parsed_NP})
   set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${input_file}.dat)
+  # check if .dat file exists
+  if(NOT EXISTS ${source_file})
+    message(FATAL_ERROR "Test source file ${source_file} does not exist!")
+  endif()
+
   set(additional_fixture "")
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${input_file}_p${_parsed_NP})
-  file(MAKE_DIRECTORY ${test_directory})
 
   set(test_command
-      "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${source_file} ${test_directory}/xxx"
+      "mkdir -p ${test_directory} && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${_parsed_NP} $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> ${source_file} ${test_directory}/xxx"
       )
 
   # Optional timeout
@@ -158,49 +192,66 @@ function(four_c_test input_file)
     set(name_of_test ${name_of_test}-t${_parsed_OMP_THREADS})
     set(test_directory ${test_directory}_t${_parsed_OMP_THREADS})
     set(test_command
-        "export OMP_NUM_THREADS=${num_omp_threads}; ${test_command}; unset OMP_NUM_THREADS"
+        "export OMP_NUM_THREADS=${_parsed_OMP_THREADS}; ${test_command}; unset OMP_NUM_THREADS"
         )
-    set(total_procs math (EXPR total_num_proc "${_parsed_NP}*${_parsed_OMP_THREADS}"))
+    math(EXPR total_procs "${_parsed_NP}*${_parsed_OMP_THREADS}")
   endif()
 
-  add_test_with_options(
+  _add_test_with_options(
+    NAME_OF_TEST
     ${name_of_test}
+    TEST_COMMAND
     ${test_command}
-    additional_fixture
+    ADDITIONAL_FIXTURE
+    ${additional_fixture}
+    NP
     ${total_procs}
+    TIMEOUT
     "${_parsed_TIMEOUT}"
-    "${_parsed_LABEL}"
+    LABELS
+    "${_parsed_LABELS}"
     )
 
   # restart option
   if(${_parsed_RESTART_STEP})
+    set(additional_fixture "${name_of_test};${additional_fixture}")
     set(name_of_test "${name_of_test}-restart")
-    set(test_command "${test_command} restart=${restart_step}")
-    add_test_with_options(
+    set(test_command "${test_command} restart=${_parsed_RESTART_STEP}")
+    _add_test_with_options(
+      NAME_OF_TEST
       ${name_of_test}
+      TEST_COMMAND
       ${test_command}
-      additional_fixture
+      ADDITIONAL_FIXTURE
+      ${additional_fixture}
+      NP
       ${total_procs}
+      TIMEOUT
       "${_parsed_TIMEOUT}"
-      "${_parsed_LABEL}"
+      LABELS
+      "${_parsed_LABELS}"
       )
   endif()
 
   # post_ensight test in serial and parallel
-  if(${_parsed_POST_ENSIGHT})
+  if(${_parsed_POST_ENSIGHT_STRUCTURE})
     set(additional_fixture ${name_of_test})
     # serial run
     set(name_of_ensight_test "${name_of_test}-post_ensight_serial")
     set(ensight_command
         "${FOUR_C_ENABLE_ADDRESS_SANITIZER_TEST_OPTIONS}\ ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_serial\ --outputtype=bin\ --stress=ndxyz && ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${source_file} ${test_directory}/xxx_serial_structure.case"
         )
-    add_test_with_options(
+    _add_test_with_options(
+      NAME_OF_TEST
       ${name_of_ensight_test}
+      TEST_COMMAND
       ${ensight_command}
-      additional_fixture
-      1
+      ADDITIONAL_FIXTURE
+      ${additional_fixture}
+      TIMEOUT
       "${_parsed_TIMEOUT}"
-      "${_parsed_LABEL}"
+      LABELS
+      "${_parsed_LABELS}"
       )
 
     # parallel run
@@ -208,13 +259,19 @@ function(four_c_test input_file)
     set(ensight_command
         "${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${_parsed_NP}\ ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_parallel --outputtype=bin\ --stress=ndxyz && ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${source_file} ${test_directory}/xxx_parallel_structure.case"
         )
-    add_test_with_options(
+    _add_test_with_options(
+      NAME_OF_TEST
       ${name_of_ensight_test}
+      TEST_COMMAND
       ${ensight_command}
-      additional_fixture
+      ADDITIONAL_FIXTURE
+      ${additional_fixture}
+      NP
       _parsed_NP
+      TIMEOUT
       "${_parsed_TIMEOUT}"
-      "${_parsed_LABEL}"
+      LABELS
+      "${_parsed_LABELS}"
       )
 
   endif()
