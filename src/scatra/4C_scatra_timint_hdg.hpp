@@ -78,7 +78,7 @@ namespace SCATRA
     */
     virtual Teuchos::RCP<CORE::LINALG::SerialDenseVector> ComputeError() const;
 
-    Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateScaTraFieldTest() override;
 
    protected:
     //! copy constructor

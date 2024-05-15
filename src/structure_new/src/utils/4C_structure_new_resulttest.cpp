@@ -138,7 +138,7 @@ namespace
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::ResultTest::ResultTest()
-    : DRT::ResultTest("STRUCTURE"),
+    : CORE::UTILS::ResultTest("STRUCTURE"),
       isinit_(false),
       issetup_(false),
       strudisc_(Teuchos::null),

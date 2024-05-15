@@ -22,6 +22,7 @@
 #include "4C_config.hpp"
 
 #include "4C_inpar_thermo.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
@@ -266,7 +267,7 @@ namespace ADAPTER
     virtual void PreparePartitionStep() = 0;
 
     /// create result test for encapulated thermo algorithm
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
   };
 
 

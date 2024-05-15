@@ -1262,7 +1262,7 @@ void SCATRA::ScaTraTimIntElchSCL::CalcInitialPotentialField()
       ->PostCalcInitialPotentialField();
 }
 
-Teuchos::RCP<DRT::ResultTest> SCATRA::ScaTraTimIntElchSCL::CreateMicroFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> SCATRA::ScaTraTimIntElchSCL::CreateMicroFieldTest()
 {
   return Teuchos::rcp(new SCATRA::ElchResultTest(
       Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(MicroScaTraField())));

@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Vector.h>
 
@@ -32,7 +32,7 @@ namespace STR
 /*!
   \brief Structure specific result test class
 */
-class StruResultTest : public DRT::ResultTest
+class StruResultTest : public CORE::UTILS::ResultTest
 {
  public:
   //! Constructor for time integrators of general kind

@@ -228,7 +228,10 @@ namespace ADAPTER
     //@}
 
     //! create result test for encapsulated structure algorithm
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override { return ale_->CreateFieldTest(); }
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override
+    {
+      return ale_->CreateFieldTest();
+    }
 
     /*! \brief Create Systemmatrix
      *

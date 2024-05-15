@@ -411,7 +411,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::IntegrateInterfaceShape()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidAle::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::FluidAle::CreateFieldTest()
 {
   return FluidField()->CreateFieldTest();
 }

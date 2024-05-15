@@ -50,7 +50,7 @@ void ADAPTER::PoroFluidMultiphaseWrapper::Init(const bool isale,  ///< ALE flag
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::PoroFluidMultiphaseWrapper::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::PoroFluidMultiphaseWrapper::CreateFieldTest()
 {
   return porofluid_->CreateFieldTest();
 }

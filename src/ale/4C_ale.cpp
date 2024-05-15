@@ -668,7 +668,7 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ALE::Ale::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> ALE::Ale::CreateFieldTest()
 {
   return Teuchos::rcp(new ALE::AleResultTest(*this));
 }

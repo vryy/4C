@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FSI::FSIResultTest::FSIResultTest(
     Teuchos::RCP<FSI::Monolithic>& fsi, const Teuchos::ParameterList& fsidyn)
-    : DRT::ResultTest("FSI"), fsi_(fsi)
+    : CORE::UTILS::ResultTest("FSI"), fsi_(fsi)
 {
   int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
@@ -154,7 +154,7 @@ FSI::FSIResultTest::FSIResultTest(
 /*----------------------------------------------------------------------*/
 FSI::FSIResultTest::FSIResultTest(
     Teuchos::RCP<FSI::MonolithicNoNOX> fsi, const Teuchos::ParameterList& fsidyn)
-    : DRT::ResultTest("FSI")
+    : CORE::UTILS::ResultTest("FSI")
 {
   int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)

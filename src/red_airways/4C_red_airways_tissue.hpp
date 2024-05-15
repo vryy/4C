@@ -16,8 +16,8 @@
 
 #include "4C_adapter_algorithmbase.hpp"
 #include "4C_inpar_bio.hpp"
-#include "4C_lib_resulttest.hpp"
 #include "4C_red_airways_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

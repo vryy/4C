@@ -9,8 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_LIB_RESULTTEST_HPP
-#define FOUR_C_LIB_RESULTTEST_HPP
+#ifndef FOUR_C_UTILS_RESULT_TEST_HPP
+#define FOUR_C_UTILS_RESULT_TEST_HPP
 
 
 #include "4C_config.hpp"
@@ -29,7 +29,7 @@ namespace INPUT
   class Lines;
 }  // namespace INPUT
 
-namespace DRT
+namespace CORE::UTILS
 {
   /*!
     \brief Base class of all field test classes
@@ -116,11 +116,8 @@ namespace DRT
     /// do all tests of all fields including appropiate output
     void TestAll(const Epetra_Comm& comm);
 
-    /// Definition of valid input section
-    INPUT::Lines ValidResultLines();
-
-    /// read the 4C input file and set up all curves
-    void ReadInput(INPUT::DatFileReader& reader);
+    /// Store the parsed @p results.
+    void SetParsedLines(std::vector<INPUT::LineDefinition> results);
 
    private:
     /// set of field specific result test objects
@@ -130,9 +127,7 @@ namespace DRT
     std::vector<INPUT::LineDefinition> results_;
   };
 
-}  // namespace DRT
-
-void PrintResultDescrDatHeader();
+}  // namespace CORE::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -19,7 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net) : DRT::ResultTest("ARTNET")
+ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
+    : CORE::UTILS::ResultTest("ARTNET")
 {
   dis_ = art_net.Discretization();
   mysol_ = art_net.QAnp();
@@ -27,7 +28,8 @@ ART::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net) : DRT::R
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ART::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net) : DRT::ResultTest("ARTNET")
+ART::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net)
+    : CORE::UTILS::ResultTest("ARTNET")
 {
   dis_ = art_net.Discretization();
   mysol_ = art_net.Pressurenp();

@@ -278,7 +278,7 @@ namespace THR
     void PreparePartitionStep() override = 0;
 
     //! thermal result test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     //@}
 

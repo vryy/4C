@@ -18,10 +18,10 @@
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_resulttest.hpp"
 #include "4C_red_airways_implicitintegration.hpp"
 #include "4C_red_airways_resulttest.hpp"
 #include "4C_red_airways_tissue.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -164,7 +164,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
     airwayimplicit->Integrate();
 
     // Create resulttest
-    Teuchos::RCP<DRT::ResultTest> resulttest =
+    Teuchos::RCP<CORE::UTILS::ResultTest> resulttest =
         Teuchos::rcp(new AIRWAY::RedAirwayResultTest(*airwayimplicit));
 
     // Resulttest for 0D problem and testing

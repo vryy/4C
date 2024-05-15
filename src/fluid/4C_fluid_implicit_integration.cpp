@@ -6185,7 +6185,7 @@ void FLD::FluidImplicitTimeInt::ApplyExternalForces(Teuchos::RCP<Epetra_MultiVec
 /*------------------------------------------------------------------------------------------------*
  | create field test
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> FLD::FluidImplicitTimeInt::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> FLD::FluidImplicitTimeInt::CreateFieldTest()
 {
   return Teuchos::rcp(new FLD::FluidResultTest(*this));
 }

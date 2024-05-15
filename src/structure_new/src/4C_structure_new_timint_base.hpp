@@ -530,7 +530,7 @@ namespace STR
       }
 
       /// create result test for encapsulated structure algorithm
-      Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+      Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
       /** \brief Get data that is written during restart
        *

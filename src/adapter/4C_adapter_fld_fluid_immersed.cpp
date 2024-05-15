@@ -124,7 +124,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::IntegrateInterfaceShape()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidImmersed::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::FluidImmersed::CreateFieldTest()
 {
   return FluidField()->CreateFieldTest();
 }

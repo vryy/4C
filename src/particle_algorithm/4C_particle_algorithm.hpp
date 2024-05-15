@@ -20,6 +20,7 @@
 #include "4C_particle_engine.hpp"
 #include "4C_particle_engine_typedefs.hpp"
 #include "4C_particle_wall.hpp"
+#include "4C_utils_result_test.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -187,7 +188,7 @@ namespace PARTICLEALGORITHM
      *
      * \return particle field specific result test objects
      */
-    std::vector<std::shared_ptr<DRT::ResultTest>> CreateResultTests();
+    std::vector<std::shared_ptr<CORE::UTILS::ResultTest>> CreateResultTests();
 
     /*!
      * \brief get interface to particle engine

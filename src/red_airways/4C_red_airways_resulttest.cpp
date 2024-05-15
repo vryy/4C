@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 AIRWAY::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airways)
-    : DRT::ResultTest("RED_AIRWAY")
+    : CORE::UTILS::ResultTest("RED_AIRWAY")
 {
   dis_ = airways.Discretization();
   mynodesol_pressure_ = airways.Pnp();

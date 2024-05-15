@@ -27,12 +27,12 @@ its parameters and conditions.
 #include "4C_inpar_validparameters.hpp"
 #include "4C_lib_conditiondefinition.hpp"
 #include "4C_lib_elementdefinition.hpp"
-#include "4C_lib_resulttest.hpp"
 #include "4C_lib_utils_createdis.hpp"
 #include "4C_pre_exodus_readbc.hpp"
 #include "4C_pre_exodus_reader.hpp"
 #include "4C_pre_exodus_validate.hpp"
 #include "4C_pre_exodus_writedat.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_CommandLineProcessor.hpp>
@@ -373,8 +373,11 @@ int main(int argc, char** argv)
 
       // default result-test lines
       {
-        DRT::ResultTestManager resulttestmanager;
-        INPUT::Lines lines = resulttestmanager.ValidResultLines();
+        CORE::UTILS::ResultTestManager resulttestmanager;
+        INPUT::Lines lines("RESULT DESCRIPTION",
+            "The result of the simulation with respect to specific quantities at concrete points "
+            "can be tested against particular values with a given tolerance.");
+        GlobalLegacyModuleCallbacks().AttachResultLines(lines);
         lines.Print(defaulthead);
       }
 

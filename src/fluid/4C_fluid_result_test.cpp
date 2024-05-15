@@ -22,7 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid) : DRT::ResultTest("FLUID")
+FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
+    : CORE::UTILS::ResultTest("FLUID")
 {
   fluiddis_ = fluid.discret_;
   myerror_ = fluid.EvaluateErrorComparedToAnalyticalSol();

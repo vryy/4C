@@ -17,13 +17,13 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_lib_discret_hdg.hpp"
-#include "4C_lib_resulttest.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_electromagnetic.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -1127,7 +1127,7 @@ Teuchos::RCP<DRT::Discretization> ELEMAG::ElemagTimeInt::Discretization()
 /*----------------------------------------------------------------------*
  |  Create test field (public)                         berardocco 08/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ELEMAG::ElemagTimeInt::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> ELEMAG::ElemagTimeInt::CreateFieldTest()
 {
   return Teuchos::rcp(new ElemagResultTest(*this));
 }  // CreateFieldTest

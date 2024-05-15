@@ -13,6 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
@@ -65,7 +66,7 @@ namespace ADAPTER
         ) = 0;
 
     /// create result test for multiphase porous fluid field
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
 
     /// read restart
     virtual void ReadRestart(int restart) = 0;

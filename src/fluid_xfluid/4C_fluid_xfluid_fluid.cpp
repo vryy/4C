@@ -306,7 +306,7 @@ Teuchos::RCP<const Epetra_Map> FLD::XFluidFluid::VelocityRowMap()
   return xff_state_->xffluidvelpressplitter_->OtherMap();
 }
 
-Teuchos::RCP<DRT::ResultTest> FLD::XFluidFluid::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> FLD::XFluidFluid::CreateFieldTest()
 {
   return Teuchos::rcp(new FLD::XFluidResultTest(*this));
 }

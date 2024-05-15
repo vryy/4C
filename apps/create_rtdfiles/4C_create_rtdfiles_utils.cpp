@@ -11,6 +11,7 @@
 #include "4C_create_rtdfiles_utils.hpp"
 
 #include "4C_discretization_fem_general_cell_type_traits.hpp"
+#include "4C_global_legacy_module.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_utils_reader.hpp"
 #include "4C_lib_utils_createdis.hpp"
@@ -689,8 +690,11 @@ namespace RTD
     {
       WriteLinktarget(stream, "restultdescriptionreference");
       WriteHeader(stream, 0, "Result description reference");
-      DRT::ResultTestManager resulttestmanager;
-      const INPUT::Lines lines = resulttestmanager.ValidResultLines();
+      CORE::UTILS::ResultTestManager resulttestmanager;
+      INPUT::Lines lines("RESULT DESCRIPTION",
+          "The result of the simulation with respect to specific quantities at concrete points "
+          "can be tested against particular values with a given tolerance.");
+      GlobalLegacyModuleCallbacks().AttachResultLines(lines);
       std::string sectionDescription = lines.Description();
       WriteParagraph(stream, sectionDescription);
       std::stringstream resultDescriptionStream;

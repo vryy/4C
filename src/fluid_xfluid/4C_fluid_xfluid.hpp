@@ -316,7 +316,7 @@ namespace FLD
     }
 
     /// create field test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     /// read restart data for fluid discretization
     void ReadRestart(int step) override;

@@ -3817,7 +3817,7 @@ void SCATRA::ScaTraTimIntImpl::SetTimeSteppingToMicroScale()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> SCATRA::ScaTraTimIntImpl::CreateScaTraFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> SCATRA::ScaTraTimIntImpl::CreateScaTraFieldTest()
 {
   return Teuchos::rcp(new SCATRA::ScaTraResultTest(Teuchos::rcp(this, false)));
 }

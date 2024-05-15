@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
@@ -45,7 +45,7 @@ namespace FSI
     \author mayr.mt
     \date 11/2012
   */
-  class FSIResultTest : public DRT::ResultTest
+  class FSIResultTest : public CORE::UTILS::ResultTest
   {
    public:
     //! constructor for standard FSI

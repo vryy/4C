@@ -12,7 +12,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Vector.h>
 
@@ -38,7 +38,7 @@ namespace IO
 /*!
   \brief Structure specific result test class
 */
-class Cardiovascular0DResultTest : public DRT::ResultTest
+class Cardiovascular0DResultTest : public CORE::UTILS::ResultTest
 {
  public:
   Cardiovascular0DResultTest(

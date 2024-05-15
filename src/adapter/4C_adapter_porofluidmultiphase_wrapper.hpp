@@ -56,7 +56,7 @@ namespace ADAPTER
         ) override;
 
     /// create result test for multiphase porous fluid field
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     /// read restart
     void ReadRestart(int restart) override;

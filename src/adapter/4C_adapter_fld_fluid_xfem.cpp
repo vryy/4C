@@ -174,7 +174,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::IntegrateInterfaceShape()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEM::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::FluidXFEM::CreateFieldTest()
 {
   return FluidField()->CreateFieldTest();
 }

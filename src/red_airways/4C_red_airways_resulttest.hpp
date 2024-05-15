@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
 #include "4C_red_airways_implicitintegration.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
@@ -36,7 +36,7 @@ namespace AIRWAY
   /*!
     \brief red_airways specific result test class
   */
-  class RedAirwayResultTest : public DRT::ResultTest
+  class RedAirwayResultTest : public CORE::UTILS::ResultTest
   {
    public:
     /*!

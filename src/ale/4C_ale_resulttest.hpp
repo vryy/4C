@@ -17,7 +17,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_ale.hpp"
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Vector.h>
 
@@ -40,7 +40,7 @@ namespace ALE
 namespace ALE
 {
   /// Result test subclass for linear ale algorithm
-  class AleResultTest : public DRT::ResultTest
+  class AleResultTest : public CORE::UTILS::ResultTest
   {
    public:
     AleResultTest(ALE::Ale& ale);

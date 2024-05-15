@@ -19,8 +19,8 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"
-#include "4C_lib_resulttest.hpp"
 #include "4C_lib_utils_createdis.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

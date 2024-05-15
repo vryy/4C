@@ -102,7 +102,7 @@ void PASI::PartitionedAlgo::TestResults(const Epetra_Comm& comm)
   problem->AddFieldTest(structurefield_->CreateFieldTest());
 
   // create particle field specific result test objects
-  std::vector<std::shared_ptr<DRT::ResultTest>> allresulttests =
+  std::vector<std::shared_ptr<CORE::UTILS::ResultTest>> allresulttests =
       particlealgorithm_->CreateResultTests();
 
   // add particle field specific result test objects

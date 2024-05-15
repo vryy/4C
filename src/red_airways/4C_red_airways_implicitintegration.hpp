@@ -214,7 +214,7 @@ namespace AIRWAY
     */
     void ReadRestart(int step, bool coupledTo3D = false);
 
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest();
 
 
     //! @name access methods for composite algorithms

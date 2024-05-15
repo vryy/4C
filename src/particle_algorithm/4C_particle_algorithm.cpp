@@ -13,7 +13,6 @@
 #include "4C_inpar_particle.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_lib_resulttest.hpp"
 #include "4C_particle_algorithm_gravity.hpp"
 #include "4C_particle_algorithm_initial_field.hpp"
 #include "4C_particle_algorithm_input_generator.hpp"
@@ -33,6 +32,7 @@
 #include "4C_particle_wall.hpp"
 #include "4C_particle_wall_result_test.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -324,14 +324,14 @@ void PARTICLEALGORITHM::ParticleAlgorithm::WriteRestart() const
   }
 }
 
-std::vector<std::shared_ptr<DRT::ResultTest>>
+std::vector<std::shared_ptr<CORE::UTILS::ResultTest>>
 PARTICLEALGORITHM::ParticleAlgorithm::CreateResultTests()
 {
   // build global id to local index map
   particleengine_->BuildGlobalIDToLocalIndexMap();
 
   // particle field specific result test objects
-  std::vector<std::shared_ptr<DRT::ResultTest>> allresulttests(0);
+  std::vector<std::shared_ptr<CORE::UTILS::ResultTest>> allresulttests(0);
 
   // particle result test
   {

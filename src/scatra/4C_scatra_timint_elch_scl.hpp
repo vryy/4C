@@ -52,7 +52,7 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! create result test for micro field
-    Teuchos::RCP<DRT::ResultTest> CreateMicroFieldTest();
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateMicroFieldTest();
 
     //! get time integration of micro problem
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> MicroScaTraField();

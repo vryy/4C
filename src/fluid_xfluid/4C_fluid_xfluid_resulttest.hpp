@@ -14,7 +14,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Vector.h>
 
@@ -35,7 +35,7 @@ namespace FLD
   /*!
     ResultTest class for XFluid
    */
-  class XFluidResultTest : public DRT::ResultTest
+  class XFluidResultTest : public CORE::UTILS::ResultTest
   {
    public:
     //! ctor for standard XFEM problems

@@ -3294,7 +3294,7 @@ const Epetra_Map& STR::TimInt::DomainMap() const { return mass_->DomainMap(); }
 
 /*----------------------------------------------------------------------*/
 /* Creates the field test                                               */
-Teuchos::RCP<DRT::ResultTest> STR::TimInt::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> STR::TimInt::CreateFieldTest()
 {
   return Teuchos::rcp(new StruResultTest(*this));
 }

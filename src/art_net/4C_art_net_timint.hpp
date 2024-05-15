@@ -165,7 +165,7 @@ namespace ART
     }
 
     // create field test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override = 0;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override = 0;
 
    protected:
     //! @name general algorithm parameters

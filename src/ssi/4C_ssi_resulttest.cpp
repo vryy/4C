@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_base)
-    : DRT::ResultTest("SSI"), ssi_base_(ssi_base)
+    : CORE::UTILS::ResultTest("SSI"), ssi_base_(ssi_base)
 {
 }
 

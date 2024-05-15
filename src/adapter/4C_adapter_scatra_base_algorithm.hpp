@@ -14,6 +14,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_utils_result_test.hpp"
+
 #include <Teuchos_RCP.hpp>
 
 namespace Teuchos
@@ -74,7 +76,7 @@ namespace ADAPTER
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() { return scatra_; }
 
     /// create result test for scalar transport field
-    Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest();
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateScaTraFieldTest();
 
    private:
     /// scalar transport field solver

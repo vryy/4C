@@ -41,7 +41,7 @@ namespace FLD
     void ReadRestart(const int restart);
 
     /// do result check
-    Teuchos::RCP<DRT::ResultTest> DoResultCheck()
+    Teuchos::RCP<CORE::UTILS::ResultTest> DoResultCheck()
     {
       return fluidalgo_->FluidField()->CreateFieldTest();
     };

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  | ctor                                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 POROFLUIDMULTIPHASE::ResultTest::ResultTest(TimIntImpl& porotimint)
-    : DRT::ResultTest("POROFLUIDMULTIPHASE"), porotimint_(porotimint)
+    : CORE::UTILS::ResultTest("POROFLUIDMULTIPHASE"), porotimint_(porotimint)
 {
   return;
 }

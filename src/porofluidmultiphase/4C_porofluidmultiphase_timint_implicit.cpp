@@ -2027,7 +2027,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
 /*----------------------------------------------------------------------*
  | create result test for this field                        vuong 08/16  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> POROFLUIDMULTIPHASE::TimIntImpl::CreateFieldTest()
+Teuchos::RCP<CORE::UTILS::ResultTest> POROFLUIDMULTIPHASE::TimIntImpl::CreateFieldTest()
 {
   strategy_->CreateFieldTest();
   return Teuchos::rcp(new POROFLUIDMULTIPHASE::ResultTest(*this));

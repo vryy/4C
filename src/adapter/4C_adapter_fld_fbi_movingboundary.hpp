@@ -121,7 +121,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
 
     /// Get velocity at timestep n+1
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();

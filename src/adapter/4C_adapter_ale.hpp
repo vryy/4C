@@ -15,6 +15,7 @@
 
 #include "4C_ale_utils_mapextractor.hpp"
 #include "4C_inpar_ale.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
@@ -227,7 +228,7 @@ namespace ADAPTER
     //@}
 
     //! create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
 
     //! reset state vectors to zero
     virtual void Reset() = 0;

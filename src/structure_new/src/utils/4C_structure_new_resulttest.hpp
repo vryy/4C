@@ -14,8 +14,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_lib_resulttest.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_result_test.hpp"
 
 #include <Epetra_Vector.h>
 
@@ -51,7 +51,7 @@ namespace STR
   }  // namespace MODELEVALUATOR
 
   /*! \brief Structure specific result test class */
-  class ResultTest : public DRT::ResultTest
+  class ResultTest : public CORE::UTILS::ResultTest
   {
     /// possible status flag for the result test
     enum class Status : char
