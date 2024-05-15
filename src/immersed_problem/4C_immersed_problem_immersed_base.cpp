@@ -38,8 +38,9 @@ void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discr
   id += 1;
 
   // build condition
-  Teuchos::RCP<DRT::Condition> condition = Teuchos::rcp(
-      new DRT::Condition(id, condtype, buildgeometry, CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<DRT::Condition> condition =
+      Teuchos::rcp(new DRT::Condition(id, condtype, CORE::Conditions::to_string(condtype).data(),
+          buildgeometry, CORE::Conditions::geometry_type_volume));
 
   // add nodes to conditions
   condition->SetNodes(dvol_fenode);

@@ -114,8 +114,8 @@ void INPUT::ConditionDefinition::Read(const GLOBAL::Problem& problem, DatFileRea
     const int dobjid = parser.Read<int>(*condline) - 1;
     parser.Consume(*condline, "-");
 
-    Teuchos::RCP<DRT::Condition> condition =
-        Teuchos::rcp(new DRT::Condition(dobjid, condtype_, buildgeometry_, gtype_));
+    Teuchos::RCP<DRT::Condition> condition = Teuchos::rcp(new DRT::Condition(
+        dobjid, condtype_, CORE::Conditions::to_string(condtype_).data(), buildgeometry_, gtype_));
 
     for (auto& j : inputline_)
     {

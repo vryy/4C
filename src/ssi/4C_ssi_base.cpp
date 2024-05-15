@@ -312,8 +312,10 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
 
         // create new condition
         const int num_conditions = static_cast<int>(scatra_manifold_dis->GetAllConditions().size());
-        auto cond = Teuchos::rcp(new DRT::Condition(num_conditions + 1,
-            CORE::Conditions::ScatraPartitioning, true, CORE::Conditions::geometry_type_surface));
+        auto cond = Teuchos::rcp(
+            new DRT::Condition(num_conditions + 1, CORE::Conditions::ScatraPartitioning,
+                CORE::Conditions::to_string(CORE::Conditions::ScatraPartitioning).data(), true,
+                CORE::Conditions::geometry_type_surface));
         cond->parameters().Add("ConditionID", 0);
         cond->SetNodes(glob_node_ids);
 
