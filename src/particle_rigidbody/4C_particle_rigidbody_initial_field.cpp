@@ -110,7 +110,7 @@ namespace
           params_conditions, stateIt.first, currentstatetypetofunctidmap);
     }
 
-#ifdef BACI_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     // safety check
     for (const auto& iter : statetotypetofunctidmap)
     {
