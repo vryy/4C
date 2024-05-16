@@ -1802,8 +1802,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
               "for the least square problem. Maybe one should add a separate parameter for this.");
         }
 
-        DRT::NURBS::apply_nurbs_initial_condition(
-            *discret_, problem_->SolverParams(lstsolver), startfuncno, phin_);
+        DRT::NURBS::apply_nurbs_initial_condition(*discret_, problem_->SolverParams(lstsolver),
+            problem_->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1), phin_);
       }
 
       // initialize also the solution vector. These values are a pretty good guess for the
