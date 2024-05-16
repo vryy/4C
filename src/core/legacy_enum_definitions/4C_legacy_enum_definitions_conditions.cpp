@@ -381,8 +381,7 @@ std::string_view CORE::Conditions::to_string(const CORE::Conditions::ConditionTy
     case CORE::Conditions::NodeTag:
       return "Tagged nodes";
     default:
-      FOUR_C_THROW(
-          "no output std::string for condition defined in CORE::Conditions::Condition::Print");
+      FOUR_C_THROW("Unknown condition type for enum constant %d.", condition_type);
   }
 }
 

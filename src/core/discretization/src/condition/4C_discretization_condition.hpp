@@ -76,8 +76,8 @@ namespace CORE::Conditions
                                (elements) have to be build
     \param gtype (in): type of geometric entity this condition lives on
     */
-    Condition(const int id, const CORE::Conditions::ConditionType type, std::string name,
-        const bool buildgeometry, const CORE::Conditions::GeometryType gtype);
+    Condition(const int id, const CORE::Conditions::ConditionType type, const bool buildgeometry,
+        const CORE::Conditions::GeometryType gtype);
 
     /*!
     \brief Default constructor with type condition_none
@@ -142,11 +142,6 @@ namespace CORE::Conditions
     \brief Print this Condition
     */
     void Print(std::ostream& os) const;
-
-    /*!
-    Return the id and the name of the condition
-    */
-    [[nodiscard]] std::string Name() const;
 
     /*!
     \brief Return type of condition
@@ -238,9 +233,6 @@ namespace CORE::Conditions
 
     //! Type of this condition
     CORE::Conditions::ConditionType type_{};
-
-    //! name of this condition
-    std::string name_{};
 
     //! Type of geometry the condition lives on
     CORE::Conditions::GeometryType gtype_{};

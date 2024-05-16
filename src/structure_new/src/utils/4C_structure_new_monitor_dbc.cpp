@@ -112,9 +112,8 @@ void STR::MonitorDbc::CreateReactionForceCondition(
   const int new_id = GetUniqueId(tagged_cond.Id(), tagged_cond.GType());
 
   Teuchos::RCP<CORE::Conditions::Condition> rcond_ptr =
-      Teuchos::rcp(new CORE::Conditions::Condition(new_id, CORE::Conditions::ElementTag,
-          CORE::Conditions::to_string(CORE::Conditions::ElementTag).data(), true,
-          tagged_cond.GType()));
+      Teuchos::rcp(new CORE::Conditions::Condition(
+          new_id, CORE::Conditions::ElementTag, true, tagged_cond.GType()));
 
   rcond_ptr->parameters().Add("onoff", (tagged_cond.parameters().Get<std::vector<int>>("onoff")));
   rcond_ptr->SetNodes(*tagged_cond.GetNodes());

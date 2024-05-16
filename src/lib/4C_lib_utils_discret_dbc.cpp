@@ -279,7 +279,8 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
     // is the number of degrees of freedom given in the constraint definition sufficient?
     const int num_dbc_dofs = static_cast<int>((*onoff).size());
     if (num_dbc_dofs < numdf)
-      FOUR_C_THROW("%d DOFs given but %d expected in %s", num_dbc_dofs, numdf, cond.Name().c_str());
+      FOUR_C_THROW("%d DOFs given but %d expected in %s", num_dbc_dofs, numdf,
+          CORE::Conditions::to_string(cond.Type()).data());
 
     // loop over dofs of current nnode
     for (unsigned j = 0; j < total_numdf; ++j)

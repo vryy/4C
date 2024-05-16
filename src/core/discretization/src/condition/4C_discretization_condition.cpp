@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 
 CORE::Conditions::Condition::Condition(const int id, const CORE::Conditions::ConditionType type,
-    const std::string name, const bool buildgeometry, const CORE::Conditions::GeometryType gtype)
-    : id_(id), buildgeometry_(buildgeometry), type_(type), name_(std::move(name)), gtype_(gtype)
+    const bool buildgeometry, const CORE::Conditions::GeometryType gtype)
+    : id_(id), buildgeometry_(buildgeometry), type_(type), gtype_(gtype)
 {
 }
 
@@ -30,17 +30,10 @@ std::ostream& operator<<(std::ostream& os, const CORE::Conditions::Condition& co
   return os;
 }
 
-std::string CORE::Conditions::Condition::Name() const
-{
-  std::stringstream condition_name;
-  condition_name << "Condition " << id_ << " " << name_ << ": ";
-
-  return condition_name.str();
-}
 
 void CORE::Conditions::Condition::Print(std::ostream& os) const
 {
-  os << CORE::Conditions::Condition::Name();
+  os << "Condition " << id_ << " " << to_string(type_) << ": ";
   container_.Print(os);
   os << std::endl;
   if (nodes_.size() != 0)

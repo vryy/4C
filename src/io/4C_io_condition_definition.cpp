@@ -113,8 +113,7 @@ void INPUT::ConditionDefinition::Read(
     parser.Consume(*condline, "-");
 
     Teuchos::RCP<CORE::Conditions::Condition> condition =
-        Teuchos::rcp(new CORE::Conditions::Condition(dobjid, condtype_,
-            CORE::Conditions::to_string(condtype_).data(), buildgeometry_, gtype_));
+        Teuchos::rcp(new CORE::Conditions::Condition(dobjid, condtype_, buildgeometry_, gtype_));
 
     for (auto& j : inputline_)
     {
