@@ -7,8 +7,7 @@
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RELEASE",
-        "CMAKE_CXX_FLAGS": "-march=native",
-        "CMAKE_C_FLAGS": "-march=native",
+        "FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS": "ON",
         "FOUR_C_WITH_GOOGLETEST": "OFF",
         "FOUR_C_BUILD_DOXYGEN": "OFF",
         "FOUR_C_CLN_ROOT": "/lnm/packages/cln/1-3-4",

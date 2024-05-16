@@ -15,9 +15,9 @@
 // This flag guards assertions and special checks that are often expensive and should only run when debugging.
 #cmakedefine FOUR_C_ENABLE_ASSERTIONS
 
-#cmakedefine FOUR_C_DSERROR_DUMP
+#cmakedefine FOUR_C_ENABLE_CORE_DUMP
 
-#cmakedefine FOUR_C_TRAP_FE
+#cmakedefine FOUR_C_ENABLE_FE_TRAPPING
 
 // The project namespace is added via the following two macros. This design allows
 // to treat the namespace as invisible within the project.

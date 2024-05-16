@@ -53,9 +53,21 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   enable_compiler_flag_if_supported("-Wno-error=potentially-evaluated-expression")
 endif()
 
+four_c_process_global_option(
+  FOUR_C_ENABLE_WARNINGS_AS_ERRORS "Treat warnings as errors when compiling" OFF
+  )
+if(FOUR_C_ENABLE_WARNINGS_AS_ERRORS)
+  enable_compiler_flag_if_supported("-Werror")
+endif()
+
+four_c_process_global_option(FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS "Optimze for current hardware" OFF)
+if(FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS)
+  enable_compiler_flag_if_supported("-march=native")
+endif()
+
 # If enabled, build all targets with address sanitizer
-option(FOUR_C_WITH_ADDRESS_SANITIZER "Compile with address sanitizer" OFF)
-if(FOUR_C_WITH_ADDRESS_SANITIZER)
+four_c_process_global_option(FOUR_C_ENABLE_ADDRESS_SANITIZER "Compile with address sanitizer" OFF)
+if(FOUR_C_ENABLE_ADDRESS_SANITIZER)
   # We get better stack traces in ASAN with this flag.
   enable_compiler_flag_if_supported("-fno-omit-frame-pointer")
   enable_linker_flag_if_supported("-fno-omit-frame-pointer")
@@ -72,7 +84,7 @@ if(FOUR_C_WITH_ADDRESS_SANITIZER)
   if(NOT FOUR_C_COMPILER_LINKER_SUPPORT_ASAN)
     message(
       FATAL_ERROR
-        "Option FOUR_C_WITH_ADDRESS_SANITIZER is ON but the compiler does not support this feature."
+        "Option FOUR_C_ENABLE_ADDRESS_SANITIZER is ON but the compiler does not support this feature."
       )
   endif()
 endif()
@@ -99,8 +111,10 @@ if(FOUR_C_ENABLE_COVERAGE)
   endif()
 endif()
 
-four_c_process_global_option(FOUR_C_DSERROR_DUMP "Uncaught exceptions create a core file" OFF)
-four_c_process_global_option(FOUR_C_TRAP_FE "Crash the program if a nan or inf occurs" ON)
+four_c_process_global_option(FOUR_C_ENABLE_CORE_DUMP "Uncaught exceptions create a core file" OFF)
+four_c_process_global_option(
+  FOUR_C_ENABLE_FE_TRAPPING "Crash the program if a nan or inf occurs" ON
+  )
 
 ##
 # Optimization flags

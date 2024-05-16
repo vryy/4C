@@ -13,7 +13,7 @@
 #include "4C_solver_nonlin_nox_floating_point_exception.hpp"
 
 #include <NOX_Utils.H>
-#ifdef FOUR_C_TRAP_FE
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
 #include <fenv.h>
 #endif
 
@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 void NOX::NLN::FloatingPointException::disable() const
 {
   if (not shall_be_caught_) return;
-#ifdef FOUR_C_TRAP_FE
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
   fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 #endif
 }
@@ -34,7 +34,7 @@ void NOX::NLN::FloatingPointException::disable() const
 void NOX::NLN::FloatingPointException::clear() const
 {
   if (not shall_be_caught_) return;
-#ifdef FOUR_C_TRAP_FE
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
   feclearexcept(FE_ALL_EXCEPT);
 #endif
 }
@@ -44,7 +44,7 @@ void NOX::NLN::FloatingPointException::clear() const
 int NOX::NLN::FloatingPointException::checkAndPrint(std::ostream& os)
 {
   int exception_occurred = 0;
-#ifdef FOUR_C_TRAP_FE
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
   if (fetestexcept(FE_INVALID))
   {
     os << "Floating Point Exception: INVALID\n";
@@ -69,7 +69,7 @@ int NOX::NLN::FloatingPointException::checkAndPrint(std::ostream& os)
 void NOX::NLN::FloatingPointException::enable() const
 {
   if (not shall_be_caught_) return;
-#ifdef FOUR_C_TRAP_FE
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
   feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 #endif
 }

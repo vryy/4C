@@ -933,7 +933,7 @@ int main(int argc, char** argv)
 
     // proper cleanup
     GLOBAL::Problem::Done();
-#ifdef FOUR_C_DSERROR_DUMP
+#ifdef FOUR_C_ENABLE_CORE_DUMP
     abort();
 #endif
 

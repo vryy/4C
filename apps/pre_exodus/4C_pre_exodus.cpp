@@ -454,7 +454,7 @@ int main(int argc, char** argv)
     problem->Done();
     comm = Teuchos::null;
 
-#ifdef FOUR_C_DSERROR_DUMP
+#ifdef FOUR_C_ENABLE_CORE_DUMP
     abort();
 #endif
 
